@@ -68,6 +68,7 @@ class EditorSpinSlider : public Range {
 	void _value_input_entered(const String &);
 	void _value_focus_exited();
 	bool hide_slider;
+	bool flat;
 
 protected:
 	void _notification(int p_what);
@@ -87,6 +88,9 @@ public:
 
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;
+
+	void set_flat(bool p_enable);
+	bool is_flat() const;
 
 	virtual Size2 get_minimum_size() const;
 	EditorSpinSlider();

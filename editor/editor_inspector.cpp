@@ -91,6 +91,9 @@ void EditorProperty::_notification(int p_what) {
 		Rect2 rect;
 		Rect2 bottom_rect;
 
+		right_child_rect = Rect2();
+		bottom_child_rect = Rect2();
+
 		{
 			int child_room = size.width * (1.0 - split_ratio);
 			Ref<Font> font = get_font("font", "Tree");
@@ -118,7 +121,8 @@ void EditorProperty::_notification(int p_what) {
 
 			if (bottom_editor) {
 
-				int m = get_constant("item_margin", "Tree");
+				int m = 0; //get_constant("item_margin", "Tree");
+
 				bottom_rect = Rect2(m, rect.size.height + get_constant("vseparation", "Tree"), size.width - m, bottom_editor->get_combined_minimum_size().height);
 			}
 		}
@@ -147,10 +151,12 @@ void EditorProperty::_notification(int p_what) {
 				continue;
 
 			fit_child_in_rect(c, rect);
+			right_child_rect = rect;
 		}
 
 		if (bottom_editor) {
 			fit_child_in_rect(bottom_editor, bottom_rect);
+			bottom_child_rect = bottom_rect;
 		}
 
 		update(); //need to redraw text
@@ -158,6 +164,7 @@ void EditorProperty::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Font> font = get_font("font", "Tree");
+		Color dark_color = get_color("dark_color_2", "Editor");
 
 		Size2 size = get_size();
 		if (bottom_editor) {
@@ -169,6 +176,13 @@ void EditorProperty::_notification(int p_what) {
 		if (selected) {
 			Ref<StyleBox> sb = get_stylebox("selected", "Tree");
 			draw_style_box(sb, Rect2(Vector2(), size));
+		}
+
+		if (right_child_rect != Rect2()) {
+			draw_rect(right_child_rect, dark_color);
+		}
+		if (bottom_child_rect != Rect2()) {
+			draw_rect(bottom_child_rect, dark_color);
 		}
 
 		Color color;
@@ -251,7 +265,7 @@ void EditorProperty::_notification(int p_what) {
 		//int vs = get_constant("vseparation", "Tree");
 		Color guide_color = get_color("guide_color", "Tree");
 		int vs_height = get_size().height; // vs / 2;
-		draw_line(Point2(0, vs_height), Point2(get_size().width, vs_height), guide_color);
+		//	draw_line(Point2(0, vs_height), Point2(get_size().width, vs_height), guide_color);
 	}
 }
 
@@ -926,6 +940,14 @@ EditorInspectorCategory::EditorInspectorCategory() {
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
+void EditorInspectorSection::_test_unfold() {
+
+	if (!vbox_added) {
+		add_child(vbox);
+		vbox_added = true;
+	}
+}
+
 void EditorInspectorSection::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
@@ -936,9 +958,9 @@ void EditorInspectorSection::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_icon("arrow", "Tree");
+				arrow = get_icon("arrow_up", "Tree");
 			} else {
-				arrow = get_icon("arrow_collapsed", "Tree");
+				arrow = get_icon("arrow", "Tree");
 			}
 		}
 #endif
@@ -951,7 +973,7 @@ void EditorInspectorSection::_notification(int p_what) {
 		}
 
 		offset.y += get_constant("vseparation", "Tree");
-		offset.x += get_constant("item_margin", "Tree");
+		offset.x += get_constant("inspector_margin", "Editor");
 
 		Rect2 rect(offset, size - offset);
 
@@ -979,9 +1001,9 @@ void EditorInspectorSection::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_icon("arrow", "Tree");
+				arrow = get_icon("arrow_up", "Tree");
 			} else {
-				arrow = get_icon("arrow_collapsed", "Tree");
+				arrow = get_icon("arrow", "Tree");
 			}
 		}
 #endif
@@ -998,14 +1020,14 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		int hs = get_constant("hseparation", "Tree");
 
+		Color color = get_color("font_color", "Tree");
+		draw_string(font, Point2(hs, font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
+
 		int ofs = 0;
 		if (arrow.is_valid()) {
-			draw_texture(arrow, Point2(ofs, (h - arrow->get_height()) / 2).floor());
+			draw_texture(arrow, Point2(get_size().width - arrow->get_width(), (h - arrow->get_height()) / 2).floor());
 			ofs += hs + arrow->get_width();
 		}
-
-		Color color = get_color("font_color", "Tree");
-		draw_string(font, Point2(ofs, font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
 	}
 }
 
@@ -1027,8 +1049,8 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	}
 
 	Ref<Font> font = get_font("font", "Tree");
-	ms.height += font->get_ascent() + get_constant("vseparation", "Tree");
-	ms.width += get_constant("item_margin", "Tree");
+	ms.height += font->get_height() + get_constant("vseparation", "Tree");
+	ms.width += get_constant("inspector_margin", "Editor");
 
 	return ms;
 }
@@ -1041,8 +1063,14 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	bg_color = p_bg_color;
 	foldable = p_foldable;
 
+	if (!foldable && !vbox_added) {
+		add_child(vbox);
+		vbox_added = true;
+	}
+
 #ifdef TOOLS_ENABLED
 	if (foldable) {
+		_test_unfold();
 		if (object->editor_is_section_unfolded(section)) {
 			vbox->show();
 		} else {
@@ -1061,6 +1089,9 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+
+		_test_unfold();
+
 		bool unfold = !object->editor_is_section_unfolded(section);
 		object->editor_set_section_unfold(section, unfold);
 		if (unfold) {
@@ -1080,6 +1111,9 @@ void EditorInspectorSection::unfold() {
 
 	if (!foldable)
 		return;
+
+	_test_unfold();
+
 #ifdef TOOLS_ENABLED
 
 	object->editor_set_section_unfold(section, true);
@@ -1092,6 +1126,8 @@ void EditorInspectorSection::fold() {
 	if (!foldable)
 		return;
 
+	if (!vbox_added)
+		return; //kinda pointless
 #ifdef TOOLS_ENABLED
 
 	object->editor_set_section_unfold(section, false);
@@ -1113,7 +1149,14 @@ EditorInspectorSection::EditorInspectorSection() {
 	object = NULL;
 	foldable = false;
 	vbox = memnew(VBoxContainer);
-	add_child(vbox);
+	vbox_added = false;
+	//add_child(vbox);
+}
+
+EditorInspectorSection::~EditorInspectorSection() {
+	if (!vbox_added) {
+		memdelete(vbox);
+	}
 }
 
 ////////////////////////////////////////////////
@@ -1274,8 +1317,10 @@ void EditorInspector::update_tree() {
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
+	VBoxContainer *category_vbox = NULL;
 
-	List<PropertyInfo> plist;
+	List<PropertyInfo>
+			plist;
 	object->get_property_list(&plist, true);
 
 	HashMap<String, VBoxContainer *> item_path;
@@ -1327,6 +1372,7 @@ void EditorInspector::update_tree() {
 
 			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
 			main_vbox->add_child(category);
+			category_vbox = NULL; //reset
 
 			String type = p.name;
 			if (has_icon(type, "EditorIcons"))
@@ -1412,6 +1458,11 @@ void EditorInspector::update_tree() {
 				continue;
 		}
 
+		if (category_vbox == NULL) {
+			category_vbox = memnew(VBoxContainer);
+			main_vbox->add_child(category_vbox);
+		}
+
 		VBoxContainer *current_vbox = main_vbox;
 
 		{
@@ -1438,6 +1489,14 @@ void EditorInspector::update_tree() {
 				}
 				current_vbox = item_path[acc_path];
 				level = (MIN(level + 1, 4));
+			}
+
+			if (current_vbox == main_vbox) {
+				//do not add directly to the main vbox, given it has no spacing
+				if (category_vbox == NULL) {
+					category_vbox = memnew(VBoxContainer);
+				}
+				current_vbox = category_vbox;
 			}
 		}
 
@@ -1625,6 +1684,10 @@ void EditorInspector::edit(Object *p_object) {
 	object = p_object;
 
 	if (object) {
+		update_scroll_request = 0; //reset
+		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
+			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accomodated
+		}
 		object->add_change_receptor(this);
 		update_tree();
 	}
@@ -1728,6 +1791,19 @@ void EditorInspector::set_scroll_offset(int p_offset) {
 
 int EditorInspector::get_scroll_offset() const {
 	return get_v_scroll();
+}
+
+void EditorInspector::set_use_sub_inspector_bg(bool p_enable) {
+
+	use_sub_inspector_bg = p_enable;
+	if (!is_inside_tree())
+		return;
+
+	if (use_sub_inspector_bg) {
+		add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
+	} else {
+		add_style_override("bg", get_stylebox("bg", "Tree"));
+	}
 }
 
 void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
@@ -1940,7 +2016,11 @@ void EditorInspector::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		get_tree()->connect("node_removed", this, "_node_removed");
-		add_style_override("bg", get_stylebox("bg", "Tree"));
+		if (use_sub_inspector_bg) {
+			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
+		} else if (is_inside_tree()) {
+			add_style_override("bg", get_stylebox("bg", "Tree"));
+		}
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
@@ -1950,6 +2030,10 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
 
+		if (update_scroll_request >= 0) {
+			get_v_scrollbar()->call_deferred("set_value", update_scroll_request);
+			update_scroll_request = -1;
+		}
 		if (refresh_countdown > 0) {
 			refresh_countdown -= get_process_delta_time();
 			if (refresh_countdown <= 0) {
@@ -1997,6 +2081,16 @@ void EditorInspector::_changed_callback(Object *p_changed, const char *p_prop) {
 	_edit_request_change(p_changed, p_prop);
 }
 
+void EditorInspector::_vscroll_changed(double p_offset) {
+
+	if (update_scroll_request >= 0) //waiting, do nothing
+		return;
+
+	if (object) {
+		scroll_cache[object->get_instance_id()] = p_offset;
+	}
+}
+
 void EditorInspector::_bind_methods() {
 
 	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed, DEFVAL(false));
@@ -2012,6 +2106,8 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_property_selected", &EditorInspector::_property_selected);
 	ClassDB::bind_method("_resource_selected", &EditorInspector::_resource_selected);
 	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
+	ClassDB::bind_method("_vscroll_changed", &EditorInspector::_vscroll_changed);
+
 	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
@@ -2024,6 +2120,7 @@ EditorInspector::EditorInspector() {
 	undo_redo = NULL;
 	main_vbox = memnew(VBoxContainer);
 	main_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_vbox->add_constant_override("separation", 0);
 	add_child(main_vbox);
 	set_enable_h_scroll(false);
 	set_enable_v_scroll(true);
@@ -2045,4 +2142,8 @@ EditorInspector::EditorInspector() {
 	_prop_edited = "property_edited";
 	set_process(true);
 	property_focusable = -1;
+	use_sub_inspector_bg = false;
+
+	get_v_scrollbar()->connect("value_changed", this, "_vscroll_changed");
+	update_scroll_request = -1;
 }

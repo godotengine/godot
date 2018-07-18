@@ -161,15 +161,19 @@ void EditorSpinSlider::_notification(int p_what) {
 		updown_offset = -1;
 
 		Ref<StyleBox> sb = get_stylebox("normal", "LineEdit");
-		draw_style_box(sb, Rect2(Vector2(), get_size()));
+		if (!flat) {
+			draw_style_box(sb, Rect2(Vector2(), get_size()));
+		}
 		Ref<Font> font = get_font("font", "LineEdit");
+		int sep = 4 * EDSCALE;
 
-		int avail_width = get_size().width - sb->get_minimum_size().width;
-		avail_width -= font->get_string_size(label).width;
+		int string_width = font->get_string_size(label).width;
+		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
+
 		Ref<Texture> updown = get_icon("updown", "SpinBox");
 
 		if (get_step() == 1) {
-			avail_width -= updown->get_width();
+			number_width -= updown->get_width();
 		}
 
 		if (has_focus()) {
@@ -183,9 +187,8 @@ void EditorSpinSlider::_notification(int p_what) {
 
 		Color fc = get_color("font_color", "LineEdit");
 
-		int label_ofs = sb->get_offset().x + avail_width;
-		draw_string(font, Vector2(label_ofs, vofs), label, fc * Color(1, 1, 1, 0.5));
-		draw_string(font, Vector2(sb->get_offset().x, vofs), numstr, fc, avail_width);
+		draw_string(font, Vector2(sb->get_offset().x, vofs), label, fc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
 			Ref<Texture> updown = get_icon("updown", "SpinBox");
@@ -336,6 +339,16 @@ bool EditorSpinSlider::is_read_only() const {
 	return read_only;
 }
 
+void EditorSpinSlider::set_flat(bool p_enable) {
+
+	flat = p_enable;
+	update();
+}
+
+bool EditorSpinSlider::is_flat() const {
+	return flat;
+}
+
 void EditorSpinSlider::_focus_entered() {
 	Rect2 gr = get_global_rect();
 	value_input->set_text(get_text_value());
@@ -355,6 +368,9 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_read_only", "read_only"), &EditorSpinSlider::set_read_only);
 	ClassDB::bind_method(D_METHOD("is_read_only"), &EditorSpinSlider::is_read_only);
 
+	ClassDB::bind_method(D_METHOD("set_flat", "flat"), &EditorSpinSlider::set_flat);
+	ClassDB::bind_method(D_METHOD("is_flat"), &EditorSpinSlider::is_flat);
+
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorSpinSlider::_gui_input);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_entered"), &EditorSpinSlider::_grabber_mouse_entered);
 	ClassDB::bind_method(D_METHOD("_grabber_mouse_exited"), &EditorSpinSlider::_grabber_mouse_exited);
@@ -365,10 +381,12 @@ void EditorSpinSlider::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 }
 
 EditorSpinSlider::EditorSpinSlider() {
 
+	flat = false;
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;
 	grabbing_spinner_dist_cache = 0;

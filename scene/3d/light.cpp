@@ -307,7 +307,6 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
 	set_param(PARAM_SHADOW_BIAS, 0.15);
 	set_disable_scale(true);
-	print_line("disabling light scale?");
 }
 
 Light::Light() {
