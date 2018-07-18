@@ -176,8 +176,8 @@ int _main() {
 }
 
 int main(int _argc, char **_argv) {
-// _argc and _argv are ignored
-// we are going to use the WideChar version of them instead
+	// _argc and _argv are ignored
+	// we are going to use the WideChar version of them instead
 
 #ifdef CRASH_HANDLER_EXCEPTION
 	__try {

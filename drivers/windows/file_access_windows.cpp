@@ -120,9 +120,9 @@ void FileAccessWindows::close() {
 		bool rename_error = true;
 		int attempts = 4;
 		while (rename_error && attempts) {
-		// This workaround of trying multiple times is added to deal with paranoid Windows
-		// antiviruses that love reading just written files even if they are not executable, thus
-		// locking the file and preventing renaming from happening.
+			// This workaround of trying multiple times is added to deal with paranoid Windows
+			// antiviruses that love reading just written files even if they are not executable, thus
+			// locking the file and preventing renaming from happening.
 
 #ifdef UWP_ENABLED
 			// UWP has no PathFileExists, so we check attributes instead

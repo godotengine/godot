@@ -42,7 +42,8 @@ void AudioDriverOpenSL::_buffer_callback(
 		/*   SLuint32 eventFlags,
     const void * pBuffer,
     SLuint32 bufferSize,
-    SLuint32 dataUsed*/) {
+    SLuint32 dataUsed*/
+) {
 
 	bool mix = true;
 

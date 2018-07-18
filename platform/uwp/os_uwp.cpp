@@ -392,7 +392,6 @@ void OSUWP::ManagedType::update_clipboard() {
 	if (data->Contains(StandardDataFormats::Text)) {
 
 		create_task(data->GetTextAsync()).then([this](Platform::String ^ clipboard_content) {
-
 			this->clipboard = clipboard_content;
 		});
 	}
