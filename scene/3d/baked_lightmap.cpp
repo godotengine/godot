@@ -811,4 +811,5 @@ BakedLightmap::BakedLightmap() {
 	propagation = 1;
 	hdr = false;
 	image_path = ".";
+	set_disable_scale(true);
 }
