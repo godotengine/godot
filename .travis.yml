@@ -23,9 +23,9 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
           packages:
-            - clang-format-5.0
+            - clang-format-6.0
 
         coverity_scan:
           project:
