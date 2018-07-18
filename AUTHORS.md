@@ -40,14 +40,15 @@ name is available.
     Ben Brookshire (sheepandshepherd)
     Benjamin (Nallebeorn)
     Bernard Liebl (poke1024)
-    Bojidar Marinov (bojidar-bg)
     Błażej Szczygieł (zaps166)
+    Bojidar Marinov (bojidar-bg)
+    bruvzg
     Carl Olsson (not-surt)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Dmitry Koteroff (Krakean)
-    Дмитрий Сальников (DmitriySalnikov)
     Emmanuel Leblond (touilleMan)
+    est31
     Fabio Alessandrelli (Faless)
     Ferenc Arn (tagcup)
     Franklin Sobrinho (TheHX)
@@ -68,6 +69,7 @@ name is available.
     J08nY
     Jakub Grzesik (kubecz3k)
     Jérôme GULLY (Nutriz)
+    JFonS
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
@@ -76,15 +78,18 @@ name is available.
     Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
     Leon Krause (eska014)
-    Marc Gilleron (Zylann)
+    m4nu3lf
     Marcelo Fernandez (marcelofg55)
+    Marc Gilleron (Zylann)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Sjursen (binbitten)
+    marynate
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     Michael Alexsander Silva Dias (YeldhamDev)
+    mrezai
     Nathan Warden (NathanWarden)
     Nuno Donato (nunodonato)
     Ovnuniarchos
@@ -102,28 +107,24 @@ name is available.
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Roberto F. Arroyo (robfram)
+    romulox-x
+    rraallvv
     Ruslan Mustakov (endragor)
     Saniko (sanikoyes)
     SaracenOne
+    sersoong
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo (toger5)
-    V. Vamsi Krishna (vkbsb)
     Vinzenz Feenstra (vinzenz)
+    박한얼 (volzhs)
+    V. Vamsi Krishna (vkbsb)
     Wilhem Barbier (nounoursheureux)
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
+    yg2f (SuperUserNameMan)
     Yuri Roubinski (Chaosus)
     Zher Huei Lee (leezh)
     ZuBsPaCe
-    박한얼 (volzhs)
-    bruvzg
-    est31
-    m4nu3lf
-    marynate
-    mrezai
-    romulox-x
-    rraallvv
-    sersoong
-    yg2f (SuperUserNameMan)
+    Дмитрий Сальников (DmitriySalnikov)
