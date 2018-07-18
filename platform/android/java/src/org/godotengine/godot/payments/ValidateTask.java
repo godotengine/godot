@@ -62,7 +62,6 @@ abstract public class ValidateTask {
 
 	public void validatePurchase(final String sku) {
 		new AsyncTask<String, String, String>() {
-
 			private ProgressDialog dialog;
 
 			@Override
@@ -107,7 +106,6 @@ abstract public class ValidateTask {
 					error(e.getMessage());
 				}
 			}
-
 		}
 				.execute();
 	}

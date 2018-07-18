@@ -661,7 +661,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			}
 		}
 
-			//print_line("no theora: "+itos(no_theora)+" theora eos: "+itos(theora_eos)+" frame done "+itos(frame_done));
+		//print_line("no theora: "+itos(no_theora)+" theora eos: "+itos(theora_eos)+" frame done "+itos(frame_done));
 
 #ifdef THEORA_USE_THREAD_STREAMING
 		if (file && thread_eof && no_theora && theora_eos && ring_buffer.data_left() == 0) {

@@ -418,7 +418,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node, int p_level, bool p
 							code+="vec4( "+dump_node_code(onode->arguments[i],p_level)+(i==4?",1.0)":",0.0)");
 
 						}
-					} else*/ if (callfunc == "tex") {
+					} else*/
+					if (callfunc == "tex") {
 
 						code = "texture2D( " + dump_node_code(onode->arguments[1], p_level) + "," + dump_node_code(onode->arguments[2], p_level) + ")";
 						break;

@@ -48,8 +48,8 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
-#include <ApplicationServices/ApplicationServices.h>
 #include <AppKit/NSCursor.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 //bitch
 #undef CursorShape

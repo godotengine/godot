@@ -410,7 +410,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		_self = this;
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		mClipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 
 		if (true) {
 			boolean md5mismatch = false;
@@ -583,8 +583,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		String copiedText = "";
 
 		if (mClipboard.getPrimaryClip() != null) {
-				ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
-				copiedText = item.getText().toString();
+			ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
+			copiedText = item.getText().toString();
 		}
 
 		return copiedText;
@@ -646,10 +646,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 		float[] adjustedValues = new float[3];
 		final int axisSwap[][] = {
-			{ 1, -1, 0, 1 },  // ROTATION_0
+			{ 1, -1, 0, 1 }, // ROTATION_0
 			{ -1, -1, 1, 0 }, // ROTATION_90
-			{ -1, 1, 0, 1 },  // ROTATION_180
-			{ 1, 1, 1, 0 }    // ROTATION_270
+			{ -1, 1, 0, 1 }, // ROTATION_180
+			{ 1, 1, 1, 0 } // ROTATION_270
 		};
 
 		final int[] as = axisSwap[displayRotation];

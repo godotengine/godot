@@ -488,7 +488,6 @@ void OSWinrt::ManagedType::update_clipboard() {
 	if (data->Contains(StandardDataFormats::Text)) {
 
 		create_task(data->GetTextAsync()).then([this](Platform::String ^ clipboard_content) {
-
 			this->clipboard = clipboard_content;
 		});
 	}
@@ -771,7 +770,7 @@ void OSWinrt::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-void OSWinrt::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape,  const Vector2 &p_hotspot) {
+void OSWinrt::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 
 	// FIXME:
 	// Not implemented, some work needs to be done for this one

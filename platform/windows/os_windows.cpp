@@ -39,10 +39,10 @@
 #include "os/memory_pool_dynamic_static.h"
 #include "os_windows.h"
 
+#include "scene/resources/texture.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-#include "scene/resources/texture.h"
 
 #include "globals.h"
 #include "io/marshalls.h"
@@ -466,7 +466,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_MBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
 			/*case WM_XBUTTONDOWN:
-		case WM_XBUTTONUP: */ {
+		case WM_XBUTTONUP: */
+			{
 
 				/*
 			LPARAM extra = GetMessageExtraInfo();

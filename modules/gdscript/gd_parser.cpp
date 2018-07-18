@@ -3022,7 +3022,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 							member._export.type=Variant::DICTIONARY;
 
-						} else*/ {
+						} else*/
+						{
 
 							if (subexpr->type != Node::TYPE_CONSTANT) {
 

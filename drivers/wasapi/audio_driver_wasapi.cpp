@@ -46,8 +46,15 @@ class CMMNotificationClient : public IMMNotificationClient {
 	IMMDeviceEnumerator *_pEnumerator;
 
 public:
-	CMMNotificationClient() : _cRef(1), _pEnumerator(NULL) { }
-	~CMMNotificationClient() { if ((_pEnumerator) != NULL) { (_pEnumerator)->Release(); (_pEnumerator) = NULL; } }
+	CMMNotificationClient() :
+			_cRef(1),
+			_pEnumerator(NULL) {}
+	~CMMNotificationClient() {
+		if ((_pEnumerator) != NULL) {
+			(_pEnumerator)->Release();
+			(_pEnumerator) = NULL;
+		}
+	}
 
 	ULONG STDMETHODCALLTYPE AddRef() {
 		return InterlockedIncrement(&_cRef);
@@ -64,10 +71,10 @@ public:
 	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, VOID **ppvInterface) {
 		if (IID_IUnknown == riid) {
 			AddRef();
-			*ppvInterface = (IUnknown*)this;
+			*ppvInterface = (IUnknown *)this;
 		} else if (__uuidof(IMMNotificationClient) == riid) {
 			AddRef();
-			*ppvInterface = (IMMNotificationClient*)this;
+			*ppvInterface = (IMMNotificationClient *)this;
 		} else {
 			*ppvInterface = NULL;
 			return E_NOINTERFACE;

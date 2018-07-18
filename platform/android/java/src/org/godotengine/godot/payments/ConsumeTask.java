@@ -61,7 +61,6 @@ abstract public class ConsumeTask {
 		}
 		final String token = _token;
 		new AsyncTask<String, String, String>() {
-
 			@Override
 			protected String doInBackground(String... params) {
 				try {
@@ -83,7 +82,6 @@ abstract public class ConsumeTask {
 					error(param);
 				}
 			}
-
 		}
 				.execute();
 	}

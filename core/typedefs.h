@@ -77,7 +77,7 @@ T *_nullptr() {
 
 #define OFFSET_OF(st, m) \
 	((size_t)((char *)&(_nullptr<st>()->m) - (char *)0))
-	/**
+/**
  * Some platforms (devices) not define NULL
  */
 
@@ -85,7 +85,7 @@ T *_nullptr() {
 #define NULL 0
 #endif
 
-	/**
+/**
  * Windows defines a lot of badly stuff we'll never ever use. undefine it.
  */
 
@@ -107,7 +107,7 @@ T *_nullptr() {
 
 #include "int_types.h"
 
-	/** Generic ABS function, for math uses please use Math::abs */
+/** Generic ABS function, for math uses please use Math::abs */
 
 #ifndef ABS
 #define ABS(m_v) ((m_v < 0) ? (-(m_v)) : (m_v))

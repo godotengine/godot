@@ -153,7 +153,6 @@ Error GameCenter::award_achievement(Variant p_params) {
 
 	[GKAchievement reportAchievements:@[ achievement ]
 				withCompletionHandler:^(NSError *error) {
-
 					Dictionary ret;
 					ret["type"] = "award_achievement";
 					if (error == nil) {
@@ -172,7 +171,6 @@ Error GameCenter::award_achievement(Variant p_params) {
 void GameCenter::request_achievement_descriptions() {
 
 	[GKAchievementDescription loadAchievementDescriptionsWithCompletionHandler:^(NSArray *descriptions, NSError *error) {
-
 		Dictionary ret;
 		ret["type"] = "achievement_descriptions";
 		if (error == nil) {
@@ -228,7 +226,6 @@ void GameCenter::request_achievement_descriptions() {
 void GameCenter::request_achievements() {
 
 	[GKAchievement loadAchievementsWithCompletionHandler:^(NSArray *achievements, NSError *error) {
-
 		Dictionary ret;
 		ret["type"] = "achievements";
 		if (error == nil) {

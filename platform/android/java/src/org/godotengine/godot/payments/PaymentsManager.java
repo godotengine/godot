@@ -308,14 +308,12 @@ public class PaymentsManager {
 
 	public void processPurchaseResponse(int resultCode, Intent data) {
 		HandlePurchaseTask handlePurchaseTask = new HandlePurchaseTask(activity) {
-
 			@Override
 			protected void success(final String sku, final String signature, final String ticket) {
 				godotPaymentV3.callbackSuccess(ticket, signature, sku);
 
 				if (auto_consume) {
 					new ConsumeTask(mService, activity) {
-
 						@Override
 						protected void success(String ticket) {
 						}
@@ -346,12 +344,10 @@ public class PaymentsManager {
 	public void validatePurchase(String purchaseToken, final String sku) {
 
 		new ValidateTask(activity, godotPaymentV3) {
-
 			@Override
 			protected void success() {
 
 				new ConsumeTask(mService, activity) {
-
 					@Override
 					protected void success(String ticket) {
 						godotPaymentV3.callbackSuccess(ticket, null, sku);
@@ -384,7 +380,6 @@ public class PaymentsManager {
 
 	public void consume(final String sku) {
 		new ConsumeTask(mService, activity) {
-
 			@Override
 			protected void success(String ticket) {
 				godotPaymentV3.callbackSuccessProductMassConsumed(ticket, "", sku);
@@ -527,7 +522,8 @@ public class PaymentsManager {
 				}
 				godotPaymentV3.completeSkuDetail();
 			}
-		})).start();
+		}))
+				.start();
 	}
 
 	public void setBaseSingleton(GodotPaymentV3 godotPaymentV3) {

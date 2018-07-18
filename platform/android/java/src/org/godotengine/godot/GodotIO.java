@@ -436,7 +436,6 @@ public class GodotIO {
 				Log.v(TAG, "Problem stopping audio thread: " + e);
 			}
 			mAudioThread = null;
-
 		}
 
 		if (mAudioTrack != null) {
@@ -515,7 +514,6 @@ public class GodotIO {
 	public void showKeyboard(String p_existing_text) {
 		if (edit != null)
 			edit.showKeyboard(p_existing_text);
-
 	};
 
 	public void hideKeyboard() {

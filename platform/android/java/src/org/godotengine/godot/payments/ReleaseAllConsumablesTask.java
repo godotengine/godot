@@ -84,7 +84,6 @@ abstract public class ReleaseAllConsumablesTask {
 						String token = inappPurchaseData.getString("purchaseToken");
 						String signature = mySignatures.get(i);
 						new GenericConsumeTask(context, mService, sku, receipt, signature, token) {
-
 							@Override
 							public void onSuccess(String sku, String receipt, String signature, String token) {
 								ReleaseAllConsumablesTask.this.success(sku, receipt, signature, token);

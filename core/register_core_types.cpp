@@ -30,9 +30,9 @@
 #include "register_core_types.h"
 
 #include "bind/core_bind.h"
+#include "color.h"
 #include "compressed_translation.h"
 #include "core/io/xml_parser.h"
-#include "color.h"
 #include "core_string_names.h"
 #include "func_ref.h"
 #include "geometry.h"

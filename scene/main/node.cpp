@@ -201,7 +201,7 @@ void Node::_propagate_enter_tree() {
 
 void Node::_propagate_exit_tree() {
 
-//block while removing children
+	//block while removing children
 
 #ifdef DEBUG_ENABLED
 

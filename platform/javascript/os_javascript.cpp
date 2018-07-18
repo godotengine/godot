@@ -686,7 +686,6 @@ void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 }
 
 void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-
 }
 
 void OS_JavaScript::main_loop_begin() {

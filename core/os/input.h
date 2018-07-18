@@ -50,7 +50,7 @@ public:
 		MOUSE_MODE_CAPTURED
 	};
 
-	#undef CursorShape
+#undef CursorShape
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,

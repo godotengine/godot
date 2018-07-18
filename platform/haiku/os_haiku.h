@@ -99,7 +99,7 @@ public:
 	virtual int get_mouse_button_state() const;
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
- 
+
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);

@@ -825,7 +825,7 @@ bool Penetration(const ShapeSW *shape0,
 	return (false);
 }
 
-	/* Symbols cleanup		*/
+/* Symbols cleanup		*/
 
 #undef GJK_MAX_ITERATIONS
 #undef GJK_ACCURARY

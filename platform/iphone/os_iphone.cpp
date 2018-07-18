@@ -478,7 +478,7 @@ void OSIPhone::set_cursor_shape(CursorShape p_shape){
 
 };
 
-void OSIPhone::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+void OSIPhone::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){
 
 };
 

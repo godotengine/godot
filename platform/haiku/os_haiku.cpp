@@ -235,7 +235,7 @@ void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
 	//ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
 }
 
-void OS_Haiku::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape,  const Vector2 &p_hotspot) {
+void OS_Haiku::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	// TODO: implement set_custom_mouse_cursor()
 }
 

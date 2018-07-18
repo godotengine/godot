@@ -500,7 +500,7 @@ void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_sh
 
 	custom_cursors[p_shape] = p_cursor;
 
-	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape) p_shape, p_hotspot);
+	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
 }
 
 // from github.com/gabomdq/SDL_GameControllerDB
