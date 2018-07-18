@@ -70,6 +70,9 @@ void ProjectExportDialog::popup_export() {
 	}
 
 	_update_presets();
+	if (presets->get_current() >= 0) {
+		_edit_preset(presets->get_current()); // triggers rescan for templates if newly installed
+	}
 
 	// Restore valid window bounds or pop up at default size.
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/export_bounds")) {
@@ -141,7 +144,6 @@ void ProjectExportDialog::_update_presets() {
 
 	if (current_idx != -1) {
 		presets->select(current_idx);
-		//_edit_preset(current_idx);
 	}
 
 	updating = false;
@@ -154,6 +156,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		name->set_editable(false);
 		runnable->set_disabled(true);
 		parameters->edit(NULL);
+		presets->unselect_all();
 		delete_preset->set_disabled(true);
 		sections->hide();
 		patches->clear();
@@ -425,11 +428,9 @@ void ProjectExportDialog::_delete_preset() {
 void ProjectExportDialog::_delete_preset_confirm() {
 
 	int idx = presets->get_current();
-	parameters->edit(NULL); //to avoid crash
 	_edit_preset(-1);
 	EditorExport::get_singleton()->remove_export_preset(idx);
 	_update_presets();
-	_edit_preset(presets->get_current());
 }
 
 Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
