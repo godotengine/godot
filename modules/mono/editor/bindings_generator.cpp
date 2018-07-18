@@ -100,8 +100,6 @@
 #define C_METHOD_MONOSTR_FROM_GODOT C_NS_MONOMARSHAL "::mono_string_from_godot"
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
-#define C_METHOD_MANAGED_TO_DICT C_NS_MONOMARSHAL "::mono_object_to_Dictionary"
-#define C_METHOD_MANAGED_FROM_DICT C_NS_MONOMARSHAL "::Dictionary_to_mono_object"
 
 #define BINDINGS_GENERATOR_VERSION UINT32_C(2)
 
@@ -1338,7 +1336,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		} else if (return_type->cs_out.empty()) {
 			p_output.push_back("return " + im_call + ";\n");
 		} else {
-			p_output.push_back(INDENT3);
 			p_output.push_back(sformat(return_type->cs_out, im_call, return_type->cs_type, return_type->im_type_out));
 			p_output.push_back("\n");
 		}
@@ -2344,7 +2341,6 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 #define INSERT_ARRAY(m_type, m_proxy_t) INSERT_ARRAY_FULL(m_type, m_type, m_proxy_t)
 
-	INSERT_ARRAY(Array, object);
 	INSERT_ARRAY(PoolIntArray, int);
 	INSERT_ARRAY_FULL(PoolByteArray, PoolByteArray, byte);
 
@@ -2362,20 +2358,36 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 #undef INSERT_ARRAY
 
+	// Array
+	itype = TypeInterface();
+	itype.name = "Array";
+	itype.cname = itype.name;
+	itype.proxy_name = "Array";
+	itype.c_out = "\treturn memnew(Array(%1));\n";
+	itype.c_type = itype.name;
+	itype.c_type_in = itype.c_type + "*";
+	itype.c_type_out = itype.c_type + "*";
+	itype.cs_type = itype.proxy_name;
+	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
+	itype.cs_out = "return new Array(%0);";
+	itype.im_type_in = "IntPtr";
+	itype.im_type_out = "IntPtr";
+	builtin_types.insert(itype.cname, itype);
+
 	// Dictionary
 	itype = TypeInterface();
 	itype.name = "Dictionary";
 	itype.cname = itype.name;
-	itype.proxy_name = "Dictionary<object, object>";
-	itype.c_in = "\t%0 %1_in = " C_METHOD_MANAGED_TO_DICT "(%1);\n";
-	itype.c_out = "\treturn " C_METHOD_MANAGED_FROM_DICT "(%1);\n";
-	itype.c_arg_in = "&%s_in";
+	itype.proxy_name = "Dictionary";
+	itype.c_out = "\treturn memnew(Dictionary(%1));\n";
 	itype.c_type = itype.name;
-	itype.c_type_in = "MonoObject*";
-	itype.c_type_out = "MonoObject*";
+	itype.c_type_in = itype.c_type + "*";
+	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = itype.proxy_name;
-	itype.im_type_in = itype.proxy_name;
-	itype.im_type_out = itype.proxy_name;
+	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
+	itype.cs_out = "return new Dictionary(%0);";
+	itype.im_type_in = "IntPtr";
+	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);
 
 	// void (fictitious type to represent the return type of methods that do not return anything)

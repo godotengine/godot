@@ -98,7 +98,11 @@ class GDMonoClass {
 	GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly);
 
 public:
-	static MonoType *get_raw_type(GDMonoClass *p_class);
+	static String get_full_name(MonoClass *p_mono_class);
+	static MonoType *get_mono_type(MonoClass *p_mono_class);
+
+	String get_full_name() const;
+	MonoType *get_mono_type();
 
 	bool is_assignable_from(GDMonoClass *p_from) const;
 
@@ -107,8 +111,6 @@ public:
 
 	_FORCE_INLINE_ MonoClass *get_mono_ptr() const { return mono_class; }
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
-
-	String get_full_name() const;
 
 	GDMonoClass *get_parent_class();
 

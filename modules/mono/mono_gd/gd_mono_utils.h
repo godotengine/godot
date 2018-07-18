@@ -41,14 +41,24 @@
 #include "object.h"
 #include "reference.h"
 
+#define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
+	if (unlikely(m_exc != NULL)) {                     \
+		GDMonoUtils::debug_unhandled_exception(m_exc); \
+		_UNREACHABLE_();                               \
+	}
+
 namespace GDMonoUtils {
 
-typedef MonoObject *(*MarshalUtils_DictToArrays)(MonoObject *, MonoArray **, MonoArray **, MonoObject **);
-typedef MonoObject *(*MarshalUtils_ArraysToDict)(MonoArray *, MonoArray *, MonoObject **);
+typedef Array *(*Array_GetPtr)(MonoObject *, MonoObject **);
+typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoObject **);
 typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoObject **);
 typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoObject **);
 typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoObject **);
 typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoObject **);
+typedef MonoBoolean (*IsArrayGenericType)(MonoObject *, MonoObject **);
+typedef MonoBoolean (*IsDictionaryGenericType)(MonoObject *, MonoObject **);
+typedef MonoBoolean (*IsArrayGenericType)(MonoObject *, MonoObject **);
+typedef MonoBoolean (*IsDictionaryGenericType)(MonoObject *, MonoObject **);
 typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoObject **);
 
 struct MonoCache {
@@ -79,6 +89,8 @@ struct MonoCache {
 	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool;
 #endif
 
+	GDMonoClass *class_KeyNotFoundException;
+
 	MonoClass *rawclass_Dictionary;
 	// -----------------------------------------------
 
@@ -100,6 +112,8 @@ struct MonoCache {
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
 	GDMonoClass *class_WeakRef;
+	GDMonoClass *class_Array;
+	GDMonoClass *class_Dictionary;
 	GDMonoClass *class_MarshalUtils;
 
 #ifdef DEBUG_ENABLED
@@ -124,8 +138,10 @@ struct MonoCache {
 	GDMonoField *field_Image_ptr;
 	GDMonoField *field_RID_ptr;
 
-	MarshalUtils_DictToArrays methodthunk_MarshalUtils_DictionaryToArrays;
-	MarshalUtils_ArraysToDict methodthunk_MarshalUtils_ArraysToDictionary;
+	Array_GetPtr methodthunk_Array_GetPtr;
+	Dictionary_GetPtr methodthunk_Dictionary_GetPtr;
+	IsArrayGenericType methodthunk_MarshalUtils_IsArrayGenericType;
+	IsDictionaryGenericType methodthunk_MarshalUtils_IsDictionaryGenericType;
 	SignalAwaiter_SignalCallback methodthunk_SignalAwaiter_SignalCallback;
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
@@ -172,6 +188,8 @@ _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
 }
 
+void runtime_object_init(MonoObject *p_this_obj);
+
 GDMonoClass *get_object_class(MonoObject *p_object);
 GDMonoClass *type_get_proxy_class(const StringName &p_type);
 GDMonoClass *get_class_native_base(GDMonoClass *p_class);
@@ -180,10 +198,13 @@ MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringNa
 
 MonoObject *create_managed_from(const NodePath &p_from);
 MonoObject *create_managed_from(const RID &p_from);
+MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class);
+MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
 MonoDomain *create_domain(const String &p_friendly_name);
 
-String get_exception_name_and_message(MonoException *p_ex);
+String get_exception_name_and_message(MonoException *p_exc);
+void set_exception_message(MonoException *p_exc, String message);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);
