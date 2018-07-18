@@ -92,6 +92,7 @@ class Spatial : public Node {
 		bool notify_transform;
 
 		bool visible;
+		bool disable_scale;
 
 #ifdef TOOLS_ENABLED
 		Ref<SpatialGizmo> gizmo;
@@ -152,6 +153,9 @@ public:
 
 	void set_as_toplevel(bool p_enabled);
 	bool is_set_as_toplevel() const;
+
+	void set_disable_scale(bool p_enabled);
+	bool is_scale_disabled() const;
 
 	void set_disable_gizmo(bool p_enabled);
 	void update_gizmo();

@@ -613,6 +613,7 @@ Camera::Camera() {
 	velocity_tracker.instance();
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
+	set_disable_scale(true);
 }
 
 Camera::~Camera() {

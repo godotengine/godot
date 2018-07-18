@@ -280,6 +280,10 @@ Transform Spatial::get_global_transform() const {
 			data.global_transform = data.local_transform;
 		}
 
+		if (data.disable_scale) {
+			data.global_transform.basis.orthonormalize();
+		}
+
 		data.dirty &= ~DIRTY_GLOBAL;
 	}
 
@@ -466,6 +470,15 @@ void Spatial::set_disable_gizmo(bool p_enabled) {
 }
 
 #endif
+
+void Spatial::set_disable_scale(bool p_enabled) {
+
+	data.disable_scale = p_enabled;
+}
+
+bool Spatial::is_scale_disabled() const {
+	return data.disable_scale;
+}
 
 void Spatial::set_as_toplevel(bool p_enabled) {
 
@@ -735,6 +748,8 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Spatial::set_ignore_transform_notification);
 	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Spatial::set_as_toplevel);
 	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("set_disable_scale", "disable"), &Spatial::set_disable_scale);
+	ClassDB::bind_method(D_METHOD("is_scale_disabled"), &Spatial::is_scale_disabled);
 	ClassDB::bind_method(D_METHOD("get_world"), &Spatial::get_world);
 
 	ClassDB::bind_method(D_METHOD("_update_gizmo"), &Spatial::_update_gizmo);
@@ -754,15 +769,6 @@ void Spatial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &Spatial::set_notify_transform);
 	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &Spatial::is_transform_notification_enabled);
-
-	void rotate(const Vector3 &p_axis, float p_angle);
-	void rotate_x(float p_angle);
-	void rotate_y(float p_angle);
-	void rotate_z(float p_angle);
-	void translate(const Vector3 &p_offset);
-	void scale(const Vector3 &p_ratio);
-	void global_rotate(const Vector3 &p_axis, float p_angle);
-	void global_translate(const Vector3 &p_offset);
 
 	ClassDB::bind_method(D_METHOD("rotate", "axis", "angle"), &Spatial::rotate);
 	ClassDB::bind_method(D_METHOD("global_rotate", "axis", "angle"), &Spatial::global_rotate);
@@ -797,6 +803,7 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
+
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "SpatialGizmo", 0), "set_gizmo", "get_gizmo");
@@ -817,6 +824,7 @@ Spatial::Spatial() :
 	data.viewport = NULL;
 	data.inside_world = false;
 	data.visible = true;
+	data.disable_scale = false;
 
 #ifdef TOOLS_ENABLED
 	data.gizmo_disabled = false;
