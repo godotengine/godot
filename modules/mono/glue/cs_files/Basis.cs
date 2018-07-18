@@ -343,9 +343,9 @@ namespace Godot
         {
             var tr = this;
 
-            real_t temp = this[0, 1];
-            this[0, 1] = this[1, 0];
-            this[1, 0] = temp;
+            real_t temp = tr[0, 1];
+            tr[0, 1] = tr[1, 0];
+            tr[1, 0] = temp;
 
             temp = tr[0, 2];
             tr[0, 2] = tr[2, 0];
