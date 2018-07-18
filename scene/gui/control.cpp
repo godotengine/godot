@@ -2682,6 +2682,16 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 	return data.v_grow;
 }
 
+void Control::set_accessible_text(const String &p_accessible_text) {
+
+	accessible_text = p_accessible_text;
+}
+
+String Control::get_accessible_text() const {
+
+	return accessible_text;
+}
+
 void Control::_bind_methods() {
 
 	//ClassDB::bind_method(D_METHOD("_window_resize_event"),&Control::_window_resize_event);
@@ -2815,6 +2825,9 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_font_changed"), &Control::_font_changed);
 
+	ClassDB::bind_method(D_METHOD("set_accessible_text", "accessible_text"), &Control::set_accessible_text);
+	ClassDB::bind_method(D_METHOD("get_accessible_text"), &Control::get_accessible_text);
+
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
 	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_drag_data", PropertyInfo(Variant::VECTOR2, "position")));
@@ -2870,6 +2883,8 @@ void Control::_bind_methods() {
 	ADD_GROUP("Theme", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");
 	ADD_GROUP("", "");
+
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "accessible_text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_accessible_text", "get_accessible_text");
 
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
 	BIND_ENUM_CONSTANT(FOCUS_CLICK);

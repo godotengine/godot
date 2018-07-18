@@ -599,6 +599,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessible_text" type="String" setter="set_accessible_text" getter="get_accessible_text">
+			An accessibility-related textual description of this control.
+		</member>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor">
 			Anchors the bottom edge of the node to the origin, the center, or the end of its parent container. It changes how the bottom margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>

@@ -212,6 +212,8 @@ private:
 
 	} data;
 
+	String accessible_text;
+
 	// used internally
 	Control *_find_control_at_pos(CanvasItem *p_node, const Point2 &p_pos, const Transform2D &p_xform, Transform2D &r_inv_xform);
 
@@ -486,6 +488,9 @@ public:
 	bool is_visibility_clip_disabled() const;
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+
+	void set_accessible_text(const String &p_accessible_text);
+	String get_accessible_text() const;
 
 	Control();
 	~Control();
