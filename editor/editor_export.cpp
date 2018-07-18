@@ -409,6 +409,7 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 	String cur_dir = da->get_current_dir().replace("\\", "/");
 	if (!cur_dir.ends_with("/"))
 		cur_dir += "/";
+	String cur_dir_no_prefix = cur_dir.replace("res://", "");
 
 	Vector<String> dirs;
 	String f;
@@ -417,8 +418,10 @@ void EditorExportPlatform::_edit_files_with_filter(DirAccess *da, const Vector<S
 			dirs.push_back(f);
 		else {
 			String fullpath = cur_dir + f;
+			// Test also against path without res:// so that filters like `file.txt` can work.
+			String fullpath_no_prefix = cur_dir_no_prefix + f;
 			for (int i = 0; i < p_filters.size(); ++i) {
-				if (fullpath.matchn(p_filters[i])) {
+				if (fullpath.matchn(p_filters[i]) || fullpath_no_prefix.matchn(p_filters[i])) {
 					if (!exclude) {
 						r_list.insert(fullpath);
 					} else {
