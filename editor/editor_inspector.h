@@ -294,6 +294,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _vscroll_changed(double);
 
+	void _handle_prop_signal(const String &p_signal_name, const Array &p_params);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

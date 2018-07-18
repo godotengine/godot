@@ -70,6 +70,8 @@ class EditorPropertyArray : public EditorProperty {
 	void _property_changed(const String &p_prop, Variant p_value);
 	void _change_type(Object *p_button, int p_index);
 	void _change_type_menu(int p_index);
+	void _prop_signal(const Variant &p_arg0, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
+	void _relay_prop_signal(const String &p_signal_name, const Array &p_params);
 
 protected:
 	static void _bind_methods();
@@ -102,6 +104,8 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _property_changed(const String &p_prop, Variant p_value);
 	void _change_type(Object *p_button, int p_index);
 	void _change_type_menu(int p_index);
+	void _prop_signal(const Variant &p_arg0, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
+	void _relay_prop_signal(const String &p_signal_name, const Array &p_params);
 
 	void _add_key_value();
 

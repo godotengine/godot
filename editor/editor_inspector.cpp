@@ -1283,6 +1283,13 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 	ped->added_editors.clear();
 }
 
+void EditorInspector::_handle_prop_signal(const String &p_signal_name, const Array &p_params) {
+	// handle signals coming from embedded editors (in arrays, dicts)
+	if (p_signal_name == "object_id_selected")
+		_object_id_selected(p_params[0], p_params[1]);
+	// add other signals here if neccessary
+}
+
 void EditorInspector::update_tree() {
 
 	//to update properly if all is refreshed
@@ -1559,6 +1566,9 @@ void EditorInspector::update_tree() {
 
 			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; //make a copy, since plugins may be used again in a sub-inspector
 			ped->added_editors.clear();
+
+			if (ClassDB::has_signal(ped->get_class_name(), "signal_from_props") && !ped->is_connected("signal_from_props", this, "_handle_prop_signal"))
+				ped->connect("signal_from_props", this, "_handle_prop_signal", varray(), CONNECT_DEFERRED);
 
 			for (List<EditorInspectorPlugin::AddedEditor>::Element *F = editors.front(); F; F = F->next()) {
 
@@ -2106,8 +2116,8 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_property_selected", &EditorInspector::_property_selected);
 	ClassDB::bind_method("_resource_selected", &EditorInspector::_resource_selected);
 	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
+	ClassDB::bind_method("_handle_prop_signal", &EditorInspector::_handle_prop_signal);
 	ClassDB::bind_method("_vscroll_changed", &EditorInspector::_vscroll_changed);
-
 	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));

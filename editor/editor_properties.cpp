@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_properties.h"
+#include "core/io/marshalls.h"
 #include "editor/editor_resource_preview.h"
 #include "editor_node.h"
 #include "editor_properties_array_dict.h"
@@ -723,9 +724,18 @@ EditorPropertyInteger::EditorPropertyInteger() {
 
 ///////////////////// OBJECT ID /////////////////////////
 
+ObjectID EditorPropertyObjectID::_get_id() {
+	if (is_encoded) {
+		Ref<EncodedObjectAsID> encoded = get_edited_object()->get(get_edited_property());
+		return encoded->get_object_id();
+	} else {
+		return get_edited_object()->get(get_edited_property());
+	}
+}
+
 void EditorPropertyObjectID::_edit_pressed() {
 
-	emit_signal("object_id_selected", get_edited_property(), get_edited_object()->get(get_edited_property()));
+	emit_signal("object_id_selected", get_edited_property(), _get_id());
 }
 
 void EditorPropertyObjectID::update_property() {
@@ -740,7 +750,7 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = get_edited_object()->get(get_edited_property());
+	ObjectID id = _get_id();
 	if (id != 0) {
 		edit->set_text(type + " ID: " + itos(id));
 		edit->set_disabled(false);
@@ -752,8 +762,9 @@ void EditorPropertyObjectID::update_property() {
 	}
 }
 
-void EditorPropertyObjectID::setup(const String &p_base_type) {
+void EditorPropertyObjectID::setup(const String &p_base_type, const bool p_encoded) {
 	base_type = p_base_type;
+	is_encoded = p_encoded;
 }
 
 void EditorPropertyObjectID::_bind_methods() {
@@ -2340,6 +2351,10 @@ EditorPropertyResource::EditorPropertyResource() {
 
 ////////////// DEFAULT PLUGIN //////////////////////
 
+void EditorInspectorDefaultPlugin::_prop_signal(const String &p_signal_name, const Array &p_params) {
+	emit_signal("signal_from_props", p_signal_name, p_params);
+}
+
 bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
 	return true; //can handle everything
 }
@@ -2399,7 +2414,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			} else if (p_hint == PROPERTY_HINT_OBJECT_ID) {
 
 				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
-				editor->setup(p_hint_text);
+				editor->setup(p_hint_text, false);
 				add_property_editor(p_path, editor);
 
 			} else {
@@ -2714,34 +2729,44 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		case Variant::_RID: {
 		} break;
 		case Variant::OBJECT: {
-			EditorPropertyResource *editor = memnew(EditorPropertyResource);
-			editor->setup(p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
+			Ref<EncodedObjectAsID> encoded = p_object->get(p_path); //for debugger and remote tools
 
-			if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
-				String open_in_new = EDITOR_GET("interface/inspector/resources_types_to_open_in_new_inspector");
-				for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
-					String type = open_in_new.get_slicec(',', i).strip_edges();
-					for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
-						String inherits = p_hint_text.get_slicec(',', j);
+			if (encoded.is_valid()) {
+				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+				editor->setup(p_hint_text, true);
+				add_property_editor(p_path, editor);
 
-						if (ClassDB::is_parent_class(inherits, type)) {
+			} else {
+				EditorPropertyResource *editor = memnew(EditorPropertyResource);
+				editor->setup(p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
 
-							editor->set_use_sub_inspector(false);
+				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					String open_in_new = EDITOR_GET("interface/inspector/resources_types_to_open_in_new_inspector");
+					for (int i = 0; i < open_in_new.get_slice_count(","); i++) {
+						String type = open_in_new.get_slicec(',', i).strip_edges();
+						for (int j = 0; j < p_hint_text.get_slice_count(","); j++) {
+							String inherits = p_hint_text.get_slicec(',', j);
+
+							if (ClassDB::is_parent_class(inherits, type)) {
+
+								editor->set_use_sub_inspector(false);
+							}
 						}
 					}
 				}
+
+				add_property_editor(p_path, editor);
 			}
-
-			add_property_editor(p_path, editor);
-
 		} break;
 		case Variant::DICTIONARY: {
 			EditorPropertyDictionary *editor = memnew(EditorPropertyDictionary);
+			editor->connect("signal_from_props", this, "_prop_signal");
 			add_property_editor(p_path, editor);
 		} break;
 		case Variant::ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::ARRAY);
+			editor->connect("signal_from_props", this, "_prop_signal");
 			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_BYTE_ARRAY: {
@@ -2787,4 +2812,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 void EditorInspectorDefaultPlugin::parse_end() {
 	//do none
+}
+
+void EditorInspectorDefaultPlugin::_bind_methods() {
+	ClassDB::bind_method("_prop_signal", &EditorInspectorDefaultPlugin::_prop_signal);
+
+	ADD_SIGNAL(MethodInfo("signal_from_props", PropertyInfo(Variant::STRING, "signal_name"), PropertyInfo(Variant::ARRAY, "params")));
 }

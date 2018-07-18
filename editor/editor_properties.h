@@ -249,6 +249,8 @@ class EditorPropertyObjectID : public EditorProperty {
 	GDCLASS(EditorPropertyObjectID, EditorProperty)
 	Button *edit;
 	String base_type;
+	bool is_encoded;
+	ObjectID _get_id();
 	void _edit_pressed();
 
 protected:
@@ -256,7 +258,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(const String &p_base_type);
+	void setup(const String &p_base_type, const bool p_encoded);
 	EditorPropertyObjectID();
 };
 
@@ -553,6 +555,11 @@ public:
 ///
 class EditorInspectorDefaultPlugin : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorDefaultPlugin, EditorInspectorPlugin)
+
+	void _prop_signal(const String &p_signal_name, const Array &p_params);
+
+protected:
+	static void _bind_methods();
 
 public:
 	virtual bool can_handle(Object *p_object);

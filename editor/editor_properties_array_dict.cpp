@@ -1,4 +1,5 @@
 #include "editor_properties_array_dict.h"
+#include "core/io/marshalls.h"
 #include "editor/editor_scale.h"
 #include "editor_properties.h"
 
@@ -166,6 +167,28 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	}
 	object->set_array(array);
 	update_property();
+}
+
+void EditorPropertyArray::_prop_signal(const Variant &p_arg0, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3) {
+
+	Array params;
+	params.push_back(p_arg0);
+	params.push_back(p_arg1);
+	params.push_back(p_arg2);
+	params.push_back(p_arg3);
+
+	int signal_id = 0;
+	for (int i = 0; i < params.size(); i++) {
+		if (params[i].get_type() != Variant::NIL)
+			signal_id = i;
+	}
+	String signal = params[signal_id];
+
+	_relay_prop_signal(signal, params);
+}
+
+void EditorPropertyArray::_relay_prop_signal(const String &p_signal_name, const Array &p_params) {
+	emit_signal("signal_from_props", p_signal_name, p_params);
 }
 
 void EditorPropertyArray::update_property() {
@@ -401,12 +424,20 @@ void EditorPropertyArray::update_property() {
 
 				} break;
 				case Variant::OBJECT: {
+					Ref<EncodedObjectAsID> encoded = value; //for debugger and remote tools
 
-					prop = memnew(EditorPropertyResource);
+					if (encoded.is_valid()) {
+						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+						editor->setup("", true);
+						editor->connect("object_id_selected", this, "_prop_signal", varray("object_id_selected"));
+						prop = editor;
+					} else
+						prop = memnew(EditorPropertyResource);
 
 				} break;
 				case Variant::DICTIONARY: {
 					prop = memnew(EditorPropertyDictionary);
+					prop->connect("signal_from_props", this, "_relay_prop_signal");
 
 				} break;
 
@@ -414,6 +445,7 @@ void EditorPropertyArray::update_property() {
 				case Variant::ARRAY: {
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
 					editor->setup(Variant::ARRAY);
+					editor->connect("signal_from_props", this, "_relay_prop_signal");
 					prop = editor;
 
 				} break;
@@ -547,6 +579,10 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method("_property_changed", &EditorPropertyArray::_property_changed);
 	ClassDB::bind_method("_change_type", &EditorPropertyArray::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyArray::_change_type_menu);
+	ClassDB::bind_method("_relay_prop_signal", &EditorPropertyArray::_relay_prop_signal);
+	ClassDB::bind_method("_prop_signal", &EditorPropertyArray::_prop_signal, Variant(), Variant(), Variant(), Variant());
+
+	ADD_SIGNAL(MethodInfo("signal_from_props", PropertyInfo(Variant::ARRAY, "params")));
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -659,6 +695,28 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	dict = dict.duplicate(); //dupe, so undo/redo works better
 	object->set_dict(dict);
 	update_property();
+}
+
+void EditorPropertyDictionary::_prop_signal(const Variant &p_arg0, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3) {
+
+	Array params;
+	params.push_back(p_arg0);
+	params.push_back(p_arg1);
+	params.push_back(p_arg2);
+	params.push_back(p_arg3);
+
+	int signal_id = 0;
+	for (int i = 0; i < params.size(); i++) {
+		if (params[i].get_type() != Variant::NIL)
+			signal_id = i;
+	}
+	String signal = params[signal_id];
+
+	_relay_prop_signal(signal, params);
+}
+
+void EditorPropertyDictionary::_relay_prop_signal(const String &p_signal_name, const Array &p_params) {
+	emit_signal("signal_from_props", p_signal_name, p_params);
 }
 
 void EditorPropertyDictionary::update_property() {
@@ -846,17 +904,26 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 				case Variant::OBJECT: {
+					Ref<EncodedObjectAsID> encoded = value; //for debugger and remote tools
 
-					prop = memnew(EditorPropertyResource);
+					if (encoded.is_valid()) {
+						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+						editor->setup("", true);
+						editor->connect("object_id_selected", this, "_prop_signal", varray("object_id_selected"));
+						prop = editor;
+					} else
+						prop = memnew(EditorPropertyResource);
 
 				} break;
 				case Variant::DICTIONARY: {
 					prop = memnew(EditorPropertyDictionary);
+					prop->connect("signal_from_props", this, "_relay_prop_signal");
 
 				} break;
 				case Variant::ARRAY: {
 
 					prop = memnew(EditorPropertyArray);
+					prop->connect("signal_from_props", this, "_relay_prop_signal");
 
 				} break;
 
@@ -985,6 +1052,10 @@ void EditorPropertyDictionary::_bind_methods() {
 	ClassDB::bind_method("_change_type", &EditorPropertyDictionary::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyDictionary::_change_type_menu);
 	ClassDB::bind_method("_add_key_value", &EditorPropertyDictionary::_add_key_value);
+	ClassDB::bind_method("_relay_prop_signal", &EditorPropertyDictionary::_relay_prop_signal);
+	ClassDB::bind_method("_prop_signal", &EditorPropertyDictionary::_prop_signal, Variant(), Variant(), Variant(), Variant());
+
+	ADD_SIGNAL(MethodInfo("signal_from_props", PropertyInfo(Variant::STRING, "signal_name"), PropertyInfo(Variant::ARRAY, "params")));
 }
 
 EditorPropertyDictionary::EditorPropertyDictionary() {
