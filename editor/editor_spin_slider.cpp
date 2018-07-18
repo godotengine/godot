@@ -90,10 +90,12 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 			grabbing_spinner_dist_cache += diff_x;
 
-			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4) {
+			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
-			} else {
+			}
+
+			if (grabbing_spinner) {
 				if (mm->get_control() || updown_offset != -1) {
 					set_value(Math::round(get_value()));
 					if (ABS(grabbing_spinner_dist_cache) > 6) {
