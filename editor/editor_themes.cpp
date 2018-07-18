@@ -656,6 +656,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size) * EDSCALE);
 
+	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1, 2, 0, 0, 0);
+	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
+	sub_inspector_bg->set_border_color(MARGIN_LEFT, accent_color * Color(1, 1, 1, 0.3));
+	sub_inspector_bg->set_draw_center(true);
+
+	theme->set_stylebox("sub_inspector_bg", "Editor", sub_inspector_bg);
+	theme->set_constant("inspector_margin", "Editor", 8 * EDSCALE);
+
 	// Tree & ItemList background
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
 	style_tree_bg->set_bg_color(dark_color_1);
@@ -666,6 +674,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
+	theme->set_icon("arrow_up", "Tree", theme->get_icon("GuiTreeArrowUp", "EditorIcons"));
 	theme->set_icon("arrow", "Tree", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("updown", "Tree", theme->get_icon("GuiTreeUpdown", "EditorIcons"));
