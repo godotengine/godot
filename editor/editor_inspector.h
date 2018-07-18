@@ -55,6 +55,9 @@ private:
 	bool draw_red;
 	bool keying;
 
+	Rect2 right_child_rect;
+	Rect2 bottom_child_rect;
+
 	Rect2 keying_rect;
 	bool keying_hover;
 	Rect2 revert_rect;
@@ -194,8 +197,11 @@ class EditorInspectorSection : public Container {
 	String section;
 	Object *object;
 	VBoxContainer *vbox;
+	bool vbox_added; //optimization
 	Color bg_color;
 	bool foldable;
+
+	void _test_unfold();
 
 protected:
 	void _notification(int p_what);
@@ -213,6 +219,7 @@ public:
 	Object *get_edited_object();
 
 	EditorInspectorSection();
+	~EditorInspectorSection();
 };
 
 class EditorInspector : public ScrollContainer {
@@ -249,15 +256,19 @@ class EditorInspector : public ScrollContainer {
 	bool update_all_pending;
 	bool read_only;
 	bool keying;
+	bool use_sub_inspector_bg;
 
 	float refresh_countdown;
 	bool update_tree_pending;
 	StringName _prop_edited;
 	StringName property_selected;
 	int property_focusable;
+	int update_scroll_request;
 
 	Map<StringName, Map<StringName, String> > descr_cache;
 	Map<StringName, String> class_descr_cache;
+
+	Map<ObjectID, int> scroll_cache;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -280,6 +291,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);
+
+	void _vscroll_changed(double);
 
 protected:
 	static void _bind_methods();
@@ -329,6 +342,8 @@ public:
 
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
+
+	void set_use_sub_inspector_bg(bool p_enable);
 
 	EditorInspector();
 };

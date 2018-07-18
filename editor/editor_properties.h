@@ -278,16 +278,26 @@ public:
 class EditorPropertyEasing : public EditorProperty {
 	GDCLASS(EditorPropertyEasing, EditorProperty)
 	Control *easing_draw;
-	ToolButton *button_out, *button_in, *button_linear, *button_constant;
-	ToolButton *button_in_out, *button_out_in;
-	VBoxContainer *vb;
+	PopupMenu *preset;
+	bool full;
+
+	enum {
+		EASING_ZERO,
+		EASING_LINEAR,
+		EASING_IN,
+		EASING_OUT,
+		EASING_IN_OUT,
+		EASING_OUT_IN,
+		EASING_MAX
+
+	};
 
 	bool flip;
 
 	void _drag_easing(const Ref<InputEvent> &p_ev);
 	void _draw_easing();
 	void _notification(int p_what);
-	void _set_preset(float p_val);
+	void _set_preset(int);
 
 protected:
 	static void _bind_methods();
