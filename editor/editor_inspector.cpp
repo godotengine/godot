@@ -1049,8 +1049,6 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 			vbox->hide();
 		}
 	}
-		//	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
-
 #endif
 }
 

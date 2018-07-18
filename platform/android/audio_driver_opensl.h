@@ -74,7 +74,8 @@ class AudioDriverOpenSL : public AudioDriver {
 			/*   SLuint32 eventFlags,
 	    const void * pBuffer,
 	    SLuint32 bufferSize,
-	    SLuint32 dataUsed*/);
+	    SLuint32 dataUsed*/
+	);
 
 	static void _buffer_callbacks(
 			SLAndroidSimpleBufferQueueItf queueItf,

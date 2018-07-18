@@ -3272,10 +3272,10 @@ NavigationMeshSpatialGizmo::NavigationMeshSpatialGizmo(NavigationMeshInstance *p
 	navmesh = p_navmesh;
 }
 
-	//////
-	///
-	///
-	///
+//////
+///
+///
+///
 
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
