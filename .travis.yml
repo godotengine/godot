@@ -24,8 +24,10 @@ matrix:
         apt:
           sources:
             - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
           packages:
             - clang-format-6.0
+            - libstdc++6 # >= 4.9 needed for clang-format-6.0
 
         coverity_scan:
           project:
