@@ -71,6 +71,7 @@ addons:
 
       # For style checks.
       - clang-format-6.0
+      - libstdc++6 # >= 4.9 needed for clang-format-6.0
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
