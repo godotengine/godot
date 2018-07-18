@@ -372,9 +372,9 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 	set_group_flags(0, p_group, p_name, p_value);
 }
 
-void SceneTree::set_input_as_handled() {
+void SceneTree::set_input_as_handled(bool p_handled) {
 
-	input_handled = true;
+	input_handled = p_handled;
 }
 
 void SceneTree::input_text(const String &p_text) {
@@ -1770,7 +1770,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
-	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &SceneTree::set_input_as_handled);
+	ClassDB::bind_method(D_METHOD("set_input_as_handled", "handled"), &SceneTree::set_input_as_handled);
 	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
