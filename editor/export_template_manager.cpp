@@ -501,7 +501,6 @@ void ExportTemplateManager::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		if (!is_visible_in_tree()) {
-			print_line("closed");
 			set_process(false);
 		}
 	}
