@@ -70,6 +70,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Johannes Wuensch
     Josep G. Camarasa
     Joshua Lesperance
+    Kyle Szklenski
     Libre-Dépanne
     Matthew Bennett
     Olafur Gislason
@@ -87,21 +88,21 @@ generous deed immortalized in the next stable release of Godot Engine.
     David Churchill
     Dean Harmon
     Dexter Miguel
-    Guilherme Felipe de C. G. da Silva
     John
     Justo Delgado Baudí
     KTL
     Laurence Bannister
+    paul gruenbacher
     Rami
     Robert Willes
     Robin Arys
+    Rodrigo Loli
     Ronnie Ashlock
     Rufus Xavier Sarsaparilla
     ScottMakesGames
     Thomas Bjarnelöf
     William Connell
     Wojciech Chojnacki
-    Xavier Tan
     Zaq Poi
 
     Alessandra Pereyra
@@ -113,13 +114,15 @@ generous deed immortalized in the next stable release of Godot Engine.
     Cody Parker
     Corey Auger
     D
-    Daniel Eliasinski
     E.G.
+    Eric
     Eric Monson
     flesk
+    floopf
     G Barnes
     GGGames.org
     Giovanni Solimeno
+    Guilherme Felipe de C. G. da Silva
     Hasen Judy
     Heath Hayes
     Jay Horton
@@ -133,31 +136,32 @@ generous deed immortalized in the next stable release of Godot Engine.
     Markus Wiesner
     Marvin
     Mohammad Taleb
+    Neal Barry
     Nick Nikitin
     Pablo Cholaky
     Patrick Schnorbus
     Pete Goodwin
     Phyronnaz
     Ruben Soares Luis
+    Sindre Sømme
     Sofox
     Stoned Xander
-    Ted
     Tim Dalporto
     Trent McPheron
-    Vladimir
 
 ## Silver donors
 
     1D_Inc
     Adam  Carr
     Adam Smeltzer
+    Adisibio
     Alder Stefano
     Alessandro Senese
-    Álvaro Domínguez López
     Anders Jensen-Urstad
     Anthony Bongiovanni
     Arda Erol
     Arthur S. Muszynski
+    Artur Barichello
     Aubrey Falconer
     Avencherus
     Bailey
@@ -168,6 +172,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Blair Allen
     Brandon
     Bryan Stevenson
+    Carl Winder
     Carwyn Edwards
     Casey Foote
     Chris Chapin
@@ -175,7 +180,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Christian Winter
     Christopher Schmitt
     Collin Shooltz
-    Daniel Delgado Corona
     Daniel Johnson
     Daniel Kaplan
     DanielMaximiano
@@ -186,6 +190,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Dominik Wetzel
     Duy Kevin Nguyen
     Edward Herbert
+    Edwin Acosta
     Eric Martini
     Fabian Becker
     fengjiongmax
@@ -194,10 +199,10 @@ generous deed immortalized in the next stable release of Godot Engine.
     Gerrit Großkopf
     Gerrit Procee
     Gilberto K. Otubo
+    Guillaume Laforte
     Guldoman
     Gumichan01
     Heribert Hirth
-    hubert jenkins
     Hunter Jones
     ialex32x
     Ivan Vodopiviz
@@ -222,16 +227,15 @@ generous deed immortalized in the next stable release of Godot Engine.
     Kevin Kamper Meejach Petersen
     Klavdij Voncina
     Krzysztof Jankowski
-    Lars pfeffer
     Linus Lind Lundgren
     Luis Moraes
     Macil
     magodev
     Martin Eigel
     Martins Odabi
-    Matthew Fitzpatrick
     Max R.R. Collada
     Maxwell
+    Mertcan Mermerkaya
     mhilbrunner
     Michael Dürwald
     Michael Gringauz
@@ -246,10 +250,8 @@ generous deed immortalized in the next stable release of Godot Engine.
     Niclas Eriksen
     Nicolas SAN AGUSTIN
     Niko Leopold
-    nivardus
     Noi Sek
     Oleg Tyshchenko
-    Oleksandr Yemets
     Pablo Seibelt
     Pan Ip
     Pat LaBine
@@ -260,28 +262,28 @@ generous deed immortalized in the next stable release of Godot Engine.
     Pierre-Igor Berthet
     Pietro Vertechi
     Piotr Kaczmarski
-    Rea
     Rémi Verschelde
     Richman Stewart
     Roger Burgess
     Roger Smith
     Roman Tinkov
     Ryan Whited
-    Samuel El-Borai
     Sasori Olkof
     Sootstone
     Stefan Butucea
     Theo Cranmore
     Thibault Barbaroux
     Thomas Bell
+    Thomas Hermansen
+    Thomas Holmes
     Thomas Kurz
-    Tomasz Wacławek
     Tom Larrow
     Tyler Stafos
     UltyX
     Victor
     Victor Gonzalez Fernandez
     Viktor Ferenczi
+    waka nya
     werner mendizabal
     Wout Standaert
     Yu He
