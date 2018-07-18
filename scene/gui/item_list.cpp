@@ -285,7 +285,7 @@ void ItemList::unselect_all() {
 
 		items[i].selected = false;
 	}
-
+	current = -1;
 	update();
 }
 
