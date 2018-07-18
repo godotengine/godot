@@ -148,6 +148,8 @@ public:
 
 	void set_registering_order(bool p_enable);
 
+	bool has_custom_feature(const String &p_feature) const;
+
 	ProjectSettings();
 	~ProjectSettings();
 };
