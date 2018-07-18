@@ -912,6 +912,10 @@ Variant ProjectSettings::get_setting(const String &p_setting) const {
 	return get(p_setting);
 }
 
+bool ProjectSettings::has_custom_feature(const String &p_feature) const {
+	return custom_features.has(p_feature);
+}
+
 void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
