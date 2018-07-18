@@ -783,12 +783,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 		} break;
+		case TOOL_CREATE_GENERIC:
 		case TOOL_CREATE_2D_SCENE:
 		case TOOL_CREATE_3D_SCENE:
 		case TOOL_CREATE_USER_INTERFACE: {
 
 			Node *new_node;
 			switch (p_tool) {
+				case TOOL_CREATE_GENERIC: new_node = memnew(Node); break;
 				case TOOL_CREATE_2D_SCENE: new_node = memnew(Node2D); break;
 				case TOOL_CREATE_3D_SCENE: new_node = memnew(Spatial); break;
 				case TOOL_CREATE_USER_INTERFACE: new_node = memnew(Control); break;
@@ -869,6 +871,12 @@ void SceneTreeDock::_notification(int p_what) {
 			button_ui->set_text(TTR("User Interface"));
 			button_ui->set_icon(get_icon("Control", "EditorIcons"));
 			button_ui->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_USER_INTERFACE, false));
+
+			Button *button_generic = memnew(Button);
+			create_root_dialog->add_child(button_generic);
+			button_generic->set_text(TTR("Generic"));
+			button_generic->set_icon(get_icon("Node", "EditorIcons"));
+			button_generic->connect("pressed", this, "_tool_selected", make_binds(TOOL_CREATE_GENERIC, false));
 
 			Button *button_custom = memnew(Button);
 			create_root_dialog->add_child(button_custom);
