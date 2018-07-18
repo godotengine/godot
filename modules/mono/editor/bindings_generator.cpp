@@ -1768,6 +1768,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			continue;
 		}
 
+		if (!ClassDB::is_class_enabled(type_cname)) {
+			if (verbose_output)
+				WARN_PRINTS("Ignoring type " + type_cname.operator String() + " because it's not enabled");
+			class_list.pop_front();
+			continue;
+		}
+
 		ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(type_cname);
 
 		TypeInterface itype = TypeInterface::create_object_type(type_cname, api_type);
