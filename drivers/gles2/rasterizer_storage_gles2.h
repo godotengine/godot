@@ -176,7 +176,6 @@ public:
 		bool active;
 		GLenum tex_id;
 
-
 		uint16_t stored_cube_sides;
 
 		RenderTarget *render_target;
@@ -515,7 +514,7 @@ public:
 
 	virtual RID multimesh_create();
 
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format,VS::MultimeshCustomDataFormat p_data=VS::MULTIMESH_CUSTOM_DATA_NONE);
+	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE);
 	virtual int multimesh_get_instance_count(RID p_multimesh) const;
 
 	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh);

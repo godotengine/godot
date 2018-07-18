@@ -113,7 +113,7 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
 	if (min > rad || max < -rad) return false;
 
-	/*======================== Z-tests ========================*/
+/*======================== Z-tests ========================*/
 
 #define AXISTEST_Z12(a, b, fa, fb)                 \
 	p1 = a * v1.x - b * v1.y;                      \
@@ -1961,7 +1961,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 #endif
 			for (int i = 0; i < height; i++) {
 
-			//print_line("bake line " + itos(i) + " / " + itos(height));
+				//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1)
 #endif

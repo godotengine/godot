@@ -215,6 +215,6 @@ public:																\
 																\
 protected:
 
-	/* clang-format on */
+/* clang-format on */
 
 #endif // LWS_HELPER_H

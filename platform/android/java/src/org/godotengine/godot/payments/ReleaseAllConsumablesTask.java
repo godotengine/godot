@@ -88,7 +88,6 @@ abstract public class ReleaseAllConsumablesTask {
 						String signature = mySignatures.get(i);
 						//Log.d("godot", "A punto de consumir un item con token:" + token + "\n" + receipt);
 						new GenericConsumeTask(context, mService, sku, receipt, signature, token) {
-
 							@Override
 							public void onSuccess(String sku, String receipt, String signature, String token) {
 								ReleaseAllConsumablesTask.this.success(sku, receipt, signature, token);
