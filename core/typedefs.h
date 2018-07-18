@@ -97,6 +97,7 @@ T *_nullptr() {
 #undef CLAMP // override standard definition
 #undef Error
 #undef OK
+#undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
 #endif
 
 #include "int_types.h"
