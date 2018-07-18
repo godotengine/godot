@@ -1609,7 +1609,7 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 
 bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
 	if (p_delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-		MonoType *raw_type = GDMonoClass::get_raw_type(p_delegate);
+		MonoType *raw_type = p_delegate->get_mono_type();
 
 		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
 			// Arguments are accessibles as arguments of .Invoke method
