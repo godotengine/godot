@@ -145,6 +145,11 @@ void Dictionary::erase(const Variant &p_key) {
 	_p->variant_map.erase(p_key);
 }
 
+bool Dictionary::erase_checked(const Variant &p_key) {
+
+	return _p->variant_map.erase(p_key);
+}
+
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
 
 	return _p == p_dictionary._p;
