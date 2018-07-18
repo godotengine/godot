@@ -475,6 +475,8 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorFunc>();
 	ClassDB::register_class<VisualShaderNodeDotProduct>();
 	ClassDB::register_class<VisualShaderNodeVectorLen>();
+	ClassDB::register_class<VisualShaderNodeNoise>();
+	ClassDB::register_class<VisualShaderNodeCloudNoise>();
 	ClassDB::register_class<VisualShaderNodeScalarInterp>();
 	ClassDB::register_class<VisualShaderNodeVectorInterp>();
 	ClassDB::register_class<VisualShaderNodeVectorCompose>();
