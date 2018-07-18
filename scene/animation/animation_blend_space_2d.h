@@ -47,7 +47,6 @@ protected:
 	static void _bind_methods();
 
 public:
-
 	virtual void set_tree(AnimationTree *p_player);
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);

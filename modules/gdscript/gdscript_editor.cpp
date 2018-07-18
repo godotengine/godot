@@ -2205,16 +2205,27 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 					}
 				}
 
-				base_type = base_type.class_type->base_type;
-			} break;
-			case GDScriptParser::DataType::GDSCRIPT: {
-				Ref<GDScript> gds = base_type.script_type;
-				if (gds.is_valid()) {
-					if ((p_method == "connect" || p_method == "emit_signal") && p_argidx == 0) {
-						List<MethodInfo> signals;
-						gds->get_script_signal_list(&signals);
-						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-							r_result.insert("\"" + E->get().name + "\"");
+		} else {
+
+			//regular method
+#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+			if (p_argidx < m->get_argument_count()) {
+				PropertyInfo pi = m->get_argument_info(p_argidx);
+
+				if (pi.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
+					String enumeration = pi.class_name;
+					if (enumeration.find(".") != -1) {
+						//class constant
+						List<StringName> constants;
+						String cls = enumeration.get_slice(".", 0);
+						String enm = enumeration.get_slice(".", 1);
+
+						ClassDB::get_enum_constants(cls, enm, &constants);
+						//constants.sort_custom<StringName::AlphCompare>();
+						for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+							String add = cls + "." + E->get();
+							result.insert(add);
+							r_forced = true;
 						}
 					}
 					Ref<GDScript> base_script = gds->get_base_script();

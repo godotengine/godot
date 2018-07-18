@@ -973,4 +973,4 @@ Dictionary mono_object_to_Dictionary(MonoObject *p_dict) {
 
 	return ret;
 }
-}
+} // namespace GDMonoMarshal
