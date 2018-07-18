@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.5.beta.custom_build" name="Engine Types">
+<doc version="2.1.5.rc.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -10237,6 +10237,10 @@
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Modal control was closed.
+		</constant>
+		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
+		</constant>
+		<constant name="NOTIFICATION_SCROLL_END" value="48">
 		</constant>
 		<constant name="CURSOR_ARROW" value="0">
 		</constant>
@@ -35308,6 +35312,12 @@
 		A ScrollContainer node with a [Control] child and scrollbar child ([HScrollbar], [VScrollBar], or both) will only draw the Control within the ScrollContainer area.  Scrollbars will automatically be drawn at the right (for vertical) or bottom (for horizontal) and will enable dragging to move the viewable Control (and its children) within the ScrollContainer.  Scrollbars will also automatically resize the grabber based on the minimum_size of the Control relative to the ScrollContainer.  Works great with a [Panel] control.  You can set EXPAND on children size flags, so they will upscale to ScrollContainer size if ScrollContainer size is bigger (scroll is invisible for chosen dimension).
 	</description>
 	<methods>
+		<method name="get_deadzone" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_h_scroll" qualifiers="const">
 			<return type="int">
 			</return>
@@ -35334,6 +35344,12 @@
 			</return>
 			<description>
 				Return true if vertical scroll is allowed.
+			</description>
+		</method>
+		<method name="set_deadzone">
+			<argument index="0" name="deadzone" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_enable_h_scroll">
@@ -35365,6 +35381,16 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="scroll_ended">
+			<description>
+			</description>
+		</signal>
+		<signal name="scroll_started">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
