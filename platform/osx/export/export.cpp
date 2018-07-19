@@ -314,7 +314,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
-	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
+	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release");
 
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
