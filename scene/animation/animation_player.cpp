@@ -545,6 +545,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					int s = params.size();
 
 					ERR_CONTINUE(s > VARIANT_ARG_MAX);
+#ifdef DEBUG_ENABLED
+					if (!nc->node->has_method(method)) {
+						ERR_PRINTS("Invalid method call '" + method + "'. '" + a->get_name() + "' at node '" + get_path() + "'.");
+					}
+#endif
+
 					if (can_call) {
 						MessageQueue::get_singleton()->push_call(
 								nc->node,
