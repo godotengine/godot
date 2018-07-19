@@ -134,6 +134,7 @@ class OS_Windows : public OS {
 
 	PowerWindows *power_manager;
 
+	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
 #endif
@@ -153,6 +154,8 @@ class OS_Windows : public OS {
 
 	// functions used by main to initialize/deintialize the OS
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 

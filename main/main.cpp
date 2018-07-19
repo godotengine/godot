@@ -825,7 +825,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 	GLOBAL_DEF("rendering/quality/driver/driver_name", "GLES3");
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, "GLES3,GLES2"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name", PropertyInfo(Variant::STRING, "rendering/quality/driver/driver_name", PROPERTY_HINT_ENUM, "GLES2,GLES3"));
 	if (video_driver == "") {
 		video_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
@@ -914,7 +914,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver == "") { // specified in project.godot
-		audio_driver = GLOBAL_DEF("audio/driver", OS::get_singleton()->get_audio_driver_name(0));
+		audio_driver = GLOBAL_DEF_RST("audio/driver", OS::get_singleton()->get_audio_driver_name(0));
 	}
 
 	for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
@@ -1957,6 +1957,15 @@ void Main::cleanup() {
 		memdelete(globals);
 	if (engine)
 		memdelete(engine);
+
+	if (OS::get_singleton()->is_restart_on_exit_set()) {
+		//attempt to restart with arguments
+		String exec = OS::get_singleton()->get_executable_path();
+		List<String> args = OS::get_singleton()->get_restart_on_exit_argumens();
+		OS::ProcessID pid = 0;
+		OS::get_singleton()->execute(exec, args, false, &pid);
+		OS::get_singleton()->set_restart_on_exit(false, List<String>()); //clear list (uses memory)
+	}
 
 	unregister_core_driver_types();
 	unregister_core_types();

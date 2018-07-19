@@ -59,11 +59,13 @@ protected:
 		Variant initial;
 		bool hide_from_editor;
 		bool overridden;
+		bool restart_if_changed;
 		VariantContainer() :
 				order(0),
 				persist(false),
 				hide_from_editor(false),
 				overridden(false) {
+			restart_if_changed = false;
 		}
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),
@@ -71,6 +73,7 @@ protected:
 				variant(p_variant),
 				hide_from_editor(false),
 				overridden(false) {
+			restart_if_changed = false;
 		}
 	};
 
@@ -120,6 +123,7 @@ public:
 	String globalize_path(const String &p_path) const;
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
+	void set_restart_if_changed(const String &p_name, bool p_restart);
 	bool property_can_revert(const String &p_name);
 	Variant property_get_revert(const String &p_name);
 
@@ -158,8 +162,9 @@ public:
 };
 
 //not a macro any longer
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default);
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
+#define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
 
 #endif

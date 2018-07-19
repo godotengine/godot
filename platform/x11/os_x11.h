@@ -180,6 +180,7 @@ class OS_X11 : public OS_Unix {
 
 	CrashHandler crash_handler;
 
+	int video_driver_index;
 	int audio_driver_index;
 	unsigned int capture_idle;
 	bool maximized;
@@ -206,6 +207,8 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
+	virtual int get_current_video_driver() const;
+
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);

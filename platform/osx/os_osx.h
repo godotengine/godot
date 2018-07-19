@@ -137,6 +137,9 @@ public:
 
 	void _update_window();
 
+	int video_driver_index;
+	virtual int get_current_video_driver() const;
+
 protected:
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);

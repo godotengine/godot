@@ -137,6 +137,7 @@ private:
 	AlertFunc alert_func;
 
 	//power_android *power_manager;
+	int video_driver_index;
 
 public:
 	// functions used by main to initialize/deintialize the OS
@@ -145,6 +146,8 @@ public:
 
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
