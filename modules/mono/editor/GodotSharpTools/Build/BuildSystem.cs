@@ -7,6 +7,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Construction;
+using GodotSharpTools.Project;
+using System.Net;
+using System.Linq;
 
 namespace GodotSharpTools.Build
 {
@@ -90,6 +94,8 @@ namespace GodotSharpTools.Build
             if (!string.IsNullOrEmpty(frameworkPath))
                 customPropertiesList.Add("FrameworkPathOverride=" + frameworkPath);
 
+            SynchronizeCsproj();
+
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
@@ -150,6 +156,8 @@ namespace GodotSharpTools.Build
             if (!string.IsNullOrEmpty(frameworkPath))
                 customPropertiesList.Add("FrameworkPathOverride=" + frameworkPath);
 
+            SynchronizeCsproj();
+
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
@@ -187,6 +195,42 @@ namespace GodotSharpTools.Build
             }
 
             return true;
+        }
+
+        public void SynchronizeCsproj()
+        {
+            string projectDirectory = Path.GetDirectoryName(solution);
+            ProjectRootElement root = ProjectRootElement.Open(solution.Replace(".sln", ".csproj"));
+
+            foreach (var itemGroup in root.ItemGroups)
+            {
+                if (itemGroup.Condition.Length != 0)
+                    continue;
+
+                foreach (var item in itemGroup.Items.ToArray())
+                {
+                    if (item.ItemType == "Compile")
+                    {
+                        // We need to use WebUtility.UrlDecode because paths in .csproj are URL encoded from some reason
+                        if (!File.Exists(Path.Combine(projectDirectory, WebUtility.UrlDecode(item.Include))))
+                        {
+                            itemGroup.RemoveChild(item);
+                        }
+                    }
+                }
+            }
+
+            foreach (string filePath in Directory.EnumerateFiles(projectDirectory, "*.*", SearchOption.AllDirectories))
+            {
+                if (Path.GetExtension(filePath) == ".cs")
+                {
+                    string relativePath = filePath.RelativeToPath(projectDirectory);
+
+                    root.AddItemChecked("Compile", relativePath);
+                }
+            }
+
+            root.Save();
         }
 
         private string BuildArguments(string loggerAssemblyPath, string loggerOutputDir, List<string> customProperties)
