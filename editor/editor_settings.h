@@ -148,6 +148,7 @@ public:
 	void erase(const String &p_setting);
 	void raise_order(const String &p_setting);
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
+	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
 		if (p_emit_signal)
 			_set(p_setting, p_value);

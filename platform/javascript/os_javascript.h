@@ -81,7 +81,11 @@ class OS_JavaScript : public OS_Unix {
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
+	int video_driver_index;
+
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 

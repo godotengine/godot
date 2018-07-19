@@ -212,6 +212,8 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
+	virtual int get_current_video_driver() const;
+
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);

@@ -903,8 +903,8 @@ void AudioServer::init_channels_and_buffers() {
 
 void AudioServer::init() {
 
-	channel_disable_threshold_db = GLOBAL_DEF("audio/channel_disable_threshold_db", -60.0);
-	channel_disable_frames = float(GLOBAL_DEF("audio/channel_disable_time", 2.0)) * get_mix_rate();
+	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/channel_disable_threshold_db", -60.0);
+	channel_disable_frames = float(GLOBAL_DEF_RST("audio/channel_disable_time", 2.0)) * get_mix_rate();
 	buffer_size = 1024; //hardcoded for now
 
 	init_channels_and_buffers();
@@ -937,68 +937,6 @@ void AudioServer::init() {
 #endif
 
 	GLOBAL_DEF_RST("audio/video_delay_compensation_ms", 0);
-}
-
-void AudioServer::update() {
-#ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
-
-		// Driver time includes server time + effects times
-		// Server time includes effects times
-		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
-		uint64_t server_time = prof_time;
-
-		// Substract the server time from the driver time
-		if (driver_time > server_time)
-			driver_time -= server_time;
-
-		Array values;
-
-		for (int i = buses.size() - 1; i >= 0; i--) {
-			Bus *bus = buses[i];
-			if (bus->bypass)
-				continue;
-
-			for (int j = 0; j < bus->effects.size(); j++) {
-				if (!bus->effects[j].enabled)
-					continue;
-
-				values.push_back(String(bus->name) + bus->effects[j].effect->get_name());
-				values.push_back(USEC_TO_SEC(bus->effects[j].prof_time));
-
-				// Substract the effect time from the driver and server times
-				if (driver_time > bus->effects[j].prof_time)
-					driver_time -= bus->effects[j].prof_time;
-				if (server_time > bus->effects[j].prof_time)
-					server_time -= bus->effects[j].prof_time;
-			}
-		}
-
-		values.push_back("audio_server");
-		values.push_back(USEC_TO_SEC(server_time));
-		values.push_back("audio_driver");
-		values.push_back(USEC_TO_SEC(driver_time));
-
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("audio_thread", values);
-	}
-
-	// Reset profiling times
-	for (int i = buses.size() - 1; i >= 0; i--) {
-		Bus *bus = buses[i];
-		if (bus->bypass)
-			continue;
-
-		for (int j = 0; j < bus->effects.size(); j++) {
-			if (!bus->effects[j].enabled)
-				continue;
-
-			bus->effects.write[j].prof_time = 0;
-		}
-	}
-
-	AudioDriver::get_singleton()->reset_profiling_time();
-	prof_time = 0;
-#endif
 }
 
 void AudioServer::update() {

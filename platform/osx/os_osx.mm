@@ -1276,6 +1276,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 	}
 
+	video_driver_index = p_video_driver;
+
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 
 	/*
