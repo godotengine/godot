@@ -32,28 +32,10 @@ namespace GodotSharpTools.Project
             if (!root.HasItem(itemType, include))
             {
                 root.AddItem(itemType, include);
-
                 return true;
             }
 
             return false;
-        }
-
-        public static void RemoveItem(this ProjectRootElement root, string itemType, string include)
-        {
-            foreach (var itemGroup in root.ItemGroups)
-            {
-                if (itemGroup.Condition.Length != 0)
-                    continue;
-
-                foreach (var item in itemGroup.Items)
-                {
-                    if (item.ItemType == itemType && item.Include == include)
-                    {
-                        itemGroup.RemoveChild(item);
-                    }
-                }
-            }
         }
 
         public static Guid GetGuid(this ProjectRootElement root)
