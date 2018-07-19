@@ -56,6 +56,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/pane_drag.h"
+#include "editor/plugin_config_dialog.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
@@ -256,6 +257,8 @@ private:
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
 
+	PluginConfigDialog *plugin_config_dialog;
+
 	RichTextLabel *load_errors;
 	AcceptDialog *load_error_dialog;
 
@@ -414,6 +417,8 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 	void _tool_menu_option(int p_idx);
 	void _update_debug_options();
+
+	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
