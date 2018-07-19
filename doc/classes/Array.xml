@@ -313,6 +313,30 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="reduce">
+			<return type="Array">
+			</return>
+			<argument index="0" name="obj" type="Object">
+			</argument>
+			<argument index="1" name="func" type="String">
+			</argument>
+			<argument index="2" name="args" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="map">
+			<return type="Array">
+			</return>
+			<argument index="0" name="obj" type="Object">
+			</argument>
+			<argument index="1" name="func" type="String">
+			</argument>
+			<argument index="2" name="args" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>

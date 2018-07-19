@@ -128,6 +128,10 @@ godot_int GDAPI godot_array_bsearch(godot_array *p_self, const godot_variant *p_
 
 godot_int GDAPI godot_array_bsearch_custom(godot_array *p_self, const godot_variant *p_value, godot_object *p_obj, const godot_string *p_func, const godot_bool p_before);
 
+godot_array GDAPI godot_array_reduce(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object* p_args);
+
+godot_array GDAPI godot_array_map(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args);
+
 void GDAPI godot_array_destroy(godot_array *p_self);
 
 #ifdef __cplusplus

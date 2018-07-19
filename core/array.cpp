@@ -355,6 +355,49 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
+Array Array::reduce(Object *p_obj, const StringName &p_function,const Variant &p_args) {
+	Array ret = Array();
+	StringName func = p_function;
+
+	for (int i = 0; i < this->size(); i++) {
+
+		Variant res = p_obj->call(
+			func,
+			this->get(i),
+			p_args
+		);
+
+		if (res.get_type() != Variant::Type::BOOL) {
+			ERR_FAIL_V(ret);
+		}
+
+		if (((bool)res)) {
+			ret.append(this->get(i));
+		}
+	}
+
+	return ret;
+}
+
+Array Array::map(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+	Array ret = Array();
+	StringName func = p_function;
+
+	ret.resize(this->size());
+
+	for (int i = 0; i < this->size(); i++) {
+
+		Variant res = p_obj->call(
+				func,
+				this->get(i),
+				p_args);
+
+		ret[i] = res;
+	}
+
+	return ret;
+}
+
 Array::Array(const Array &p_from) {
 
 	_p = NULL;
