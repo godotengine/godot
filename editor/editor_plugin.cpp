@@ -382,6 +382,80 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 	}
 }
 
+void EditorPlugin::add_custom_toolbar(Control *p_control) {
+
+	HBoxContainer *toolbar = memnew(HBoxContainer);
+	toolbar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	toolbar->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	EditorNode::get_submenu_vb()->add_child(toolbar);
+	toolbar->add_child(p_control);
+	Vector<Variant> args;
+	args.push_back(p_control);
+	p_control->connect("visibility_changed", this, "_toolbar_visibility_changed", args);
+}
+
+void EditorPlugin::remove_custom_toolbar(Control *p_control) {
+
+	VBoxContainer *submenu = EditorNode::get_submenu_vb();
+	for (int i = 0; i < submenu->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(submenu->get_child(i));
+		if (child && child->get_child(0) == p_control) {
+			if (child->is_visible()) {
+				submenu->set_visible(false);
+			}
+			submenu->remove_child(p_control);
+		}
+	}
+}
+
+Control *EditorPlugin::get_custom_toolbar() {
+
+	VBoxContainer *submenu = EditorNode::get_submenu_vb();
+	for (int i = 0; i < submenu->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(submenu->get_child(i));
+		if (child && child->is_visible()) {
+			Control *custom_toolbar = Object::cast_to<Control>(child->get_child(0));
+			if (custom_toolbar)
+				return custom_toolbar;
+		}
+	}
+	return NULL;
+}
+
+void EditorPlugin::show_custom_toolbar(Control *p_control) {
+
+	VBoxContainer *submenu = EditorNode::get_submenu_vb();
+	for (int i = 0; i < submenu->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(submenu->get_child(i));
+		if (child) {
+			if (child->get_child(0) == p_control) {
+				submenu->set_visible(true);
+				child->set_visible(true);
+			} else {
+				child->set_visible(false);
+			}
+		}
+	}
+}
+
+void EditorPlugin::hide_custom_toolbar() {
+
+	VBoxContainer *submenu = EditorNode::get_submenu_vb();
+	submenu->set_visible(false);
+	for (int i = 0; i < submenu->get_child_count(); i++) {
+		Control *child = Object::cast_to<Control>(EditorNode::get_submenu_vb()->get_child(i));
+		if (child) {
+			child->set_visible(false);
+			break;
+		}
+	}
+}
+
+void EditorPlugin::_toolbar_visibility_changed(const Variant &p_control) {
+	//TODO
+	print_line("triggered!");
+}
+
 void EditorPlugin::remove_control_from_container(CustomControlContainer p_location, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 
@@ -736,6 +810,13 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+
+	ClassDB::bind_method(D_METHOD("add_custom_toolbar", "control"), &EditorPlugin::add_custom_toolbar);
+	ClassDB::bind_method(D_METHOD("remove_custom_toolbar", "control"), &EditorPlugin::remove_custom_toolbar);
+	ClassDB::bind_method(D_METHOD("get_custom_toolbar"), &EditorPlugin::get_custom_toolbar);
+	ClassDB::bind_method(D_METHOD("show_custom_toolbar", "control"), &EditorPlugin::show_custom_toolbar);
+	ClassDB::bind_method(D_METHOD("hide_custom_toolbar"), &EditorPlugin::hide_custom_toolbar);
+	ClassDB::bind_method(D_METHOD("_toolbar_visibility_changed", "control"), &EditorPlugin::_toolbar_visibility_changed);
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);

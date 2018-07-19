@@ -123,6 +123,8 @@ protected:
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
 	void remove_custom_type(const String &p_type);
 
+	void _toolbar_visibility_changed(const Variant &p_control);
+
 public:
 	enum CustomControlContainer {
 		CONTAINER_TOOLBAR,
@@ -155,6 +157,12 @@ public:
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
+
+	void add_custom_toolbar(Control *p_control);
+	void remove_custom_toolbar(Control *p_control);
+	Control *get_custom_toolbar();
+	void show_custom_toolbar(Control *p_control);
+	void hide_custom_toolbar();
 
 	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
 	void add_tool_submenu_item(const String &p_name, Object *p_submenu);

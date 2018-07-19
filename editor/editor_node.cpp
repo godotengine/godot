@@ -4704,6 +4704,12 @@ EditorNode::EditorNode() {
 	menu_hb = memnew(HBoxContainer);
 	main_vbox->add_child(menu_hb);
 
+	submenu_vb = memnew(VBoxContainer);
+	submenu_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	submenu_vb->set_custom_minimum_size(Size2(0, 20));
+	submenu_vb->set_visible(false);
+	main_vbox->add_child(submenu_vb);
+
 	left_l_hsplit = memnew(HSplitContainer);
 	main_vbox->add_child(left_l_hsplit);
 

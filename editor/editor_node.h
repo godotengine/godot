@@ -225,6 +225,7 @@ private:
 
 	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
+	VBoxContainer *submenu_vb;
 	Control *viewport;
 	MenuButton *file_menu;
 	MenuButton *project_menu;
@@ -637,6 +638,7 @@ public:
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
+	static VBoxContainer *get_submenu_vb() { return singleton->submenu_vb; }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
