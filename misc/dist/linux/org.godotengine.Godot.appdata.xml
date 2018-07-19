@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2017-2018 Rémi Verschelde <akien@godotengine.org> -->
 <component type="desktop">
-  <id>godot.desktop</id>
+  <id>org.godotengine.Godot.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Godot Engine</name>
   <summary>Multi-platform 2D and 3D game engine with a feature-rich editor</summary>
+  <icon type="remote">https://raw.githubusercontent.com/godotengine/godot/master/icon.png</icon>
+  ​<launchable type="desktop-id">org.godotengine.Godot.desktop</launchable>
   <description>
     <p>
       Godot is an advanced, feature-packed, multi-platform 2D and 3D game
@@ -24,8 +26,12 @@
       <image>https://download.tuxfamily.org/godotengine/media/screenshots/editor_3d_fracteed-720p.jpg</image>
     </screenshot>
   </screenshots>
+  <categories>
+    <category>Development</category>
+  </categories>
   <url type="homepage">https://godotengine.org</url>
   <url type="bugtracker">https://github.com/godotengine/godot/issues</url>
+  <url type="faq">http://docs.godotengine.org/en/latest/about/faq.html</url>
   <url type="help">http://docs.godotengine.org</url>
   <url type="donation">https://godotengine.org/donate</url>
   <url type="translate">https://hosted.weblate.org/projects/godot-engine/godot</url>

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Godot Engine
 GenericName=Libre game engine
-Comment=Multi-platform 2D and 3D game engine with a feature rich editor
+Comment=Multi-platform 2D and 3D game engine with a feature-rich editor
 Exec=godot -p
 Icon=godot
 Terminal=false
