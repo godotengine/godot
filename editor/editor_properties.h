@@ -315,6 +315,7 @@ class EditorPropertyVector2 : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -330,6 +331,7 @@ class EditorPropertyRect2 : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -345,6 +347,7 @@ class EditorPropertyVector3 : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -360,6 +363,7 @@ class EditorPropertyPlane : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -375,6 +379,7 @@ class EditorPropertyQuat : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -390,6 +395,7 @@ class EditorPropertyAABB : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -405,6 +411,7 @@ class EditorPropertyTransform2D : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -420,6 +427,7 @@ class EditorPropertyBasis : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -435,6 +443,7 @@ class EditorPropertyTransform : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
