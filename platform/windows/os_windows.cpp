@@ -1012,6 +1012,10 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
 } SHC_PROCESS_DPI_AWARENESS;
 
+int OS_Windows::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	main_loop = NULL;
@@ -1180,6 +1184,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		RasterizerGLES3::register_config();
 		RasterizerGLES3::make_current();
 	}
+
+	video_driver_index = p_video_driver; // FIXME TODO - FIX IF DRIVER DETECTION HAPPENS AND GLES2 MUST BE USED
 
 	gl_context->set_use_vsync(video_mode.use_vsync);
 #endif

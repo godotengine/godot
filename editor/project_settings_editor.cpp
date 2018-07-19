@@ -106,6 +106,12 @@ void ProjectSettingsEditor::_notification(int p_what) {
 				translation_res_file_open->add_filter("*." + E->get());
 				translation_res_option_file_open->add_filter("*." + E->get());
 			}
+
+			restart_close_button->set_icon(get_icon("Close", "EditorIcons"));
+			restart_container->add_style_override("panel", get_stylebox("bg", "Tree"));
+			restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
+			restart_label->add_color_override("font_color", get_color("error_color", "Editor"));
+
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set("interface/dialogs/project_settings_bounds", get_rect());
@@ -800,15 +806,13 @@ void ProjectSettingsEditor::popup_project_settings() {
 	plugin_settings->update_plugins();
 }
 
-void ProjectSettingsEditor::_item_selected() {
+void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
-	TreeItem *ti = globals_editor->get_property_editor()->get_property_tree()->get_selected();
-	if (!ti)
-		return;
-	if (!ti->get_parent())
+	String selected_path = p_path;
+	if (selected_path == String())
 		return;
 	category->set_text(globals_editor->get_current_section());
-	property->set_text(ti->get_text(0));
+	property->set_text(selected_path);
 	popup_copy_to_feature->set_disabled(false);
 }
 
@@ -865,7 +869,7 @@ void ProjectSettingsEditor::_item_add() {
 
 void ProjectSettingsEditor::_item_del() {
 
-	String path = globals_editor->get_property_editor()->get_selected_path();
+	String path = globals_editor->get_inspector()->get_selected_path();
 	if (path == String()) {
 		EditorNode::get_singleton()->show_warning(TTR("Select a setting item first!"));
 		return;
@@ -1043,7 +1047,7 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 
 void ProjectSettingsEditor::_copy_to_platform(int p_which) {
 
-	String path = globals_editor->get_property_editor()->get_selected_path();
+	String path = globals_editor->get_inspector()->get_selected_path();
 	if (path == String()) {
 		EditorNode::get_singleton()->show_warning(TTR("Select a setting item first!"));
 		return;
@@ -1572,7 +1576,7 @@ void ProjectSettingsEditor::_update_translations() {
 
 void ProjectSettingsEditor::_toggle_search_bar(bool p_pressed) {
 
-	globals_editor->get_property_editor()->set_use_filter(p_pressed);
+	globals_editor->get_inspector()->set_use_filter(p_pressed);
 
 	if (p_pressed) {
 
@@ -1593,7 +1597,7 @@ void ProjectSettingsEditor::_clear_search_box() {
 		return;
 
 	search_box->clear();
-	globals_editor->get_property_editor()->update_tree();
+	globals_editor->get_inspector()->update_tree();
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
@@ -1604,6 +1608,18 @@ void ProjectSettingsEditor::set_plugins_page() {
 TabContainer *ProjectSettingsEditor::get_tabs() {
 
 	return tab_container;
+}
+
+void ProjectSettingsEditor::_editor_restart() {
+	EditorNode::get_singleton()->save_all_scenes_and_restart();
+}
+
+void ProjectSettingsEditor::_editor_restart_request() {
+	restart_container->show();
+}
+
+void ProjectSettingsEditor::_editor_restart_close() {
+	restart_container->hide();
 }
 
 void ProjectSettingsEditor::_bind_methods() {
@@ -1650,6 +1666,10 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_toggle_search_bar"), &ProjectSettingsEditor::_toggle_search_bar);
 
 	ClassDB::bind_method(D_METHOD("_copy_to_platform_about_to_show"), &ProjectSettingsEditor::_copy_to_platform_about_to_show);
+
+	ClassDB::bind_method(D_METHOD("_editor_restart_request"), &ProjectSettingsEditor::_editor_restart_request);
+	ClassDB::bind_method(D_METHOD("_editor_restart"), &ProjectSettingsEditor::_editor_restart);
+	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
 }
@@ -1737,16 +1757,17 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	search_bar->add_child(clear_button);
 	clear_button->connect("pressed", this, "_clear_search_box");
 
-	globals_editor = memnew(SectionedPropertyEditor);
+	globals_editor = memnew(SectionedInspector);
 	props_base->add_child(globals_editor);
-	globals_editor->get_property_editor()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
-	globals_editor->get_property_editor()->set_property_selectable(true);
+	globals_editor->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	globals_editor->get_inspector()->set_property_selectable(true);
 	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
-	globals_editor->get_property_editor()->get_property_tree()->connect("cell_selected", this, "_item_selected");
-	globals_editor->get_property_editor()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
-	globals_editor->get_property_editor()->connect("property_edited", this, "_settings_prop_edited");
+	globals_editor->get_inspector()->connect("property_selected", this, "_item_selected");
+	//globals_editor->get_inspector()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
+	globals_editor->get_inspector()->connect("property_edited", this, "_settings_prop_edited");
+	globals_editor->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
 
 	Button *del = memnew(Button);
 	hbc->add_child(del);
@@ -1765,6 +1786,26 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
+
+	restart_container = memnew(PanelContainer);
+	props_base->add_child(restart_container);
+	HBoxContainer *restart_hb = memnew(HBoxContainer);
+	restart_container->add_child(restart_hb);
+	restart_icon = memnew(TextureRect);
+	restart_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
+	restart_hb->add_child(restart_icon);
+	restart_label = memnew(Label);
+	restart_label->set_text(TTR("Editor must be restarted for changes to take effect"));
+	restart_hb->add_child(restart_label);
+	restart_hb->add_spacer();
+	Button *restart_button = memnew(Button);
+	restart_button->connect("pressed", this, "_editor_restart");
+	restart_hb->add_child(restart_button);
+	restart_button->set_text(TTR("Save & Restart"));
+	restart_close_button = memnew(ToolButton);
+	restart_close_button->connect("pressed", this, "_editor_restart_close");
+	restart_hb->add_child(restart_close_button);
+	restart_container->hide();
 
 	message = memnew(AcceptDialog);
 	add_child(message);

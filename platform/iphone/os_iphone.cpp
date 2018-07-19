@@ -93,7 +93,13 @@ void OSIPhone::initialize_core() {
 	set_data_dir(data_dir);
 };
 
+int OSIPhone::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+
+	video_driver = p_video_driver; //this may be misleading
 
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();

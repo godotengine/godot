@@ -191,7 +191,7 @@ void register_core_types() {
 
 void register_core_settings() {
 	//since in register core types, globals may not e present
-	GLOBAL_DEF("network/limits/packet_peer_stream/max_buffer_po2", (16));
+	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
 }
 
 void register_core_singletons() {

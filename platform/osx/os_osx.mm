@@ -1176,6 +1176,10 @@ static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplay
 	displays_arrangement_dirty = true;
 }
 
+int OS_OSX::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
@@ -1271,6 +1275,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		//we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
 		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 	}
+
+	video_driver_index = p_video_driver;
 
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 

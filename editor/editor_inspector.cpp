@@ -1507,12 +1507,19 @@ void EditorInspector::update_tree() {
 			checked = p.usage & PROPERTY_USAGE_CHECKED;
 		}
 
+		if (p.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
+			restart_request_props.insert(p.name);
+		}
+
 		String doc_hint;
 
 		if (use_doc_hints) {
 
 			StringName classname = object->get_class_name();
-			StringName propname = p.name;
+			if (object_class != String()) {
+				classname = object_class;
+			}
+			StringName propname = property_prefix + p.name;
 			String descr;
 			bool found = false;
 
@@ -1580,9 +1587,9 @@ void EditorInspector::update_tree() {
 					ep->connect("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
 					if (doc_hint != String()) {
-						ep->set_tooltip(TTR("Property: ") + p.name + "\n\n" + doc_hint);
+						ep->set_tooltip(TTR("Property: ") + property_prefix + p.name + "\n\n" + doc_hint);
 					} else {
-						ep->set_tooltip(TTR("Property: ") + p.name);
+						ep->set_tooltip(TTR("Property: ") + property_prefix + p.name);
 					}
 					ep->set_draw_red(draw_red);
 					ep->set_use_folding(use_folding);
@@ -1659,6 +1666,7 @@ void EditorInspector::_clear() {
 	editor_property_map.clear();
 	sections.clear();
 	pending.clear();
+	restart_request_props.clear();
 }
 
 void EditorInspector::refresh() {
@@ -1902,6 +1910,10 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 
 	if (changing)
 		this->changing--;
+
+	if (restart_request_props.has(p_path)) {
+		emit_signal("restart_requested");
+	}
 }
 
 void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value) {
@@ -1921,6 +1933,9 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
 	for (int i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
+		if (restart_request_props.has(p_paths[i])) {
+			emit_signal("restart_requested");
+		}
 	}
 	changing++;
 	undo_redo->commit_action();
@@ -1993,6 +2008,8 @@ void EditorInspector::_property_selected(const String &p_path, int p_focusable) 
 				E->get()->deselect();
 		}
 	}
+
+	emit_signal("property_selected", p_path);
 }
 
 void EditorInspector::_object_id_selected(const String &p_path, ObjectID p_id) {
@@ -2090,6 +2107,21 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 		scroll_cache[object->get_instance_id()] = p_offset;
 	}
 }
+void EditorInspector::set_property_prefix(const String &p_prefix) {
+	property_prefix = p_prefix;
+}
+
+String EditorInspector::get_property_prefix() const {
+	return property_prefix;
+}
+
+void EditorInspector::set_object_class(const String &p_class) {
+	object_class = p_class;
+}
+
+String EditorInspector::get_object_class() const {
+	return object_class;
+}
 
 void EditorInspector::_bind_methods() {
 
@@ -2110,9 +2142,12 @@ void EditorInspector::_bind_methods() {
 
 	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
+	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "res"), PropertyInfo(Variant::STRING, "prop")));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("property_edited", PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorInspector::EditorInspector() {

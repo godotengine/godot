@@ -267,8 +267,12 @@ class EditorInspector : public ScrollContainer {
 
 	Map<StringName, Map<StringName, String> > descr_cache;
 	Map<StringName, String> class_descr_cache;
+	Set<StringName> restart_request_props;
 
 	Map<ObjectID, int> scroll_cache;
+
+	String property_prefix; //used for sectioned inspector
+	String object_class;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -342,6 +346,12 @@ public:
 
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
+
+	void set_property_prefix(const String &p_prefix);
+	String get_property_prefix() const;
+
+	void set_object_class(const String &p_class);
+	String get_object_class() const;
 
 	void set_use_sub_inspector_bg(bool p_enable);
 
