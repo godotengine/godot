@@ -70,6 +70,9 @@ class EditorSpinSlider : public Range {
 	bool hide_slider;
 	bool flat;
 
+	bool use_custom_label_color;
+	Color custom_label_color;
+
 protected:
 	void _notification(int p_what);
 	void _gui_input(const Ref<InputEvent> &p_event);
@@ -91,6 +94,8 @@ public:
 
 	void set_flat(bool p_enable);
 	bool is_flat() const;
+
+	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
 
 	virtual Size2 get_minimum_size() const;
 	EditorSpinSlider();
