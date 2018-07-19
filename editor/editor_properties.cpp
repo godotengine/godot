@@ -993,6 +993,18 @@ void EditorPropertyVector2::update_property() {
 	setting = false;
 }
 
+void EditorPropertyVector2::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 2; i++) {
+
+			Color c = base;
+			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
+
 void EditorPropertyVector2::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyVector2::_value_changed);
@@ -1046,7 +1058,17 @@ void EditorPropertyRect2::update_property() {
 	spin[3]->set_value(val.size.y);
 	setting = false;
 }
+void EditorPropertyRect2::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 4; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyRect2::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyRect2::_value_changed);
@@ -1098,7 +1120,17 @@ void EditorPropertyVector3::update_property() {
 	spin[2]->set_value(val.z);
 	setting = false;
 }
+void EditorPropertyVector3::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 3; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyVector3::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyVector3::_value_changed);
@@ -1152,7 +1184,17 @@ void EditorPropertyPlane::update_property() {
 	spin[3]->set_value(val.d);
 	setting = false;
 }
+void EditorPropertyPlane::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 3; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyPlane::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyPlane::_value_changed);
@@ -1206,7 +1248,17 @@ void EditorPropertyQuat::update_property() {
 	spin[3]->set_value(val.w);
 	setting = false;
 }
+void EditorPropertyQuat::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 3; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyQuat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyQuat::_value_changed);
@@ -1267,7 +1319,17 @@ void EditorPropertyAABB::update_property() {
 
 	setting = false;
 }
+void EditorPropertyAABB::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 6; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyAABB::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyAABB::_value_changed);
@@ -1331,7 +1393,17 @@ void EditorPropertyTransform2D::update_property() {
 
 	setting = false;
 }
+void EditorPropertyTransform2D::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 6; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i % 2) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyTransform2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyTransform2D::_value_changed);
@@ -1400,7 +1472,17 @@ void EditorPropertyBasis::update_property() {
 
 	setting = false;
 }
+void EditorPropertyBasis::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 9; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyBasis::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyBasis::_value_changed);
@@ -1475,7 +1557,17 @@ void EditorPropertyTransform::update_property() {
 
 	setting = false;
 }
+void EditorPropertyTransform::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		Color base = get_color("accent_color", "Editor");
+		for (int i = 0; i < 12; i++) {
 
+			Color c = base;
+			c.set_hsv(float(i % 3) / 3.0 + 0.05, c.get_s() * 0.75, c.get_v());
+			spin[i]->set_custom_label_color(true, c);
+		}
+	}
+}
 void EditorPropertyTransform::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyTransform::_value_changed);

@@ -165,7 +165,8 @@ void EditorSpinSlider::_notification(int p_what) {
 			draw_style_box(sb, Rect2(Vector2(), get_size()));
 		}
 		Ref<Font> font = get_font("font", "LineEdit");
-		int sep = 4 * EDSCALE;
+		int sep_base = 4 * EDSCALE;
+		int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
 		int string_width = font->get_string_size(label).width;
 		int number_width = get_size().width - sb->get_minimum_size().width - string_width - sep;
@@ -176,18 +177,30 @@ void EditorSpinSlider::_notification(int p_what) {
 			number_width -= updown->get_width();
 		}
 
-		if (has_focus()) {
-			Ref<StyleBox> focus = get_stylebox("focus", "LineEdit");
-			draw_style_box(focus, Rect2(Vector2(), get_size()));
-		}
-
 		String numstr = get_text_value();
 
 		int vofs = (get_size().height - font->get_height()) / 2 + font->get_ascent();
 
 		Color fc = get_color("font_color", "LineEdit");
+		Color lc;
+		if (use_custom_label_color) {
+			lc = custom_label_color;
+		} else {
+			lc = fc;
+		}
 
-		draw_string(font, Vector2(sb->get_offset().x, vofs), label, fc * Color(1, 1, 1, 0.5));
+		if (flat && label != String()) {
+			Color label_bg_color = get_color("dark_color_3", "Editor");
+			draw_rect(Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + string_width, get_size().height)), label_bg_color);
+		}
+
+		if (has_focus()) {
+			Ref<StyleBox> focus = get_stylebox("focus", "LineEdit");
+			draw_style_box(focus, Rect2(Vector2(), get_size()));
+		}
+
+		draw_string(font, Vector2(sb->get_offset().x, vofs), label, lc * Color(1, 1, 1, 0.5));
+
 		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
@@ -255,9 +268,11 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
+		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult
+		 * if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
 			_focus_entered();
-		}
+		}*/
+
 		value_input_just_closed = false;
 	}
 }
@@ -349,6 +364,11 @@ bool EditorSpinSlider::is_flat() const {
 	return flat;
 }
 
+void EditorSpinSlider::set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color) {
+	use_custom_label_color = p_use_custom_label_color;
+	custom_label_color = p_custom_label_color;
+}
+
 void EditorSpinSlider::_focus_entered() {
 	Rect2 gr = get_global_rect();
 	value_input->set_text(get_text_value());
@@ -415,4 +435,5 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input_just_closed = false;
 	hide_slider = false;
 	read_only = false;
+	use_custom_label_color = false;
 }
