@@ -10,7 +10,6 @@ namespace GodotSharpTools.Project
         {
             var dir = Directory.GetParent(projectPath).FullName;
             var root = ProjectRootElement.Open(projectPath);
-
             if (root.AddItemChecked(itemType, include.RelativeToPath(dir).Replace("/", "\\")))
                 root.Save();
         }
