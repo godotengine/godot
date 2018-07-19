@@ -970,7 +970,7 @@ void FileSystemDock::_make_dir_confirm() {
 	if (dir_name.length() == 0) {
 		EditorNode::get_singleton()->show_warning(TTR("No name provided"));
 		return;
-	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
+	} else if (dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
 		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters"));
 		return;
 	}
@@ -979,7 +979,20 @@ void FileSystemDock::_make_dir_confirm() {
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(path);
 	if (err == OK) {
-		err = da->make_dir(dir_name);
+		Vector<String> dirs = dir_name.split("/", false);
+		String currentDir = path;
+
+		for (int i = 0; i < dirs.size(); i++) {
+			da->change_dir(currentDir);
+
+			err = da->make_dir(dirs[i]);
+
+			if (err == OK) {
+				currentDir += dirs[i] + "/";
+			} else {
+				break;
+			}
+		}
 	}
 	memdelete(da);
 
@@ -987,7 +1000,7 @@ void FileSystemDock::_make_dir_confirm() {
 		print_line("call rescan!");
 		_rescan();
 	} else {
-		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
+		EditorNode::get_singleton()->show_warning(TTR("Could not create folder(s)."));
 	}
 }
 
