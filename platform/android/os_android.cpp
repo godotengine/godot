@@ -123,6 +123,9 @@ void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 	ERR_FAIL_COND(!p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 }
+int OS_Android::get_current_video_driver() const {
+	return video_driver_index;
+}
 
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
@@ -136,9 +139,11 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (use_gl2) {
 		RasterizerGLES2::register_config();
 		RasterizerGLES2::make_current();
+		video_driver_index = VIDEO_DRIVER_GLES2;
 	} else {
 		RasterizerGLES3::register_config();
 		RasterizerGLES3::make_current();
+		video_driver_index = VIDEO_DRIVER_GLES3;
 	}
 
 	visual_server = memnew(VisualServerRaster);

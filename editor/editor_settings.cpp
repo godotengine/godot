@@ -165,6 +165,7 @@ struct _EVCSort {
 	Variant::Type type;
 	int order;
 	bool save;
+	bool restart_if_changed;
 
 	bool operator<(const _EVCSort &p_vcs) const { return order < p_vcs.order; }
 };
@@ -188,6 +189,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
 		vc.save = v->save;
+		vc.restart_if_changed = v->restart_if_changed;
 
 		vclist.insert(vc);
 	}
@@ -209,6 +211,10 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage = pinfo;
 		if (hints.has(E->get().name))
 			pi = hints[E->get().name];
+
+		if (E->get().restart_if_changed) {
+			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
+		}
 
 		p_list->push_back(pi);
 	}
@@ -280,6 +286,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		_initial_set("interface/editor/editor_language", best);
+		set_restart_if_changed("interface/editor/editor_language", true);
 		hints["interface/editor/editor_language"] = PropertyInfo(Variant::STRING, "interface/editor/editor_language", PROPERTY_HINT_ENUM, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	}
 
@@ -1017,6 +1024,14 @@ void EditorSettings::raise_order(const String &p_setting) {
 	props[p_setting].order = ++last_order;
 }
 
+void EditorSettings::set_restart_if_changed(const StringName &p_setting, bool p_restart) {
+	_THREAD_SAFE_METHOD_
+
+	if (!props.has(p_setting))
+		return;
+	props[p_setting].restart_if_changed = p_restart;
+}
+
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
 
 	_THREAD_SAFE_METHOD_
@@ -1030,16 +1045,19 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 	}
 }
 
-Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
+Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
 
 	Variant ret = p_default;
-	if (EditorSettings::get_singleton()->has_setting(p_setting))
+	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);
-	else
+	} else {
 		EditorSettings::get_singleton()->set_manually(p_setting, p_default);
+		EditorSettings::get_singleton()->set_restart_if_changed(p_setting, p_restart_if_changed);
+	}
 
-	if (!EditorSettings::get_singleton()->has_default_value(p_setting))
+	if (!EditorSettings::get_singleton()->has_default_value(p_setting)) {
 		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
+	}
 
 	return ret;
 }

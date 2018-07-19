@@ -659,6 +659,18 @@ const char *OS::get_audio_driver_name(int p_driver) const {
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
+void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
+	restart_on_exit = p_restart;
+	restart_commandline = p_restart_arguments;
+}
+
+bool OS::is_restart_on_exit_set() const {
+	return restart_on_exit;
+}
+List<String> OS::get_restart_on_exit_argumens() const {
+	return restart_commandline;
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 

@@ -70,6 +70,7 @@ private:
 		bool has_default_value;
 		bool hide_from_editor;
 		bool save;
+		bool restart_if_changed;
 		VariantContainer() {
 			variant = Variant();
 			initial = Variant();
@@ -77,6 +78,7 @@ private:
 			hide_from_editor = false;
 			has_default_value = false;
 			save = false;
+			restart_if_changed = false;
 		}
 		VariantContainer(const Variant &p_variant, int p_order) {
 			variant = p_variant;
@@ -85,6 +87,7 @@ private:
 			hide_from_editor = false;
 			has_default_value = false;
 			save = false;
+			restart_if_changed = false;
 		}
 	};
 
@@ -145,6 +148,7 @@ public:
 	void erase(const String &p_setting);
 	void raise_order(const String &p_setting);
 	void set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current = false);
+	void set_restart_if_changed(const StringName &p_setting, bool p_restart);
 	void set_manually(const StringName &p_setting, const Variant &p_value, bool p_emit_signal = false) {
 		if (p_emit_signal)
 			_set(p_setting, p_value);
@@ -200,7 +204,8 @@ public:
 //not a macro any longer
 
 #define EDITOR_DEF(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val))
-Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default);
+#define EDITOR_DEF_RST(m_var, m_val) _EDITOR_DEF(m_var, Variant(m_val), true)
+Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed = false);
 
 #define EDITOR_GET(m_var) _EDITOR_GET(m_var)
 Variant _EDITOR_GET(const String &p_setting);

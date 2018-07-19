@@ -105,6 +105,11 @@ void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_v
 	ERR_FAIL_COND(!props.has(p_name));
 	props[p_name].initial = p_value;
 }
+void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
+
+	ERR_FAIL_COND(!props.has(p_name));
+	props[p_name].restart_if_changed = p_restart;
+}
 
 String ProjectSettings::globalize_path(const String &p_path) const {
 
@@ -225,6 +230,9 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		else
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
 
+		if (v->restart_if_changed) {
+			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
+		}
 		vclist.insert(vc);
 	}
 
@@ -817,7 +825,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	return OK;
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
 
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
@@ -827,6 +835,7 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
 	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
+	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
 	return ret;
 }
 
@@ -1080,7 +1089,6 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
-	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_mode", 2);
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 
