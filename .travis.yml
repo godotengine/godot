@@ -61,7 +61,7 @@ addons:
       - libssl-dev
 
       # For style checks.
-      - clang-format-5.0
+      - clang-format-6.0
       - libstdc++6 # >= 4.9 needed for clang-format-6.0
 
 before_install:
