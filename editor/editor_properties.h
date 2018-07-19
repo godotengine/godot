@@ -119,6 +119,25 @@ public:
 	EditorPropertyPath();
 };
 
+class EditorPropertyClassName : public EditorProperty {
+	GDCLASS(EditorPropertyClassName, EditorProperty)
+private:
+	CreateDialog *dialog;
+	Button *property;
+	String selected_type;
+	String base_type;
+	void _property_selected();
+	void _dialog_created();
+
+protected:
+	static void _bind_methods();
+
+public:
+	void setup(const String &p_base_type, const String &p_selected_type);
+	virtual void update_property();
+	EditorPropertyClassName();
+};
+
 class EditorPropertyMember : public EditorProperty {
 	GDCLASS(EditorPropertyMember, EditorProperty)
 public:

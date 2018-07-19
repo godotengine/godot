@@ -258,6 +258,51 @@ EditorPropertyPath::EditorPropertyPath() {
 	global = false;
 }
 
+///////////////////// CLASS NAME /////////////////////////
+
+void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type) {
+
+	base_type = p_base_type;
+	dialog->set_base_type(base_type);
+	selected_type = p_selected_type;
+	property->set_text(selected_type);
+}
+
+void EditorPropertyClassName::update_property() {
+
+	String s = get_edited_object()->get(get_edited_property());
+	property->set_text(s);
+	selected_type = s;
+}
+
+void EditorPropertyClassName::_property_selected() {
+	dialog->popup_create(true);
+}
+
+void EditorPropertyClassName::_dialog_created() {
+	selected_type = dialog->get_selected_type();
+	emit_signal("property_changed", get_edited_property(), selected_type);
+	update_property();
+}
+
+void EditorPropertyClassName::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_dialog_created"), &EditorPropertyClassName::_dialog_created);
+	ClassDB::bind_method(D_METHOD("_property_selected"), &EditorPropertyClassName::_property_selected);
+}
+
+EditorPropertyClassName::EditorPropertyClassName() {
+	property = memnew(Button);
+	property->set_clip_text(true);
+	add_child(property);
+	add_focusable(property);
+	property->set_text(selected_type);
+	property->connect("pressed", this, "_property_selected");
+	dialog = memnew(CreateDialog);
+	dialog->set_base_type(base_type);
+	dialog->connect("create", this, "_dialog_created");
+	add_child(dialog);
+}
+
 ///////////////////// MEMBER /////////////////////////
 
 void EditorPropertyMember::_property_selected(const String &p_selected) {
@@ -2606,6 +2651,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
+				add_property_editor(p_path, editor);
+			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
+				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
+				editor->setup("Object", p_hint_text);
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 
