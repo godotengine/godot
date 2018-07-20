@@ -80,6 +80,10 @@ const char *OS_Haiku::get_video_driver_name(int p_driver) const {
 	return "GLES3";
 }
 
+int OS_Haiku::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	main_loop = NULL;
 	current_video_mode = p_desired;
@@ -123,6 +127,8 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 	*/
+
+	video_driver_index = p_video_driver;
 
 	input = memnew(InputDefault);
 	window->SetInput(input);

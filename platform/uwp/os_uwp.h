@@ -99,6 +99,7 @@ private:
 	Windows::UI::Core::CoreWindow ^ window;
 
 	VideoMode video_mode;
+	int video_driver_index;
 
 	MainLoop *main_loop;
 
@@ -154,6 +155,7 @@ private:
 	// functions used by main to initialize/deintialize the OS
 protected:
 	virtual int get_video_driver_count() const;
+	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);

@@ -51,6 +51,7 @@ private:
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_video_mode;
+	int video_driver_index;
 	PowerHaiku *power_manager;
 
 #ifdef MEDIA_KIT_ENABLED
@@ -66,6 +67,7 @@ private:
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual int get_current_video_driver() const;
 
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
