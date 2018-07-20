@@ -574,6 +574,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 
 		if (node_styles.has(node->get_category())) {
 			Ref<StyleBoxFlat> sbf = node_styles[node->get_category()];
+			Ref<StyleBoxFlat> sbfh = node_h_styles[node->get_category()];
 			if (gnode->is_comment())
 				sbf = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox("comment", "GraphNode");
 
@@ -589,6 +590,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			c.a = 0.7;
 			gnode->add_color_override("close_color", c);
 			gnode->add_style_override("frame", sbf);
+			gnode->add_style_override("frame_header", sbfh);
 		}
 
 		const Color mono_color = get_color("mono_color", "Editor");
@@ -2890,13 +2892,20 @@ void VisualScriptEditor::_notification(int p_what) {
 
 		for (List<Pair<String, Color> >::Element *E = colors.front(); E; E = E->next()) {
 			Ref<StyleBoxFlat> sb = tm->get_stylebox("frame", "GraphNode");
+			Ref<StyleBoxFlat> sbh = tm->get_stylebox("frame_header", "GraphNode");
 			if (!sb.is_null()) {
 				Ref<StyleBoxFlat> frame_style = sb->duplicate();
+				Ref<StyleBoxFlat> frame_header_style = sbh->duplicate();
 				Color c = sb->get_border_color(MARGIN_TOP);
 				Color cn = E->get().second;
 				cn.a = c.a;
 				frame_style->set_border_color_all(cn);
+				frame_header_style->set_border_color_all(cn);
+				if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
+					frame_header_style->set_bg_color(cn);
+				}
 				node_styles[E->get().first] = frame_style;
+				node_h_styles[E->get().first] = frame_header_style;
 			}
 		}
 	}

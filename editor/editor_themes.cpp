@@ -984,40 +984,95 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float mv = dark_theme ? 0.0 : 1.0;
 	const float mv2 = 1.0 - mv;
 	const int gn_margin_side = 28;
-	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(Color(mv, mv, mv, 0.7), gn_margin_side, 24, gn_margin_side, 5);
-	graphsb->set_border_width_all(border_width);
-	graphsb->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
-	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(Color(mv, mv, mv, 0.9), gn_margin_side, 24, gn_margin_side, 5);
-	graphsbselected->set_border_width_all(border_width);
-	graphsbselected->set_border_color_all(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
-	graphsbselected->set_shadow_size(8 * EDSCALE);
-	graphsbselected->set_shadow_color(shadow_color);
-	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(Color(mv, mv, mv, 0.3), gn_margin_side, 24, gn_margin_side, 5);
-	graphsbcomment->set_border_width_all(border_width);
-	graphsbcomment->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
-	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(Color(mv, mv, mv, 0.4), gn_margin_side, 24, gn_margin_side, 5);
-	graphsbcommentselected->set_border_width_all(border_width);
-	graphsbcommentselected->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
+	const int corner_radius = 10;
+
+	Color graphsb_color = Color(mv, mv, mv, 0.7);
+	Color graphsb_border_color = Color(mv2, mv2, mv2, 0.9);
+	Color graphsbselected_color = Color(mv, mv, mv, 0.9);
+	Color graphsbselected_border_color = Color(accent_color.r, accent_color.g, accent_color.b, 0.9);
+	Color graphsbcomment_color = Color(mv, mv, mv, 0.3);
+	Color graphsbcomment_border_color = Color(mv2, mv2, mv2, 0.9);
+	Color graphsbcommentselected_color = Color(mv, mv, mv, 0.4);
+	Color graphsbcommentselected_border_color = Color(mv2, mv2, mv2, 0.9);
+
+	Ref<StyleBoxFlat> graphsb = make_flat_stylebox(graphsb_color, gn_margin_side, 24, gn_margin_side, 5);
+	graphsb->set_border_width(Margin::MARGIN_BOTTOM, border_width);
+	graphsb->set_border_width(Margin::MARGIN_LEFT, border_width);
+	graphsb->set_border_width(Margin::MARGIN_RIGHT, border_width);
+	graphsb->set_border_width(Margin::MARGIN_TOP, 0);
+	graphsb->set_border_color_all(graphsb_border_color);
+	Ref<StyleBoxFlat> graphsb_header = graphsb->duplicate();
+	graphsb_header->set_border_width(Margin::MARGIN_TOP, border_width);
+	graphsb_header->set_corner_radius(Corner::CORNER_TOP_LEFT, corner_radius);
+	graphsb_header->set_corner_radius(Corner::CORNER_TOP_RIGHT, corner_radius);
+	graphsb->set_corner_radius(Corner::CORNER_BOTTOM_LEFT, corner_radius);
+	graphsb->set_corner_radius(Corner::CORNER_BOTTOM_RIGHT, corner_radius);
+
+	Ref<StyleBoxFlat> graphsbselected = make_flat_stylebox(graphsbselected_color, gn_margin_side, 24, gn_margin_side, 5);
+	graphsbselected->set_border_width(Margin::MARGIN_BOTTOM, border_width);
+	graphsbselected->set_border_width(Margin::MARGIN_LEFT, border_width);
+	graphsbselected->set_border_width(Margin::MARGIN_RIGHT, border_width);
+	graphsbselected->set_border_width(Margin::MARGIN_TOP, 0);
+	graphsbselected->set_border_color_all(graphsbselected_border_color);
+	Ref<StyleBoxFlat> graphsbselected_header = graphsbselected->duplicate();
+	graphsbselected_header->set_border_width(Margin::MARGIN_TOP, border_width);
+	graphsbselected_header->set_corner_radius(Corner::CORNER_TOP_LEFT, corner_radius);
+	graphsbselected_header->set_corner_radius(Corner::CORNER_TOP_RIGHT, corner_radius);
+	graphsbselected->set_corner_radius(Corner::CORNER_BOTTOM_LEFT, corner_radius);
+	graphsbselected->set_corner_radius(Corner::CORNER_BOTTOM_RIGHT, corner_radius);
+
+	Ref<StyleBoxFlat> graphsbcomment = make_flat_stylebox(graphsbcomment_color, gn_margin_side, 24, gn_margin_side, 5);
+	graphsbcomment->set_border_width(Margin::MARGIN_BOTTOM, border_width);
+	graphsbcomment->set_border_width(Margin::MARGIN_LEFT, border_width);
+	graphsbcomment->set_border_width(Margin::MARGIN_RIGHT, border_width);
+	graphsbcomment->set_border_width(Margin::MARGIN_TOP, 0);
+	graphsbcomment->set_border_color_all(graphsbcomment_border_color);
+	Ref<StyleBoxFlat> graphsbcomment_header = graphsbcomment->duplicate();
+	graphsbcomment_header->set_border_width(Margin::MARGIN_TOP, border_width);
+	graphsbcomment_header->set_corner_radius(Corner::CORNER_TOP_LEFT, corner_radius);
+	graphsbcomment_header->set_corner_radius(Corner::CORNER_TOP_RIGHT, corner_radius);
+	graphsbcomment->set_corner_radius(Corner::CORNER_BOTTOM_LEFT, corner_radius);
+	graphsbcomment->set_corner_radius(Corner::CORNER_BOTTOM_RIGHT, corner_radius);
+
+	Ref<StyleBoxFlat> graphsbcommentselected = make_flat_stylebox(graphsbcommentselected_color, gn_margin_side, 24, gn_margin_side, 5);
+	graphsbcommentselected->set_border_width(Margin::MARGIN_BOTTOM, border_width);
+	graphsbcommentselected->set_border_width(Margin::MARGIN_LEFT, border_width);
+	graphsbcommentselected->set_border_width(Margin::MARGIN_RIGHT, border_width);
+	graphsbcommentselected->set_border_width(Margin::MARGIN_TOP, 0);
+	graphsbcommentselected->set_border_color_all(graphsbcommentselected_border_color);
+	Ref<StyleBoxFlat> graphsbcommentselected_header = graphsbcommentselected->duplicate();
+	graphsbcommentselected_header->set_border_width(Margin::MARGIN_TOP, border_width);
+	graphsbcommentselected_header->set_corner_radius(Corner::CORNER_TOP_LEFT, corner_radius);
+	graphsbcommentselected_header->set_corner_radius(Corner::CORNER_TOP_RIGHT, corner_radius);
+	graphsbcommentselected->set_corner_radius(Corner::CORNER_BOTTOM_LEFT, corner_radius);
+	graphsbcommentselected->set_corner_radius(Corner::CORNER_BOTTOM_RIGHT, corner_radius);
+
 	Ref<StyleBoxFlat> graphsbbreakpoint = graphsbselected->duplicate();
 	graphsbbreakpoint->set_draw_center(false);
 	graphsbbreakpoint->set_border_color_all(warning_color);
 	graphsbbreakpoint->set_shadow_color(warning_color * Color(1.0, 1.0, 1.0, 0.1));
+	graphsbbreakpoint->set_corner_radius_all(corner_radius);
 	Ref<StyleBoxFlat> graphsbposition = graphsbselected->duplicate();
 	graphsbposition->set_draw_center(false);
 	graphsbposition->set_border_color_all(error_color);
 	graphsbposition->set_shadow_color(error_color * Color(1.0, 1.0, 1.0, 0.2));
+	graphsbposition->set_corner_radius_all(corner_radius);
 
 	if (use_gn_headers) {
-		graphsb->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-		graphsbselected->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-		graphsbcomment->set_border_width(MARGIN_TOP, 24 * EDSCALE);
-		graphsbcommentselected->set_border_width(MARGIN_TOP, 24 * EDSCALE);
+		graphsb_header->set_bg_color(graphsb_border_color);
+		graphsbselected_header->set_bg_color(graphsbselected_border_color);
+		graphsbcomment_header->set_bg_color(graphsbcomment_border_color);
+		graphsbcommentselected_header->set_bg_color(graphsbcomment_border_color);
 	}
 
 	theme->set_stylebox("frame", "GraphNode", graphsb);
+	theme->set_stylebox("frame_header", "GraphNode", graphsb_header);
 	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
+	theme->set_stylebox("selectedframe_header", "GraphNode", graphsbselected_header);
 	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
+	theme->set_stylebox("comment_header", "GraphNode", graphsbcomment_header);
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
+	theme->set_stylebox("commentfocus_header", "GraphNode", graphsbcommentselected_header);
 	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
 	theme->set_stylebox("position", "GraphNode", graphsbposition);
 
@@ -1028,6 +1083,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
+	theme->set_constant("title_h_size", "GraphNode", 24 * EDSCALE);
 	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);

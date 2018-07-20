@@ -138,6 +138,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	};
 
 	HashMap<StringName, Ref<StyleBox> > node_styles;
+	HashMap<StringName, Ref<StyleBox> > node_h_styles;
 	StringName edited_func;
 
 	void _update_graph_connections();
