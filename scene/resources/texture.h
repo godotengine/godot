@@ -366,6 +366,8 @@ private:
 		return false;
 	}
 
+	Vector<Ref<Texture>> textures;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -376,8 +378,8 @@ protected:
 public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
-	void set_side(Side p_side, const Ref<Image> &p_image);
-	Ref<Image> get_side(Side p_side) const;
+	void set_side(Side p_side, const Ref<Texture> &p_texture);
+	Ref<Texture> get_side(Side p_side) const;
 
 	Image::Format get_format() const;
 	int get_width() const;
