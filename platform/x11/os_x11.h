@@ -196,6 +196,8 @@ class OS_X11 : public OS_Unix {
 	Bool xrandr_ext_ok;
 
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
@@ -207,8 +209,6 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
-	virtual int get_current_video_driver() const;
-
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
