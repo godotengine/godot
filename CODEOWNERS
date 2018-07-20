@@ -17,7 +17,7 @@ misc/*            @akien-mga
 
 modules/bullet/*     @AndreaCatania
 modules/enet/*       @godotengine/network
-modules/gnative/*    @karroffel
+modules/gdnative/*   @karroffel
 modules/gdscript/*   @reduz @vnen @bojidar-bg
 modules/mbedtls/*    @godotengine/network
 modules/mobile_vr/*  @BastiaanOlij
