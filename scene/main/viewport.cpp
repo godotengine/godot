@@ -41,10 +41,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
@@ -1312,7 +1309,7 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 }
 
-String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos) {
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which) {
 
 	Vector2 pos = p_pos;
 	String tooltip;
@@ -1320,6 +1317,10 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos) {
 	while (p_control) {
 
 		tooltip = p_control->get_tooltip(pos);
+
+		if (r_which) {
+			*r_which = p_control;
+		}
 
 		if (tooltip != String())
 			break;
@@ -1342,7 +1343,8 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
-	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
+	Control *which = NULL;
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
 	if (tooltip.length() == 0)
 		return; // bye
 
@@ -1382,13 +1384,8 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->set_as_toplevel(true);
 	//gui.tooltip_popup->hide();
 
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_LEFT));
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
-	gui.tooltip_label->set_text(tooltip.strip_edges());
-	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_minimum_size() + ttp->get_minimum_size());
-	Rect2 vr = gui.tooltip_label->get_viewport_rect();
+	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_popup->get_minimum_size());
+	Rect2 vr = gui.tooltip_popup->get_viewport_rect();
 	if (r.size.x + r.position.x > vr.size.x)
 		r.position.x = vr.size.x - r.size.x;
 	else if (r.position.x < 0)
@@ -1931,7 +1928,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			bool is_tooltip_shown = false;
 
 			if (gui.tooltip_popup) {
-				if (can_tooltip) {
+				if (can_tooltip && gui.tooltip) {
 					String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
 
 					if (tooltip.length() == 0)

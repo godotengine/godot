@@ -719,6 +719,24 @@ void EditorProperty::set_object_and_property(Object *p_object, const StringName 
 	property = p_property;
 }
 
+Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
+
+	tooltip_text = p_text;
+	EditorHelpBit *help_bit = memnew(EditorHelpBit);
+	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
+	help_bit->get_rich_text()->set_fixed_size_to_width(300);
+
+	String text = TTR("Property: ") + "[u][b]" + p_text.get_slice("::", 0) + "[/b][/u]\n";
+	text += p_text.get_slice("::", 1).strip_edges();
+	help_bit->set_text(text);
+	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	return help_bit;
+}
+
+String EditorProperty::get_tooltip_text() const {
+	return tooltip_text;
+}
+
 void EditorProperty::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_label", "text"), &EditorProperty::set_label);
@@ -744,6 +762,8 @@ void EditorProperty::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorProperty::_gui_input);
 	ClassDB::bind_method(D_METHOD("_focusable_focused"), &EditorProperty::_focusable_focused);
+
+	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
@@ -919,6 +939,20 @@ void EditorInspectorCategory::_notification(int p_what) {
 	}
 }
 
+Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) const {
+
+	tooltip_text = p_text;
+	EditorHelpBit *help_bit = memnew(EditorHelpBit);
+	help_bit->add_style_override("panel", get_stylebox("panel", "TooltipPanel"));
+	help_bit->get_rich_text()->set_fixed_size_to_width(300);
+
+	String text = "[u][b]" + p_text.get_slice("::", 0) + "[/b][/u]\n";
+	text += p_text.get_slice("::", 1).strip_edges();
+	help_bit->set_text(text);
+	help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+	return help_bit;
+}
+
 Size2 EditorInspectorCategory::get_minimum_size() const {
 
 	Ref<Font> font = get_font("font", "Tree");
@@ -932,6 +966,15 @@ Size2 EditorInspectorCategory::get_minimum_size() const {
 	ms.height += get_constant("vseparation", "Tree");
 
 	return ms;
+}
+
+void EditorInspectorCategory::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorInspectorCategory::get_tooltip_text);
+}
+
+String EditorInspectorCategory::get_tooltip_text() const {
+
+	return tooltip_text;
 }
 
 EditorInspectorCategory::EditorInspectorCategory() {
@@ -1395,7 +1438,7 @@ void EditorInspector::update_tree() {
 					class_descr_cache[type] = descr.word_wrap(80);
 				}
 
-				category->set_tooltip(TTR("Class:") + " " + p.name + (class_descr_cache[type] == "" ? "" : "\n\n" + class_descr_cache[type]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type] == "" ? "" : class_descr_cache[type]));
 			}
 
 			for (List<Ref<EditorInspectorPlugin> >::Element *E = valid_plugins.front(); E; E = E->next()) {
@@ -1587,9 +1630,9 @@ void EditorInspector::update_tree() {
 					ep->connect("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
 					if (doc_hint != String()) {
-						ep->set_tooltip(TTR("Property:") + " " + property_prefix + p.name + "\n\n" + doc_hint);
+						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
 					} else {
-						ep->set_tooltip(TTR("Property:") + " " + property_prefix + p.name);
+						ep->set_tooltip(property_prefix + p.name);
 					}
 					ep->set_draw_red(draw_red);
 					ep->set_use_folding(use_folding);
