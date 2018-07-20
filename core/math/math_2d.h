@@ -37,42 +37,6 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-enum Margin {
-
-	MARGIN_LEFT,
-	MARGIN_TOP,
-	MARGIN_RIGHT,
-	MARGIN_BOTTOM
-};
-
-enum Corner {
-
-	CORNER_TOP_LEFT,
-	CORNER_TOP_RIGHT,
-	CORNER_BOTTOM_RIGHT,
-	CORNER_BOTTOM_LEFT
-};
-
-enum Orientation {
-
-	HORIZONTAL,
-	VERTICAL
-};
-
-enum HAlign {
-
-	HALIGN_LEFT,
-	HALIGN_CENTER,
-	HALIGN_RIGHT
-};
-
-enum VAlign {
-
-	VALIGN_TOP,
-	VALIGN_CENTER,
-	VALIGN_BOTTOM
-};
-
 struct Transform2D;
 
 struct Rect2 {
