@@ -1451,6 +1451,26 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 	folder_options->popup();
 }
 
+void FileSystemDock::_dir_gui_input(Ref<InputEvent> p_event) {
+	if (get_viewport()->get_modal_stack_top()) {
+		return; // Modal is open
+	}
+
+	Ref<InputEventKey> key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
+			String path = tree->get_selected()->get_metadata(tree->get_selected_column());
+			Vector<String> remove_folders;
+
+			if (path != "res://") {
+				remove_folders.push_back(path);
+				remove_dialog->show(remove_folders, Vector<String>());	
+			}
+		}
+	}
+}
+
 void FileSystemDock::_search_changed(const String &p_text) {
 
 	if (file_list_vb->is_visible())
@@ -1864,6 +1884,7 @@ void FileSystemDock::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ClassDB::bind_method(D_METHOD("_go_to_file_list"), &FileSystemDock::_go_to_file_list);
 	ClassDB::bind_method(D_METHOD("_dir_rmb_pressed"), &FileSystemDock::_dir_rmb_pressed);
+	ClassDB::bind_method(D_METHOD("_dir_gui_input"), &FileSystemDock::_dir_gui_input);
 
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &FileSystemDock::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
@@ -1998,6 +2019,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("item_activated", this, "_go_to_file_list");
 	tree->connect("cell_selected", this, "_dir_selected");
 	tree->connect("item_rmb_selected", this, "_dir_rmb_pressed");
+	tree->connect("gui_input", this, "_dir_gui_input");
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
