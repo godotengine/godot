@@ -366,7 +366,7 @@ private:
 		return false;
 	}
 
-	Vector<Ref<Texture>> textures;
+	Vector<Ref<Texture> > textures;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
