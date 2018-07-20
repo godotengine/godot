@@ -5267,6 +5267,7 @@ EditorNode::EditorNode() {
 
 	video_driver->connect("item_selected", this, "_video_driver_selected");
 	video_restart_dialog = memnew(ConfirmationDialog);
+	video_restart_dialog->set_theme(get_gui_base()->get_theme());
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
 	video_restart_dialog->get_ok()->set_text(TTR("Save & Restart"));
 	video_restart_dialog->connect("confirmed", this, "_menu_option", varray(SET_VIDEO_DRIVER_SAVE_AND_RESTART));
