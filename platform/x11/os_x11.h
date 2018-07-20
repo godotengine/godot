@@ -125,6 +125,7 @@ class OS_X11 : public OS_Unix {
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
+	int last_click_button_index;
 	uint32_t last_button_state;
 #ifdef TOUCH_ENABLED
 	struct {
