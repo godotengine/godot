@@ -981,20 +981,7 @@ void FileSystemDock::_make_dir_confirm() {
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(path);
 	if (err == OK) {
-		Vector<String> dirs = dir_name.split("/", false);
-		String current_dir = path;
-
-		for (int i = 0; i < dirs.size(); i++) {
-			da->change_dir(current_dir);
-
-			err = da->make_dir(dirs[i]);
-
-			if (err == OK) {
-				current_dir += dirs[i] + "/";
-			} else {
-				break;
-			}
-		}
+		da->make_dir_recursive(dir_name);
 	}
 	memdelete(da);
 
