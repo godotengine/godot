@@ -1253,6 +1253,9 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	//validate invalid lines
 	Size2 size = get_size();
+	if (fixed_width != -1) {
+		size.width = fixed_width;
+	}
 	Rect2 text_rect = _get_text_rect();
 	Color font_color_shadow = get_color("font_color_shadow");
 	bool use_outline = get_constant("shadow_as_outline");
@@ -2245,6 +2248,21 @@ int RichTextLabel::get_total_character_count() const {
 	return tc;
 }
 
+void RichTextLabel::set_fixed_size_to_width(int p_width) {
+	fixed_width = p_width;
+	minimum_size_changed();
+}
+
+Size2 RichTextLabel::get_minimum_size() const {
+
+	if (fixed_width != -1) {
+		const_cast<RichTextLabel *>(this)->_validate_line_caches(main);
+		return Size2(fixed_width, const_cast<RichTextLabel *>(this)->get_content_height());
+	}
+
+	return Size2();
+}
+
 RichTextLabel::RichTextLabel() {
 
 	main = memnew(ItemFrame);
@@ -2287,6 +2305,7 @@ RichTextLabel::RichTextLabel() {
 	percent_visible = 1;
 	visible_line_count = 0;
 
+	fixed_width = -1;
 	set_clip_contents(true);
 }
 

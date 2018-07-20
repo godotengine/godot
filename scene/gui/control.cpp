@@ -2188,9 +2188,16 @@ void Control::set_tooltip(const String &p_tooltip) {
 
 	data.tooltip = p_tooltip;
 }
+
 String Control::get_tooltip(const Point2 &p_pos) const {
 
 	return data.tooltip;
+}
+Control *Control::make_custom_tooltip(const String &p_text) const {
+	if (get_script_instance()) {
+		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
+	}
+	return NULL;
 }
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
@@ -2820,6 +2827,7 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_drag_data", PropertyInfo(Variant::VECTOR2, "position")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
 
 	ADD_GROUP("Anchor", "anchor_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "anchor_left", PROPERTY_HINT_RANGE, "0,1,0.01"), "_set_anchor", "get_anchor", MARGIN_LEFT);

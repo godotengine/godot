@@ -454,6 +454,7 @@ public:
 
 	void set_tooltip(const String &p_tooltip);
 	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	/* CURSOR */
 
