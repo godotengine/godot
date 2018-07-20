@@ -47,7 +47,6 @@
 
 class OS_Server : public OS_Unix {
 
-	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
@@ -73,7 +72,7 @@ class OS_Server : public OS_Unix {
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
-
+	virtual int get_current_video_driver() const;
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
@@ -85,8 +84,6 @@ protected:
 
 public:
 	virtual String get_name();
-
-	virtual int get_current_video_driver() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
