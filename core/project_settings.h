@@ -64,16 +64,16 @@ protected:
 				order(0),
 				persist(false),
 				hide_from_editor(false),
-				overridden(false) {
-			restart_if_changed = false;
+				overridden(false),
+				restart_if_changed(false) {
 		}
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),
 				persist(p_persist),
 				variant(p_variant),
 				hide_from_editor(false),
-				overridden(false) {
-			restart_if_changed = false;
+				overridden(false),
+				restart_if_changed(false) {
 		}
 	};
 

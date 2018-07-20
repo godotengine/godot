@@ -667,7 +667,8 @@ void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_argum
 bool OS::is_restart_on_exit_set() const {
 	return restart_on_exit;
 }
-List<String> OS::get_restart_on_exit_argumens() const {
+
+List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
