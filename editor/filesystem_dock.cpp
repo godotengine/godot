@@ -982,15 +982,15 @@ void FileSystemDock::_make_dir_confirm() {
 	Error err = da->change_dir(path);
 	if (err == OK) {
 		Vector<String> dirs = dir_name.split("/", false);
-		String currentDir = path;
+		String current_dir = path;
 
 		for (int i = 0; i < dirs.size(); i++) {
-			da->change_dir(currentDir);
+			da->change_dir(current_dir);
 
 			err = da->make_dir(dirs[i]);
 
 			if (err == OK) {
-				currentDir += dirs[i] + "/";
+				current_dir += dirs[i] + "/";
 			} else {
 				break;
 			}
