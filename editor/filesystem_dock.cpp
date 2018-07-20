@@ -981,20 +981,7 @@ void FileSystemDock::_make_dir_confirm() {
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(path);
 	if (err == OK) {
-		Vector<String> dirs = dir_name.split("/", false);
-		String currentDir = path;
-
-		for (int i = 0; i < dirs.size(); i++) {
-			da->change_dir(currentDir);
-
-			err = da->make_dir(dirs[i]);
-
-			if (err == OK) {
-				currentDir += dirs[i] + "/";
-			} else {
-				break;
-			}
-		}
+		err = da->make_dir(dir_name);
 	}
 	memdelete(da);
 
@@ -1002,7 +989,7 @@ void FileSystemDock::_make_dir_confirm() {
 		print_line("call rescan!");
 		_rescan();
 	} else {
-		EditorNode::get_singleton()->show_warning(TTR("Could not create folder(s)."));
+		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
 	}
 }
 
