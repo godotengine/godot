@@ -260,6 +260,8 @@ public:
 	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
 	void select_file(const String &p_file);
 
+	void rename();
+
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
 };
