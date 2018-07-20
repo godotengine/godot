@@ -1898,8 +1898,9 @@ void Image::fill(const Color &c) {
 	unlock();
 }
 
-Ref<Image> (*Image::_png_mem_loader_func)(const uint8_t *, int) = NULL;
-Ref<Image> (*Image::_jpg_mem_loader_func)(const uint8_t *, int) = NULL;
+ImageMemLoadFunc Image::_png_mem_loader_func = NULL;
+ImageMemLoadFunc Image::_jpg_mem_loader_func = NULL;
+ImageMemLoadFunc Image::_webp_mem_loader_func = NULL;
 
 void (*Image::_image_compress_bc_func)(Image *, Image::CompressSource) = NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
@@ -2357,6 +2358,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -2649,32 +2651,26 @@ String Image::get_format_name(Format p_format) {
 }
 
 Error Image::load_png_from_buffer(const PoolVector<uint8_t> &p_array) {
-
-	int buffer_size = p_array.size();
-
-	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!_png_mem_loader_func, ERR_INVALID_PARAMETER);
-
-	PoolVector<uint8_t>::Read r = p_array.read();
-
-	Ref<Image> image = _png_mem_loader_func(r.ptr(), buffer_size);
-	ERR_FAIL_COND_V(!image.is_valid(), ERR_PARSE_ERROR);
-
-	copy_internals_from(image);
-
-	return OK;
+	return _load_from_buffer(p_array, _png_mem_loader_func);
 }
 
 Error Image::load_jpg_from_buffer(const PoolVector<uint8_t> &p_array) {
+	return _load_from_buffer(p_array, _jpg_mem_loader_func);
+}
 
+Error Image::load_webp_from_buffer(const PoolVector<uint8_t> &p_array) {
+	return _load_from_buffer(p_array, _webp_mem_loader_func);
+}
+
+Error Image::_load_from_buffer(const PoolVector<uint8_t> &p_array, ImageMemLoadFunc p_loader) {
 	int buffer_size = p_array.size();
 
 	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!_jpg_mem_loader_func, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_loader, ERR_INVALID_PARAMETER);
 
 	PoolVector<uint8_t>::Read r = p_array.read();
 
-	Ref<Image> image = _jpg_mem_loader_func(r.ptr(), buffer_size);
+	Ref<Image> image = p_loader(r.ptr(), buffer_size);
 	ERR_FAIL_COND_V(!image.is_valid(), ERR_PARSE_ERROR);
 
 	copy_internals_from(image);
