@@ -4394,7 +4394,7 @@ PropertyEditor::PropertyEditor() {
 	use_filter = false;
 	subsection_selectable = false;
 	property_selectable = false;
-	show_type_icons = EDITOR_DEF("interface/editor/show_type_icons", false);
+	show_type_icons = false; // TODO: need to reimplement it to work with the new inspector
 }
 
 PropertyEditor::~PropertyEditor() {
