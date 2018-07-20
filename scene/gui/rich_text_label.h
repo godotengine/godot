@@ -293,6 +293,8 @@ private:
 
 	void _update_all_lines();
 
+	int fixed_width;
+
 protected:
 	void _notification(int p_what);
 
@@ -367,6 +369,9 @@ public:
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
+
+	void set_fixed_size_to_width(int p_width);
+	virtual Size2 get_minimum_size() const;
 
 	RichTextLabel();
 	~RichTextLabel();
