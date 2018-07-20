@@ -878,6 +878,66 @@ void VisualShader::_update_shader() const {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
+	// Simplex3D noise generator taken from https://github.com/curly-brace/Godot-3.0-Noise-Shaders (MIT license)
+
+	global_code += "vec3 mod289_3(vec3 x) {\n";
+	global_code += "\treturn x - floor(x * (1.0 / 289.0)) * 289.0;\n";
+	global_code += "}\n\n";
+	global_code += "\tvec4 mod289_4(vec4 x) {\n";
+	global_code += "\treturn x - floor(x * (1.0 / 289.0)) * 289.0;\n";
+	global_code += "}\n\n";
+	global_code += "vec4 permute(vec4 x) {\n";
+	global_code += "\treturn mod289_4(((x * 34.0) + 1.0) * x);";
+	global_code += "}\n\n";
+	global_code += "vec4 taylorInvSqrt(vec4 r) {\n";
+	global_code += "\treturn 2.79284291400159 - 0.85373472095314 * r;\n";
+	global_code += "}\n\n";
+	global_code += "float snoise(vec3 v) {\n";
+	global_code += "\tvec2 C = vec2(1.0/6.0, 1.0/3.0);\n\n";
+	global_code += "\tvec4 D = vec4(0.0, 0.5, 1.0, 2.0);\n";
+	global_code += "\tvec3 i  = floor(v + dot(v, vec3(C.y)));\n";
+	global_code += "\tvec3 x0 = v - i + dot(i, vec3(C.x));\n";
+	global_code += "\tvec3 g = step(x0.yzx, x0.xyz);\n";
+	global_code += "\tvec3 l = 1.0 - g;\n";
+	global_code += "\tvec3 i1 = min( g.xyz, l.zxy);\n";
+	global_code += "\tvec3 i2 = max( g.xyz, l.zxy);\n";
+	global_code += "\tvec3 x1 = x0 - i1 + vec3(C.x);\n";
+	global_code += "\tvec3 x2 = x0 - i2 + vec3(C.y);\n";
+	global_code += "\tvec3 x3 = x0 - D.yyy;\n";
+	global_code += "\ti = mod289_3(i);\n";
+	global_code += "\tvec4 p = permute( permute( permute(\n";
+	global_code += "\ti.z + vec4(0.0, i1.z, i2.z, 1.0))\n";
+	global_code += "\t+i.y + vec4(0.0, i1.y, i2.y, 1.0))\n";
+	global_code += "\t+i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n";
+	global_code += "\tfloat n_ = 0.142857142857;\n";
+	global_code += "\tvec3  ns = n_ * D.wyz - D.xzx;\n";
+	global_code += "\tvec4 j = p - 49.0 * floor(p * ns.z * ns.z);\n";
+	global_code += "\tvec4 x_ = floor(j * ns.z);\n";
+	global_code += "\tvec4 y_ = floor(j - 7.0 * x_);\n";
+	global_code += "\tvec4 x = x_ *ns.x + vec4(ns.y);\n";
+	global_code += "\tvec4 y = y_ *ns.x + vec4(ns.y);\n";
+	global_code += "\tvec4 h = 1.0 - abs(x) - abs(y);\n";
+	global_code += "\tvec4 b0 = vec4(x.xy, y.xy);\n";
+	global_code += "\tvec4 b1 = vec4(x.zw, y.zw );\n";
+	global_code += "\tvec4 s0 = floor(b0)*2.0 + 1.0;\n";
+	global_code += "\tvec4 s1 = floor(b1)*2.0 + 1.0;\n";
+	global_code += "\tvec4 sh = -step(h, vec4(0.0));\n";
+	global_code += "\tvec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;\n";
+	global_code += "\tvec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;\n";
+	global_code += "\tvec3 p0 = vec3(a0.xy,h.x);\n";
+	global_code += "\tvec3 p1 = vec3(a0.zw,h.y);\n";
+	global_code += "\tvec3 p2 = vec3(a1.xy,h.z);\n";
+	global_code += "\tvec3 p3 = vec3(a1.zw,h.w);\n";
+	global_code += "\tvec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n";
+	global_code += "\tp0 *= norm.x;\n";
+	global_code += "\tp1 *= norm.y;\n";
+	global_code += "\tp2 *= norm.z;\n";
+	global_code += "\tp3 *= norm.w;\n";
+	global_code += "\tvec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), vec4(0.0));\n";
+	global_code += "\tm = m * m;\n";
+	global_code += "\treturn 22.0 * dot( m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));\n";
+	global_code += "}\n\n";
+
 	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light" };
 
 	for (int i = 0; i < TYPE_MAX; i++) {

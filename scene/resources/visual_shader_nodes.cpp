@@ -1894,3 +1894,99 @@ String VisualShaderNodeCubeMapUniform::generate_code(Shader::Mode p_mode, Visual
 
 VisualShaderNodeCubeMapUniform::VisualShaderNodeCubeMapUniform() {
 }
+
+// Simple 3D Noise
+
+String VisualShaderNodeNoise::get_caption() const {
+	return "Noise";
+}
+
+int VisualShaderNodeNoise::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeNoise::PortType VisualShaderNodeNoise::get_input_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeNoise::get_input_port_name(int p_port) const {
+	return "seed";
+}
+
+int VisualShaderNodeNoise::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeNoise::PortType VisualShaderNodeNoise::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeNoise::get_output_port_name(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeNoise::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+	return "\t" + p_output_vars[0] + " = snoise( " + p_input_vars[0] + " );\n";
+}
+
+VisualShaderNodeNoise::VisualShaderNodeNoise() {
+	set_input_port_default_value(0, Vector3());
+}
+
+// Cloud noise
+
+String VisualShaderNodeCloudNoise::get_caption() const {
+	return "CloudNoise";
+}
+
+int VisualShaderNodeCloudNoise::get_input_port_count() const {
+	return 2;
+}
+
+VisualShaderNodeCloudNoise::PortType VisualShaderNodeCloudNoise::get_input_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_VECTOR;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeCloudNoise::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "seed";
+		case 1:
+			return "octaves";
+	}
+	return "";
+}
+
+int VisualShaderNodeCloudNoise::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeCloudNoise::PortType VisualShaderNodeCloudNoise::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeCloudNoise::get_output_port_name(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeCloudNoise::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+	String s;
+	s += "vec3 q = " + p_input_vars[0] + ";\n";
+	s += "float f = 0.0;\n";
+	s += "float r = 1.0;\n";
+	s += "for(int i = int(" + p_input_vars[1] + "); i >= 0; i--) {\n";
+	s += "f += 0.03125 * pow(2.0, float(i)) * snoise(q * pow(2.0, r));\n";
+	s += "r += 1.0;\n";
+	s += "}\n";
+	s += "\t" + p_output_vars[0] + " = f;\n";
+	return s;
+}
+
+VisualShaderNodeCloudNoise::VisualShaderNodeCloudNoise() {
+	set_input_port_default_value(0, Vector3());
+	set_input_port_default_value(1, 4);
+}

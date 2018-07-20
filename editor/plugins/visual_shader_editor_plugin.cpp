@@ -773,6 +773,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("VectorFunc", "Functions", "VisualShaderNodeVectorFunc"));
 	add_options.push_back(AddOption("DotProduct", "Functions", "VisualShaderNodeDotProduct"));
 	add_options.push_back(AddOption("VectorLen", "Functions", "VisualShaderNodeVectorLen"));
+	add_options.push_back(AddOption("Noise", "Functions", "VisualShaderNodeNoise"));
+	add_options.push_back(AddOption("CloudNoise", "Functions", "VisualShaderNodeCloudNoise"));
 	add_options.push_back(AddOption("ScalarInterp", "Interpolation", "VisualShaderNodeScalarInterp"));
 	add_options.push_back(AddOption("VectorInterp", "Interpolation", "VisualShaderNodeVectorInterp"));
 	add_options.push_back(AddOption("VectorCompose", "Compose", "VisualShaderNodeVectorCompose"));
