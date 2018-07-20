@@ -667,13 +667,15 @@ void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_argum
 bool OS::is_restart_on_exit_set() const {
 	return restart_on_exit;
 }
-List<String> OS::get_restart_on_exit_argumens() const {
+
+List<String> OS::get_restart_on_exit_arguments() const {
 	return restart_commandline;
 }
 
 OS::OS() {
 	void *volatile stack_bottom;
 
+	restart_on_exit = false;
 	last_error = NULL;
 	singleton = this;
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.

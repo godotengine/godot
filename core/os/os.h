@@ -502,7 +502,7 @@ public:
 
 	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
 	bool is_restart_on_exit_set() const;
-	List<String> get_restart_on_exit_argumens() const;
+	List<String> get_restart_on_exit_arguments() const;
 
 	OS();
 	virtual ~OS();

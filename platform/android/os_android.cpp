@@ -123,6 +123,7 @@ void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 	ERR_FAIL_COND(!p_gl_extensions);
 	gl_extensions = p_gl_extensions;
 }
+
 int OS_Android::get_current_video_driver() const {
 	return video_driver_index;
 }
