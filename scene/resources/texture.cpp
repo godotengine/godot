@@ -1201,10 +1201,11 @@ uint32_t CubeMap::get_flags() const {
 	return flags;
 }
 
-void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
+void CubeMap::set_side(Side p_side, const Ref<Texture> &p_texture) {
 
-	ERR_FAIL_COND(p_image->empty());
 	ERR_FAIL_INDEX(p_side, 6);
+
+	Ref<Image> p_image = p_texture->get_data();
 	if (!_is_valid()) {
 		format = p_image->get_format();
 		w = p_image->get_width();
@@ -1213,14 +1214,16 @@ void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 	}
 
 	VS::get_singleton()->texture_set_data(cubemap, p_image, VS::CubeMapSide(p_side));
+
+	textures[p_side] = p_texture;
 	valid[p_side] = true;
 }
 
-Ref<Image> CubeMap::get_side(Side p_side) const {
+Ref<Texture> CubeMap::get_side(Side p_side) const {
 
 	if (!valid[p_side])
-		return Ref<Image>();
-	return VS::get_singleton()->texture_get_data(cubemap, VS::CubeMapSide(p_side));
+		return Ref<Texture>();
+	return textures[p_side];
 }
 
 Image::Format CubeMap::get_format() const {
@@ -1327,12 +1330,12 @@ void CubeMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		img_hint = PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS;
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/left", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/right", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/bottom", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/top", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/front", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/back", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/left", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/right", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/bottom", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/top", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/front", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "side/back", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
 }
 
 void CubeMap::_bind_methods() {
@@ -1341,7 +1344,7 @@ void CubeMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &CubeMap::get_height);
 	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &CubeMap::set_flags);
 	ClassDB::bind_method(D_METHOD("get_flags"), &CubeMap::get_flags);
-	ClassDB::bind_method(D_METHOD("set_side", "side", "image"), &CubeMap::set_side);
+	ClassDB::bind_method(D_METHOD("set_side", "side", "texture"), &CubeMap::set_side);
 	ClassDB::bind_method(D_METHOD("get_side", "side"), &CubeMap::get_side);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &CubeMap::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &CubeMap::get_storage);
@@ -1373,8 +1376,10 @@ CubeMap::CubeMap() {
 
 	w = h = 0;
 	flags = FLAGS_DEFAULT;
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++) {
 		valid[i] = false;
+		textures.push_back(Ref<Texture>());
+	}
 	cubemap = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
