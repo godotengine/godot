@@ -1587,9 +1587,9 @@ void EditorInspector::update_tree() {
 					ep->connect("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
 					ep->connect("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
 					if (doc_hint != String()) {
-						ep->set_tooltip(TTR("Property: ") + property_prefix + p.name + "\n\n" + doc_hint);
+						ep->set_tooltip(TTR("Property:") + " " + property_prefix + p.name + "\n\n" + doc_hint);
 					} else {
-						ep->set_tooltip(TTR("Property: ") + property_prefix + p.name);
+						ep->set_tooltip(TTR("Property:") + " " + property_prefix + p.name);
 					}
 					ep->set_draw_red(draw_red);
 					ep->set_use_folding(use_folding);
@@ -2107,6 +2107,7 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 		scroll_cache[object->get_instance_id()] = p_offset;
 	}
 }
+
 void EditorInspector::set_property_prefix(const String &p_prefix) {
 	property_prefix = p_prefix;
 }
