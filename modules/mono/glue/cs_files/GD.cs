@@ -7,8 +7,6 @@ using real_t = System.Single;
 
 // TODO: Add comments describing what this class does. It is not obvious. 
 
-// TODO: Add comments describing what this class does. It is not obvious. 
-
 namespace Godot
 {
     public static partial class GD
