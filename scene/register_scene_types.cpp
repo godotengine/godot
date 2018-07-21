@@ -312,21 +312,19 @@ void register_scene_types() {
 	ClassDB::register_class<CenterContainer>();
 	ClassDB::register_class<ScrollContainer>();
 	ClassDB::register_class<PanelContainer>();
-	ClassDB::register_virtual_class<SplitContainer>();
-	ClassDB::register_class<HSplitContainer>();
-	ClassDB::register_class<VSplitContainer>();
-	ClassDB::register_class<GraphNode>();
-	ClassDB::register_class<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<TextureProgress>();
 	ClassDB::register_class<ItemList>();
 
+	ClassDB::register_class<LineEdit>();
+	ClassDB::register_class<VideoPlayer>();
+
 #ifndef ADVANCED_GUI_DISABLED
 
 	ClassDB::register_class<FileDialog>();
-	ClassDB::register_class<LineEdit>();
+
 	ClassDB::register_class<PopupMenu>();
 	ClassDB::register_class<Tree>();
 
@@ -343,9 +341,13 @@ void register_scene_types() {
 	ClassDB::register_class<WindowDialog>();
 	ClassDB::register_class<AcceptDialog>();
 	ClassDB::register_class<ConfirmationDialog>();
-	ClassDB::register_class<VideoPlayer>();
 	ClassDB::register_class<MarginContainer>();
 	ClassDB::register_class<ViewportContainer>();
+	ClassDB::register_virtual_class<SplitContainer>();
+	ClassDB::register_class<HSplitContainer>();
+	ClassDB::register_class<VSplitContainer>();
+	ClassDB::register_class<GraphNode>();
+	ClassDB::register_class<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

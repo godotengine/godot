@@ -1543,10 +1543,10 @@ void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_debug_usage"), &VisualServer::_texture_debug_usage_bind);
 	ClassDB::bind_method(D_METHOD("textures_keep_original", "enable"), &VisualServer::textures_keep_original);
-
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
 	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "cube_map", "radiance_size"), &VisualServer::sky_set_texture);
-
+#endif
 	ClassDB::bind_method(D_METHOD("shader_create"), &VisualServer::shader_create);
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &VisualServer::shader_set_code);
 	ClassDB::bind_method(D_METHOD("shader_get_code", "shader"), &VisualServer::shader_get_code);
@@ -1603,7 +1603,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_set_visible_instances", "multimesh", "visible"), &VisualServer::multimesh_set_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &VisualServer::multimesh_get_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_set_as_bulk_array", "multimesh", "array"), &VisualServer::multimesh_set_as_bulk_array);
-
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("immediate_create"), &VisualServer::immediate_create);
 	ClassDB::bind_method(D_METHOD("immediate_begin", "immediate", "primitive", "texture"), &VisualServer::immediate_begin, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("immediate_vertex", "immediate", "vertex"), &VisualServer::immediate_vertex);
@@ -1617,6 +1617,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("immediate_clear", "immediate"), &VisualServer::immediate_clear);
 	ClassDB::bind_method(D_METHOD("immediate_set_material", "immediate", "material"), &VisualServer::immediate_set_material);
 	ClassDB::bind_method(D_METHOD("immediate_get_material", "immediate"), &VisualServer::immediate_get_material);
+#endif
 
 	ClassDB::bind_method(D_METHOD("skeleton_create"), &VisualServer::skeleton_create);
 	ClassDB::bind_method(D_METHOD("skeleton_allocate", "skeleton", "bones", "is_2d_skeleton"), &VisualServer::skeleton_allocate, DEFVAL(false));
@@ -1626,6 +1627,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("skeleton_bone_set_transform_2d", "skeleton", "bone", "transform"), &VisualServer::skeleton_bone_set_transform_2d);
 	ClassDB::bind_method(D_METHOD("skeleton_bone_get_transform_2d", "skeleton", "bone"), &VisualServer::skeleton_bone_get_transform_2d);
 
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("directional_light_create"), &VisualServer::directional_light_create);
 	ClassDB::bind_method(D_METHOD("omni_light_create"), &VisualServer::omni_light_create);
 	ClassDB::bind_method(D_METHOD("spot_light_create"), &VisualServer::spot_light_create);
@@ -1695,7 +1697,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_octree", "capture"), &VisualServer::lightmap_capture_get_octree);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_energy", "capture", "energy"), &VisualServer::lightmap_capture_set_energy);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_energy", "capture"), &VisualServer::lightmap_capture_get_energy);
-
+#endif
 	ClassDB::bind_method(D_METHOD("particles_create"), &VisualServer::particles_create);
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &VisualServer::particles_set_emitting);
 	ClassDB::bind_method(D_METHOD("particles_get_emitting", "particles"), &VisualServer::particles_get_emitting);
@@ -1782,6 +1784,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scenario_set_reflection_atlas_size", "scenario", "p_size", "subdiv"), &VisualServer::scenario_set_reflection_atlas_size);
 	ClassDB::bind_method(D_METHOD("scenario_set_fallback_environment", "scenario", "environment"), &VisualServer::scenario_set_fallback_environment);
 
+#ifndef _3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("instance_create2", "base", "scenario"), &VisualServer::instance_create2);
 	ClassDB::bind_method(D_METHOD("instance_create"), &VisualServer::instance_create);
 	ClassDB::bind_method(D_METHOD("instance_set_base", "instance", "base"), &VisualServer::instance_set_base);
@@ -1806,7 +1810,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instances_cull_aabb", "aabb", "scenario"), &VisualServer::_instances_cull_aabb_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &VisualServer::_instances_cull_ray_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_convex", "convex", "scenario"), &VisualServer::_instances_cull_convex_bind, DEFVAL(RID()));
-
+#endif
 	ClassDB::bind_method(D_METHOD("canvas_create"), &VisualServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &VisualServer::canvas_set_item_mirroring);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &VisualServer::canvas_set_modulate);
@@ -1889,12 +1893,13 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);
 	ClassDB::bind_method(D_METHOD("finish"), &VisualServer::finish);
 	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &VisualServer::get_render_info);
-
-	ClassDB::bind_method(D_METHOD("get_test_cube"), &VisualServer::get_test_cube);
-	ClassDB::bind_method(D_METHOD("get_test_texture"), &VisualServer::get_test_texture);
-	ClassDB::bind_method(D_METHOD("get_white_texture"), &VisualServer::get_white_texture);
+#ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("make_sphere_mesh", "latitudes", "longitudes", "radius"), &VisualServer::make_sphere_mesh);
+	ClassDB::bind_method(D_METHOD("get_test_cube"), &VisualServer::get_test_cube);
+#endif
+	ClassDB::bind_method(D_METHOD("get_test_texture"), &VisualServer::get_test_texture);
+	ClassDB::bind_method(D_METHOD("get_white_texture"), &VisualServer::get_white_texture);
 
 	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale"), &VisualServer::set_boot_image);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &VisualServer::set_default_clear_color);

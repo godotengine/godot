@@ -166,12 +166,18 @@ def configure_msvc(env, manual_msvc_config):
     # Build type
 
     if (env["target"] == "release"):
-        env.Append(CCFLAGS=['/O2'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Append(CCFLAGS=['/O2'])
+        else: # optimize for size
+            env.Append(CCFLAGS=['/O1'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
         env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
     elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['/O2'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Append(CCFLAGS=['/O2'])
+        else: # optimize for size
+            env.Append(CCFLAGS=['/O1'])
         env.AppendUnique(CPPDEFINES = ['DEBUG_ENABLED'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 
@@ -247,10 +253,14 @@ def configure_mingw(env):
     if (env["target"] == "release"):
         env.Append(CCFLAGS=['-msse2'])
 
-        if (env["bits"] == "64"):
-            env.Append(CCFLAGS=['-O3'])
-        else:
-            env.Append(CCFLAGS=['-O2'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            if (env["bits"] == "64"):
+                env.Append(CCFLAGS=['-O3'])
+            else:
+                env.Append(CCFLAGS=['-O2'])
+        else: #optimize for size
+            env.Prepend(CCFLAGS=['-Os'])
+   
 
         env.Append(LINKFLAGS=['-Wl,--subsystem,windows'])
 
@@ -265,7 +275,11 @@ def configure_mingw(env):
            env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
            env.Prepend(CCFLAGS=['-g2'])
-
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+           env.Append(CCFLAGS=['-O2'])
+        else: #optimize for size
+           env.Prepend(CCFLAGS=['-Os'])
+   
     elif (env["target"] == "debug"):
         env.Append(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
