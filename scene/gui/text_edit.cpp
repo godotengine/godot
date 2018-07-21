@@ -290,6 +290,7 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 
 	Line line;
 	line.marked = false;
+	line.safe = false;
 	line.breakpoint = false;
 	line.hidden = false;
 	line.width_cache = -1;
@@ -972,7 +973,7 @@ void TextEdit::_notification(int p_what) {
 								fc = line_num_padding + fc;
 							}
 
-							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, cache.line_number_color);
+							cache.font->draw(ci, Point2(cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width + ofs_x, yofs + cache.font->get_ascent()), fc, text.is_safe(line) ? cache.safe_line_number_color : cache.line_number_color);
 						}
 					}
 
@@ -4314,6 +4315,7 @@ void TextEdit::_update_caches() {
 	cache.caret_color = get_color("caret_color");
 	cache.caret_background_color = get_color("caret_background_color");
 	cache.line_number_color = get_color("line_number_color");
+	cache.safe_line_number_color = get_color("safe_line_number_color");
 	cache.font_color = get_color("font_color");
 	cache.font_selected_color = get_color("font_selected_color");
 	cache.keyword_color = get_color("keyword_color");
@@ -4883,6 +4885,17 @@ void TextEdit::set_line_as_marked(int p_line, bool p_marked) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	text.set_marked(p_line, p_marked);
 	update();
+}
+
+void TextEdit::set_line_as_safe(int p_line, bool p_safe) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	text.set_safe(p_line, p_safe);
+	update();
+}
+
+bool TextEdit::is_line_set_as_safe(int p_line) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
+	return text.is_safe(p_line);
 }
 
 bool TextEdit::is_line_set_as_breakpoint(int p_line) const {

@@ -116,6 +116,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color completion_font_color = EDITOR_GET("text_editor/highlighting/completion_font_color");
 	Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
 	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
+	Color safe_line_number_color = EDITOR_GET("text_editor/highlighting/safe_line_number_color");
 	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
 	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
 	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
@@ -147,6 +148,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("completion_font_color", completion_font_color);
 	text_edit->add_color_override("font_color", text_color);
 	text_edit->add_color_override("line_number_color", line_number_color);
+	text_edit->add_color_override("safe_line_number_color", safe_line_number_color);
 	text_edit->add_color_override("caret_color", caret_color);
 	text_edit->add_color_override("caret_background_color", caret_background_color);
 	text_edit->add_color_override("font_selected_color", text_selected_color);
@@ -589,6 +591,7 @@ void ScriptTextEditor::set_edited_script(const Ref<Script> &p_script) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+	call_deferred("_validate_script");
 }
 
 void ScriptTextEditor::_validate_script() {
@@ -599,8 +602,9 @@ void ScriptTextEditor::_validate_script() {
 
 	String text = te->get_text();
 	List<String> fnc;
+	Set<int> safe_lines;
 
-	if (!script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc)) {
+	if (!script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc, &safe_lines)) {
 		String error_text = "error(" + itos(line) + "," + itos(col) + "): " + errortxt;
 		code_editor->set_error(error_text);
 	} else {
@@ -621,8 +625,23 @@ void ScriptTextEditor::_validate_script() {
 	}
 
 	line--;
+	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
+	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
 		te->set_line_as_marked(i, line == i);
+		if (highlight_safe) {
+			if (safe_lines.has(i + 1)) {
+				te->set_line_as_safe(i, true);
+				last_is_safe = true;
+			} else if (last_is_safe && (te->is_line_comment(i) || te->get_line(i).strip_edges().empty())) {
+				te->set_line_as_safe(i, true);
+			} else {
+				te->set_line_as_safe(i, false);
+				last_is_safe = false;
+			}
+		} else {
+			te->set_line_as_safe(i, false);
+		}
 	}
 
 	emit_signal("name_changed");

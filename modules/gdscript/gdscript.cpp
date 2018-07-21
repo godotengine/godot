@@ -220,16 +220,14 @@ void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 void GDScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 	for (const Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
+		GDScriptFunction *func = E->get();
 		MethodInfo mi;
 		mi.name = E->key();
-		for (int i = 0; i < E->get()->get_argument_count(); i++) {
-			PropertyInfo arg;
-			arg.type = Variant::NIL; //variant
-			arg.name = E->get()->get_argument_name(i);
-			mi.arguments.push_back(arg);
+		for (int i = 0; i < func->get_argument_count(); i++) {
+			mi.arguments.push_back(func->get_argument_type(i));
 		}
 
-		mi.return_val.name = "Variant";
+		mi.return_val = func->get_return_type();
 		p_list->push_back(mi);
 	}
 }
@@ -277,16 +275,14 @@ MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 	if (!E)
 		return MethodInfo();
 
+	GDScriptFunction *func = E->get();
 	MethodInfo mi;
 	mi.name = E->key();
-	for (int i = 0; i < E->get()->get_argument_count(); i++) {
-		PropertyInfo arg;
-		arg.type = Variant::NIL; //variant
-		arg.name = E->get()->get_argument_name(i);
-		mi.arguments.push_back(arg);
+	for (int i = 0; i < func->get_argument_count(); i++) {
+		mi.arguments.push_back(func->get_argument_type(i));
 	}
 
-	mi.return_val.name = "Variant";
+	mi.return_val = func->get_return_type();
 	return mi;
 }
 
@@ -941,8 +937,12 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				if (err.error == Variant::CallError::CALL_OK) {
 					return true; //function exists, call was successful
 				}
-			} else
+			} else {
+				if (!E->get().data_type.is_type(p_value)) {
+					return false; // Type mismatch
+				}
 				members[E->get().index] = p_value;
+			}
 			return true;
 		}
 	}
@@ -1735,7 +1735,9 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"NAN",
 		"self",
 		"true",
+		"void",
 		// functions
+		"as",
 		"assert",
 		"breakpoint",
 		"class",
@@ -1824,8 +1826,40 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	if (parser.get_parse_tree() && parser.get_parse_tree()->type == GDScriptParser::Node::TYPE_CLASS) {
 
 		const GDScriptParser::ClassNode *c = static_cast<const GDScriptParser::ClassNode *>(parser.get_parse_tree());
-		if (r_base_type && c->extends_used && c->extends_class.size() == 1) {
-			*r_base_type = c->extends_class[0]; //todo, should work much better
+		if (r_base_type) {
+			GDScriptParser::DataType base_type;
+			if (c->base_type.has_type) {
+				base_type = c->base_type;
+				while (base_type.has_type && base_type.kind != GDScriptParser::DataType::NATIVE) {
+					switch (base_type.kind) {
+						case GDScriptParser::DataType::CLASS: {
+							base_type = base_type.class_type->base_type;
+						} break;
+						case GDScriptParser::DataType::GDSCRIPT: {
+							Ref<GDScript> gds = base_type.script_type;
+							if (gds.is_valid()) {
+								base_type.kind = GDScriptParser::DataType::NATIVE;
+								base_type.native_type = gds->get_instance_base_type();
+							} else {
+								base_type = GDScriptParser::DataType();
+							}
+						} break;
+						default: {
+							base_type = GDScriptParser::DataType();
+						} break;
+					}
+				}
+			}
+			if (base_type.has_type) {
+				*r_base_type = base_type.native_type;
+			} else {
+				// Fallback
+				if (c->extends_used && c->extends_class.size() == 1) {
+					*r_base_type = c->extends_class[0];
+				} else if (!c->extends_used) {
+					*r_base_type = "Reference";
+				}
+			}
 		}
 		return c->name;
 	}
