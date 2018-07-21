@@ -4086,6 +4086,9 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="3" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_CLAY" value="4" enum="ViewportDebugDraw">
+			Replaces all materials with a default material.
+		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 		</constant>
 		<constant name="SCENARIO_DEBUG_WIREFRAME" value="1" enum="ScenarioDebugMode">

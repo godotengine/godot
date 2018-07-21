@@ -2218,6 +2218,9 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		m_src = default_overdraw_material;
 	}
+	else if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_CLAY) {
+		m_src = default_material;
+	}
 
 	/*
 #ifdef DEBUG_ENABLED
@@ -2360,7 +2363,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	//e->light_type=0xFF; // no lights!
 
-	if (p_depth_pass || p_material->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (p_depth_pass || p_material->shader->spatial.unshaded || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME) {
 		e->sort_key |= SORT_KEY_UNSHADED_FLAG;
 	}
 
@@ -4239,7 +4242,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	RasterizerStorageGLES3::Sky *sky = NULL;
 	GLuint env_radiance_tex = 0;
 
-	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME) {
 		clear_color = Color(0, 0, 0, 0);
 		storage->frame.clear_request = false;
 	} else if (!probe && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
@@ -4358,7 +4361,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(1, &gldb);
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW))) {
+	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_WIREFRAME))) {
 
 		/*
 		if (use_mrt) {

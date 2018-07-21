@@ -656,6 +656,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_UNSHADED,
 		VIEWPORT_DEBUG_DRAW_OVERDRAW,
 		VIEWPORT_DEBUG_DRAW_WIREFRAME,
+		VIEWPORT_DEBUG_DRAW_CLAY,
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -744,7 +745,7 @@ public:
 		SCENARIO_DEBUG_WIREFRAME,
 		SCENARIO_DEBUG_OVERDRAW,
 		SCENARIO_DEBUG_SHADELESS,
-
+		SCENARIO_DEBUG_CLAY,
 	};
 
 	virtual void scenario_set_debug(RID p_scenario, ScenarioDebugMode p_debug_mode) = 0;
