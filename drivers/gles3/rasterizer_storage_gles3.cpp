@@ -5955,14 +5955,17 @@ void RasterizerStorageGLES3::particles_restart(RID p_particles) {
 	particles->restart_request = true;
 }
 
-void RasterizerStorageGLES3::particles_request_process(RID p_particles) {
+bool RasterizerStorageGLES3::particles_request_process(RID p_particles) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
-	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND_V(!particles, false);
 
-	if (!particles->particle_element.in_list()) {
+	if (!particles->particle_element.in_list() && (particles->emitting || !particles->inactive)) {
 		particle_update_list.add(&particles->particle_element);
+		return true;
 	}
+
+	return false;
 }
 
 AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {

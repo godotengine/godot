@@ -3554,7 +3554,8 @@ void RasterizerStorageGLES2::particles_set_draw_pass_mesh(RID p_particles, int p
 void RasterizerStorageGLES2::particles_restart(RID p_particles) {
 }
 
-void RasterizerStorageGLES2::particles_request_process(RID p_particles) {
+bool RasterizerStorageGLES2::particles_request_process(RID p_particles) {
+	return false;
 }
 
 AABB RasterizerStorageGLES2::particles_get_current_aabb(RID p_particles) {

@@ -679,7 +679,7 @@ public:
 	void particles_set_draw_passes(RID p_particles, int p_count) {}
 	void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) {}
 
-	void particles_request_process(RID p_particles) {}
+	bool particles_request_process(RID p_particles) {}
 	AABB particles_get_current_aabb(RID p_particles) { return AABB(); }
 	AABB particles_get_aabb(RID p_particles) const { return AABB(); }
 

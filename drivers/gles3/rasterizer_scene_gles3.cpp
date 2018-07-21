@@ -1821,7 +1821,6 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					storage->info.render.vertices_count += s->array_len * amount;
 				}
 			}
-
 		} break;
 	}
 }

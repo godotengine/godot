@@ -1885,9 +1885,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			if (ins->base_type == VS::INSTANCE_PARTICLES) {
 				//particles visible? process them
-				VSG::storage->particles_request_process(ins->base);
-				//particles visible? request redraw
-				VisualServerRaster::redraw_request();
+				if (VSG::storage->particles_request_process(ins->base)) {
+					//particles visible? request redraw
+					VisualServerRaster::redraw_request();
+				}
 			}
 
 			if (geom->lighting_dirty) {

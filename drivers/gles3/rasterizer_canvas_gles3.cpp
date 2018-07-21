@@ -840,14 +840,13 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				if (!particles)
 					break;
 
-				if (particles->inactive && !particles->emitting)
+				if (!(storage->particles_request_process(particles_cmd->particles)))
 					break;
 
 				glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1); //not used, so keep white
 
 				VisualServerRaster::redraw_request();
 
-				storage->particles_request_process(particles_cmd->particles);
 				//enable instancing
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCE_CUSTOM, true);
