@@ -885,8 +885,8 @@ String String::to_upper() const {
 
 	for (int i = 0; i < upper.size(); i++) {
 
-		const char s = upper[i];
-		const char t = _find_upper(s);
+		const CharType s = upper[i];
+		const CharType t = _find_upper(s);
 		if (s != t) // avoid copy on write
 			upper[i] = t;
 	}
@@ -900,8 +900,8 @@ String String::to_lower() const {
 
 	for (int i = 0; i < lower.size(); i++) {
 
-		const char s = lower[i];
-		const char t = _find_lower(s);
+		const CharType s = lower[i];
+		const CharType t = _find_lower(s);
 		if (s != t) // avoid copy on write
 			lower[i] = t;
 	}
