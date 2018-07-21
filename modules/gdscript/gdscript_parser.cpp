@@ -113,6 +113,58 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 	}
 }
 
+bool GDScriptParser::_parse_argument_names(Vector<StringName> &p_args) {
+
+	while (true) {
+		if (!tokenizer->is_token_literal(0, true)) {
+			_set_error("Expected identifier for argument.");
+			return false;
+		}
+		StringName argname = tokenizer->get_token_identifier();
+		p_args.push_back(argname);
+		tokenizer->advance();
+		if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+			break;
+		}
+		tokenizer->advance();
+	}
+
+	return true;
+}
+
+bool GDScriptParser::_parse_captures(Vector<StringName> &p_args, Vector<bool> &p_weak) {
+
+	if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_OPEN) {
+		return true;
+	}
+	tokenizer->advance();
+	while (true) {
+		if (!tokenizer->is_token_literal(0, true)) {
+			_set_error("Expected identifier for argument.");
+			return false;
+		}
+		if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_FUNC && tokenizer->get_token_literal() == "weakref") {
+			p_weak.push_back(true);
+			tokenizer->advance();
+		} else {
+			p_weak.push_back(false);
+		}
+		StringName argname = tokenizer->get_token_identifier();
+		p_args.push_back(argname);
+		tokenizer->advance();
+		if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+			break;
+		}
+		tokenizer->advance();
+	}
+	if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
+		_set_error("Expected ']'.");
+		return false;
+	}
+	tokenizer->advance();
+	return true;
+}
+
 bool GDScriptParser::_parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete) {
 
 	if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -348,6 +400,138 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			tokenizer->advance();
 			continue; //no point in cursor in the middle of expression
 
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_FUNCTION) {
+
+			tokenizer->advance();
+			const int fnline = tokenizer->get_token_line();
+			const int fncol = tokenizer->get_token_column();
+			Vector<StringName> arguments;
+			if (!_parse_argument_names(arguments)) {
+				return NULL;
+			}
+			Vector<StringName> captures;
+			Vector<bool> is_weak_capture;
+			if (!_parse_captures(captures, is_weak_capture)) {
+				return NULL;
+			}
+			bool as_block = false;
+			if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+				if (tokenizer->get_token(1) == GDScriptTokenizer::TK_NEWLINE) {
+					if (!_enter_indent_block()) {
+						_set_error("Expected block");
+						return NULL;
+					}
+					as_block = true;
+				} else {
+					tokenizer->advance();
+				}
+			} else {
+				_set_error("Expected ',' or ':'");
+				return NULL;
+			}
+			ClassNode *lambda_class = alloc_node<ClassNode>();
+			lambda_class->initializer = alloc_node<BlockNode>();
+			lambda_class->initializer->parent_class = lambda_class;
+			lambda_class->ready = alloc_node<BlockNode>();
+			lambda_class->ready->parent_class = lambda_class;
+			lambda_class->name = String("#Lambda:") + String::num_int64(fnline) + String(":") + String::num_int64(fncol);
+			lambda_class->owner = current_class;
+			current_class->subclasses.push_back(lambda_class);
+			if (captures.size() > 0) {
+				Vector<StringName> use_p;
+				for (int i = 0; i < captures.size(); i++) {
+					use_p.push_back("p_" + captures[i]);
+				}
+				FunctionNode *init_function = alloc_node<FunctionNode>();
+				init_function->name = "_init";
+				init_function->arguments = use_p;
+				init_function->_static = false;
+				init_function->line = fnline;
+				init_function->rpc_mode = rpc_mode;
+				lambda_class->functions.push_back(init_function);
+				BlockNode *init_block = alloc_node<BlockNode>();
+				init_block->parent_class = lambda_class;
+				init_function->body = init_block;
+				for (int i = 0; i < captures.size(); i++) {
+					ClassNode::Member member;
+					member.identifier = captures[i];
+					member.expression = NULL;
+					member._export.name = member.identifier;
+					member.line = fnline;
+					member.rpc_mode = rpc_mode;
+					// if (is_weak_capture[i]) { member.weakref = true; }
+					lambda_class->variables.push_back(member);
+
+					OperatorNode *assign = alloc_node<OperatorNode>();
+					assign->op = OperatorNode::OP_ASSIGN;
+
+					IdentifierNode *id_var = alloc_node<IdentifierNode>();
+					id_var->name = captures[i];
+					assign->arguments.push_back(id_var);
+
+					IdentifierNode *id_arg = alloc_node<IdentifierNode>();
+					id_arg->name = use_p[i];
+					assign->arguments.push_back(id_arg);
+					init_block->statements.push_back(assign);
+				}
+			}
+			FunctionNode *function = alloc_node<FunctionNode>();
+			function->name = "_call";
+			function->arguments = arguments;
+			function->_static = captures.empty() ? true : p_static;
+			function->line = fnline;
+			function->rpc_mode = rpc_mode;
+			lambda_class->functions.push_back(function);
+			ClassNode *previous_class = current_class;
+			FunctionNode *previous_function = current_function;
+			current_class = lambda_class;
+			current_function = function;
+			BlockNode *block = alloc_node<BlockNode>();
+			block->parent_class = lambda_class;
+			function->body = block;
+			BlockNode *previous_block = current_block;
+			current_block = block;
+			if (as_block) {
+				inline_indent = tab_level.back()->get() - 1;
+				_parse_block(block, function->_static);
+				inline_indent = -1;
+			} else {
+				Node *expression = _parse_and_reduce_expression(block, function->_static, false, true);
+				if (!expression) {
+					current_block = previous_block;
+					current_class = previous_class;
+					current_function = previous_function;
+					if (_recover_from_completion()) {
+						break;
+					}
+					return NULL;
+				}
+				ControlFlowNode *cf_return = alloc_node<ControlFlowNode>();
+				cf_return->cf_type = ControlFlowNode::CF_RETURN;
+				cf_return->arguments.push_back(expression);
+				block->statements.push_back(cf_return);
+			}
+			current_block = previous_block;
+			current_function = previous_function;
+			current_class = previous_class;
+			IdentifierNode *id_lambda_class = alloc_node<IdentifierNode>();
+			id_lambda_class->name = lambda_class->name;
+			if (captures.empty()) {
+				expr = id_lambda_class;
+			} else {
+				IdentifierNode *id_new = alloc_node<IdentifierNode>();
+				id_new->name = "new";
+				OperatorNode *op = alloc_node<OperatorNode>();
+				op->op = OperatorNode::OP_CALL;
+				op->arguments.push_back(id_lambda_class);
+				op->arguments.push_back(id_new);
+				for (int i = 0; i < captures.size(); i++) {
+					IdentifierNode *id_var = alloc_node<IdentifierNode>();
+					id_var->name = captures[i];
+					op->arguments.push_back(id_var);
+				}
+				expr = op;
+			}
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT) {
 
 			//constant defined by tokenizer
@@ -2984,7 +3168,13 @@ bool GDScriptParser::_parse_newline() {
 				current_indent = tab_level.back()->get();
 			}
 
+			if (inline_indent != -1 && current_indent == inline_indent) {
+				return false;
+			}
+
 			tokenizer->advance();
+			return false;
+		} else if (inline_indent != -1 && current_indent == inline_indent) {
 			return false;
 		}
 	}
@@ -4548,6 +4738,7 @@ void GDScriptParser::clear() {
 	error_line = 0;
 	error_column = 0;
 	pending_newline = -1;
+	inline_indent = -1;
 	parenthesis = 0;
 	current_export.type = Variant::NIL;
 	error = "";
