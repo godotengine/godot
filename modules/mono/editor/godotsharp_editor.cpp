@@ -278,13 +278,11 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 		about_label->set_autowrap(true);
 		String about_text =
 				String("C# support in Godot Engine is a brand new feature and a work in progress.\n") +
-				"It is at the alpha stage and thus not suitable for use in production.\n\n" +
+				"It is currently in an alpha stage and is not suitable for use in production.\n\n" +
 				"As of Godot 3.0, C# support is not feature-complete and may crash in some situations. " +
-				"Bugs and usability issues will be addressed gradually over 3.0.x and 3.x releases, " +
+				"Bugs and usability issues will be addressed gradually over future 3.0.x and 3.x releases, " +
 				"including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
-				"The main missing feature is the ability to export games using C# assemblies - you will therefore be able to develop and run games in the editor, " +
-				"but not to share them as standalone binaries yet. This feature is of course high on the priority list and should be available as soon as possible.\n\n" +
-				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, Mono version, IDE, etc.:\n\n" +
+				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, Mono version, IDE, etc:\n\n" +
 				"        https://github.com/godotengine/godot/issues\n\n" +
 				"Your critical feedback at this stage will play a great role in shaping the C# support in future releases, so thank you!";
 		about_label->set_text(about_text);
