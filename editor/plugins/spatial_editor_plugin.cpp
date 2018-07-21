@@ -4641,9 +4641,7 @@ void SpatialEditor::_init_grid() {
 			Vector3 p2_dest = p2 * (-axis_n1 + axis_n2);
 
 			Color line_color = secondary_grid_color;
-			if (j == 0) {
-				continue;
-			} else if (j % primary_grid_steps == 0) {
+			if (j % primary_grid_steps == 0) {
 				line_color = primary_grid_color;
 			}
 
