@@ -39,14 +39,21 @@ def configure(env):
 	## Build type
 
     if (env["target"] == "release"):
-        env.Prepend(CCFLAGS=['-O3', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Prepend(CCFLAGS=['-O3', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+        else: #optimize for size
+            env.Prepend(CCFLAGS=['-Os','-ftree-vectorize', '-msse2'])
+
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
             env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "release_debug"):
-        env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+        else: #optimize for size
+            env.Prepend(CCFLAGS=['-Os', '-DDEBUG_ENABLED'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):

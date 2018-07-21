@@ -1381,6 +1381,8 @@ void PhysicsServerSW::init() {
 
 void PhysicsServerSW::step(real_t p_step) {
 
+#ifndef _3D_DISABLED
+
 	if (!active)
 		return;
 
@@ -1401,6 +1403,7 @@ void PhysicsServerSW::step(real_t p_step) {
 		active_objects += E->get()->get_active_objects();
 		collision_pairs += E->get()->get_collision_pairs();
 	}
+#endif
 }
 
 void PhysicsServerSW::sync(){
@@ -1408,6 +1411,8 @@ void PhysicsServerSW::sync(){
 };
 
 void PhysicsServerSW::flush_queries() {
+
+#ifndef _3D_DISABLED
 
 	if (!active)
 		return;
@@ -1455,6 +1460,7 @@ void PhysicsServerSW::flush_queries() {
 
 		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics", values);
 	}
+#endif
 };
 
 void PhysicsServerSW::finish() {

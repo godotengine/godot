@@ -401,6 +401,8 @@ void PhysicsShapeQueryResult::_bind_methods() {
 
 void PhysicsServer::_bind_methods() {
 
+#ifndef _3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("shape_create", "type"), &PhysicsServer::shape_create);
 	ClassDB::bind_method(D_METHOD("shape_set_data", "shape", "data"), &PhysicsServer::shape_set_data);
 
@@ -738,6 +740,8 @@ void PhysicsServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_AXIS_ANGULAR_X);
 	BIND_ENUM_CONSTANT(BODY_AXIS_ANGULAR_Y);
 	BIND_ENUM_CONSTANT(BODY_AXIS_ANGULAR_Z);
+
+#endif
 }
 
 PhysicsServer::PhysicsServer() {
