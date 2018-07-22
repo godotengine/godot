@@ -62,7 +62,7 @@ void TileMap::_notification(int p_what) {
 
 			pending_update = true;
 			_recreate_quadrants();
-			_update_dirty_quadrants();
+			update_dirty_quadrants();
 			RID space = get_world_2d()->get_space();
 			_update_quadrant_transform();
 			_update_quadrant_space(space);
@@ -721,7 +721,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool updat
 		return;
 
 	if (update) {
-		_update_dirty_quadrants();
+		call_deferred("update_dirty_quadrants");
 	}
 }
 
@@ -1026,7 +1026,7 @@ void TileMap::_recreate_quadrants() {
 		Q->get().cells.insert(E->key());
 		_make_quadrant_dirty(Q, false);
 	}
-	_update_dirty_quadrants();
+	update_dirty_quadrants();
 }
 
 void TileMap::_clear_quadrants() {
