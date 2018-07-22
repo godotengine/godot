@@ -1654,12 +1654,18 @@ EditorPropertyTransform::EditorPropertyTransform() {
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
 
-	emit_signal("property_changed", get_edited_property(), p_color);
+	emit_signal("property_changed", get_edited_property(), p_color, true);
+}
+
+void EditorPropertyColor::_popup_closed() {
+
+	emit_signal("property_changed", get_edited_property(), picker->get_pick_color(), false);
 }
 
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
+	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1677,6 +1683,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
+	picker->connect("popup_closed", this, "_popup_closed");
 }
 
 ////////////// NODE PATH //////////////////////
@@ -1684,12 +1691,20 @@ EditorPropertyColor::EditorPropertyColor() {
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	NodePath path = p_path;
-	Node *base_node = Object::cast_to<Node>(get_edited_object());
-	if (base_node == NULL && get_edited_object()->has_method("get_root_path")) {
-		base_node = get_edited_object()->call("get_root_path");
+	Object *edited_object = get_edited_object();
+	if (edited_object->get_class() == "EditorPropertyArrayObject") {
+		edited_object = get_edited_parent_object();
+	}
+
+	Node *base_node = Object::cast_to<Node>(edited_object);
+	if (base_node == NULL && edited_object->has_method("get_root_path")) {
+		base_node = edited_object->call("get_root_path");
 	}
 	if (base_node) { // for AnimationTrackKeyEdit
 		path = base_node->get_path().rel_path_to(p_path);
+		if (edited_object->get_class() == "EditorPropertyArrayObject") {
+			base_hint = path;
+		}
 	}
 	emit_signal("property_changed", get_edited_property(), path);
 	update_property();
@@ -1714,7 +1729,11 @@ void EditorPropertyNodePath::_node_clear() {
 
 void EditorPropertyNodePath::update_property() {
 
-	NodePath p = get_edited_object()->get(get_edited_property());
+	Object *edited_object = get_edited_object();
+	NodePath p = edited_object->get(get_edited_property());
+	if (edited_object->get_class() == "EditorPropertyArrayObject") {
+		edited_object = get_edited_parent_object();
+	}
 
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
@@ -1731,7 +1750,7 @@ void EditorPropertyNodePath::update_property() {
 			base_node = get_tree()->get_root()->get_node(base_hint);
 		}
 	} else {
-		base_node = Object::cast_to<Node>(get_edited_object());
+		base_node = Object::cast_to<Node>(edited_object);
 	}
 
 	if (!base_node || !base_node->has_node(p)) {

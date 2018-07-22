@@ -286,6 +286,14 @@ StringName EditorProperty::get_edited_property() {
 	return property;
 }
 
+Object *EditorProperty::get_edited_parent_object() {
+	return parent_object;
+}
+
+StringName EditorProperty::get_edited_parent_property() {
+	return parent_property;
+}
+
 void EditorProperty::update_property() {
 	if (get_script_instance())
 		get_script_instance()->call("update_property");
@@ -717,6 +725,11 @@ float EditorProperty::get_name_split_ratio() const {
 void EditorProperty::set_object_and_property(Object *p_object, const StringName &p_property) {
 	object = p_object;
 	property = p_property;
+}
+
+void EditorProperty::set_parent_object_and_property(Object *p_object, const StringName &p_property) {
+	parent_object = p_object;
+	parent_property = p_property;
 }
 
 Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
