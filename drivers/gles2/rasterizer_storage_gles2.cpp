@@ -2005,6 +2005,8 @@ void RasterizerStorageGLES2::initialize() {
 		}
 	}
 
+	config.shrink_textures_x2 = false;
+
 	frame.count = 0;
 	frame.delta = 0;
 	frame.current_rt = NULL;
