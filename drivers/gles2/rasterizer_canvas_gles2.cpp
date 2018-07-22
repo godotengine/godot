@@ -409,8 +409,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					Rect2 dst_rect = Rect2(r->rect.position, r->rect.size);
 
-					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
-
 					if (dst_rect.size.width < 0) {
 						dst_rect.position.x += dst_rect.size.width;
 						dst_rect.size.width *= -1;
