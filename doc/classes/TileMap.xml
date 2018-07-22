@@ -153,6 +153,8 @@
 				Sets the tile index for the cell given by a Vector2.
 				An index of [code]-1[/code] clears the cell.
 				Optionally, the tile can also be flipped, transposed, or given autotile coordinates.
+				Note that data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
+				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 			</description>
 		</method>
 		<method name="set_cellv">
@@ -172,6 +174,8 @@
 				Sets the tile index for the given cell.
 				An index of [code]-1[/code] clears the cell.
 				Optionally, the tile can also be flipped or transposed.
+				Note that data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
+				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
@@ -215,6 +219,13 @@
 			<description>
 				Applies autotiling rules to the cells in the given region (specified by grid-based x and y coordinates).
 				Calling with invalid (or missing) parameters applies autotiling rules for the entire tilemap.
+			</description>
+		</method>
+		<method name="update_dirty_quadrants">
+			<return type="void">
+			</return>
+			<description>
+				Updates the tile map's quadrants, allowing things such as navigation and collision shapes to be immediately used if modified.
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">

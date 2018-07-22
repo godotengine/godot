@@ -62,7 +62,7 @@ void TileMap::_notification(int p_what) {
 
 			pending_update = true;
 			_recreate_quadrants();
-			_update_dirty_quadrants();
+			update_dirty_quadrants();
 			RID space = get_world_2d()->get_space();
 			_update_quadrant_transform();
 			_update_quadrant_space(space);
@@ -245,7 +245,7 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 	xform.elements[2].y += offset.y;
 }
 
-void TileMap::_update_dirty_quadrants() {
+void TileMap::update_dirty_quadrants() {
 
 	if (!pending_update)
 		return;
@@ -721,7 +721,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool updat
 		return;
 
 	if (update) {
-		_update_dirty_quadrants();
+		call_deferred("update_dirty_quadrants");
 	}
 }
 
@@ -1026,7 +1026,7 @@ void TileMap::_recreate_quadrants() {
 		Q->get().cells.insert(E->key());
 		_make_quadrant_dirty(Q, false);
 	}
-	_update_dirty_quadrants();
+	update_dirty_quadrants();
 }
 
 void TileMap::_clear_quadrants() {
@@ -1630,7 +1630,7 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_clear_quadrants"), &TileMap::_clear_quadrants);
 	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);
-	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"), &TileMap::_update_dirty_quadrants);
+	ClassDB::bind_method(D_METHOD("update_dirty_quadrants"), &TileMap::update_dirty_quadrants);
 
 	ClassDB::bind_method(D_METHOD("update_bitmask_area", "position"), &TileMap::update_bitmask_area);
 	ClassDB::bind_method(D_METHOD("update_bitmask_region", "start", "end"), &TileMap::update_bitmask_region, DEFVAL(Vector2()), DEFVAL(Vector2()));
