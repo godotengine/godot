@@ -91,6 +91,7 @@ layout(std140) uniform SceneData { //ubo:0
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
 	mediump float ambient_occlusion_affect_ao_channel;
+	mediump float opaque_prepass_treshold;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -679,6 +680,7 @@ layout(std140) uniform SceneData {
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
 	mediump float ambient_occlusion_affect_ao_channel;
+	mediump float opaque_prepass_treshold;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -1690,9 +1692,10 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_OPAQUE_PREPASS
 
-	if (alpha<0.99) {
+	if (alpha<opaque_prepass_treshold) {
 		discard;
 	}
+
 #endif
 
 #if defined(ENABLE_NORMALMAP)
