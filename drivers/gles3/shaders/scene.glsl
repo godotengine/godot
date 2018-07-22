@@ -91,7 +91,7 @@ layout(std140) uniform SceneData { //ubo:0
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
 	mediump float ambient_occlusion_affect_ao_channel;
-	mediump float opaque_prepass_treshold;
+	mediump float opaque_prepass_threshold;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -680,7 +680,7 @@ layout(std140) uniform SceneData {
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
 	mediump float ambient_occlusion_affect_ao_channel;
-	mediump float opaque_prepass_treshold;
+	mediump float opaque_prepass_threshold;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -1691,7 +1691,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_OPAQUE_PREPASS
 
-	if (alpha<opaque_prepass_treshold) {
+	if (alpha<opaque_prepass_threshold) {
 		discard;
 	}
 
@@ -2139,6 +2139,8 @@ FRAGMENT_SHADER_CODE
 	specular_buffer=vec4(0.0);
 
 #else
+
+
 
 	//approximate ambient scale for SSAO, since we will lack full ambient
 	float max_emission=max(emission.r,max(emission.g,emission.b));
