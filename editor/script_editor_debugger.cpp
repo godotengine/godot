@@ -1249,6 +1249,9 @@ void ScriptEditorDebugger::stop() {
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
 
+	Node *node = editor->get_scene_tree_dock()->get_tree_editor()->get_selected();
+	editor->push_item(node);
+
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
 			EditorNode::get_singleton()->hide_bottom_panel();
