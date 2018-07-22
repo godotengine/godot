@@ -141,6 +141,7 @@ public:
 			float subsurface_scatter_width;
 			float ambient_occlusion_affect_light;
 			float ambient_occlusion_affect_ssao;
+			float opaque_prepass_treshold;
 
 			uint32_t fog_depth_enabled;
 			float fog_depth_begin;
@@ -152,7 +153,7 @@ public:
 			float fog_height_max;
 			float fog_height_curve;
 			// make sure this struct is padded to be a multiple of 16 bytes for webgl
-			float pad[3];
+			float pad[2];
 
 		} ubo_data;
 
