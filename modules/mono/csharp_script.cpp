@@ -119,7 +119,7 @@ void CSharpLanguage::init() {
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&gdsharp_editor_init_callback);
 
-	GLOBAL_DEF("mono/export/include_scripts_content", true);
+	GLOBAL_DEF("mono/export/include_scripts_content", false);
 #endif
 }
 
