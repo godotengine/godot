@@ -47,6 +47,8 @@
 #include "os/dir_access.h"
 #include "os/thread.h"
 
+#include "create_dialog.h"
+
 #include "dependency_editor.h"
 #include "editor_dir_dialog.h"
 #include "editor_file_system.h"
@@ -78,7 +80,8 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_SHOW_IN_EXPLORER,
-		FILE_COPY_PATH
+		FILE_COPY_PATH,
+		FILE_NEW_RESOURCE
 	};
 
 	enum FolderMenu {
@@ -131,6 +134,7 @@ private:
 	LineEdit *make_dir_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog_text;
+	CreateDialog *new_resource_dialog;
 
 	class FileOrFolder {
 	public:
@@ -189,6 +193,7 @@ private:
 	void _update_favorite_dirs_list_after_move(const Map<String, String> &p_renames) const;
 	void _update_project_settings_after_move(const Map<String, String> &p_renames) const;
 
+	void _resource_created() const;
 	void _make_dir_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
