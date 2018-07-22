@@ -141,7 +141,7 @@ public:
 			float subsurface_scatter_width;
 			float ambient_occlusion_affect_light;
 			float ambient_occlusion_affect_ssao;
-			float opaque_prepass_treshold;
+			float opaque_prepass_threshold;
 
 			uint32_t fog_depth_enabled;
 			float fog_depth_begin;

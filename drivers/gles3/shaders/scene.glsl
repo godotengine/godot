@@ -91,7 +91,7 @@ layout(std140) uniform SceneData { //ubo:0
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
 	mediump float ambient_occlusion_affect_ao_channel;
-	mediump float opaque_prepass_treshold;
+	mediump float opaque_prepass_threshold;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -680,7 +680,7 @@ layout(std140) uniform SceneData {
 	mediump float subsurface_scatter_width;
 	mediump float ambient_occlusion_affect_light;
 	mediump float ambient_occlusion_affect_ao_channel;
-	mediump float opaque_prepass_treshold;
+	mediump float opaque_prepass_threshold;
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
@@ -1028,12 +1028,11 @@ LIGHT_SHADER_CODE
 		diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
 #endif
 
-#if defined(TRANSMISSION_USED)
-		diffuse_light += light_color * diffuse_color * mix(vec3(diffuse_brdf_NL), vec3(M_PI), transmission) * attenuation;
-#else
 		diffuse_light += light_color * diffuse_color * diffuse_brdf_NL * attenuation;
-#endif
 
+#if defined(TRANSMISSION_USED)
+		diffuse_light += light_color * diffuse_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * transmission * attenuation;
+#endif
 
 
 #if defined(LIGHT_USE_RIM)
@@ -1630,7 +1629,7 @@ void main() {
 	float alpha = 1.0;
 
 #if defined(DO_SIDE_CHECK)
-	float side=float(gl_FrontFacing)*2.0-1.0;
+	float side=gl_FrontFacing ? 1.0 : -1.0;
 #else
 	float side=1.0;
 #endif
@@ -1692,7 +1691,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_OPAQUE_PREPASS
 
-	if (alpha<opaque_prepass_treshold) {
+	if (alpha<opaque_prepass_threshold) {
 		discard;
 	}
 
@@ -2141,6 +2140,8 @@ FRAGMENT_SHADER_CODE
 
 #else
 
+
+
 	//approximate ambient scale for SSAO, since we will lack full ambient
 	float max_emission=max(emission.r,max(emission.g,emission.b));
 	float max_ambient=max(ambient_light.r,max(ambient_light.g,ambient_light.b));
@@ -2171,7 +2172,6 @@ FRAGMENT_SHADER_CODE
 #else
 	frag_color=vec4(emission+ambient_light+diffuse_light+specular_light,alpha);
 #endif //SHADELESS
-
 
 #endif //USE_MULTIPLE_RENDER_TARGETS
 
