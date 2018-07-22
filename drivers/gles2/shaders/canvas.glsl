@@ -13,7 +13,13 @@ uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
 attribute highp vec2 vertex; // attrib:0
 attribute vec4 color_attrib; // attrib:3
+
+#ifdef USE_TEXTURE_RECT_ATTRIB
+attribute vec4 src_rect_attrib; // attrib:4
+attribute vec4 dst_rect_attrib; // attrib:5
+#else
 attribute vec2 uv_attrib; // attrib:4
+#endif
 
 varying vec2 uv_interp;
 varying vec4 color_interp;
@@ -43,7 +49,25 @@ vec2 select(vec2 a, vec2 b, bvec2 c) {
 void main() {
 
 	vec4 color = color_attrib;
+#ifdef USE_TEXTURE_RECT_ATTRIB
+	if (dst_rect_attrib.z < 0.0) { // Transpose is encoded as negative dst_rect_attrib.z
+		uv_interp = src_rect_attrib.xy + abs(src_rect_attrib.zw) * vertex.yx;
+	} else {
+		uv_interp = src_rect_attrib.xy + abs(src_rect_attrib.zw) * vertex;
+	}
 
+	vec4 outvec = vec4(0.0, 0.0, 0.0, 1.0);
+
+	// This is what is done in the GLES 3 bindings and should
+	// take care of flipped rects.
+	//
+	// But it doesn't.
+	// I don't know why, will need to investigate further.
+
+	outvec.xy = dst_rect_attrib.xy + abs(dst_rect_attrib.zw) * select(vertex, vec2(1.0, 1.0) - vertex, lessThan(src_rect_attrib.zw, vec2(0.0, 0.0)));
+
+	// outvec.xy = dst_rect_attrib.xy + abs(dst_rect_attrib.zw) * vertex;
+#else
 #ifdef USE_TEXTURE_RECT
 
 	if (dst_rect.z < 0.0) { // Transpose is encoded as negative dst_rect.z
@@ -74,6 +98,7 @@ void main() {
 
 #endif
 
+#endif
 {
         vec2 src_vtx=outvec.xy;
 VERTEX_SHADER_CODE

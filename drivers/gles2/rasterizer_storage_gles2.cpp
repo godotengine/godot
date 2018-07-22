@@ -1991,6 +1991,11 @@ int RasterizerStorageGLES2::get_captured_render_info(VS::RenderInfo p_info) {
 }
 
 int RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
+	switch (p_info) {
+		case VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME:
+			return info.render.draw_call_count;
+	}
+
 	return 0;
 }
 
