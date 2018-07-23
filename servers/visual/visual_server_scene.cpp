@@ -820,6 +820,11 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			instance->baked_light = p_enabled;
 
 		} break;
+		case VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE: {
+
+			instance->redraw_if_visible = p_enabled;
+
+		} break;
 	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {
@@ -1872,6 +1877,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			keep = true;
 
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(ins->base_data);
+
+			if (ins->redraw_if_visible) {
+				VisualServerRaster::redraw_request();
+			}
 
 			if (ins->base_type == VS::INSTANCE_PARTICLES) {
 				//particles visible? process them

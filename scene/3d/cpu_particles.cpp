@@ -25,6 +25,8 @@ void CPUParticles::set_emitting(bool p_emitting) {
 			update_mutex->lock();
 #endif
 			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, true);
+
 #ifndef NO_THREADS
 			update_mutex->unlock();
 #endif
@@ -446,6 +448,8 @@ float rand_from_seed_m1_p1(uint32_t &seed) {
 
 void CPUParticles::_particles_process(float p_delta) {
 
+	p_delta *= speed_scale;
+
 	int pcount = particles.size();
 	PoolVector<Particle>::Write w = particles.write();
 
@@ -475,7 +479,7 @@ void CPUParticles::_particles_process(float p_delta) {
 		if (!emitting && !p.active)
 			continue;
 
-		float restart_time = float(i) / float(pcount);
+		float restart_time = (float(i) / float(pcount)) * lifetime;
 		float local_delta = p_delta;
 
 		if (randomness_ratio > 0.0) {
@@ -643,7 +647,7 @@ void CPUParticles::_particles_process(float p_delta) {
 			uint32_t alt_seed = p.seed;
 
 			p.time += local_delta;
-			p.custom[1] += p.time / lifetime;
+			p.custom[1] = p.time / lifetime;
 
 			float tex_linear_velocity = 0.0;
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
@@ -979,6 +983,7 @@ void CPUParticles::_notification(int p_what) {
 			update_mutex->lock();
 #endif
 			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, true);
 #ifndef NO_THREADS
 			update_mutex->unlock();
 #endif
@@ -992,6 +997,7 @@ void CPUParticles::_notification(int p_what) {
 			update_mutex->lock();
 #endif
 			VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, false);
 #ifndef NO_THREADS
 			update_mutex->unlock();
 #endif
@@ -1018,6 +1024,8 @@ void CPUParticles::_notification(int p_what) {
 				update_mutex->lock();
 #endif
 				VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
+				VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, false);
+
 #ifndef NO_THREADS
 				update_mutex->unlock();
 #endif
