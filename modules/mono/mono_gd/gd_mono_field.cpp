@@ -148,7 +148,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(GDMonoClass::get_raw_type(type.type_class));
+			MonoArrayType *array_type = mono_type_get_array_type(type.type_class->get_mono_type());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
 				SET_FROM_ARRAY_AND_BREAK(Array);
@@ -196,6 +196,18 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 			if (CACHED_CLASS(RID) == type_class) {
 				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator RID());
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (CACHED_CLASS(Dictionary) == type_class) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), CACHED_CLASS(Dictionary));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (CACHED_CLASS(Array) == type_class) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}
@@ -248,10 +260,13 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					break;
 				}
 				case Variant::DICTIONARY: {
-					MonoObject *managed = GDMonoMarshal::Dictionary_to_mono_object(p_value.operator Dictionary());
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), CACHED_CLASS(Dictionary));
 					mono_field_set_value(p_object, mono_field, managed);
 				} break;
-				case Variant::ARRAY: SET_FROM_ARRAY_AND_BREAK(Array);
+				case Variant::ARRAY: {
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
+					mono_field_set_value(p_object, mono_field, managed);
+				} break;
 				case Variant::POOL_BYTE_ARRAY: SET_FROM_ARRAY_AND_BREAK(PoolByteArray);
 				case Variant::POOL_INT_ARRAY: SET_FROM_ARRAY_AND_BREAK(PoolIntArray);
 				case Variant::POOL_REAL_ARRAY: SET_FROM_ARRAY_AND_BREAK(PoolRealArray);
@@ -265,8 +280,28 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			if (CACHED_RAW_MONO_CLASS(Dictionary) == type.type_class->get_mono_ptr()) {
-				MonoObject *managed = GDMonoMarshal::Dictionary_to_mono_object(p_value.operator Dictionary());
+			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
+
+			MonoException *exc = NULL;
+
+			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
+			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+			if (is_dict) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), type.type_class);
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			exc = NULL;
+
+			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
+			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+			if (is_array) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), type.type_class);
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}

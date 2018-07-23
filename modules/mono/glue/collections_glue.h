@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dictionary.h                                                         */
+/*  collections_glue.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef COLLECTIONS_GLUE_H
+#define COLLECTIONS_GLUE_H
 
-#include "array.h"
-#include "list.h"
-#include "ustring.h"
-class Variant;
+#include "core/array.h"
 
-struct DictionaryPrivate;
+#include "../mono_gd/gd_mono_marshal.h"
 
-class Dictionary {
+// Array
 
-	mutable DictionaryPrivate *_p;
+Array *godot_icall_Array_Ctor();
 
-	void _ref(const Dictionary &p_from) const;
-	void _unref() const;
+void godot_icall_Array_Dtor(Array *ptr);
 
-public:
-	void get_key_list(List<Variant> *p_keys) const;
-	Variant get_key_at_index(int p_index) const;
-	Variant get_value_at_index(int p_index) const;
+MonoObject *godot_icall_Array_At(Array *ptr, int index);
 
-	Variant &operator[](const Variant &p_key);
-	const Variant &operator[](const Variant &p_key) const;
+void godot_icall_Array_SetAt(Array *ptr, int index, MonoObject *value);
 
-	const Variant *getptr(const Variant &p_key) const;
-	Variant *getptr(const Variant &p_key);
+int godot_icall_Array_Count(Array *ptr);
 
-	Variant get_valid(const Variant &p_key) const;
+void godot_icall_Array_Add(Array *ptr, MonoObject *item);
 
-	int size() const;
-	bool empty() const;
-	void clear();
+void godot_icall_Array_Clear(Array *ptr);
 
-	bool has(const Variant &p_key) const;
-	bool has_all(const Array &p_keys) const;
+bool godot_icall_Array_Contains(Array *ptr, MonoObject *item);
 
-	void erase(const Variant &p_key);
-	bool erase_checked(const Variant &p_key);
+void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index);
 
-	bool operator==(const Dictionary &p_dictionary) const;
+int godot_icall_Array_IndexOf(Array *ptr, MonoObject *item);
 
-	uint32_t hash() const;
-	void operator=(const Dictionary &p_dictionary);
+void godot_icall_Array_Insert(Array *ptr, int index, MonoObject *item);
 
-	const Variant *next(const Variant *p_key = NULL) const;
+bool godot_icall_Array_Remove(Array *ptr, MonoObject *item);
 
-	Array keys() const;
-	Array values() const;
+void godot_icall_Array_RemoveAt(Array *ptr, int index);
 
-	Dictionary duplicate(bool p_deep = false) const;
+// Dictionary
 
-	Dictionary(const Dictionary &p_from);
-	Dictionary();
-	~Dictionary();
-};
+Dictionary *godot_icall_Dictionary_Ctor();
 
-#endif // DICTIONARY_H
+void godot_icall_Dictionary_Dtor(Dictionary *ptr);
+
+MonoObject *godot_icall_Dictionary_GetValue(Dictionary *ptr, MonoObject *key);
+
+void godot_icall_Dictionary_SetValue(Dictionary *ptr, MonoObject *key, MonoObject *value);
+
+Array *godot_icall_Dictionary_Keys(Dictionary *ptr);
+
+Array *godot_icall_Dictionary_Values(Dictionary *ptr);
+
+int godot_icall_Dictionary_Count(Dictionary *ptr);
+
+void godot_icall_Dictionary_Add(Dictionary *ptr, MonoObject *key, MonoObject *value);
+
+void godot_icall_Dictionary_Clear(Dictionary *ptr);
+
+bool godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value);
+
+bool godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key);
+
+bool godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
+
+bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value);
+
+bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value);
+
+// Register internal calls
+
+void godot_register_collections_icalls();
+
+#endif // COLLECTIONS_GLUE_H

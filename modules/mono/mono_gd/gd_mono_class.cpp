@@ -33,23 +33,37 @@
 #include <mono/metadata/attrdefs.h>
 
 #include "gd_mono_assembly.h"
+#include "gd_mono_marshal.h"
 
-MonoType *GDMonoClass::get_raw_type(GDMonoClass *p_class) {
+String GDMonoClass::get_full_name(MonoClass *p_mono_class) {
+	// mono_type_get_full_name is not exposed to embedders, but this seems to do the job
+	MonoReflectionType *type_obj = mono_type_get_object(mono_domain_get(), get_mono_type(p_mono_class));
 
-	return mono_class_get_type(p_class->get_mono_ptr());
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoString *str = mono_object_to_string((MonoObject *)type_obj, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
+	UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+	return GDMonoMarshal::mono_string_to_godot(str);
+}
+
+MonoType *GDMonoClass::get_mono_type(MonoClass *p_mono_class) {
+	return mono_class_get_type(p_mono_class);
+}
+
+String GDMonoClass::get_full_name() const {
+	return get_full_name(mono_class);
+}
+
+MonoType *GDMonoClass::get_mono_type() {
+	// Care, you cannot compare MonoType pointers
+	return get_mono_type(mono_class);
 }
 
 bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
-}
-
-String GDMonoClass::get_full_name() const {
-
-	String res = namespace_name;
-	if (res.length())
-		res += ".";
-	return res + class_name;
 }
 
 GDMonoClass *GDMonoClass::get_parent_class() {
