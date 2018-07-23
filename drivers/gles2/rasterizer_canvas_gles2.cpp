@@ -661,6 +661,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				if (state.canvas_shader.bind())
 					_set_uniforms();
 
+				_bind_canvas_texture(RID(), RID());
+
 				if (pline->triangles.size()) {
 					_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
 				} else {
