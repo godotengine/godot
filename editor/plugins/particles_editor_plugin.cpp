@@ -299,6 +299,10 @@ void ParticlesEditor::_menu_option(int p_option) {
 
 			CPUParticles *cpu_particles = memnew(CPUParticles);
 			cpu_particles->convert_from_particles(node);
+			cpu_particles->set_name(node->get_name());
+			cpu_particles->set_transform(node->get_transform());
+			cpu_particles->set_visible(node->is_visible());
+			cpu_particles->set_pause_mode(node->get_pause_mode());
 
 			undo_redo->create_action("Replace Particles by CPUParticles");
 			undo_redo->add_do_method(node, "replace_by", cpu_particles);
