@@ -693,7 +693,6 @@ public:
 		AABB custom_aabb;
 		mutable uint64_t last_pass;
 		SelfList<MultiMesh>::List multimeshes;
-
 		_FORCE_INLINE_ void update_multimeshes() {
 
 			SelfList<MultiMesh> *mm = multimeshes.first();

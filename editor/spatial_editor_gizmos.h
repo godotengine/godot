@@ -331,6 +331,23 @@ public:
 	BakedIndirectLightGizmo(BakedLightmap *p_baker = NULL);
 };
 
+class SoftBodySpatialGizmo : public EditorSpatialGizmo {
+	GDCLASS(SoftBodySpatialGizmo, EditorSpatialGizmo);
+
+	class SoftBody *soft_body;
+	//RID physics_sphere_shape; // Used for raycast that doesn't work, in this moment, with softbody
+
+public:
+	void redraw();
+	virtual bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel);
+
+	virtual bool is_gizmo_handle_highlighted(int idx) const;
+
+	SoftBodySpatialGizmo(SoftBody *p_soft_physics_body = NULL);
+	~SoftBodySpatialGizmo();
+};
+
 class CollisionShapeSpatialGizmo : public EditorSpatialGizmo {
 
 	GDCLASS(CollisionShapeSpatialGizmo, EditorSpatialGizmo);

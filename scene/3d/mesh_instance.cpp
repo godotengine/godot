@@ -36,6 +36,7 @@
 #include "scene/resources/material.h"
 #include "scene/scene_string_names.h"
 #include "skeleton.h"
+
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
 
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.

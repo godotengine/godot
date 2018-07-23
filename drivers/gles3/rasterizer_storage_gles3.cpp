@@ -3240,7 +3240,7 @@ void RasterizerStorageGLES3::mesh_surface_update_region(RID p_mesh, int p_surfac
 
 	PoolVector<uint8_t>::Read r = p_data.read();
 
-	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->array_id);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->vertex_id);
 	glBufferSubData(GL_ARRAY_BUFFER, p_offset, total_size, r.ptr());
 	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 }
@@ -3404,6 +3404,7 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shap
 
 	return bsarr;
 }
+
 Vector<AABB> RasterizerStorageGLES3::mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const {
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
@@ -3455,6 +3456,7 @@ void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface) {
 
 	mesh->instance_change_notify();
 }
+
 int RasterizerStorageGLES3::mesh_get_surface_count(RID p_mesh) const {
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
@@ -3468,6 +3470,7 @@ void RasterizerStorageGLES3::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb
 	ERR_FAIL_COND(!mesh);
 
 	mesh->custom_aabb = p_aabb;
+	mesh->instance_change_notify();
 }
 
 AABB RasterizerStorageGLES3::mesh_get_custom_aabb(RID p_mesh) const {

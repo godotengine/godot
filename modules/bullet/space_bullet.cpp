@@ -36,6 +36,7 @@
 #include "constraint_bullet.h"
 #include "godot_collision_configuration.h"
 #include "godot_collision_dispatcher.h"
+#include "project_settings.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "soft_body_bullet.h"
@@ -325,7 +326,7 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 	}
 }
 
-SpaceBullet::SpaceBullet(bool p_create_soft_world) :
+SpaceBullet::SpaceBullet() :
 		broadphase(NULL),
 		dispatcher(NULL),
 		solver(NULL),
@@ -338,7 +339,7 @@ SpaceBullet::SpaceBullet(bool p_create_soft_world) :
 		gravityMagnitude(10),
 		contactDebugCount(0) {
 
-	create_empty_world(p_create_soft_world);
+	create_empty_world(GLOBAL_DEF("physics/3d/active_soft_world", true));
 	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
 }
 
@@ -355,6 +356,7 @@ void SpaceBullet::flush_queries() {
 }
 
 void SpaceBullet::step(real_t p_delta_time) {
+	delta_time = p_delta_time;
 	dynamicsWorld->stepSimulation(p_delta_time, 0, 0);
 }
 
@@ -483,6 +485,7 @@ void SpaceBullet::reload_collision_filters(RigidBodyBullet *p_body) {
 void SpaceBullet::add_soft_body(SoftBodyBullet *p_body) {
 	if (is_using_soft_world()) {
 		if (p_body->get_bt_soft_body()) {
+			p_body->get_bt_soft_body()->m_worldInfo = get_soft_body_world_info();
 			static_cast<btSoftRigidDynamicsWorld *>(dynamicsWorld)->addSoftBody(p_body->get_bt_soft_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
 		}
 	} else {
@@ -494,6 +497,7 @@ void SpaceBullet::remove_soft_body(SoftBodyBullet *p_body) {
 	if (is_using_soft_world()) {
 		if (p_body->get_bt_soft_body()) {
 			static_cast<btSoftRigidDynamicsWorld *>(dynamicsWorld)->removeSoftBody(p_body->get_bt_soft_body());
+			p_body->get_bt_soft_body()->m_worldInfo = NULL;
 		}
 	}
 }

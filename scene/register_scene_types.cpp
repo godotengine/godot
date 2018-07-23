@@ -199,6 +199,7 @@
 #include "scene/3d/remote_transform.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/skeleton.h"
+#include "scene/3d/soft_body.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
@@ -428,6 +429,7 @@ void register_scene_types() {
 	ClassDB::register_class<KinematicCollision>();
 	ClassDB::register_class<KinematicBody>();
 	ClassDB::register_class<PhysicalBone>();
+	ClassDB::register_class<SoftBody>();
 
 	ClassDB::register_class<VehicleBody>();
 	ClassDB::register_class<VehicleWheel>();

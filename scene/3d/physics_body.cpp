@@ -122,23 +122,23 @@ bool PhysicsBody::get_collision_layer_bit(int p_bit) const {
 void PhysicsBody::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
-	PhysicsBody *physics_body = Object::cast_to<PhysicsBody>(p_node);
-	if (!physics_body) {
-		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
+	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
+	if (!collision_object) {
+		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
 	}
-	ERR_FAIL_COND(!physics_body);
-	PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
+	ERR_FAIL_COND(!collision_object);
+	PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
 void PhysicsBody::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
-	PhysicsBody *physics_body = Object::cast_to<PhysicsBody>(p_node);
-	if (!physics_body) {
-		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
+	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
+	if (!collision_object) {
+		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
 	}
-	ERR_FAIL_COND(!physics_body);
-	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
+	ERR_FAIL_COND(!collision_object);
+	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
 void PhysicsBody::_set_layers(uint32_t p_mask) {
