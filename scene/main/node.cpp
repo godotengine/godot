@@ -809,6 +809,22 @@ bool Node::is_processing_internal() const {
 	return data.idle_process_internal;
 }
 
+void Node::set_process_priority(int p_priority) {
+	data.process_priority = p_priority;
+
+	if (is_processing())
+		data.tree->make_group_changed("idle_process");
+
+	if (is_processing_internal())
+		data.tree->make_group_changed("idle_process_internal");
+
+	if (is_physics_processing())
+		data.tree->make_group_changed("physics_process");
+
+	if (is_physics_processing_internal())
+		data.tree->make_group_changed("physics_process_internal");
+}
+
 void Node::set_process_input(bool p_enable) {
 
 	if (p_enable == data.input)
@@ -1386,6 +1402,11 @@ bool Node::is_greater_than(const Node *p_node) const {
 	}
 
 	return res;
+}
+
+bool Node::has_priority_higher_than(const Node *p_node) const {
+	ERR_FAIL_NULL_V(p_node, false);
+	return data.process_priority > p_node->data.process_priority;
 }
 
 void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
@@ -2608,6 +2629,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
+	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
 	ClassDB::bind_method(D_METHOD("is_processing"), &Node::is_processing);
 	ClassDB::bind_method(D_METHOD("set_process_input", "enable"), &Node::set_process_input);
 	ClassDB::bind_method(D_METHOD("is_processing_input"), &Node::is_processing_input);
@@ -2759,6 +2781,7 @@ Node::Node() {
 	data.tree = NULL;
 	data.physics_process = false;
 	data.idle_process = false;
+	data.process_priority = 0;
 	data.physics_process_internal = false;
 	data.idle_process_internal = false;
 	data.inside_tree = false;

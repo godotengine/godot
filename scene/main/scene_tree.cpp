@@ -132,6 +132,12 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 		group_map.erase(E);
 }
 
+void SceneTree::make_group_changed(const StringName &p_group) {
+	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	if (E)
+		E->get().changed = true;
+}
+
 void SceneTree::flush_transform_notifications() {
 
 	SelfList<Node> *n = xform_change_list.first();
@@ -165,7 +171,7 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = false;
 }
 
-void SceneTree::_update_group_order(Group &g) {
+void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 
 	if (!g.changed)
 		return;
@@ -175,8 +181,13 @@ void SceneTree::_update_group_order(Group &g) {
 	Node **nodes = &g.nodes[0];
 	int node_count = g.nodes.size();
 
-	SortArray<Node *, Node::Comparator> node_sort;
-	node_sort.sort(nodes, node_count);
+	if (p_use_priority) {
+		SortArray<Node *, Node::ComparatorWithPriority> node_sort;
+		node_sort.sort(nodes, node_count);
+	} else {
+		SortArray<Node *, Node::Comparator> node_sort;
+		node_sort.sort(nodes, node_count);
+	}
 	g.changed = false;
 }
 
@@ -921,7 +932,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	if (g.nodes.empty())
 		return;
 
-	_update_group_order(g);
+	_update_group_order(g, p_notification == Node::NOTIFICATION_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PROCESS || p_notification == Node::NOTIFICATION_PHYSICS_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 
 	//copy, so copy on write happens in case something is removed from process while being called
 	//performance is not lost because only if something is added/removed the vector is copied.
