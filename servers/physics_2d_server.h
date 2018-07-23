@@ -416,6 +416,19 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value) = 0;
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const = 0;
 
+	enum CombineMode {
+		COMBINE_MODE_MAX,
+		COMBINE_MODE_MIN,
+		COMBINE_MODE_MULTIPLY,
+		COMBINE_MODE_AVERAGE,
+
+		COMBINE_MODE_INHERIT /// Inherit from other body or use COMBINE_MODE_MAX (Restitution) COMBINE_MODE_MULTIPLY (Friction)
+	};
+
+	/// p_param accept only Bounce and Friction
+	virtual void body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) = 0;
+	virtual CombineMode body_get_combine_mode(RID p_body, BodyParameter p_param) const = 0;
+
 	//state
 	enum BodyState {
 		BODY_STATE_TRANSFORM,

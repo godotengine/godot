@@ -942,8 +942,6 @@ VehicleBody::VehicleBody() :
 	engine_force = 0;
 	brake = 0;
 
-	friction = 1;
-
 	state = NULL;
 	ccd = false;
 

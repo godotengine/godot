@@ -647,6 +647,20 @@ float BulletPhysicsServer::body_get_param(RID p_body, BodyParameter p_param) con
 	return body->get_param(p_param);
 }
 
+void BulletPhysicsServer::body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_combine_mode(p_param, p_mode);
+}
+
+PhysicsServer::CombineMode BulletPhysicsServer::body_get_combine_mode(RID p_body, BodyParameter p_param) const {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, COMBINE_MODE_INHERIT);
+
+	return body->get_combine_mode(p_param);
+}
+
 void BulletPhysicsServer::body_set_kinematic_safe_margin(RID p_body, real_t p_margin) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);

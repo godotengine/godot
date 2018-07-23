@@ -188,6 +188,10 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
 	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 
+	/// p_param accept only Bounce and Friction
+	virtual void body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode);
+	virtual CombineMode body_get_combine_mode(RID p_body, BodyParameter p_param) const;
+
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin);
 	virtual real_t body_get_kinematic_safe_margin(RID p_body) const;
 

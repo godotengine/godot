@@ -211,6 +211,9 @@ public:
 	FUNC3(body_set_param, RID, BodyParameter, real_t);
 	FUNC2RC(real_t, body_get_param, RID, BodyParameter);
 
+	FUNC3(body_set_combine_mode, RID, BodyParameter, CombineMode);
+	FUNC2RC(CombineMode, body_get_combine_mode, RID, BodyParameter);
+
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
 
