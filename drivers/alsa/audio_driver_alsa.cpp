@@ -153,7 +153,6 @@ Error AudioDriverALSA::init() {
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
-	pcm_open = false;
 
 	Error err = init_device();
 	if (err == OK) {
@@ -316,9 +315,9 @@ void AudioDriverALSA::unlock() {
 
 void AudioDriverALSA::finish_device() {
 
-	if (pcm_open) {
+	if (pcm_handle) {
 		snd_pcm_close(pcm_handle);
-		pcm_open = NULL;
+		pcm_handle = NULL;
 	}
 }
 
