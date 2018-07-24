@@ -210,8 +210,8 @@ void EditorPropertyArray::update_property() {
 		default: {}
 	}
 
-	if (!array.is_array()) {
-		edit->set_text(arrtype + "[" + Variant::get_type_name(array.get_type()) + "]");
+	if (array.get_type() == Variant::NIL) {
+		edit->set_text(String("(Nil) ") + arrtype);
 		edit->set_pressed(false);
 		if (vbox) {
 			memdelete(vbox);
@@ -219,7 +219,7 @@ void EditorPropertyArray::update_property() {
 		return;
 	}
 
-	edit->set_text(arrtype + "[" + itos(array.call("size")) + "]");
+	edit->set_text(arrtype + "(size " + itos(array.call("size")) + ")");
 
 #ifdef TOOLS_ENABLED
 
@@ -613,7 +613,13 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 
 void EditorPropertyDictionary::_add_key_value() {
 
+	// Do not allow nil as valid key. I experienced errors with this
+	if (object->get_new_item_key().get_type() == Variant::NIL) {
+		return;
+	}
+
 	Dictionary dict = object->get_dict();
+
 	dict[object->get_new_item_key()] = object->get_new_item_value();
 	object->set_new_item_key(Variant());
 	object->set_new_item_value(Variant());
@@ -663,9 +669,20 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 
 void EditorPropertyDictionary::update_property() {
 
-	Dictionary dict = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_object()->get(get_edited_property());
 
-	edit->set_text("Dict[" + itos(dict.size()) + "]");
+	if (updated_val.get_type() == Variant::NIL) {
+		edit->set_text("Dictionary (Nil)"); //This provides symmetry with the array property.
+		edit->set_pressed(false);
+		if (vbox) {
+			memdelete(vbox);
+		}
+		return;
+	}
+
+	Dictionary dict = updated_val;
+
+	edit->set_text("Dictionary (size " + itos(dict.size()) + ")");
 
 #ifdef TOOLS_ENABLED
 
@@ -695,9 +712,9 @@ void EditorPropertyDictionary::update_property() {
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
 			page->connect("value_changed", this, "_page_changed");
 		} else {
-			//bye bye children of the box
-			while (vbox->get_child_count() > 1) {
-				memdelete(vbox->get_child(1));
+			// Queue childs for deletion, delete immediately might cause errors.
+			for (size_t i = 1; i < vbox->get_child_count(); i++) {
+				vbox->get_child(i)->queue_delete();
 			}
 		}
 
@@ -941,10 +958,10 @@ void EditorPropertyDictionary::update_property() {
 			prop->update_property();
 
 			if (i == amount + 1) {
-				Button *add_item = memnew(Button);
-				add_item->set_text(TTR("Add Key/Value Pair"));
-				add_vbox->add_child(add_item);
-				add_item->connect("pressed", this, "_add_key_value");
+				Button *butt_add_item = memnew(Button);
+				butt_add_item->set_text(TTR("Add Key/Value Pair"));
+				butt_add_item->connect("pressed", this, "_add_key_value");
+				add_vbox->add_child(butt_add_item);
 			}
 		}
 
@@ -965,7 +982,15 @@ void EditorPropertyDictionary::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 	}
 }
+
 void EditorPropertyDictionary::_edit_pressed() {
+
+	Variant prop_val = get_edited_object()->get(get_edited_property());
+	if (prop_val.get_type() == Variant::NIL) {
+		Variant::CallError ce;
+		prop_val = Variant::construct(Variant::DICTIONARY, NULL, 0, ce);
+		get_edited_object()->set(get_edited_property(), prop_val);
+	}
 
 	get_edited_object()->editor_set_section_unfold(get_edited_property(), edit->is_pressed());
 	update_property();
