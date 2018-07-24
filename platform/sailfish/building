@@ -1,0 +1,56 @@
+SSH to SDK (host)
+-----------------
+ssh -p 2222 -i ~/SailfishOS/vmshare/ssh/private_keys/engine/mersdk mersdk@localhost
+
+SSH to emulator (host)
+----------------------
+ssh -p 2223 -i ~/SailfishOS/vmshare/ssh/private_keys/SailfishOS_Emulator/root root@localhost
+
+install scons (SDK)
+-------------------
+sb2 -t SailfishOS-i486 -m sdk-install -R zypper in scons
+sb2 -t SailfishOS-armv7hl -m sdk-install -R zypper in scons
+
+install pulseaudio dev libs (SDK)
+---------------------------------
+sb2 -t SailfishOS-i486 -m sdk-install -R zypper in pulseaudio-devel
+sb2 -t SailfishOS-armv7hl -m sdk-install -R zypper in pulseaudio-devel
+
+install libaudioresource (SDK)
+---------------------------
+sb2 -t SailfishOS-i486 -m sdk-install -R zypper in libaudioresource
+sb2 -t SailfishOS-i486 -m sdk-install -R zypper in libaudioresource-devel
+
+sb2 -t SailfishOS-armv7hl -m sdk-install -R zypper in libaudioresource
+sb2 -t SailfishOS-armv7hl -m sdk-install -R zypper in libaudioresource-devel
+
+install development libraries
+-----------------------------
+sb2 -t SailfishOS-i486 -m sdk-install -R zypper in libpng-devel
+sb2 -t SailfishOS-armv7hl -m sdk-install -R zypper in libpng-devel
+
+build the engine (SDK)
+----------------------
+cd /home/src1/<path-to-godot-source>
+sb2 -t SailfishOS-i486 scons platform=sailfish -jN
+
+build RPM package (SDK)
+-----------------------
+mb2 -t SailfishOS-i486 build
+mb2 -t SailfishOS-armv7hl build
+
+build and deploy the package to the emulator (SDK)
+--------------------------------------------------
+mb2 --device "SailfishOS Emulator" deploy --sdk
+
+installing the package manually
+-------------------------------
+scp -P 2223 -i ~/SailfishOS/vmshare/ssh/private_keys/SailfishOS_Emulator/root cmakesample-1.0-1.i486.rpm root@localhost:
+ssh to emulator
+rpm -i cmakesample-1.0-1.i486.rpm
+
+debug remotely
+--------------
+emulator> gdbserver localhost:10000 /usr/bin/harbour-godotengine [parameters]
+host> cd path/to/project/root
+host> (gdb) target remote localhost:10000
