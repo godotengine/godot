@@ -156,6 +156,7 @@
 #include "scene/resources/sky_box.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/text_file.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
@@ -616,6 +617,8 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
 	ClassDB::register_class<Curve>();
+
+	ClassDB::register_class<TextFile>();
 
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();

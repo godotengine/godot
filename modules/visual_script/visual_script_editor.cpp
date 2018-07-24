@@ -1962,28 +1962,27 @@ void VisualScriptEditor::_button_resource_previewed(const String &p_path, const 
 void VisualScriptEditor::apply_code() {
 }
 
-Ref<Script> VisualScriptEditor::get_edited_script() const {
-
+RES VisualScriptEditor::get_edited_resource() const {
 	return script;
 }
 
-Vector<String> VisualScriptEditor::get_functions() {
+void VisualScriptEditor::set_edited_resource(const RES &p_res) {
 
-	return Vector<String>();
-}
-
-void VisualScriptEditor::set_edited_script(const Ref<Script> &p_script) {
-
-	script = p_script;
-	signal_editor->script = p_script;
+	script = p_res;
+	signal_editor->script = script;
 	signal_editor->undo_redo = undo_redo;
-	variable_editor->script = p_script;
+	variable_editor->script = script;
 	variable_editor->undo_redo = undo_redo;
 
 	script->connect("node_ports_changed", this, "_node_ports_changed");
 
 	_update_members();
 	_update_available_nodes();
+}
+
+Vector<String> VisualScriptEditor::get_functions() {
+
+	return Vector<String>();
 }
 
 void VisualScriptEditor::reload_text() {
@@ -3515,9 +3514,9 @@ VisualScriptEditor::~VisualScriptEditor() {
 	memdelete(variable_editor);
 }
 
-static ScriptEditorBase *create_editor(const Ref<Script> &p_script) {
+static ScriptEditorBase *create_editor(const RES &p_resource) {
 
-	if (Object::cast_to<VisualScript>(*p_script)) {
+	if (Object::cast_to<VisualScript>(*p_resource)) {
 		return memnew(VisualScriptEditor);
 	}
 

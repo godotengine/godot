@@ -258,84 +258,10 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->get_text_edit()->select_all();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
-
-			TextEdit *tx = shader_editor->get_text_edit();
-			if (shader.is_null())
-				return;
-
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				int from_line = tx->get_selection_from_line();
-				int from_col = tx->get_selection_from_column();
-				int to_line = tx->get_selection_to_line();
-				int to_column = tx->get_selection_to_column();
-
-				for (int i = from_line; i <= to_line; i++) {
-					int line_id = i;
-					int next_id = i - 1;
-
-					if (line_id == 0 || next_id < 0)
-						return;
-
-					tx->swap_lines(line_id, next_id);
-					tx->cursor_set_line(next_id);
-				}
-				int from_line_up = from_line > 0 ? from_line - 1 : from_line;
-				int to_line_up = to_line > 0 ? to_line - 1 : to_line;
-				tx->select(from_line_up, from_col, to_line_up, to_column);
-			} else {
-				int line_id = tx->cursor_get_line();
-				int next_id = line_id - 1;
-
-				if (line_id == 0 || next_id < 0)
-					return;
-
-				tx->swap_lines(line_id, next_id);
-				tx->cursor_set_line(next_id);
-			}
-			tx->end_complex_operation();
-			tx->update();
-
+			shader_editor->move_lines_up();
 		} break;
 		case EDIT_MOVE_LINE_DOWN: {
-
-			TextEdit *tx = shader_editor->get_text_edit();
-			if (shader.is_null())
-				return;
-
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				int from_line = tx->get_selection_from_line();
-				int from_col = tx->get_selection_from_column();
-				int to_line = tx->get_selection_to_line();
-				int to_column = tx->get_selection_to_column();
-
-				for (int i = to_line; i >= from_line; i--) {
-					int line_id = i;
-					int next_id = i + 1;
-
-					if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
-						return;
-
-					tx->swap_lines(line_id, next_id);
-					tx->cursor_set_line(next_id);
-				}
-				int from_line_down = from_line < tx->get_line_count() ? from_line + 1 : from_line;
-				int to_line_down = to_line < tx->get_line_count() ? to_line + 1 : to_line;
-				tx->select(from_line_down, from_col, to_line_down, to_column);
-			} else {
-				int line_id = tx->cursor_get_line();
-				int next_id = line_id + 1;
-
-				if (line_id == tx->get_line_count() - 1 || next_id > tx->get_line_count())
-					return;
-
-				tx->swap_lines(line_id, next_id);
-				tx->cursor_set_line(next_id);
-			}
-			tx->end_complex_operation();
-			tx->update();
-
+			shader_editor->move_lines_down();
 		} break;
 		case EDIT_INDENT_LEFT: {
 
@@ -356,55 +282,10 @@ void ShaderEditor::_menu_option(int p_option) {
 
 		} break;
 		case EDIT_DELETE_LINE: {
-
-			TextEdit *tx = shader_editor->get_text_edit();
-			if (shader.is_null())
-				return;
-
-			tx->begin_complex_operation();
-			int line = tx->cursor_get_line();
-			tx->set_line(tx->cursor_get_line(), "");
-			tx->backspace_at_cursor();
-			tx->cursor_set_line(line);
-			tx->end_complex_operation();
-
+			shader_editor->delete_lines();
 		} break;
 		case EDIT_CLONE_DOWN: {
-
-			TextEdit *tx = shader_editor->get_text_edit();
-			if (shader.is_null())
-				return;
-
-			int from_line = tx->cursor_get_line();
-			int to_line = tx->cursor_get_line();
-			int column = tx->cursor_get_column();
-
-			if (tx->is_selection_active()) {
-				from_line = tx->get_selection_from_line();
-				to_line = tx->get_selection_to_line();
-				column = tx->cursor_get_column();
-			}
-			int next_line = to_line + 1;
-
-			tx->begin_complex_operation();
-			for (int i = from_line; i <= to_line; i++) {
-
-				if (i >= tx->get_line_count() - 1) {
-					tx->set_line(i, tx->get_line(i) + "\n");
-				}
-				String line_clone = tx->get_line(i);
-				tx->insert_at(line_clone, next_line);
-				next_line++;
-			}
-
-			tx->cursor_set_column(column);
-			if (tx->is_selection_active()) {
-				tx->select(to_line + 1, tx->get_selection_from_column(), next_line - 1, tx->get_selection_to_column());
-			}
-
-			tx->end_complex_operation();
-			tx->update();
-
+			shader_editor->code_lines_down();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 
