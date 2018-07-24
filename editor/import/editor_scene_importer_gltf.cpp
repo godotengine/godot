@@ -1711,14 +1711,14 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 #endif
 	for (int i = 0; i < n->children.size(); i++) {
 		if (state.nodes[n->children[i]]->joints.size()) {
-			_generate_bone(state, n->children[i], skeletons, Vector<int>(), node);
+			_generate_bone(state, n->children[i], skeletons, node);
 		} else {
 			_generate_node(state, n->children[i], node, p_owner, skeletons);
 		}
 	}
 }
 
-void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, const Vector<int> &p_parent_bones, Node *p_parent_node) {
+void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
 	ERR_FAIL_INDEX(p_node, state.nodes.size());
 
 	if (state.skeleton_nodes.has(p_node)) {
@@ -1733,30 +1733,28 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 	}
 
 	GLTFNode *n = state.nodes[p_node];
-	Vector<int> parent_bones;
 
 	for (int i = 0; i < n->joints.size(); i++) {
-		ERR_FAIL_COND(n->joints[i].skin < 0);
+		const int skin = n->joints[i].skin;
+		ERR_FAIL_COND(skin < 0);
 
-		int bone_index = n->joints[i].bone;
+		Skeleton *s = skeletons[skin];
+		const GLTFNode *gltf_bone_node = state.nodes[state.skins[skin].bones[n->joints[i].bone].node];
+		const String bone_name = gltf_bone_node->name;
+		const int parent = gltf_bone_node->parent;
+		const int parent_index = s->find_bone(state.nodes[parent]->name);
 
-		Skeleton *s = skeletons[n->joints[i].skin];
-		while (s->get_bone_count() <= bone_index) {
-			s->add_bone("Bone " + itos(s->get_bone_count()));
-		}
-
-		if (p_parent_bones.size()) {
-			s->set_bone_parent(bone_index, p_parent_bones[i]);
-		}
-		s->set_bone_rest(bone_index, state.skins[n->joints[i].skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
+		s->add_bone(bone_name);
+		const int bone_index = s->find_bone(bone_name);
+		s->set_bone_parent(bone_index, parent_index);
+		s->set_bone_rest(bone_index, state.skins[skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
 
 		n->godot_nodes.push_back(s);
 		n->joints[i].godot_bone_index = bone_index;
-		parent_bones.push_back(bone_index);
 	}
 
 	for (int i = 0; i < n->children.size(); i++) {
-		_generate_bone(state, n->children[i], skeletons, parent_bones, p_parent_node);
+		_generate_bone(state, n->children[i], skeletons, p_parent_node);
 	}
 }
 
@@ -2070,7 +2068,7 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	}
 	for (int i = 0; i < state.root_nodes.size(); i++) {
 		if (state.nodes[state.root_nodes[i]]->joints.size()) {
-			_generate_bone(state, state.root_nodes[i], skeletons, Vector<int>(), root);
+			_generate_bone(state, state.root_nodes[i], skeletons, root);
 		} else {
 			_generate_node(state, state.root_nodes[i], root, root, skeletons);
 		}
