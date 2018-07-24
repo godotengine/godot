@@ -54,31 +54,24 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 	int line = 1;
 	bool skip_this = false;
 	bool skip_next = false;
+	bool is_eof = false;
 
-	while (true) {
+	while (!is_eof) {
 
-		String l = f->get_line();
+		String l = f->get_line().strip_edges();
+		is_eof = f->eof_reached();
 
-		if (f->eof_reached()) {
+		// If we reached last line and it's not a content line, break, otherwise let processing that last loop
+		if (is_eof && l.empty()) {
 
-			if (status == STATUS_READING_STRING) {
-
-				if (msg_id != "") {
-					if (!skip_this)
-						translation->add_message(msg_id, msg_str);
-				} else if (config == "")
-					config = msg_str;
+			if (status == STATUS_READING_ID) {
+				memdelete(f);
+				ERR_EXPLAIN(p_path + ":" + itos(line) + " Unexpected EOF while reading 'msgid' at file: ");
+				ERR_FAIL_V(RES());
+			} else {
 				break;
-
-			} else if (status == STATUS_NONE)
-				break;
-
-			memdelete(f);
-			ERR_EXPLAIN(p_path + ":" + itos(line) + " Unexpected EOF while reading 'msgid' at file: ");
-			ERR_FAIL_V(RES());
+			}
 		}
-
-		l = l.strip_edges();
 
 		if (l.begins_with("msgid")) {
 
@@ -159,6 +152,15 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 
 	f->close();
 	memdelete(f);
+
+	if (status == STATUS_READING_STRING) {
+
+		if (msg_id != "") {
+			if (!skip_this)
+				translation->add_message(msg_id, msg_str);
+		} else if (config == "")
+			config = msg_str;
+	}
 
 	if (config == "") {
 		ERR_EXPLAIN("No config found in file: " + p_path);
