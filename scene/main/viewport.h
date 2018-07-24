@@ -303,7 +303,7 @@ private:
 	} gui;
 
 	bool disable_input;
-	int focus_layer;
+	int input_player;
 	StringName focus_group;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
@@ -472,8 +472,8 @@ public:
 	void input(const Ref<InputEvent> &p_event);
 	void unhandled_input(const Ref<InputEvent> &p_event);
 
-	void set_focus_layer(int p_focus_layer);
-	int get_focus_layer() const;
+	void set_input_player(int p_input_player);
+	int get_input_player() const;
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;

@@ -1362,10 +1362,10 @@ void Viewport::_gui_prepare_subwindows() {
 	_gui_sort_subwindows();
 }
 
-void Viewport::set_focus_layer(int p_focus_layer) {
+void Viewport::set_input_player(int p_input_player) {
 	StringName old = focus_group;
-	focus_layer = p_focus_layer;
-	focus_group = "_viewport_focus_" + itos(focus_layer);
+	input_player = p_input_player;
+	focus_group = "_viewport_focus_" + itos(input_player);
 
 	if (is_inside_tree()) {
 		remove_from_group(old);
@@ -1373,8 +1373,8 @@ void Viewport::set_focus_layer(int p_focus_layer) {
 	}
 }
 
-int Viewport::get_focus_layer() const {
-	return focus_layer;
+int Viewport::get_input_player() const {
+	return input_player;
 }
 
 void Viewport::_gui_sort_subwindows() {
@@ -3042,8 +3042,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
 
-	ClassDB::bind_method(D_METHOD("set_focus_layer", "focus_layer"), &Viewport::set_focus_layer);
-	ClassDB::bind_method(D_METHOD("get_focus_layer"), &Viewport::get_focus_layer);
+	ClassDB::bind_method(D_METHOD("set_input_player", "input_player"), &Viewport::set_input_player);
+	ClassDB::bind_method(D_METHOD("get_input_player"), &Viewport::get_input_player);
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
@@ -3107,7 +3107,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Physics", "physics_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_GROUP("GUI", "gui_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_focus_layer", PROPERTY_HINT_RANGE, "0,20"), "set_focus_layer", "get_focus_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_input_player", PROPERTY_HINT_ENUM, "All,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"), "set_input_player", "get_input_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
@@ -3227,7 +3227,7 @@ Viewport::Viewport() {
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
-	set_focus_layer(0);
+	set_input_player(0);
 	disable_input = false;
 	disable_3d = false;
 	keep_3d_linear = false;
