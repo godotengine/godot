@@ -95,6 +95,7 @@ void PhysicsDirectBodyState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState::add_central_force);
 	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState::add_force);
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState::add_torque);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "j"), &PhysicsDirectBodyState::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "j"), &PhysicsDirectBodyState::apply_impulse);
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "j"), &PhysicsDirectBodyState::apply_torque_impulse);
 
