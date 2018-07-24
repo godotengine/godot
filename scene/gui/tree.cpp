@@ -2426,14 +2426,23 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				int col, h, section;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
-				if ((drop_mode_flags && it != drop_mode_over) || section != drop_mode_section) {
-					drop_mode_over = it;
-					drop_mode_section = section;
+				if (drop_mode_flags) {
+					if (it != drop_mode_over) {
+						drop_mode_over = it;
+						update();
+					}
+					if (it && section != drop_mode_section) {
+						drop_mode_section = section;
+						update();
+					}
+				}
+
+				if (it != cache.hover_item) {
+					cache.hover_item = it;
 					update();
 				}
 
-				if (it != cache.hover_item || col != cache.hover_cell) {
-					cache.hover_item = it;
+				if (it && col != cache.hover_cell) {
 					cache.hover_cell = col;
 					update();
 				}
