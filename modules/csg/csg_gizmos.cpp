@@ -32,7 +32,16 @@
 
 ///////////
 
-String CSGShapeSpatialGizmo::get_handle_name(int p_idx) const {
+CSGShapeSpatialGizmoPlugin::CSGShapeSpatialGizmoPlugin() {
+
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.2, 0.5, 1, 0.1));
+	create_material("shape_material", gizmo_color);
+	create_handle_material("handles");
+}
+
+String CSGShapeSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
+
+	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere>(cs)) {
 
@@ -57,7 +66,9 @@ String CSGShapeSpatialGizmo::get_handle_name(int p_idx) const {
 
 	return "";
 }
-Variant CSGShapeSpatialGizmo::get_handle_value(int p_idx) const {
+Variant CSGShapeSpatialGizmoPlugin::get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const {
+
+	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere>(cs)) {
 
@@ -89,10 +100,12 @@ Variant CSGShapeSpatialGizmo::get_handle_value(int p_idx) const {
 
 	return Variant();
 }
-void CSGShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point) {
+
+	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
 
 	Transform gt = cs->get_global_transform();
-	gt.orthonormalize();
+	//gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
@@ -170,7 +183,9 @@ void CSGShapeSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 
 			s->set_outer_radius(d);
 	}
 }
-void CSGShapeSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+void CSGShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+
+	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
 
 	if (Object::cast_to<CSGSphere>(cs)) {
 		CSGSphere *s = Object::cast_to<CSGSphere>(cs);
@@ -260,12 +275,26 @@ void CSGShapeSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bo
 		ur->commit_action();
 	}
 }
-void CSGShapeSpatialGizmo::redraw() {
+bool CSGShapeSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<CSGSphere>(p_spatial) || Object::cast_to<CSGBox>(p_spatial) || Object::cast_to<CSGCylinder>(p_spatial) || Object::cast_to<CSGTorus>(p_spatial) || Object::cast_to<CSGMesh>(p_spatial) || Object::cast_to<CSGPolygon>(p_spatial);
+}
 
-	clear();
+String CSGShapeSpatialGizmoPlugin::get_name() const {
+	return "CSGShapes";
+}
 
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/csg");
-	Ref<Material> material = create_material("shape_material", gizmo_color);
+bool CSGShapeSpatialGizmoPlugin::is_selectable_when_hidden() const {
+	return true;
+}
+
+void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+
+	CSGShape *cs = Object::cast_to<CSGShape>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	Ref<Material> material = get_material("shape_material", p_gizmo);
+	Ref<Material> handles_material = get_material("handles");
 
 	PoolVector<Vector3> faces = cs->get_brush_faces();
 
@@ -284,8 +313,8 @@ void CSGShapeSpatialGizmo::redraw() {
 		}
 	}
 
-	add_lines(lines, material);
-	add_collision_segments(lines);
+	p_gizmo->add_lines(lines, material);
+	p_gizmo->add_collision_segments(lines);
 
 	if (Object::cast_to<CSGSphere>(cs)) {
 		CSGSphere *s = Object::cast_to<CSGSphere>(cs);
@@ -293,7 +322,7 @@ void CSGShapeSpatialGizmo::redraw() {
 		float r = s->get_radius();
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(r, 0, 0));
-		add_handles(handles);
+		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	if (Object::cast_to<CSGBox>(cs)) {
@@ -303,7 +332,7 @@ void CSGShapeSpatialGizmo::redraw() {
 		handles.push_back(Vector3(s->get_width(), 0, 0));
 		handles.push_back(Vector3(0, s->get_height(), 0));
 		handles.push_back(Vector3(0, 0, s->get_depth()));
-		add_handles(handles);
+		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	if (Object::cast_to<CSGCylinder>(cs)) {
@@ -312,7 +341,7 @@ void CSGShapeSpatialGizmo::redraw() {
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(s->get_radius(), 0, 0));
 		handles.push_back(Vector3(0, s->get_height() * 0.5, 0));
-		add_handles(handles);
+		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	if (Object::cast_to<CSGTorus>(cs)) {
@@ -321,25 +350,11 @@ void CSGShapeSpatialGizmo::redraw() {
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(s->get_inner_radius(), 0, 0));
 		handles.push_back(Vector3(s->get_outer_radius(), 0, 0));
-		add_handles(handles);
+		p_gizmo->add_handles(handles, handles_material);
 	}
-}
-CSGShapeSpatialGizmo::CSGShapeSpatialGizmo(CSGShape *p_cs) {
-
-	cs = p_cs;
-	set_spatial_node(p_cs);
-}
-
-Ref<SpatialEditorGizmo> EditorPluginCSG::create_spatial_gizmo(Spatial *p_spatial) {
-	if (Object::cast_to<CSGSphere>(p_spatial) || Object::cast_to<CSGBox>(p_spatial) || Object::cast_to<CSGCylinder>(p_spatial) || Object::cast_to<CSGTorus>(p_spatial) || Object::cast_to<CSGMesh>(p_spatial) || Object::cast_to<CSGPolygon>(p_spatial)) {
-		Ref<CSGShapeSpatialGizmo> csg = memnew(CSGShapeSpatialGizmo(Object::cast_to<CSGShape>(p_spatial)));
-		return csg;
-	}
-
-	return Ref<SpatialEditorGizmo>();
 }
 
 EditorPluginCSG::EditorPluginCSG(EditorNode *p_editor) {
-
-	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/csg", Color(0.2, 0.5, 1, 0.1));
+	Ref<CSGShapeSpatialGizmoPlugin> gizmo_plugin = Ref<CSGShapeSpatialGizmoPlugin>(memnew(CSGShapeSpatialGizmoPlugin));
+	SpatialEditor::get_singleton()->register_gizmo_plugin(gizmo_plugin);
 }

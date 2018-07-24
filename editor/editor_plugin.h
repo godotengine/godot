@@ -51,7 +51,6 @@ class Camera;
 class EditorSelection;
 class EditorExport;
 class EditorSettings;
-class SpatialEditorGizmo;
 class EditorImportPlugin;
 class EditorExportPlugin;
 class EditorResourcePreview;
@@ -171,7 +170,6 @@ public:
 	void notify_scene_closed(const String &scene_filepath);
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 
-	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	virtual void forward_draw_over_viewport(Control *p_overlay);
 	virtual void forward_force_draw_over_viewport(Control *p_overlay);

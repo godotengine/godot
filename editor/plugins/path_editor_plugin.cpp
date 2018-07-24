@@ -215,6 +215,10 @@ void PathSpatialGizmo::redraw() {
 
 	clear();
 
+	Ref<SpatialMaterial> path_material = gizmo_plugin->get_material("path_material");
+	Ref<SpatialMaterial> path_thin_material = gizmo_plugin->get_material("path_thin_material");
+	Ref<SpatialMaterial> handles_material = gizmo_plugin->get_material("handles");
+
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
 		return;
@@ -238,7 +242,7 @@ void PathSpatialGizmo::redraw() {
 	}
 
 	if (v3p.size() > 1) {
-		add_lines(v3p, PathEditorPlugin::singleton->path_material);
+		add_lines(v3p, path_material);
 		add_collision_segments(v3p);
 	}
 
@@ -265,13 +269,13 @@ void PathSpatialGizmo::redraw() {
 		}
 
 		if (v3p.size() > 1) {
-			add_lines(v3p, PathEditorPlugin::singleton->path_thin_material);
+			add_lines(v3p, path_thin_material);
 		}
 		if (handles.size()) {
-			add_handles(handles);
+			add_handles(handles, handles_material);
 		}
 		if (sec_handles.size()) {
-			add_handles(sec_handles, false, true);
+			add_handles(sec_handles, handles_material, false, true);
 		}
 	}
 }
@@ -280,16 +284,6 @@ PathSpatialGizmo::PathSpatialGizmo(Path *p_path) {
 
 	path = p_path;
 	set_spatial_node(p_path);
-}
-
-Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
-
-	if (Object::cast_to<Path>(p_spatial)) {
-
-		return memnew(PathSpatialGizmo(Object::cast_to<Path>(p_spatial)));
-	}
-
-	return Ref<SpatialEditorGizmo>();
 }
 
 bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
@@ -567,21 +561,9 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 
-	path_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	path_material->set_albedo(Color(0.5, 0.5, 1.0, 0.8));
-	path_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	path_material->set_line_width(3);
-	path_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	path_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-	path_thin_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	path_thin_material->set_albedo(Color(0.5, 0.5, 1.0, 0.4));
-	path_thin_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	path_thin_material->set_line_width(1);
-	path_thin_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	path_thin_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-	//SpatialEditor::get_singleton()->add_gizmo_plugin(this);
+	Ref<PathSpatialGizmoPlugin> gizmo_plugin;
+	gizmo_plugin.instance();
+	SpatialEditor::get_singleton()->register_gizmo_plugin(gizmo_plugin);
 
 	sep = memnew(VSeparator);
 	sep->hide();
@@ -630,18 +612,53 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 
 	curve_edit->set_pressed(true);
 	/*
-	collision_polygon_editor = memnew( PathEditor(p_node) );
-	editor->get_viewport()->add_child(collision_polygon_editor);
-
-	collision_polygon_editor->set_margin(MARGIN_LEFT,200);
-	collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
-	collision_polygon_editor->set_margin(MARGIN_TOP,0);
-	collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
-
-
-	collision_polygon_editor->hide();
-	*/
+    collision_polygon_editor = memnew( PathEditor(p_node) );
+    editor->get_viewport()->add_child(collision_polygon_editor);
+    collision_polygon_editor->set_margin(MARGIN_LEFT,200);
+    collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
+    collision_polygon_editor->set_margin(MARGIN_TOP,0);
+    collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
+    collision_polygon_editor->hide();
+    */
 }
 
 PathEditorPlugin::~PathEditorPlugin() {
+}
+
+Ref<EditorSpatialGizmo> PathSpatialGizmoPlugin::create_gizmo(Spatial *p_spatial) {
+	Ref<PathSpatialGizmo> ref;
+
+	Path *path = Object::cast_to<Path>(p_spatial);
+	if (path) ref = Ref<PathSpatialGizmo>(memnew(PathSpatialGizmo(path)));
+
+	return ref;
+}
+
+String PathSpatialGizmoPlugin::get_name() const {
+	return "Path";
+}
+
+PathSpatialGizmoPlugin::PathSpatialGizmoPlugin() {
+
+	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
+
+	Ref<SpatialMaterial> path_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+	path_color.a = 0.8;
+	path_material->set_albedo(path_color);
+	path_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	path_material->set_line_width(3);
+	path_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+	path_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+
+	Ref<SpatialMaterial> path_thin_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+	path_color.a = 0.4;
+	path_thin_material->set_albedo(path_color);
+	path_thin_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	path_thin_material->set_line_width(1);
+	path_thin_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+	path_thin_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+
+	add_material("path_material", path_material);
+	add_material("path_thin_material", path_thin_material);
+	create_handle_material("handles");
 }

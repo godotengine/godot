@@ -49,8 +49,20 @@ public:
 	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	void redraw();
+	virtual void redraw();
 	PathSpatialGizmo(Path *p_path = NULL);
+};
+
+class PathSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+
+	GDCLASS(PathSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+
+protected:
+	Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);
+
+public:
+	String get_name() const;
+	PathSpatialGizmoPlugin();
 };
 
 class PathEditorPlugin : public EditorPlugin {
@@ -88,12 +100,10 @@ public:
 	Path *get_edited_path() { return path; }
 
 	static PathEditorPlugin *singleton;
-	Ref<SpatialMaterial> path_material;
-	Ref<SpatialMaterial> path_thin_material;
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
 
 	//virtual bool forward_gui_input(const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
-	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
+	//virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
 	virtual String get_name() const { return "Path"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
