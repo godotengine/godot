@@ -206,7 +206,8 @@ def configure_msvc(env, manual_msvc_config):
 
     env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
                                    'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
-                                   'TYPED_METHOD_BIND', 'WIN32', 'MSVC',
+                                   'WINMIDI_ENABLED', 'TYPED_METHOD_BIND',
+                                   'WIN32', 'MSVC',
                                    {'WINVER' : '$target_win_version',
                                     '_WIN32_WINNT': '$target_win_version'}])
     if env["bits"] == "64":

@@ -140,6 +140,16 @@ enum JoystickList {
 	JOY_ANALOG_R2 = JOY_AXIS_7,
 };
 
+enum MidiMessageList {
+	MIDI_MESSAGE_NOTE_OFF = 0x8,
+	MIDI_MESSAGE_NOTE_ON = 0x9,
+	MIDI_MESSAGE_AFTERTOUCH = 0xA,
+	MIDI_MESSAGE_CONTROL_CHANGE = 0xB,
+	MIDI_MESSAGE_PROGRAM_CHANGE = 0xC,
+	MIDI_MESSAGE_CHANNEL_PRESSURE = 0xD,
+	MIDI_MESSAGE_PITCH_BEND = 0xE,
+};
+
 /**
  * Input Modifier Status
  * for keyboard/mouse events.
@@ -525,4 +535,50 @@ public:
 
 	InputEventPanGesture();
 };
+
+class InputEventMIDI : public InputEvent {
+	GDCLASS(InputEventMIDI, InputEvent)
+
+	int channel;
+	int message;
+	int pitch;
+	int velocity;
+	int instrument;
+	int pressure;
+	int controller_number;
+	int controller_value;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_channel(const int p_channel);
+	int get_channel() const;
+
+	void set_message(const int p_message);
+	int get_message() const;
+
+	void set_pitch(const int p_pitch);
+	int get_pitch() const;
+
+	void set_velocity(const int p_velocity);
+	int get_velocity() const;
+
+	void set_instrument(const int p_instrument);
+	int get_instrument() const;
+
+	void set_pressure(const int p_pressure);
+	int get_pressure() const;
+
+	void set_controller_number(const int p_controller_number);
+	int get_controller_number() const;
+
+	void set_controller_value(const int p_controller_value);
+	int get_controller_value() const;
+
+	virtual String as_text() const;
+
+	InputEventMIDI();
+};
+
 #endif

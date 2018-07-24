@@ -1080,3 +1080,122 @@ InputEventPanGesture::InputEventPanGesture() {
 
 	delta = Vector2(0, 0);
 }
+/////////////////////////////
+
+void InputEventMIDI::set_channel(const int p_channel) {
+
+	channel = p_channel;
+}
+
+int InputEventMIDI::get_channel() const {
+	return channel;
+}
+
+void InputEventMIDI::set_message(const int p_message) {
+
+	message = p_message;
+}
+
+int InputEventMIDI::get_message() const {
+	return message;
+}
+
+void InputEventMIDI::set_pitch(const int p_pitch) {
+
+	pitch = p_pitch;
+}
+
+int InputEventMIDI::get_pitch() const {
+	return pitch;
+}
+
+void InputEventMIDI::set_velocity(const int p_velocity) {
+
+	velocity = p_velocity;
+}
+
+int InputEventMIDI::get_velocity() const {
+	return velocity;
+}
+
+void InputEventMIDI::set_instrument(const int p_instrument) {
+
+	instrument = p_instrument;
+}
+
+int InputEventMIDI::get_instrument() const {
+	return instrument;
+}
+
+void InputEventMIDI::set_pressure(const int p_pressure) {
+
+	pressure = p_pressure;
+}
+
+int InputEventMIDI::get_pressure() const {
+	return pressure;
+}
+
+void InputEventMIDI::set_controller_number(const int p_controller_number) {
+
+	controller_number = p_controller_number;
+}
+
+int InputEventMIDI::get_controller_number() const {
+	return controller_number;
+}
+
+void InputEventMIDI::set_controller_value(const int p_controller_value) {
+
+	controller_value = p_controller_value;
+}
+
+int InputEventMIDI::get_controller_value() const {
+	return controller_value;
+}
+
+String InputEventMIDI::as_text() const {
+
+	return "InputEventMIDI : channel=(" + itos(get_channel()) + "), message=(" + itos(get_message()) + ")";
+}
+
+void InputEventMIDI::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_channel", "channel"), &InputEventMIDI::set_channel);
+	ClassDB::bind_method(D_METHOD("get_channel"), &InputEventMIDI::get_channel);
+	ClassDB::bind_method(D_METHOD("set_message", "message"), &InputEventMIDI::set_message);
+	ClassDB::bind_method(D_METHOD("get_message"), &InputEventMIDI::get_message);
+	ClassDB::bind_method(D_METHOD("set_pitch", "pitch"), &InputEventMIDI::set_pitch);
+	ClassDB::bind_method(D_METHOD("get_pitch"), &InputEventMIDI::get_pitch);
+	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &InputEventMIDI::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_velocity"), &InputEventMIDI::get_velocity);
+	ClassDB::bind_method(D_METHOD("set_instrument", "instrument"), &InputEventMIDI::set_instrument);
+	ClassDB::bind_method(D_METHOD("get_instrument"), &InputEventMIDI::get_instrument);
+	ClassDB::bind_method(D_METHOD("set_pressure", "pressure"), &InputEventMIDI::set_pressure);
+	ClassDB::bind_method(D_METHOD("get_pressure"), &InputEventMIDI::get_pressure);
+	ClassDB::bind_method(D_METHOD("set_controller_number", "controller_number"), &InputEventMIDI::set_controller_number);
+	ClassDB::bind_method(D_METHOD("get_controller_number"), &InputEventMIDI::get_controller_number);
+	ClassDB::bind_method(D_METHOD("set_controller_value", "controller_value"), &InputEventMIDI::set_controller_value);
+	ClassDB::bind_method(D_METHOD("get_controller_value"), &InputEventMIDI::get_controller_value);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "channel"), "set_channel", "get_channel");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "message"), "set_message", "get_message");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pitch"), "set_pitch", "get_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "velocity"), "set_velocity", "get_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "instrument"), "set_instrument", "get_instrument");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pressure"), "set_pressure", "get_pressure");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_number"), "set_controller_number", "get_controller_number");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "controller_value"), "set_controller_value", "get_controller_value");
+}
+
+InputEventMIDI::InputEventMIDI() {
+
+	channel = 0;
+	message = 0;
+	pitch = 0;
+	velocity = 0;
+	instrument = 0;
+	pressure = 0;
+	controller_number = 0;
+	controller_value = 0;
+}
