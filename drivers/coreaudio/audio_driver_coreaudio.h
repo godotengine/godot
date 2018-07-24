@@ -54,8 +54,6 @@ class AudioDriverCoreAudio : public AudioDriver {
 	unsigned int buffer_frames;
 	unsigned int buffer_size;
 
-	Vector<int32_t> samples_in;
-
 #ifdef OSX_ENABLED
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,

@@ -142,7 +142,7 @@ Error AudioDriverALSA::init_device() {
 	status = snd_pcm_sw_params(pcm_handle, swparams);
 	CHECK_FAIL(status < 0);
 
-	samples_in.resize(period_size * channels);
+	output_buffer.resize(period_size * channels);
 	samples_out.resize(period_size * channels);
 
 	return OK;
@@ -168,22 +168,22 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 	AudioDriverALSA *ad = (AudioDriverALSA *)p_udata;
 
 	while (!ad->exit_thread) {
-
 		ad->lock();
 		ad->start_counting_ticks();
 
-		if (!ad->active) {
-			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out[i] = 0;
-			}
-
+		if (ad->active) {
+			ad->audio_server_process(ad->period_size, ad->output_buffer.ptrw());
 		} else {
-			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
-
-			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out[i] = ad->samples_in[i] >> 16;
+			for (unsigned int i = 0; i < ad->output_buffer.size(); i++) {
+				ad->output_buffer[i] = 0;
 			}
 		}
+
+		for (unsigned int i = 0; i < ad->output_buffer.size(); i++) {
+			ad->samples_out[i] = ad->output_buffer[i] >> 16;
+		}
+
+		ad->output_position += ad->output_buffer.size();
 
 		int todo = ad->period_size;
 		int total = 0;

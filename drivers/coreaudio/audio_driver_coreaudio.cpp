@@ -127,7 +127,7 @@ Error AudioDriverCoreAudio::init() {
 #endif
 
 	buffer_size = buffer_frames * channels;
-	samples_in.resize(buffer_size);
+	output_buffer.resize(buffer_size);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("CoreAudio: detected " + itos(channels) + " channels");
@@ -155,7 +155,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 
 	AudioDriverCoreAudio *ad = (AudioDriverCoreAudio *)inRefCon;
 
-	if (!ad->active || !ad->try_lock()) {
+	if (!ad->active) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			AudioBuffer *abuf = &ioData->mBuffers[i];
 			zeromem(abuf->mData, abuf->mDataByteSize);
@@ -163,6 +163,7 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		return 0;
 	};
 
+	ad->lock();
 	ad->start_counting_ticks();
 
 	for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
@@ -174,11 +175,12 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		while (frames_left) {
 
 			int frames = MIN(frames_left, ad->buffer_frames);
-			ad->audio_server_process(frames, ad->samples_in.ptrw());
+			ad->audio_server_process(frames, ad->output_buffer.ptrw());
+			ad->output_position += frames * ad->channels;
 
 			for (int j = 0; j < frames * ad->channels; j++) {
 
-				out[j] = ad->samples_in[j] >> 16;
+				out[j] = ad->output_buffer[j] >> 16;
 			}
 
 			frames_left -= frames;
@@ -443,8 +445,6 @@ AudioDriverCoreAudio::AudioDriverCoreAudio() {
 
 	buffer_size = 0;
 	buffer_frames = 0;
-
-	samples_in.clear();
 
 	device_name = "Default";
 };

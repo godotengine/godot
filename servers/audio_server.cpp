@@ -117,6 +117,8 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_mix_amount = 0;
+	output_buffer.clear();
+	output_position = 0;
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
@@ -1250,6 +1252,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_list"), &AudioServer::get_device_list);
 	ClassDB::bind_method(D_METHOD("get_device"), &AudioServer::get_device);
 	ClassDB::bind_method(D_METHOD("set_device"), &AudioServer::set_device);
+
+	ClassDB::bind_method(D_METHOD("get_output_buffer"), &AudioServer::get_output_buffer);
+	ClassDB::bind_method(D_METHOD("get_output_position"), &AudioServer::get_output_position);
+	ClassDB::bind_method(D_METHOD("get_output_channels"), &AudioServer::get_output_channels);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
