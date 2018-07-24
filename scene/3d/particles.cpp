@@ -818,7 +818,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "		CUSTOM.z = mod(CUSTOM.z,1.0);\n"; //loop
 
 	} else {
-		code += "		CUSTOM.z = clamp(CUSTOM.z,0.0,1.0);\n"; //0 to 1 only
+		code += "		CUSTOM.z = clamp(CUSTOM.z,0.0,1.0 - 0.0001);\n"; //0 to 1 only
 	}
 	code += "	}\n";
 	//apply color
