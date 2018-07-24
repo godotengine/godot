@@ -65,6 +65,7 @@ class String : public Vector<CharType> {
 	void copy_from(const char *p_cstr);
 	void copy_from(const CharType *p_cstr, int p_clip_to = -1);
 	void copy_from(const CharType &p_char);
+	void copy_from_unchecked(const CharType *p_char, int p_length);
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
 
 public:

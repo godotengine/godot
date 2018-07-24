@@ -161,14 +161,21 @@ void String::copy_from(const CharType *p_cstr, int p_clip_to) {
 		return;
 	}
 
-	resize(len + 1);
-	set(len, 0);
+	copy_from_unchecked(p_cstr, len);
+}
+
+// assumes the following have already been validated:
+// p_char != NULL
+// p_length > 0
+// p_length <= p_char strlen
+void String::copy_from_unchecked(const CharType *p_char, int p_length) {
+	resize(p_length + 1);
+	set(p_length, 0);
 
 	CharType *dst = &operator[](0);
 
-	for (int i = 0; i < len; i++) {
-
-		dst[i] = p_cstr[i];
+	for (int i = 0; i < p_length; i++) {
+		dst[i] = p_char[i];
 	}
 }
 
@@ -2246,7 +2253,9 @@ String String::substr(int p_from, int p_chars) const {
 		return String(*this);
 	}
 
-	return String(&c_str()[p_from], p_chars);
+	String s = String();
+	s.copy_from_unchecked(&c_str()[p_from], p_chars);
+	return s;
 }
 
 int String::find_last(const String &p_str) const {
