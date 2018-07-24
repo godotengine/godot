@@ -1319,6 +1319,9 @@ void FileSystemDock::_file_option(int p_option) {
 			String fpath = files->get_item_metadata(idx);
 			OS::get_singleton()->set_clipboard(fpath);
 		} break;
+		case FILE_NEW_RESOURCE: {
+			new_resource_dialog->popup_create(true);
+		} break;
 	}
 }
 
@@ -1391,6 +1394,21 @@ void FileSystemDock::_folder_option(int p_option) {
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 	}
+}
+
+void FileSystemDock::_resource_created() const {
+	Object *c = new_resource_dialog->instance_selected();
+
+	ERR_FAIL_COND(!c);
+	Resource *r = Object::cast_to<Resource>(c);
+	ERR_FAIL_COND(!r);
+
+	REF res(r);
+	editor->push_item(c);
+
+	RES current_res = RES(r);
+
+	editor->save_resource_as(current_res);
 }
 
 void FileSystemDock::_go_to_file_list() {
@@ -1738,6 +1756,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
+	file_options->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_position(files->get_global_position() + p_pos);
@@ -1750,6 +1769,7 @@ void FileSystemDock::_rmb_pressed(const Vector2 &p_pos) {
 
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
+	file_options->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();
@@ -1862,6 +1882,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_option"), &FileSystemDock::_file_option);
 	ClassDB::bind_method(D_METHOD("_folder_option"), &FileSystemDock::_folder_option);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_resource_created"), &FileSystemDock::_resource_created);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm", "to_path", "overwrite"), &FileSystemDock::_move_operation_confirm, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_move_with_overwrite"), &FileSystemDock::_move_with_overwrite);
 	ClassDB::bind_method(D_METHOD("_rename_operation_confirm"), &FileSystemDock::_rename_operation_confirm);
@@ -2086,6 +2107,11 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_script_dialog_text = memnew(ScriptCreateDialog);
 	make_script_dialog_text->set_title(TTR("Create Script"));
 	add_child(make_script_dialog_text);
+
+	new_resource_dialog = memnew(CreateDialog);
+	add_child(new_resource_dialog);
+	new_resource_dialog->set_base_type("Resource");
+	new_resource_dialog->connect("create", this, "_resource_created");
 
 	updating_tree = false;
 	initialized = false;
