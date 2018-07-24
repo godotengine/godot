@@ -1205,18 +1205,40 @@ void CubeMap::set_side(Side p_side, const Ref<Texture> &p_texture) {
 
 	ERR_FAIL_INDEX(p_side, 6);
 
+	//user has cleared a side
+	if (!p_texture.is_valid()) {
+		Image::Format format = VS::get_singleton()->texture_get_format(cubemap);
+		Ref<Image> empty_image = memnew(Image(w, h, 0, format));
+		VS::get_singleton()->texture_set_data(cubemap, empty_image, VS::CubeMapSide(p_side));
+
+		valid[p_side] = false;
+
+		return;
+	}
+
 	Ref<Image> p_image = p_texture->get_data();
+	ERR_FAIL_COND(!p_image.is_valid());
+
+	//if at least one of the sides have been assigned an image, we can allocate texture space for it
 	if (!_is_valid()) {
 		format = p_image->get_format();
 		w = p_image->get_width();
 		h = p_image->get_height();
-		VS::get_singleton()->texture_allocate(cubemap, w, h, p_image->get_format(), flags | VS::TEXTURE_FLAG_CUBEMAP);
+		VS::get_singleton()->texture_allocate(cubemap, w, h, format, flags | VS::TEXTURE_FLAG_CUBEMAP);
 	}
 
 	VS::get_singleton()->texture_set_data(cubemap, p_image, VS::CubeMapSide(p_side));
 
 	textures[p_side] = p_texture;
 	valid[p_side] = true;
+
+	for (int i = 0; i < 6; i++) {
+		if (!valid[i]) {
+			Image::Format format = VS::get_singleton()->texture_get_format(cubemap);
+			Ref<Image> empty_image = memnew(Image(w, h, 0, format));
+			VS::get_singleton()->texture_set_data(cubemap, empty_image, VS::CubeMapSide(i));
+		}
+	}
 }
 
 Ref<Texture> CubeMap::get_side(Side p_side) const {
@@ -1268,6 +1290,16 @@ void CubeMap::set_path(const String &p_path, bool p_take_over) {
 
 	if (cubemap.is_valid()) {
 		VisualServer::get_singleton()->texture_set_path(cubemap, p_path);
+
+		if (_is_valid()) {
+			for (int i = 0; i < 6; i++) {
+				if (!valid[i]) {
+					Image::Format format = VS::get_singleton()->texture_get_format(cubemap);
+					Ref<Image> empty_image = memnew(Image(w, h, 0, format));
+					VS::get_singleton()->texture_set_data(cubemap, empty_image, VS::CubeMapSide(i));
+				}
+			}
+		}
 	}
 
 	Resource::set_path(p_path, p_take_over);
