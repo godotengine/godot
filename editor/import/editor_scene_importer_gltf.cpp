@@ -1735,23 +1735,22 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 	GLTFNode *n = state.nodes[p_node];
 
 	for (int i = 0; i < n->joints.size(); i++) {
-		ERR_FAIL_COND(n->joints[i].skin < 0);
+		const int skin = n->joints[i].skin;
+		ERR_FAIL_COND(skin < 0);
 
-		int bone_index = n->joints[i].bone;
+		Skeleton *s = skeletons[skin];
+		const GLTFNode *gltf_bone_node = state.nodes[state.skins[skin].bones[n->joints[i].bone].node];
+		const String bone_name = gltf_bone_node->name;
+		const int parent = gltf_bone_node->parent;
+		const int parent_index = s->find_bone(state.nodes[parent]->name);
 
-		Skeleton *s = skeletons[n->joints[i].skin];
-		while (s->get_bone_count() <= bone_index) {
-			s->add_bone("Bone " + itos(s->get_bone_count()));
-		}
-
-		if (p_parent_bones.size()) {
-			s->set_bone_parent(bone_index, p_parent_bones[i]);
-		}
-		s->set_bone_rest(bone_index, state.skins[n->joints[i].skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
+		s->add_bone(bone_name);
+		const int bone_index = s->find_bone(bone_name);
+		s->set_bone_parent(bone_index, parent_index);
+		s->set_bone_rest(bone_index, state.skins[skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
 
 		n->godot_nodes.push_back(s);
 		n->joints[i].godot_bone_index = bone_index;
-		parent_bones.push_back(bone_index);
 	}
 
 	for (int i = 0; i < n->children.size(); i++) {
