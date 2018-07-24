@@ -91,6 +91,13 @@ void Physics2DDirectBodyState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "transform"), &Physics2DDirectBodyState::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Physics2DDirectBodyState::get_transform);
 
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &Physics2DDirectBodyState::add_central_force);
+	ClassDB::bind_method(D_METHOD("add_force", "offset", "force"), &Physics2DDirectBodyState::add_force);
+	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &Physics2DDirectBodyState::add_torque);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &Physics2DDirectBodyState::apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &Physics2DDirectBodyState::apply_torque_impulse);
+	ClassDB::bind_method(D_METHOD("apply_impulse", "offset", "impulse"), &Physics2DDirectBodyState::apply_impulse);
+
 	ClassDB::bind_method(D_METHOD("set_sleep_state", "enabled"), &Physics2DDirectBodyState::set_sleep_state);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &Physics2DDirectBodyState::is_sleeping);
 
@@ -585,8 +592,12 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &Physics2DServer::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &Physics2DServer::body_get_state);
 
+	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &Physics2DServer::body_apply_central_impulse);
+	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &Physics2DServer::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "position", "impulse"), &Physics2DServer::body_apply_impulse);
+	ClassDB::bind_method(D_METHOD("body_add_central_force", "force"), &Physics2DServer::body_add_central_force);
 	ClassDB::bind_method(D_METHOD("body_add_force", "body", "offset", "force"), &Physics2DServer::body_add_force);
+	ClassDB::bind_method(D_METHOD("body_add_torque", "body", "torque"), &Physics2DServer::body_add_torque);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &Physics2DServer::body_set_axis_velocity);
 
 	ClassDB::bind_method(D_METHOD("body_add_collision_exception", "body", "excepted_body"), &Physics2DServer::body_add_collision_exception);

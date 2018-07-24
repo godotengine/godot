@@ -126,6 +126,10 @@ void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
 	body->apply_torque(p_torque);
 }
 
+void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_j) {
+	body->apply_central_impulse(p_j);
+}
+
 void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
 	body->apply_impulse(p_pos, p_j);
 }
