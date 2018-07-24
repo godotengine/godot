@@ -409,6 +409,11 @@ if selected_platform in platform_list:
 
     env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+    # (SH)LIBSUFFIX will be used for our own built libraries
+    # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
+    # so we need to append the default suffixes to keep the ability
+    # to link against thirdparty libraries (.a, .so, .dll, etc.).
+    env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
