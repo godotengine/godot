@@ -526,7 +526,7 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 	if (!erase) {
 		ids = get_selected_tiles();
 
-		if (ids.size() == 0 && ids[0] == TileMap::INVALID_CELL)
+		if (ids.size() == 0 || ids[0] == TileMap::INVALID_CELL)
 			return PoolVector<Vector2>();
 	} else if (prev_id == TileMap::INVALID_CELL) {
 		return PoolVector<Vector2>();
