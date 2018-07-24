@@ -721,6 +721,34 @@ Vector3 BulletPhysicsServer::body_get_applied_torque(RID p_body) const {
 	return body->get_applied_torque();
 }
 
+void BulletPhysicsServer::body_add_central_force(RID p_body, const Vector3 &p_force) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_central_force(p_force);
+}
+
+void BulletPhysicsServer::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_force(p_force, p_pos);
+}
+
+void BulletPhysicsServer::body_add_torque(RID p_body, const Vector3 &p_torque) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_torque(p_torque);
+}
+
+void BulletPhysicsServer::body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_central_impulse(p_impulse);
+}
+
 void BulletPhysicsServer::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);

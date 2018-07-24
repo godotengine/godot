@@ -95,6 +95,7 @@ void PhysicsDirectBodyState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState::add_central_force);
 	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState::add_force);
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState::add_torque);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "j"), &PhysicsDirectBodyState::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "j"), &PhysicsDirectBodyState::apply_impulse);
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "j"), &PhysicsDirectBodyState::apply_torque_impulse);
 
@@ -496,6 +497,11 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer::body_get_state);
 
+	ClassDB::bind_method(D_METHOD("body_add_central_force", "body", "force"), &PhysicsServer::body_add_central_force);
+	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer::body_add_force);
+	ClassDB::bind_method(D_METHOD("body_add_torque", "body", "torque"), &PhysicsServer::body_add_torque);
+
+	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &PhysicsServer::body_apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "position", "impulse"), &PhysicsServer::body_apply_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &PhysicsServer::body_set_axis_velocity);

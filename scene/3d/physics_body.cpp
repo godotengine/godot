@@ -795,6 +795,22 @@ int RigidBody::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+void RigidBody::add_central_force(const Vector3 &p_force) {
+	PhysicsServer::get_singleton()->body_add_central_force(get_rid(), p_force);
+}
+
+void RigidBody::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+	PhysicsServer::get_singleton()->body_add_force(get_rid(), p_force, p_pos);
+}
+
+void RigidBody::add_torque(const Vector3 &p_torque) {
+	PhysicsServer::get_singleton()->body_add_torque(get_rid(), p_torque);
+}
+
+void RigidBody::apply_central_impulse(const Vector3 &p_impulse) {
+	PhysicsServer::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
+}
+
 void RigidBody::apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) {
 
 	PhysicsServer::get_singleton()->body_apply_impulse(get_rid(), p_pos, p_impulse);
@@ -947,6 +963,12 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &RigidBody::is_using_continuous_collision_detection);
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody::set_axis_velocity);
+
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidBody::add_central_force);
+	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidBody::add_force);
+	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidBody::add_torque);
+
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "impulse"), &RigidBody::apply_impulse);
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &RigidBody::apply_torque_impulse);
 

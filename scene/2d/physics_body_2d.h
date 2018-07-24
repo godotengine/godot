@@ -256,7 +256,9 @@ public:
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;
 
+	void apply_central_impulse(const Vector2 &p_impulse);
 	void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse);
+	void apply_torque_impulse(float p_torque);
 
 	void set_applied_force(const Vector2 &p_force);
 	Vector2 get_applied_force() const;
@@ -264,7 +266,9 @@ public:
 	void set_applied_torque(const float p_torque);
 	float get_applied_torque() const;
 
+	void add_central_force(const Vector2 &p_force);
 	void add_force(const Vector2 &p_offset, const Vector2 &p_force);
+	void add_torque(float p_torque);
 
 	Array get_colliding_bodies() const; //function for script
 
