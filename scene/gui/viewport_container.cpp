@@ -163,7 +163,7 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 		if (!c || c->is_input_disabled())
 			continue;
 
-		ev->set_layer(c->get_focus_layer());
+		ev->set_layer(c->get_input_player());
 		c->input(ev);
 	}
 }

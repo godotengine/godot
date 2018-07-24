@@ -1275,7 +1275,7 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 
 	Ref<InputEvent> out = ev->xformed_by(ai, -vp_ofs);
-	out->set_layer(get_focus_layer());
+	out->set_layer(get_input_player());
 
 	return out;
 }
