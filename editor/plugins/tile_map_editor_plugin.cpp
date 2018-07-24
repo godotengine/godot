@@ -538,9 +538,7 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 		}
 	}
 
-	Rect2i r = node->_edit_get_rect();
-	r.position = r.position / node->get_cell_size();
-	r.size = r.size / node->get_cell_size();
+	Rect2i r = node->get_used_rect();
 
 	int area = r.get_area();
 	if (preview) {
@@ -1029,7 +1027,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						if (points.size() == 0)
 							return false;
 
-						undo_redo->create_action(TTR("Bucket Fill"));
+						_start_undo(TTR("Bucket Fill"));
 
 						Dictionary op;
 						op["id"] = get_selected_tiles();
@@ -1039,7 +1037,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						_fill_points(points, op);
 
-						undo_redo->commit_action();
+						_finish_undo();
 
 						// We want to keep the bucket-tool active
 						return true;
