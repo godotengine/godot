@@ -35,19 +35,20 @@
 		func get_import_options(i):
 		    return [{"name": "my_option", "default_value": false}]
 
-		func load(src, dst, opts, r_platform_variants, r_gen_files):
+		func import(source_file, save_path, options, r_platform_variants, r_gen_files):
 		    var file = File.new()
-		    if file.open(src, File.READ) != OK:
+		    if file.open(source_file, File.READ) != OK:
 		        return FAILED
 
 		    var mesh = Mesh.new()
 
-		    var save = dst + "." + get_save_extension()
-		    ResourceSaver.save(file, mesh)
+		    var filename = save_path + "." + get_save_extension()
+		    ResourceSaver.save(filename, mesh)
 		    return OK
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -119,7 +120,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Get the godot resource type associated with this loader. e.g. "Mesh" or "Animation".
+				Get the Godot resource type associated with this loader. e.g. "Mesh" or "Animation".
 			</description>
 		</method>
 		<method name="get_save_extension" qualifiers="virtual">
