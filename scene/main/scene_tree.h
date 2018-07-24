@@ -324,7 +324,7 @@ public:
 
 	void quit();
 
-	void set_input_as_handled();
+	void set_input_as_handled(bool p_handled = true);
 	bool is_input_handled();
 	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
 	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
