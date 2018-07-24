@@ -35,7 +35,7 @@
 
 Size2 ViewportContainer::get_minimum_size() const {
 
-	if (stretch)
+	if (stretch || resizable)
 		return Size2();
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -50,6 +50,17 @@ Size2 ViewportContainer::get_minimum_size() const {
 	}
 
 	return ms;
+}
+
+void ViewportContainer::set_resizable(bool p_enable) {
+
+	resizable = p_enable;
+	minimum_size_changed();
+}
+
+bool ViewportContainer::is_resizable() const {
+
+	return resizable;
 }
 
 void ViewportContainer::set_stretch(bool p_enable) {
@@ -174,13 +185,18 @@ void ViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stretch_shrink", "amount"), &ViewportContainer::set_stretch_shrink);
 	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &ViewportContainer::get_stretch_shrink);
 
+	ClassDB::bind_method(D_METHOD("set_resizable", "amount"), &ViewportContainer::set_resizable);
+	ClassDB::bind_method(D_METHOD("is_resizable"), &ViewportContainer::is_resizable);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
 }
 
 ViewportContainer::ViewportContainer() {
 
 	stretch = false;
 	shrink = 1;
+	resizable = false;
 	set_process_input(true);
 }

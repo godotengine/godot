@@ -39,6 +39,7 @@ class ViewportContainer : public Container {
 
 	bool stretch;
 	int shrink;
+	bool resizable;
 
 protected:
 	void _notification(int p_what);
@@ -51,6 +52,9 @@ public:
 	void _input(const Ref<InputEvent> &p_event);
 	void set_stretch_shrink(int p_shrink);
 	int get_stretch_shrink() const;
+
+	void set_resizable(bool p_enable);
+	bool is_resizable() const;
 
 	virtual Size2 get_minimum_size() const;
 
