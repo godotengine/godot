@@ -1376,6 +1376,15 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID } },
 	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
+	//conversion between matrixes
+
+	{ "mat2", TYPE_MAT2, { TYPE_MAT3, TYPE_VOID } },
+	{ "mat2", TYPE_MAT2, { TYPE_MAT4, TYPE_VOID } },
+	{ "mat3", TYPE_MAT3, { TYPE_MAT2, TYPE_VOID } },
+	{ "mat3", TYPE_MAT3, { TYPE_MAT4, TYPE_VOID } },
+	{ "mat4", TYPE_MAT4, { TYPE_MAT2, TYPE_VOID } },
+	{ "mat4", TYPE_MAT4, { TYPE_MAT3, TYPE_VOID } },
+
 	//builtins - trigonometry
 
 	{ "radians", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
