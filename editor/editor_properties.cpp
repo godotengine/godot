@@ -726,6 +726,7 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 		grid->value |= (1 << p_menu);
 	}
 	grid->update();
+	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
 	_grid_changed(grid->value);
 }
 
@@ -751,6 +752,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	set_bottom_editor(hb);
 	layers = memnew(PopupMenu);
 	add_child(layers);
+	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 }
 ///////////////////// INT /////////////////////////
