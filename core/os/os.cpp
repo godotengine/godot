@@ -632,6 +632,22 @@ void OS::center_window() {
 	set_window_position(Vector2(x, y));
 }
 
+void OS::set_adapter_name(const String &p_adapter_name) {
+	_adapter = p_adapter_name;
+}
+
+String OS::get_adapter_name() const {
+	return _adapter;
+}
+
+void OS::set_adapter_vendor(const String &p_adapter_vendor) {
+	_adapter_vendor = p_adapter_vendor;
+}
+
+String OS::get_adapter_vendor() const {
+	return _adapter_vendor;
+}
+
 int OS::get_video_driver_count() const {
 
 	return 2;

@@ -67,6 +67,8 @@ class OS {
 	bool _allow_hidpi;
 	bool _allow_layered;
 	bool _use_vsync;
+	String _adapter;
+	String _adapter_vendor;
 
 	char *last_error;
 
@@ -182,6 +184,11 @@ public:
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0) = 0;
 	virtual VideoMode get_video_mode(int p_screen = 0) const = 0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const = 0;
+
+	virtual void set_adapter_name(const String &p_adapter_name);
+	virtual String get_adapter_name() const;
+	virtual void set_adapter_vendor(const String &p_adapter_vendor);
+	virtual String get_adapter_vendor() const;
 
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;

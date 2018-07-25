@@ -387,6 +387,14 @@ Array _OS::get_fullscreen_mode_list(int p_screen) const {
 	return vmarr;
 }
 
+String _OS::get_adapter_name() const {
+	return OS::get_singleton()->get_adapter_name();
+}
+
+String _OS::get_adapter_vendor() const {
+	return OS::get_singleton()->get_adapter_vendor();
+}
+
 void _OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
@@ -1194,6 +1202,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("alert", "text", "title"), &_OS::alert, DEFVAL("Alert!"));
 
 	ClassDB::bind_method(D_METHOD("set_thread_name", "name"), &_OS::set_thread_name);
+
+	ClassDB::bind_method(D_METHOD("get_adapter_name"), &_OS::get_adapter_name);
+	ClassDB::bind_method(D_METHOD("get_adapter_vendor"), &_OS::get_adapter_vendor);
 
 	ClassDB::bind_method(D_METHOD("set_use_vsync", "enable"), &_OS::set_use_vsync);
 	ClassDB::bind_method(D_METHOD("is_vsync_enabled"), &_OS::is_vsync_enabled);
