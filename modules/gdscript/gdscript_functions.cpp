@@ -1412,7 +1412,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 
 MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	//using a switch, so the compiler generates a jumptable
 
 	switch (p_func) {
