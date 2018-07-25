@@ -369,6 +369,7 @@ public:
 		StringName _notification;
 		StringName _set;
 		StringName _get;
+		StringName _call;
 		StringName _get_property_list;
 		StringName _script_source;
 

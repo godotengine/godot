@@ -648,7 +648,13 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 									return -1;
 								}
 								GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(on->arguments[i]);
-								ret = codegen.get_name_map_pos(id->name);
+
+								if (instance->type == GDScriptParser::Node::TYPE_SELF && static_cast<const GDScriptParser::SelfNode *>(instance)->implicit && codegen.stack_identifiers.has(id->name)) {
+									arguments[0] = codegen.stack_identifiers[id->name] | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+									ret = codegen.get_name_map_pos("_call");
+								} else {
+									ret = codegen.get_name_map_pos(id->name);
+								}
 
 							} else {
 

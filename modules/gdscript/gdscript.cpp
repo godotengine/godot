@@ -1149,6 +1149,14 @@ Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_arg
 		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
 		if (E) {
 			return E->get()->call(this, p_args, p_argcount, r_error);
+		} else {
+			Map<StringName, GDScript::MemberInfo>::Element *M = sptr->member_indices.find(p_method);
+			if (M) {
+				Variant method_object = members[M->get().index];
+				if (method_object.get_type() == Variant::OBJECT) {
+					return method_object.call(GDScriptLanguage::get_singleton()->strings._call, p_args, p_argcount, r_error);
+				}
+			}
 		}
 		sptr = sptr->_base;
 	}
@@ -1876,6 +1884,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._notification = StaticCString::create("_notification");
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
+	strings._call = StaticCString::create("_call");
 	strings._get_property_list = StaticCString::create("_get_property_list");
 	strings._script_source = StaticCString::create("script/source");
 	_debug_parse_err_line = -1;

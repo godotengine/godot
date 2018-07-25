@@ -30,6 +30,7 @@
 
 #include "gdscript_function.h"
 
+#include "func_ref.h"
 #include "gdscript.h"
 #include "gdscript_functions.h"
 #include "os/os.h"
@@ -642,6 +643,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #else
 				*dst = src->get_named(*index, &valid);
 #endif
+				if (!valid && src->get_type() == Variant::OBJECT) {
+					Object *obj = *src;
+					if (obj->has_method(*index)) {
+						Ref<FuncRef> fr = memnew(FuncRef);
+						fr->set_instance(obj);
+						fr->set_function(*index);
+						valid = true;
+#ifdef DEBUG_ENABLED
+						ret = fr;
+#else
+						*dst = fr;
+#endif
+					}
+				}
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					if (src->has_method(*index)) {

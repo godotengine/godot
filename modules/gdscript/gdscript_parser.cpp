@@ -693,6 +693,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			} else {
 
 				SelfNode *self = alloc_node<SelfNode>();
+				self->implicit = true;
 				op->arguments.push_back(self);
 
 				StringName identifier;
