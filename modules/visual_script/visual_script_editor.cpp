@@ -2905,7 +2905,7 @@ void VisualScriptEditor::_selected_new_virtual_method(const String &p_text, cons
 	undo_redo->add_do_method(script.ptr(), "add_function", name);
 
 	for (int i = 0; i < minfo.arguments.size(); i++) {
-		func_node->add_argument(minfo.arguments[i].type, minfo.arguments[i].name);
+		func_node->add_argument(minfo.arguments[i].type, minfo.arguments[i].name, -1, minfo.arguments[i].hint, minfo.arguments[i].hint_string);
 	}
 
 	undo_redo->add_do_method(script.ptr(), "add_node", name, script->get_available_id(), func_node);
