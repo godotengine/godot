@@ -190,7 +190,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		for (int i = 0; i < plugins.size(); i++) {
-			custom_editor = plugins[i]->create_editor(vsnode);
+			custom_editor = plugins.write[i]->create_editor(vsnode);
 			if (custom_editor) {
 				break;
 			}

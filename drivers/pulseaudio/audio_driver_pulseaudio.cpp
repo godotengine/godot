@@ -295,7 +295,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		if (!ad->active) {
 			for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-				ad->samples_out[i] = 0;
+				ad->samples_out.write[i] = 0;
 			}
 
 		} else {
@@ -303,7 +303,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 			if (ad->channels == ad->pa_map.channels) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-					ad->samples_out[i] = ad->samples_in[i] >> 16;
+					ad->samples_out.write[i] = ad->samples_in[i] >> 16;
 				}
 			} else {
 				// Uneven amount of channels
@@ -312,11 +312,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 				for (unsigned int i = 0; i < ad->buffer_frames; i++) {
 					for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
-						ad->samples_out[out_idx++] = ad->samples_in[in_idx++] >> 16;
+						ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
 					}
 					uint32_t l = ad->samples_in[in_idx++];
 					uint32_t r = ad->samples_in[in_idx++];
-					ad->samples_out[out_idx++] = (l >> 1 + r >> 1) >> 16;
+					ad->samples_out.write[out_idx++] = (l >> 1 + r >> 1) >> 16;
 				}
 			}
 		}

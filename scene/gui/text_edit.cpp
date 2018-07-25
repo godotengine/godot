@@ -131,8 +131,6 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 
 	text.write[p_line].wrap_amount_cache = -1;
 
-	text[p_line].wrap_amount_cache = -1;
-
 	//update regions
 
 	text.write[p_line].region_info.clear();
@@ -238,7 +236,7 @@ void TextEdit::Text::set_line_wrap_amount(int p_line, int p_wrap_amount) const {
 
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	text[p_line].wrap_amount_cache = p_wrap_amount;
+	text.write[p_line].wrap_amount_cache = p_wrap_amount;
 }
 
 int TextEdit::Text::get_line_wrap_amount(int p_line) const {
@@ -251,14 +249,14 @@ int TextEdit::Text::get_line_wrap_amount(int p_line) const {
 void TextEdit::Text::clear_width_cache() {
 
 	for (int i = 0; i < text.size(); i++) {
-		text[i].width_cache = -1;
+		text.write[i].width_cache = -1;
 	}
 }
 
 void TextEdit::Text::clear_wrap_cache() {
 
 	for (int i = 0; i < text.size(); i++) {
-		text[i].wrap_amount_cache = -1;
+		text.write[i].wrap_amount_cache = -1;
 	}
 }
 
@@ -283,9 +281,9 @@ void TextEdit::Text::set(int p_line, const String &p_text) {
 
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	text[p_line].width_cache = -1;
-	text[p_line].wrap_amount_cache = -1;
-	text[p_line].data = p_text;
+	text.write[p_line].width_cache = -1;
+	text.write[p_line].wrap_amount_cache = -1;
+	text.write[p_line].data = p_text;
 }
 
 void TextEdit::Text::insert(int p_at, const String &p_text) {

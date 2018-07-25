@@ -1750,7 +1750,7 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 		s->set_bone_rest(bone_index, state.skins[skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
 
 		n->godot_nodes.push_back(s);
-		n->joints[i].godot_bone_index = bone_index;
+		n->joints.write[i].godot_bone_index = bone_index;
 	}
 
 	for (int i = 0; i < n->children.size(); i++) {

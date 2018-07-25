@@ -282,10 +282,10 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 
 		ERR_FAIL_COND(p_offset >= p_packet_len);
 		int vlen;
-		Error err = decode_variant(args[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
+		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
 		ERR_FAIL_COND(err != OK);
 		//args[i]=p_packet[3+i];
-		argp[i] = &args[i];
+		argp.write[i] = &args[i];
 		p_offset += vlen;
 	}
 
@@ -354,8 +354,8 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 	Vector<uint8_t> packet;
 
 	packet.resize(1 + len);
-	packet[0] = NETWORK_COMMAND_CONFIRM_PATH;
-	encode_cstring(pname.get_data(), &packet[1]);
+	packet.write[0] = NETWORK_COMMAND_CONFIRM_PATH;
+	encode_cstring(pname.get_data(), &packet.write[1]);
 
 	network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	network_peer->set_target_peer(p_from);
@@ -415,9 +415,9 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 		Vector<uint8_t> packet;
 
 		packet.resize(1 + 4 + len);
-		packet[0] = NETWORK_COMMAND_SIMPLIFY_PATH;
-		encode_uint32(psc->id, &packet[1]);
-		encode_cstring(pname.get_data(), &packet[5]);
+		packet.write[0] = NETWORK_COMMAND_SIMPLIFY_PATH;
+		encode_uint32(psc->id, &packet.write[1]);
+		encode_cstring(pname.get_data(), &packet.write[5]);
 
 		network_peer->set_target_peer(E->get()); //to all of you
 		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
@@ -482,19 +482,19 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	//encode type
 	MAKE_ROOM(1);
-	packet_cache[0] = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
+	packet_cache.write[0] = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
 	ofs += 1;
 
 	//encode ID
 	MAKE_ROOM(ofs + 4);
-	encode_uint32(psc->id, &(packet_cache[ofs]));
+	encode_uint32(psc->id, &(packet_cache.write[ofs]));
 	ofs += 4;
 
 	//encode function name
 	CharString name = String(p_name).utf8();
 	int len = encode_cstring(name.get_data(), NULL);
 	MAKE_ROOM(ofs + len);
-	encode_cstring(name.get_data(), &(packet_cache[ofs]));
+	encode_cstring(name.get_data(), &(packet_cache.write[ofs]));
 	ofs += len;
 
 	if (p_set) {
@@ -502,19 +502,19 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		Error err = encode_variant(*p_arg[0], NULL, len);
 		ERR_FAIL_COND(err != OK);
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &(packet_cache[ofs]), len);
+		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
 		ofs += len;
 
 	} else {
 		//call arguments
 		MAKE_ROOM(ofs + 1);
-		packet_cache[ofs] = p_argcount;
+		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
 			Error err = encode_variant(*p_arg[i], NULL, len);
 			ERR_FAIL_COND(err != OK);
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &(packet_cache[ofs]), len);
+			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
 			ofs += len;
 		}
 	}
@@ -537,7 +537,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), NULL);
 		MAKE_ROOM(ofs + path_len);
-		encode_cstring(pname.get_data(), &(packet_cache[ofs]));
+		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
 		for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
 
@@ -554,11 +554,11 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 			if (F->get() == true) {
 				//this one confirmed path, so use id
-				encode_uint32(psc->id, &(packet_cache[1]));
+				encode_uint32(psc->id, &(packet_cache.write[1]));
 				network_peer->put_packet(packet_cache.ptr(), ofs);
 			} else {
 				//this one did not confirm path yet, so use entire path (sorry!)
-				encode_uint32(0x80000000 | ofs, &(packet_cache[1])); //offset to path and flag
+				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); //offset to path and flag
 				network_peer->put_packet(packet_cache.ptr(), ofs + path_len);
 			}
 		}
@@ -712,8 +712,8 @@ Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, Networked
 
 	MAKE_ROOM(p_data.size() + 1);
 	PoolVector<uint8_t>::Read r = p_data.read();
-	packet_cache[0] = NETWORK_COMMAND_RAW;
-	memcpy(&packet_cache[1], &r[0], p_data.size());
+	packet_cache.write[0] = NETWORK_COMMAND_RAW;
+	memcpy(&packet_cache.write[1], &r[0], p_data.size());
 
 	network_peer->set_target_peer(p_to);
 	network_peer->set_transfer_mode(p_mode);

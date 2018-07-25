@@ -1532,11 +1532,11 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						float z = i == 0 ? -1 : 1;
 						Vector<Plane> planes;
 						planes.resize(5);
-						planes[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
-						planes[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
-						planes[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
-						planes[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
-						planes[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
+						planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+						planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
+						planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
+						planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
+						planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 						int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 						Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);

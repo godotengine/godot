@@ -318,7 +318,7 @@ bool UndoRedo::undo() {
 	ERR_FAIL_COND_V(action_level > 0, false);
 	if (current_action < 0)
 		return false; //nothing to redo
-	_process_operation_list(actions[current_action].undo_ops.front());
+	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
 

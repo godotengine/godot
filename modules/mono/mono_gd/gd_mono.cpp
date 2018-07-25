@@ -77,12 +77,12 @@ void setup_runtime_main_args() {
 	Vector<char *> main_args;
 	main_args.resize(cmdline_args.size() + 1);
 
-	main_args[0] = execpath.ptrw();
+	main_args.write[0] = execpath.ptrw();
 
 	int i = 1;
 	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		CharString &stored = cmdline_args_utf8.push_back(E->get().utf8())->get();
-		main_args[i] = stored.ptrw();
+		main_args.write[i] = stored.ptrw();
 		i++;
 	}
 

@@ -405,9 +405,6 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 		if (ct.texture->get_format() != p_image_format)
 			continue;
 
-		if (ct.texture->get_format() != p_image_format)
-			continue;
-
 		if (mw > ct.texture_size || mh > ct.texture_size) //too big for this texture
 			continue;
 
@@ -496,7 +493,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 
 	//fit character in char texture
 
-	CharTexture &tex = textures[tex_pos.index];
+	CharTexture &tex = textures.write[tex_pos.index];
 
 	{
 		PoolVector<uint8_t>::Write wr = tex.imgdata.write();
@@ -550,7 +547,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 	// update height array
 
 	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
-		tex.offsets[k] = tex_pos.y + mh;
+		tex.offsets.write[k] = tex_pos.y + mh;
 	}
 
 	Character chr;
@@ -701,9 +698,9 @@ void DynamicFont::_reload_cache() {
 	}
 
 	for (int i = 0; i < fallbacks.size(); i++) {
-		fallback_data_at_size[i] = fallbacks[i]->_get_dynamic_font_at_size(cache_id);
+		fallback_data_at_size.write[i] = fallbacks.write[i]->_get_dynamic_font_at_size(cache_id);
 		if (outline_cache_id.outline_size > 0)
-			fallback_outline_data_at_size[i] = fallbacks[i]->_get_dynamic_font_at_size(outline_cache_id);
+			fallback_outline_data_at_size.write[i] = fallbacks.write[i]->_get_dynamic_font_at_size(outline_cache_id);
 	}
 
 	emit_changed();
@@ -906,9 +903,9 @@ void DynamicFont::add_fallback(const Ref<DynamicFontData> &p_data) {
 
 	ERR_FAIL_COND(p_data.is_null());
 	fallbacks.push_back(p_data);
-	fallback_data_at_size.push_back(fallbacks[fallbacks.size() - 1]->_get_dynamic_font_at_size(cache_id)); //const..
+	fallback_data_at_size.push_back(fallbacks.write[fallbacks.size() - 1]->_get_dynamic_font_at_size(cache_id)); //const..
 	if (outline_cache_id.outline_size > 0)
-		fallback_outline_data_at_size.push_back(fallbacks[fallbacks.size() - 1]->_get_dynamic_font_at_size(outline_cache_id));
+		fallback_outline_data_at_size.push_back(fallbacks.write[fallbacks.size() - 1]->_get_dynamic_font_at_size(outline_cache_id));
 
 	_change_notify();
 	emit_changed();

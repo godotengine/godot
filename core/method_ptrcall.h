@@ -225,7 +225,7 @@ struct PtrToArg<const T *> {
 			{                                                                                    \
 				PoolVector<m_type>::Read r = dvs->read();                                        \
 				for (int i = 0; i < len; i++) {                                                  \
-					ret[i] = r[i];                                                               \
+					ret.write[i] = r[i];                                                         \
 				}                                                                                \
 			}                                                                                    \
 			return ret;                                                                          \
@@ -252,7 +252,7 @@ struct PtrToArg<const T *> {
 			{                                                                                    \
 				PoolVector<m_type>::Read r = dvs->read();                                        \
 				for (int i = 0; i < len; i++) {                                                  \
-					ret[i] = r[i];                                                               \
+					ret.write[i] = r[i];                                                         \
 				}                                                                                \
 			}                                                                                    \
 			return ret;                                                                          \

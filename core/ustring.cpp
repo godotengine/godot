@@ -3042,14 +3042,14 @@ String String::strip_escapes() const {
 	return substr(beg, end - beg);
 }
 
-String String::lstrip(const Vector<CharType> &p_chars) const {
+String String::lstrip(const String &p_chars) const {
 
 	int len = length();
 	int beg;
 
 	for (beg = 0; beg < len; beg++) {
 
-		if (p_chars.find(operator[](beg)) == -1)
+		if (p_chars.find(&ptr()[beg]) == -1)
 			break;
 	}
 
@@ -3059,14 +3059,14 @@ String String::lstrip(const Vector<CharType> &p_chars) const {
 	return substr(beg, len - beg);
 }
 
-String String::rstrip(const Vector<CharType> &p_chars) const {
+String String::rstrip(const String &p_chars) const {
 
 	int len = length();
 	int end;
 
 	for (end = len - 1; end >= 0; end--) {
 
-		if (p_chars.find(operator[](end)) == -1)
+		if (p_chars.find(&ptr()[end]) == -1)
 			break;
 	}
 
@@ -3878,10 +3878,10 @@ String String::percent_decode() const {
 			c += d;
 			i += 2;
 		}
-		pe.push_back(c);
+		pe += c;
 	}
 
-	pe.push_back(0);
+	pe += '0';
 
 	return String::utf8(pe.ptr());
 }

@@ -288,7 +288,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
-			strings.push_back(cc->custom_defines[i]);
+			strings.push_back(cc->custom_defines.write[i]);
 			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i]));
 		}
 	}
@@ -502,7 +502,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	if (cc) {
 		v.custom_uniform_locations.resize(cc->custom_uniforms.size());
 		for (int i = 0; i < cc->custom_uniforms.size(); i++) {
-			v.custom_uniform_locations[i] = glGetUniformLocation(v.id, String(cc->custom_uniforms[i]).ascii().get_data());
+			v.custom_uniform_locations.write[i] = glGetUniformLocation(v.id, String(cc->custom_uniforms[i]).ascii().get_data());
 		}
 	}
 

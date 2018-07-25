@@ -1689,7 +1689,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->rpc_mode = p_func->rpc_mode;
 		gdfunc->argument_types.resize(p_func->argument_types.size());
 		for (int i = 0; i < p_func->argument_types.size(); i++) {
-			gdfunc->argument_types[i] = _gdtype_from_datatype(p_func->argument_types[i]);
+			gdfunc->argument_types.write[i] = _gdtype_from_datatype(p_func->argument_types[i]);
 		}
 		gdfunc->return_type = _gdtype_from_datatype(p_func->return_type);
 	} else {
@@ -1741,7 +1741,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->named_globals.resize(codegen.named_globals.size());
 		gdfunc->_named_globals_ptr = gdfunc->named_globals.ptr();
 		for (int i = 0; i < codegen.named_globals.size(); i++) {
-			gdfunc->named_globals[i] = codegen.named_globals[i];
+			gdfunc->named_globals.write[i] = codegen.named_globals[i];
 		}
 		gdfunc->_named_globals_count = gdfunc->named_globals.size();
 	}

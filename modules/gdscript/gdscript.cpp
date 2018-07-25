@@ -941,7 +941,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 				if (!E->get().data_type.is_type(p_value)) {
 					return false; // Type mismatch
 				}
-				members[E->get().index] = p_value;
+				members.write[E->get().index] = p_value;
 			}
 			return true;
 		}

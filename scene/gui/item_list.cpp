@@ -144,7 +144,7 @@ void ItemList::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].icon_modulate = p_modulate;
+	items.write[p_idx].icon_modulate = p_modulate;
 	update();
 }
 

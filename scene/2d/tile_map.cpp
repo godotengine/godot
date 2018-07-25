@@ -529,8 +529,8 @@ void TileMap::update_dirty_quadrants() {
 								{
 									PoolVector<Vector2>::Read vr = navigation_polygon_vertices.read();
 									for (int i = 0; i < vsize; i++) {
-										vertices[i] = vr[i];
-										colors[i] = debug_navigation_color;
+										vertices.write[i] = vr[i];
+										colors.write[i] = debug_navigation_color;
 									}
 								}
 

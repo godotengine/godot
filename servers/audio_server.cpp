@@ -346,7 +346,7 @@ void AudioServer::_mix_step() {
 				}
 
 #ifdef DEBUG_ENABLED
-				bus->effects[j].prof_time += OS::get_singleton()->get_ticks_usec() - ticks;
+				bus->effects.write[j].prof_time += OS::get_singleton()->get_ticks_usec() - ticks;
 #endif
 			}
 		}
@@ -506,10 +506,10 @@ void AudioServer::set_bus_count(int p_count) {
 			}
 		}
 
-		buses[i] = memnew(Bus);
-		buses[i]->channels.resize(channel_count);
+		buses.write[i] = memnew(Bus);
+		buses.write[i]->channels.resize(channel_count);
 		for (int j = 0; j < channel_count; j++) {
-			buses[i]->channels[j].buffer.resize(buffer_size);
+			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
 		}
 		buses[i]->name = attempt;
 		buses[i]->solo = false;
@@ -581,7 +581,7 @@ void AudioServer::add_bus(int p_at_pos) {
 	Bus *bus = memnew(Bus);
 	bus->channels.resize(channel_count);
 	for (int j = 0; j < channel_count; j++) {
-		bus->channels[j].buffer.resize(buffer_size);
+		bus->channels.write[j].buffer.resize(buffer_size);
 	}
 	bus->name = attempt;
 	bus->solo = false;
@@ -890,13 +890,13 @@ void AudioServer::init_channels_and_buffers() {
 	temp_buffer.resize(channel_count);
 
 	for (int i = 0; i < temp_buffer.size(); i++) {
-		temp_buffer[i].resize(buffer_size);
+		temp_buffer.write[i].resize(buffer_size);
 	}
 
 	for (int i = 0; i < buses.size(); i++) {
 		buses[i]->channels.resize(channel_count);
 		for (int j = 0; j < channel_count; j++) {
-			buses[i]->channels[j].buffer.resize(buffer_size);
+			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
 		}
 	}
 }
@@ -992,7 +992,7 @@ void AudioServer::update() {
 			if (!bus->effects[j].enabled)
 				continue;
 
-			bus->effects[j].prof_time = 0;
+			bus->effects.write[j].prof_time = 0;
 		}
 	}
 
@@ -1166,7 +1166,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
 		buses[i]->channels.resize(channel_count);
 		for (int j = 0; j < channel_count; j++) {
-			buses[i]->channels[j].buffer.resize(buffer_size);
+			buses.write[i]->channels.write[j].buffer.resize(buffer_size);
 		}
 		_update_bus_effects(i);
 	}

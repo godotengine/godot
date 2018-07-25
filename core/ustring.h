@@ -228,8 +228,8 @@ public:
 	String dedent() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
-	String lstrip(const Vector<CharType> &p_chars) const;
-	String rstrip(const Vector<CharType> &p_chars) const;
+	String lstrip(const String &p_chars) const;
+	String rstrip(const String &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
 	String plus_file(const String &p_file) const;

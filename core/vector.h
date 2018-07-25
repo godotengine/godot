@@ -91,8 +91,6 @@ public:
 
 	void append_array(const Vector<T> &p_other);
 
-	void append_array(const Vector<T> &p_other);
-
 	template <class C>
 	void sort_custom() {
 
@@ -175,85 +173,6 @@ bool Vector<T>::push_back(const T &p_elem) {
 	set(size() - 1, p_elem);
 
 	return false;
-}
-
-template <class T>
-void Vector<T>::remove(int p_index) {
-
-	ERR_FAIL_INDEX(p_index, size());
-	T *p = ptrw();
-	int len = size();
-	for (int i = p_index; i < len - 1; i++) {
-
-		p[i] = p[i + 1];
-	};
-
-	resize(len - 1);
-};
-
-template <class T>
-void Vector<T>::_copy_from(const Vector &p_from) {
-
-	if (_ptr == p_from._ptr)
-		return; // self assign, do nothing.
-
-	_unref(_ptr);
-	_ptr = NULL;
-
-	if (!p_from._ptr)
-		return; //nothing to do
-
-	if (atomic_conditional_increment(p_from._get_refcount()) > 0) { // could reference
-		_ptr = p_from._ptr;
-	}
-}
-
-template <class T>
-void Vector<T>::operator=(const Vector &p_from) {
-
-	_copy_from(p_from);
-}
-
-template <class T>
-Error Vector<T>::insert(int p_pos, const T &p_val) {
-
-	ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
-	resize(size() + 1);
-	for (int i = (size() - 1); i > p_pos; i--)
-		set(i, get(i - 1));
-	set(p_pos, p_val);
-
-	return OK;
-}
-
-template <class T>
-void Vector<T>::append_array(const Vector<T> &p_other) {
-	const int ds = p_other.size();
-	if (ds == 0)
-		return;
-	const int bs = size();
-	resize(bs + ds);
-	for (int i = 0; i < ds; ++i)
-		operator[](bs + i) = p_other[i];
-}
-
-template <class T>
-Vector<T>::Vector(const Vector &p_from) {
-
-	_ptr = NULL;
-	_copy_from(p_from);
-}
-
-template <class T>
-Vector<T>::Vector() {
-
-	_ptr = NULL;
-}
-
-template <class T>
-Vector<T>::~Vector() {
-
-	_unref(_ptr);
 }
 
 #endif

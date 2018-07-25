@@ -2020,7 +2020,7 @@ Variant::operator Vector<StringName>() const {
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
 
-		to[i] = from[i];
+		to.write[i] = from[i];
 	}
 	return to;
 }

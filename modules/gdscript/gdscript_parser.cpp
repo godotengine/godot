@@ -5991,7 +5991,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							id->name = cn->value.operator StringName();
 
 							op->op = OperatorNode::OP_INDEX_NAMED;
-							op->arguments[1] = id;
+							op->arguments.write[1] = id;
 
 							return _reduce_node_type(op);
 						}
@@ -6358,7 +6358,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			Vector<DataType> par_types;
 			par_types.resize(p_call->arguments.size() - 1);
 			for (int i = 1; i < p_call->arguments.size(); i++) {
-				par_types[i - 1] = _reduce_node_type(p_call->arguments[i]);
+				par_types.write[i - 1] = _reduce_node_type(p_call->arguments[i]);
 			}
 
 			if (error_set) return DataType();
@@ -6984,7 +6984,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
 	// Class variables
 	for (int i = 0; i < p_class->variables.size(); i++) {
-		ClassNode::Member &v = p_class->variables[i];
+		ClassNode::Member &v = p_class->variables.write[i];
 
 		DataType tmp;
 		if (_get_member_type(p_class->base_type, v.identifier, tmp)) {
@@ -7028,7 +7028,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 					convert_call->arguments.push_back(tgt_type);
 
 					v.expression = convert_call;
-					v.initial_assignment->arguments[1] = convert_call;
+					v.initial_assignment->arguments.write[1] = convert_call;
 				}
 			}
 
@@ -7168,7 +7168,7 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 	for (int i = 0; i < p_function->arguments.size(); i++) {
 
 		// Resolve types
-		p_function->argument_types[i] = _resolve_type(p_function->argument_types[i], p_function->line);
+		p_function->argument_types.write[i] = _resolve_type(p_function->argument_types[i], p_function->line);
 
 		if (i >= defaults_ofs) {
 			if (p_function->default_values[i - defaults_ofs]->type != Node::TYPE_OPERATOR) {
@@ -7319,7 +7319,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							convert_call->arguments.push_back(tgt_type);
 
 							lv->assign = convert_call;
-							lv->assign_op->arguments[1] = convert_call;
+							lv->assign_op->arguments.write[1] = convert_call;
 						}
 					}
 					if (lv->datatype.infer_type) {
@@ -7437,7 +7437,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 								convert_call->arguments.push_back(op->arguments[1]);
 								convert_call->arguments.push_back(tgt_type);
 
-								op->arguments[1] = convert_call;
+								op->arguments.write[1] = convert_call;
 							}
 						}
 						if (!rh_type.has_type && (op->op != OperatorNode::OP_ASSIGN || lh_type.has_type || op->arguments[0]->type == Node::TYPE_OPERATOR)) {

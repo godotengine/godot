@@ -126,16 +126,16 @@ void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 	PoolVector<Vector3>::Read ver_r = vertices.read();
 	for (int j = 0, x = 0, i = 0; i < triangles_num; j += 6, x += 3, ++i) {
 		// Triangle line 1
-		r_lines[j + 0] = ver_r[ind_r[x + 0]];
-		r_lines[j + 1] = ver_r[ind_r[x + 1]];
+		r_lines.write[j + 0] = ver_r[ind_r[x + 0]];
+		r_lines.write[j + 1] = ver_r[ind_r[x + 1]];
 
 		// Triangle line 2
-		r_lines[j + 2] = ver_r[ind_r[x + 1]];
-		r_lines[j + 3] = ver_r[ind_r[x + 2]];
+		r_lines.write[j + 2] = ver_r[ind_r[x + 1]];
+		r_lines.write[j + 3] = ver_r[ind_r[x + 2]];
 
 		// Triangle line 3
-		r_lines[j + 4] = ver_r[ind_r[x + 2]];
-		r_lines[j + 5] = ver_r[ind_r[x + 0]];
+		r_lines.write[j + 4] = ver_r[ind_r[x + 2]];
+		r_lines.write[j + 5] = ver_r[ind_r[x + 0]];
 	}
 }
 void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
@@ -148,7 +148,7 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	int vertices_size = vertices.size();
 	r_points.resize(vertices_size);
 	for (int i = 0; i < vertices_size; ++i) {
-		r_points[i] = vertices[i];
+		r_points.write[i] = vertices[i];
 	}
 }
 
@@ -970,7 +970,7 @@ void ArrayMesh::surface_set_name(int p_idx, const String &p_name) {
 
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
 
-	surfaces[p_idx].name = p_name;
+	surfaces.write[p_idx].name = p_name;
 	emit_changed();
 }
 

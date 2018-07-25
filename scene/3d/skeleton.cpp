@@ -393,7 +393,7 @@ void Skeleton::unparent_bone_and_rest(int p_bone) {
 
 void Skeleton::set_bone_ignore_animation(int p_bone, bool p_ignore) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	bones[p_bone].ignore_animation = p_ignore;
+	bones.write[p_bone].ignore_animation = p_ignore;
 }
 
 bool Skeleton::is_bone_ignore_animation(int p_bone) const {
@@ -553,14 +553,14 @@ void Skeleton::bind_physical_bone_to_bone(int p_bone, PhysicalBone *p_physical_b
 	ERR_FAIL_INDEX(p_bone, bones.size());
 	ERR_FAIL_COND(bones[p_bone].physical_bone);
 	ERR_FAIL_COND(!p_physical_bone);
-	bones[p_bone].physical_bone = p_physical_bone;
+	bones.write[p_bone].physical_bone = p_physical_bone;
 
 	_rebuild_physical_bones_cache();
 }
 
 void Skeleton::unbind_physical_bone_from_bone(int p_bone) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	bones[p_bone].physical_bone = NULL;
+	bones.write[p_bone].physical_bone = NULL;
 
 	_rebuild_physical_bones_cache();
 }
@@ -600,7 +600,7 @@ PhysicalBone *Skeleton::_get_physical_bone_parent(int p_bone) {
 void Skeleton::_rebuild_physical_bones_cache() {
 	const int b_size = bones.size();
 	for (int i = 0; i < b_size; ++i) {
-		bones[i].cache_parent_physical_bone = _get_physical_bone_parent(i);
+		bones.write[i].cache_parent_physical_bone = _get_physical_bone_parent(i);
 		if (bones[i].physical_bone)
 			bones[i].physical_bone->_on_bone_parent_changed();
 	}
@@ -660,7 +660,7 @@ void Skeleton::physical_bones_start_simulation_on(const Array &p_bones) {
 			if (Variant::STRING == p_bones.get(i).get_type()) {
 				int bone_id = find_bone(p_bones.get(i));
 				if (bone_id != -1)
-					sim_bones[c++] = bone_id;
+					sim_bones.write[c++] = bone_id;
 			}
 		}
 		sim_bones.resize(c);

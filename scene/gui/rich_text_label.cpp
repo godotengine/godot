@@ -535,9 +535,9 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					int idx = 0;
 					//set minimums to zero
 					for (int i = 0; i < table->columns.size(); i++) {
-						table->columns[i].min_width = 0;
-						table->columns[i].max_width = 0;
-						table->columns[i].width = 0;
+						table->columns.write[i].min_width = 0;
+						table->columns.write[i].max_width = 0;
+						table->columns.write[i].width = 0;
 					}
 					//compute minimum width for each cell
 					const int available_width = p_width - hseparation * (table->columns.size() - 1) - wofs;
@@ -553,8 +553,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						for (int i = 0; i < frame->lines.size(); i++) {
 
 							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs);
-							table->columns[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
-							table->columns[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
+							table->columns.write[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
+							table->columns.write[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
 						idx++;
 					}
@@ -568,7 +568,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					for (int i = 0; i < table->columns.size(); i++) {
 						remaining_width -= table->columns[i].min_width;
 						if (table->columns[i].max_width > table->columns[i].min_width)
-							table->columns[i].expand = true;
+							table->columns.write[i].expand = true;
 						if (table->columns[i].expand)
 							total_ratio += table->columns[i].expand_ratio;
 					}
@@ -592,7 +592,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							int dif = table->columns[i].width - table->columns[i].max_width;
 							if (dif > 0) {
 								table_need_fit = true;
-								table->columns[i].width = table->columns[i].max_width;
+								table->columns.write[i].width = table->columns[i].max_width;
 								table->total_width -= dif;
 								total_ratio -= table->columns[i].expand_ratio;
 							}
@@ -606,7 +606,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									if (dif > 0) {
 										int slice = table->columns[i].expand_ratio * remaining_width / total_ratio;
 										int incr = MIN(dif, slice);
-										table->columns[i].width += incr;
+										table->columns.write[i].width += incr;
 										table->total_width += incr;
 									}
 								}
@@ -626,8 +626,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 							int ly = 0;
 							_process_line(frame, Point2(), ly, table->columns[column].width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs);
-							frame->lines[i].height_cache = ly; //actual height
-							frame->lines[i].height_accum_cache = ly; //actual height
+							frame->lines.write[i].height_cache = ly; //actual height
+							frame->lines.write[i].height_accum_cache = ly; //actual height
 						}
 						idx++;
 					}
@@ -1267,8 +1267,8 @@ void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 		int y = 0;
 		_process_line(p_frame, text_rect.get_position(), y, text_rect.get_size().width - scroll_w, i, PROCESS_CACHE, base_font, Color(), font_color_shadow, use_outline, shadow_ofs);
-		p_frame->lines[i].height_cache = y;
-		p_frame->lines[i].height_accum_cache = y;
+		p_frame->lines.write[i].height_cache = y;
+		p_frame->lines.write[i].height_accum_cache = y;
 
 		if (i > 0)
 			p_frame->lines.write[i].height_accum_cache += p_frame->lines[i - 1].height_accum_cache;
