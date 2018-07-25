@@ -1438,13 +1438,9 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
 	}
 
-	editor_data->get_undo_redo().add_do_method(editor, "push_item", p_script.operator->());
-	editor_data->get_undo_redo().add_undo_method(editor, "push_item", (Script *)NULL);
-
-	editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-	editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
-
 	editor_data->get_undo_redo().commit_action();
+
+	editor->push_item(p_script.operator->());
 }
 
 void SceneTreeDock::_delete_confirm() {
