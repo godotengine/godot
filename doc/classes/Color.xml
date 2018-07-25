@@ -187,17 +187,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="to_argb32">
-			<return type="int">
-			</return>
-			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). More compatible with DirectX.
-				[codeblock]
-				var c = Color(1, .5, .2)
-				print(str(c.to_32())) # prints 4294934323
-				[/codeblock]
-			</description>
-		</method>
 		<method name="to_html">
 			<return type="String">
 			</return>
@@ -213,16 +202,70 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_argb32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_argb32()) # Prints 4294934323
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_abgr32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_abgr32()) # Prints 4281565439
+				[/codeblock]
+			</description>
+		</method>
 		<method name="to_rgba32">
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile).
+				Returns the color's 32-bit integer in RGBA format (each byte represents a component of the RGBA profile). RGBA is the format that Godot uses by default.
 				[codeblock]
 				var c = Color(1, .5, .2)
-				print(str(c.to_32())) # prints 4294934323
+				print(c.to_rgba32()) # Prints 4286526463
 				[/codeblock]
-				[i]This is same as [method to_argb32] but may be changed later to support RGBA format instead[/i].
+			</description>
+		</method>
+		<method name="to_argb64">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_argb64()) # Prints -2147470541
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_abgr64">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_abgr64()) # Prints -225178692812801
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_rgba64">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 64-bit integer in RGBA format (each word represents a component of the RGBA profile). RGBA is the format that Godot uses by default.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_rgba64()) # Prints -140736629309441
+				[/codeblock]
 			</description>
 		</method>
 	</methods>

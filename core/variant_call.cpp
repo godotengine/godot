@@ -446,8 +446,12 @@ struct _VariantCall {
 	VCALL_LOCALMEM1(Quat, set_euler);
 	VCALL_LOCALMEM2(Quat, set_axis_angle);
 
-	VCALL_LOCALMEM0R(Color, to_rgba32);
 	VCALL_LOCALMEM0R(Color, to_argb32);
+	VCALL_LOCALMEM0R(Color, to_abgr32);
+	VCALL_LOCALMEM0R(Color, to_rgba32);
+	VCALL_LOCALMEM0R(Color, to_argb64);
+	VCALL_LOCALMEM0R(Color, to_abgr64);
+	VCALL_LOCALMEM0R(Color, to_rgba64);
 	VCALL_LOCALMEM0R(Color, gray);
 	VCALL_LOCALMEM0R(Color, inverted);
 	VCALL_LOCALMEM0R(Color, contrasted);
@@ -1614,8 +1618,12 @@ void register_variant_methods() {
 	ADDFUNC1(QUAT, NIL, Quat, set_euler, VECTOR3, "euler", varray());
 	ADDFUNC2(QUAT, NIL, Quat, set_axis_angle, VECTOR3, "axis", REAL, "angle", varray());
 
-	ADDFUNC0R(COLOR, INT, Color, to_rgba32, varray());
 	ADDFUNC0R(COLOR, INT, Color, to_argb32, varray());
+	ADDFUNC0R(COLOR, INT, Color, to_abgr32, varray());
+	ADDFUNC0R(COLOR, INT, Color, to_rgba32, varray());
+	ADDFUNC0R(COLOR, INT, Color, to_argb64, varray());
+	ADDFUNC0R(COLOR, INT, Color, to_abgr64, varray());
+	ADDFUNC0R(COLOR, INT, Color, to_rgba64, varray());
 	ADDFUNC0R(COLOR, REAL, Color, gray, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, inverted, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
