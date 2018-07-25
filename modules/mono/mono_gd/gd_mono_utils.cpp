@@ -234,13 +234,13 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(NodePath, ptr, CACHED_CLASS(NodePath)->get_field(BINDINGS_PTR_FIELD));
 	CACHE_FIELD_AND_CHECK(RID, ptr, CACHED_CLASS(RID)->get_field(BINDINGS_PTR_FIELD));
 
-	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_CLASS(Array)->get_method("GetPtr", 0)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_CLASS(Dictionary)->get_method("GetPtr", 0)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method("IsArrayGenericType", 1)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method("IsDictionaryGenericType", 1)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method("SignalCallback", 1)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, FailureCallback, (SignalAwaiter_FailureCallback)GODOT_API_CLASS(SignalAwaiter)->get_method("FailureCallback", 0)->get_thunk());
-	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, (GodotTaskScheduler_Activate)GODOT_API_CLASS(GodotTaskScheduler)->get_method("Activate", 0)->get_thunk());
+	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_CLASS(Array)->get_method_thunk("GetPtr", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_CLASS(Dictionary)->get_method_thunk("GetPtr", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsArrayGenericType", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsDictionaryGenericType", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("SignalCallback", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, FailureCallback, (SignalAwaiter_FailureCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("FailureCallback", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, (GodotTaskScheduler_Activate)GODOT_API_CLASS(GodotTaskScheduler)->get_method_thunk("Activate", 0));
 
 #ifdef DEBUG_ENABLED
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, (DebugUtils_StackFrameInfo)GODOT_API_CLASS(DebuggingUtils)->get_method_thunk("GetStackFrameInfo", 4));
