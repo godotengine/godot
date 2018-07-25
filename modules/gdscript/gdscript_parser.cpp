@@ -4187,6 +4187,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 
 								current_export.hint_string = native_class->get_name();
+								current_export.class_name = native_class->get_name();
 
 							} else {
 								current_export = PropertyInfo();
@@ -4546,6 +4547,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							member._export.type = Variant::OBJECT;
 							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
 							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							member._export.hint_string = member.data_type.native_type;
 							member._export.class_name = member.data_type.native_type;
 						} else {
 							_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
