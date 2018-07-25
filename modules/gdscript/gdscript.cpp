@@ -1949,7 +1949,7 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 
 		script->set_script_path(p_original_path); // script needs this.
 		script->set_path(p_original_path);
-		//script->set_name(p_path.get_file());
+		script->set_name(p_path.get_file());
 
 		script->reload();
 	}
