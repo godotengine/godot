@@ -187,50 +187,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="to_abgr32">
-			<return type="int">
-			</return>
-			<description>
-				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
-				[codeblock]
-				var c = Color(1, .5, .2)
-				print(c.to_abgr32()) # Prints 4281565439
-				[/codeblock]
-			</description>
-		</method>
-		<method name="to_abgr64">
-			<return type="int">
-			</return>
-			<description>
-				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
-				[codeblock]
-				var c = Color(1, .5, .2)
-				print(c.to_abgr64()) # Prints -225178692812801
-				[/codeblock]
-			</description>
-		</method>
-		<method name="to_argb32">
-			<return type="int">
-			</return>
-			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
-				[codeblock]
-				var c = Color(1, .5, .2)
-				print(c.to_argb32()) # Prints 4294934323
-				[/codeblock]
-			</description>
-		</method>
-		<method name="to_argb64">
-			<return type="int">
-			</return>
-			<description>
-				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
-				[codeblock]
-				var c = Color(1, .5, .2)
-				print(c.to_argb64()) # Prints -2147470541
-				[/codeblock]
-			</description>
-		</method>
 		<method name="to_html">
 			<return type="String">
 			</return>
@@ -246,6 +202,28 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_argb32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_argb32()) # Prints 4294934323
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_abgr32">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_abgr32()) # Prints 4281565439
+				[/codeblock]
+			</description>
+		</method>
 		<method name="to_rgba32">
 			<return type="int">
 			</return>
@@ -254,6 +232,28 @@
 				[codeblock]
 				var c = Color(1, .5, .2)
 				print(c.to_rgba32()) # Prints 4286526463
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_argb64">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_argb64()) # Prints -2147470541
+				[/codeblock]
+			</description>
+		</method>
+		<method name="to_abgr64">
+			<return type="int">
+			</return>
+			<description>
+				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				[codeblock]
+				var c = Color(1, .5, .2)
+				print(c.to_abgr64()) # Prints -225178692812801
 				[/codeblock]
 			</description>
 		</method>
