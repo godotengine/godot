@@ -344,28 +344,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	storage->free(texture);
 
-	if (OS::get_singleton()->is_layered_allowed()) {
-		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
-			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
-			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
-			if (data) {
-				glReadPixels(0, 0, wndsize.x, wndsize.y, GL_BGRA, GL_UNSIGNED_BYTE, data);
-				OS::get_singleton()->swap_layered_buffer();
-
-				return;
-			}
-#endif
-		} else {
-			//clear alpha
-			glColorMask(false, false, false, true);
-			glClearColor(0, 0, 0, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
-			glColorMask(true, true, true, true);
-		}
-	}
-
-	OS::get_singleton()->swap_buffers();
+	end_frame(true);
 }
 
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
