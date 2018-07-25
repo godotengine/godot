@@ -289,7 +289,7 @@ public:
 		ERR_FAIL_COND(!m);
 
 		m->surfaces.push_back(DummySurface());
-		DummySurface *s = &m->surfaces[m->surfaces.size() - 1];
+		DummySurface *s = &m->surfaces.write[m->surfaces.size() - 1];
 		s->format = p_format;
 		s->primitive = p_primitive;
 		s->array = p_array;

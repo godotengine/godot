@@ -771,7 +771,7 @@ void VisualScript::custom_signal_set_argument_type(const StringName &p_func, int
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func][p_argidx].type = p_type;
+	custom_signals[p_func].write[p_argidx].type = p_type;
 }
 Variant::Type VisualScript::custom_signal_get_argument_type(const StringName &p_func, int p_argidx) const {
 
@@ -783,7 +783,7 @@ void VisualScript::custom_signal_set_argument_name(const StringName &p_func, int
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func][p_argidx].name = p_name;
+	custom_signals[p_func].write[p_argidx].name = p_name;
 }
 String VisualScript::custom_signal_get_argument_name(const StringName &p_func, int p_argidx) const {
 
@@ -811,7 +811,7 @@ void VisualScript::custom_signal_swap_argument(const StringName &p_func, int p_a
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
 	ERR_FAIL_INDEX(p_with_argidx, custom_signals[p_func].size());
 
-	SWAP(custom_signals[p_func][p_argidx], custom_signals[p_func][p_with_argidx]);
+	SWAP(custom_signals[p_func].write[p_argidx], custom_signals[p_func].write[p_with_argidx]);
 }
 void VisualScript::remove_custom_signal(const StringName &p_name) {
 

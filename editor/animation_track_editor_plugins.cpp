@@ -271,8 +271,8 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i - from_x;
-			lines[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-			lines[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+			lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+			lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 		}
 
 		Vector<Color> color;
@@ -883,8 +883,8 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i - from_x;
-		lines[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-		lines[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+		lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+		lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 	}
 
 	Vector<Color> color;

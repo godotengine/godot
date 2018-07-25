@@ -508,7 +508,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				continue;
 			PhysicsServer::get_singleton()->body_add_shape(g.static_body, shapes[i].shape->get_rid(), xform * shapes[i].local_transform);
 			if (g.collision_debug.is_valid()) {
-				shapes[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
+				shapes.write[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
 			}
 
 			//print_line("PHIS x: "+xform);
@@ -758,7 +758,7 @@ void GridMap::_update_visibility() {
 	for (Map<OctantKey, Octant *>::Element *e = octant_map.front(); e; e = e->next()) {
 		Octant *octant = e->value();
 		for (int i = 0; i < octant->multimesh_instances.size(); i++) {
-			Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
+			const Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
 			VS::get_singleton()->instance_set_visible(mi.instance, is_visible());
 		}
 	}

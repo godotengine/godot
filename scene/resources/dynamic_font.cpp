@@ -314,7 +314,7 @@ void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
 
 	texture_flags = p_flags;
 	for (int i = 0; i < textures.size(); i++) {
-		Ref<ImageTexture> &tex = textures[i].texture;
+		Ref<ImageTexture> &tex = textures.write[i].texture;
 		if (!tex.is_null())
 			tex->set_flags(p_flags);
 	}
@@ -400,7 +400,7 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 
 	for (int i = 0; i < textures.size(); i++) {
 
-		CharTexture &ct = textures[i];
+		const CharTexture &ct = textures[i];
 
 		if (ct.texture->get_format() != p_image_format)
 			continue;
@@ -466,7 +466,7 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 		}
 		tex.offsets.resize(texsize);
 		for (int i = 0; i < texsize; i++) //zero offsets
-			tex.offsets[i] = 0;
+			tex.offsets.write[i] = 0;
 
 		textures.push_back(tex);
 		ret.index = textures.size() - 1;
@@ -493,7 +493,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 
 	//fit character in char texture
 
-	CharTexture &tex = textures[tex_pos.index];
+	CharTexture &tex = textures.write[tex_pos.index];
 
 	{
 		PoolVector<uint8_t>::Write wr = tex.imgdata.write();
@@ -547,7 +547,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 	// update height array
 
 	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
-		tex.offsets[k] = tex_pos.y + mh;
+		tex.offsets.write[k] = tex_pos.y + mh;
 	}
 
 	Character chr;
@@ -698,9 +698,9 @@ void DynamicFont::_reload_cache() {
 	}
 
 	for (int i = 0; i < fallbacks.size(); i++) {
-		fallback_data_at_size[i] = fallbacks[i]->_get_dynamic_font_at_size(cache_id);
+		fallback_data_at_size.write[i] = fallbacks.write[i]->_get_dynamic_font_at_size(cache_id);
 		if (outline_cache_id.outline_size > 0)
-			fallback_outline_data_at_size[i] = fallbacks[i]->_get_dynamic_font_at_size(outline_cache_id);
+			fallback_outline_data_at_size.write[i] = fallbacks.write[i]->_get_dynamic_font_at_size(outline_cache_id);
 	}
 
 	emit_changed();
@@ -895,17 +895,17 @@ void DynamicFont::set_fallback(int p_idx, const Ref<DynamicFontData> &p_data) {
 
 	ERR_FAIL_COND(p_data.is_null());
 	ERR_FAIL_INDEX(p_idx, fallbacks.size());
-	fallbacks[p_idx] = p_data;
-	fallback_data_at_size[p_idx] = fallbacks[p_idx]->_get_dynamic_font_at_size(cache_id);
+	fallbacks.write[p_idx] = p_data;
+	fallback_data_at_size.write[p_idx] = fallbacks.write[p_idx]->_get_dynamic_font_at_size(cache_id);
 }
 
 void DynamicFont::add_fallback(const Ref<DynamicFontData> &p_data) {
 
 	ERR_FAIL_COND(p_data.is_null());
 	fallbacks.push_back(p_data);
-	fallback_data_at_size.push_back(fallbacks[fallbacks.size() - 1]->_get_dynamic_font_at_size(cache_id)); //const..
+	fallback_data_at_size.push_back(fallbacks.write[fallbacks.size() - 1]->_get_dynamic_font_at_size(cache_id)); //const..
 	if (outline_cache_id.outline_size > 0)
-		fallback_outline_data_at_size.push_back(fallbacks[fallbacks.size() - 1]->_get_dynamic_font_at_size(outline_cache_id));
+		fallback_outline_data_at_size.push_back(fallbacks.write[fallbacks.size() - 1]->_get_dynamic_font_at_size(outline_cache_id));
 
 	_change_notify();
 	emit_changed();
@@ -1092,7 +1092,7 @@ void DynamicFont::update_oversampling() {
 		dynamic_font_mutex->unlock();
 
 	for (int i = 0; i < changed.size(); i++) {
-		changed[i]->emit_changed();
+		changed.write[i]->emit_changed();
 	}
 }
 

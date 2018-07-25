@@ -409,16 +409,16 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 		}
 
 		//put this temporarily here, corrected in a later step
-		bake_cells[p_idx].albedo[0] += albedo_accum.r;
-		bake_cells[p_idx].albedo[1] += albedo_accum.g;
-		bake_cells[p_idx].albedo[2] += albedo_accum.b;
-		bake_cells[p_idx].emission[0] += emission_accum.r;
-		bake_cells[p_idx].emission[1] += emission_accum.g;
-		bake_cells[p_idx].emission[2] += emission_accum.b;
-		bake_cells[p_idx].normal[0] += normal_accum.x;
-		bake_cells[p_idx].normal[1] += normal_accum.y;
-		bake_cells[p_idx].normal[2] += normal_accum.z;
-		bake_cells[p_idx].alpha += alpha;
+		bake_cells.write[p_idx].albedo[0] += albedo_accum.r;
+		bake_cells.write[p_idx].albedo[1] += albedo_accum.g;
+		bake_cells.write[p_idx].albedo[2] += albedo_accum.b;
+		bake_cells.write[p_idx].emission[0] += emission_accum.r;
+		bake_cells.write[p_idx].emission[1] += emission_accum.g;
+		bake_cells.write[p_idx].emission[2] += emission_accum.b;
+		bake_cells.write[p_idx].normal[0] += normal_accum.x;
+		bake_cells.write[p_idx].normal[1] += normal_accum.y;
+		bake_cells.write[p_idx].normal[2] += normal_accum.z;
+		bake_cells.write[p_idx].alpha += alpha;
 
 	} else {
 		//go down
@@ -465,9 +465,9 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				//sub cell must be created
 
 				uint32_t child_idx = bake_cells.size();
-				bake_cells[p_idx].children[i] = child_idx;
+				bake_cells.write[p_idx].children[i] = child_idx;
 				bake_cells.resize(bake_cells.size() + 1);
-				bake_cells[child_idx].level = p_level + 1;
+				bake_cells.write[child_idx].level = p_level + 1;
 			}
 
 			_plot_face(bake_cells[p_idx].children[i], p_level + 1, nx, ny, nz, p_vtx, p_normal, p_uv, p_material, aabb);
@@ -483,7 +483,7 @@ Vector<Color> VoxelLightBaker::_get_bake_texture(Ref<Image> p_image, const Color
 
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
-			ret[i] = p_color_add;
+			ret.write[i] = p_color_add;
 		}
 
 		return ret;
@@ -509,7 +509,7 @@ Vector<Color> VoxelLightBaker::_get_bake_texture(Ref<Image> p_image, const Color
 
 		c.a = r[i * 4 + 3] / 255.0;
 
-		ret[i] = c;
+		ret.write[i] = c;
 	}
 
 	return ret;
@@ -686,13 +686,13 @@ void VoxelLightBaker::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, con
 
 void VoxelLightBaker::_init_light_plot(int p_idx, int p_level, int p_x, int p_y, int p_z, uint32_t p_parent) {
 
-	bake_light[p_idx].x = p_x;
-	bake_light[p_idx].y = p_y;
-	bake_light[p_idx].z = p_z;
+	bake_light.write[p_idx].x = p_x;
+	bake_light.write[p_idx].y = p_y;
+	bake_light.write[p_idx].z = p_z;
 
 	if (p_level == cell_subdiv - 1) {
 
-		bake_light[p_idx].next_leaf = first_leaf;
+		bake_light.write[p_idx].next_leaf = first_leaf;
 		first_leaf = p_idx;
 	} else {
 
@@ -1197,33 +1197,33 @@ void VoxelLightBaker::_fixup_plot(int p_idx, int p_level) {
 		leaf_voxel_count++;
 		float alpha = bake_cells[p_idx].alpha;
 
-		bake_cells[p_idx].albedo[0] /= alpha;
-		bake_cells[p_idx].albedo[1] /= alpha;
-		bake_cells[p_idx].albedo[2] /= alpha;
+		bake_cells.write[p_idx].albedo[0] /= alpha;
+		bake_cells.write[p_idx].albedo[1] /= alpha;
+		bake_cells.write[p_idx].albedo[2] /= alpha;
 
 		//transfer emission to light
-		bake_cells[p_idx].emission[0] /= alpha;
-		bake_cells[p_idx].emission[1] /= alpha;
-		bake_cells[p_idx].emission[2] /= alpha;
+		bake_cells.write[p_idx].emission[0] /= alpha;
+		bake_cells.write[p_idx].emission[1] /= alpha;
+		bake_cells.write[p_idx].emission[2] /= alpha;
 
-		bake_cells[p_idx].normal[0] /= alpha;
-		bake_cells[p_idx].normal[1] /= alpha;
-		bake_cells[p_idx].normal[2] /= alpha;
+		bake_cells.write[p_idx].normal[0] /= alpha;
+		bake_cells.write[p_idx].normal[1] /= alpha;
+		bake_cells.write[p_idx].normal[2] /= alpha;
 
 		Vector3 n(bake_cells[p_idx].normal[0], bake_cells[p_idx].normal[1], bake_cells[p_idx].normal[2]);
 		if (n.length() < 0.01) {
 			//too much fight over normal, zero it
-			bake_cells[p_idx].normal[0] = 0;
-			bake_cells[p_idx].normal[1] = 0;
-			bake_cells[p_idx].normal[2] = 0;
+			bake_cells.write[p_idx].normal[0] = 0;
+			bake_cells.write[p_idx].normal[1] = 0;
+			bake_cells.write[p_idx].normal[2] = 0;
 		} else {
 			n.normalize();
-			bake_cells[p_idx].normal[0] = n.x;
-			bake_cells[p_idx].normal[1] = n.y;
-			bake_cells[p_idx].normal[2] = n.z;
+			bake_cells.write[p_idx].normal[0] = n.x;
+			bake_cells.write[p_idx].normal[1] = n.y;
+			bake_cells.write[p_idx].normal[2] = n.z;
 		}
 
-		bake_cells[p_idx].alpha = 1.0;
+		bake_cells.write[p_idx].alpha = 1.0;
 
 		/*if (bake_light.size()) {
 			for(int i=0;i<6;i++) {
@@ -1235,20 +1235,20 @@ void VoxelLightBaker::_fixup_plot(int p_idx, int p_level) {
 
 		//go down
 
-		bake_cells[p_idx].emission[0] = 0;
-		bake_cells[p_idx].emission[1] = 0;
-		bake_cells[p_idx].emission[2] = 0;
-		bake_cells[p_idx].normal[0] = 0;
-		bake_cells[p_idx].normal[1] = 0;
-		bake_cells[p_idx].normal[2] = 0;
-		bake_cells[p_idx].albedo[0] = 0;
-		bake_cells[p_idx].albedo[1] = 0;
-		bake_cells[p_idx].albedo[2] = 0;
+		bake_cells.write[p_idx].emission[0] = 0;
+		bake_cells.write[p_idx].emission[1] = 0;
+		bake_cells.write[p_idx].emission[2] = 0;
+		bake_cells.write[p_idx].normal[0] = 0;
+		bake_cells.write[p_idx].normal[1] = 0;
+		bake_cells.write[p_idx].normal[2] = 0;
+		bake_cells.write[p_idx].albedo[0] = 0;
+		bake_cells.write[p_idx].albedo[1] = 0;
+		bake_cells.write[p_idx].albedo[2] = 0;
 		if (bake_light.size()) {
 			for (int j = 0; j < 6; j++) {
-				bake_light[p_idx].accum[j][0] = 0;
-				bake_light[p_idx].accum[j][1] = 0;
-				bake_light[p_idx].accum[j][2] = 0;
+				bake_light.write[p_idx].accum[j][0] = 0;
+				bake_light.write[p_idx].accum[j][1] = 0;
+				bake_light.write[p_idx].accum[j][2] = 0;
 			}
 		}
 
@@ -1267,29 +1267,29 @@ void VoxelLightBaker::_fixup_plot(int p_idx, int p_level) {
 
 			if (bake_light.size() > 0) {
 				for (int j = 0; j < 6; j++) {
-					bake_light[p_idx].accum[j][0] += bake_light[child].accum[j][0];
-					bake_light[p_idx].accum[j][1] += bake_light[child].accum[j][1];
-					bake_light[p_idx].accum[j][2] += bake_light[child].accum[j][2];
+					bake_light.write[p_idx].accum[j][0] += bake_light[child].accum[j][0];
+					bake_light.write[p_idx].accum[j][1] += bake_light[child].accum[j][1];
+					bake_light.write[p_idx].accum[j][2] += bake_light[child].accum[j][2];
 				}
-				bake_cells[p_idx].emission[0] += bake_cells[child].emission[0];
-				bake_cells[p_idx].emission[1] += bake_cells[child].emission[1];
-				bake_cells[p_idx].emission[2] += bake_cells[child].emission[2];
+				bake_cells.write[p_idx].emission[0] += bake_cells[child].emission[0];
+				bake_cells.write[p_idx].emission[1] += bake_cells[child].emission[1];
+				bake_cells.write[p_idx].emission[2] += bake_cells[child].emission[2];
 			}
 
 			children_found++;
 		}
 
-		bake_cells[p_idx].alpha = alpha_average / 8.0;
+		bake_cells.write[p_idx].alpha = alpha_average / 8.0;
 		if (bake_light.size() && children_found) {
 			float divisor = Math::lerp(8, children_found, propagation);
 			for (int j = 0; j < 6; j++) {
-				bake_light[p_idx].accum[j][0] /= divisor;
-				bake_light[p_idx].accum[j][1] /= divisor;
-				bake_light[p_idx].accum[j][2] /= divisor;
+				bake_light.write[p_idx].accum[j][0] /= divisor;
+				bake_light.write[p_idx].accum[j][1] /= divisor;
+				bake_light.write[p_idx].accum[j][2] /= divisor;
 			}
-			bake_cells[p_idx].emission[0] /= divisor;
-			bake_cells[p_idx].emission[1] /= divisor;
-			bake_cells[p_idx].emission[2] /= divisor;
+			bake_cells.write[p_idx].emission[0] /= divisor;
+			bake_cells.write[p_idx].emission[1] /= divisor;
+			bake_cells.write[p_idx].emission[2] /= divisor;
 		}
 	}
 }
@@ -2403,25 +2403,25 @@ PoolVector<uint8_t> VoxelLightBaker::create_capture_octree(int p_subdiv) {
 			new_size++;
 			demap.push_back(i);
 		}
-		remap[i] = c;
+		remap.write[i] = c;
 	}
 
 	Vector<VoxelLightBakerOctree> octree;
 	octree.resize(new_size);
 
 	for (int i = 0; i < new_size; i++) {
-		octree[i].alpha = bake_cells[demap[i]].alpha;
+		octree.write[i].alpha = bake_cells[demap[i]].alpha;
 		for (int j = 0; j < 6; j++) {
 			for (int k = 0; k < 3; k++) {
 				float l = bake_light[demap[i]].accum[j][k]; //add anisotropic light
 				l += bake_cells[demap[i]].emission[k]; //add emission
-				octree[i].light[j][k] = CLAMP(l * 1024, 0, 65535); //give two more bits to octree
+				octree.write[i].light[j][k] = CLAMP(l * 1024, 0, 65535); //give two more bits to octree
 			}
 		}
 
 		for (int j = 0; j < 8; j++) {
 			uint32_t child = bake_cells[demap[i]].children[j];
-			octree[i].children[j] = child == CHILD_EMPTY ? CHILD_EMPTY : remap[child];
+			octree.write[i].children[j] = child == CHILD_EMPTY ? CHILD_EMPTY : remap[child];
 		}
 	}
 

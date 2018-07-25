@@ -304,7 +304,7 @@ void ConvexPolygonShapeBullet::get_vertices(Vector<Vector3> &out_vertices) {
 	const int n_of_vertices = vertices.size();
 	out_vertices.resize(n_of_vertices);
 	for (int i = n_of_vertices - 1; 0 <= i; --i) {
-		B_TO_G(vertices[i], out_vertices[i]);
+		B_TO_G(vertices[i], out_vertices.write[i]);
 	}
 }
 

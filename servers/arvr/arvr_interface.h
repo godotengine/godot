@@ -88,7 +88,7 @@ public:
 	bool is_primary();
 	void set_is_primary(bool p_is_primary);
 
-	virtual bool is_initialized() = 0; /* returns true if we've initialized this interface */
+	virtual bool is_initialized() const = 0; /* returns true if we've initialized this interface */
 	void set_is_initialized(bool p_initialized); /* helper function, will call initialize or uninitialize */
 	virtual bool initialize() = 0; /* initialize this interface, if this has an HMD it becomes the primary interface */
 	virtual void uninitialize() = 0; /* deinitialize this interface */

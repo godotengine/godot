@@ -1462,7 +1462,7 @@ void ProjectSettingsEditor::_update_translations() {
 			t->set_editable(0, true);
 			t->set_tooltip(0, l);
 			t->set_checked(0, l_filter.has(l));
-			translation_filter_treeitems[i] = t;
+			translation_filter_treeitems.write[i] = t;
 		}
 	} else {
 		for (int i = 0; i < s; i++) {
@@ -1502,7 +1502,7 @@ void ProjectSettingsEditor::_update_translations() {
 					if (langnames.length() > 0)
 						langnames += ",";
 					langnames += names[i];
-					translation_locales_idxs_remap[l_idx] = i;
+					translation_locales_idxs_remap.write[l_idx] = i;
 					l_idx++;
 				}
 			}

@@ -533,7 +533,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 			r_items.remove(i);
 			i--;
 		} else {
-			r_items[i].item = canvas_item;
+			r_items.write[i].item = canvas_item;
 		}
 	}
 }

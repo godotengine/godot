@@ -427,7 +427,7 @@ NodePath::NodePath(const String &p_path) {
 
 				String name = path.substr(from, i - from);
 				ERR_FAIL_INDEX(slice, data->path.size());
-				data->path[slice++] = name;
+				data->path.write[slice++] = name;
 			}
 			from = i + 1;
 			last_is_slash = true;

@@ -73,7 +73,7 @@ void Navigation::_navmesh_link(int p_id) {
 			Vector3 ep = nm.xform.xform(r[idx]);
 			center += ep;
 			e.point = _get_point(ep);
-			p.edges[j] = e;
+			p.edges.write[j] = e;
 
 			if (j >= 2) {
 				Vector3 epa = nm.xform.xform(r[indices[j - 2]]);
@@ -118,7 +118,7 @@ void Navigation::_navmesh_link(int p_id) {
 					ConnectionPending pending;
 					pending.polygon = &p;
 					pending.edge = j;
-					p.edges[j].P = C->get().pending.push_back(pending);
+					p.edges.write[j].P = C->get().pending.push_back(pending);
 					continue;
 					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
@@ -126,10 +126,10 @@ void Navigation::_navmesh_link(int p_id) {
 
 				C->get().B = &p;
 				C->get().B_edge = j;
-				C->get().A->edges[C->get().A_edge].C = &p;
-				C->get().A->edges[C->get().A_edge].C_edge = j;
-				p.edges[j].C = C->get().A;
-				p.edges[j].C_edge = C->get().A_edge;
+				C->get().A->edges.write[C->get().A_edge].C = &p;
+				C->get().A->edges.write[C->get().A_edge].C_edge = j;
+				p.edges.write[j].C = C->get().A;
+				p.edges.write[j].C_edge = C->get().A_edge;
 				//connection successful.
 			}
 		}
@@ -165,10 +165,10 @@ void Navigation::_navmesh_unlink(int p_id) {
 			} else if (C->get().B) {
 				//disconnect
 
-				C->get().B->edges[C->get().B_edge].C = NULL;
-				C->get().B->edges[C->get().B_edge].C_edge = -1;
-				C->get().A->edges[C->get().A_edge].C = NULL;
-				C->get().A->edges[C->get().A_edge].C_edge = -1;
+				C->get().B->edges.write[C->get().B_edge].C = NULL;
+				C->get().B->edges.write[C->get().B_edge].C_edge = -1;
+				C->get().A->edges.write[C->get().A_edge].C = NULL;
+				C->get().A->edges.write[C->get().A_edge].C_edge = -1;
 
 				if (C->get().A == &E->get()) {
 
@@ -185,11 +185,11 @@ void Navigation::_navmesh_unlink(int p_id) {
 
 					C->get().B = cp.polygon;
 					C->get().B_edge = cp.edge;
-					C->get().A->edges[C->get().A_edge].C = cp.polygon;
-					C->get().A->edges[C->get().A_edge].C_edge = cp.edge;
-					cp.polygon->edges[cp.edge].C = C->get().A;
-					cp.polygon->edges[cp.edge].C_edge = C->get().A_edge;
-					cp.polygon->edges[cp.edge].P = NULL;
+					C->get().A->edges.write[C->get().A_edge].C = cp.polygon;
+					C->get().A->edges.write[C->get().A_edge].C_edge = cp.edge;
+					cp.polygon->edges.write[cp.edge].C = C->get().A;
+					cp.polygon->edges.write[cp.edge].C_edge = C->get().A_edge;
+					cp.polygon->edges.write[cp.edge].P = NULL;
 				}
 
 			} else {
@@ -320,8 +320,8 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 
 		Vector<Vector3> path;
 		path.resize(2);
-		path[0] = begin_point;
-		path[1] = end_point;
+		path.write[0] = begin_point;
+		path.write[1] = end_point;
 		//print_line("Direct Path");
 		return path;
 	}
@@ -375,7 +375,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 
 		for (int i = 0; i < p->edges.size(); i++) {
 
-			Polygon::Edge &e = p->edges[i];
+			Polygon::Edge &e = p->edges.write[i];
 
 			if (!e.C)
 				continue;

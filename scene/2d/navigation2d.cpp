@@ -74,7 +74,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 			Vector2 ep = nm.xform.xform(r[idx]);
 			center += ep;
 			e.point = _get_point(ep);
-			p.edges[j] = e;
+			p.edges.write[j] = e;
 
 			int idxn = indices[(j + 1) % plen];
 			if (idxn < 0 || idxn >= len) {
@@ -119,17 +119,17 @@ void Navigation2D::_navpoly_link(int p_id) {
 					ConnectionPending pending;
 					pending.polygon = &p;
 					pending.edge = j;
-					p.edges[j].P = C->get().pending.push_back(pending);
+					p.edges.write[j].P = C->get().pending.push_back(pending);
 					continue;
 					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
 
 				C->get().B = &p;
 				C->get().B_edge = j;
-				C->get().A->edges[C->get().A_edge].C = &p;
-				C->get().A->edges[C->get().A_edge].C_edge = j;
-				p.edges[j].C = C->get().A;
-				p.edges[j].C_edge = C->get().A_edge;
+				C->get().A->edges.write[C->get().A_edge].C = &p;
+				C->get().A->edges.write[C->get().A_edge].C_edge = j;
+				p.edges.write[j].C = C->get().A;
+				p.edges.write[j].C_edge = C->get().A_edge;
 				//connection successful.
 			}
 		}
@@ -167,10 +167,10 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 			} else if (C->get().B) {
 				//disconnect
 
-				C->get().B->edges[C->get().B_edge].C = NULL;
-				C->get().B->edges[C->get().B_edge].C_edge = -1;
-				C->get().A->edges[C->get().A_edge].C = NULL;
-				C->get().A->edges[C->get().A_edge].C_edge = -1;
+				C->get().B->edges.write[C->get().B_edge].C = NULL;
+				C->get().B->edges.write[C->get().B_edge].C_edge = -1;
+				C->get().A->edges.write[C->get().A_edge].C = NULL;
+				C->get().A->edges.write[C->get().A_edge].C_edge = -1;
 
 				if (C->get().A == &E->get()) {
 
@@ -187,11 +187,11 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 
 					C->get().B = cp.polygon;
 					C->get().B_edge = cp.edge;
-					C->get().A->edges[C->get().A_edge].C = cp.polygon;
-					C->get().A->edges[C->get().A_edge].C_edge = cp.edge;
-					cp.polygon->edges[cp.edge].C = C->get().A;
-					cp.polygon->edges[cp.edge].C_edge = C->get().A_edge;
-					cp.polygon->edges[cp.edge].P = NULL;
+					C->get().A->edges.write[C->get().A_edge].C = cp.polygon;
+					C->get().A->edges.write[C->get().A_edge].C_edge = cp.edge;
+					cp.polygon->edges.write[cp.edge].C = C->get().A;
+					cp.polygon->edges.write[cp.edge].C_edge = C->get().A_edge;
+					cp.polygon->edges.write[cp.edge].P = NULL;
 				}
 
 			} else {
@@ -339,8 +339,8 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		Vector<Vector2> path;
 		path.resize(2);
-		path[0] = begin_point;
-		path[1] = end_point;
+		path.write[0] = begin_point;
+		path.write[1] = end_point;
 		//print_line("Direct Path");
 		return path;
 	}
@@ -408,7 +408,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		for (int i = 0; i < es; i++) {
 
-			Polygon::Edge &e = p->edges[i];
+			Polygon::Edge &e = p->edges.write[i];
 
 			if (!e.C)
 				continue;
@@ -586,7 +586,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 		if (!path.size() || path[path.size() - 1].distance_squared_to(begin_point) > CMP_EPSILON) {
 			path.push_back(begin_point); // Add the begin point
 		} else {
-			path[path.size() - 1] = begin_point; // Replace first midpoint by the exact begin point
+			path.write[path.size() - 1] = begin_point; // Replace first midpoint by the exact begin point
 		}
 
 		path.invert();
@@ -594,7 +594,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 		if (path.size() <= 1 || path[path.size() - 1].distance_squared_to(end_point) > CMP_EPSILON) {
 			path.push_back(end_point); // Add the end point
 		} else {
-			path[path.size() - 1] = end_point; // Replace last midpoint by the exact end point
+			path.write[path.size() - 1] = end_point; // Replace last midpoint by the exact end point
 		}
 
 		return path;

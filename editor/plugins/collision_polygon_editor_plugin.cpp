@@ -276,7 +276,7 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 							//apply
 
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
-							poly[edited_point] = edited_point_pos;
+							poly.write[edited_point] = edited_point_pos;
 							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(node, "set_polygon", poly);
 							undo_redo->add_undo_method(node, "set_polygon", pre_move_edit);

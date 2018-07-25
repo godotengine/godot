@@ -556,7 +556,7 @@ void ResourceLoader::load_translation_remaps() {
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
 		for (int i = 0; i < langs.size(); i++) {
-			lang_remaps[i] = langs[i];
+			lang_remaps.write[i] = langs[i];
 		}
 
 		translation_remaps[String(E->get())] = lang_remaps;

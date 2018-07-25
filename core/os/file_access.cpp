@@ -262,15 +262,15 @@ String FileAccess::get_token() const {
 	while (!eof_reached()) {
 
 		if (c <= ' ') {
-			if (!token.empty())
+			if (token.length())
 				break;
 		} else {
-			token.push_back(c);
+			token += c;
 		}
 		c = get_8();
 	}
 
-	token.push_back(0);
+	token += '0';
 	return String::utf8(token.get_data());
 }
 
@@ -293,7 +293,7 @@ class CharBuffer {
 
 			for (int i = 0; i < written; i++) {
 
-				vector[i] = stack_buffer[i];
+				vector.write[i] = stack_buffer[i];
 			}
 		}
 

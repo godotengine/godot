@@ -357,8 +357,8 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {
-				touch[i].id = p_points[i].id;
-				touch[i].pos = p_points[i].pos;
+				touch.write[i].id = p_points[i].id;
+				touch.write[i].pos = p_points[i].pos;
 			}
 
 			//send touch
@@ -399,7 +399,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
 				input->parse_input_event(ev);
-				touch[i].pos = p_points[idx].pos;
+				touch.write[i].pos = p_points[idx].pos;
 			}
 
 		} break;

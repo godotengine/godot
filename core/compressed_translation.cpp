@@ -73,7 +73,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		Pair<int, CharString> p;
 		p.first = idx;
 		p.second = cs;
-		buckets[h % size].push_back(p);
+		buckets.write[h % size].push_back(p);
 
 		//compress string
 		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
@@ -100,7 +100,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 			ps.compressed[0] = 0;
 		}
 
-		compressed[idx] = ps;
+		compressed.write[idx] = ps;
 		total_compression_size += ps.compressed.size();
 		total_string_size += src_s.size();
 		idx++;
@@ -111,8 +111,8 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 
-		Vector<Pair<int, CharString> > &b = buckets[i];
-		Map<uint32_t, int> &t = table[i];
+		const Vector<Pair<int, CharString> > &b = buckets[i];
+		Map<uint32_t, int> &t = table.write[i];
 
 		if (b.size() == 0)
 			continue;
@@ -136,7 +136,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 			}
 		}
 
-		hfunc_table[i] = d;
+		hfunc_table.write[i] = d;
 		bucket_table_size += 2 + b.size() * 4;
 	}
 
@@ -157,7 +157,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 
-		Map<uint32_t, int> &t = table[i];
+		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;

@@ -133,7 +133,7 @@ public:
 
 	inline T &operator[](int p_index) {
 
-		return _data[p_index];
+		return _data.write[p_index];
 	}
 
 	inline const T &operator[](int p_index) const {

@@ -1838,8 +1838,8 @@ void OS_X11::process_xevents() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-					// Grab touch devices to avoid OS gesture interference
-					/*for (int i = 0; i < touch.devices.size(); ++i) {
+				// Grab touch devices to avoid OS gesture interference
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
 				}*/
 #endif
@@ -2105,7 +2105,7 @@ void OS_X11::process_xevents() {
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
 					for (int i = 0; i < files.size(); i++) {
-						files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
+						files.write[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
 					}
 					main_loop->drop_files(files);
 
@@ -2587,12 +2587,12 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 
 		pd.resize(2 + w * h);
 
-		pd[0] = w;
-		pd[1] = h;
+		pd.write[0] = w;
+		pd.write[1] = h;
 
 		PoolVector<uint8_t>::Read r = img->get_data().read();
 
-		long *wr = &pd[2];
+		long *wr = &pd.write[2];
 		uint8_t const *pr = r.ptr();
 
 		for (int i = 0; i < w * h; i++) {

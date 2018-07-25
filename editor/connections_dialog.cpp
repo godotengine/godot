@@ -51,7 +51,7 @@ public:
 		if (name.begins_with("bind/")) {
 			int which = name.get_slice("/", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
-			params[which] = p_value;
+			params.write[which] = p_value;
 		} else
 			return false;
 

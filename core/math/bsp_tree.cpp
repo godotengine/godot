@@ -449,10 +449,10 @@ BSP_Tree::operator Variant() const {
 
 	for (int i = 0; i < planes.size(); i++) {
 
-		plane_values[i * 4 + 0] = planes[i].normal.x;
-		plane_values[i * 4 + 1] = planes[i].normal.y;
-		plane_values[i * 4 + 2] = planes[i].normal.z;
-		plane_values[i * 4 + 3] = planes[i].d;
+		plane_values.write[i * 4 + 0] = planes[i].normal.x;
+		plane_values.write[i * 4 + 1] = planes[i].normal.y;
+		plane_values.write[i * 4 + 2] = planes[i].normal.z;
+		plane_values.write[i * 4 + 3] = planes[i].d;
 	}
 
 	d["planes"] = plane_values;
@@ -498,10 +498,10 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 			PoolVector<real_t>::Read r = src_planes.read();
 			for (int i = 0; i < plane_count / 4; i++) {
 
-				planes[i].normal.x = r[i * 4 + 0];
-				planes[i].normal.y = r[i * 4 + 1];
-				planes[i].normal.z = r[i * 4 + 2];
-				planes[i].d = r[i * 4 + 3];
+				planes.write[i].normal.x = r[i * 4 + 0];
+				planes.write[i].normal.y = r[i * 4 + 1];
+				planes.write[i].normal.z = r[i * 4 + 2];
+				planes.write[i].d = r[i * 4 + 3];
 			}
 		}
 
@@ -520,9 +520,9 @@ BSP_Tree::BSP_Tree(const Variant &p_variant) {
 
 	for (int i = 0; i < nodes.size(); i++) {
 
-		nodes[i].over = r[i * 3 + 0];
-		nodes[i].under = r[i * 3 + 1];
-		nodes[i].plane = r[i * 3 + 2];
+		nodes.write[i].over = r[i * 3 + 0];
+		nodes.write[i].under = r[i * 3 + 1];
+		nodes.write[i].plane = r[i * 3 + 2];
 	}
 }
 

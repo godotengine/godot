@@ -355,10 +355,10 @@ public:
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
 		for (int i = 0; i < _debug_call_stack_pos; i++) {
-			csi[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
+			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
 			if (_call_stack[i].function)
-				csi[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-			csi[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
+			csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
 		}
 		return csi;
 	}

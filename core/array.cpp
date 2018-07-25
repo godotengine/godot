@@ -72,7 +72,7 @@ void Array::_unref() const {
 
 Variant &Array::operator[](int p_idx) {
 
-	return _p->array[p_idx];
+	return _p->array.write[p_idx];
 }
 
 const Variant &Array::operator[](int p_idx) const {

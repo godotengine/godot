@@ -207,7 +207,7 @@ godot_int GDAPI godot_string_findmk(const godot_string *p_self, const godot_arra
 	Array *keys_proxy = (Array *)p_keys;
 	keys.resize(keys_proxy->size());
 	for (int i = 0; i < keys_proxy->size(); i++) {
-		keys[i] = (*keys_proxy)[i];
+		keys.write[i] = (*keys_proxy)[i];
 	}
 
 	return self->findmk(keys);
@@ -220,7 +220,7 @@ godot_int GDAPI godot_string_findmk_from(const godot_string *p_self, const godot
 	Array *keys_proxy = (Array *)p_keys;
 	keys.resize(keys_proxy->size());
 	for (int i = 0; i < keys_proxy->size(); i++) {
-		keys[i] = (*keys_proxy)[i];
+		keys.write[i] = (*keys_proxy)[i];
 	}
 
 	return self->findmk(keys, p_from);
@@ -233,7 +233,7 @@ godot_int GDAPI godot_string_findmk_from_in_place(const godot_string *p_self, co
 	Array *keys_proxy = (Array *)p_keys;
 	keys.resize(keys_proxy->size());
 	for (int i = 0; i < keys_proxy->size(); i++) {
-		keys[i] = (*keys_proxy)[i];
+		keys.write[i] = (*keys_proxy)[i];
 	}
 
 	return self->findmk(keys, p_from, r_key);
@@ -696,7 +696,7 @@ godot_array GDAPI godot_string_split_floats_mk(const godot_string *p_self, const
 	Array *splitter_proxy = (Array *)p_splitters;
 	splitters.resize(splitter_proxy->size());
 	for (int i = 0; i < splitter_proxy->size(); i++) {
-		splitters[i] = (*splitter_proxy)[i];
+		splitters.write[i] = (*splitter_proxy)[i];
 	}
 
 	godot_array result;
@@ -719,7 +719,7 @@ godot_array GDAPI godot_string_split_floats_mk_allows_empty(const godot_string *
 	Array *splitter_proxy = (Array *)p_splitters;
 	splitters.resize(splitter_proxy->size());
 	for (int i = 0; i < splitter_proxy->size(); i++) {
-		splitters[i] = (*splitter_proxy)[i];
+		splitters.write[i] = (*splitter_proxy)[i];
 	}
 
 	godot_array result;
@@ -774,7 +774,7 @@ godot_array GDAPI godot_string_split_ints_mk(const godot_string *p_self, const g
 	Array *splitter_proxy = (Array *)p_splitters;
 	splitters.resize(splitter_proxy->size());
 	for (int i = 0; i < splitter_proxy->size(); i++) {
-		splitters[i] = (*splitter_proxy)[i];
+		splitters.write[i] = (*splitter_proxy)[i];
 	}
 
 	godot_array result;
@@ -797,7 +797,7 @@ godot_array GDAPI godot_string_split_ints_mk_allows_empty(const godot_string *p_
 	Array *splitter_proxy = (Array *)p_splitters;
 	splitters.resize(splitter_proxy->size());
 	for (int i = 0; i < splitter_proxy->size(); i++) {
-		splitters[i] = (*splitter_proxy)[i];
+		splitters.write[i] = (*splitter_proxy)[i];
 	}
 
 	godot_array result;

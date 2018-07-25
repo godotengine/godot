@@ -552,7 +552,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 			} else {
 
 				int rec = 0;
-				err = _get_http_data(&chunk[chunk.size() - chunk_left], chunk_left, rec);
+				err = _get_http_data(&chunk.write[chunk.size() - chunk_left], chunk_left, rec);
 				if (rec == 0) {
 					break;
 				}

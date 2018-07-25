@@ -1411,8 +1411,8 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				op->op = expression[i].op;
 				op->arguments.push_back(expression[i + 1].node);
 				op->line = op_line; //line might have been changed from a \n
-				expression[i].is_op = false;
-				expression[i].node = op;
+				expression.write[i].is_op = false;
+				expression.write[i].node = op;
 				expression.remove(i + 1);
 			}
 
@@ -1466,7 +1466,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			op->arguments.push_back(expression[next_op + 3].node); //expression after next goes as when-false
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression[next_op - 1].node = op;
+			expression.write[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);
 			expression.remove(next_op);
@@ -1502,7 +1502,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			op->arguments.push_back(expression[next_op + 1].node); //next expression goes as right
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression[next_op - 1].node = op;
+			expression.write[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);
 		}
@@ -1526,7 +1526,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 			for (int i = 0; i < an->elements.size(); i++) {
 
-				an->elements[i] = _reduce_expression(an->elements[i], p_to_const);
+				an->elements.write[i] = _reduce_expression(an->elements[i], p_to_const);
 				if (an->elements[i]->type != Node::TYPE_CONSTANT)
 					all_constants = false;
 			}
@@ -1556,10 +1556,10 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 			for (int i = 0; i < dn->elements.size(); i++) {
 
-				dn->elements[i].key = _reduce_expression(dn->elements[i].key, p_to_const);
+				dn->elements.write[i].key = _reduce_expression(dn->elements[i].key, p_to_const);
 				if (dn->elements[i].key->type != Node::TYPE_CONSTANT)
 					all_constants = false;
-				dn->elements[i].value = _reduce_expression(dn->elements[i].value, p_to_const);
+				dn->elements.write[i].value = _reduce_expression(dn->elements[i].value, p_to_const);
 				if (dn->elements[i].value->type != Node::TYPE_CONSTANT)
 					all_constants = false;
 			}
@@ -1592,7 +1592,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 			for (int i = 0; i < op->arguments.size(); i++) {
 
-				op->arguments[i] = _reduce_expression(op->arguments[i], p_to_const);
+				op->arguments.write[i] = _reduce_expression(op->arguments[i], p_to_const);
 				if (op->arguments[i]->type != Node::TYPE_CONSTANT) {
 					all_constants = false;
 					last_not_constant = i;
@@ -1620,7 +1620,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 						for (int i = 0; i < ptrs.size(); i++) {
 
 							ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[i + 1]);
-							ptrs[i] = &cn->value;
+							ptrs.write[i] = &cn->value;
 						}
 
 						vptr = (const Variant **)&ptrs[0];
@@ -5956,7 +5956,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							id->name = cn->value.operator StringName();
 
 							op->op = OperatorNode::OP_INDEX_NAMED;
-							op->arguments[1] = id;
+							op->arguments.write[1] = id;
 
 							return _reduce_node_type(op);
 						}
@@ -6323,7 +6323,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 			Vector<DataType> par_types;
 			par_types.resize(p_call->arguments.size() - 1);
 			for (int i = 1; i < p_call->arguments.size(); i++) {
-				par_types[i - 1] = _reduce_node_type(p_call->arguments[i]);
+				par_types.write[i - 1] = _reduce_node_type(p_call->arguments[i]);
 			}
 
 			if (error_set) return DataType();
@@ -6949,7 +6949,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
 	// Class variables
 	for (int i = 0; i < p_class->variables.size(); i++) {
-		ClassNode::Member &v = p_class->variables[i];
+		ClassNode::Member &v = p_class->variables.write[i];
 
 		DataType tmp;
 		if (_get_member_type(p_class->base_type, v.identifier, tmp)) {
@@ -6993,7 +6993,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 					convert_call->arguments.push_back(tgt_type);
 
 					v.expression = convert_call;
-					v.initial_assignment->arguments[1] = convert_call;
+					v.initial_assignment->arguments.write[1] = convert_call;
 				}
 			}
 
@@ -7133,7 +7133,7 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 	for (int i = 0; i < p_function->arguments.size(); i++) {
 
 		// Resolve types
-		p_function->argument_types[i] = _resolve_type(p_function->argument_types[i], p_function->line);
+		p_function->argument_types.write[i] = _resolve_type(p_function->argument_types[i], p_function->line);
 
 		if (i >= defaults_ofs) {
 			if (p_function->default_values[i - defaults_ofs]->type != Node::TYPE_OPERATOR) {
@@ -7284,7 +7284,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							convert_call->arguments.push_back(tgt_type);
 
 							lv->assign = convert_call;
-							lv->assign_op->arguments[1] = convert_call;
+							lv->assign_op->arguments.write[1] = convert_call;
 						}
 					}
 					if (lv->datatype.infer_type) {
@@ -7402,7 +7402,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 								convert_call->arguments.push_back(op->arguments[1]);
 								convert_call->arguments.push_back(tgt_type);
 
-								op->arguments[1] = convert_call;
+								op->arguments.write[1] = convert_call;
 							}
 						}
 						if (!rh_type.has_type && (op->op != OperatorNode::OP_ASSIGN || lh_type.has_type || op->arguments[0]->type == Node::TYPE_OPERATOR)) {

@@ -447,7 +447,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 		} else {
 			for (unsigned int i = 0; i < ad->buffer_size; i++) {
-				ad->samples_in[i] = 0;
+				ad->samples_in.write[i] = 0;
 			}
 		}
 

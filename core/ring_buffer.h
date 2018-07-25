@@ -137,7 +137,7 @@ public:
 
 	Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);
-		data[inc(write_pos, 1)] = p_v;
+		data.write[inc(write_pos, 1)] = p_v;
 		return OK;
 	};
 
@@ -156,7 +156,7 @@ public:
 			int total = end - pos;
 
 			for (int i = 0; i < total; i++) {
-				data[pos + i] = p_buf[src++];
+				data.write[pos + i] = p_buf[src++];
 			};
 			to_write -= total;
 			pos = 0;
@@ -196,7 +196,7 @@ public:
 		data.resize(1 << p_power);
 		if (old_size < new_size && read_pos > write_pos) {
 			for (int i = 0; i < write_pos; i++) {
-				data[(old_size + i) & mask] = data[i];
+				data.write[(old_size + i) & mask] = data[i];
 			};
 			write_pos = (old_size + write_pos) & mask;
 		} else {

@@ -220,7 +220,7 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 
 		for (int i = 0; i < l; i++) {
 
-			Canvas::ChildItem &ci = p_canvas->child_items[i];
+			const Canvas::ChildItem &ci = p_canvas->child_items[i];
 			_render_canvas_item_tree(ci.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
@@ -263,7 +263,7 @@ void VisualServerCanvas::canvas_set_item_mirroring(RID p_canvas, RID p_item, con
 
 	int idx = canvas->find_item(canvas_item);
 	ERR_FAIL_COND(idx == -1);
-	canvas->child_items[idx].mirror = p_mirroring;
+	canvas->child_items.write[idx].mirror = p_mirroring;
 }
 void VisualServerCanvas::canvas_set_modulate(RID p_canvas, const Color &p_color) {
 
@@ -468,21 +468,21 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
 
 			if (p_antialiased) {
-				pline->lines[i] = p_points[i] + tangent;
-				pline->lines[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
+				pline->lines.write[i] = p_points[i] + tangent;
+				pline->lines.write[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
 				if (pline->line_colors.size() > 1) {
-					pline->line_colors[i] = p_colors[i];
-					pline->line_colors[p_points.size() * 2 - i - 1] = p_colors[i];
+					pline->line_colors.write[i] = p_colors[i];
+					pline->line_colors.write[p_points.size() * 2 - i - 1] = p_colors[i];
 				}
 			}
 
-			pline->triangles[i * 2 + 0] = p_points[i] + tangent;
-			pline->triangles[i * 2 + 1] = p_points[i] - tangent;
+			pline->triangles.write[i * 2 + 0] = p_points[i] + tangent;
+			pline->triangles.write[i * 2 + 1] = p_points[i] - tangent;
 
 			if (pline->triangle_colors.size() > 1) {
 
-				pline->triangle_colors[i * 2 + 0] = p_colors[i];
-				pline->triangle_colors[i * 2 + 1] = p_colors[i];
+				pline->triangle_colors.write[i * 2 + 0] = p_colors[i];
+				pline->triangle_colors.write[i * 2 + 1] = p_colors[i];
 			}
 
 			prev_t = t;
