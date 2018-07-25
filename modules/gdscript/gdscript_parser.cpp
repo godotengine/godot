@@ -6820,6 +6820,9 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				result.class_type = outer_class;
 				return result;
 			}
+			if (outer_class->constant_expressions.has(p_identifier)) {
+				return outer_class->constant_expressions[p_identifier].type;
+			}
 			for (int i = 0; i < outer_class->subclasses.size(); i++) {
 				if (outer_class->subclasses[i] == current_class) {
 					continue;
