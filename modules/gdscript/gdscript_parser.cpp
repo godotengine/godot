@@ -3555,7 +3555,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						DataType argtype;
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-							if (!_parse_type(argtype)) {
+							if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+								argtype.infer_type = true;
+								tokenizer->advance();
+							} else if (!_parse_type(argtype)) {
 								_set_error("Expected type for argument.");
 								return;
 							}
@@ -7140,11 +7143,9 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 	// Arguments
 	int defaults_ofs = p_function->arguments.size() - p_function->default_values.size();
 	for (int i = 0; i < p_function->arguments.size(); i++) {
-
-		// Resolve types
-		p_function->argument_types.write[i] = _resolve_type(p_function->argument_types[i], p_function->line);
-
-		if (i >= defaults_ofs) {
+		if (i < defaults_ofs) {
+			p_function->argument_types.write[i] = _resolve_type(p_function->argument_types[i], p_function->line);
+		} else {
 			if (p_function->default_values[i - defaults_ofs]->type != Node::TYPE_OPERATOR) {
 				_set_error("Parser bug: invalid argument default value.", p_function->line, p_function->column);
 				return;
@@ -7159,11 +7160,18 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 
 			DataType def_type = _reduce_node_type(op->arguments[1]);
 
-			if (!_is_type_compatible(p_function->argument_types[i], def_type, true)) {
-				String arg_name = p_function->arguments[i];
-				_set_error("Value type (" + def_type.to_string() + ") doesn't match the type of argument '" +
-								   arg_name + "' (" + p_function->arguments[i] + ")",
-						p_function->line);
+			if (p_function->argument_types[i].infer_type) {
+				def_type.is_constant = false;
+				p_function->argument_types.write[i] = def_type;
+			} else {
+				p_function->return_type = _resolve_type(p_function->return_type, p_function->line);
+
+				if (!_is_type_compatible(p_function->argument_types[i], def_type, true)) {
+					String arg_name = p_function->arguments[i];
+					_set_error("Value type (" + def_type.to_string() + ") doesn't match the type of argument '" +
+									   arg_name + "' (" + p_function->arguments[i] + ")",
+							p_function->line);
+				}
 			}
 		}
 	}
