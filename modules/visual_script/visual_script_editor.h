@@ -177,7 +177,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _cancel_connect_node();
 	void _create_new_node(const String &p_text, const String &p_category, const Vector2 &p_point);
-	void _selected_new_virtual_method(const String &p_text, const String &p_category, const bool p_connecting = true);
+	void _selected_new_virtual_method(const String &p_text = String(""), const String &p_category = String(""), const bool p_connecting = true);
 
 	int error_line;
 
