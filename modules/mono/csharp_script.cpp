@@ -2030,6 +2030,9 @@ void CSharpScript::set_source_code(const String &p_code) {
 
 bool CSharpScript::has_method(const StringName &p_method) const {
 
+	if (!script_class)
+		return false;
+
 	return script_class->has_fetched_method_unknown_params(p_method);
 }
 
