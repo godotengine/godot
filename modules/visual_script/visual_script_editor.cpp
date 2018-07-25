@@ -1327,12 +1327,10 @@ void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		revert_on_drag = String(); //so we can still drag functions
 	}
+}
 
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->get_scancode() == KEY_A && k->get_shift() && k->is_pressed()) {
-		new_connect_node_select->select_from_visual_script(String(""));
-		accept_event();
-	}
+void VisualScriptEditor::_generic_search() {
+	new_connect_node_select->select_from_visual_script(String(""));
 }
 
 void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
