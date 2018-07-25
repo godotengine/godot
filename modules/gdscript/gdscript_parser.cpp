@@ -3332,6 +3332,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 		switch (token) {
 
+			case GDScriptTokenizer::TK_CURSOR: {
+				tokenizer->advance();
+			} break;
 			case GDScriptTokenizer::TK_EOF:
 				p_class->end_line = tokenizer->get_token_line();
 			case GDScriptTokenizer::TK_ERROR: {
