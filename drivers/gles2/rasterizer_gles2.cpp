@@ -346,6 +346,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	ERR_FAIL_COND(!rt);
 
 	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT_ATTRIB, false);
 	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
 	canvas->state.canvas_shader.bind();
