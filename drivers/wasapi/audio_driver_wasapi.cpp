@@ -699,6 +699,32 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 					ERR_BREAK(hr != S_OK);
 				}
 			}
+
+			// If we're using the Default device and it changed finish it so we'll re-init the device
+			if (ad->audio_input.device_name == "Default" && default_capture_device_changed) {
+				Error err = ad->finish_capture_device();
+				if (err != OK) {
+					ERR_PRINT("WASAPI: finish_capture_device error");
+				}
+
+				default_capture_device_changed = false;
+			}
+
+			// User selected a new device, finish the current one so we'll init the new device
+			if (ad->audio_input.device_name != ad->audio_input.new_device) {
+				ad->audio_input.device_name = ad->audio_input.new_device;
+				Error err = ad->finish_capture_device();
+				if (err != OK) {
+					ERR_PRINT("WASAPI: finish_capture_device error");
+				}
+			}
+
+			if (!ad->audio_input.audio_client) {
+				Error err = ad->init_capture_device(true);
+				if (err == OK) {
+					ad->capture_start();
+				}
+			}
 		}
 
 		ad->stop_counting_ticks();
@@ -798,10 +824,10 @@ Array AudioDriverWASAPI::capture_get_device_list() {
 	return audio_device_get_list(true);
 }
 
-StringName AudioDriverWASAPI::capture_get_device() {
+String AudioDriverWASAPI::capture_get_device() {
 
 	lock();
-	StringName name = audio_input.device_name;
+	String name = audio_input.device_name;
 	unlock();
 
 	return name;
