@@ -660,7 +660,7 @@ public:
 
 	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata);
 
-	virtual void draw(bool p_swap_buffers);
+	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
 	virtual bool has_changed() const;
 	virtual void init();

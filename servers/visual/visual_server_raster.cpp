@@ -93,14 +93,14 @@ void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const Str
 	frame_drawn_callbacks.push_back(fdc);
 }
 
-void VisualServerRaster::draw(bool p_swap_buffers) {
+void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	VS::get_singleton()->emit_signal("frame_pre_draw");
 
 	changes = 0;
 
-	VSG::rasterizer->begin_frame();
+	VSG::rasterizer->begin_frame(frame_step);
 
 	VSG::scene->update_dirty_instances(); //update scene stuff
 

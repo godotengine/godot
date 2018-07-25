@@ -777,7 +777,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {}
 
 	void initialize() {}
-	void begin_frame() {}
+	void begin_frame(double frame_step) {}
 	void set_current_render_target(RID p_render_target) {}
 	void restore_render_target() {}
 	void clear_render_target(const Color &p_color) {}

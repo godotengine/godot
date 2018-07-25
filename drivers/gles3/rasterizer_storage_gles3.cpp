@@ -7489,7 +7489,6 @@ void RasterizerStorageGLES3::initialize() {
 #endif
 
 	frame.count = 0;
-	frame.prev_tick = 0;
 	frame.delta = 0;
 	frame.current_rt = NULL;
 	config.keep_original_textures = false;

@@ -1078,7 +1078,7 @@ public:
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
 
 	virtual void initialize() = 0;
-	virtual void begin_frame() = 0;
+	virtual void begin_frame(double frame_step) = 0;
 	virtual void set_current_render_target(RID p_render_target) = 0;
 	virtual void restore_render_target() = 0;
 	virtual void clear_render_target(const Color &p_color) = 0;

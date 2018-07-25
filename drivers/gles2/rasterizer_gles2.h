@@ -43,7 +43,6 @@ class RasterizerGLES2 : public Rasterizer {
 	RasterizerCanvasGLES2 *canvas;
 	RasterizerSceneGLES2 *scene;
 
-	uint64_t prev_ticks;
 	double time_total;
 
 public:
@@ -54,7 +53,7 @@ public:
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
 
 	virtual void initialize();
-	virtual void begin_frame();
+	virtual void begin_frame(double frame_step);
 	virtual void set_current_render_target(RID p_render_target);
 	virtual void restore_render_target();
 	virtual void clear_render_target(const Color &p_color);
