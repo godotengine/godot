@@ -349,21 +349,33 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 
 			Ref<Script> existing = selected->get_script();
-			if (existing.is_valid())
-				editor->push_item(existing.ptr());
-			else {
-				String path = selected->get_filename();
-				if (path == "") {
-					String root_path = editor_data->get_edited_scene_root()->get_filename();
-					if (root_path == "") {
-						path = "res://" + selected->get_name();
-					} else {
-						path = root_path.get_base_dir() + "/" + selected->get_name();
+
+			String path = selected->get_filename();
+			if (path == "") {
+				String root_path = editor_data->get_edited_scene_root()->get_filename();
+				if (root_path == "") {
+					path = "res://" + selected->get_name();
+				} else {
+					path = root_path.get_base_dir() + "/" + selected->get_name();
+				}
+			}
+
+			String inherits = selected->get_class();
+			if (existing.is_valid()) {
+				for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+					ScriptLanguage *l = ScriptServer::get_language(i);
+					if (l->get_type() == existing->get_class()) {
+						if (EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+							String name = l->get_global_class_name(existing->get_path(), NULL);
+							inherits = editor->get_editor_data().script_class_get_base(name);
+						} else if (l->can_inherit_from_file()) {
+							inherits = "\"" + existing->get_path() + "\"";
+						}
 					}
 				}
-				script_create_dialog->config(selected->get_class(), path);
-				script_create_dialog->popup_centered();
 			}
+			script_create_dialog->config(inherits, path);
+			script_create_dialog->popup_centered();
 
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
@@ -1426,13 +1438,9 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
 	}
 
-	editor_data->get_undo_redo().add_do_method(editor, "push_item", p_script.operator->());
-	editor_data->get_undo_redo().add_undo_method(editor, "push_item", (Script *)NULL);
-
-	editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-	editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
-
 	editor_data->get_undo_redo().commit_action();
+
+	editor->push_item(p_script.operator->());
 }
 
 void SceneTreeDock::_delete_confirm() {
@@ -1521,16 +1529,9 @@ void SceneTreeDock::_delete_confirm() {
 
 void SceneTreeDock::_update_script_button() {
 	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size() == 1) {
-		if (EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
-			button_create_script->show();
-			button_clear_script->hide();
-		} else {
-			button_create_script->hide();
-			button_clear_script->show();
-		}
+		button_create_script->show();
 	} else {
 		button_create_script->hide();
-		button_clear_script->hide();
 	}
 }
 

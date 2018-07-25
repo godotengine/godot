@@ -211,6 +211,9 @@ public:
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 
+	bool script_class_is_parent(const String &p_class, const String &p_inherits);
+	StringName script_class_get_base(const String &p_class);
+
 	EditorData();
 };
 
