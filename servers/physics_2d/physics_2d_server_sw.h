@@ -213,8 +213,12 @@ public:
 	virtual void body_set_applied_torque(RID p_body, real_t p_torque);
 	virtual real_t body_get_applied_torque(RID p_body) const;
 
+	virtual void body_add_central_force(RID p_body, const Vector2 &p_force);
 	virtual void body_add_force(RID p_body, const Vector2 &p_offset, const Vector2 &p_force);
+	virtual void body_add_torque(RID p_body, real_t p_torque);
 
+	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse);
+	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque);
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_pos, const Vector2 &p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity);
 

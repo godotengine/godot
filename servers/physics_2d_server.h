@@ -61,6 +61,13 @@ public:
 	virtual void set_transform(const Transform2D &p_transform) = 0;
 	virtual Transform2D get_transform() const = 0;
 
+	virtual void add_central_force(const Vector2 &p_force) = 0;
+	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) = 0;
+	virtual void add_torque(real_t p_torque) = 0;
+	virtual void apply_central_impulse(const Vector2 &p_impulse) = 0;
+	virtual void apply_torque_impulse(real_t p_torque) = 0;
+	virtual void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse) = 0;
+
 	virtual void set_sleep_state(bool p_enable) = 0;
 	virtual bool is_sleeping() const = 0;
 
@@ -448,8 +455,12 @@ public:
 	virtual void body_set_applied_torque(RID p_body, float p_torque) = 0;
 	virtual float body_get_applied_torque(RID p_body) const = 0;
 
+	virtual void body_add_central_force(RID p_body, const Vector2 &p_force) = 0;
 	virtual void body_add_force(RID p_body, const Vector2 &p_offset, const Vector2 &p_force) = 0;
+	virtual void body_add_torque(RID p_body, float p_torque) = 0;
 
+	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) = 0;
+	virtual void body_apply_torque_impulse(RID p_body, float p_torque) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_offset, const Vector2 &p_impulse) = 0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity) = 0;
 
