@@ -120,8 +120,8 @@ public:
 	virtual Error capture_start();
 	virtual Error capture_stop();
 	virtual Array capture_get_device_list();
-	virtual void capture_set_device(StringName p_name);
-	virtual StringName capture_get_device();
+	virtual void capture_set_device(const String &p_name);
+	virtual String capture_get_device();
 
 	AudioDriverWASAPI();
 };

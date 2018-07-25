@@ -98,8 +98,8 @@ public:
 
 	virtual Error capture_start() { return FAILED; }
 	virtual Error capture_stop() { return FAILED; }
-	virtual void capture_set_device(StringName p_name) {}
-	virtual StringName capture_get_device() { return "Default"; }
+	virtual void capture_set_device(const String &p_name) {}
+	virtual String capture_get_device() { return "Default"; }
 	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PoolStringArray
 
 	virtual float get_latency() { return 0; }
@@ -362,8 +362,8 @@ public:
 	void set_device(String device);
 
 	Array capture_get_device_list();
-	StringName capture_get_device();
-	void capture_set_device(StringName device);
+	String capture_get_device();
+	void capture_set_device(const String &p_name);
 
 	float get_output_latency() { return output_latency; }
 	AudioServer();

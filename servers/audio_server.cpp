@@ -1215,14 +1215,14 @@ Array AudioServer::capture_get_device_list() {
 	return AudioDriver::get_singleton()->capture_get_device_list();
 }
 
-StringName AudioServer::capture_get_device() {
+String AudioServer::capture_get_device() {
 
 	return AudioDriver::get_singleton()->capture_get_device();
 }
 
-void AudioServer::capture_set_device(StringName device) {
+void AudioServer::capture_set_device(const String &p_name) {
 
-	AudioDriver::get_singleton()->capture_set_device(device);
+	AudioDriver::get_singleton()->capture_set_device(p_name);
 }
 
 void AudioServer::_bind_methods() {
@@ -1274,6 +1274,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_list"), &AudioServer::get_device_list);
 	ClassDB::bind_method(D_METHOD("get_device"), &AudioServer::get_device);
 	ClassDB::bind_method(D_METHOD("set_device"), &AudioServer::set_device);
+
+	ClassDB::bind_method(D_METHOD("capture_get_device_list"), &AudioServer::capture_get_device_list);
+	ClassDB::bind_method(D_METHOD("capture_get_device"), &AudioServer::capture_get_device);
+	ClassDB::bind_method(D_METHOD("capture_set_device"), &AudioServer::capture_set_device);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);

@@ -786,7 +786,7 @@ Error AudioDriverWASAPI::capture_stop() {
 	return FAILED;
 }
 
-void AudioDriverWASAPI::capture_set_device(StringName p_name) {
+void AudioDriverWASAPI::capture_set_device(const String &p_name) {
 
 	lock();
 	audio_input.new_device = p_name;
