@@ -196,6 +196,17 @@ void MobileVRInterface::set_position_from_sensors() {
 	// JIC
 	orientation.orthonormalize();
 
+	predicted_orientation = orientation;
+	if (has_gyro) {
+		// Now we use our average frame timing to predict where our headset will be based on our current gyro reading
+		// We should look into improving this by seeing if we've sped up or slown down our rotation since the last (few) frame(s)
+		Basis rotate;
+		rotate.rotate(orientation.get_axis(0), gyro.x * avg_frame_time);
+		rotate.rotate(orientation.get_axis(1), gyro.y * avg_frame_time);
+		rotate.rotate(orientation.get_axis(2), gyro.z * avg_frame_time);
+		predicted_orientation = rotate * predicted_orientation;
+	}
+
 	last_ticks = ticks;
 };
 
@@ -304,7 +315,7 @@ bool MobileVRInterface::initialize() {
 		arvr_server->set_primary_interface(this);
 
 		last_ticks = OS::get_singleton()->get_ticks_usec();
-		;
+
 		initialized = true;
 	};
 
@@ -357,7 +368,7 @@ Transform MobileVRInterface::get_transform_for_eye(ARVRInterface::Eyes p_eye, co
 
 		// just scale our origin point of our transform
 		Transform hmd_transform;
-		hmd_transform.basis = orientation;
+		hmd_transform.basis = predicted_orientation;
 		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
 
 		transform_for_eye = p_cam_transform * (arvr_server->get_reference_frame()) * hmd_transform * transform_for_eye;
@@ -437,6 +448,18 @@ void MobileVRInterface::process() {
 	_THREAD_SAFE_METHOD_
 
 	if (initialized) {
+		// update the average frame timing, this are the usecs passed between calling process() and submit()
+		avg_frame_time = 0.0;
+		for (int i = 1; i < MOBILEVR_AVG_FRAMES; i++) {
+			frame_timing[i] = frame_timing[i - 1];
+			avg_frame_time += frame_timing[i];
+		}
+		frame_timing[0] = ARVRServer::get_singleton()->get_last_frame_usec();
+		avg_frame_time += frame_timing[0];
+		avg_frame_time /= MOBILEVR_AVG_FRAMES;
+		avg_frame_time /= 1000000.0; // usec -> sec
+
+		// now process our sensor data
 		set_position_from_sensors();
 	};
 };
@@ -453,6 +476,11 @@ MobileVRInterface::MobileVRInterface() {
 	k1 = 0.215;
 	k2 = 0.215;
 	last_ticks = 0;
+
+	for (int i = 0; i < MOBILEVR_AVG_FRAMES; i++) {
+		frame_timing[i] = 0;
+	}
+	avg_frame_time = 0;
 
 	// create our shader stuff
 	lens_shader.init();

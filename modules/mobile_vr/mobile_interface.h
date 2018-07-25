@@ -49,6 +49,8 @@
 	more advanced interfaces.
 */
 
+#define MOBILEVR_AVG_FRAMES 5
+
 class MobileVRInterface : public ARVRInterface {
 	GDCLASS(MobileVRInterface, ARVRInterface);
 
@@ -57,6 +59,10 @@ private:
 	Basis orientation;
 	float eye_height;
 	uint64_t last_ticks;
+
+	Basis predicted_orientation;
+	uint64_t frame_timing[MOBILEVR_AVG_FRAMES];
+	float avg_frame_time;
 
 	LensDistortedShaderGLES3 lens_shader;
 	GLuint half_screen_quad;
