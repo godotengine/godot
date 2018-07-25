@@ -6770,7 +6770,26 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 	// Check classes in current file
 	ClassNode *base = NULL;
 	if (!p_base_type) {
-		// Possibly this is a global, check first
+		base = current_class;
+		base_type.has_type = true;
+		base_type.is_constant = true;
+		base_type.kind = DataType::CLASS;
+		base_type.class_type = base;
+	} else {
+		base_type = DataType(*p_base_type);
+		if (base_type.kind == DataType::CLASS) {
+			base = base_type.class_type;
+		}
+	}
+
+	DataType member_type;
+
+	if (_get_member_type(base_type, p_identifier, member_type)) {
+		return member_type;
+	}
+
+	if (!p_base_type) {
+		// Possibly this is a global, check before failing
 
 		if (ClassDB::class_exists(p_identifier) || ClassDB::class_exists("_" + p_identifier.operator String())) {
 			DataType result;
@@ -6885,27 +6904,6 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 			}
 		}
 
-		// Nothing found, keep looking in local scope
-
-		base = current_class;
-		base_type.has_type = true;
-		base_type.is_constant = true;
-		base_type.kind = DataType::CLASS;
-		base_type.class_type = base;
-	} else {
-		base_type = *p_base_type;
-		if (base_type.kind == DataType::CLASS) {
-			base = base_type.class_type;
-		}
-	}
-
-	DataType member_type;
-
-	if (_get_member_type(base_type, p_identifier, member_type)) {
-		return member_type;
-	}
-
-	if (!p_base_type) {
 		// This means looking in the current class, which type is always known
 		_set_error("Identifier '" + p_identifier.operator String() + "' is not declared in the current scope.", p_line);
 	}
