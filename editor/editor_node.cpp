@@ -2047,6 +2047,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			project_settings->popup_project_settings();
 		} break;
+		case RUN_PROJECT_DATA_FOLDER: {
+
+			OS::get_singleton()->shell_open(OS::get_singleton()->get_user_data_dir());
+		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
 
@@ -2178,6 +2182,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case SETTINGS_PREFERENCES: {
 
 			settings_config_dialog->popup_edit_settings();
+		} break;
+		case SETTINGS_EDITOR_DATA_FOLDER: {
+
+			OS::get_singleton()->shell_open(EditorSettings::get_singleton()->get_data_dir());
+		} break;
+		case SETTINGS_EDITOR_CONFIG_FOLDER: {
+
+			OS::get_singleton()->shell_open(EditorSettings::get_singleton()->get_settings_dir());
 		} break;
 		case SETTINGS_MANAGE_EXPORT_TEMPLATES: {
 
@@ -5078,6 +5090,9 @@ EditorNode::EditorNode() {
 	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
 	p->add_separator();
 
+	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+	p->add_separator();
+
 #ifdef OSX_ENABLED
 	p->add_item(TTR("Quit to Project List"), RUN_PROJECT_MANAGER, KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_Q);
 #else
@@ -5125,6 +5140,7 @@ EditorNode::EditorNode() {
 
 	p->add_item(TTR("Editor Settings"), SETTINGS_PREFERENCES);
 	p->add_separator();
+
 	editor_layouts = memnew(PopupMenu);
 	editor_layouts->set_name("Layouts");
 	p->add_child(editor_layouts);
@@ -5136,6 +5152,17 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREEN);
 #endif
 	p->add_separator();
+
+	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
+		// Configuration and data folders are located in the same place (Windows/macOS)
+		p->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
+	} else {
+		// Separate configuration and data folders (Linux)
+		p->add_item(TTR("Open Editor Data Folder"), SETTINGS_EDITOR_DATA_FOLDER);
+		p->add_item(TTR("Open Editor Settings Folder"), SETTINGS_EDITOR_CONFIG_FOLDER);
+	}
+	p->add_separator();
+
 	p->add_item(TTR("Manage Export Templates"), SETTINGS_MANAGE_EXPORT_TEMPLATES);
 
 	// Help Menu
