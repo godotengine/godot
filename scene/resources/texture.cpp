@@ -235,6 +235,8 @@ Error ImageTexture::load(const String &p_path) {
 
 void ImageTexture::set_data(const Ref<Image> &p_image) {
 
+	ERR_FAIL_COND(p_image.is_null());
+
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 
 	_change_notify();
