@@ -1579,7 +1579,7 @@ StringName GDScriptFunction::get_global_name(int p_idx) const {
 
 int GDScriptFunction::get_default_argument_count() const {
 
-	return default_arguments.size();
+	return _default_arg_count;
 }
 int GDScriptFunction::get_default_argument_addr(int p_idx) const {
 
