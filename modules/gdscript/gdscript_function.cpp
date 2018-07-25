@@ -743,12 +743,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
 
 				if (src->get_type() != var_type) {
-					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
-							   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
-					OPCODE_BREAK;
+					if (Variant::can_convert_strict(src->get_type(), var_type)) {
+						Variant::CallError ce;
+						*dst = Variant::construct(var_type, const_cast<const Variant **>(&src), 1, ce);
+					} else {
+						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
+								   "' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
+						OPCODE_BREAK;
+					}
+				} else {
+					*dst = *src;
 				}
-
-				*dst = *src;
 
 				ip += 4;
 			}
