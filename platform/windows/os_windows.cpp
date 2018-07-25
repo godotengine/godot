@@ -451,11 +451,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				if (mm->get_position() == c) {
 					center = c;
+					input->set_mouse_position(Vector2((int)c.x, (int)c.y));
 					return 0;
 				}
 
-				Point2i ncenter = mm->get_position();
-				center = ncenter;
 				POINT pos = { (int)c.x, (int)c.y };
 				ClientToScreen(hWnd, &pos);
 				SetCursorPos(pos.x, pos.y);
