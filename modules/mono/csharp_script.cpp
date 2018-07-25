@@ -1963,8 +1963,6 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
-	ERR_FAIL_COND_V(!valid, NULL);
-
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
 		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
@@ -1981,12 +1979,14 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 			// The project assembly is not loaded
 			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
 			ERR_FAIL_V(NULL);
+		} else {
+			// The project assembly is loaded, but the class could not found
+			ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
+			ERR_FAIL_V(NULL);
 		}
-
-		// The project assembly is loaded, but the class could not found
-		ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
-		ERR_FAIL_V(NULL);
 	}
+
+	ERR_FAIL_COND_V(!valid, NULL);
 
 	if (native) {
 		String native_name = native->get_name();
