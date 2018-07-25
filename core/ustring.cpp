@@ -2768,7 +2768,7 @@ String String::format(const Variant &values, String placeholder) const {
 						val = val.substr(1, val.length() - 2);
 					}
 
-					new_string = new_string.replacen(placeholder.replace("_", key), val);
+					new_string = new_string.replace(placeholder.replace("_", key), val);
 				} else {
 					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
 				}
@@ -2781,7 +2781,7 @@ String String::format(const Variant &values, String placeholder) const {
 					val = val.substr(1, val.length() - 2);
 				}
 
-				new_string = new_string.replacen(placeholder.replace("_", i_as_str), val);
+				new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
 			}
 		}
 	} else if (values.get_type() == Variant::DICTIONARY) {
@@ -2801,7 +2801,7 @@ String String::format(const Variant &values, String placeholder) const {
 				val = val.substr(1, val.length() - 2);
 			}
 
-			new_string = new_string.replacen(placeholder.replace("_", key), val);
+			new_string = new_string.replace(placeholder.replace("_", key), val);
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());
