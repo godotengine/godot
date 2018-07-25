@@ -2408,14 +2408,14 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_separator();
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_COPY_PATH);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), SHOW_IN_FILE_SYSTEM);
-	}
 
-	Ref<Script> scr = se->get_edited_resource();
-	if (scr != NULL) {
-		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
-		if (!scr.is_null() && scr->is_tool()) {
-			context_menu->add_separator();
-			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
+		Ref<Script> scr = se->get_edited_resource();
+		if (scr != NULL) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_TOOL_RELOAD_SOFT);
+			if (!scr.is_null() && scr->is_tool()) {
+				context_menu->add_separator();
+				context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_RUN);
+			}
 		}
 	} else {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
