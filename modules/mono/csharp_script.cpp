@@ -649,6 +649,8 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 			name = "UnnamedProject";
 		}
 
+		name += ".dll";
+
 		if (proj_assembly) {
 			String proj_asm_path = proj_assembly->get_path();
 
