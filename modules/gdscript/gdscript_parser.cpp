@@ -7159,6 +7159,7 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 
 	if (!(p_function->name == "_init")) {
 		// Signature for the initializer may vary
+#ifdef DEBUG_ENABLED
 		DataType return_type;
 		List<DataType> arg_types;
 		int default_arg_count = 0;
@@ -7169,18 +7170,44 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 		if (_get_function_signature(base_type, p_function->name, return_type, arg_types, default_arg_count, _static, vararg)) {
 			bool valid = _static == p_function->_static;
 			valid = valid && return_type == p_function->return_type;
-			valid = valid && p_function->default_values.size() >= default_arg_count;
-			valid = valid && arg_types.size() == p_function->arguments.size();
+			int argsize_diff = p_function->arguments.size() - arg_types.size();
+			valid = valid && argsize_diff >= 0;
+			valid = valid && p_function->default_values.size() >= default_arg_count + argsize_diff;
 			int i = 0;
 			for (List<DataType>::Element *E = arg_types.front(); valid && E; E = E->next()) {
 				valid = valid && E->get() == p_function->argument_types[i++];
 			}
 
 			if (!valid) {
-				_set_error("Function signature doesn't match the parent.", p_function->line);
+				String parent_signature = return_type.has_type ? return_type.to_string() : "Variant";
+				if (parent_signature == "null") {
+					parent_signature = "void";
+				}
+				parent_signature += " " + p_function->name + "(";
+				if (arg_types.size()) {
+					int i = 0;
+					for (List<DataType>::Element *E = arg_types.front(); E; E = E->next()) {
+						if (E != arg_types.front()) {
+							parent_signature += ", ";
+						}
+						String arg = E->get().to_string();
+						if (arg == "null" || arg == "var") {
+							arg = "Variant";
+						}
+						parent_signature += arg;
+						if (i == arg_types.size() - default_arg_count) {
+							parent_signature += "=default";
+						}
+
+						i++;
+					}
+				}
+				parent_signature += ")";
+				_set_error("Function signature doesn't match the parent. Parent signature is: '" + parent_signature + "'.", p_function->line);
 				return;
 			}
 		}
+#endif // DEBUG_ENABLED
 	} else {
 		if (p_function->return_type.has_type && (p_function->return_type.kind != DataType::BUILTIN || p_function->return_type.builtin_type != Variant::NIL)) {
 			_set_error("Constructor cannot return a value.", p_function->line);
