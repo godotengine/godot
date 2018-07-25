@@ -2781,7 +2781,11 @@ String String::format(const Variant &values, String placeholder) const {
 					val = val.substr(1, val.length() - 2);
 				}
 
-				new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+				if (placeholder.find("_") > -1) {
+					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
+				} else {
+					new_string = new_string.replace_first(placeholder, val);
+				}
 			}
 		}
 	} else if (values.get_type() == Variant::DICTIONARY) {
