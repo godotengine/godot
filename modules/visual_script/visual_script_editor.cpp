@@ -1327,12 +1327,10 @@ void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		revert_on_drag = String(); //so we can still drag functions
 	}
+}
 
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->get_scancode() == KEY_A && k->get_shift() && k->is_pressed()) {
-		new_connect_node_select->select_from_visual_script(String(""));
-		accept_event();
-	}
+void VisualScriptEditor::_generic_search() {
+	new_connect_node_select->select_from_visual_script(String(""));
 }
 
 void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
@@ -3148,9 +3146,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 		} break;
 		case EDIT_FIND_NODE_TYPE: {
-			//popup disappearing grabs focus to owner, so use call deferred
-			node_filter->call_deferred("grab_focus");
-			node_filter->call_deferred("select_all");
+			_generic_search();
 		} break;
 		case EDIT_COPY_NODES:
 		case EDIT_CUT_NODES: {
@@ -3487,6 +3483,8 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_member_option", &VisualScriptEditor::_member_option);
 
 	ClassDB::bind_method("_update_available_nodes", &VisualScriptEditor::_update_available_nodes);
+
+	ClassDB::bind_method("_generic_search", &VisualScriptEditor::_generic_search);
 }
 
 VisualScriptEditor::VisualScriptEditor() {
