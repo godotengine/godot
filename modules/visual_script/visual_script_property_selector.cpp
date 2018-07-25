@@ -222,6 +222,10 @@ void VisualScriptPropertySelector::_update_search() {
 				item->set_selectable(0, true);
 			}
 		}
+
+		if (category && category->get_children() == NULL) {
+			memdelete(category); //old category was unused
+		}
 	}
 
 	if (seq_connect == true && visual_script_generic == false) {
@@ -346,6 +350,10 @@ void VisualScriptPropertySelector::_update_search() {
 	if (!found && selected_item != NULL) {
 		selected_item->select(0);
 		found = true;
+	}
+
+	if (category && category->get_children() == NULL) {
+		memdelete(category); //old category was unused
 	}
 
 	get_ok()->set_disabled(root->get_children() == NULL);
