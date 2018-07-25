@@ -627,7 +627,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		Vector<uint8_t> buff;
 		buff.resize(len);
 
-		err = encode_variant(p_custom_features, &buff[0], len);
+		err = encode_variant(p_custom_features, buff.ptrw(), len);
 		if (err != OK) {
 			memdelete(file);
 			ERR_FAIL_V(err);
@@ -664,7 +664,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 			Vector<uint8_t> buff;
 			buff.resize(len);
 
-			err = encode_variant(value, &buff[0], len);
+			err = encode_variant(value, buff.ptrw(), len);
 			if (err != OK)
 				memdelete(file);
 			ERR_FAIL_COND_V(err != OK, ERR_INVALID_DATA);

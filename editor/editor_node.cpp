@@ -3947,7 +3947,7 @@ void EditorNode::raise_bottom_panel_item(Control *p_item) {
 
 		if (bottom_panel_items[i].control == p_item) {
 			bottom_panel_items[i].button->raise();
-			SWAP(bottom_panel_items[i], bottom_panel_items[bottom_panel_items.size() - 1]);
+			SWAP(bottom_panel_items.write[i], bottom_panel_items.write[bottom_panel_items.size() - 1]);
 			break;
 		}
 	}

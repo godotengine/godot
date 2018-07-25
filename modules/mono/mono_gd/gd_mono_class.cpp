@@ -503,7 +503,7 @@ GDMonoClass::~GDMonoClass() {
 					}
 				}
 
-				deleted_methods[offset] = method;
+				deleted_methods.write[offset] = method;
 				++offset;
 
 				memdelete(method);

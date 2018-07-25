@@ -61,10 +61,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 		Vector3 sp = p_points[i].snapped(Vector3(0.0001, 0.0001, 0.0001));
 		if (valid_cache.has(sp)) {
-			valid_points[i] = false;
+			valid_points.write[i] = false;
 			//print_line("INVALIDATED: "+itos(i));
 		} else {
-			valid_points[i] = true;
+			valid_points.write[i] = true;
 			valid_cache.insert(sp);
 		}
 	}
@@ -452,7 +452,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	int idx = 0;
 	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
-		r_mesh.faces[idx++] = E->get();
+		r_mesh.faces.write[idx++] = E->get();
 	}
 	r_mesh.edges.resize(ret_edges.size());
 	idx = 0;
@@ -461,7 +461,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		Geometry::MeshData::Edge e;
 		e.a = E->key().vertices[0];
 		e.b = E->key().vertices[1];
-		r_mesh.edges[idx++] = e;
+		r_mesh.edges.write[idx++] = e;
 	}
 
 	r_mesh.vertices = p_points;

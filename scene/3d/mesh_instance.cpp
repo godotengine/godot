@@ -257,7 +257,7 @@ void MeshInstance::set_surface_material(int p_surface, const Ref<Material> &p_ma
 
 	ERR_FAIL_INDEX(p_surface, materials.size());
 
-	materials[p_surface] = p_material;
+	materials.write[p_surface] = p_material;
 
 	if (materials[p_surface].is_valid())
 		VS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, materials[p_surface]->get_rid());

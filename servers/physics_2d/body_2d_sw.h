@@ -141,7 +141,7 @@ public:
 	_FORCE_INLINE_ void add_area(Area2DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas[index].refCount += 1;
+			areas.write[index].refCount += 1;
 		} else {
 			areas.ordered_insert(AreaCMP(p_area));
 		}
@@ -150,7 +150,7 @@ public:
 	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas[index].refCount -= 1;
+			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1)
 				areas.remove(index);
 		}
@@ -311,7 +311,7 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 	if (c_max == 0)
 		return;
 
-	Contact *c = &contacts[0];
+	Contact *c = contacts.ptrw();
 
 	int idx = -1;
 

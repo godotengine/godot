@@ -56,7 +56,7 @@ void Geometry::MeshData::optimize_vertices() {
 				vtx_remap[idx] = ni;
 			}
 
-			faces[i].indices[j] = vtx_remap[idx];
+			faces.write[i].indices.write[j] = vtx_remap[idx];
 		}
 	}
 
@@ -74,8 +74,8 @@ void Geometry::MeshData::optimize_vertices() {
 			vtx_remap[b] = ni;
 		}
 
-		edges[i].a = vtx_remap[a];
-		edges[i].b = vtx_remap[b];
+		edges.write[i].a = vtx_remap[a];
+		edges.write[i].b = vtx_remap[b];
 	}
 
 	Vector<Vector3> new_vertices;
@@ -84,7 +84,7 @@ void Geometry::MeshData::optimize_vertices() {
 	for (int i = 0; i < vertices.size(); i++) {
 
 		if (vtx_remap.has(i))
-			new_vertices[vtx_remap[i]] = vertices[i];
+			new_vertices.write[vtx_remap[i]] = vertices[i];
 	}
 	vertices = new_vertices;
 }
@@ -1014,8 +1014,8 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 	Vector<_AtlasWorkRect> wrects;
 	wrects.resize(p_rects.size());
 	for (int i = 0; i < p_rects.size(); i++) {
-		wrects[i].s = p_rects[i];
-		wrects[i].idx = i;
+		wrects.write[i].s = p_rects[i];
+		wrects.write[i].idx = i;
 	}
 	wrects.sort();
 	int widest = wrects[0].s.width;
@@ -1033,7 +1033,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 		Vector<int> hmax;
 		hmax.resize(w);
 		for (int j = 0; j < w; j++)
-			hmax[j] = 0;
+			hmax.write[j] = 0;
 
 		//place them
 		int ofs = 0;
@@ -1052,8 +1052,8 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 					from_y = hmax[ofs + k];
 			}
 
-			wrects[j].p.x = ofs;
-			wrects[j].p.y = from_y;
+			wrects.write[j].p.x = ofs;
+			wrects.write[j].p.y = from_y;
 			int end_h = from_y + wrects[j].s.height;
 			int end_w = ofs + wrects[j].s.width;
 			if (ofs == 0)
@@ -1061,7 +1061,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 			for (int k = 0; k < wrects[j].s.width; k++) {
 
-				hmax[ofs + k] = end_h;
+				hmax.write[ofs + k] = end_h;
 			}
 
 			if (end_h > max_h)
@@ -1101,7 +1101,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	for (int i = 0; i < p_rects.size(); i++) {
 
-		r_result[results[best].result[i].idx] = results[best].result[i].p;
+		r_result.write[results[best].result[i].idx] = results[best].result[i].p;
 	}
 
 	r_size = Size2(results[best].max_w, results[best].max_h);

@@ -1781,8 +1781,8 @@ ProjectManager::ProjectManager() {
 	vb->add_constant_override("separation", 15 * EDSCALE);
 
 	String cp;
-	cp.push_back(0xA9);
-	cp.push_back(0);
+	cp += 0xA9;
+	cp += '0';
 	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2018 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);

@@ -46,7 +46,7 @@ bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	ERR_EXPLAIN("EditorResourcePreviewGenerator::handles needs to be overridden");
 	ERR_FAIL_V(false);
 }
-Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from) {
+Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("generate")) {
 		return get_script_instance()->call("generate", p_from);
@@ -55,7 +55,7 @@ Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from) {
 	ERR_FAIL_V(Ref<Texture>());
 }
 
-Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_path) {
+Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_path) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("generate_from_path")) {
 		return get_script_instance()->call("generate_from_path", p_path);

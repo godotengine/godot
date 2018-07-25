@@ -169,11 +169,11 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_name) {
-			transitions[i].from = p_new_name;
+			transitions.write[i].from = p_new_name;
 		}
 
 		if (transitions[i].to == p_name) {
-			transitions[i].to = p_new_name;
+			transitions.write[i].to = p_new_name;
 		}
 	}
 

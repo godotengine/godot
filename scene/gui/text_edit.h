@@ -101,13 +101,13 @@ public:
 		int get_line_wrap_amount(int p_line) const;
 		const Map<int, ColorRegionInfo> &get_color_region_info(int p_line) const;
 		void set(int p_line, const String &p_text);
-		void set_marked(int p_line, bool p_marked) { text[p_line].marked = p_marked; }
+		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
-		void set_breakpoint(int p_line, bool p_breakpoint) { text[p_line].breakpoint = p_breakpoint; }
+		void set_breakpoint(int p_line, bool p_breakpoint) { text.write[p_line].breakpoint = p_breakpoint; }
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
-		void set_hidden(int p_line, bool p_hidden) { text[p_line].hidden = p_hidden; }
+		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
-		void set_safe(int p_line, bool p_safe) { text[p_line].safe = p_safe; }
+		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);

@@ -103,7 +103,7 @@ MainLoop *test() {
 		int len = z->get_len();
 		Vector<uint8_t> zip;
 		zip.resize(len);
-		z->get_buffer(&zip[0], len);
+		z->get_buffer(zip.ptrw(), len);
 		z->close();
 		memdelete(z);
 

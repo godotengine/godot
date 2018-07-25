@@ -353,7 +353,7 @@ void ARVRServer::_process() {
 		if (!interfaces[i].is_valid()) {
 			// ignore, not a valid reference
 		} else if (interfaces[i]->is_initialized()) {
-			interfaces[i]->process();
+			interfaces.write[i]->process();
 		};
 	};
 };

@@ -924,8 +924,8 @@ MainLoop *test(TestType p_type) {
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
 	buf.resize(fa->get_len() + 1);
-	fa->get_buffer(&buf[0], flen);
-	buf[flen] = 0;
+	fa->get_buffer(buf.ptrw(), flen);
+	buf.write[flen] = 0;
 
 	String code;
 	code.parse_utf8((const char *)&buf[0]);

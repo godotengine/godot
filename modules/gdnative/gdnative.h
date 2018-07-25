@@ -148,16 +148,16 @@ public:
 	static void _bind_methods();
 
 	void set_library(Ref<GDNativeLibrary> p_library);
-	Ref<GDNativeLibrary> get_library();
+	Ref<GDNativeLibrary> get_library() const;
 
-	bool is_initialized();
+	bool is_initialized() const;
 
 	bool initialize();
 	bool terminate();
 
 	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
 
-	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true);
+	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true) const;
 };
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {

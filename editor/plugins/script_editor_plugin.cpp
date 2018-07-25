@@ -342,11 +342,11 @@ void ScriptEditor::_save_history() {
 
 		if (Object::cast_to<ScriptEditorBase>(n)) {
 
-			history[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 
-			history[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
+			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
 		}
 	}
 
@@ -373,11 +373,11 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 		if (Object::cast_to<ScriptEditorBase>(n)) {
 
-			history[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 
-			history[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
+			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
 		}
 	}
 
@@ -2613,11 +2613,11 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 
 	if (Object::cast_to<ScriptEditorBase>(n)) {
 
-		history[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
 	}
 	if (Object::cast_to<EditorHelp>(n)) {
 
-		history[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
+		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
 	}
 
 	history_pos = p_new_pos;

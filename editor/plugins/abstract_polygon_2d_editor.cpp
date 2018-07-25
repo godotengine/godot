@@ -345,7 +345,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 						Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
 						ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
-						vertices[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
+						vertices.write[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
 
 						undo_redo->create_action(TTR("Edit Poly"));
 						_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
@@ -445,7 +445,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 				Vector<Vector2> vertices = _get_polygon(edited_point.polygon);
 				ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
-				vertices[edited_point.vertex] = cpoint - _get_offset(edited_point.polygon);
+				vertices.write[edited_point.vertex] = cpoint - _get_offset(edited_point.polygon);
 				_set_polygon(edited_point.polygon, vertices);
 			}
 

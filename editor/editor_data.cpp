@@ -62,7 +62,7 @@ void EditorHistory::cleanup_history() {
 				fail = true;
 			} else {
 				//after level, clip
-				history[i].path.resize(j);
+				history.write[i].path.resize(j);
 			}
 
 			break;
@@ -100,14 +100,14 @@ void EditorHistory::_add_object(ObjectID p_object, const String &p_property, int
 
 	if (p_property != "" && has_prev) {
 		//add a sub property
-		History &pr = history[current];
+		History &pr = history.write[current];
 		h = pr;
 		h.path.resize(h.level + 1);
 		h.path.push_back(o);
 		h.level++;
 	} else if (p_level_change != -1 && has_prev) {
 		//add a sub property
-		History &pr = history[current];
+		History &pr = history.write[current];
 		h = pr;
 		ERR_FAIL_INDEX(p_level_change, h.path.size());
 		h.level = p_level_change;
@@ -206,7 +206,7 @@ ObjectID EditorHistory::get_current() {
 	if (current < 0 || current >= history.size())
 		return 0;
 
-	History &h = history[current];
+	History &h = history.write[current];
 	Object *obj = ObjectDB::get_instance(h.path[h.level].object);
 	if (!obj)
 		return 0;
@@ -558,7 +558,7 @@ void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
 
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	ERR_FAIL_INDEX(p_to_idx, edited_scene.size());
-	SWAP(edited_scene[p_idx], edited_scene[p_to_idx]);
+	SWAP(edited_scene.write[p_idx], edited_scene.write[p_to_idx]);
 }
 void EditorData::remove_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
@@ -644,7 +644,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		//transfer selection
 		List<Node *> new_selection;
-		for (List<Node *>::Element *E = edited_scene[p_idx].selection.front(); E; E = E->next()) {
+		for (List<Node *>::Element *E = edited_scene.write[p_idx].selection.front(); E; E = E->next()) {
 			NodePath p = edited_scene[p_idx].root->get_path_to(E->get());
 			Node *new_node = new_scene->get_node(p);
 			if (new_node)
@@ -654,8 +654,8 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		new_scene->set_filename(edited_scene[p_idx].root->get_filename());
 
 		memdelete(edited_scene[p_idx].root);
-		edited_scene[p_idx].root = new_scene;
-		edited_scene[p_idx].selection = new_selection;
+		edited_scene.write[p_idx].root = new_scene;
+		edited_scene.write[p_idx].selection = new_selection;
 
 		return true;
 	}
@@ -685,7 +685,7 @@ Node *EditorData::get_edited_scene_root(int p_idx) {
 void EditorData::set_edited_scene_root(Node *p_root) {
 
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
-	edited_scene[current_edited_scene].root = p_root;
+	edited_scene.write[current_edited_scene].root = p_root;
 }
 
 int EditorData::get_edited_scene_count() const {
@@ -707,10 +707,10 @@ Vector<EditorData::EditedScene> EditorData::get_edited_scenes() const {
 void EditorData::set_edited_scene_version(uint64_t version, int p_scene_idx) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	if (p_scene_idx < 0) {
-		edited_scene[current_edited_scene].version = version;
+		edited_scene.write[current_edited_scene].version = version;
 	} else {
 		ERR_FAIL_INDEX(p_scene_idx, edited_scene.size());
-		edited_scene[p_scene_idx].version = version;
+		edited_scene.write[p_scene_idx].version = version;
 	}
 }
 
@@ -793,7 +793,7 @@ String EditorData::get_scene_path(int p_idx) const {
 void EditorData::set_edited_scene_live_edit_root(const NodePath &p_root) {
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 
-	edited_scene[current_edited_scene].live_edit_root = p_root;
+	edited_scene.write[current_edited_scene].live_edit_root = p_root;
 }
 NodePath EditorData::get_edited_scene_live_edit_root() {
 
@@ -806,7 +806,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHis
 
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 
-	EditedScene &es = edited_scene[current_edited_scene];
+	EditedScene &es = edited_scene.write[current_edited_scene];
 	es.selection = p_selection->get_selected_node_list();
 	es.history_current = p_history->current;
 	es.history_stored = p_history->history;
@@ -817,7 +817,7 @@ void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHis
 Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history) {
 	ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), Dictionary());
 
-	EditedScene &es = edited_scene[current_edited_scene];
+	EditedScene &es = edited_scene.write[current_edited_scene];
 
 	p_history->current = es.history_current;
 	p_history->history = es.history_stored;

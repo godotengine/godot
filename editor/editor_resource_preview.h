@@ -63,8 +63,8 @@ protected:
 
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture> generate(const RES &p_from);
-	virtual Ref<Texture> generate_from_path(const String &p_path);
+	virtual Ref<Texture> generate(const RES &p_from) const;
+	virtual Ref<Texture> generate_from_path(const String &p_path) const;
 
 	EditorResourcePreviewGenerator();
 };

@@ -1650,7 +1650,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 								   "\t\tvarargs.set(i, GDMonoMarshal::mono_object_to_variant(elem));\n"
 								   "\t\t" C_LOCAL_PTRCALL_ARGS ".set(");
 				p_output.push_back(real_argc_str);
-				p_output.push_back(" + i, &varargs[i]);\n\t" CLOSE_BLOCK);
+				p_output.push_back(" + i, &varargs.write[i]);\n\t" CLOSE_BLOCK);
 			} else {
 				p_output.push_back(c_in_statements);
 				p_output.push_back("\tconst void* " C_LOCAL_PTRCALL_ARGS "[");

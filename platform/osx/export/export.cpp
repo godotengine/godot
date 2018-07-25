@@ -137,10 +137,10 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 	Vector<uint8_t> data;
 
 	data.resize(8);
-	data[0] = 'i';
-	data[1] = 'c';
-	data[2] = 'n';
-	data[3] = 's';
+	data.write[0] = 'i';
+	data.write[1] = 'c';
+	data.write[2] = 'n';
+	data.write[3] = 's';
 
 	const char *name[] = { "ic09", "ic08", "ic07", "icp6", "icp5", "icp4" };
 	int index = 0;
@@ -160,19 +160,19 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 		int ofs = data.size();
 		uint32_t len = f->get_len();
 		data.resize(data.size() + len + 8);
-		f->get_buffer(&data[ofs + 8], len);
+		f->get_buffer(&data.write[ofs + 8], len);
 		memdelete(f);
 		len += 8;
 		len = BSWAP32(len);
-		copymem(&data[ofs], name[index], 4);
-		encode_uint32(len, &data[ofs + 4]);
+		copymem(&data.write[ofs], name[index], 4);
+		encode_uint32(len, &data.write[ofs + 4]);
 		index++;
 		size /= 2;
 	}
 
 	uint32_t total_len = data.size();
 	total_len = BSWAP32(total_len);
-	encode_uint32(total_len, &data[4]);
+	encode_uint32(total_len, &data.write[4]);
 
 	p_data = data;
 }
@@ -210,7 +210,7 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 	CharString cs = strnew.utf8();
 	plist.resize(cs.size() - 1);
 	for (int i = 0; i < cs.size() - 1; i++) {
-		plist[i] = cs[i];
+		plist.write[i] = cs[i];
 	}
 }
 

@@ -1373,11 +1373,11 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 	}
 
 	if (slide_colliders[p_bounce].is_null()) {
-		slide_colliders[p_bounce].instance();
-		slide_colliders[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce].instance();
+		slide_colliders.write[p_bounce]->owner = this;
 	}
 
-	slide_colliders[p_bounce]->collision = colliders[p_bounce];
+	slide_colliders.write[p_bounce]->collision = colliders[p_bounce];
 	return slide_colliders[p_bounce];
 }
 
@@ -1475,7 +1475,7 @@ KinematicBody2D::~KinematicBody2D() {
 
 	for (int i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
-			slide_colliders[i]->owner = NULL;
+			slide_colliders.write[i]->owner = NULL;
 		}
 	}
 }

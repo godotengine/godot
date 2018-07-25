@@ -102,11 +102,11 @@ Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
 
 		TriangulatorPoly &tp = I->get();
 
-		decomp[idx].resize(tp.GetNumPoints());
+		decomp.write[idx].resize(tp.GetNumPoints());
 
 		for (int i = 0; i < tp.GetNumPoints(); i++) {
 
-			decomp[idx][i] = tp.GetPoint(i);
+			decomp.write[idx].write[i] = tp.GetPoint(i);
 		}
 
 		idx++;

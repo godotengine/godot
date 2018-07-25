@@ -818,8 +818,8 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	argptrs.resize(p_args.size());
 
 	for (int i = 0; i < p_args.size(); i++) {
-		args[i] = p_args[i];
-		argptrs[i] = &args[i];
+		args.write[i] = p_args[i];
+		argptrs.write[i] = &args[i];
 	}
 
 	Variant::CallError ce;
@@ -1182,10 +1182,10 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			bind_mem.resize(p_argcount + c.binds.size());
 
 			for (int j = 0; j < p_argcount; j++) {
-				bind_mem[j] = p_args[j];
+				bind_mem.write[j] = p_args[j];
 			}
 			for (int j = 0; j < c.binds.size(); j++) {
-				bind_mem[p_argcount + j] = &c.binds[j];
+				bind_mem.write[p_argcount + j] = &c.binds[j];
 			}
 
 			args = (const Variant **)bind_mem.ptr();
