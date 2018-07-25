@@ -146,6 +146,9 @@ public:
 	bool is_video_mode_resizable(int p_screen = 0) const;
 	Array get_fullscreen_mode_list(int p_screen = 0) const;
 
+	virtual String get_adapter_name() const;
+	virtual String get_adapter_vendor() const;
+
 	virtual int get_video_driver_count() const;
 	virtual String get_video_driver_name(int p_driver) const;
 

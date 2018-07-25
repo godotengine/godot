@@ -124,6 +124,20 @@
 				Returns the scancode of the given string (e.g. "Escape")
 			</description>
 		</method>
+		<method name="get_adapter_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns a name of the graphics adapter.
+			</description>
+		</method>
+		<method name="get_adapter_vendor" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns a vendor name of the graphics adapter.
+			</description>
+		</method>
 		<method name="get_audio_driver_count" qualifiers="const">
 			<return type="int">
 			</return>

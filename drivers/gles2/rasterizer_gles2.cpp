@@ -220,8 +220,11 @@ void RasterizerGLES2::initialize() {
 	}
 #endif
 
-	const GLubyte *renderer = glGetString(GL_RENDERER);
-	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
+	String renderer = (const char *)glGetString(GL_RENDERER);
+	String vendor = (const char *)glGetString(GL_VENDOR);
+	OS::get_singleton()->set_adapter_name(renderer);
+	OS::get_singleton()->set_adapter_vendor(vendor);
+	print_line("OpenGL ES 2.0 Renderer: " + renderer);
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
