@@ -72,7 +72,7 @@ public:
 
 	struct ComparatorWithPriority {
 
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->has_priority_higher_than(p_a) || p_b->is_greater_than(p_a); }
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
 	};
 
 private:
@@ -265,7 +265,6 @@ public:
 
 	bool is_a_parent_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
-	bool has_priority_higher_than(const Node *p_node) const;
 
 	NodePath get_path() const;
 	NodePath get_path_to(const Node *p_node) const;
