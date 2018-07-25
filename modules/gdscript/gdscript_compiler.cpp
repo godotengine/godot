@@ -140,7 +140,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::CLASS: {
 			result.kind = GDScriptDataType::GDSCRIPT;
-			if (p_datatype.class_type->name == StringName()) {
+			if (!p_datatype.class_type->owner) {
 				result.script_type = Ref<GDScript>(main_script);
 			} else {
 				result.script_type = class_map[p_datatype.class_type->name];
@@ -482,7 +482,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 					Variant script;
 					int idx = -1;
-					if (cn->cast_type.class_type->name == StringName()) {
+					if (!cn->cast_type.class_type->owner) {
 						script = codegen.script;
 					} else {
 						StringName name = cn->cast_type.class_type->name;
@@ -1181,7 +1181,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 									Variant script;
 									int idx = -1;
-									if (assign_type.class_type->name == StringName()) {
+									if (!assign_type.class_type->owner) {
 										script = codegen.script;
 									} else {
 										StringName name = assign_type.class_type->name;
@@ -1994,7 +1994,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 		p_script->_signals[name] = p_class->_signals[i].arguments;
 	}
 
-	if (p_class->name != StringName()) {
+	if (!p_class->owner) {
 		parsed_classes.insert(p_class->name);
 	}
 
