@@ -178,7 +178,7 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 	if (g.nodes.empty())
 		return;
 
-	Node **nodes = &g.nodes[0];
+	Node **nodes = g.nodes.ptrw();
 	int node_count = g.nodes.size();
 
 	if (p_use_priority) {
@@ -227,7 +227,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 	int node_count = nodes_copy.size();
 
 	call_lock++;
@@ -282,7 +282,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 	int node_count = nodes_copy.size();
 
 	call_lock++;
@@ -331,7 +331,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 	int node_count = nodes_copy.size();
 
 	call_lock++;
@@ -895,7 +895,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 	Vector<Node *> nodes_copy = g.nodes;
 
 	int node_count = nodes_copy.size();
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 
 	Variant arg = p_input;
 	const Variant *v[1] = { &arg };
@@ -939,7 +939,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	Vector<Node *> nodes_copy = g.nodes;
 
 	int node_count = nodes_copy.size();
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 
 	call_lock++;
 

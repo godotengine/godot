@@ -894,7 +894,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	for (uint32_t i = 0; i < string_table_size; i++) {
 
 		StringName s = get_unicode_string();
-		string_map[i] = s;
+		string_map.write[i] = s;
 	}
 
 	print_bl("strings: " + itos(string_table_size));
@@ -1834,7 +1834,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	save_order.resize(external_resources.size());
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		save_order[E->get()] = E->key();
+		save_order.write[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {

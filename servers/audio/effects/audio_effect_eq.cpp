@@ -70,7 +70,7 @@ Ref<AudioEffectInstance> AudioEffectEQ::instance() {
 	for (int i = 0; i < 2; i++) {
 		ins->bands[i].resize(eq.get_band_count());
 		for (int j = 0; j < ins->bands[i].size(); j++) {
-			ins->bands[i][j] = eq.get_band_processor(j);
+			ins->bands[i].write[j] = eq.get_band_processor(j);
 		}
 	}
 
@@ -79,7 +79,7 @@ Ref<AudioEffectInstance> AudioEffectEQ::instance() {
 
 void AudioEffectEQ::set_band_gain_db(int p_band, float p_volume) {
 	ERR_FAIL_INDEX(p_band, gain.size());
-	gain[p_band] = p_volume;
+	gain.write[p_band] = p_volume;
 }
 
 float AudioEffectEQ::get_band_gain_db(int p_band) const {
@@ -134,7 +134,7 @@ AudioEffectEQ::AudioEffectEQ(EQ::Preset p_preset) {
 	eq.set_preset_band_mode(p_preset);
 	gain.resize(eq.get_band_count());
 	for (int i = 0; i < gain.size(); i++) {
-		gain[i] = 0.0;
+		gain.write[i] = 0.0;
 		String name = "band_db/" + itos(eq.get_band_frequency(i)) + "_hz";
 		prop_band_map[name] = i;
 		band_names.push_back(name);

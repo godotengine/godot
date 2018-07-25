@@ -679,7 +679,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> sb = name == selected_node ? style_selected : style;
 		int strsize = font->get_string_size(name).width;
 
-		NodeRect &nr = node_rects[i];
+		NodeRect &nr = node_rects.write[i];
 
 		Vector2 offset = nr.node.position;
 		int h = nr.node.size.height;
@@ -771,7 +771,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	if (idx == -1)
 		return;
 
-	NodeRect &nr = node_rects[idx];
+	const NodeRect &nr = node_rects[idx];
 
 	Vector2 from;
 	from.x = nr.play.position.x;

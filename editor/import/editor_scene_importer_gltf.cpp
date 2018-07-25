@@ -651,7 +651,7 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, int p
 	} else {
 		//fill with zeros, as bufferview is not defined.
 		for (int i = 0; i < (a.count * component_count); i++) {
-			dst_buffer[i] = 0;
+			dst_buffer.write[i] = 0;
 		}
 	}
 
@@ -794,7 +794,7 @@ Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state,
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
 		}
 	}
 	return ret;
@@ -808,8 +808,8 @@ Vector<Transform2D> EditorSceneImporterGLTF::_decode_accessor_as_xform2d(GLTFSta
 	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
 	ret.resize(attribs.size() / 4);
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i][0] = Vector2(attribs[i * 4 + 0], attribs[i * 4 + 1]);
-		ret[i][1] = Vector2(attribs[i * 4 + 2], attribs[i * 4 + 3]);
+		ret.write[i][0] = Vector2(attribs[i * 4 + 0], attribs[i * 4 + 1]);
+		ret.write[i][1] = Vector2(attribs[i * 4 + 2], attribs[i * 4 + 3]);
 	}
 	return ret;
 }
@@ -823,9 +823,9 @@ Vector<Basis> EditorSceneImporterGLTF::_decode_accessor_as_basis(GLTFState &stat
 	ERR_FAIL_COND_V(attribs.size() % 9 != 0, ret);
 	ret.resize(attribs.size() / 9);
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i].set_axis(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
-		ret[i].set_axis(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
-		ret[i].set_axis(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
+		ret.write[i].set_axis(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
+		ret.write[i].set_axis(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
+		ret.write[i].set_axis(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
 	}
 	return ret;
 }
@@ -838,10 +838,10 @@ Vector<Transform> EditorSceneImporterGLTF::_decode_accessor_as_xform(GLTFState &
 	ERR_FAIL_COND_V(attribs.size() % 16 != 0, ret);
 	ret.resize(attribs.size() / 16);
 	for (int i = 0; i < ret.size(); i++) {
-		ret[i].basis.set_axis(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
-		ret[i].basis.set_axis(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
-		ret[i].basis.set_axis(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
-		ret[i].set_origin(Vector3(attribs[i * 16 + 12], attribs[i * 16 + 13], attribs[i * 16 + 14]));
+		ret.write[i].basis.set_axis(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
+		ret.write[i].basis.set_axis(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
+		ret.write[i].basis.set_axis(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
+		ret.write[i].set_origin(Vector3(attribs[i * 16 + 12], attribs[i * 16 + 13], attribs[i * 16 + 14]));
 	}
 	return ret;
 }
@@ -1085,7 +1085,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			ERR_FAIL_COND_V(mesh.mesh->get_blend_shape_count() != weights.size(), ERR_PARSE_ERROR);
 			mesh.blend_weights.resize(weights.size());
 			for (int j = 0; j < weights.size(); j++) {
-				mesh.blend_weights[j] = weights[j];
+				mesh.blend_weights.write[j] = weights[j];
 			}
 		}
 
@@ -1139,7 +1139,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 			ERR_FAIL_INDEX_V(bvi, state.buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
 
-			GLTFBufferView &bv = state.buffer_views[bvi];
+			const GLTFBufferView &bv = state.buffer_views[bvi];
 
 			int bi = bv.buffer;
 			ERR_FAIL_INDEX_V(bi, state.buffers.size(), ERR_PARAMETER_RANGE_ERROR);
@@ -1596,7 +1596,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				PoolVector<float> weights = _decode_accessor_as_floats(state, output, false);
 
 				ERR_FAIL_INDEX_V(state.nodes[node]->mesh, state.meshes.size(), ERR_PARSE_ERROR);
-				GLTFMesh *mesh = &state.meshes[state.nodes[node]->mesh];
+				const GLTFMesh *mesh = &state.meshes[state.nodes[node]->mesh];
 				ERR_FAIL_COND_V(mesh->blend_weights.size() == 0, ERR_PARSE_ERROR);
 				int wc = mesh->blend_weights.size();
 
@@ -1611,11 +1611,11 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 					Vector<float> wdata;
 					wdata.resize(wlen);
 					for (int l = 0; l < wlen; l++) {
-						wdata[l] = r[l * wc + k];
+						wdata.write[l] = r[l * wc + k];
 					}
 
 					cf.values = wdata;
-					track->weight_tracks[k] = cf;
+					track->weight_tracks.write[k] = cf;
 				}
 			} else {
 				WARN_PRINTS("Invalid path: " + path);
@@ -1657,7 +1657,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 	if (n->mesh >= 0) {
 		ERR_FAIL_INDEX(n->mesh, state.meshes.size());
 		MeshInstance *mi = memnew(MeshInstance);
-		GLTFMesh &mesh = state.meshes[n->mesh];
+		GLTFMesh &mesh = state.meshes.write[n->mesh];
 		mi->set_mesh(mesh.mesh);
 		if (mesh.mesh->get_name() == "") {
 			mesh.mesh->set_name(n->name);
@@ -1750,7 +1750,7 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 		s->set_bone_rest(bone_index, state.skins[skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
 
 		n->godot_nodes.push_back(s);
-		n->joints[i].godot_bone_index = bone_index;
+		n->joints.write[i].godot_bone_index = bone_index;
 	}
 
 	for (int i = 0; i < n->children.size(); i++) {

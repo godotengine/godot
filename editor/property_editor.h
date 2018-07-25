@@ -64,7 +64,7 @@ protected:
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 class CustomPropertyEditor : public Popup {

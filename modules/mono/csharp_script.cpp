@@ -523,7 +523,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 	si.resize(frame_count);
 
 	for (int i = 0; i < frame_count; i++) {
-		StackInfo &sif = si[i];
+		StackInfo &sif = si.write[i];
 		MonoObject *frame = mono_array_get(frames, MonoObject *, i);
 
 		MonoString *file_name;

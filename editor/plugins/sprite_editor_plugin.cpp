@@ -169,7 +169,7 @@ void SpriteEditor::_update_mesh_data() {
 
 	Size2 img_size = Vector2(image->get_width(), image->get_height());
 	for (int j = 0; j < lines.size(); j++) {
-		lines[j] = expand(lines[j], rect, epsilon);
+		lines.write[j] = expand(lines[j], rect, epsilon);
 
 		int index_ofs = computed_vertices.size();
 

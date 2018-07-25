@@ -255,7 +255,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							//apply
 
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
-							poly[edited_point] = edited_point_pos;
+							poly.write[edited_point] = edited_point_pos;
 							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(node->get_occluder_polygon().ptr(), "set_polygon", poly);
 							undo_redo->add_undo_method(node->get_occluder_polygon().ptr(), "set_polygon", pre_move_edit);

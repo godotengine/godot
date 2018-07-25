@@ -78,9 +78,9 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 		return 0;
 	}
 
-	inputs[p_input].last_pass = state->last_pass;
+	inputs.write[p_input].last_pass = state->last_pass;
 
-	return _blend_node(node, p_time, p_seek, p_blend, p_filter, p_optimize, &inputs[p_input].activity);
+	return _blend_node(node, p_time, p_seek, p_blend, p_filter, p_optimize, &inputs.write[p_input].activity);
 }
 
 float AnimationNode::blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
@@ -221,7 +221,7 @@ StringName AnimationNode::get_input_connection(int p_input) {
 void AnimationNode::set_input_connection(int p_input, const StringName &p_connection) {
 
 	ERR_FAIL_INDEX(p_input, inputs.size());
-	inputs[p_input].connected_to = p_connection;
+	inputs.write[p_input].connected_to = p_connection;
 }
 
 String AnimationNode::get_caption() const {
@@ -248,7 +248,7 @@ void AnimationNode::add_input(const String &p_name) {
 void AnimationNode::set_input_name(int p_input, const String &p_name) {
 	ERR_FAIL_INDEX(p_input, inputs.size());
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
-	inputs[p_input].name = p_name;
+	inputs.write[p_input].name = p_name;
 	emit_changed();
 }
 

@@ -102,6 +102,15 @@ bool CharString::operator<(const CharString &p_right) const {
 	return is_str_less(get_data(), p_right.get_data());
 }
 
+CharString &CharString::operator+=(char p_char) {
+
+	resize(size() ? size() + 1 : 2);
+	set(length(), 0);
+	set(length() - 1, p_char);
+
+	return *this;
+}
+
 const char *CharString::get_data() const {
 
 	if (size())
@@ -1578,6 +1587,7 @@ String::String(const char *p_str) {
 
 	copy_from(p_str);
 }
+
 String::String(const CharType *p_str, int p_clip_to_len) {
 
 	copy_from(p_str, p_clip_to_len);
@@ -2197,7 +2207,7 @@ Vector<uint8_t> String::md5_buffer() const {
 	Vector<uint8_t> ret;
 	ret.resize(16);
 	for (int i = 0; i < 16; i++) {
-		ret[i] = ctx.digest[i];
+		ret.write[i] = ctx.digest[i];
 	};
 
 	return ret;
@@ -2214,7 +2224,7 @@ Vector<uint8_t> String::sha256_buffer() const {
 	Vector<uint8_t> ret;
 	ret.resize(32);
 	for (int i = 0; i < 32; i++) {
-		ret[i] = hash[i];
+		ret.write[i] = hash[i];
 	}
 
 	return ret;
@@ -2673,7 +2683,7 @@ Vector<String> String::bigrams() const {
 	}
 	b.resize(n_pairs);
 	for (int i = 0; i < n_pairs; i++) {
-		b[i] = substr(i, 2);
+		b.write[i] = substr(i, 2);
 	}
 	return b;
 }
@@ -3032,14 +3042,14 @@ String String::strip_escapes() const {
 	return substr(beg, end - beg);
 }
 
-String String::lstrip(const Vector<CharType> &p_chars) const {
+String String::lstrip(const String &p_chars) const {
 
 	int len = length();
 	int beg;
 
 	for (beg = 0; beg < len; beg++) {
 
-		if (p_chars.find(operator[](beg)) == -1)
+		if (p_chars.find(&ptr()[beg]) == -1)
 			break;
 	}
 
@@ -3049,14 +3059,14 @@ String String::lstrip(const Vector<CharType> &p_chars) const {
 	return substr(beg, len - beg);
 }
 
-String String::rstrip(const Vector<CharType> &p_chars) const {
+String String::rstrip(const String &p_chars) const {
 
 	int len = length();
 	int end;
 
 	for (end = len - 1; end >= 0; end--) {
 
-		if (p_chars.find(operator[](end)) == -1)
+		if (p_chars.find(&ptr()[end]) == -1)
 			break;
 	}
 
@@ -3868,10 +3878,10 @@ String String::percent_decode() const {
 			c += d;
 			i += 2;
 		}
-		pe.push_back(c);
+		pe += c;
 	}
 
-	pe.push_back(0);
+	pe += '0';
 
 	return String::utf8(pe.ptr());
 }

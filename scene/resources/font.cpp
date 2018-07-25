@@ -386,7 +386,7 @@ Vector<CharType> BitmapFont::get_char_keys() const {
 	int count = 0;
 	while ((ct = char_map.next(ct))) {
 
-		chars[count++] = *ct;
+		chars.write[count++] = *ct;
 	};
 
 	return chars;
@@ -438,7 +438,7 @@ Vector<BitmapFont::KerningPairKey> BitmapFont::get_kerning_pair_keys() const {
 	int i = 0;
 
 	for (Map<KerningPairKey, int>::Element *E = kerning_map.front(); E; E = E->next()) {
-		ret[i++] = E->key();
+		ret.write[i++] = E->key();
 	}
 
 	return ret;

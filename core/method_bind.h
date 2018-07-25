@@ -354,7 +354,7 @@ public:
 			for (int i = 0; i < p_info.arguments.size(); i++) {
 
 				at[i + 1] = p_info.arguments[i].type;
-				names[i] = p_info.arguments[i].name;
+				names.write[i] = p_info.arguments[i].name;
 			}
 
 			set_argument_names(names);

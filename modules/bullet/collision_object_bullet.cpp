@@ -223,7 +223,7 @@ void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform
 }
 
 void RigidCollisionObjectBullet::set_shape(int p_index, ShapeBullet *p_shape) {
-	ShapeWrapper &shp = shapes[p_index];
+	ShapeWrapper &shp = shapes.write[p_index];
 	shp.shape->remove_owner(this);
 	p_shape->add_owner(this);
 	shp.shape = p_shape;
@@ -233,8 +233,8 @@ void RigidCollisionObjectBullet::set_shape(int p_index, ShapeBullet *p_shape) {
 void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
-	shapes[p_index].set_transform(p_transform);
-	on_shape_changed(shapes[p_index].shape);
+	shapes.write[p_index].set_transform(p_transform);
+	on_shape_changed(shapes.write[p_index].shape);
 }
 
 void RigidCollisionObjectBullet::remove_shape(ShapeBullet *p_shape) {
@@ -287,7 +287,7 @@ void RigidCollisionObjectBullet::on_shape_changed(const ShapeBullet *const p_sha
 	const int size = shapes.size();
 	for (int i = 0; i < size; ++i) {
 		if (shapes[i].shape == p_shape) {
-			bulletdelete(shapes[i].bt_shape);
+			bulletdelete(shapes.write[i].bt_shape);
 		}
 	}
 	on_shapes_changed();
@@ -307,7 +307,7 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 	// Reset shape if required
 	if (force_shape_reset) {
 		for (i = 0; i < shapes_size; ++i) {
-			shpWrapper = &shapes[i];
+			shpWrapper = &shapes.write[i];
 			bulletdelete(shpWrapper->bt_shape);
 		}
 		force_shape_reset = false;
@@ -316,7 +316,7 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 	// Insert all shapes
 	btVector3 body_scale(get_bt_body_scale());
 	for (i = 0; i < shapes_size; ++i) {
-		shpWrapper = &shapes[i];
+		shpWrapper = &shapes.write[i];
 		if (shpWrapper->active) {
 			if (!shpWrapper->bt_shape) {
 				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape(shpWrapper->scale * body_scale);
@@ -334,7 +334,7 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 }
 
 void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
-	shapes[p_index].active = !p_disabled;
+	shapes.write[p_index].active = !p_disabled;
 	on_shapes_changed();
 }
 
@@ -348,7 +348,7 @@ void RigidCollisionObjectBullet::on_body_scale_changed() {
 }
 
 void RigidCollisionObjectBullet::internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody) {
-	ShapeWrapper &shp = shapes[p_index];
+	ShapeWrapper &shp = shapes.write[p_index];
 	shp.shape->remove_owner(this, p_permanentlyFromThisBody);
 	bulletdelete(shp.bt_shape);
 }

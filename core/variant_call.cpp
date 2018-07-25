@@ -64,7 +64,7 @@ struct _VariantCall {
 			if (arg_count == 0)
 				return true;
 
-			Variant::Type *tptr = &arg_types[0];
+			const Variant::Type *tptr = &arg_types[0];
 
 			for (int i = 0; i < arg_count; i++) {
 

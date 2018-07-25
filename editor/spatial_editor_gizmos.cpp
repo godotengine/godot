@@ -229,7 +229,7 @@ void EditorSpatialGizmo::add_collision_segments(const Vector<Vector3> &p_lines) 
 	collision_segments.resize(from + p_lines.size());
 	for (int i = 0; i < p_lines.size(); i++) {
 
-		collision_segments[from + i] = p_lines[i];
+		collision_segments.write[from + i] = p_lines[i];
 	}
 }
 
@@ -296,14 +296,14 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 		int chs = handles.size();
 		handles.resize(chs + p_handles.size());
 		for (int i = 0; i < p_handles.size(); i++) {
-			handles[i + chs] = p_handles[i];
+			handles.write[i + chs] = p_handles[i];
 		}
 	} else {
 
 		int chs = secondary_handles.size();
 		secondary_handles.resize(chs + p_handles.size());
 		for (int i = 0; i < p_handles.size(); i++) {
-			secondary_handles[i + chs] = p_handles[i];
+			secondary_handles.write[i + chs] = p_handles[i];
 		}
 	}
 }
@@ -597,7 +597,7 @@ void EditorSpatialGizmo::create() {
 
 	for (int i = 0; i < instances.size(); i++) {
 
-		instances[i].create_instance(spatial_node);
+		instances.write[i].create_instance(spatial_node);
 	}
 
 	transform();
@@ -621,7 +621,7 @@ void EditorSpatialGizmo::free() {
 
 		if (instances[i].instance.is_valid())
 			VS::get_singleton()->free(instances[i].instance);
-		instances[i].instance = RID();
+		instances.write[i].instance = RID();
 	}
 
 	valid = false;
@@ -1124,8 +1124,8 @@ void AudioStreamPlayer3DSpatialGizmo::redraw() {
 			Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
 			Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
 
-			points[i * 2 + 0] = from;
-			points[i * 2 + 1] = to;
+			points.write[i * 2 + 0] = from;
+			points.write[i * 2 + 1] = to;
 		}
 
 		for (int i = 0; i < 4; i++) {
@@ -1134,8 +1134,8 @@ void AudioStreamPlayer3DSpatialGizmo::redraw() {
 
 			Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
 
-			points[200 + i * 2 + 0] = from;
-			points[200 + i * 2 + 1] = Vector3();
+			points.write[200 + i * 2 + 0] = from;
+			points.write[200 + i * 2 + 1] = Vector3();
 		}
 
 		add_lines(points, material);
@@ -1441,11 +1441,11 @@ void SkeletonSpatialGizmo::redraw() {
 	weights.resize(4);
 
 	for (int i = 0; i < 4; i++) {
-		bones[i] = 0;
-		weights[i] = 0;
+		bones.write[i] = 0;
+		weights.write[i] = 0;
 	}
 
-	weights[0] = 1;
+	weights.write[0] = 1;
 
 	AABB aabb;
 
@@ -1457,7 +1457,7 @@ void SkeletonSpatialGizmo::redraw() {
 		int parent = skel->get_bone_parent(i);
 
 		if (parent >= 0) {
-			grests[i] = grests[parent] * skel->get_bone_rest(i);
+			grests.write[i] = grests[parent] * skel->get_bone_rest(i);
 
 			Vector3 v0 = grests[parent].origin;
 			Vector3 v1 = grests[i].origin;
@@ -1480,7 +1480,7 @@ void SkeletonSpatialGizmo::redraw() {
 			int pointidx = 0;
 			for (int j = 0; j < 3; j++) {
 
-				bones[0] = parent;
+				bones.write[0] = parent;
 				surface_tool->add_bones(bones);
 				surface_tool->add_weights(weights);
 				surface_tool->add_color(rootcolor);
@@ -1508,7 +1508,7 @@ void SkeletonSpatialGizmo::redraw() {
 					Vector3 point = v0 + d * dist * 0.2;
 					point += axis * dist * 0.1;
 
-					bones[0] = parent;
+					bones.write[0] = parent;
 					surface_tool->add_bones(bones);
 					surface_tool->add_weights(weights);
 					surface_tool->add_color(bonecolor);
@@ -1518,12 +1518,12 @@ void SkeletonSpatialGizmo::redraw() {
 					surface_tool->add_color(bonecolor);
 					surface_tool->add_vertex(point);
 
-					bones[0] = parent;
+					bones.write[0] = parent;
 					surface_tool->add_bones(bones);
 					surface_tool->add_weights(weights);
 					surface_tool->add_color(bonecolor);
 					surface_tool->add_vertex(point);
-					bones[0] = i;
+					bones.write[0] = i;
 					surface_tool->add_bones(bones);
 					surface_tool->add_weights(weights);
 					surface_tool->add_color(bonecolor);
@@ -1535,7 +1535,7 @@ void SkeletonSpatialGizmo::redraw() {
 			SWAP(points[1], points[2]);
 			for (int j = 0; j < 4; j++) {
 
-				bones[0] = parent;
+				bones.write[0] = parent;
 				surface_tool->add_bones(bones);
 				surface_tool->add_weights(weights);
 				surface_tool->add_color(bonecolor);
@@ -1560,8 +1560,8 @@ void SkeletonSpatialGizmo::redraw() {
 */
 		} else {
 
-			grests[i] = skel->get_bone_rest(i);
-			bones[0] = i;
+			grests.write[i] = skel->get_bone_rest(i);
+			bones.write[0] = i;
 		}
 		/*
 		Transform  t = grests[i];
@@ -2542,8 +2542,8 @@ void CollisionShapeSpatialGizmo::redraw() {
 				Vector<Vector3> points;
 				points.resize(md.edges.size() * 2);
 				for (int i = 0; i < md.edges.size(); i++) {
-					points[i * 2 + 0] = md.vertices[md.edges[i].a];
-					points[i * 2 + 1] = md.vertices[md.edges[i].b];
+					points.write[i * 2 + 0] = md.vertices[md.edges[i].a];
+					points.write[i * 2 + 1] = md.vertices[md.edges[i].b];
 				}
 
 				add_lines(points, material);

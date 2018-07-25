@@ -89,7 +89,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 
 		for (size_t i = 0; i < ds; i += 16) {
 
-			aes256_decrypt_ecb(&ctx, &data[i]);
+			aes256_decrypt_ecb(&ctx, &data.write[i]);
 		}
 
 		aes256_done(&ctx);
@@ -117,7 +117,7 @@ Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const Str
 	key.resize(32);
 	for (int i = 0; i < 32; i++) {
 
-		key[i] = cs[i];
+		key.write[i] = cs[i];
 	}
 
 	return open_and_parse(p_base, key, p_mode);
@@ -148,7 +148,7 @@ void FileAccessEncrypted::close() {
 		compressed.resize(len);
 		zeromem(compressed.ptrw(), len);
 		for (int i = 0; i < data.size(); i++) {
-			compressed[i] = data[i];
+			compressed.write[i] = data[i];
 		}
 
 		aes256_context ctx;
@@ -156,7 +156,7 @@ void FileAccessEncrypted::close() {
 
 		for (size_t i = 0; i < len; i += 16) {
 
-			aes256_encrypt_ecb(&ctx, &compressed[i]);
+			aes256_encrypt_ecb(&ctx, &compressed.write[i]);
 		}
 
 		aes256_done(&ctx);
@@ -263,7 +263,7 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 		data.resize(pos + p_length);
 		for (int i = 0; i < p_length; i++) {
 
-			data[pos + i] = p_src[i];
+			data.write[pos + i] = p_src[i];
 		}
 		pos += p_length;
 	}
@@ -280,7 +280,7 @@ void FileAccessEncrypted::store_8(uint8_t p_dest) {
 	ERR_FAIL_COND(!writing);
 
 	if (pos < data.size()) {
-		data[pos] = p_dest;
+		data.write[pos] = p_dest;
 		pos++;
 	} else if (pos == data.size()) {
 		data.push_back(p_dest);
