@@ -5441,7 +5441,7 @@ GDScriptParser::DataType GDScriptParser::_get_operation_type(const Variant::Oper
 	if (b_type == Variant::INT || b_type == Variant::REAL) {
 		Variant::evaluate(Variant::OP_ADD, b, 1, b, r_valid);
 	}
-	if (a_type == Variant::STRING) {
+	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
 		a = "%s"; // Work around for formatting operator (%)
 	}
 
