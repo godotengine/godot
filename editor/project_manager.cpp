@@ -2023,18 +2023,6 @@ void ProjectListFilter::_setup_filters() {
 	filter_option->add_item(TTR("Path"));
 }
 
-void ProjectListFilter::_command(int p_command) {
-	switch (p_command) {
-
-		case CMD_CLEAR_FILTER: {
-			if (search_box->get_text() != "") {
-				search_box->clear();
-				emit_signal("filter_changed");
-			}
-		} break;
-	}
-}
-
 void ProjectListFilter::_search_text_changed(const String &p_newtext) {
 	emit_signal("filter_changed");
 }
@@ -2057,13 +2045,14 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 
 void ProjectListFilter::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE)
-		clear_search_button->set_icon(get_icon("Close", "EditorIcons"));
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		search_box->set_clear_button_enabled(true);
+	}
 }
 
 void ProjectListFilter::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_command"), &ProjectListFilter::_command);
 	ClassDB::bind_method(D_METHOD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
 	ClassDB::bind_method(D_METHOD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
 
@@ -2088,8 +2077,4 @@ ProjectListFilter::ProjectListFilter() {
 	search_box->connect("text_changed", this, "_search_text_changed");
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);
-
-	clear_search_button = memnew(ToolButton);
-	clear_search_button->connect("pressed", this, "_command", make_binds(CMD_CLEAR_FILTER));
-	add_child(clear_search_button);
 }

@@ -74,6 +74,7 @@ void TileMapEditor::_notification(int p_what) {
 			rotate_270->set_icon(get_icon("Rotate270", "EditorIcons"));
 
 			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			search_box->set_clear_button_enabled(true);
 
 			PopupMenu *p = options->get_popup();
 			p->set_item_icon(p->get_item_index(OPTION_PAINTING), get_icon("Edit", "EditorIcons"));

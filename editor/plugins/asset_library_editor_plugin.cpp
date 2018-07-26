@@ -554,6 +554,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
+			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
 		} break;
@@ -604,6 +606,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
+			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 		} break;
 	}
 }

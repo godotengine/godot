@@ -863,6 +863,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
 
 			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 
@@ -911,6 +912,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
 
 			filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 		} break;
 		case NOTIFICATION_PROCESS: {
 

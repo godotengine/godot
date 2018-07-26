@@ -219,6 +219,9 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			connect("confirmed", this, "_confirmed");
+
+			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			search_box->set_clear_button_enabled(true);
 		} break;
 	}
 }

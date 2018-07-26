@@ -530,6 +530,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTR("Filter properties"));
 	search->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	search->set_clear_button_enabled(true);
 	add_child(search);
 
 	warning = memnew(Button);
