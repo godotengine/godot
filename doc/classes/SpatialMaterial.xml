@@ -84,7 +84,11 @@
 		</member>
 		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag">
 		</member>
+		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag">
+		</member>
 		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag">
+		</member>
+		<member name="flags_ensure_correct_normals" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag">
 		</member>
@@ -328,9 +332,7 @@
 		</constant>
 		<constant name="FLAG_ENSURE_CORRECT_NORMALS" value="16" enum="Flags">
 		</constant>
-		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="14" enum="Flags">
-		</constant>
-		<constant name="FLAG_MAX" value="15" enum="Flags">
+		<constant name="FLAG_MAX" value="18" enum="Flags">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>

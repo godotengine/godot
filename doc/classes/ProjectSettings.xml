@@ -559,6 +559,8 @@
 		<member name="physics/2d/thread_model" type="int" setter="" getter="">
 			Set whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API Access to only physics process.
 		</member>
+		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="">
+		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="">
 		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="">
@@ -614,8 +616,6 @@
 			Strategy used for framebuffer allocation. The simpler it is, the less memory it uses (but the least features it supports).
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="">
-		</member>
-		<member name="rendering/quality/intended_usage/framebuffer_mode" type="int" setter="" getter="">
 		</member>
 		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="">
 			For reflection probes and panorama backgrounds (sky), use a high amount of samples to create ggx blurred versions (used for roughness).

@@ -146,6 +146,22 @@
 				Removes the possibility to disconnect nodes when dragging from the slot at the right if it has the specified type.
 			</description>
 		</method>
+		<method name="set_connection_activity">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_port" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_port" type="int">
+			</argument>
+			<argument index="4" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_selected">
 			<return type="void">
 			</return>

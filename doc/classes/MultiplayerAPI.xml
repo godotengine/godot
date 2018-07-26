@@ -71,6 +71,8 @@
 			</argument>
 			<argument index="1" name="id" type="int" default="0">
 			</argument>
+			<argument index="2" name="mode" type="int" enum="NetworkedMultiplayerPeer.TransferMode" default="2">
+			</argument>
 			<description>
 				Sends the given raw [code]bytes[/code] to a specific peer identified by [code]id[/code] (see [method NetworkedMultiplayerPeer.set_target_peer]). Default ID is [code]0[/code], i.e. broadcast to all peers.
 			</description>

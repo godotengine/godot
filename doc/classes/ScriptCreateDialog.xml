@@ -21,10 +21,8 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="inherits" type="String">
-				The dialog's "Inherits" field content.
 			</argument>
 			<argument index="1" name="path" type="String">
-				The dialog's "Path" field content.
 			</argument>
 			<description>
 				Prefills required fields to configure the ScriptCreateDialog for use.
