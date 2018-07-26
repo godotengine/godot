@@ -1928,6 +1928,11 @@ void SpatialEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, cons
 
 void SpatialEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
 
+	if (lock_rotation) {
+		_nav_pan(p_event, p_relative);
+		return;
+	}
+
 	real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
 	real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
 	bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y-axis");
@@ -2563,6 +2568,19 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			_update_name();
 
 		} break;
+		case VIEW_LOCK_ROTATION: {
+
+			int idx = view_menu->get_popup()->get_item_index(VIEW_LOCK_ROTATION);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			lock_rotation = !current;
+			view_menu->get_popup()->set_item_checked(idx, !current);
+			if (lock_rotation) {
+				view_menu->set_icon(get_icon("Lock", "EditorIcons"));
+			} else {
+				view_menu->set_icon(Ref<Texture>());
+			}
+
+		} break;
 		case VIEW_AUDIO_LISTENER: {
 
 			int idx = view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER);
@@ -2836,6 +2854,12 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		if (!view_menu->get_popup()->is_item_checked(idx))
 			_menu_option(display);
 	}
+	if (p_state.has("lock_rotation")) {
+		lock_rotation = p_state["lock_rotation"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_LOCK_ROTATION);
+		view_menu->get_popup()->set_item_checked(idx, lock_rotation);
+	}
 	if (p_state.has("use_environment")) {
 		bool env = p_state["use_environment"];
 
@@ -2923,6 +2947,8 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["half_res"] = viewport_container->get_stretch_shrink() > 1;
 	if (previewing)
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
+	if (lock_rotation)
+		d["lock_rotation"] = lock_rotation;
 
 	return d;
 }
@@ -2951,6 +2977,7 @@ void SpatialEditorViewport::_bind_methods() {
 void SpatialEditorViewport::reset() {
 
 	orthogonal = false;
+	lock_rotation = false;
 	message_time = 0;
 	message = "";
 	last_message = "";
@@ -3376,6 +3403,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_radio_check_item(TTR("Perspective") + " (" + ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal")->get_as_text() + ")", VIEW_PERSPECTIVE);
 	view_menu->get_popup()->add_radio_check_item(TTR("Orthogonal") + " (" + ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal")->get_as_text() + ")", VIEW_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
+	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_lock_rotation", TTR("Lock View Rotation")), VIEW_LOCK_ROTATION);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_normal", TTR("Display Normal")), VIEW_DISPLAY_NORMAL);
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_wireframe", TTR("Display Wireframe")), VIEW_DISPLAY_WIREFRAME);
