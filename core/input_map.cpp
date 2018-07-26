@@ -99,21 +99,22 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength) const {
+List<InputMap::ActionInput>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player, bool p_exact_player, bool *p_pressed, float *p_strength) const {
 
-	for (List<Ref<InputEvent> >::Element *E = p_action.inputs.front(); E; E = E->next()) {
+	for (List<ActionInput>::Element *E = p_action.inputs.front(); E; E = E->next()) {
 
-		const Ref<InputEvent> e = E->get();
+		const ActionInput a = E->get();
 
-		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
-		//	continue;
+		if (p_player == PLAYER_ALL) {
+			if (p_exact_player && a.player != p_player)
+				continue;
+		} else if (a.player != PLAYER_ALL && a.player != p_player) {
+			continue;
+		}
 
-		//if (e->get_player() != p_event->get_player())
-		//	continue;
-
-		int device = e->get_device();
+		int device = a.event->get_device();
 		if (device == ALL_DEVICES || device == p_event->get_device()) {
-			if (e->action_match(p_event, p_pressed, p_strength, p_action.deadzone)) {
+			if (a.event->action_match(p_event, p_pressed, p_strength, p_action.deadzone)) {
 				return E;
 			}
 		}
@@ -134,27 +135,30 @@ void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone)
 	input_map[p_action].deadzone = p_deadzone;
 }
 
-void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player) {
 
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!input_map.has(p_action));
-	if (_find_event(input_map[p_action], p_event))
+	if (_find_event(input_map[p_action], p_event, p_player, true))
 		return; //already gots
 
-	input_map[p_action].inputs.push_back(p_event);
+	ActionInput a;
+	a.player = p_player;
+	a.event = p_event;
+	input_map[p_action].inputs.push_back(a);
 }
 
-bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+bool InputMap::action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player) {
 
 	ERR_FAIL_COND_V(!input_map.has(p_action), false);
-	return (_find_event(input_map[p_action], p_event) != NULL);
+	return (_find_event(input_map[p_action], p_event, p_player, true) != NULL);
 }
 
-void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event) {
+void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event, ActionPlayer p_player) {
 
 	ERR_FAIL_COND(!input_map.has(p_action));
 
-	List<Ref<InputEvent> >::Element *E = _find_event(input_map[p_action], p_event);
+	List<ActionInput>::Element *E = _find_event(input_map[p_action], p_event, p_player, true);
 	if (E)
 		input_map[p_action].inputs.erase(E);
 }
@@ -166,21 +170,24 @@ void InputMap::action_erase_events(const StringName &p_action) {
 	input_map[p_action].inputs.clear();
 }
 
-Array InputMap::_get_action_list(const StringName &p_action) {
+Array InputMap::_get_action_list(const StringName &p_action, ActionPlayer p_player) {
 
 	Array ret;
-	const List<Ref<InputEvent> > *al = get_action_list(p_action);
+	const List<ActionInput> *al = get_action_list(p_action);
 	if (al) {
-		for (const List<Ref<InputEvent> >::Element *E = al->front(); E; E = E->next()) {
+		for (const List<ActionInput>::Element *E = al->front(); E; E = E->next()) {
 
-			ret.push_back(E->get());
+			ActionInput a = E->get();
+			if (p_player != a.player)
+				continue;
+			ret.push_back(a.event);
 		}
 	}
 
 	return ret;
 }
 
-const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_action) {
+const List<InputMap::ActionInput> *InputMap::get_action_list(const StringName &p_action, ActionPlayer p_player) {
 
 	const Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E)
@@ -189,11 +196,11 @@ const List<Ref<InputEvent> > *InputMap::get_action_list(const StringName &p_acti
 	return &E->get().inputs;
 }
 
-bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const {
-	return event_get_action_status(p_event, p_action);
+bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action, ActionPlayer p_player) const {
+	return event_get_action_status(p_event, p_action, NULL, NULL, p_player);
 }
 
-bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed, float *p_strength) const {
+bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed, float *p_strength, ActionPlayer p_player) const {
 	Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E) {
 		ERR_EXPLAIN("Request for nonexistent InputMap action: " + String(p_action));
@@ -211,8 +218,8 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	bool pressed;
 	float strength;
-	List<Ref<InputEvent> >::Element *event = _find_event(E->get(), p_event, &pressed, &strength);
-	if (event != NULL) {
+	List<ActionInput>::Element *a = _find_event(E->get(), p_event, p_player, false, &pressed, &strength);
+	if (a != NULL) {
 		if (p_pressed != NULL)
 			*p_pressed = pressed;
 		if (p_strength != NULL)
