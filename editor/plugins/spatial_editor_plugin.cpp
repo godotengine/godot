@@ -2156,6 +2156,21 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		_update_freelook(delta);
 
+		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
+		if (previewing_cinema == true && scene_root != NULL) {
+			Camera *cam = scene_root->get_viewport()->get_camera();
+			if (cam != NULL && cam != previewing) {
+				//then switch the viewport's camera to the scene's viewport camera
+				if (previewing != NULL) {
+					previewing->disconnect("tree_exited", this, "_preview_exited_scene");
+				}
+				previewing = cam;
+				previewing->connect("tree_exited", this, "_preview_exited_scene");
+				VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
+				surface->update();
+			}
+		}
+
 		_update_camera(delta);
 
 		Map<Node *, Object *> &selection = editor_selection->get_selection();
@@ -2261,6 +2276,13 @@ void SpatialEditorViewport::_notification(int p_what) {
 			text += TTR("FPS") + ": " + itos(temp_fps) + " (" + String::num(1000.0f / temp_fps, 2) + " ms)";
 			fps_label->set_text(text);
 		}
+
+		bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
+		cinema_label->set_visible(show_cinema);
+		if (show_cinema) {
+			float cinema_half_width = cinema_label->get_size().width / 2.0f;
+			cinema_label->set_anchor_and_margin(MARGIN_LEFT, 0.5f, -cinema_half_width);
+		}
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2273,6 +2295,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("focus_exited", this, "_surface_focus_exit");
 		info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		cinema_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
 		_init_gizmo_instance(index);
 	}
@@ -2599,6 +2622,22 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, current);
 
 		} break;
+		case VIEW_CINEMATIC_PREVIEW: {
+
+			int idx = view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW);
+			bool current = view_menu->get_popup()->is_item_checked(idx);
+			current = !current;
+			view_menu->get_popup()->set_item_checked(idx, current);
+			previewing_cinema = true;
+			_toggle_cinema_preview(current);
+
+			if (current) {
+				preview_camera->hide();
+			} else {
+				if (previewing != NULL)
+					preview_camera->show();
+			}
+		} break;
 		case VIEW_GIZMOS: {
 
 			int idx = view_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -2762,6 +2801,25 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	}
 }
 
+void SpatialEditorViewport::_toggle_cinema_preview(bool p_activate) {
+	previewing_cinema = p_activate;
+	if (!previewing_cinema) {
+		if (previewing != NULL)
+			previewing->disconnect("tree_exited", this, "_preview_exited_scene");
+
+		previewing = NULL;
+		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
+		preview_camera->set_pressed(false);
+		if (!preview) {
+			preview_camera->hide();
+		} else {
+			preview_camera->show();
+		}
+		view_menu->show();
+		surface->update();
+	}
+}
+
 void SpatialEditorViewport::_selection_result_pressed(int p_result) {
 
 	if (selection_results.size() <= p_result)
@@ -2786,7 +2844,7 @@ void SpatialEditorViewport::set_can_preview(Camera *p_preview) {
 
 	preview = p_preview;
 
-	if (!preview_camera->is_pressed())
+	if (!preview_camera->is_pressed() && !previewing_cinema)
 		preview_camera->set_visible(p_preview);
 }
 
@@ -2907,6 +2965,12 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 		int idx = view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION);
 		view_menu->get_popup()->set_item_checked(idx, half_res);
 	}
+	if (p_state.has("cinematic_preview")) {
+		previewing_cinema = p_state["cinematic_preview"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW);
+		view_menu->get_popup()->set_item_checked(idx, previewing_cinema);
+	}
 
 	if (p_state.has("previewing")) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
@@ -2945,6 +3009,7 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["information"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["fps"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_FPS));
 	d["half_res"] = viewport_container->get_stretch_shrink() > 1;
+	d["cinematic_preview"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 	if (previewing)
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
 	if (lock_rotation)
@@ -3425,6 +3490,9 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_GIZMOS), true);
 
 	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTR("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
+
+	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
@@ -3473,6 +3541,15 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	fps_label->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 	surface->add_child(fps_label);
 	fps_label->hide();
+
+	cinema_label = memnew(Label);
+	cinema_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
+	cinema_label->set_h_grow_direction(GROW_DIRECTION_END);
+	cinema_label->set_align(Label::ALIGN_CENTER);
+	surface->add_child(cinema_label);
+	cinema_label->set_text(TTR("Cinematic Preview"));
+	cinema_label->hide();
+	previewing_cinema = false;
 
 	accept = NULL;
 

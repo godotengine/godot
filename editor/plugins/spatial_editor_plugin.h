@@ -95,7 +95,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
 		VIEW_DISPLAY_SHADELESS,
-		VIEW_LOCK_ROTATION
+		VIEW_LOCK_ROTATION,
+		VIEW_CINEMATIC_PREVIEW
 	};
 
 public:
@@ -140,6 +141,7 @@ private:
 
 	Label *info_label;
 	Label *fps_label;
+	Label *cinema_label;
 
 	struct _RayResult {
 
@@ -288,8 +290,11 @@ private:
 	Camera *previewing;
 	Camera *preview;
 
+	bool previewing_cinema;
+
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
+	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
 	void _finish_gizmo_instances();
 	void _selection_result_pressed(int);
