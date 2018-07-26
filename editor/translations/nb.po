@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-22 08:31+0000\n"
-"Last-Translator: Frank T. Rambol <frank@d-fect.com>\n"
+"PO-Revision-Date: 2018-06-28 14:40+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
 "Language: nb\n"
@@ -1756,7 +1756,9 @@ msgstr "Velg en HovedScene"
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "Kan ikke aktivere addon-plugin på: '%s' parsing av konfig feilet."
+msgstr ""
+"Kan ikke aktivere tilleggs-programtillegg på: \"%s\" tolking av oppsett "
+"mislyktes."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
@@ -1912,9 +1914,8 @@ msgid "MeshLibrary..."
 msgstr "MeshBibliotek..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "TileSet..."
-msgstr "TileSet…"
+msgstr "Flissett…"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -7494,6 +7495,11 @@ msgstr "Prosjekt"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr ""
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Vis Filer"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-10 08:44+0000\n"
+"PO-Revision-Date: 2018-06-27 13:43+0000\n"
 "Last-Translator: matevž lapajne <sivar.lapajne@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 3.0.1-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -3340,23 +3340,23 @@ msgstr "Razreševanje..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
-msgstr ""
+msgstr "Napaka pri izdelavi zahteve"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Nedejaven"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Ponovi"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Napaka Pri Prenosu"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Prenos za ta dodatek je že v teku!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "first"
@@ -3382,7 +3382,7 @@ msgstr "Vse"
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
-msgstr ""
+msgstr "Vtičniki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Sort:"
@@ -3390,7 +3390,7 @@ msgstr "Razvrsti:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Reverse"
-msgstr ""
+msgstr "Obrni"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -3407,15 +3407,15 @@ msgstr "Podpora..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Uradno"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Preskušanje"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "Dodatki v ZIP Datoteki"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -3423,6 +3423,9 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Ni mogoče določiti poti shranjevanja slik svetlobnih kart.\n"
+"Shrani prizor (za slike, da bodo shranjene v isti mapi), ali izberi pot za "
+"shranitev iz lastnosti Zapečene Svetlobne karte."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -3435,53 +3438,54 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Napaka pri izdelavi slik, svetlobnih kart. Poskrbite, da je pot zapisljiva."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr ""
+msgstr "Zapeči Svetlobne karte"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
-msgstr ""
+msgstr "Predogled"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr ""
+msgstr "Nastavi Zaskok"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr ""
+msgstr "Mrežni Zamik:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr ""
+msgstr "Mrežni Korak:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr ""
+msgstr "Rotacijski Odmik:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr ""
+msgstr "Rotacijski Korak:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Pivot"
-msgstr ""
+msgstr "Premakni Točko"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move Action"
-msgstr ""
+msgstr "Premakni Dejanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
-msgstr ""
+msgstr "Premakni navpični vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new vertical guide"
-msgstr ""
+msgstr "Ustvari nov navpični vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove vertical guide"
@@ -3489,59 +3493,61 @@ msgstr "Odstranite navpični vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move horizontal guide"
-msgstr ""
+msgstr "Premakni vodoravni vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal guide"
-msgstr ""
+msgstr "Ustvari nov vodoravni vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove horizontal guide"
-msgstr "Odstrani vodoravno vodilo"
+msgstr "Odstrani vodoravni vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
-msgstr ""
+msgstr "Ustvari nov vodoravni in navpični vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit IK Chain"
-msgstr ""
+msgstr "Uredi Verigo IK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Edit CanvasItem"
-msgstr ""
+msgstr "Uredi Platno Stvari"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
-msgstr ""
+msgstr "Samo Sidrišča"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors and Margins"
-msgstr ""
+msgstr "Spremeni Sidrišča in Robove"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
-msgstr ""
+msgstr "Spremeni Sidrišča"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
-msgstr ""
+msgstr "Prilepi Pozicijo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Izberite Način"
+msgstr "Izberi Način"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
-msgstr "Povlecite: Zavrti"
+msgstr "Povleci: Vrtenje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move"
-msgstr ""
+msgstr "Alt+Drag: Premakni"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
 msgstr ""
+"Pritisni 'v' za Spremembo Točke in 'Shift+v' za Vleko Točke (med "
+"premikanjem)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
@@ -3561,16 +3567,16 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Ob kliku prikaži seznam vseh objektov na tem mestu.\n"
+"Ob kliku prikaži seznam vseh objektov na tem mestu\n"
 "(isto kot Alt+RMB v načinu izbire)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
-msgstr ""
+msgstr "Klikni, če želiš spremeniti rotacijsko točko objekta."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
-msgstr ""
+msgstr "Način Plošče"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggles snapping"
@@ -3578,66 +3584,66 @@ msgstr "Preklopi pripenjanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Snap"
-msgstr ""
+msgstr "Uporabi Pripenjanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping options"
-msgstr ""
+msgstr "Možnosti pripenjanja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to grid"
-msgstr ""
+msgstr "Pripni na mrežo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr ""
+msgstr "Uporabi Rotacijsko Pripenjanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Preoblikuj Zaskok..."
+msgstr "Nastavi Pripenjanje..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr ""
+msgstr "Pripni Relativno"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr ""
+msgstr "Uporabi Pripenjanje Pikslov"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart snapping"
-msgstr ""
+msgstr "Pametno pripenjanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to parent"
-msgstr ""
+msgstr "Pripni na Predhodnika"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
-msgstr ""
+msgstr "Pripni na gradnik vodilo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr ""
+msgstr "Pripni na gradnik strani"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
-msgstr ""
+msgstr "Pripni na druge gradnike"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to guides"
-msgstr ""
+msgstr "Pripni na vodnike"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr "Izbrani predmet zaklenite na svoje mesto (ga ni mogoče premakniti)."
+msgstr "Izbrani predmet zakleni na svoje mesto (ni ga mogoče premakniti)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr "Odklenite izbrani predmet (ga lahko premaknete)."
+msgstr "Odkleni izbrani predmet (lahko ga premaknete)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
@@ -5945,9 +5951,8 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Ime Projekta:"
+msgstr "Neveljavno Ime Projekta."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7373,6 +7378,11 @@ msgstr ""
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr ""
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Ogled datotek"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

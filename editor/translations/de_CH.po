@@ -7424,6 +7424,11 @@ msgstr "Projektname:"
 msgid "Warnings"
 msgstr ""
 
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Datei(en) öffnen"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
