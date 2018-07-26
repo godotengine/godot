@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-10 08:44+0000\n"
+"PO-Revision-Date: 2018-06-27 13:43+0000\n"
 "Last-Translator: matevž lapajne <sivar.lapajne@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 3.0.1-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -3501,7 +3501,7 @@ msgstr "Ustvari nov vodoravni vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove horizontal guide"
-msgstr "Odstrani vodoravno vodilo"
+msgstr "Odstrani vodoravni vodnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
@@ -3533,11 +3533,11 @@ msgstr "Prilepi Pozicijo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Izberite Način"
+msgstr "Izberi Način"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
-msgstr "Povlecite: Zavrti"
+msgstr "Povleci: Vrtenje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move"
@@ -3567,7 +3567,7 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"Ob kliku prikaži seznam vseh objektov na tem mestu.\n"
+"Ob kliku prikaži seznam vseh objektov na tem mestu\n"
 "(isto kot Alt+RMB v načinu izbire)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3601,7 +3601,7 @@ msgstr "Uporabi Rotacijsko Pripenjanje"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr "Preoblikuj Zaskok..."
+msgstr "Nastavi Pripenjanje..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -3638,12 +3638,12 @@ msgstr "Pripni na vodnike"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr "Izbrani predmet zaklenite na svoje mesto (ga ni mogoče premakniti)."
+msgstr "Izbrani predmet zakleni na svoje mesto (ni ga mogoče premakniti)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr "Odklenite izbrani predmet (ga lahko premaknete)."
+msgstr "Odkleni izbrani predmet (lahko ga premaknete)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
@@ -5951,9 +5951,8 @@ msgid "Imported Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Ime Projekta:"
+msgstr "Neveljavno Ime Projekta."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7379,6 +7378,11 @@ msgstr ""
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr ""
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Ogled datotek"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

@@ -27,7 +27,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-22 08:31+0000\n"
+"PO-Revision-Date: 2018-07-14 08:42+0000\n"
 "Last-Translator: RM <synaptykq@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -7525,6 +7525,11 @@ msgstr "Zbuduj projekt"
 msgid "Warnings"
 msgstr "Ostrzeżenia"
 
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Pokaż pliki"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
@@ -8078,14 +8083,6 @@ msgstr "ARVROrigin wymaga dziedziczącego po nim ARVRCamera"
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
 msgstr "%d%%"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "(Time Left: %d:%02d s)"
-msgstr "(Pozostały czas: %d:%02d s)"
-
-#: scene/3d/baked_lightmap.cpp
-msgid "%d%%"
-msgstr ""
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
