@@ -44,12 +44,12 @@ int InputEvent::get_device() const {
 	return device;
 }
 
-void InputEvent::set_layer(int p_layer) {
-	layer = p_layer;
+void InputEvent::set_player(int p_player) {
+	player = p_player;
 }
 
-int InputEvent::get_layer() const {
-	return layer;
+int InputEvent::get_player() const {
+	return player;
 }
 
 bool InputEvent::is_action(const StringName &p_action) const {
@@ -119,8 +119,8 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
-	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &InputEvent::set_layer);
-	ClassDB::bind_method(D_METHOD("get_layer"), &InputEvent::get_layer);
+	ClassDB::bind_method(D_METHOD("set_player", "player"), &InputEvent::set_player);
+	ClassDB::bind_method(D_METHOD("get_player"), &InputEvent::get_player);
 
 	ClassDB::bind_method(D_METHOD("is_action", "action"), &InputEvent::is_action);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputEvent::is_action_pressed);
@@ -141,13 +141,13 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer"), "set_layer", "get_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "player"), "set_player", "get_player");
 }
 
 InputEvent::InputEvent() {
 
 	device = 0;
-	layer = 0;
+	player = 0;
 }
 
 //////////////////

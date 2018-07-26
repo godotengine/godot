@@ -108,7 +108,7 @@ List<Ref<InputEvent> >::Element *InputMap::_find_event(Action &p_action, const R
 		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
 		//	continue;
 
-		if (e->get_layer() != p_event->get_layer())
+		if (e->get_player() != p_event->get_player())
 			continue;
 
 		int device = e->get_device();
