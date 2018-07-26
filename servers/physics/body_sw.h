@@ -442,6 +442,9 @@ public:
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].local_normal;
 	}
+	virtual float get_contact_impulse(int p_contact_idx) const {
+		return 0.0f; // Only implemented for bullet
+	}
 	virtual int get_contact_local_shape(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);
 		return body->contacts[p_contact_idx].local_shape;
