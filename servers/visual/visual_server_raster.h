@@ -674,7 +674,7 @@ public:
 
 	/* TESTING */
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, const String &p_scale);
 	virtual void set_default_clear_color(const Color &p_color);
 
 	virtual bool has_feature(Features p_feature) const;

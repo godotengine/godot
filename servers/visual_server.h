@@ -993,7 +993,7 @@ public:
 	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes);
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, const String &p_scale) = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
 	enum Features {

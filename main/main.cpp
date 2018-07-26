@@ -1085,8 +1085,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
-		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
 		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image", PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"));
+
+		const String boot_logo_scale = GLOBAL_DEF("application/boot_splash/scale", "disabled");
+		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/scale", PropertyInfo(Variant::STRING, "application/boot_splash/scale", PROPERTY_HINT_ENUM, "disabled,keep_width,keep_height,cover,expand,full_size"));
 
 		Ref<Image> boot_logo;
 
@@ -1104,6 +1106,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
 			Color boot_bg = GLOBAL_DEF("application/boot_splash/bg_color", clear);
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg, boot_logo_scale);
+
 #ifndef TOOLS_ENABLED
 //no tools, so free the boot logo (no longer needed)
 //ProjectSettings::get_singleton()->set("application/boot_logo",Image());
@@ -1123,7 +1126,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			MAIN_PRINT("Main: ClearColor");
 			VisualServer::get_singleton()->set_default_clear_color(boot_splash_bg_color);
 			MAIN_PRINT("Main: Image");
-			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color, false);
+			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color, "disabled");
 #endif
 		}
 

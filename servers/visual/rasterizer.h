@@ -1075,7 +1075,7 @@ public:
 	virtual RasterizerCanvas *get_canvas() = 0;
 	virtual RasterizerScene *get_scene() = 0;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
+	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, const String &p_scale) = 0;
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
