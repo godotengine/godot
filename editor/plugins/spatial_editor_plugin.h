@@ -109,7 +109,6 @@ private:
 	int index;
 	String name;
 	void _menu_option(int p_option);
-
 	Spatial *preview_node;
 	AABB *preview_bounds;
 	Vector<String> selected_files;
@@ -405,7 +404,6 @@ public:
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
 		TOOL_MAX
-
 	};
 
 	enum ToolOptions {
@@ -489,7 +487,8 @@ private:
 		MENU_VIEW_CAMERA_SETTINGS,
 		MENU_LOCK_SELECTED,
 		MENU_UNLOCK_SELECTED,
-		MENU_VISIBILITY_SKELETON
+		MENU_VISIBILITY_SKELETON,
+		MENU_SNAP_TO_FLOOR
 	};
 
 	Button *tool_button[TOOL_MAX];
@@ -598,7 +597,7 @@ public:
 
 	void update_transform_gizmo();
 	void update_all_gizmos();
-
+	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
 
