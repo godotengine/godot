@@ -4241,6 +4241,9 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50));
 		} break;
+		case MENU_SNAP_TO_FLOOR: {
+			snap_selected_nodes_to_floor();
+		} break;
 		case MENU_LOCK_SELECTED: {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -4718,6 +4721,119 @@ void SpatialEditor::_refresh_menu_icons() {
 	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
 }
 
+template <typename T>
+Set<T *> _get_child_nodes(Node *parent_node) {
+	Set<T *> nodes = Set<T *>();
+	T *node = Node::cast_to<T>(parent_node);
+	if (node) {
+		nodes.insert(node);
+	}
+
+	for (int i = 0; i < parent_node->get_child_count(); i++) {
+		Node *child_node = parent_node->get_child(i);
+		Set<T *> child_nodes = _get_child_nodes<T>(child_node);
+		for (typename Set<T *>::Element *I = child_nodes.front(); I; I = I->next()) {
+			nodes.insert(I->get());
+		}
+	}
+
+	return nodes;
+}
+
+Set<RID> _get_physics_bodies_rid(Node *node) {
+	Set<RID> rids = Set<RID>();
+	PhysicsBody *pb = Node::cast_to<PhysicsBody>(node);
+	if (pb) {
+		rids.insert(pb->get_rid());
+	}
+	Set<PhysicsBody *> child_nodes = _get_child_nodes<PhysicsBody>(node);
+	for (Set<PhysicsBody *>::Element *I = child_nodes.front(); I; I = I->next()) {
+		rids.insert(I->get()->get_rid());
+	}
+
+	return rids;
+}
+
+void SpatialEditor::snap_selected_nodes_to_floor() {
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+	Dictionary snap_data;
+
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		Spatial *sp = Object::cast_to<Spatial>(E->get());
+		if (sp) {
+			Vector3 from = Vector3();
+			Vector3 position_offset = Vector3();
+
+			// Priorities for snapping to floor are CollisionShapes, VisualInstances and then origin
+			Set<VisualInstance *> vi = _get_child_nodes<VisualInstance>(sp);
+			Set<CollisionShape *> cs = _get_child_nodes<CollisionShape>(sp);
+
+			if (cs.size()) {
+				AABB aabb = sp->get_global_transform().xform(cs.front()->get()->get_shape()->get_debug_mesh()->get_aabb());
+				for (Set<CollisionShape *>::Element *I = cs.front(); I; I = I->next()) {
+					aabb.merge_with(sp->get_global_transform().xform(I->get()->get_shape()->get_debug_mesh()->get_aabb()));
+				}
+				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
+				from = aabb.position + size;
+				position_offset.y = from.y - sp->get_global_transform().origin.y;
+			} else if (vi.size()) {
+				AABB aabb = vi.front()->get()->get_transformed_aabb();
+				for (Set<VisualInstance *>::Element *I = vi.front(); I; I = I->next()) {
+					aabb.merge_with(I->get()->get_transformed_aabb());
+				}
+				Vector3 size = aabb.size * Vector3(0.5, 0.0, 0.5);
+				from = aabb.position + size;
+				position_offset.y = from.y - sp->get_global_transform().origin.y;
+			} else {
+				from = sp->get_global_transform().origin;
+			}
+
+			// We add a bit of margin to the from position to avoid it from snapping
+			// when the spatial is already on a floor and there's another floor under
+			// it
+			from = from + Vector3(0.0, 0.1, 0.0);
+
+			Dictionary d;
+
+			d["from"] = from;
+			d["position_offset"] = position_offset;
+			snap_data[sp] = d;
+		}
+	}
+
+	PhysicsDirectSpaceState *ss = get_tree()->get_root()->get_world()->get_direct_space_state();
+	PhysicsDirectSpaceState::RayResult result;
+
+	Array keys = snap_data.keys();
+
+	if (keys.size()) {
+		undo_redo->create_action("Snap Nodes To Floor");
+
+		for (int i = 0; i < keys.size(); i++) {
+			Node *node = keys[i];
+			Spatial *sp = Object::cast_to<Spatial>(node);
+
+			Dictionary d = snap_data[node];
+			Vector3 from = d["from"];
+			Vector3 position_offset = d["position_offset"];
+
+			Vector3 to = from - Vector3(0.0, 10.0, 0.0);
+			Set<RID> excluded = _get_physics_bodies_rid(sp);
+
+			if (ss->intersect_ray(from, to, result, excluded)) {
+				Transform new_transform = sp->get_global_transform();
+				new_transform.origin.y = result.position.y;
+				new_transform.origin = new_transform.origin - position_offset;
+
+				undo_redo->add_do_method(sp, "set_global_transform", new_transform);
+				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+			}
+		}
+
+		undo_redo->commit_action();
+	}
+}
+
 void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
@@ -4746,6 +4862,8 @@ void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 			else if (ED_IS_SHORTCUT("spatial_editor/tool_scale", p_event))
 				_menu_item_pressed(MENU_TOOL_SCALE);
+			else if (ED_IS_SHORTCUT("spatial_editor/snap_to_floor", p_event))
+				snap_selected_nodes_to_floor();
 
 			else if (ED_IS_SHORTCUT("spatial_editor/local_coords", p_event))
 				if (are_local_coords_enabled()) {
@@ -5105,6 +5223,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/tool_move", TTR("Tool Move"), KEY_W);
 	ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Tool Rotate"), KEY_E);
 	ED_SHORTCUT("spatial_editor/tool_scale", TTR("Tool Scale"), KEY_R);
+	ED_SHORTCUT("spatial_editor/snap_to_floor", TTR("Snap To Floor"), KEY_PAGEDOWN);
 
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTR("Toggle Freelook"), KEY_MASK_SHIFT + KEY_F);
 
@@ -5115,6 +5234,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	hbc_menu->add_child(transform_menu);
 
 	p = transform_menu->get_popup();
+	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTR("Snap object to floor")), MENU_SNAP_TO_FLOOR);
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTR("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
