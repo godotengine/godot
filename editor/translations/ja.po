@@ -8251,6 +8251,11 @@ msgstr "プロジェクト"
 msgid "Warnings"
 msgstr "警告"
 
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "ビューファイル:"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
