@@ -69,6 +69,12 @@
 				Returns whether node notifies about its local transformation changes. Spatial will not propagate this by default.
 			</description>
 		</method>
+		<method name="is_scale_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_set_as_toplevel" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -188,6 +194,14 @@
 			</argument>
 			<description>
 				Makes the node ignore its parents transformations. Node transformations are only in global space.
+			</description>
+		</method>
+		<method name="set_disable_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="disable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_identity">

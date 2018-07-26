@@ -73,6 +73,12 @@
 				Update a file information. Call this if an external program (not Godot) modified the file.
 			</description>
 		</method>
+		<method name="update_script_classes">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="filesystem_changed">

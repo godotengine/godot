@@ -71,6 +71,8 @@
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] object to be played.
 		</member>
+		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused">
+		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db">
 			Base volume without dampening.
 		</member>

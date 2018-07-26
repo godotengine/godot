@@ -227,12 +227,6 @@
 				Insert a given text at the cursor position.
 			</description>
 		</method>
-		<method name="is_breakpoint_gutter_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="is_folded" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -320,14 +314,6 @@
 			</return>
 			<description>
 				Select all the text.
-			</description>
-		</method>
-		<method name="set_breakpoint_gutter_enabled">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="set_line_as_hidden">
@@ -540,6 +526,8 @@
 		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
+		</theme_item>
+		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>

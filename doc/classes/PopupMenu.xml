@@ -136,6 +136,8 @@
 		<method name="add_separator">
 			<return type="void">
 			</return>
+			<argument index="0" name="label" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
 				Add a separator between items. Separators also occupy an index.
 			</description>
@@ -507,7 +509,7 @@
 		</member>
 		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection">
 		</member>
-		<member name="submenu_popup_delay" type="real" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay">
+		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay">
 			Sets the delay time for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item. Default value: [code]0.3[/code] seconds.
 		</member>
 	</members>
@@ -552,6 +554,10 @@
 		<theme_item name="hover" type="StyleBox">
 		</theme_item>
 		<theme_item name="hseparation" type="int">
+		</theme_item>
+		<theme_item name="labeled_separator_left" type="StyleBox">
+		</theme_item>
+		<theme_item name="labeled_separator_right" type="StyleBox">
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>

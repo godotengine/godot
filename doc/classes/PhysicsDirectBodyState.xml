@@ -35,6 +35,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="j" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="apply_impulse">
 			<return type="void">
 			</return>

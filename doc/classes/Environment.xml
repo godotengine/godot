@@ -203,6 +203,8 @@
 		</member>
 		<member name="ss_reflections_roughness" type="bool" setter="set_ssr_rough" getter="is_ssr_rough">
 		</member>
+		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect">
+		</member>
 		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias">
 		</member>
 		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="is_ssao_blur_enabled" enum="Environment.SSAOBlur">

@@ -9,9 +9,11 @@ def get_doc_classes():
         "ARVRInterfaceGDNative",
         "GDNative",
         "GDNativeLibrary",
+        "MultiplayerPeerGDNative",
         "NativeScript",
         "PacketPeerGDNative",
         "PluginScript",
+        "StreamPeerGDNative",
     ]
 
 def get_doc_path():

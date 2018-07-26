@@ -9,10 +9,22 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="refresh">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="object_id_selected">
 			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="property_edited">
+			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
 			</description>
@@ -23,11 +35,21 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="property_selected">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="resource_selected">
 			<argument index="0" name="res" type="Object">
 			</argument>
 			<argument index="1" name="prop" type="String">
 			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="restart_requested">
 			<description>
 			</description>
 		</signal>

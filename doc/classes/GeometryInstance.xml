@@ -59,7 +59,7 @@
 			Will allow the GeometryInstance to be used when baking lights using a [GIProbe] and/or any other form of baked lighting.
 			Added documentation for GeometryInstance and VisualInstance
 		</constant>
-		<constant name="FLAG_MAX" value="1" enum="Flags">
+		<constant name="FLAG_MAX" value="2" enum="Flags">
 		</constant>
 	</constants>
 </class>

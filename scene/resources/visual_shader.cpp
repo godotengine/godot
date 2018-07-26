@@ -949,8 +949,8 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "type", "node", "position", "id"), &VisualShader::add_node);
 	ClassDB::bind_method(D_METHOD("set_node_position", "type", "id", "position"), &VisualShader::set_node_position);
 
+	ClassDB::bind_method(D_METHOD("get_node", "type", "id"), &VisualShader::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_position", "type", "id"), &VisualShader::get_node_position);
-	ClassDB::bind_method(D_METHOD("get_node", "type"), &VisualShader::get_node);
 
 	ClassDB::bind_method(D_METHOD("get_node_list", "type"), &VisualShader::get_node_list);
 	ClassDB::bind_method(D_METHOD("get_valid_node_id", "type"), &VisualShader::get_valid_node_id);

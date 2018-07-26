@@ -595,7 +595,7 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &Physics2DServer::body_apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &Physics2DServer::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "position", "impulse"), &Physics2DServer::body_apply_impulse);
-	ClassDB::bind_method(D_METHOD("body_add_central_force", "force"), &Physics2DServer::body_add_central_force);
+	ClassDB::bind_method(D_METHOD("body_add_central_force", "body", "force"), &Physics2DServer::body_add_central_force);
 	ClassDB::bind_method(D_METHOD("body_add_force", "body", "offset", "force"), &Physics2DServer::body_add_force);
 	ClassDB::bind_method(D_METHOD("body_add_torque", "body", "torque"), &Physics2DServer::body_add_torque);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &Physics2DServer::body_set_axis_velocity);

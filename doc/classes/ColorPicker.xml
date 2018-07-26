@@ -25,14 +25,14 @@
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
 			The currently selected color.
 		</member>
+		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode">
+			If [code]true[/code], the color will apply only after user releases mouse button, otherwise it will apply immediatly even in mouse motion event (which can cause performance issues).
+		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
 			If [code]true[/code], shows an alpha channel slider (transparency).
 		</member>
 		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode">
 			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
-		</member>
-		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode">
-			If [code]true[/code], the color will apply only after user releases mouse button, otherwise it will apply immediatly even in mouse motion event (which can cause performance issues).
 		</member>
 	</members>
 	<signals>

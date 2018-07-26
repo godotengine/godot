@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTransformVecMult" inherits="VisualShaderNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeTransformVecMult.Operator">
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_AxB" value="0" enum="Operator">
+		</constant>
+		<constant name="OP_BxA" value="1" enum="Operator">
+		</constant>
+		<constant name="OP_3x3_AxB" value="2" enum="Operator">
+		</constant>
+		<constant name="OP_3x3_BxA" value="3" enum="Operator">
+		</constant>
+	</constants>
+</class>

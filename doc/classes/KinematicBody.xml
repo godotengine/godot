@@ -76,13 +76,13 @@
 			</argument>
 			<argument index="1" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
-			<argument index="2" name="infinite_inertia" type="bool" default="true">
+			<argument index="2" name="slope_stop_min_velocity" type="float" default="0.05">
 			</argument>
-			<argument index="3" name="slope_stop_min_velocity" type="float" default="0.05">
+			<argument index="3" name="max_slides" type="int" default="4">
 			</argument>
-			<argument index="4" name="max_slides" type="int" default="4">
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
-			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
+			<argument index="5" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
 				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [code]KinematicBody[/code] or [RigidBody], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
