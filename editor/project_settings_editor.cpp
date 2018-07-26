@@ -229,10 +229,8 @@ void ProjectSettingsEditor::_action_edited() {
 		Array events = action["events"];
 		ERR_FAIL_INDEX(idx, events.size());
 
-		Ref<InputEvent> ie = events[idx];
-		ERR_FAIL_COND(!ie.is_valid());
-
-		//ie->set_player(ti->get_range(2));
+		Dictionary event = events[idx];
+		event["player"] = ti->get_range(2);
 
 		undo_redo->create_action(TTR("Change Action Event Player"));
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
@@ -320,10 +318,13 @@ void ProjectSettingsEditor::_device_input_add() {
 		}
 	}
 
+	Dictionary event;
+	event["player"] = 0;
+	event["event"] = ie;
 	if (idx < 0 || idx >= events.size()) {
-		events.push_back(ie);
+		events.push_back(event);
 	} else {
-		events[idx] = ie;
+		events[idx] = event;
 	}
 	action["events"] = events;
 
@@ -373,9 +374,13 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	Dictionary action = old_val.duplicate();
 	Array events = action["events"];
 
+	Dictionary event;
+	event["player"] = 0;
+
 	for (int i = 0; i < events.size(); i++) {
 
-		Ref<InputEventKey> aie = events[i];
+		event = events[i];
+		Ref<InputEventKey> aie = event["event"];
 		if (aie.is_null())
 			continue;
 		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
@@ -383,10 +388,11 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		}
 	}
 
+	event["event"] = ie;
 	if (idx < 0 || idx >= events.size()) {
-		events.push_back(ie);
+		events.push_back(event);
 	} else {
-		events[idx] = ie;
+		events[idx] = event;
 	}
 	action["events"] = events;
 
@@ -582,7 +588,8 @@ void ProjectSettingsEditor::_action_activated() {
 	Array events = action["events"];
 
 	ERR_FAIL_INDEX(idx, events.size());
-	Ref<InputEvent> event = events[idx];
+	Dictionary ev = events[idx];
+	Ref<InputEvent> event = ev["event"];
 	if (event.is_null())
 		return;
 
@@ -666,7 +673,8 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			Array events = action["events"];
 			ERR_FAIL_INDEX(idx, events.size());
 
-			Ref<InputEvent> event = events[idx];
+			Dictionary ev = events[idx];
+			Ref<InputEvent> event = ev["event"];
 
 			if (event.is_null())
 				return;
@@ -733,7 +741,8 @@ void ProjectSettingsEditor::_update_actions() {
 
 		for (int i = 0; i < events.size(); i++) {
 
-			Ref<InputEvent> event = events[i];
+			Dictionary ev = events[i];
+			Ref<InputEvent> event = ev["event"];
 			if (event.is_null())
 				continue;
 
@@ -804,7 +813,7 @@ void ProjectSettingsEditor::_update_actions() {
 			action2->set_editable(2, true);
 			action2->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
 			action2->set_range_config(2, 0.0, 20.0, 1.0);
-			//action2->set_range(2, event->get_player());
+			action2->set_range(2, ev["player"]);
 
 			action2->add_button(3, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
 			action2->add_button(3, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));

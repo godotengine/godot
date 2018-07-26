@@ -255,10 +255,12 @@ void InputMap::load_from_globals() {
 
 		add_action(name, deadzone);
 		for (int i = 0; i < events.size(); i++) {
-			Ref<InputEvent> event = events[i];
+			Dictionary ev = events[i];
+			Ref<InputEvent> event = ev["event"];
 			if (event.is_null())
 				continue;
-			action_add_event(name, event);
+			int player = ev["player"];
+			action_add_event(name, event, (ActionPlayer)player);
 		}
 	}
 }
