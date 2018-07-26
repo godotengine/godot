@@ -1295,7 +1295,7 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 
 		Ref<VisualScriptNode> node = script->get_node(edited_func, F->get());
 
-		Ref<VisualScriptNode> dupe = node->duplicate();
+		Ref<VisualScriptNode> dupe = node->duplicate(true);
 
 		int new_id = idc++;
 		to_select.insert(new_id);
@@ -3170,7 +3170,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 							return;
 						}
 						if (node.is_valid()) {
-							clipboard->nodes[id] = node->duplicate();
+							clipboard->nodes[id] = node->duplicate(true);
 							clipboard->nodes_positions[id] = script->get_node_position(edited_func, id);
 						}
 					}
