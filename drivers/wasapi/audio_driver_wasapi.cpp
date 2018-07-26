@@ -675,18 +675,28 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 					ERR_BREAK(hr != S_OK);
 
 					// fixme: Only works for floating point atm
-					for (int j = 0; j < num_frames_available * ad->audio_input.channels; j++) {
-						int32_t sample;
+					for (int j = 0; j < num_frames_available; j++) {
+						int32_t sample_channel[2];
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-							sample = 0;
+							sample_channel[0] = sample_channel[1] = 0;
 						} else {
-							sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
+							if (ad->audio_input.channels == 2) {
+								sample_channel[0] = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
+								sample_channel[1] = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
+							} else if (ad->audio_input.channels == 1) {
+								sample_channel[0] = sample_channel[1] = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
+							} else {
+								sample_channel[0] = sample_channel[1] = 0;
+								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
+							}
 						}
 
-						ad->audio_input_buffer.write[ad->audio_input_position++] = sample;
-						if (ad->audio_input_position >= ad->audio_input_buffer.size()) {
-							ad->audio_input_position = 0;
+						for (int k = 0; k < 2; k++) {
+							ad->audio_input_buffer.write[ad->audio_input_position++] = sample_channel[k];
+							if (ad->audio_input_position >= ad->audio_input_buffer.size()) {
+								ad->audio_input_position = 0;
+							}
 						}
 					}
 
