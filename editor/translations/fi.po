@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-14 20:37+0000\n"
+"PO-Revision-Date: 2018-07-19 10:36+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2128,7 +2128,7 @@ msgstr "Käynnistä muokattavana oleva skene."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr "Toista skene"
+msgstr "Pelaa skeneä"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
@@ -2414,7 +2414,7 @@ msgstr "Lataa uudelleen"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr "Poista"
+msgstr "Poista asennus"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
@@ -2475,7 +2475,7 @@ msgstr ""
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr "Yhdistäminen epäonnistui."
+msgstr "Yhdeydenselvitys epäonnistui."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2520,11 +2520,11 @@ msgstr "Yhteys katkaistu"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
-msgstr "Selvitetään"
+msgstr "Selvitetään yhteyttä"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr "Yhdistäminen epäonnistui"
+msgstr "Yhteyden selvittäminen epäonnistui"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2809,7 +2809,7 @@ msgstr "Luodaan meshille: "
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr "Suorita valitsemasi skripti..."
+msgstr "Suoritetaan mukautettua skriptiä..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2940,7 +2940,7 @@ msgstr "VIRHE: Virheellinen animaation nimi!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "ERROR: Animation name already exists!"
-msgstr "VIrhe: Samanniminen animaatio on jo olemassa!"
+msgstr "VIRHE: Samanniminen animaatio on jo olemassa!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -3316,7 +3316,8 @@ msgstr "Pyyntö epäonnistui, liikaa uudelleenohjauksia"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr "Latauksessa väärä hash, oletetaan että tiedostoa on näpelöity."
+msgstr ""
+"Latauksessa väärä hajautuskoodi, oletetaan että tiedostoa on näpelöity."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -3328,7 +3329,7 @@ msgstr "Saatiin:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr "sha256  hash-tarkistus epäonnistui"
+msgstr "sha256-hajautusarvon tarkistus epäonnistui"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
@@ -3442,7 +3443,7 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
-"Lightmap-kuvien luonti epäonnistui, varmista, että polku on "
+"Lightmap-kuvien luonti epäonnistui. Varmista, että polku on "
 "kirjoituskelpoinen."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
@@ -5301,11 +5302,11 @@ msgstr "Tarttumisen tila (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
-msgstr "Pohjanäkymä"
+msgstr "Alanäkymä"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr "Huippunäkymä"
+msgstr "Ylänäkymä"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
@@ -7110,7 +7111,7 @@ msgstr "Aseta puusta"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
-msgstr "Pikakuvakkeet"
+msgstr "Pikanäppäimet"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
@@ -7434,6 +7435,11 @@ msgstr "Käännä projekti"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "Varoitukset"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Näytä tiedostot"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

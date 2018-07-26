@@ -2,7 +2,6 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Alessio Corridori <alessiocorridori@hotmail.com>, 2018.
 # Dario Bonfanti <bonfi.96@hotmail.it>, 2016-2017.
 # Dario D'Ambra <legione0@gmail.com>, 2017.
@@ -15,13 +14,13 @@
 # RealAquilus <JamesHeller@live.it>, 2017.
 # Samuele Zolfanelli <samdazel@gmail.com>, 2018.
 # Sean Bone <seanbone@zumguy.com>, 2017.
-#
+# Red Pill <redpill902@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-05-18 16:39+0000\n"
-"Last-Translator: Alessio Corridori <alessiocorridori@hotmail.com>\n"
+"PO-Revision-Date: 2018-06-25 18:40+0000\n"
+"Last-Translator: Red Pill <redpill902@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -29,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -40,9 +39,8 @@ msgid "All Selection"
 msgstr "Seleziona Tutto"
 
 #: editor/animation_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Cambia Valore"
+msgstr "Anim Cambia Tempo di Keyframe"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
@@ -7639,6 +7637,11 @@ msgstr "Progetto"
 #, fuzzy
 msgid "Warnings"
 msgstr "Avvertimento"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Vedi Files"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

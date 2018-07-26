@@ -40,12 +40,14 @@
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
 # Xananax <xananax@yelostudio.com>, 2017-2018.
+# Perrier Mathis <mathis.perrier73@gmail.com>, 2018.
+# Ewan Lehnebach <ewan.lehnebach@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-06-12 16:38+0000\n"
-"Last-Translator: Philippe Gervaise <blah@malvese.org>\n"
+"PO-Revision-Date: 2018-07-21 12:37+0000\n"
+"Last-Translator: Perrier Mathis <mathis.perrier73@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -53,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -65,11 +67,11 @@ msgstr "Toute la sélection"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Changer l'heure de l'animation des images clés"
+msgstr "Animation Changer l'heure de l'image clé"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Transition du changement d'animation"
+msgstr "Animation Changer la transition"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Transform"
@@ -77,7 +79,7 @@ msgstr "Animation Changer la transformation"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Changer la valeur de l'animation des images clés"
+msgstr "Animation Changer la valeur de l'image clé"
 
 #: editor/animation_editor.cpp
 msgid "Anim Change Call"
@@ -4076,7 +4078,7 @@ msgstr "Créer le contour"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "Maillage"
+msgstr "Maillages"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -6512,7 +6514,7 @@ msgstr "Remaps par langue :"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "Langue"
+msgstr "Localisation"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales Filter"
@@ -7512,6 +7514,11 @@ msgstr "Compiler le projet"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "Avertissements"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Voir Fichiers"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
