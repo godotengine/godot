@@ -36,6 +36,7 @@
 #include "core/allocators.h"
 #include "core/math/geometry.h"
 #include "core/math/octree.h"
+#include "core/oa_hash_map.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/self_list.h"
@@ -89,6 +90,8 @@ public:
 		RID env;
 
 		Transform transform;
+
+		OAHashMap<uint32_t, bool> lod_hysteresis_visible_state;
 
 		Camera() {
 
@@ -178,7 +181,6 @@ public:
 		float lod_end;
 		float lod_begin_hysteresis;
 		float lod_end_hysteresis;
-		RID lod_instance;
 
 		uint64_t last_render_pass;
 		uint64_t last_frame_pass;
@@ -487,7 +489,7 @@ public:
 
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario);
 
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe);
+	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, OAHashMap<uint32_t, bool> *lod_visible_state);
 	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	void render_empty_scene(RID p_scenario, RID p_shadow_atlas);
 

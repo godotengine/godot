@@ -32,6 +32,7 @@
 #include "core/os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
+
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -859,6 +860,14 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 }
 
 void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->lod_begin = p_min;
+	instance->lod_end = p_max;
+	instance->lod_begin_hysteresis = p_min_margin;
+	instance->lod_end_hysteresis = p_max_margin;
 }
 void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
 }
@@ -1710,7 +1719,7 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), &camera->lod_hysteresis_visible_state);
 	_render_scene(camera->transform, camera_matrix, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
@@ -1789,17 +1798,17 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 		mono_transform *= apply_z_shift;
 
 		// now prepare our scene with our adjusted transform projection matrix
-		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), &camera->lod_hysteresis_visible_state);
 	} else if (p_eye == ARVRInterface::EYE_MONO) {
 		// For mono render, prepare as per usual
-		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), &camera->lod_hysteresis_visible_state);
 	}
 
 	// And render our scene...
 	_render_scene(cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
+void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, OAHashMap<uint32_t, bool> *lod_visible_state) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -1964,6 +1973,39 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			ins->depth = near_plane.distance_to(ins->transform.origin);
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
+
+			// if lod is active, and the instance is not within its lod range, don't render it
+			if (ins->lod_begin > 0.f || ins->lod_end > 0.f) { // lod valid
+				float lod_begin_with_hys = ins->lod_begin;
+				float lod_end_with_hys = ins->lod_end;
+				bool prev_lod_state = false;
+				if (lod_visible_state != NULL)
+					lod_visible_state->lookup(ins->self.get_id(), prev_lod_state);
+
+				if (prev_lod_state) {
+					lod_begin_with_hys -= ins->lod_begin_hysteresis / 2.f;
+					lod_end_with_hys += ins->lod_end_hysteresis / 2.f;
+				} else {
+					lod_begin_with_hys += ins->lod_begin_hysteresis / 2.f;
+					lod_end_with_hys -= ins->lod_end_hysteresis / 2.f;
+				}
+
+				if (ins->lod_begin <= 0.f) {
+					lod_begin_with_hys = -Math_INF;
+				}
+				if (ins->lod_end <= 0.f) {
+					lod_end_with_hys = +Math_INF;
+				}
+
+				if (lod_begin_with_hys <= ins->depth && ins->depth < lod_end_with_hys) {
+					if (lod_visible_state != NULL)
+						lod_visible_state->set(ins->self.get_id(), true);
+				} else {
+					if (lod_visible_state != NULL)
+						lod_visible_state->set(ins->self.get_id(), false);
+					keep = false;
+				}
+			}
 		}
 
 		if (!keep) {
@@ -2214,7 +2256,7 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 			shadow_atlas = scenario->reflection_probe_shadow_atlas;
 		}
 
-		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
+		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, NULL /* no LOD hysteresis handling */);
 		_render_scene(xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {

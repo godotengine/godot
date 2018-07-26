@@ -24,12 +24,14 @@
 		</member>
 		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis">
 			The GeometryInstance's max LOD margin.
+			Margins are symmetrical around [member lod_max_distance].
 		</member>
 		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance">
 			The GeometryInstance's min LOD distance.
 		</member>
 		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis">
 			The GeometryInstance's min LOD margin.
+			Margins are symmetrical around [member lod_min_distance].
 		</member>
 		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 			The material override for the whole geometry.
