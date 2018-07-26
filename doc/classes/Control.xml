@@ -36,6 +36,14 @@
 				Replaces Godot 2's [code]_input_event[/code].
 			</description>
 		</method>
+		<method name="_make_custom_tooltip" qualifiers="virtual">
+			<return type="Object">
+			</return>
+			<argument index="0" name="for_text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="accept_event">
 			<return type="void">
 			</return>

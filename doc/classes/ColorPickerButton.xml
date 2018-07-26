@@ -18,7 +18,7 @@
 				Returns the [code]ColorPicker[/code] that this [code]ColorPickerButton[/code] toggles.
 			</description>
 		</method>
-		<method name="get_popup" qualifiers="const">
+		<method name="get_popup">
 			<return type="PopupPanel">
 			</return>
 			<description>

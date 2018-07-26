@@ -13,7 +13,9 @@
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
-		<member name="grow" type="float" setter="set_grow" getter="get_grow">
+		<member name="grow_begin" type="float" setter="set_grow_begin" getter="get_grow_begin">
+		</member>
+		<member name="grow_end" type="float" setter="set_grow_end" getter="get_grow_end">
 		</member>
 		<member name="thickness" type="int" setter="set_thickness" getter="get_thickness">
 		</member>

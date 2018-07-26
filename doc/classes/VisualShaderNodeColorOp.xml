@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeColorOp" inherits="VisualShaderNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeColorOp.Operator">
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_SCREEN" value="0" enum="Operator">
+		</constant>
+		<constant name="OP_DIFFERENCE" value="1" enum="Operator">
+		</constant>
+		<constant name="OP_DARKEN" value="2" enum="Operator">
+		</constant>
+		<constant name="OP_LIGHTEN" value="3" enum="Operator">
+		</constant>
+		<constant name="OP_OVERLAY" value="4" enum="Operator">
+		</constant>
+		<constant name="OP_DODGE" value="5" enum="Operator">
+		</constant>
+		<constant name="OP_BURN" value="6" enum="Operator">
+		</constant>
+		<constant name="OP_SOFT_LIGHT" value="7" enum="Operator">
+		</constant>
+		<constant name="OP_HARD_LIGHT" value="8" enum="Operator">
+		</constant>
+	</constants>
+</class>

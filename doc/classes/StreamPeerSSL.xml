@@ -15,7 +15,7 @@
 		<method name="accept_stream">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="stream" type="StreamPeer">
+			<argument index="0" name="base" type="StreamPeer">
 			</argument>
 			<description>
 			</description>
@@ -55,17 +55,20 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="blocking_handshake" type="bool" setter="set_blocking_handshake_enabled" getter="is_blocking_handshake_enabled">
+		</member>
+	</members>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			A status representing a [code]StreamPeerSSL[/code] that is disconnected.
 		</constant>
-		<constant name="STATUS_CONNECTED" value="1" enum="Status">
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
 			A status representing a [code]StreamPeerSSL[/code] that is connected to a host.
 		</constant>
-		<constant name="STATUS_ERROR_NO_CERTIFICATE" value="2" enum="Status">
-			An errot status that shows the peer did not present a SSL certificate and validation was requested.
+		<constant name="STATUS_ERROR" value="3" enum="Status">
 		</constant>
-		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="3" enum="Status">
+		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4" enum="Status">
 			An error status that shows a mismatch in the SSL certificate domain presented by the host and the domain requested for validation.
 		</constant>
 	</constants>

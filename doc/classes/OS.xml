@@ -147,6 +147,12 @@
 				Returns the command line arguments passed to the engine.
 			</description>
 		</method>
+		<method name="get_connected_midi_inputs">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_date" qualifiers="const">
 			<return type="Dictionary">
 			</return>

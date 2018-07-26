@@ -157,6 +157,16 @@
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 			</description>
 		</method>
+		<method name="set_celld">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_cellv">
 			<return type="void">
 			</return>

@@ -121,7 +121,7 @@
 		</constant>
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 		</constant>

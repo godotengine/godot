@@ -294,6 +294,16 @@
 				Sets the transform matrix for an area.
 			</description>
 		</method>
+		<method name="body_add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_add_collision_exception">
 			<return type="void">
 			</return>
@@ -303,6 +313,18 @@
 			</argument>
 			<description>
 				Adds a body to the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="body_add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector3">
+			</argument>
+			<argument index="2" name="position" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_add_shape">
@@ -316,6 +338,26 @@
 			</argument>
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+			</description>
+		</method>
+		<method name="body_add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="torque" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="impulse" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_apply_impulse">

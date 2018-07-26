@@ -84,7 +84,11 @@
 		</member>
 		<member name="flags_albedo_tex_force_srgb" type="bool" setter="set_flag" getter="get_flag">
 		</member>
+		<member name="flags_disable_ambient_light" type="bool" setter="set_flag" getter="get_flag">
+		</member>
 		<member name="flags_do_not_receive_shadows" type="bool" setter="set_flag" getter="get_flag">
+		</member>
+		<member name="flags_ensure_correct_normals" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag">
 		</member>
@@ -115,6 +119,8 @@
 		<member name="normal_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="params_alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold">
+		</member>
+		<member name="params_billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="params_billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode">
 		</member>
@@ -304,23 +310,29 @@
 		</constant>
 		<constant name="FLAG_FIXED_SIZE" value="6" enum="Flags">
 		</constant>
-		<constant name="FLAG_UV1_USE_TRIPLANAR" value="7" enum="Flags">
+		<constant name="FLAG_BILLBOARD_KEEP_SCALE" value="7" enum="Flags">
 		</constant>
-		<constant name="FLAG_UV2_USE_TRIPLANAR" value="8" enum="Flags">
+		<constant name="FLAG_UV1_USE_TRIPLANAR" value="8" enum="Flags">
 		</constant>
-		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
+		<constant name="FLAG_UV2_USE_TRIPLANAR" value="9" enum="Flags">
 		</constant>
-		<constant name="FLAG_EMISSION_ON_UV2" value="11" enum="Flags">
+		<constant name="FLAG_AO_ON_UV2" value="11" enum="Flags">
 		</constant>
-		<constant name="FLAG_USE_ALPHA_SCISSOR" value="12" enum="Flags">
+		<constant name="FLAG_EMISSION_ON_UV2" value="12" enum="Flags">
 		</constant>
-		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="9" enum="Flags">
+		<constant name="FLAG_USE_ALPHA_SCISSOR" value="13" enum="Flags">
 		</constant>
-		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="13" enum="Flags">
+		<constant name="FLAG_TRIPLANAR_USE_WORLD" value="10" enum="Flags">
 		</constant>
-		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="14" enum="Flags">
+		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="14" enum="Flags">
 		</constant>
-		<constant name="FLAG_MAX" value="15" enum="Flags">
+		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="15" enum="Flags">
+		</constant>
+		<constant name="FLAG_DISABLE_AMBIENT_LIGHT" value="17" enum="Flags">
+		</constant>
+		<constant name="FLAG_ENSURE_CORRECT_NORMALS" value="16" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="18" enum="Flags">
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
 		</constant>

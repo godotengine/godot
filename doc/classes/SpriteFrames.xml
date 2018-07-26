@@ -58,6 +58,13 @@
 				If [code]true[/code] the given animation will loop.
 			</description>
 		</method>
+		<method name="get_animation_names" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
+			</description>
+		</method>
 		<method name="get_animation_speed" qualifiers="const">
 			<return type="float">
 			</return>
@@ -125,13 +132,6 @@
 			</argument>
 			<description>
 				Changes the animation's name to [code]newname[/code].
-			</description>
-		</method>
-		<method name="get_animation_names">
-			<return type="PoolStringArray">
-			</return>
-			<description>
-				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
 			</description>
 		</method>
 		<method name="set_animation_loop">
