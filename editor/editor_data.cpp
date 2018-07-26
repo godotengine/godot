@@ -853,6 +853,41 @@ void EditorData::get_plugin_window_layout(Ref<ConfigFile> p_layout) {
 	}
 }
 
+bool EditorData::script_class_is_parent(const String &p_class, const String &p_inherits) {
+	if (!ScriptServer::is_global_class(p_class))
+		return false;
+	String base = script_class_get_base(p_class);
+	while (p_inherits != base) {
+		if (ClassDB::class_exists(base)) {
+			return ClassDB::is_parent_class(base, p_inherits);
+		} else if (ScriptServer::is_global_class(base)) {
+			base = script_class_get_base(base);
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+StringName EditorData::script_class_get_base(const String &p_class) {
+
+	if (!ScriptServer::is_global_class(p_class))
+		return StringName();
+
+	String path = ScriptServer::get_global_class_path(p_class);
+
+	Ref<Script> script = ResourceLoader::load(path, "Script");
+	if (script.is_null())
+		return StringName();
+
+	Ref<Script> base_script = script->get_base_script();
+	if (base_script.is_null()) {
+		return ScriptServer::get_global_class_base(p_class);
+	}
+
+	return script->get_language()->get_global_class_name(base_script->get_path());
+}
+
 EditorData::EditorData() {
 
 	current_edited_scene = -1;
