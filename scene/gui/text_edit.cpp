@@ -4328,7 +4328,11 @@ void TextEdit::_update_caches() {
 	cache.search_result_border_color = get_color("search_result_border_color");
 	cache.symbol_color = get_color("symbol_color");
 	cache.background_color = get_color("background_color");
+#ifdef TOOLS_ENABLED
+	cache.line_spacing = get_constant("line_spacing") * EDSCALE;
+#else
 	cache.line_spacing = get_constant("line_spacing");
+#endif
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon = get_icon("tab");
 	cache.folded_icon = get_icon("GuiTreeArrowRight", "EditorIcons");
