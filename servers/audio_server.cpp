@@ -332,7 +332,7 @@ void AudioServer::_mix_step() {
 
 				for (int k = 0; k < bus->channels.size(); k++) {
 
-					if (!bus->channels[k].active)
+					if (!(bus->channels[k].active || bus->channels[k].effect_instances[j]->process_silence()))
 						continue;
 					bus->channels.write[k].effect_instances.write[j]->process(bus->channels[k].buffer.ptr(), temp_buffer.write[k].ptrw(), buffer_size);
 				}
@@ -340,7 +340,7 @@ void AudioServer::_mix_step() {
 				//swap buffers, so internal buffer always has the right data
 				for (int k = 0; k < bus->channels.size(); k++) {
 
-					if (!buses[i]->channels[k].active)
+					if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence()))
 						continue;
 					SWAP(bus->channels.write[k].buffer, temp_buffer.write[k]);
 				}
