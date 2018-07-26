@@ -706,11 +706,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 		// remove leftovers from last export so they don't interfere
 		// in case some files are no longer needed
-		if (da->change_dir(dest_dir + binary_name + ".xcodeproj") == OK) {
-			da->erase_contents_recursive();
+		String binary_dir = dest_dir + binary_name;
+		String proj_dir = binary_dir + ".xcodeproj";
+
+		if (da->change_dir(proj_dir) == OK) {
+			da->erase_contents_recursive(proj_dir);
 		}
-		if (da->change_dir(dest_dir + binary_name) == OK) {
-			da->erase_contents_recursive();
+		if (da->change_dir(binary_dir) == OK) {
+			da->erase_contents_recursive(binary_dir);
 		}
 
 		da->change_dir(current_dir);

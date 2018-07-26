@@ -86,7 +86,7 @@ public:
 	virtual String get_current_dir() = 0; ///< return current dir location
 	virtual Error make_dir(String p_dir) = 0;
 	virtual Error make_dir_recursive(String p_dir);
-	virtual Error erase_contents_recursive(); //super dangerous, use with care!
+	virtual Error erase_contents_recursive(String p_path); //super dangerous, use with care!
 
 	virtual bool file_exists(String p_file) = 0;
 	virtual bool dir_exists(String p_dir) = 0;

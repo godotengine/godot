@@ -523,6 +523,7 @@ public:
 
 	Error make_dir(String p_dir);
 	Error make_dir_recursive(String p_dir);
+	Error erase_contents_recursive(String p_path);
 
 	bool file_exists(String p_file);
 	bool dir_exists(String p_dir);
@@ -530,6 +531,7 @@ public:
 	int get_space_left();
 
 	Error copy(String p_from, String p_to);
+	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1);
 	Error rename(String p_from, String p_to);
 	Error remove(String p_name);
 

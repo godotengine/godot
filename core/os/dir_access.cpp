@@ -131,7 +131,12 @@ static Error _erase_recursive(DirAccess *da) {
 	return OK;
 }
 
-Error DirAccess::erase_contents_recursive() {
+Error DirAccess::erase_contents_recursive(String p_path) {
+	ERR_FAIL_COND_V(!dir_exists(p_path), ERR_FILE_NOT_FOUND);
+
+	Error err = change_dir(p_path);
+	if (err != OK)
+		return err;
 
 	return _erase_recursive(this);
 }

@@ -2066,6 +2066,11 @@ Error _Directory::make_dir_recursive(String p_dir) {
 	}
 	return d->make_dir_recursive(p_dir);
 }
+Error _Directory::erase_contents_recursive(String p_path) {
+
+	ERR_FAIL_COND_V(!d, ERR_UNCONFIGURED);
+	return d->erase_contents_recursive(p_path);
+}
 
 bool _Directory::file_exists(String p_file) {
 
@@ -2102,6 +2107,11 @@ Error _Directory::copy(String p_from, String p_to) {
 
 	ERR_FAIL_COND_V(!d, ERR_UNCONFIGURED);
 	return d->copy(p_from, p_to);
+}
+Error _Directory::copy_dir(String p_from, String p_to, int p_chmod_flags) {
+
+	ERR_FAIL_COND_V(!d, ERR_UNCONFIGURED);
+	return d->copy_dir(p_from, p_to, p_chmod_flags);
 }
 Error _Directory::rename(String p_from, String p_to) {
 
@@ -2142,11 +2152,13 @@ void _Directory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &_Directory::get_current_dir);
 	ClassDB::bind_method(D_METHOD("make_dir", "path"), &_Directory::make_dir);
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &_Directory::make_dir_recursive);
+	ClassDB::bind_method(D_METHOD("erase_contents_recursive", "path"), &_Directory::erase_contents_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &_Directory::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &_Directory::dir_exists);
 	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&_Directory::get_modified_time);
 	ClassDB::bind_method(D_METHOD("get_space_left"), &_Directory::get_space_left);
 	ClassDB::bind_method(D_METHOD("copy", "from", "to"), &_Directory::copy);
+	ClassDB::bind_method(D_METHOD("copy_dir", "from", "to", "chmod_flags"), &_Directory::copy_dir, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &_Directory::rename);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &_Directory::remove);
 }
