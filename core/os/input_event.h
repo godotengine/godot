@@ -176,7 +176,6 @@ class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
 	int device;
-	int player;
 
 protected:
 	static void _bind_methods();
@@ -187,9 +186,6 @@ public:
 
 	void set_device(int p_device);
 	int get_device() const;
-
-	void set_player(int p_player);
-	int get_player() const;
 
 	bool is_action(const StringName &p_action) const;
 	bool is_action_pressed(const StringName &p_action) const;

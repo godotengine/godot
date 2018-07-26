@@ -232,7 +232,7 @@ void ProjectSettingsEditor::_action_edited() {
 		Ref<InputEvent> ie = events[idx];
 		ERR_FAIL_COND(!ie.is_valid());
 
-		ie->set_player(ti->get_range(2));
+		//ie->set_player(ti->get_range(2));
 
 		undo_redo->create_action(TTR("Change Action Event Player"));
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
@@ -804,7 +804,7 @@ void ProjectSettingsEditor::_update_actions() {
 			action2->set_editable(2, true);
 			action2->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
 			action2->set_range_config(2, 0.0, 20.0, 1.0);
-			action2->set_range(2, event->get_player());
+			//action2->set_range(2, event->get_player());
 
 			action2->add_button(3, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
 			action2->add_button(3, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
