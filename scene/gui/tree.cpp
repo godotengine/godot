@@ -31,6 +31,7 @@
 #include "tree.h"
 #include <limits.h>
 
+#include "core/string_buffer.h"
 #include "math_funcs.h"
 #include "os/input.h"
 #include "os/keyboard.h"
@@ -794,6 +795,7 @@ void TreeItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_MODE_RANGE_EXPRESSION);
 	BIND_ENUM_CONSTANT(CELL_MODE_ICON);
 	BIND_ENUM_CONSTANT(CELL_MODE_CUSTOM);
+	BIND_ENUM_CONSTANT(CELL_MODE_CUSTOM_NUMERIC);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -943,6 +945,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 			}
 			case TreeItem::CELL_MODE_STRING:
 			case TreeItem::CELL_MODE_CUSTOM:
+			case TreeItem::CELL_MODE_CUSTOM_NUMERIC:
 			case TreeItem::CELL_MODE_ICON: {
 
 				Ref<Texture> icon = p_item->cells[i].icon;
@@ -955,7 +958,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 					if (s.height > height)
 						height = s.height;
 				}
-				if (p_item->cells[i].mode == TreeItem::CELL_MODE_CUSTOM && p_item->cells[i].custom_button) {
+				if ((p_item->cells[i].mode == TreeItem::CELL_MODE_CUSTOM || p_item->cells[i].mode == TreeItem::CELL_MODE_CUSTOM_NUMERIC) && p_item->cells[i].custom_button) {
 					height += cache.custom_button->get_minimum_size().height;
 				}
 
@@ -1002,16 +1005,42 @@ void Tree::draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, co
 	if (p_cell.suffix != String())
 		text += " " + p_cell.suffix;
 
-	int w = 0;
+	int w0 = 0;
 	if (!p_cell.icon.is_null()) {
 		Size2i bmsize = p_cell.get_icon_size();
 
 		if (p_cell.icon_max_w > 0 && bmsize.width > p_cell.icon_max_w) {
 			bmsize.width = p_cell.icon_max_w;
 		}
-		w += bmsize.width + cache.hseparation;
+		w0 += bmsize.width + cache.hseparation;
 	}
-	w += font->get_string_size(text).width;
+	int w = w0 + font->get_string_size(text).width;
+
+	if (p_cell.mode == TreeItem::CELL_MODE_CUSTOM_NUMERIC && w > rect.size.width) {
+		if (text.length() > 2 && text[0] == '(' && text[text.length() - 1] == ')') {
+			Vector<float> f = text.substr(1, text.length() - 2).split_floats(",");
+			for (int digits = 6; digits >= 1; digits--) {
+				StringBuffer buffer;
+				buffer.append('(');
+				for (int j = 0; j < f.size(); j++) {
+					if (j > 0) {
+						buffer.append(',');
+						buffer.append(' ');
+					}
+					String number = String::num(f[j], digits);
+					buffer.append(number);
+					if (number != String::num(f[j])) {
+						buffer.append(0x2026);
+					}
+				}
+				buffer.append(')');
+				text = buffer.as_string();
+				w = w0 + font->get_string_size(text).width;
+				if (w <= rect.size.width)
+					break;
+			}
+		}
+	}
 
 	switch (p_cell.text_align) {
 		case TreeItem::ALIGN_LEFT:
@@ -1321,7 +1350,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					//p_item->cells[i].icon->draw(ci, icon_ofs);
 
 				} break;
-				case TreeItem::CELL_MODE_CUSTOM: {
+				case TreeItem::CELL_MODE_CUSTOM:
+				case TreeItem::CELL_MODE_CUSTOM_NUMERIC: {
 
 					//int option = (int)p_item->cells[i].val;
 
@@ -1721,7 +1751,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 		if (p_button == BUTTON_LEFT || (p_button == BUTTON_RIGHT && allow_rmb_select)) {
 			/* process selection */
 
-			if (p_doubleclick && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it' s confusing for check
+			if (p_doubleclick && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_CUSTOM_NUMERIC || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it' s confusing for check
 
 				emit_signal("item_activated");
 				incr_search.clear();
@@ -1898,7 +1928,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 			case TreeItem::CELL_MODE_ICON: {
 				bring_up_editor = false;
 			} break;
-			case TreeItem::CELL_MODE_CUSTOM: {
+			case TreeItem::CELL_MODE_CUSTOM:
+			case TreeItem::CELL_MODE_CUSTOM_NUMERIC: {
 				edited_item = p_item;
 				edited_col = col;
 				bool on_arrow = x > col_width - cache.select_arrow->get_width();
@@ -2688,7 +2719,7 @@ bool Tree::edit_selected() {
 		s->set_checked(col, !c.checked);
 		item_edited(col, s);
 		return true;
-	} else if (c.mode == TreeItem::CELL_MODE_CUSTOM) {
+	} else if (c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_CUSTOM_NUMERIC) {
 
 		edited_item = s;
 		edited_col = col;
