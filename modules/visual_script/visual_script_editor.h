@@ -172,12 +172,12 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void connect_data(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode, int new_id);
 
-	void _selected_connect_node(const String &p_text, const String &p_category);
+	void _selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting = true);
 	void connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id);
 
 	void _cancel_connect_node();
 	void _create_new_node(const String &p_text, const String &p_category, const Vector2 &p_point);
-	void _selected_new_virtual_method(const String &p_text, const String &p_category);
+	void _selected_new_virtual_method(const String &p_text, const String &p_category, const bool p_connecting = true);
 
 	int error_line;
 
