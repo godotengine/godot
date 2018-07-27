@@ -556,12 +556,17 @@ bool NativeScriptInstance::set(const StringName &p_name, const Variant &p_value)
 			Variant name = p_name;
 			const Variant *args[2] = { &name, &p_value };
 
-			E->get().method.method((godot_object *)owner,
+			godot_variant result;
+			result = E->get().method.method((godot_object *)owner,
 					E->get().method.method_data,
 					userdata,
 					2,
 					(godot_variant **)args);
-			return true;
+			bool handled = *(Variant *)&result;
+			godot_variant_destroy(&result);
+			if (handled) {
+				return true;
+			}
 		}
 
 		script_data = script_data->base_data;
@@ -596,10 +601,9 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 					(godot_variant **)args);
 			r_ret = *(Variant *)&result;
 			godot_variant_destroy(&result);
-			if (r_ret.get_type() == Variant::NIL) {
-				return false;
+			if (r_ret.get_type() != Variant::NIL) {
+				return true;
 			}
-			return true;
 		}
 
 		script_data = script_data->base_data;
