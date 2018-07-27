@@ -52,6 +52,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 	int mix_rate;
 	unsigned int channels;
+	unsigned int capture_channels;
 	unsigned int buffer_frames;
 
 	Vector<int32_t> samples_in;
@@ -60,6 +61,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 #ifdef OSX_ENABLED
 	Array _get_device_list(bool capture = false);
 	void _set_device(const String &device, bool capture = false);
+	void _input_write_sample(int32_t sample);
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
