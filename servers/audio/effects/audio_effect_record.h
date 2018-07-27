@@ -78,7 +78,7 @@ class AudioEffectRecord : public AudioEffect {
 		IO_BUFFER_SIZE_MS = 1500
 	};
 
-	bool should_record;
+	bool recording_active;
 	Ref<AudioEffectRecordInstance> current_instance;
 
 	AudioStreamSample::Format format;
@@ -91,8 +91,8 @@ protected:
 
 public:
 	Ref<AudioEffectInstance> instance();
-	void set_should_record(bool p_record);
-	bool get_should_record() const;
+	void set_recording_active(bool p_record);
+	bool is_recording_active() const;
 	void set_format(AudioStreamSample::Format p_format);
 	AudioStreamSample::Format get_format() const;
 	Ref<AudioStreamSample> get_recording() const;
