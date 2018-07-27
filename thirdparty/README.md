@@ -241,7 +241,7 @@ Collection of single-file libraries used in Godot components.
 ## openssl
 
 - Upstream: https://www.openssl.org
-- Version: 1.0.2l
+- Version: 1.0.2o
 - License: OpenSSL license / BSD-like
 
 Files extracted from the upstream source:

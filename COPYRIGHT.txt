@@ -265,7 +265,7 @@ License: BSD-2-clause
 
 Files: ./thirdparty/openssl/
 Comment: The OpenSSL Project
-Copyright: 1998-2016, The OpenSSL Project.
+Copyright: 1998-2018, The OpenSSL Project.
 License: OpenSSL
 
 Files: ./thirdparty/opus/
