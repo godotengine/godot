@@ -49,6 +49,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_stream *pa_str;
 	pa_stream *pa_rec_str;
 	pa_channel_map pa_map;
+	pa_channel_map pa_rec_map;
 
 	String device_name;
 	String new_device;
@@ -79,6 +80,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 
 	static void pa_state_cb(pa_context *c, void *userdata);
 	static void pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
+	static void pa_source_info_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata);
 	static void pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata);
 	static void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
 	static void pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata);
@@ -89,7 +91,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	Error capture_init_device();
 	void capture_finish_device();
 
-	void detect_channels();
+	void detect_channels(bool capture = false);
 
 	static void thread_func(void *p_udata);
 

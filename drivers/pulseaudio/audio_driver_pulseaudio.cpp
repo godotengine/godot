@@ -64,18 +64,32 @@ void AudioDriverPulseAudio::pa_sink_info_cb(pa_context *c, const pa_sink_info *l
 	ad->pa_status++;
 }
 
+void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
+	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+
+	// If eol is set to a positive number, you're at the end of the list
+	if (eol > 0) {
+		return;
+	}
+
+	ad->pa_rec_map = l->channel_map;
+	ad->pa_status++;
+}
+
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
+	ad->capture_default_device = i->default_source_name;
 	ad->default_device = i->default_sink_name;
 	ad->pa_status++;
 }
 
-void AudioDriverPulseAudio::detect_channels() {
+void AudioDriverPulseAudio::detect_channels(bool capture) {
 
-	pa_channel_map_init_stereo(&pa_map);
+	pa_channel_map_init_stereo(capture ? &pa_rec_map : &pa_map);
 
-	if (device_name == "Default") {
+	String device = capture ? capture_device_name : device_name;
+	if (device == "Default") {
 		// Get the default output device name
 		pa_status = 0;
 		pa_operation *pa_op = pa_context_get_server_info(pa_ctx, &AudioDriverPulseAudio::pa_server_info_cb, (void *)this);
@@ -93,16 +107,22 @@ void AudioDriverPulseAudio::detect_channels() {
 		}
 	}
 
-	char device[1024];
-	if (device_name == "Default") {
-		strcpy(device, default_device.utf8().get_data());
+	char dev[1024];
+	if (device == "Default") {
+		strcpy(dev, capture ? capture_default_device.utf8().get_data() : default_device.utf8().get_data());
 	} else {
-		strcpy(device, device_name.utf8().get_data());
+		strcpy(dev, device.utf8().get_data());
 	}
 
 	// Now using the device name get the amount of channels
 	pa_status = 0;
-	pa_operation *pa_op = pa_context_get_sink_info_by_name(pa_ctx, device, &AudioDriverPulseAudio::pa_sink_info_cb, (void *)this);
+	pa_operation *pa_op;
+	if (capture) {
+		pa_op = pa_context_get_source_info_by_name(pa_ctx, dev, &AudioDriverPulseAudio::pa_source_info_cb, (void *)this);
+	} else {
+		pa_op = pa_context_get_sink_info_by_name(pa_ctx, dev, &AudioDriverPulseAudio::pa_sink_info_cb, (void *)this);
+	}
+
 	if (pa_op) {
 		while (pa_status == 0) {
 			int ret = pa_mainloop_iterate(pa_ml, 1, NULL);
@@ -113,7 +133,11 @@ void AudioDriverPulseAudio::detect_channels() {
 
 		pa_operation_unref(pa_op);
 	} else {
-		ERR_PRINT("pa_context_get_sink_info_by_name error");
+		if (capture) {
+			ERR_PRINT("pa_context_get_source_info_by_name error");
+		} else {
+			ERR_PRINT("pa_context_get_sink_info_by_name error");
+		}
 	}
 }
 
@@ -194,6 +218,10 @@ Error AudioDriverPulseAudio::init_device() {
 
 	samples_in.resize(buffer_frames * channels);
 	samples_out.resize(pa_buffer_size);
+
+	// Reset audio input to keep synchronisation.
+	input_position = 0;
+	input_size = 0;
 
 	return OK;
 }
@@ -389,9 +417,12 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				} else {
 					int16_t *srcptr = (int16_t *)ptr;
 					for (size_t i = bytes >> 1; i > 0; i--) {
-						ad->input_buffer.write[ad->input_position++] = int32_t(*srcptr++) << 16;
-						if (ad->input_position >= ad->input_buffer.size()) {
-							ad->input_position = 0;
+						int32_t sample = int32_t(*srcptr++) << 16;
+						ad->input_buffer_write(sample);
+
+						if (ad->pa_rec_map.channels == 1) {
+							// In case input device is single channel convert it to Stereo
+							ad->input_buffer_write(sample);
 						}
 					}
 
@@ -571,10 +602,26 @@ Error AudioDriverPulseAudio::capture_init_device() {
 		}
 	}
 
+	detect_channels(true);
+	switch (pa_rec_map.channels) {
+		case 1: // Mono
+		case 2: // Stereo
+			break;
+
+		default:
+			WARN_PRINTS("PulseAudio: Unsupported number of input channels: " + itos(pa_rec_map.channels));
+			pa_channel_map_init_stereo(&pa_rec_map);
+			break;
+	}
+
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	}
+
 	pa_sample_spec spec;
 
 	spec.format = PA_SAMPLE_S16LE;
-	spec.channels = 2;
+	spec.channels = pa_rec_map.channels;
 	spec.rate = mix_rate;
 
 	int latency = 30;
@@ -583,9 +630,6 @@ Error AudioDriverPulseAudio::capture_init_device() {
 
 	pa_buffer_attr attr;
 	attr.fragsize = buffer_size * sizeof(int16_t);
-
-	pa_channel_map pa_rec_map;
-	pa_channel_map_init_stereo(&pa_rec_map);
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);
 	if (pa_rec_str == NULL) {
@@ -602,10 +646,8 @@ Error AudioDriverPulseAudio::capture_init_device() {
 	}
 
 	input_buffer.resize(input_buffer_frames * 8);
-	for (int i = 0; i < input_buffer.size(); i++) {
-		input_buffer.write[i] = 0;
-	}
 	input_position = 0;
+	input_size = 0;
 
 	return OK;
 }
