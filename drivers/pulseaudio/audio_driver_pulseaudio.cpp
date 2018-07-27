@@ -402,6 +402,26 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					}
 				}
 			}
+
+			// User selected a new device, finish the current one so we'll init the new device
+			if (ad->capture_device_name != ad->capture_new_device) {
+				ad->capture_device_name = ad->capture_new_device;
+				ad->capture_finish_device();
+
+				Error err = ad->capture_init_device();
+				if (err != OK) {
+					ERR_PRINT("PulseAudio: capture_init_device error");
+					ad->capture_device_name = "Default";
+					ad->capture_new_device = "Default";
+
+					err = ad->capture_init_device();
+					if (err != OK) {
+						ad->active = false;
+						ad->exit_thread = true;
+						break;
+					}
+				}
+			}
 		}
 
 		ad->stop_counting_ticks();
@@ -540,11 +560,16 @@ void AudioDriverPulseAudio::finish() {
 	thread = NULL;
 }
 
-Error AudioDriverPulseAudio::capture_start() {
+Error AudioDriverPulseAudio::capture_init_device() {
 
-	Error err = OK;
-
-	lock();
+	// If there is a specified device check that it is really present
+	if (capture_device_name != "Default") {
+		Array list = capture_get_device_list();
+		if (list.find(capture_device_name) == -1) {
+			capture_device_name = "Default";
+			capture_new_device = "Default";
+		}
+	}
 
 	pa_sample_spec spec;
 
@@ -568,11 +593,12 @@ Error AudioDriverPulseAudio::capture_start() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
+	const char *dev = capture_device_name == "Default" ? NULL : capture_device_name.utf8().get_data();
 	pa_stream_flags flags = pa_stream_flags(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE);
-	int error_code = pa_stream_connect_record(pa_rec_str, NULL, &attr, flags);
+	int error_code = pa_stream_connect_record(pa_rec_str, dev, &attr, flags);
 	if (error_code < 0) {
 		ERR_PRINTS("PulseAudio: pa_stream_connect_record error: " + String(pa_strerror(error_code)));
-		err = ERR_CANT_OPEN;
+		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
 	audio_input_buffer.resize(input_buffer_frames * 8);
@@ -581,19 +607,99 @@ Error AudioDriverPulseAudio::capture_start() {
 	}
 	audio_input_position = 0;
 
+	return OK;
+}
+
+void AudioDriverPulseAudio::capture_finish_device() {
+
+	if (pa_rec_str) {
+		int ret = pa_stream_disconnect(pa_rec_str);
+		if (ret != 0) {
+			ERR_PRINTS("PulseAudio: pa_stream_disconnect error: " + String(pa_strerror(ret)));
+		}
+		pa_stream_unref(pa_rec_str);
+		pa_rec_str = NULL;
+	}
+}
+
+Error AudioDriverPulseAudio::capture_start() {
+
+	lock();
+	Error err = capture_init_device();
 	unlock();
 
 	return err;
 }
 
 Error AudioDriverPulseAudio::capture_stop() {
-	if (pa_rec_str) {
-		pa_stream_disconnect(pa_rec_str);
-		pa_stream_unref(pa_rec_str);
-		pa_rec_str = NULL;
-	}
+	lock();
+	capture_finish_device();
+	unlock();
 
 	return OK;
+}
+
+void AudioDriverPulseAudio::capture_set_device(const String &p_name) {
+
+	lock();
+	capture_new_device = p_name;
+	unlock();
+}
+
+void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
+	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+
+	// If eol is set to a positive number, you're at the end of the list
+	if (eol > 0) {
+		return;
+	}
+
+	if (l->monitor_of_sink == PA_INVALID_INDEX) {
+		ad->pa_rec_devices.push_back(l->name);
+	}
+
+	ad->pa_status++;
+}
+
+Array AudioDriverPulseAudio::capture_get_device_list() {
+
+	pa_rec_devices.clear();
+	pa_rec_devices.push_back("Default");
+
+	if (pa_ctx == NULL) {
+		return pa_rec_devices;
+	}
+
+	lock();
+
+	// Get the device list
+	pa_status = 0;
+	pa_operation *pa_op = pa_context_get_source_info_list(pa_ctx, pa_sourcelist_cb, (void *)this);
+	if (pa_op) {
+		while (pa_status == 0) {
+			int ret = pa_mainloop_iterate(pa_ml, 1, NULL);
+			if (ret < 0) {
+				ERR_PRINT("pa_mainloop_iterate error");
+			}
+		}
+
+		pa_operation_unref(pa_op);
+	} else {
+		ERR_PRINT("pa_context_get_server_info error");
+	}
+
+	unlock();
+
+	return pa_rec_devices;
+}
+
+String AudioDriverPulseAudio::capture_get_device() {
+
+	lock();
+	String name = capture_device_name;
+	unlock();
+
+	return name;
 }
 
 AudioDriverPulseAudio::AudioDriverPulseAudio() {

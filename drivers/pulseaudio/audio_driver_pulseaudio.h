@@ -54,6 +54,10 @@ class AudioDriverPulseAudio : public AudioDriver {
 	String new_device;
 	String default_device;
 
+	String capture_device_name;
+	String capture_new_device;
+	String capture_default_device;
+
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
 
@@ -65,6 +69,7 @@ class AudioDriverPulseAudio : public AudioDriver {
 	int pa_ready;
 	int pa_status;
 	Array pa_devices;
+	Array pa_rec_devices;
 
 	bool active;
 	bool thread_exited;
@@ -76,9 +81,13 @@ class AudioDriverPulseAudio : public AudioDriver {
 	static void pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
 	static void pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata);
 	static void pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
+	static void pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata);
 
 	Error init_device();
 	void finish_device();
+
+	Error capture_init_device();
+	void capture_finish_device();
 
 	void detect_channels();
 
@@ -93,9 +102,15 @@ public:
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
+
 	virtual Array get_device_list();
 	virtual String get_device();
 	virtual void set_device(String device);
+
+	virtual Array capture_get_device_list();
+	virtual void capture_set_device(const String &p_name);
+	virtual String capture_get_device();
+
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
