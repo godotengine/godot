@@ -103,6 +103,8 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_path", p_event)) {
+		_tool_selected(TOOL_PASTE_NODE_PATH);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	}
@@ -281,6 +283,66 @@ bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_pat
 	}
 
 	return false;
+}
+
+void SceneTreeDock::_duplicate(const List<Node *> &p_what, Node *p_target) {
+
+	if (!_validate_no_foreign())
+		return;
+
+	editor_data->get_undo_redo().create_action(TTR("Duplicate Node(s)"));
+	editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
+
+	Node *dupsingle = NULL;
+
+	for (const List<Node *>::Element *E = p_what.front(); E; E = E->next()) {
+
+		Node *node = E->get();
+		Node *new_parent = p_target ? p_target->get_parent() : node->get_parent();
+
+		List<Node *> owned;
+		node->get_owned_by(node->get_owner(), &owned);
+
+		Map<const Node *, Node *> duplimap;
+		Node *dup = node->duplicate_from_editor(duplimap);
+
+		ERR_CONTINUE(!dup);
+
+		if (p_what.size() == 1)
+			dupsingle = dup;
+
+		dup->set_name(new_parent->validate_child_name(dup));
+
+		if (p_target) {
+			editor_data->get_undo_redo().add_do_method(new_parent, "add_child_below_node", p_target, dup);
+		} else {
+			editor_data->get_undo_redo().add_do_method(new_parent, "add_child_below_node", node, dup);
+		}
+
+		for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
+
+			if (!duplimap.has(F->get())) {
+
+				continue;
+			}
+			Node *d = duplimap[F->get()];
+			editor_data->get_undo_redo().add_do_method(d, "set_owner", node->get_owner());
+		}
+		editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", dup);
+
+		editor_data->get_undo_redo().add_undo_method(new_parent, "remove_child", dup);
+		editor_data->get_undo_redo().add_do_reference(dup);
+
+		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+
+		editor_data->get_undo_redo().add_do_method(sed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
+		editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(new_parent)) + "/" + dup->get_name()));
+	}
+
+	editor_data->get_undo_redo().commit_action();
+
+	if (dupsingle)
+		editor->push_item(dupsingle);
 }
 
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
@@ -480,61 +542,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign())
-				break;
-
 			List<Node *> selection = editor_selection->get_selected_node_list();
 			if (selection.size() == 0)
 				break;
 
-			editor_data->get_undo_redo().create_action(TTR("Duplicate Node(s)"));
-			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
-
-			Node *dupsingle = NULL;
-
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-
-				Node *node = E->get();
-				Node *parent = node->get_parent();
-
-				List<Node *> owned;
-				node->get_owned_by(node->get_owner(), &owned);
-
-				Map<const Node *, Node *> duplimap;
-				Node *dup = node->duplicate_from_editor(duplimap);
-
-				ERR_CONTINUE(!dup);
-
-				if (selection.size() == 1)
-					dupsingle = dup;
-
-				dup->set_name(parent->validate_child_name(dup));
-
-				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", node, dup);
-				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
-
-					if (!duplimap.has(F->get())) {
-
-						continue;
-					}
-					Node *d = duplimap[F->get()];
-					editor_data->get_undo_redo().add_do_method(d, "set_owner", node->get_owner());
-				}
-				editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", dup);
-				editor_data->get_undo_redo().add_undo_method(parent, "remove_child", dup);
-				editor_data->get_undo_redo().add_do_reference(dup);
-
-				ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-
-				editor_data->get_undo_redo().add_do_method(sed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
-				editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)) + "/" + dup->get_name()));
-			}
-
-			editor_data->get_undo_redo().commit_action();
-
-			if (dupsingle)
-				editor->push_item(dupsingle);
-
+			_duplicate(selection);
 		} break;
 		case TOOL_REPARENT: {
 
@@ -691,6 +703,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					NodePath path = root->get_path().rel_path_to(node->get_path());
 					OS::get_singleton()->set_clipboard(path);
+				}
+			}
+		} break;
+		case TOOL_PASTE_NODE_PATH: {
+			Node *root = EditorNode::get_singleton()->get_edited_scene();
+			if (root) {
+				String path = OS::get_singleton()->get_clipboard();
+				Node *node = root->get_node(path);
+				if (node) {
+					List<Node *> selection = editor_selection->get_selected_node_list();
+					if (selection.size() == 1) {
+						List<Node *> what;
+						what.push_back(node);
+						_duplicate(what, selection[0]);
+					}
 				}
 			}
 		} break;
@@ -2015,6 +2042,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
+		menu->add_icon_shortcut(get_icon("Add", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/paste_node_path"), TOOL_PASTE_NODE_PATH);
 		bool is_external = (selection[0]->get_filename() != "");
 		if (is_external) {
 			bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
@@ -2199,7 +2227,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
-	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node (And Node Path)"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("scene_tree/paste_node_path", TTR("Paste Node"), KEY_MASK_CMD | KEY_V);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 

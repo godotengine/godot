@@ -74,6 +74,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
+		TOOL_PASTE_NODE_PATH,
 		TOOL_BUTTON_MAX,
 		TOOL_SCENE_EDITABLE_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
@@ -112,6 +113,7 @@ class SceneTreeDock : public VBoxContainer {
 	Control *remote_tree;
 
 	HBoxContainer *tool_hbc;
+	void _duplicate(const List<Node *> &what, Node *p_target = NULL);
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 
 	EditorData *editor_data;
