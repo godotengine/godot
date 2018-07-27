@@ -174,9 +174,9 @@ Error AudioDriverCoreAudio::init() {
 	unsigned int buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
 	input_buf.resize(buffer_size);
-	audio_input_buffer.resize(buffer_size * 8);
-	audio_input_position = 0;
-	audio_input_size = 0;
+	input_buffer.resize(buffer_size * 8);
+	input_position = 0;
+	input_size = 0;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("CoreAudio: detected " + itos(channels) + " channels");
@@ -247,17 +247,6 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	return 0;
 };
 
-void AudioDriverCoreAudio::_input_write_sample(int32_t sample) {
-
-	audio_input_buffer.write[audio_input_position++] = sample;
-	if (audio_input_position >= audio_input_buffer.size()) {
-		audio_input_position = 0;
-	}
-	if (audio_input_size < audio_input_buffer.size()) {
-		audio_input_size++;
-	}
-}
-
 OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
 		const AudioTimeStamp *inTimeStamp,
@@ -281,11 +270,11 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	if (result == noErr) {
 		for (int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
 			int32_t sample = ad->input_buf[i] << 16;
-			ad->_input_write_sample(sample);
+			ad->input_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
 				// In case input device is single channel convert it to Stereo
-				ad->_input_write_sample(sample);
+				ad->input_buffer_write(sample);
 			}
 		}
 	} else {
@@ -545,8 +534,8 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		ERR_FAIL_COND(result != noErr);
 
 		// Reset audio input to keep synchronisation.
-		audio_input_position = 0;
-		audio_input_size = 0;
+		input_position = 0;
+		input_size = 0;
 	}
 }
 

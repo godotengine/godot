@@ -320,8 +320,8 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	samples_in.resize(buffer_frames * channels);
 
-	audio_input_position = 0;
-	audio_input_size = 0;
+	input_position = 0;
+	input_size = 0;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("WASAPI: detected " + itos(channels) + " channels");
@@ -343,12 +343,9 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	// Set the buffer size
-	audio_input_buffer.resize(max_frames * CAPTURE_BUFFER_CHANNELS);
-	for (int i = 0; i < audio_input_buffer.size(); i++) {
-		audio_input_buffer.write[i] = 0;
-	}
-	audio_input_position = 0;
-	audio_input_size = 0;
+	input_buffer.resize(max_frames * CAPTURE_BUFFER_CHANNELS);
+	input_position = 0;
+	input_size = 0;
 
 	return OK;
 }
@@ -682,31 +679,24 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					// fixme: Only works for floating point atm
 					for (int j = 0; j < num_frames_available; j++) {
-						int32_t sample_channel[CAPTURE_BUFFER_CHANNELS];
+						int32_t l, r;
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-							sample_channel[0] = sample_channel[1] = 0;
+							l = r = 0;
 						} else {
 							if (ad->audio_input.channels == 2) {
-								sample_channel[0] = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
-								sample_channel[1] = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
+								l = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
+								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
 							} else if (ad->audio_input.channels == 1) {
-								sample_channel[0] = sample_channel[1] = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
+								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
 							} else {
-								sample_channel[0] = sample_channel[1] = 0;
+								l = r = 0;
 								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
 							}
 						}
 
-						for (int k = 0; k < CAPTURE_BUFFER_CHANNELS; k++) {
-							ad->audio_input_buffer.write[ad->audio_input_position++] = sample_channel[k];
-							if (ad->audio_input_position >= ad->audio_input_buffer.size()) {
-								ad->audio_input_position = 0;
-							}
-							if (ad->audio_input_size < ad->audio_input_buffer.size()) {
-								ad->audio_input_size++;
-							}
-						}
+						input_buffer_write(l);
+						input_buffer_write(r);
 					}
 
 					read_frames += num_frames_available;

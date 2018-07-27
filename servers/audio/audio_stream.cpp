@@ -134,18 +134,18 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 
 	AudioDriver::get_singleton()->lock();
 
-	Vector<int32_t> buf = AudioDriver::get_singleton()->get_audio_input_buffer();
-	unsigned int audio_input_size = AudioDriver::get_singleton()->get_audio_input_size();
+	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
+	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
 
 	// p_frames is multipled by two since an AudioFrame is stereo
-	if ((p_frames * 2) > audio_input_size) {
+	if ((p_frames * 2) > input_size) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0.0f, 0.0f);
 		}
 		input_ofs = 0;
 	} else {
 		for (int i = 0; i < p_frames; i++) {
-			if (audio_input_size >= input_ofs) {
+			if (input_size >= input_ofs) {
 				float l = (buf[input_ofs++] >> 16) / 32768.f;
 				if (input_ofs >= buf.size()) {
 					input_ofs = 0;

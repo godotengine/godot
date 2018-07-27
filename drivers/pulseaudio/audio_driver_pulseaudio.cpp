@@ -380,7 +380,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			size_t bytes = pa_stream_readable_size(ad->pa_rec_str);
 			if (bytes > 0) {
 				const void *ptr = NULL;
-				size_t maxbytes = ad->audio_input_buffer.size() * sizeof(int16_t);
+				size_t maxbytes = ad->input_buffer.size() * sizeof(int16_t);
 
 				bytes = MIN(bytes, maxbytes);
 				ret = pa_stream_peek(ad->pa_rec_str, &ptr, &bytes);
@@ -389,9 +389,9 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				} else {
 					int16_t *srcptr = (int16_t *)ptr;
 					for (size_t i = bytes >> 1; i > 0; i--) {
-						ad->audio_input_buffer.write[ad->audio_input_position++] = int32_t(*srcptr++) << 16;
-						if (ad->audio_input_position >= ad->audio_input_buffer.size()) {
-							ad->audio_input_position = 0;
+						ad->input_buffer.write[ad->input_position++] = int32_t(*srcptr++) << 16;
+						if (ad->input_position >= ad->input_buffer.size()) {
+							ad->input_position = 0;
 						}
 					}
 
@@ -601,11 +601,11 @@ Error AudioDriverPulseAudio::capture_init_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	audio_input_buffer.resize(input_buffer_frames * 8);
-	for (int i = 0; i < audio_input_buffer.size(); i++) {
-		audio_input_buffer.write[i] = 0;
+	input_buffer.resize(input_buffer_frames * 8);
+	for (int i = 0; i < input_buffer.size(); i++) {
+		input_buffer.write[i] = 0;
 	}
-	audio_input_position = 0;
+	input_position = 0;
 
 	return OK;
 }
