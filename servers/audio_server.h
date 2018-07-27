@@ -55,6 +55,7 @@ class AudioDriver {
 protected:
 	Vector<int32_t> audio_input_buffer;
 	unsigned int audio_input_position;
+	unsigned int audio_input_size;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
@@ -109,6 +110,7 @@ public:
 
 	Vector<int32_t> get_audio_input_buffer() { return audio_input_buffer; }
 	unsigned int get_audio_input_position() { return audio_input_position; }
+	unsigned int get_audio_input_size() { return audio_input_size; }
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time; }

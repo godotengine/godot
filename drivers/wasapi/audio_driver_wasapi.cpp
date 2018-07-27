@@ -65,6 +65,8 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 #define REFTIMES_PER_SEC 10000000
 #define REFTIMES_PER_MILLISEC 10000
 
+#define CAPTURE_BUFFER_CHANNELS 2
+
 static StringName capture_device_id;
 static bool default_render_device_changed = false;
 static bool default_capture_device_changed = false;
@@ -271,7 +273,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 		pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
 	}
 
-	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, 0, p_capture ? REFTIMES_PER_SEC : 0, pwfex, NULL);
+	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_capture ? REFTIMES_PER_SEC : 0, 0, pwfex, NULL);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	if (p_capture) {
@@ -338,11 +340,12 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	// Set the buffer size
-	audio_input_buffer.resize(max_frames * 8);
+	audio_input_buffer.resize(max_frames * CAPTURE_BUFFER_CHANNELS);
 	for (int i = 0; i < audio_input_buffer.size(); i++) {
 		audio_input_buffer.write[i] = 0;
 	}
 	audio_input_position = 0;
+	audio_input_size = 0;
 
 	return OK;
 }
@@ -676,7 +679,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					// fixme: Only works for floating point atm
 					for (int j = 0; j < num_frames_available; j++) {
-						int32_t sample_channel[2];
+						int32_t sample_channel[CAPTURE_BUFFER_CHANNELS];
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
 							sample_channel[0] = sample_channel[1] = 0;
@@ -692,10 +695,13 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 							}
 						}
 
-						for (int k = 0; k < 2; k++) {
+						for (int k = 0; k < CAPTURE_BUFFER_CHANNELS; k++) {
 							ad->audio_input_buffer.write[ad->audio_input_position++] = sample_channel[k];
 							if (ad->audio_input_position >= ad->audio_input_buffer.size()) {
 								ad->audio_input_position = 0;
+							}
+							if (ad->audio_input_size < ad->audio_input_buffer.size()) {
+								ad->audio_input_size++;
 							}
 						}
 					}
