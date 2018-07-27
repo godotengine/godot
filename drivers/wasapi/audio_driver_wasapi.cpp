@@ -320,6 +320,9 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	samples_in.resize(buffer_frames * channels);
 
+	audio_input_position = 0;
+	audio_input_size = 0;
+
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("WASAPI: detected " + itos(channels) + " channels");
 		print_line("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
