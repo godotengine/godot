@@ -2,8 +2,9 @@
 Name=Godot Engine
 GenericName=Libre game engine
 Comment=Multi-platform 2D and 3D game engine with a feature-rich editor
-Exec=godot -p
+Exec=godot %f
 Icon=godot
 Terminal=false
 Type=Application
+MimeType=application/x-godot-project;
 Categories=Development;IDE;
