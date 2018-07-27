@@ -35,6 +35,31 @@
 #include "os/os.h"
 #include "servers/physics_2d_server.h"
 
+Rect2 TileMap::_edit_get_rect() const {
+
+	Rect2 map_size = _compute_used_size();
+	if (mode != MODE_CUSTOM) {
+		map_size.position *= cell_size;
+		map_size.size *= cell_size;
+	}
+	return map_size;
+}
+
+Rect2 TileMap::_compute_used_size() const {
+
+	Rect2 used_size;
+	if (tile_map.size() > 0) {
+		used_size = Rect2(tile_map.front()->key().x, tile_map.front()->key().y, 0, 0);
+		for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
+			used_size.expand_to(Vector2(E->key().x, E->key().y));
+		}
+		used_size.size += Vector2(1, 1);
+	} else {
+		used_size = Rect2();
+	}
+	return used_size;
+}
+
 int TileMap::_get_quadrant_size() const {
 
 	if (y_sort_mode)
@@ -1493,18 +1518,7 @@ Array TileMap::get_used_cells_by_id(int p_id) const {
 Rect2 TileMap::get_used_rect() { // Not const because of cache
 
 	if (used_size_cache_dirty) {
-		if (tile_map.size() > 0) {
-			used_size_cache = Rect2(tile_map.front()->key().x, tile_map.front()->key().y, 0, 0);
-
-			for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
-				used_size_cache.expand_to(Vector2(E->key().x, E->key().y));
-			}
-
-			used_size_cache.size += Vector2(1, 1);
-		} else {
-			used_size_cache = Rect2();
-		}
-
+		used_size_cache = _compute_used_size();
 		used_size_cache_dirty = false;
 	}
 
