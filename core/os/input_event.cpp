@@ -949,6 +949,14 @@ bool InputEventAction::is_pressed() const {
 	return pressed;
 }
 
+bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
+	Ref<InputEventKey> event = p_event;
+	if (event.is_null())
+		return false;
+
+	return event->is_action(action);
+}
+
 bool InputEventAction::is_action(const StringName &p_action) const {
 
 	return action == p_action;

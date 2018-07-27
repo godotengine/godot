@@ -480,6 +480,7 @@ public:
 
 	virtual bool is_action(const StringName &p_action) const;
 
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
