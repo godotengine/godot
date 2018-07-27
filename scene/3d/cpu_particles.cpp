@@ -25,7 +25,7 @@ void CPUParticles::set_emitting(bool p_emitting) {
 			update_mutex->lock();
 #endif
 			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, true);
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 
 #ifndef NO_THREADS
 			update_mutex->unlock();
@@ -983,7 +983,7 @@ void CPUParticles::_notification(int p_what) {
 			update_mutex->lock();
 #endif
 			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, true);
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 #ifndef NO_THREADS
 			update_mutex->unlock();
 #endif
@@ -997,7 +997,7 @@ void CPUParticles::_notification(int p_what) {
 			update_mutex->lock();
 #endif
 			VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, false);
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 #ifndef NO_THREADS
 			update_mutex->unlock();
 #endif
@@ -1024,7 +1024,7 @@ void CPUParticles::_notification(int p_what) {
 				update_mutex->lock();
 #endif
 				VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
-				VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE, false);
+				VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 
 #ifndef NO_THREADS
 				update_mutex->unlock();
