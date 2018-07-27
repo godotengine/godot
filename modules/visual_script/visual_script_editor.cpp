@@ -2728,7 +2728,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
 		if (tg.type == Variant::OBJECT) {
 			vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
-
+			vsfc->set_base_type(String(""));
 			if (tg.gdclass != StringName()) {
 				vsfc->set_base_type(tg.gdclass);
 
@@ -2740,7 +2740,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					vsfc->set_base_type(base_type);
 				}
 				if (p_text == "call" || p_text == "call_deferred") {
-					vsfc->set_function("");
+					vsfc->set_function(String(""));
 				}
 			}
 			if (tg.script.is_valid()) {
@@ -2748,7 +2748,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 		} else if (tg.type == Variant::NIL) {
 			vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
-			vsfc->set_base_type(script->get_instance_base_type());
+			vsfc->set_base_type(String(""));
 		} else {
 			vsfc->set_call_mode(VisualScriptFunctionCall::CALL_MODE_BASIC_TYPE);
 			vsfc->set_basic_type(tg.type);
@@ -2762,7 +2762,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
 		if (tg.type == Variant::OBJECT) {
 			vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
-
+			vsp->set_base_type(String(""));
 			if (tg.gdclass != StringName()) {
 				vsp->set_base_type(tg.gdclass);
 
@@ -2779,7 +2779,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 		} else if (tg.type == Variant::NIL) {
 			vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
-			vsp->set_base_type(script->get_instance_base_type());
+			vsp->set_base_type(String(""));
 		} else {
 			vsp->set_call_mode(VisualScriptPropertySet::CALL_MODE_BASIC_TYPE);
 			vsp->set_basic_type(tg.type);
@@ -2792,7 +2792,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
 		if (tg.type == Variant::OBJECT) {
 			vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
-
+			vsp->set_base_type(String(""));
 			if (tg.gdclass != StringName()) {
 				vsp->set_base_type(tg.gdclass);
 
@@ -2809,7 +2809,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 		} else if (tg.type == Variant::NIL) {
 			vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
-			vsp->set_base_type(script->get_instance_base_type());
+			vsp->set_base_type(String(""));
 		} else {
 			vsp->set_call_mode(VisualScriptPropertyGet::CALL_MODE_BASIC_TYPE);
 			vsp->set_basic_type(tg.type);
