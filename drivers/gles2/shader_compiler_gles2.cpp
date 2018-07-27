@@ -325,7 +325,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				uniform_code += ";\n";
 
 				if (SL::is_sampler_type(E->get().type)) {
-					r_gen_code.texture_uniforms.write[E->get().texture_order] = _mkid(E->key());
+					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
 					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
 				} else {
 					r_gen_code.uniforms.write[E->get().order] = E->key();
@@ -507,7 +507,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				case SL::OP_ASSIGN_DIV:
 				case SL::OP_ASSIGN_SHIFT_LEFT:
 				case SL::OP_ASSIGN_SHIFT_RIGHT:
-				case SL::OP_ASSIGN_MOD:
 				case SL::OP_ASSIGN_BIT_AND:
 				case SL::OP_ASSIGN_BIT_OR:
 				case SL::OP_ASSIGN_BIT_XOR: {
@@ -516,6 +515,16 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _opstr(op_node->op);
 					code += " ";
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} break;
+
+				case SL::OP_ASSIGN_MOD: {
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += " = ";
+					code += "mod(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += ", ";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ")";
 				} break;
 
 				case SL::OP_BIT_INVERT:
@@ -550,6 +559,45 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2D";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCube";
+							}
+
+						} else if (var_node->name == "textureLod") {
+							// emit texture call
+
+							if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2D) {
+								code += "texture2DLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
+								code += "textureCubeLod";
+							}
+
+						} else if (var_node->name == "mix") {
+
+							switch (op_node->arguments[3]->get_datatype()) {
+
+								case SL::TYPE_BVEC2: {
+									code += "select2";
+								} break;
+
+								case SL::TYPE_BVEC3: {
+									code += "select3";
+								} break;
+
+								case SL::TYPE_BVEC4: {
+									code += "select4";
+								} break;
+
+								case SL::TYPE_VEC2:
+								case SL::TYPE_VEC3:
+								case SL::TYPE_VEC4:
+								case SL::TYPE_FLOAT: {
+
+									code += "mix";
+								} break;
+
+								default: {
+									SL::DataType type = op_node->arguments[3]->get_datatype();
+									print_line(String("uhhhh invalid mix with type: ") + itos(type));
+								} break;
 							}
 
 						} else if (p_default_actions.renames.has(var_node->name)) {
@@ -588,6 +636,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += " : ";
 					code += _dump_node_code(op_node->arguments[2], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} break;
+
+				case SL::OP_MOD: {
+
+					code += "mod(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ", ";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ")";
 				} break;
 
 				default: {
@@ -751,10 +808,10 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	/** SPATIAL SHADER **/
 
 	actions[VS::SHADER_SPATIAL].renames["WORLD_MATRIX"] = "world_transform";
-	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
-	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_matrix";
+	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "projection_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
 
 	actions[VS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
