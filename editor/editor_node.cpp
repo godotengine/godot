@@ -946,8 +946,6 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		int x = (img->get_width() - vp_size) / 2;
 		int y = (img->get_height() - vp_size) / 2;
 
-		img->convert(Image::FORMAT_RGB8);
-
 		if (vp_size < preview_size) {
 			// just square it.
 			img->crop_from_point(x, y, vp_size, vp_size);
@@ -962,6 +960,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// We could get better pictures with better filters
 			img->resize(preview_size, preview_size, Image::INTERPOLATE_CUBIC);
 		}
+		img->convert(Image::FORMAT_RGB8);
 
 		img->flip_y();
 
