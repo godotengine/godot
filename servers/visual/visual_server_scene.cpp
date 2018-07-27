@@ -820,7 +820,7 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			instance->baked_light = p_enabled;
 
 		} break;
-		case VS::INSTANCE_FLAG_REDRAW_FRAME_IF_VISIBLE: {
+		case VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE: {
 
 			instance->redraw_if_visible = p_enabled;
 
