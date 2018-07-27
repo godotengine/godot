@@ -61,7 +61,6 @@ class AudioDriverCoreAudio : public AudioDriver {
 #ifdef OSX_ENABLED
 	Array _get_device_list(bool capture = false);
 	void _set_device(const String &device, bool capture = false);
-	void _input_write_sample(int32_t sample);
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,

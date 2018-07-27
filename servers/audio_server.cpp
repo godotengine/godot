@@ -80,6 +80,17 @@ double AudioDriver::get_mix_time() const {
 	return total;
 }
 
+void AudioDriver::input_buffer_write(int32_t sample) {
+
+	input_buffer.write[input_position++] = sample;
+	if (input_position >= input_buffer.size()) {
+		input_position = 0;
+	}
+	if (input_size < input_buffer.size()) {
+		input_size++;
+	}
+}
+
 AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_channels) const {
 	switch (p_channels) {
 		case 4: return SPEAKER_SURROUND_31;
