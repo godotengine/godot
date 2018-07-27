@@ -122,6 +122,26 @@ Error AudioDriverCoreAudio::init() {
 			break;
 	}
 
+	zeromem(&strdesc, sizeof(strdesc));
+	size = sizeof(strdesc);
+	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	switch (strdesc.mChannelsPerFrame) {
+		case 1: // Mono
+			capture_channels = 1;
+			break;
+
+		case 2: // Stereo
+			capture_channels = 2;
+			break;
+
+		default:
+			// Unknown number of channels, default to stereo
+			capture_channels = 2;
+			break;
+	}
+
 	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 
 	zeromem(&strdesc, sizeof(strdesc));
@@ -137,7 +157,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	strdesc.mChannelsPerFrame = 2;
+	strdesc.mChannelsPerFrame = capture_channels;
 
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -155,10 +175,8 @@ Error AudioDriverCoreAudio::init() {
 	samples_in.resize(buffer_size);
 	input_buf.resize(buffer_size);
 	audio_input_buffer.resize(buffer_size * 8);
-	for (int i = 0; i < audio_input_buffer.size(); i++) {
-		audio_input_buffer.write[i] = 0;
-	}
 	audio_input_position = 0;
+	audio_input_size = 0;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		print_line("CoreAudio: detected " + itos(channels) + " channels");
@@ -229,6 +247,17 @@ OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 	return 0;
 };
 
+void AudioDriverCoreAudio::_input_write_sample(int32_t sample) {
+
+	audio_input_buffer.write[audio_input_position++] = sample;
+	if (audio_input_position >= audio_input_buffer.size()) {
+		audio_input_position = 0;
+	}
+	if (audio_input_size < audio_input_buffer.size()) {
+		audio_input_size++;
+	}
+}
+
 OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
 		const AudioTimeStamp *inTimeStamp,
@@ -245,15 +274,18 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
 	bufferList.mBuffers[0].mData = ad->input_buf.ptrw();
-	bufferList.mBuffers[0].mNumberChannels = 2;
+	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
 	bufferList.mBuffers[0].mDataByteSize = ad->input_buf.size() * sizeof(int16_t);
 
 	OSStatus result = AudioUnitRender(ad->audio_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
-		for (int i = 0; i < inNumberFrames * 2; i++) {
-			ad->audio_input_buffer.write[ad->audio_input_position++] = ad->input_buf[i] << 16;
-			if (ad->audio_input_position >= ad->audio_input_buffer.size()) {
-				ad->audio_input_position = 0;
+		for (int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
+			int32_t sample = ad->input_buf[i] << 16;
+			ad->_input_write_sample(sample);
+
+			if (ad->capture_channels == 1) {
+				// In case input device is single channel convert it to Stereo
+				ad->_input_write_sample(sample);
 			}
 		}
 	} else {
@@ -511,6 +543,10 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 	if (found) {
 		OSStatus result = AudioUnitSetProperty(audio_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, capture ? kInputBus : kOutputBus, &deviceId, sizeof(AudioDeviceID));
 		ERR_FAIL_COND(result != noErr);
+
+		// Reset audio input to keep synchronisation.
+		audio_input_position = 0;
+		audio_input_size = 0;
 	}
 }
 
@@ -558,6 +594,7 @@ AudioDriverCoreAudio::AudioDriverCoreAudio() {
 
 	mix_rate = 0;
 	channels = 2;
+	capture_channels = 2;
 
 	buffer_frames = 0;
 
