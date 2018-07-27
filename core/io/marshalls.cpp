@@ -385,6 +385,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		} break;
 		case Variant::INPUT_EVENT: {
 
+			ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
+
 			InputEvent ie;
 
 			ie.type = decode_uint32(&buf[0]);
@@ -397,6 +399,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 				case InputEvent::KEY: {
 
+					ERR_FAIL_COND_V(len < 20, ERR_INVALID_DATA);
 					uint32_t mods = decode_uint32(&buf[12]);
 					if (mods & KEY_MASK_SHIFT)
 						ie.key.mod.shift = true;
@@ -414,6 +417,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				} break;
 				case InputEvent::MOUSE_BUTTON: {
 
+					ERR_FAIL_COND_V(len < 16, ERR_INVALID_DATA);
 					ie.mouse_button.button_index = decode_uint32(&buf[12]);
 					if (r_len)
 						(*r_len) += 4;
@@ -421,18 +425,21 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				} break;
 				case InputEvent::JOYSTICK_BUTTON: {
 
+					ERR_FAIL_COND_V(len < 16, ERR_INVALID_DATA);
 					ie.joy_button.button_index = decode_uint32(&buf[12]);
 					if (r_len)
 						(*r_len) += 4;
 				} break;
 				case InputEvent::SCREEN_TOUCH: {
 
+					ERR_FAIL_COND_V(len < 16, ERR_INVALID_DATA);
 					ie.screen_touch.index = decode_uint32(&buf[12]);
 					if (r_len)
 						(*r_len) += 4;
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
+					ERR_FAIL_COND_V(len < 20, ERR_INVALID_DATA);
 					ie.joy_motion.axis = decode_uint32(&buf[12]);
 					ie.joy_motion.axis_value = decode_float(&buf[16]);
 					if (r_len)
