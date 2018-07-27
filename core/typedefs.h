@@ -58,11 +58,7 @@
 #endif
 
 #ifndef _FORCE_INLINE_
-#ifdef DEBUG_ENABLED
-#define _FORCE_INLINE_ inline
-#else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
-#endif
 #endif
 
 //custom, gcc-safe offsetof, because gcc complains a lot.
@@ -266,7 +262,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 template <class T>
 struct Comparator {
 
-	inline bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
+	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };
 
 void _global_lock();
