@@ -322,7 +322,7 @@ Files extracted from the upstream source:
 ## openssl
 
 - Upstream: https://www.openssl.org
-- Version: 1.0.2n
+- Version: 1.0.2o
 - License: OpenSSL license / BSD-like
 
 Files extracted from the upstream source:

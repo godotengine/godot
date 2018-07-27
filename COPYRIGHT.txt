@@ -305,7 +305,7 @@ License: Zlib
 
 Files: ./thirdparty/openssl/
 Comment: The OpenSSL Project
-Copyright: 1998-2017, The OpenSSL Project.
+Copyright: 1998-2018, The OpenSSL Project.
 License: OpenSSL
 
 Files: ./thirdparty/opus/
