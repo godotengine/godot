@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "mobile_interface.h"
+#include "mobile_vr_interface.h"
 
 void register_mobile_vr_types() {
 	ClassDB::register_class<MobileVRInterface>();
