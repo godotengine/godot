@@ -387,7 +387,63 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				input->set_mouse_in_window(false);
 
 		} break;
+		case WM_INPUT: {
+			if (mouse_mode != MOUSE_MODE_CAPTURED || !use_raw_input) {
+				break;
+			}
+
+			UINT dwSize;
+
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+			LPBYTE lpb = new BYTE[dwSize];
+			if (lpb == NULL) {
+				return 0;
+			}
+
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+
+			RAWINPUT *raw = (RAWINPUT *)lpb;
+
+			if (raw->header.dwType == RIM_TYPEMOUSE) {
+				Ref<InputEventMouseMotion> mm;
+				mm.instance();
+
+				mm->set_control(control_mem);
+				mm->set_shift(shift_mem);
+				mm->set_alt(alt_mem);
+
+				mm->set_button_mask(last_button_state);
+
+				Point2i c(video_mode.width / 2, video_mode.height / 2);
+
+				// centering just so it works as before
+				POINT pos = { (int)c.x, (int)c.y };
+				ClientToScreen(hWnd, &pos);
+				SetCursorPos(pos.x, pos.y);
+
+				mm->set_position(c);
+				mm->set_global_position(c);
+				input->set_mouse_position(c);
+				mm->set_speed(Vector2(0, 0));
+
+				if (raw->data.mouse.usFlags == 0) {
+					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
+
+				} else if (raw->data.mouse.usFlags == 1) {
+					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY) - last_absolute_position);
+					last_absolute_position = Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+				}
+
+				if (window_has_focus && main_loop)
+					input->parse_input_event(mm);
+			}
+			delete[] lpb;
+		} break;
 		case WM_MOUSEMOVE: {
+			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+				break;
+			}
 
 			if (input->is_emulating_mouse_from_touch()) {
 				// Universal translation enabled; ignore OS translation
@@ -1064,6 +1120,20 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (!RegisterClassExW(&wc)) {
 		MessageBox(NULL, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return ERR_UNAVAILABLE;
+	}
+
+	use_raw_input = true;
+
+	RAWINPUTDEVICE Rid[1];
+
+	Rid[0].usUsagePage = 0x01;
+	Rid[0].usUsage = 0x02;
+	Rid[0].dwFlags = 0;
+	Rid[0].hwndTarget = 0;
+
+	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
+		//registration failed.
+		use_raw_input = false;
 	}
 
 	pre_fs_valid = true;
