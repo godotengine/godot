@@ -453,6 +453,9 @@ void SoftBody::become_mesh_owner() {
 	if (!mesh_owner) {
 		mesh_owner = true;
 
+		Vector<Ref<Material> > copy_materials;
+		copy_materials.append_array(materials);
+
 		ERR_FAIL_COND(!mesh->get_surface_count());
 
 		// Get current mesh array and create new mesh array with necessary flag for softbody
@@ -466,11 +469,10 @@ void SoftBody::become_mesh_owner() {
 		Ref<ArrayMesh> soft_mesh;
 		soft_mesh.instance();
 		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_format);
+		soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
 
 		set_mesh(soft_mesh);
 
-		Vector<Ref<Material> > copy_materials;
-		copy_materials.append_array(materials);
 		for (int i = copy_materials.size() - 1; 0 <= i; --i) {
 			set_surface_material(i, copy_materials[i]);
 		}
