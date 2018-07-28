@@ -1,9 +1,9 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.6.34, September 29, 2017
+ * libpng version 1.6.35, July 15, 2018
  *
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002,2004,2006-2016,2018 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -127,7 +127,7 @@
  *
  * These cases only differ if the operating system does not use the C
  * calling convention, at present this just means the above cases
- * (x86 DOS/Windows sytems) and, even then, this does not apply to
+ * (x86 DOS/Windows systems) and, even then, this does not apply to
  * Cygwin running on those systems.
  *
  * Note that the value must be defined in pnglibconf.h so that what
@@ -515,8 +515,10 @@
 #  error "libpng requires an unsigned 32-bit (or more) type"
 #endif
 
-/* Prior to 1.6.0 it was possible to disable the use of size_t, 1.6.0, however,
- * requires an ISOC90 compiler and relies on consistent behavior of sizeof.
+/* Prior to 1.6.0, it was possible to disable the use of size_t and ptrdiff_t.
+ * From 1.6.0 onwards, an ISO C90 compiler, as well as a standard-compliant
+ * behavior of sizeof and ptrdiff_t are required.
+ * The legacy typedefs are provided here for backwards compatibility.
  */
 typedef size_t png_size_t;
 typedef ptrdiff_t png_ptrdiff_t;
@@ -537,13 +539,12 @@ typedef ptrdiff_t png_ptrdiff_t;
 #  endif
 #endif
 
-/* png_alloc_size_t is guaranteed to be no smaller than png_size_t, and no
- * smaller than png_uint_32.  Casts from png_size_t or png_uint_32 to
- * png_alloc_size_t are not necessary; in fact, it is recommended not to use
- * them at all so that the compiler can complain when something turns out to be
- * problematic.
+/* png_alloc_size_t is guaranteed to be no smaller than size_t, and no smaller
+ * than png_uint_32.  Casts from size_t or png_uint_32 to png_alloc_size_t are
+ * not necessary; in fact, it is recommended not to use them at all, so that
+ * the compiler can complain when something turns out to be problematic.
  *
- * Casts in the other direction (from png_alloc_size_t to png_size_t or
+ * Casts in the other direction (from png_alloc_size_t to size_t or
  * png_uint_32) should be explicitly applied; however, we do not expect to
  * encounter practical situations that require such conversions.
  *
@@ -553,7 +554,7 @@ typedef ptrdiff_t png_ptrdiff_t;
 #ifdef PNG_SMALL_SIZE_T
    typedef png_uint_32 png_alloc_size_t;
 #else
-   typedef png_size_t png_alloc_size_t;
+   typedef size_t png_alloc_size_t;
 #endif
 
 /* Prior to 1.6.0 libpng offered limited support for Microsoft C compiler
@@ -589,8 +590,8 @@ typedef char                  * png_charp;
 typedef const char            * png_const_charp;
 typedef png_fixed_point       * png_fixed_point_p;
 typedef const png_fixed_point * png_const_fixed_point_p;
-typedef png_size_t            * png_size_tp;
-typedef const png_size_t      * png_const_size_tp;
+typedef size_t                * png_size_tp;
+typedef const size_t          * png_const_size_tp;
 
 #ifdef PNG_STDIO_SUPPORTED
 typedef FILE            * png_FILE_p;

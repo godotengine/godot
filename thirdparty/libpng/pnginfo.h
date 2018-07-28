@@ -1,8 +1,8 @@
 
 /* pnginfo.h - header file for PNG reference library
  *
- * Last changed in libpng 1.6.1 [March 28, 2013]
- * Copyright (c) 1998-2002,2004,2006-2013 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 1998-2002,2004,2006-2013,2018 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -55,10 +55,10 @@
 struct png_info_def
 {
    /* The following are necessary for every PNG file */
-   png_uint_32 width;  /* width of image in pixels (from IHDR) */
-   png_uint_32 height; /* height of image in pixels (from IHDR) */
-   png_uint_32 valid;  /* valid chunk data (see PNG_INFO_ below) */
-   png_size_t rowbytes; /* bytes needed to hold an untransformed row */
+   png_uint_32 width;       /* width of image in pixels (from IHDR) */
+   png_uint_32 height;      /* height of image in pixels (from IHDR) */
+   png_uint_32 valid;       /* valid chunk data (see PNG_INFO_ below) */
+   size_t rowbytes;         /* bytes needed to hold an untransformed row */
    png_colorp palette;      /* array of color values (valid & PNG_INFO_PLTE) */
    png_uint_16 num_palette; /* number of color entries in "palette" (PLTE) */
    png_uint_16 num_trans;   /* number of transparent palette color (tRNS) */
@@ -247,7 +247,7 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
    /* The sCAL chunk describes the actual physical dimensions of the
     * subject matter of the graphic.  The chunk contains a unit specification
     * a byte value, and two ASCII strings representing floating-point
-    * values.  The values are width and height corresponsing to one pixel
+    * values.  The values are width and height corresponding to one pixel
     * in the image.  Data values are valid if (valid & PNG_INFO_sCAL) is
     * non-zero.
     */
