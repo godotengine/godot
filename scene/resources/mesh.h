@@ -212,6 +212,7 @@ public:
 	void surface_set_material(int p_idx, const Ref<Material> &p_material);
 	Ref<Material> surface_get_material(int p_idx) const;
 
+	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);
 	String surface_get_name(int p_idx) const;
 
