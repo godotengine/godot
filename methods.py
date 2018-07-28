@@ -6,12 +6,12 @@ import glob
 import string
 import datetime
 import subprocess
-from compat import iteritems
+from compat import iteritems, isbasestring
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 
-    if isinstance(filetype, basestring):
+    if isbasestring(filetype):
         dir_path = self.Dir('.').abspath
         filetype = glob.glob(dir_path + "/" + filetype)
 
