@@ -966,6 +966,16 @@ void ArrayMesh::surface_set_material(int p_idx, const Ref<Material> &p_material)
 	emit_changed();
 }
 
+int ArrayMesh::surface_find_by_name(const String &p_name) const {
+	for (int i = 0; i < surfaces.size(); i++) {
+		if (surfaces[i].name == p_name) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 void ArrayMesh::surface_set_name(int p_idx, const String &p_name) {
 
 	ERR_FAIL_INDEX(p_idx, surfaces.size());
@@ -1312,6 +1322,7 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_primitive_type", "surf_idx"), &ArrayMesh::surface_get_primitive_type);
 	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &ArrayMesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &ArrayMesh::surface_get_material);
+	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &ArrayMesh::surface_get_arrays);

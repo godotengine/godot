@@ -40,18 +40,21 @@
 			<return type="void">
 			</return>
 			<description>
+				Centers the geometry.
 			</description>
 		</method>
 		<method name="clear_blend_shapes">
 			<return type="void">
 			</return>
 			<description>
+				Remove all blend shapes from this [code]ArrayMesh[/code].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of blend shapes that the [code]ArrayMesh[/code] holds.
 			</description>
 		</method>
 		<method name="get_blend_shape_name" qualifiers="const">
@@ -60,6 +63,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Returns the name of the blend shape at this index.
 			</description>
 		</method>
 		<method name="get_surface_count" qualifiers="const">
@@ -77,12 +81,23 @@
 			<argument index="1" name="arg1" type="float">
 			</argument>
 			<description>
+				Will perform a UV unwrap on the [code]ArrayMesh[/code] to prepare the mesh for lightmapping.
 			</description>
 		</method>
 		<method name="regen_normalmaps">
 			<return type="void">
 			</return>
 			<description>
+				Will regenerate normal maps for the [code]ArrayMesh[/code].
+			</description>
+		</method>
+		<method name="surface_find_by_name" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return the index of the first surface with this name held within this [code]ArrayMesh[/code]. If none are found -1 is returned.
 			</description>
 		</method>
 		<method name="surface_get_array_index_len" qualifiers="const">
@@ -109,6 +124,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
+				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_get_blend_shape_arrays" qualifiers="const">
@@ -117,6 +133,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
+				Returns the blend shape arrays for the requested surface.
 			</description>
 		</method>
 		<method name="surface_get_format" qualifiers="const">
@@ -143,6 +160,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
+				Get the name assigned to this surface.
 			</description>
 		</method>
 		<method name="surface_get_primitive_type" qualifiers="const">
@@ -171,6 +189,7 @@
 			<argument index="1" name="material" type="Material">
 			</argument>
 			<description>
+				Set a [Material] for a given surface. Surface will be rendered using this material.
 			</description>
 		</method>
 		<method name="surface_set_name">
@@ -181,7 +200,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Set a [Material] for a given surface. Surface will be rendered using this material.
+				Set a name for a given surface.
 			</description>
 		</method>
 		<method name="surface_update_region">
@@ -201,6 +220,7 @@
 		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode">
 		</member>
 		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb">
+			An overriding bounding box for this mesh.
 		</member>
 	</members>
 	<constants>
