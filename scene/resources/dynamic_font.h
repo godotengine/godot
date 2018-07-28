@@ -56,6 +56,7 @@ public:
 				uint32_t outline_size : 8;
 				bool mipmaps : 1;
 				bool filter : 1;
+				bool antialias : 1;
 			};
 			uint32_t key;
 		};
@@ -78,6 +79,7 @@ private:
 	const uint8_t *font_mem;
 	int font_mem_size;
 	bool force_autohinter;
+	bool use_antialias;
 	Hinting hinting;
 
 	String font_path;
@@ -97,6 +99,8 @@ public:
 	void set_font_path(const String &p_path);
 	String get_font_path() const;
 	void set_force_autohinter(bool p_force);
+	void set_use_antialias(bool p_use);
+	bool get_use_antialias() const;
 
 	DynamicFontData();
 	~DynamicFontData();

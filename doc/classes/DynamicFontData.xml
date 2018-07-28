@@ -19,6 +19,9 @@
 		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting">
 			The font hinting mode used by FreeType.
 		</member>
+		<member name="use_antialias" type="bool" setter="set_use_antialias" getter="get_use_antialias">
+			If the font is using antialias or not.
+		</member>
 	</members>
 	<constants>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">

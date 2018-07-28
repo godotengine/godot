@@ -205,10 +205,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	FontThai->set_force_autohinter(true); //just looks better..i think?
 
 	/* Hack */
-
+	bool font_source_antialias = EditorSettings::get_singleton()->get("interface/editor/code_font_antialias");
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
 	dfmono->set_hinting(font_source_hinting);
+	dfmono->set_use_antialias(font_source_antialias);
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
