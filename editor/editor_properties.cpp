@@ -568,6 +568,7 @@ public:
 	uint32_t value;
 	Vector<Rect2> flag_rects;
 	Vector<String> names;
+	Vector<String> tooltips;
 
 	virtual Size2 get_minimum_size() const {
 		Ref<Font> font = get_font("font", "Label");
@@ -576,8 +577,8 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const {
 		for (int i = 0; i < flag_rects.size(); i++) {
-			if (i < names.size() && flag_rects[i].has_point(p_pos)) {
-				return names[i];
+			if (i < tooltips.size() && flag_rects[i].has_point(p_pos)) {
+				return tooltips[i];
 			}
 		}
 		return String();
@@ -681,6 +682,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	}
 
 	Vector<String> names;
+	Vector<String> tooltips;
 	for (int i = 0; i < 20; i++) {
 		String name;
 
@@ -692,12 +694,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			name = TTR("Layer") + " " + itos(i + 1);
 		}
 
-		name += "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i);
-
 		names.push_back(name);
+		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i));
 	}
 
 	grid->names = names;
+	grid->tooltips = tooltips;
 }
 
 void EditorPropertyLayers::_button_pressed() {
