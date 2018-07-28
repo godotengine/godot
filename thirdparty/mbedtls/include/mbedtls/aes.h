@@ -13,6 +13,11 @@
  *          <em>ISO/IEC 18033-2:2006: Information technology -- Security
  *          techniques -- Encryption algorithms -- Part 2: Asymmetric
  *          ciphers</em>.
+ *
+ *          The AES-XTS block mode is standardized by NIST SP 800-38E
+ *          <https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-38e.pdf>
+ *          and described in detail by IEEE P1619
+ *          <https://ieeexplore.ieee.org/servlet/opac?punumber=4375278>.
  */
 
 /*  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved.
@@ -89,6 +94,19 @@ typedef struct
 }
 mbedtls_aes_context;
 
+#if defined(MBEDTLS_CIPHER_MODE_XTS)
+/**
+ * \brief The AES XTS context-type definition.
+ */
+typedef struct
+{
+    mbedtls_aes_context crypt; /*!< The AES context to use for AES block
+                                        encryption or decryption. */
+    mbedtls_aes_context tweak; /*!< The AES context used for tweak
+                                        computation. */
+} mbedtls_aes_xts_context;
+#endif /* MBEDTLS_CIPHER_MODE_XTS */
+
 #else  /* MBEDTLS_AES_ALT */
 #include "aes_alt.h"
 #endif /* MBEDTLS_AES_ALT */
@@ -109,6 +127,25 @@ void mbedtls_aes_init( mbedtls_aes_context *ctx );
  * \param ctx      The AES context to clear.
  */
 void mbedtls_aes_free( mbedtls_aes_context *ctx );
+
+#if defined(MBEDTLS_CIPHER_MODE_XTS)
+/**
+ * \brief          This function initializes the specified AES XTS context.
+ *
+ *                 It must be the first API called before using
+ *                 the context.
+ *
+ * \param ctx      The AES XTS context to initialize.
+ */
+void mbedtls_aes_xts_init( mbedtls_aes_xts_context *ctx );
+
+/**
+ * \brief          This function releases and clears the specified AES XTS context.
+ *
+ * \param ctx      The AES XTS context to clear.
+ */
+void mbedtls_aes_xts_free( mbedtls_aes_xts_context *ctx );
+#endif /* MBEDTLS_CIPHER_MODE_XTS */
 
 /**
  * \brief          This function sets the encryption key.
@@ -141,6 +178,44 @@ int mbedtls_aes_setkey_enc( mbedtls_aes_context *ctx, const unsigned char *key,
  */
 int mbedtls_aes_setkey_dec( mbedtls_aes_context *ctx, const unsigned char *key,
                     unsigned int keybits );
+
+#if defined(MBEDTLS_CIPHER_MODE_XTS)
+/**
+ * \brief          This function prepares an XTS context for encryption and
+ *                 sets the encryption key.
+ *
+ * \param ctx      The AES XTS context to which the key should be bound.
+ * \param key      The encryption key. This is comprised of the XTS key1
+ *                 concatenated with the XTS key2.
+ * \param keybits  The size of \p key passed in bits. Valid options are:
+ *                 <ul><li>256 bits (each of key1 and key2 is a 128-bit key)</li>
+ *                 <li>512 bits (each of key1 and key2 is a 256-bit key)</li></ul>
+ *
+ * \return         \c 0 on success.
+ * \return         #MBEDTLS_ERR_AES_INVALID_KEY_LENGTH on failure.
+ */
+int mbedtls_aes_xts_setkey_enc( mbedtls_aes_xts_context *ctx,
+                                const unsigned char *key,
+                                unsigned int keybits );
+
+/**
+ * \brief          This function prepares an XTS context for decryption and
+ *                 sets the decryption key.
+ *
+ * \param ctx      The AES XTS context to which the key should be bound.
+ * \param key      The decryption key. This is comprised of the XTS key1
+ *                 concatenated with the XTS key2.
+ * \param keybits  The size of \p key passed in bits. Valid options are:
+ *                 <ul><li>256 bits (each of key1 and key2 is a 128-bit key)</li>
+ *                 <li>512 bits (each of key1 and key2 is a 256-bit key)</li></ul>
+ *
+ * \return         \c 0 on success.
+ * \return         #MBEDTLS_ERR_AES_INVALID_KEY_LENGTH on failure.
+ */
+int mbedtls_aes_xts_setkey_dec( mbedtls_aes_xts_context *ctx,
+                                const unsigned char *key,
+                                unsigned int keybits );
+#endif /* MBEDTLS_CIPHER_MODE_XTS */
 
 /**
  * \brief          This function performs an AES single-block encryption or
@@ -212,6 +287,49 @@ int mbedtls_aes_crypt_cbc( mbedtls_aes_context *ctx,
                     const unsigned char *input,
                     unsigned char *output );
 #endif /* MBEDTLS_CIPHER_MODE_CBC */
+
+#if defined(MBEDTLS_CIPHER_MODE_XTS)
+/**
+ * \brief      This function performs an AES-XTS encryption or decryption
+ *             operation for an entire XTS data unit.
+ *
+ *             AES-XTS encrypts or decrypts blocks based on their location as
+ *             defined by a data unit number. The data unit number must be
+ *             provided by \p data_unit.
+ *
+ *             NIST SP 800-38E limits the maximum size of a data unit to 2^20
+ *             AES blocks. If the data unit is larger than this, this function
+ *             returns #MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH.
+ *
+ * \param ctx          The AES XTS context to use for AES XTS operations.
+ * \param mode         The AES operation: #MBEDTLS_AES_ENCRYPT or
+ *                     #MBEDTLS_AES_DECRYPT.
+ * \param length       The length of a data unit in bytes. This can be any
+ *                     length between 16 bytes and 2^24 bytes inclusive
+ *                     (between 1 and 2^20 block cipher blocks).
+ * \param data_unit    The address of the data unit encoded as an array of 16
+ *                     bytes in little-endian format. For disk encryption, this
+ *                     is typically the index of the block device sector that
+ *                     contains the data.
+ * \param input        The buffer holding the input data (which is an entire
+ *                     data unit). This function reads \p length bytes from \p
+ *                     input.
+ * \param output       The buffer holding the output data (which is an entire
+ *                     data unit). This function writes \p length bytes to \p
+ *                     output.
+ *
+ * \return             \c 0 on success.
+ * \return             #MBEDTLS_ERR_AES_INVALID_INPUT_LENGTH if \p length is
+ *                     smaller than an AES block in size (16 bytes) or if \p
+ *                     length is larger than 2^20 blocks (16 MiB).
+ */
+int mbedtls_aes_crypt_xts( mbedtls_aes_xts_context *ctx,
+                           int mode,
+                           size_t length,
+                           const unsigned char data_unit[16],
+                           const unsigned char *input,
+                           unsigned char *output );
+#endif /* MBEDTLS_CIPHER_MODE_XTS */
 
 #if defined(MBEDTLS_CIPHER_MODE_CFB)
 /**
@@ -295,6 +413,56 @@ int mbedtls_aes_crypt_cfb8( mbedtls_aes_context *ctx,
                     const unsigned char *input,
                     unsigned char *output );
 #endif /*MBEDTLS_CIPHER_MODE_CFB */
+
+#if defined(MBEDTLS_CIPHER_MODE_OFB)
+/**
+ * \brief       This function performs an AES-OFB (Output Feedback Mode)
+ *              encryption or decryption operation.
+ *
+ *              For OFB, you must set up the context with
+ *              mbedtls_aes_setkey_enc(), regardless of whether you are
+ *              performing an encryption or decryption operation. This is
+ *              because OFB mode uses the same key schedule for encryption and
+ *              decryption.
+ *
+ *              The OFB operation is identical for encryption or decryption,
+ *              therefore no operation mode needs to be specified.
+ *
+ * \note        Upon exit, the content of iv, the Initialisation Vector, is
+ *              updated so that you can call the same function again on the next
+ *              block(s) of data and get the same result as if it was encrypted
+ *              in one call. This allows a "streaming" usage, by initialising
+ *              iv_off to 0 before the first call, and preserving its value
+ *              between calls.
+ *
+ *              For non-streaming use, the iv should be initialised on each call
+ *              to a unique value, and iv_off set to 0 on each call.
+ *
+ *              If you need to retain the contents of the initialisation vector,
+ *              you must either save it manually or use the cipher module
+ *              instead.
+ *
+ * \warning     For the OFB mode, the initialisation vector must be unique
+ *              every encryption operation. Reuse of an initialisation vector
+ *              will compromise security.
+ *
+ * \param ctx      The AES context to use for encryption or decryption.
+ * \param length   The length of the input data.
+ * \param iv_off   The offset in IV (updated after use).
+ * \param iv       The initialization vector (updated after use).
+ * \param input    The buffer holding the input data.
+ * \param output   The buffer holding the output data.
+ *
+ * \return         \c 0 on success.
+ */
+int mbedtls_aes_crypt_ofb( mbedtls_aes_context *ctx,
+                       size_t length,
+                       size_t *iv_off,
+                       unsigned char iv[16],
+                       const unsigned char *input,
+                       unsigned char *output );
+
+#endif /* MBEDTLS_CIPHER_MODE_OFB */
 
 #if defined(MBEDTLS_CIPHER_MODE_CTR)
 /**

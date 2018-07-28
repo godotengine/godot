@@ -249,8 +249,10 @@ int mbedtls_pkcs5_pbkdf2_hmac( mbedtls_md_context_t *ctx, const unsigned char *p
     memset( counter, 0, 4 );
     counter[3] = 1;
 
+#if UINT_MAX > 0xFFFFFFFF
     if( iteration_count > 0xFFFFFFFF )
         return( MBEDTLS_ERR_PKCS5_BAD_INPUT_DATA );
+#endif
 
     while( key_length )
     {
