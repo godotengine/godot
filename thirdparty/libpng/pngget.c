@@ -1,8 +1,8 @@
 
 /* pngget.c - retrieval of values from info struct
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
- * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -26,7 +26,7 @@ png_get_valid(png_const_structrp png_ptr, png_const_inforp info_ptr,
    return(0);
 }
 
-png_size_t PNGAPI
+size_t PNGAPI
 png_get_rowbytes(png_const_structrp png_ptr, png_const_inforp info_ptr)
 {
    if (png_ptr != NULL && info_ptr != NULL)
@@ -367,7 +367,7 @@ png_get_y_pixels_per_inch(png_const_structrp png_ptr, png_const_inforp info_ptr)
 static png_fixed_point
 png_fixed_inches_from_microns(png_const_structrp png_ptr, png_int_32 microns)
 {
-   /* Convert from metres * 1,000,000 to inches * 100,000, meters to
+   /* Convert from meters * 1,000,000 to inches * 100,000, meters to
     * inches is simply *(100/2.54), so we want *(10/2.54) == 500/127.
     * Notice that this can overflow - a warning is output and 0 is
     * returned.
@@ -741,8 +741,7 @@ png_get_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
 
    if (png_ptr != NULL && info_ptr != NULL &&
        (info_ptr->valid & PNG_INFO_iCCP) != 0 &&
-       name != NULL && compression_type != NULL && profile != NULL &&
-           proflen != NULL)
+       name != NULL && profile != NULL && proflen != NULL)
    {
       *name = info_ptr->iccp_name;
       *profile = info_ptr->iccp_profile;
@@ -750,11 +749,13 @@ png_get_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
       /* This is somewhat irrelevant since the profile data returned has
        * actually been uncompressed.
        */
-      *compression_type = PNG_COMPRESSION_TYPE_BASE;
+      if (compression_type != NULL)
+         *compression_type = PNG_COMPRESSION_TYPE_BASE;
       return (PNG_INFO_iCCP);
    }
 
    return (0);
+
 }
 #endif
 
@@ -1164,7 +1165,7 @@ png_get_user_chunk_ptr(png_const_structrp png_ptr)
 }
 #endif
 
-png_size_t PNGAPI
+size_t PNGAPI
 png_get_compression_buffer_size(png_const_structrp png_ptr)
 {
    if (png_ptr == NULL)
