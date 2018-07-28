@@ -552,7 +552,8 @@
 			<argument index="1" name="path" type="NodePath">
 			</argument>
 			<description>
-				Set the path of a track. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by ":". Example: "character/skeleton:ankle" or "character/mesh:transform/local"
+				Set the path of a track. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. Tracks that control properties or bones must append their name after the path, separated by ":".
+				[b]Example:[/b] "character/skeleton:ankle" or "character/mesh:transform/local".
 			</description>
 		</method>
 		<method name="track_swap">
