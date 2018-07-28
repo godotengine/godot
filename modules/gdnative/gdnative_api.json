@@ -6374,6 +6374,42 @@
           ]
         }
       ]
+    },
+    {
+      "name": "videodecoder",
+      "type": "VIDEODECODER",
+      "version": {
+        "major": 0,
+        "minor": 1
+      },
+      "next": null,
+      "api": [
+        {
+          "name": "godot_videodecoder_file_read",
+          "return_type": "godot_int",
+          "arguments": [
+            ["void *", "file_ptr"],
+            ["uint8_t *", "buf"],
+            ["int", "buf_size"]
+          ]
+        },
+        {
+          "name": "godot_videodecoder_file_seek",
+          "return_type": "int64_t",
+          "arguments": [
+            [ "void *", "file_ptr"],
+            ["int64_t", "pos"],
+            ["int", "whence"]
+          ]
+        },
+        {
+          "name": "godot_videodecoder_register_decoder",
+          "return_type": "void",
+          "arguments": [
+            ["const godot_videodecoder_interface_gdnative *", "p_interface"]
+          ]
+        }
+      ]
     }
   ]
 }

@@ -19,6 +19,7 @@ Export('env_gdnative')
 SConscript("net/SCsub")
 SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
+SConscript("videodecoder/SCsub")
 
 
 from platform_methods import run_in_subprocess
