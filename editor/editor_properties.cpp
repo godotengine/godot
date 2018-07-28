@@ -2173,7 +2173,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 void EditorPropertyResource::_open_editor_pressed() {
 	RES res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->edit_resource(res.ptr());
+		EditorNode::get_singleton()->edit_item(res.ptr());
 	}
 }
 
