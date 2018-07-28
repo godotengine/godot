@@ -205,6 +205,8 @@ PropertyInfo VisualScriptFunction::get_output_value_port_info(int p_idx) const {
 	PropertyInfo out;
 	out.type = arguments[p_idx].type;
 	out.name = arguments[p_idx].name;
+	out.hint = arguments[p_idx].hint;
+	out.hint_string = arguments[p_idx].hint_string;
 	return out;
 }
 
@@ -218,11 +220,13 @@ String VisualScriptFunction::get_text() const {
 	return get_name(); //use name as function name I guess
 }
 
-void VisualScriptFunction::add_argument(Variant::Type p_type, const String &p_name, int p_index) {
+void VisualScriptFunction::add_argument(Variant::Type p_type, const String &p_name, int p_index, const PropertyHint p_hint, const String &p_hint_string) {
 
 	Argument arg;
 	arg.name = p_name;
 	arg.type = p_type;
+	arg.hint = p_hint;
+	arg.hint_string = p_hint_string;
 	if (p_index >= 0)
 		arguments.insert(p_index, arg);
 	else
