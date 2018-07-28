@@ -1,8 +1,8 @@
 
 /* pngstruct.h - header file for PNG reference library
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
- * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -47,7 +47,7 @@
 /* zlib.h declares a magic type 'uInt' that limits the amount of data that zlib
  * can handle at once.  This type need be no larger than 16 bits (so maximum of
  * 65535), this define allows us to discover how big it is, but limited by the
- * maximuum for png_size_t.  The value can be overriden in a library build
+ * maximum for size_t.  The value can be overridden in a library build
  * (pngusr.h, or set it in CPPFLAGS) and it works to set it to a considerably
  * lower value (e.g. 255 works).  A lower value may help memory usage (slightly)
  * and may even improve performance on some systems (and degrade it on others.)
@@ -214,7 +214,7 @@ struct png_struct_def
    png_uint_32 height;        /* height of image in pixels */
    png_uint_32 num_rows;      /* number of rows in current pass */
    png_uint_32 usr_width;     /* width of row at start of write */
-   png_size_t rowbytes;       /* size of row in bytes */
+   size_t rowbytes;           /* size of row in bytes */
    png_uint_32 iwidth;        /* width of current interlaced row in pixels */
    png_uint_32 row_number;    /* current row in interlace pass */
    png_uint_32 chunk_name;    /* PNG_CHUNK() id of current chunk */
@@ -232,7 +232,7 @@ struct png_struct_def
    png_bytep try_row;    /* buffer to save trial row when filtering */
    png_bytep tst_row;    /* buffer to save best trial row when filtering */
 #endif
-   png_size_t info_rowbytes;  /* Added in 1.5.4: cache of updated row bytes */
+   size_t info_rowbytes;      /* Added in 1.5.4: cache of updated row bytes */
 
    png_uint_32 idat_size;     /* current IDAT size for read */
    png_uint_32 crc;           /* current chunk CRC value */
@@ -307,7 +307,7 @@ struct png_struct_def
 #endif
 
 #if defined(PNG_READ_SHIFT_SUPPORTED) || defined(PNG_WRITE_SHIFT_SUPPORTED)
-   png_color_8 shift;         /* shift for significant bit tranformation */
+   png_color_8 shift;         /* shift for significant bit transformation */
 #endif
 
 #if defined(PNG_tRNS_SUPPORTED) || defined(PNG_READ_BACKGROUND_SUPPORTED) \
@@ -328,10 +328,10 @@ struct png_struct_def
    png_bytep current_buffer;         /* buffer for recently used data */
    png_uint_32 push_length;          /* size of current input chunk */
    png_uint_32 skip_length;          /* bytes to skip in input data */
-   png_size_t save_buffer_size;      /* amount of data now in save_buffer */
-   png_size_t save_buffer_max;       /* total size of save_buffer */
-   png_size_t buffer_size;           /* total amount of available input data */
-   png_size_t current_buffer_size;   /* amount of data now in current_buffer */
+   size_t save_buffer_size;          /* amount of data now in save_buffer */
+   size_t save_buffer_max;           /* total size of save_buffer */
+   size_t buffer_size;               /* total amount of available input data */
+   size_t current_buffer_size;       /* amount of data now in current_buffer */
    int process_mode;                 /* what push library is currently doing */
    int cur_palette;                  /* current push library palette index */
 
@@ -451,7 +451,7 @@ struct png_struct_def
 #endif
 
 /* New member added in libpng-1.2.26 */
-  png_size_t old_big_row_buf_size;
+   size_t old_big_row_buf_size;
 
 #ifdef PNG_READ_SUPPORTED
 /* New member added in libpng-1.2.30 */
