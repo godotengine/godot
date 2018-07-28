@@ -1200,24 +1200,13 @@ void FileSystemDock::_file_option(int p_option) {
 		} break;
 		case FILE_RENAME: {
 			int idx = files->get_current();
+
 			if (idx < 0 || idx >= files->get_item_count())
-				break;
+				return;
 
 			to_rename.path = files->get_item_metadata(idx);
-			to_rename.is_file = !to_rename.path.ends_with("/");
-			if (to_rename.is_file) {
-				String name = to_rename.path.get_file();
-				rename_dialog->set_title(TTR("Renaming file:") + " " + name);
-				rename_dialog_text->set_text(name);
-				rename_dialog_text->select(0, name.find_last("."));
-			} else {
-				String name = to_rename.path.substr(0, to_rename.path.length() - 1).get_file();
-				rename_dialog->set_title(TTR("Renaming folder:") + " " + name);
-				rename_dialog_text->set_text(name);
-				rename_dialog_text->select(0, name.length());
-			}
-			rename_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-			rename_dialog_text->grab_focus();
+
+			rename();
 		} break;
 		case FILE_REMOVE: {
 			Vector<String> remove_files;
@@ -1359,14 +1348,9 @@ void FileSystemDock::_folder_option(int p_option) {
 		} break;
 		case FOLDER_RENAME: {
 			to_rename.path = selected->get_metadata(tree->get_selected_column());
-			to_rename.is_file = false;
+
 			if (to_rename.path != "res://") {
-				String name = to_rename.path.ends_with("/") ? to_rename.path.substr(0, to_rename.path.length() - 1).get_file() : to_rename.path.get_file();
-				rename_dialog->set_title(TTR("Renaming folder:") + " " + name);
-				rename_dialog_text->set_text(name);
-				rename_dialog_text->select(0, name.length());
-				rename_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-				rename_dialog_text->grab_focus();
+				rename();
 			}
 		} break;
 		case FOLDER_REMOVE: {
@@ -1452,6 +1436,34 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 	}
 	folder_options->set_position(tree->get_global_position() + p_pos);
 	folder_options->popup();
+}
+
+void FileSystemDock::_dir_gui_input(Ref<InputEvent> p_event) {
+	if (get_viewport()->get_modal_stack_top()) {
+		return; // Modal is open
+	}
+
+	Ref<InputEventKey> key = p_event;
+
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("filesystem_dock/delete", p_event)) {
+			String path = tree->get_selected()->get_metadata(tree->get_selected_column());
+			Vector<String> remove_folders;
+
+			if (path != "res://") {
+				remove_folders.push_back(path);
+				remove_dialog->show(remove_folders, Vector<String>());
+			}
+		}
+
+		if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
+			to_rename.path = tree->get_selected()->get_metadata(tree->get_selected_column());
+
+			if (to_rename.path != "res://") {
+				rename();
+			}
+		}
+	}
 }
 
 void FileSystemDock::_search_changed(const String &p_text) {
@@ -1780,6 +1792,24 @@ void FileSystemDock::select_file(const String &p_file) {
 	navigate_to_path(p_file);
 }
 
+void FileSystemDock::rename() {
+	to_rename.is_file = !to_rename.path.ends_with("/");
+
+	if (to_rename.is_file) {
+		String name = to_rename.path.get_file();
+		rename_dialog->set_title(TTR("Renaming file:") + " " + name);
+		rename_dialog_text->set_text(name);
+		rename_dialog_text->select(0, name.find_last("."));
+	} else {
+		String name = to_rename.path.substr(0, to_rename.path.length() - 1).get_file();
+		rename_dialog->set_title(TTR("Renaming folder:") + " " + name);
+		rename_dialog_text->set_text(name);
+		rename_dialog_text->select(0, name.length());
+	}
+	rename_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+	rename_dialog_text->grab_focus();
+}
+
 void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 
 	import_dock_needs_update = true;
@@ -1869,6 +1899,7 @@ void FileSystemDock::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ClassDB::bind_method(D_METHOD("_go_to_file_list"), &FileSystemDock::_go_to_file_list);
 	ClassDB::bind_method(D_METHOD("_dir_rmb_pressed"), &FileSystemDock::_dir_rmb_pressed);
+	ClassDB::bind_method(D_METHOD("_dir_gui_input"), &FileSystemDock::_dir_gui_input);
 
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &FileSystemDock::_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
@@ -1914,7 +1945,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
-	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename"));
+	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename"), KEY_F2);
 
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 	toolbar_hbc->add_constant_override("separation", 0);
@@ -2004,6 +2035,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("item_activated", this, "_go_to_file_list");
 	tree->connect("cell_selected", this, "_dir_selected");
 	tree->connect("item_rmb_selected", this, "_dir_rmb_pressed");
+	tree->connect("gui_input", this, "_dir_gui_input");
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
