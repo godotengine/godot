@@ -113,7 +113,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.34
+- Version: 1.6.35
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -122,6 +122,7 @@ Files extracted from upstream source:
   `example.c` and `pngtest.c`
 - the arm/ folder
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
+- `LICENSE`
 
 
 ## libtheora

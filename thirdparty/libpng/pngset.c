@@ -1,8 +1,8 @@
 
 /* pngset.c - storage of image information into info struct
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
- * Copyright (c) 1998-2017 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 1998-2018 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -313,7 +313,7 @@ png_set_pCAL(png_const_structrp png_ptr, png_inforp info_ptr,
     png_const_charp purpose, png_int_32 X0, png_int_32 X1, int type,
     int nparams, png_const_charp units, png_charpp params)
 {
-   png_size_t length;
+   size_t length;
    int i;
 
    png_debug1(1, "in %s storage function", "pCAL");
@@ -390,7 +390,7 @@ png_set_pCAL(png_const_structrp png_ptr, png_inforp info_ptr,
    memcpy(info_ptr->pcal_units, units, length);
 
    info_ptr->pcal_params = png_voidcast(png_charpp, png_malloc_warn(png_ptr,
-       (png_size_t)(((unsigned int)nparams + 1) * (sizeof (png_charp)))));
+       (size_t)(((unsigned int)nparams + 1) * (sizeof (png_charp)))));
 
    if (info_ptr->pcal_params == NULL)
    {
@@ -430,7 +430,7 @@ void PNGAPI
 png_set_sCAL_s(png_const_structrp png_ptr, png_inforp info_ptr,
     int unit, png_const_charp swidth, png_const_charp sheight)
 {
-   png_size_t lengthw = 0, lengthh = 0;
+   size_t lengthw = 0, lengthh = 0;
 
    png_debug1(1, "in %s storage function", "sCAL");
 
@@ -691,7 +691,7 @@ png_set_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
 {
    png_charp new_iccp_name;
    png_bytep new_iccp_profile;
-   png_size_t length;
+   size_t length;
 
    png_debug1(1, "in %s storage function", "iCCP");
 
@@ -1018,7 +1018,7 @@ png_set_tRNS(png_structrp png_ptr, png_inforp info_ptr,
          /* Changed from num_trans to PNG_MAX_PALETTE_LENGTH in version 1.2.1 */
           info_ptr->trans_alpha = png_voidcast(png_bytep,
               png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH));
-          memcpy(info_ptr->trans_alpha, trans_alpha, (png_size_t)num_trans);
+          memcpy(info_ptr->trans_alpha, trans_alpha, (size_t)num_trans);
        }
        png_ptr->trans_alpha = info_ptr->trans_alpha;
    }
@@ -1098,7 +1098,7 @@ png_set_sPLT(png_const_structrp png_ptr,
 
    do
    {
-      png_size_t length;
+      size_t length;
 
       /* Skip invalid input entries */
       if (entries->name == NULL || entries->entries == NULL)
@@ -1563,7 +1563,7 @@ png_set_rows(png_const_structrp png_ptr, png_inforp info_ptr,
 #endif
 
 void PNGAPI
-png_set_compression_buffer_size(png_structrp png_ptr, png_size_t size)
+png_set_compression_buffer_size(png_structrp png_ptr, size_t size)
 {
    if (png_ptr == NULL)
       return;
