@@ -1139,7 +1139,7 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
     char filename[MAX_PATH];
     char *p;
     size_t len = strlen( path );
-    int lengthAsInt = 0;
+    int length_as_int = 0;
 
     WIN32_FIND_DATAW file_data;
     HANDLE hFind;
@@ -1154,7 +1154,7 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
     p = filename + len;
     filename[len++] = '*';
 
-    if ( FAILED ( SizeTToInt( len, &lengthAsInt ) ) )
+    if ( FAILED ( SizeTToInt( len, &length_as_int ) ) )
         return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
 
     /*
@@ -1165,7 +1165,7 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
      * incoming string are less than MAX_PATH to avoid a buffer overrun with
      * MultiByteToWideChar().
      */
-    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, lengthAsInt, szDir,
+    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, length_as_int, szDir,
                                  MAX_PATH - 3 );
     if( w_ret == 0 )
         return( MBEDTLS_ERR_X509_BAD_INPUT_DATA );
@@ -1182,11 +1182,11 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
         if( file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
             continue;
 
-        if ( FAILED( SizeTToInt( wcslen( file_data.cFileName ), &lengthAsInt ) ) )
+        if ( FAILED( SizeTToInt( wcslen( file_data.cFileName ), &length_as_int ) ) )
             return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
 
         w_ret = WideCharToMultiByte( CP_ACP, 0, file_data.cFileName,
-                                     lengthAsInt,
+                                     length_as_int,
                                      p, (int) len - 1,
                                      NULL, NULL );
         if( w_ret == 0 )

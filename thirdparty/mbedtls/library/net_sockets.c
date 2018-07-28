@@ -19,6 +19,11 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
+/* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
+ * be set before config.h, which pulls in glibc's features.h indirectly.
+ * Harmless on other platforms. */
+#define _POSIX_C_SOURCE 200112L
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
 #else
@@ -28,7 +33,8 @@
 #if defined(MBEDTLS_NET_C)
 
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
-    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__)
+    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
+    !defined(__HAIKU__)
 #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
 #endif
 
@@ -47,13 +53,11 @@
 
 #define IS_EINTR( ret ) ( ( ret ) == WSAEINTR )
 
-/* GODOT ADDITION */
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0501)
 #undef _WIN32_WINNT
 /* Enables getaddrinfo() & Co */
 #define _WIN32_WINNT 0x0501
 #endif
-/* END GODOT ADDITION */
 
 #include <ws2tcpip.h>
 

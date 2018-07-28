@@ -1,7 +1,7 @@
 /**
  * \file net.h
  *
- * \brief Deprecated header file that includes mbedtls/net_sockets.h
+ * \brief Deprecated header file that includes net_sockets.h
  *
  * \deprecated Superseded by mbedtls/net_sockets.h
  */
@@ -25,7 +25,7 @@
  */
 
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
-#include "mbedtls/net_sockets.h"
+#include "net_sockets.h"
 #if defined(MBEDTLS_DEPRECATED_WARNING)
 #warning "Deprecated header file: Superseded by mbedtls/net_sockets.h"
 #endif /* MBEDTLS_DEPRECATED_WARNING */
