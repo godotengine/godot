@@ -828,6 +828,7 @@ static int cmac_test_subkeys( int verbose,
         mbedtls_cipher_free( &ctx );
     }
 
+    ret = 0;
     goto exit;
 
 cleanup:
@@ -883,6 +884,7 @@ static int cmac_test_wth_cipher( int verbose,
         if( verbose != 0 )
             mbedtls_printf( "passed\n" );
     }
+    ret = 0;
 
 exit:
     return( ret );

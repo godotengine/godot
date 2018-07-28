@@ -64,10 +64,25 @@ struct mbedtls_cipher_base_t
                      unsigned char *output );
 #endif
 
+#if defined(MBEDTLS_CIPHER_MODE_OFB)
+    /** Encrypt using OFB (Full length) */
+    int (*ofb_func)( void *ctx, size_t length, size_t *iv_off,
+                     unsigned char *iv,
+                     const unsigned char *input,
+                     unsigned char *output );
+#endif
+
 #if defined(MBEDTLS_CIPHER_MODE_CTR)
     /** Encrypt using CTR */
     int (*ctr_func)( void *ctx, size_t length, size_t *nc_off,
                      unsigned char *nonce_counter, unsigned char *stream_block,
+                     const unsigned char *input, unsigned char *output );
+#endif
+
+#if defined(MBEDTLS_CIPHER_MODE_XTS)
+    /** Encrypt or decrypt using XTS. */
+    int (*xts_func)( void *ctx, mbedtls_operation_t mode, size_t length,
+                     const unsigned char data_unit[16],
                      const unsigned char *input, unsigned char *output );
 #endif
 

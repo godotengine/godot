@@ -61,43 +61,28 @@
 #define _WIN32_WINNT 0x0400
 #endif
 #include <windows.h>
-#include <bcrypt.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1600
-/* Visual Studio 2010 and earlier issue a warning when both <stdint.h> and
- * <intsafe.h> are included, as they redefine a number of <TYPE>_MAX constants.
- * These constants are guaranteed to be the same, though, so we suppress the
- * warning when including intsafe.h.
- */
-#pragma warning( push )
-#pragma warning( disable : 4005 )
-#endif
-#include <intsafe.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1600
-#pragma warning( pop )
-#endif
+#include <wincrypt.h>
 
 int mbedtls_platform_entropy_poll( void *data, unsigned char *output, size_t len,
                            size_t *olen )
 {
-    ULONG len_as_ulong = 0;
+    HCRYPTPROV provider;
     ((void) data);
     *olen = 0;
 
-    /*
-     * BCryptGenRandom takes ULONG for size, which is smaller than size_t on
-     * 64-bit Windows platforms. Ensure len's value can be safely converted into
-     * a ULONG.
-     */
-    if ( FAILED( SizeTToULong( len, &len_as_ulong ) ) )
+    if( CryptAcquireContext( &provider, NULL, NULL,
+                              PROV_RSA_FULL, CRYPT_VERIFYCONTEXT ) == FALSE )
     {
         return( MBEDTLS_ERR_ENTROPY_SOURCE_FAILED );
     }
 
-    if ( !BCRYPT_SUCCESS( BCryptGenRandom( NULL, output, len_as_ulong, BCRYPT_USE_SYSTEM_PREFERRED_RNG ) ) )
+    if( CryptGenRandom( provider, (DWORD) len, output ) == FALSE )
     {
+        CryptReleaseContext( provider, 0 );
         return( MBEDTLS_ERR_ENTROPY_SOURCE_FAILED );
     }
 
+    CryptReleaseContext( provider, 0 );
     *olen = len;
 
     return( 0 );
