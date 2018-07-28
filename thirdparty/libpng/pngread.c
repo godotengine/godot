@@ -1,8 +1,8 @@
 
 /* pngread.c - read a PNG file
  *
- * Last changed in libpng 1.6.33 [September 28, 2017]
- * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -1532,7 +1532,7 @@ png_image_begin_read_from_file(png_imagep image, const char *file_name)
 #endif /* STDIO */
 
 static void PNGCBAPI
-png_image_memory_read(png_structp png_ptr, png_bytep out, png_size_t need)
+png_image_memory_read(png_structp png_ptr, png_bytep out, size_t need)
 {
    if (png_ptr != NULL)
    {
@@ -1543,7 +1543,7 @@ png_image_memory_read(png_structp png_ptr, png_bytep out, png_size_t need)
          if (cp != NULL)
          {
             png_const_bytep memory = cp->memory;
-            png_size_t size = cp->size;
+            size_t size = cp->size;
 
             if (memory != NULL && size >= need)
             {
@@ -1562,7 +1562,7 @@ png_image_memory_read(png_structp png_ptr, png_bytep out, png_size_t need)
 }
 
 int PNGAPI png_image_begin_read_from_memory(png_imagep image,
-    png_const_voidp memory, png_size_t size)
+    png_const_voidp memory, size_t size)
 {
    if (image != NULL && image->version == PNG_IMAGE_VERSION)
    {
@@ -4150,7 +4150,7 @@ png_image_finish_read(png_imagep image, png_const_colorp background,
              *
              * NOTE: this will be changed in 1.7 because PNG_IMAGE_BUFFER_SIZE
              * will be changed to use png_alloc_size_t; bigger images can be
-             * accomodated on 64-bit systems.
+             * accommodated on 64-bit systems.
              */
             if (image->height <=
                 0xffffffffU/PNG_IMAGE_PIXEL_COMPONENT_SIZE(image->format)/check)
