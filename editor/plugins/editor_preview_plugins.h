@@ -112,7 +112,7 @@ public:
 class EditorAudioStreamPreviewPlugin : public EditorResourcePreviewGenerator {
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture> generate(const RES &p_from);
+	virtual Ref<Texture> generate(const RES &p_from) const;
 
 	EditorAudioStreamPreviewPlugin();
 };
@@ -153,7 +153,7 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	volatile bool preview_done;
+	mutable volatile bool preview_done;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -162,8 +162,8 @@ protected:
 
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture> generate(const RES &p_from);
-	virtual Ref<Texture> generate_from_path(const String &p_path);
+	virtual Ref<Texture> generate(const RES &p_from) const;
+	virtual Ref<Texture> generate_from_path(const String &p_path) const;
 
 	EditorFontPreviewPlugin();
 	~EditorFontPreviewPlugin();
