@@ -38,7 +38,6 @@
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
-#include "scene/resources/tile_set.h"
 
 /**
 	@author Mariano Suligoy
@@ -56,8 +55,6 @@ class TextureRegionEditor : public Control {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	friend class TileSetEditor;
-	friend class TileSetEditorPlugin;
 	MenuButton *snap_mode_button;
 	TextureRect *icon_zoom;
 	ToolButton *zoom_in;
@@ -91,14 +88,12 @@ class TextureRegionEditor : public Control {
 	Sprite *node_sprite;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
-	Ref<TileSet> tile_set;
 
 	Rect2 rect;
 	Rect2 rect_prev;
 	float prev_margin;
 	int edited_margin;
 	List<Rect2> autoslice_cache;
-	int selected_tile;
 
 	bool drag;
 	bool creating;

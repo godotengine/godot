@@ -368,7 +368,7 @@ void TileMap::update_dirty_quadrants() {
 			}
 
 			Rect2 r = tile_set->tile_get_region(c.id);
-			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE) {
+			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
 				int spacing = tile_set->autotile_get_spacing(c.id);
 				r.size = tile_set->autotile_get_size(c.id);
 				r.position += (r.size + Vector2(spacing, spacing)) * Vector2(c.autotile_coord_x, c.autotile_coord_y);
@@ -491,7 +491,7 @@ void TileMap::update_dirty_quadrants() {
 			if (navigation) {
 				Ref<NavigationPolygon> navpoly;
 				Vector2 npoly_ofs;
-				if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE) {
+				if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
 					navpoly = tile_set->autotile_get_navigation_polygon(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
 					npoly_ofs = Vector2();
 				} else {
@@ -563,7 +563,7 @@ void TileMap::update_dirty_quadrants() {
 			}
 
 			Ref<OccluderPolygon2D> occluder;
-			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE) {
+			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
 				occluder = tile_set->autotile_get_light_occluder(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
 			} else {
 				occluder = tile_set->tile_get_light_occluder(c.id);
@@ -840,7 +840,7 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 	Map<PosKey, Cell>::Element *E = tile_map.find(p);
 	if (E != NULL) {
 		int id = get_cell(p_x, p_y);
-		if (tile_set->tile_get_tile_mode(id) == TileSet::AUTO_TILE) {
+		if (tile_set->tile_get_tile_mode(id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
 			uint16_t mask = 0;
 			if (tile_set->autotile_get_bitmask_mode(id) == TileSet::BITMASK_2X2) {
 				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
