@@ -2311,8 +2311,18 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 	if (p_node->type == Node::TYPE_OPERATOR) {
 
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
+
 		if (op->op == OP_INDEX) {
-			return _validate_assign(op->arguments[0], p_builtin_types);
+			return _validate_assign(op->arguments[0], p_builtin_types, r_message);
+
+		} else if (_is_operator_assign(op->op)) {
+			//chained assignment
+			return _validate_assign(op->arguments[1], p_builtin_types, r_message);
+
+		} else if (op->op == OP_CALL) {
+			if (r_message)
+				*r_message = RTR("Assignment to function.");
+			return false;
 		}
 
 	} else if (p_node->type == Node::TYPE_MEMBER) {
