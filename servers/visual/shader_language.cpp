@@ -2306,24 +2306,54 @@ bool ShaderLanguage::_is_operator_assign(Operator p_op) const {
 	return false;
 }
 
-bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types) {
+bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message) {
 
 	if (p_node->type == Node::TYPE_OPERATOR) {
 
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
-		if (op->op == OP_INDEX) {
-			return _validate_assign(op->arguments[0], p_builtin_types);
-		}
-	}
 
-	if (p_node->type == Node::TYPE_VARIABLE) {
+		if (op->op == OP_INDEX) {
+			return _validate_assign(op->arguments[0], p_builtin_types, r_message);
+
+		} else if (_is_operator_assign(op->op)) {
+			//chained assignment
+			return _validate_assign(op->arguments[1], p_builtin_types, r_message);
+
+		} else if (op->op == OP_CALL) {
+			if (r_message)
+				*r_message = RTR("Assignment to function.");
+			return false;
+		}
+
+	} else if (p_node->type == Node::TYPE_MEMBER) {
+
+		MemberNode *member = static_cast<MemberNode *>(p_node);
+		return _validate_assign(member->owner, p_builtin_types, r_message);
+
+	} else if (p_node->type == Node::TYPE_VARIABLE) {
 
 		VariableNode *var = static_cast<VariableNode *>(p_node);
-		if (p_builtin_types.has(var->name) && p_builtin_types[var->name].constant) {
-			return false; //ops not valid
+
+		if (shader->uniforms.has(var->name)) {
+			if (r_message)
+				*r_message = RTR("Assignment to uniform.");
+			return false;
+		}
+
+		if (shader->varyings.has(var->name) && current_function != String("vertex")) {
+			if (r_message)
+				*r_message = RTR("Varyings can only be assigned in vertex function.");
+			return false;
+		}
+
+		if (!(p_builtin_types.has(var->name) && p_builtin_types[var->name].constant)) {
+			return true;
 		}
 	}
-	return true;
+
+	if (r_message)
+		*r_message = "Assignment to constant expression.";
+	return false;
 }
 
 ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types) {
@@ -3090,10 +3120,14 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				ERR_FAIL_V(NULL);
 			}
 
-			if (_is_operator_assign(op->op) && !_validate_assign(expression[next_op - 1].node, p_builtin_types)) {
+			if (_is_operator_assign(op->op)) {
 
-				_set_error("Assignment to constant expression.");
-				return NULL;
+				String assign_message;
+				if (!_validate_assign(expression[next_op - 1].node, p_builtin_types, &assign_message)) {
+
+					_set_error(assign_message);
+					return NULL;
+				}
 			}
 
 			if (expression[next_op + 1].is_op) {
