@@ -631,11 +631,7 @@ void TileMap::_recompute_rect_cache() {
 			r_total = r_total.merge(r);
 	}
 
-	if (r_total == Rect2()) {
-		rect_cache = Rect2(-10, -10, 20, 20);
-	} else {
-		rect_cache = r_total.grow(MAX(cell_size.x, cell_size.y) * _get_quadrant_size());
-	}
+	rect_cache = r_total;
 
 	item_rect_changed();
 
@@ -1150,6 +1146,11 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	w = PoolVector<int>::Write();
 
 	return data;
+}
+
+Rect2 TileMap::_edit_get_rect() const {
+	const_cast<TileMap *>(this)->update_dirty_quadrants();
+	return rect_cache;
 }
 
 void TileMap::set_collision_layer(uint32_t p_layer) {
