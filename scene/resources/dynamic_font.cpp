@@ -547,7 +547,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 	// update height array
 
 	for (int k = tex_pos.x; k < tex_pos.x + mw; k++) {
-		tex.offsets.write[k] = tex_pos.y + mh;
+		tex.offsets.set(k, tex_pos.y + mh);
 	}
 
 	Character chr;
