@@ -3429,6 +3429,32 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				tokenizer->advance(2);
 
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+					tokenizer->advance();
+
+					if ((tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING)) {
+						Variant constant = tokenizer->get_token_constant();
+						String icon_path = constant.operator String();
+
+						String abs_icon_path = icon_path.is_rel_path() ? self_path.get_base_dir().plus_file(icon_path).simplify_path() : icon_path;
+						if (!FileAccess::exists(abs_icon_path)) {
+							_set_error("No class icon found at: " + abs_icon_path);
+							return;
+						}
+
+						p_class->icon_path = icon_path;
+
+						tokenizer->advance();
+					} else {
+						_set_error("Optional parameter after 'class_name' must be a string constant file path to an icon.");
+						return;
+					}
+
+				} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT) {
+					_set_error("Class icon must be separated by a comma.");
+					return;
+				}
+
 			} break;
 			case GDScriptTokenizer::TK_PR_TOOL: {
 
