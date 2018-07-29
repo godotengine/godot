@@ -100,6 +100,7 @@ private:
 	}
 
 	void _unref(void *p_data);
+	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 	void _copy_on_write();
 
@@ -298,6 +299,11 @@ Error CowData<T>::resize(int p_size) {
 	}
 
 	return OK;
+}
+
+template <class T>
+void CowData<T>::_ref(const CowData *p_from) {
+	_ref(*p_from);
 }
 
 template <class T>
