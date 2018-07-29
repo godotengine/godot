@@ -669,7 +669,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	int color_size = p_colors.size();
 	int uv_size = p_uvs.size();
 	ERR_FAIL_COND(color_size != 0 && color_size != 1 && color_size != pointcount);
-	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount || !p_texture.is_valid()));
+	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry::triangulate_polygon(p_points);
 
