@@ -465,7 +465,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 
-		if (mb->get_button_index() == BUTTON_RIGHT) {
+		if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 
 			int col, row;
 			TextEdit *tx = shader_editor->get_text_edit();
@@ -491,10 +491,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					tx->cursor_set_column(col);
 				}
 			}
-
-			if (!mb->is_pressed()) {
-				_make_context_menu(tx->is_selection_active());
-			}
+			_make_context_menu(tx->is_selection_active());
 		}
 	}
 }
@@ -546,6 +543,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", this, "_menu_option");
+	context_menu->set_hide_on_window_lose_focus(true);
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -554,6 +552,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	//edit_menu->set_position(Point2(5, -1));
 	edit_menu->set_text(TTR("Edit"));
 
+	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
@@ -578,7 +577,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu = memnew(MenuButton);
 	//search_menu->set_position(Point2(38, -1));
 	search_menu->set_text(TTR("Search"));
-
+	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);

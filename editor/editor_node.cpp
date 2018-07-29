@@ -1752,6 +1752,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			} else {
 				tab_closing = editor_data.get_edited_scene();
 			}
+			if (!editor_data.get_edited_scene_root(tab_closing)) {
+				// empty tab
+				_scene_tab_closed(tab_closing);
+				break;
+			}
 
 		} // fallthrough
 		case SCENE_TAB_CLOSE:
@@ -3844,6 +3849,7 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
+
 		if (scene_tabs->get_hovered_tab() >= 0) {
 			if (mb->get_button_index() == BUTTON_MIDDLE && mb->is_pressed()) {
 				_scene_tab_closed(scene_tabs->get_hovered_tab());
@@ -3852,6 +3858,26 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			if ((mb->get_button_index() == BUTTON_LEFT && mb->is_doubleclick()) || (mb->get_button_index() == BUTTON_MIDDLE && mb->is_pressed())) {
 				_menu_option_confirm(FILE_NEW_SCENE, true);
 			}
+		}
+		if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+
+			// context menu
+			scene_tabs_context_menu->clear();
+			scene_tabs_context_menu->set_size(Size2(1, 1));
+
+			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), FILE_NEW_SCENE);
+			if (scene_tabs->get_hovered_tab() >= 0) {
+				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene"), FILE_SAVE_SCENE);
+				scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_scene_as"), FILE_SAVE_AS_SCENE);
+			}
+			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), FILE_SAVE_ALL_SCENES);
+			if (scene_tabs->get_hovered_tab() >= 0) {
+				scene_tabs_context_menu->add_separator();
+				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
+				scene_tabs_context_menu->add_item(TTR("Close Tab"), FILE_CLOSE);
+			}
+			scene_tabs_context_menu->set_position(mb->get_global_position());
+			scene_tabs_context_menu->popup();
 		}
 	}
 }
@@ -4908,6 +4934,7 @@ EditorNode::EditorNode() {
 	scene_tabs = memnew(Tabs);
 	scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
 	scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
+	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
 	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/scene_tabs/always_show_close_button", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
@@ -4924,6 +4951,11 @@ EditorNode::EditorNode() {
 
 	tabbar_container = memnew(HBoxContainer);
 	scene_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	scene_tabs_context_menu = memnew(PopupMenu);
+	tabbar_container->add_child(scene_tabs_context_menu);
+	scene_tabs_context_menu->connect("id_pressed", this, "_menu_option");
+	scene_tabs_context_menu->set_hide_on_window_lose_focus(true);
 
 	srt->add_child(tabbar_container);
 	tabbar_container->add_child(scene_tabs);
@@ -5031,6 +5063,7 @@ EditorNode::EditorNode() {
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
 	p = file_menu->get_popup();
+	p->set_hide_on_window_lose_focus(true);
 	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene")), FILE_NEW_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/new_inherited_scene", TTR("New Inherited Scene...")), FILE_NEW_INHERITED_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/open_scene", TTR("Open Scene..."), KEY_MASK_CMD + KEY_O), FILE_OPEN_SCENE);
@@ -5076,6 +5109,7 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child(project_menu);
 
 	p = project_menu->get_popup();
+	p->set_hide_on_window_lose_focus(true);
 	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
 	p->add_separator();
 	p->connect("id_pressed", this, "_menu_option");
@@ -5111,6 +5145,7 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child(debug_menu);
 
 	p = debug_menu->get_popup();
+	p->set_hide_on_window_lose_focus(true);
 	p->set_hide_on_item_selection(false);
 	p->add_check_item(TTR("Deploy with Remote Debug"), RUN_DEPLOY_REMOTE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
@@ -5135,8 +5170,9 @@ EditorNode::EditorNode() {
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(settings_menu);
-	p = settings_menu->get_popup();
 
+	p = settings_menu->get_popup();
+	p->set_hide_on_window_lose_focus(true);
 	p->add_item(TTR("Editor Settings"), SETTINGS_PREFERENCES);
 	p->add_separator();
 
@@ -5172,6 +5208,7 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child(help_menu);
 
 	p = help_menu->get_popup();
+	p->set_hide_on_window_lose_focus(true);
 	p->connect("id_pressed", this, "_menu_option");
 	p->add_icon_item(gui_base->get_icon("ClassList", "EditorIcons"), TTR("Classes"), HELP_CLASSES);
 	p->add_icon_item(gui_base->get_icon("HelpSearch", "EditorIcons"), TTR("Search"), HELP_SEARCH);
