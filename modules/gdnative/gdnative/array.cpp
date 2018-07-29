@@ -314,18 +314,16 @@ godot_int GDAPI godot_array_bsearch_custom(godot_array *p_self, const godot_vari
 	return self->bsearch_custom((const Variant *)p_value, (Object *)p_obj, *func, p_before);
 }
 
-godot_array GDAPI godot_array_reduce(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
+godot_array *GDAPI godot_array_reduce(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
-	Array *res = &self->reduce((Object *)p_obj, *func, (Variant) * (Array *)p_args);
-	return *((godot_array *)res);
+	return (godot_array *)self->reduce((Object *)p_obj, *func, (Variant) * (Array *)p_args);
 }
 
-godot_array GDAPI godot_array_map(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
+godot_array *GDAPI godot_array_map(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
-	Array *res = &self->map((Object *)p_obj, *func, (Variant) * (Array *)p_args);
-	return *((godot_array *)res);
+	return (godot_array *)self->map((Object *)p_obj, *func, (Variant) * (Array *)p_args);
 }
 
 void GDAPI godot_array_destroy(godot_array *p_self) {

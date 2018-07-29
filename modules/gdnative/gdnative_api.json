@@ -2646,7 +2646,7 @@
 			},
 			{
 				"name" : "godot_array_reduce",
-				"return_type" : "godot_array",
+				"return_type" : "godot_array*",
 				"arguments" : [
 					[ "godot_array *", "p_self" ],
 					[ "godot_object *", "p_obj" ],
@@ -2656,7 +2656,7 @@
 			},
 			{
 				"name" : "godot_array_map",
-				"return_type" : "godot_array",
+				"return_type" : "godot_array*",
 				"arguments" : [
 					[ "godot_array *", "p_self" ],
 					[ "godot_object *", "p_obj" ],
