@@ -139,6 +139,7 @@ public:
 	virtual bool can_instance() const;
 	virtual StringName get_instance_base_type() const;
 	virtual ScriptInstance *instance_create(Object *p_this);
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
 	virtual bool instance_has(const Object *p_this) const;
 
 	virtual bool has_source_code() const;

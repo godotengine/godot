@@ -450,16 +450,41 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			*r_valid = true;
 		return;
 #endif
-	} else {
-		//something inside the object... :|
-		bool success = _setv(p_name, p_value);
-		if (success) {
+	}
+
+	//something inside the object... :|
+	bool success = _setv(p_name, p_value);
+	if (success) {
+		if (r_valid)
+			*r_valid = true;
+		return;
+	}
+
+	{
+		bool valid;
+		setvar(p_name, p_value, &valid);
+		if (valid) {
 			if (r_valid)
 				*r_valid = true;
 			return;
 		}
-		setvar(p_name, p_value, r_valid);
 	}
+
+#ifdef TOOLS_ENABLED
+	if (script_instance) {
+		bool valid;
+		script_instance->property_set_fallback(p_name, p_value, &valid);
+		if (valid) {
+			if (r_valid)
+				*r_valid = true;
+			return;
+		}
+	}
+#endif
+
+	if (r_valid)
+		*r_valid = false;
+	return;
 }
 
 Variant Object::get(const StringName &p_name, bool *r_valid) const {
@@ -513,8 +538,33 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 				*r_valid = true;
 			return ret;
 		}
+
 		//if nothing else, use getvar
-		return getvar(p_name, r_valid);
+		{
+			bool valid;
+			ret = getvar(p_name, &valid);
+			if (valid) {
+				if (r_valid)
+					*r_valid = true;
+				return ret;
+			}
+		}
+
+#ifdef TOOLS_ENABLED
+		if (script_instance) {
+			bool valid;
+			ret = script_instance->property_get_fallback(p_name, &valid);
+			if (valid) {
+				if (r_valid)
+					*r_valid = true;
+				return ret;
+			}
+		}
+#endif
+
+		if (r_valid)
+			*r_valid = false;
+		return Variant();
 	}
 }
 
@@ -979,9 +1029,14 @@ void Object::set_script(const RefPtr &p_script) {
 	script = p_script;
 	Ref<Script> s(script);
 
-	if (!s.is_null() && s->can_instance()) {
-		OBJ_DEBUG_LOCK
-		script_instance = s->instance_create(this);
+	if (!s.is_null()) {
+		if (s->can_instance()) {
+			OBJ_DEBUG_LOCK
+			script_instance = s->instance_create(this);
+		} else if (Engine::get_singleton()->is_editor_hint()) {
+			OBJ_DEBUG_LOCK
+			script_instance = s->placeholder_instance_create(this);
+		}
 	}
 
 	_change_notify("script");

@@ -255,6 +255,17 @@ void ScriptInstance::call_multilevel_reversed(const StringName &p_method, const 
 	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
 }
 
+void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
+	if (r_valid)
+		*r_valid = false;
+}
+
+Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid) {
+	if (r_valid)
+		*r_valid = false;
+	return Variant();
+}
+
 void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;
@@ -364,6 +375,9 @@ ScriptDebugger::ScriptDebugger() {
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
+	if (build_failed)
+		return false;
+
 	if (values.has(p_name)) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
@@ -392,22 +406,31 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 		return true;
 	}
 
-	Variant defval;
-	if (script->get_property_default_value(p_name, defval)) {
-		r_ret = defval;
-		return true;
+	if (!build_failed) {
+		Variant defval;
+		if (script->get_property_default_value(p_name, defval)) {
+			r_ret = defval;
+			return true;
+		}
 	}
+
 	return false;
 }
 
 void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
-	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		PropertyInfo pinfo = E->get();
-		if (!values.has(pinfo.name)) {
-			pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
+	if (build_failed) {
+		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+			p_properties->push_back(E->get());
 		}
-		p_properties->push_back(E->get());
+	} else {
+		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+			PropertyInfo pinfo = E->get();
+			if (!values.has(pinfo.name)) {
+				pinfo.usage |= PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE;
+			}
+			p_properties->push_back(E->get());
+		}
 	}
 }
 
@@ -426,11 +449,17 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 
 void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 
+	if (build_failed)
+		return;
+
 	if (script.is_valid()) {
 		script->get_script_method_list(p_list);
 	}
 }
 bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
+
+	if (build_failed)
+		return false;
 
 	if (script.is_valid()) {
 		return script->has_method(p_method);
@@ -439,6 +468,8 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
+
+	build_failed = false;
 
 	Set<StringName> new_values;
 	for (const List<PropertyInfo>::Element *E = p_properties.front(); E; E = E->next()) {
@@ -481,6 +512,51 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		owner->_change_notify();
 	}
 	//change notify
+}
+
+void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) {
+
+	if (build_failed) {
+		Map<StringName, Variant>::Element *E = values.find(p_name);
+
+		if (E) {
+			E->value() = p_value;
+		} else {
+			values.insert(p_name, p_value);
+		}
+
+		bool found = false;
+		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+			if (E->get().name == p_name) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			properties.push_back(PropertyInfo(p_value.get_type(), p_name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));
+		}
+	}
+
+	if (r_valid)
+		*r_valid = false; // Cannot change the value in either case
+}
+
+Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) {
+
+	if (build_failed) {
+		const Map<StringName, Variant>::Element *E = values.find(p_name);
+
+		if (E) {
+			if (r_valid)
+				*r_valid = true;
+			return E->value();
+		}
+	}
+
+	if (r_valid)
+		*r_valid = false;
+
+	return Variant();
 }
 
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :

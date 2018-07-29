@@ -115,6 +115,7 @@ public:
 
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return NULL; }
 	virtual bool instance_has(const Object *p_this) const = 0;
 
 	virtual bool has_source_code() const = 0;
@@ -175,6 +176,9 @@ public:
 	virtual Ref<Script> get_script() const = 0;
 
 	virtual bool is_placeholder() const { return false; }
+
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
@@ -319,6 +323,8 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	ScriptLanguage *language;
 	Ref<Script> script;
 
+	bool build_failed;
+
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
@@ -344,7 +350,13 @@ public:
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
+	void set_build_failed(bool p_build_failed) { build_failed = p_build_failed; }
+	bool get_build_failed() const { return build_failed; }
+
 	virtual bool is_placeholder() const { return true; }
+
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
