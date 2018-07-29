@@ -62,6 +62,7 @@
 #include "editor/import/editor_scene_importer_gltf.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_csv_translation.h"
+#include "editor/import/resource_importer_image.h"
 #include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
@@ -4663,6 +4664,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterTexture> import_texture;
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+
+		Ref<ResourceImporterImage> import_image;
+		import_image.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_image);
 
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instance();
