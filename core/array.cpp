@@ -355,17 +355,16 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
-Array Array::reduce(Object *p_obj, const StringName &p_function,const Variant &p_args) {
+Array Array::reduce(Object *p_obj, const StringName &p_function, const Variant &p_args) {
 	Array ret = Array();
 	StringName func = p_function;
 
 	for (int i = 0; i < this->size(); i++) {
 
 		Variant res = p_obj->call(
-			func,
-			this->get(i),
-			p_args
-		);
+				func,
+				this->get(i),
+				p_args);
 
 		if (res.get_type() != Variant::Type::BOOL) {
 			ERR_FAIL_V(ret);
