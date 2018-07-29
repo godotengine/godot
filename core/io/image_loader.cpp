@@ -107,3 +107,83 @@ void ImageLoader::add_image_format_loader(ImageFormatLoader *p_loader) {
 	ERR_FAIL_COND(loader_count >= MAX_LOADERS);
 	loader[loader_count++] = p_loader;
 }
+
+/////////////////
+
+RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		memdelete(f);
+		return RES();
+	}
+
+	uint8_t header[4] = { 0, 0, 0, 0 };
+	f->get_buffer(header, 4);
+
+	bool unrecognized = header[0] != 'G' || header[1] != 'D' || header[2] != 'I' || header[3] != 'M';
+	if (unrecognized) {
+		memdelete(f);
+		if (r_error) {
+			*r_error = ERR_FILE_UNRECOGNIZED;
+		}
+		ERR_FAIL_V(RES());
+	}
+
+	String extension = f->get_pascal_string();
+
+	int idx = -1;
+
+	for (int i = 0; i < ImageLoader::loader_count; i++) {
+		if (ImageLoader::loader[i]->recognize(extension)) {
+			idx = i;
+			break;
+		}
+	}
+
+	if (idx == -1) {
+		memdelete(f);
+		if (r_error) {
+			*r_error = ERR_FILE_UNRECOGNIZED;
+		}
+		ERR_FAIL_V(RES());
+	}
+
+	Ref<Image> image;
+	image.instance();
+
+	Error err = ImageLoader::loader[idx]->load_image(image, f, false, 1.0);
+
+	memdelete(f);
+
+	if (err != OK) {
+		if (r_error) {
+			*r_error = err;
+		}
+		return RES();
+	}
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return image;
+}
+
+void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("image");
+}
+
+bool ResourceFormatLoaderImage::handles_type(const String &p_type) const {
+
+	return p_type == "Image";
+}
+
+String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
+
+	return "Image";
+}
