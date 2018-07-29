@@ -803,7 +803,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			switch (p_tool) {
 				case TOOL_CREATE_2D_SCENE: new_node = memnew(Node2D); break;
 				case TOOL_CREATE_3D_SCENE: new_node = memnew(Spatial); break;
-				case TOOL_CREATE_USER_INTERFACE: new_node = memnew(Control); break;
+				case TOOL_CREATE_USER_INTERFACE: {
+					Control *node = memnew(Control);
+					node->set_anchors_and_margins_preset(PRESET_WIDE); //more useful for resizable UIs.
+					new_node = node;
+
+				} break;
 			}
 
 			editor_data->get_undo_redo().create_action("New Scene Root");
