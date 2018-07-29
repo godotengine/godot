@@ -31,6 +31,7 @@
 #include "packed_scene.h"
 
 #include "core/core_string_names.h"
+#include "engine.h"
 #include "io/resource_loader.h"
 #include "project_settings.h"
 #include "scene/2d/node_2d.h"
@@ -279,7 +280,12 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 						stray_instances.push_back(node); //can't be added, go to stray list
 					}
 				} else {
-					node->_set_name_nocheck(snames[n.name]);
+					if (Engine::get_singleton()->is_editor_hint()) {
+						//validate name if using editor, to avoid broken
+						node->set_name(snames[n.name]);
+					} else {
+						node->_set_name_nocheck(snames[n.name]);
+					}
 				}
 			}
 
