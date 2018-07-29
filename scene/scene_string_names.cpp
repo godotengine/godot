@@ -102,6 +102,8 @@ SceneStringNames::SceneStringNames() {
 	_update_scroll = StaticCString::create("_update_scroll");
 	_update_xform = StaticCString::create("_update_xform");
 
+	_clips_input = StaticCString::create("_clips_input");
+
 	_proxgroup_add = StaticCString::create("_proxgroup_add");
 	_proxgroup_remove = StaticCString::create("_proxgroup_remove");
 
