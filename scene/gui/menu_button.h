@@ -41,6 +41,7 @@ class MenuButton : public Button {
 	GDCLASS(MenuButton, Button);
 
 	bool clicked;
+	bool switch_on_hover;
 	bool disable_shortcuts;
 	PopupMenu *popup;
 
@@ -57,6 +58,8 @@ public:
 	virtual void pressed();
 
 	PopupMenu *get_popup() const;
+	void set_switch_on_hover(bool p_enabled);
+	bool is_switch_on_hover();
 	void set_disable_shortcuts(bool p_disabled);
 
 	MenuButton();

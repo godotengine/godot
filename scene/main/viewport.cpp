@@ -1961,10 +1961,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				// If the mouse is over a menu button, this menu will open automatically
 				// if there is already a pop-up menu open at the same hierarchical level.
-				if (popup_menu_parent && menu_button &&
-						popup_menu_parent->get_icon().is_null() &&
-						menu_button->get_icon().is_null() &&
-						(popup_menu->get_parent()->get_parent()->is_a_parent_of(menu_button) ||
+				if (popup_menu_parent && menu_button && popup_menu_parent->is_switch_on_hover() &&
+						!menu_button->is_disabled() && menu_button->is_switch_on_hover() &&
+						(popup_menu_parent->get_parent()->is_a_parent_of(menu_button) ||
 								menu_button->get_parent()->is_a_parent_of(popup_menu))) {
 
 					popup_menu->notification(Control::NOTIFICATION_MODAL_CLOSE);

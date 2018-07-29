@@ -1465,6 +1465,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
@@ -1519,6 +1520,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);

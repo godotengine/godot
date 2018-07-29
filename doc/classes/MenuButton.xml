@@ -27,6 +27,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover">
+			If [code]true[/code], when the cursor hovers above another MenuButton within the same parent which also has [code]switch_on_hover[/code] enabled, it will close the current MenuButton and open the other one.
+		</member>
+	</members>
 	<signals>
 		<signal name="about_to_show">
 			<description>

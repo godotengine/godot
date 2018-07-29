@@ -526,9 +526,8 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
-	//edit_menu->set_position(Point2(5, -1));
 	edit_menu->set_text(TTR("Edit"));
-
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
@@ -548,12 +547,11 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
-
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	search_menu = memnew(MenuButton);
-	//search_menu->set_position(Point2(38, -1));
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);

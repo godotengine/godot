@@ -3491,6 +3491,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/delete_selected"), EDIT_DELETE_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/toggle_breakpoint"), EDIT_TOGGLE_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/find_node_type"), EDIT_FIND_NODE_TYPE);
