@@ -304,6 +304,7 @@ public:
 	bool is_editable_instance(Node *p_node) const;
 	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
 	HashMap<NodePath, int> get_editable_instances() const;
+	bool is_editable_children_enabled();
 
 	/* NOTIFICATIONS */
 

@@ -1823,6 +1823,14 @@ HashMap<NodePath, int> Node::get_editable_instances() const {
 	return data.editable_instances;
 }
 
+bool Node::is_editable_children_enabled() {
+	if (!get_owner()) {
+		return false;
+	} else {
+		return get_owner()->is_editable_instance(this);
+	}
+}
+
 void Node::set_scene_instance_state(const Ref<SceneState> &p_state) {
 
 	data.instance_state = p_state;
@@ -2669,6 +2677,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_network_master"), &Node::get_network_master);
 
 	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);
+
+	ClassDB::bind_method(D_METHOD("is_editable_children_enabled"), &Node::is_editable_children_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
 	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
