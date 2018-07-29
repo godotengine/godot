@@ -142,6 +142,9 @@ public:
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
 
+	void set_cull_mask_bit(int p_layer, bool p_enable);
+	bool get_cull_mask_bit(int p_layer) const;
+
 	virtual Vector<Plane> get_frustum() const;
 
 	void set_environment(const Ref<Environment> &p_environment);

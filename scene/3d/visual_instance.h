@@ -73,6 +73,9 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
+	void set_layer_mask_bit(int p_layer, bool p_enable);
+	bool get_layer_mask_bit(int p_layer) const;
+
 	VisualInstance();
 	~VisualInstance();
 };
