@@ -252,9 +252,6 @@ void VisualServerViewport::draw_viewports() {
 	// process all our active interfaces
 	ARVRServer::get_singleton()->_process();
 
-	// process all our active interfaces
-	ARVRServer::get_singleton()->_process();
-
 	if (Engine::get_singleton()->is_editor_hint()) {
 		clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
 	}
