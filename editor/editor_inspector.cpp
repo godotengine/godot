@@ -1715,9 +1715,12 @@ void EditorInspector::update_property(const String &p_prop) {
 
 void EditorInspector::_clear() {
 
-	while (main_vbox->get_child_count()) {
-		memdelete(main_vbox->get_child(0));
+	for (int i = main_vbox->get_child_count() - 1; i >= 0; i--) {
+		Node *child = main_vbox->get_child(i);
+		main_vbox->remove_child(child);
+		child->queue_delete();
 	}
+
 	property_selected = StringName();
 	property_focusable = -1;
 	editor_property_map.clear();
