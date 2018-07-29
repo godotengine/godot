@@ -225,7 +225,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target) {
 	if (!p_render_target.is_valid() && storage->frame.current_rt && storage->frame.clear_request) {
 		//handle pending clear request, if the framebuffer was not cleared
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
-		print_line("unbind clear of: " + storage->frame.clear_request_color);
+
 		glClearColor(
 				storage->frame.clear_request_color.r,
 				storage->frame.clear_request_color.g,
