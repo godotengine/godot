@@ -1192,6 +1192,7 @@ void ProjectManager::_load_recent_projects() {
 		}
 
 		ProjectItem item(project, path, conf, last_modified, favorite, grayed);
+
 		if (favorite)
 			favorite_projects.push_back(item);
 		else
@@ -1207,6 +1208,7 @@ void ProjectManager::_load_recent_projects() {
 			projects.erase(E->get());
 		E = next;
 	}
+
 	for (List<ProjectItem>::Element *E = favorite_projects.back(); E; E = E->prev()) {
 		projects.push_front(E->get());
 	}
@@ -1782,50 +1784,35 @@ ProjectManager::ProjectManager() {
 
 	String cp;
 	cp += 0xA9;
-	cp += '0';
 	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2018 Juan Linietsky, Ariel Manzur & Godot Contributors");
-
-	HBoxContainer *top_hb = memnew(HBoxContainer);
-	vb->add_child(top_hb);
-	CenterContainer *ccl = memnew(CenterContainer);
-	Label *l = memnew(Label);
-	l->set_text(VERSION_NAME + String(" - ") + TTR("Project Manager"));
-	ccl->add_child(l);
-	top_hb->add_child(ccl);
-	top_hb->add_spacer();
-	l = memnew(Label);
-	String hash = String(VERSION_HASH);
-	if (hash.length() != 0)
-		hash = "." + hash.left(7);
-	l->set_text("v" VERSION_FULL_BUILD "" + hash);
-	l->set_align(Label::ALIGN_CENTER);
-	top_hb->add_child(l);
 
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(center_box);
 
 	tabs = memnew(TabContainer);
-	center_box->add_child(tabs);
 	tabs->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
+	center_box->add_child(tabs);
 
+	// Project list
 	HBoxContainer *tree_hb = memnew(HBoxContainer);
 	projects_hb = tree_hb;
 
 	projects_hb->set_name(TTR("Project List"));
 
-	tabs->add_child(tree_hb);
+	tabs->add_child(projects_hb);
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
 	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	tree_hb->add_child(search_tree_vb);
+	projects_hb->add_child(search_tree_vb);
 
 	HBoxContainer *search_box = memnew(HBoxContainer);
-	search_box->add_spacer(true);
 	project_filter = memnew(ProjectListFilter);
-	search_box->add_child(project_filter);
+	project_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	project_filter->connect("filter_changed", this, "_load_recent_projects");
 	project_filter->set_custom_minimum_size(Size2(250, 10));
+	search_box->add_child(project_filter);
 	search_tree_vb->add_child(search_box);
 
 	PanelContainer *pc = memnew(PanelContainer);
@@ -1837,8 +1824,9 @@ ProjectManager::ProjectManager() {
 	pc->add_child(scroll);
 	scroll->set_enable_h_scroll(false);
 
+	// Project list side buttons
 	VBoxContainer *tree_vb = memnew(VBoxContainer);
-	tree_hb->add_child(tree_vb);
+	projects_hb->add_child(tree_vb);
 	scroll_children = memnew(VBoxContainer);
 	scroll_children->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->add_child(scroll_children);
@@ -1896,6 +1884,12 @@ ProjectManager::ProjectManager() {
 
 	tree_vb->add_spacer();
 
+	Button *exit = memnew(Button);
+	exit->set_text(TTR("Exit"));
+	exit->connect("pressed", this, "_exit_dialog");
+	tree_vb->add_child(exit);
+
+	// Asset Library tab
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name(TTR("Templates"));
@@ -1905,12 +1899,28 @@ ProjectManager::ProjectManager() {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
 
-	HBoxContainer *settings_hb = memnew(HBoxContainer);
-	settings_hb->set_alignment(BoxContainer::ALIGN_END);
-	settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	// Top bar
+	HBoxContainer *top_right_hb = memnew(HBoxContainer);
+	top_right_hb->set_alignment(BoxContainer::ALIGN_BEGIN);
+	top_right_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	top_right_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+
+	Label *name_lbl = memnew(Label);
+	name_lbl->set_text(VERSION_NAME + String(" - ") + TTR("Project Manager"));
+	name_lbl->set_anchors_and_margins_preset(PRESET_TOP_WIDE);
+	name_lbl->set_h_grow_direction(Control::GROW_DIRECTION_BOTH);
+	name_lbl->set_align(Label::ALIGN_CENTER);
+	center_box->add_child(name_lbl);
+
+	Label *build_lbl = memnew(Label);
+	String hash = String(VERSION_HASH);
+	if (hash.length() != 0)
+		hash = "." + hash.left(7);
+	build_lbl->set_text("v" VERSION_FULL_BUILD "" + hash);
+	build_lbl->set_align(Label::ALIGN_CENTER);
+	top_right_hb->add_child(build_lbl);
 
 	language_btn = memnew(OptionButton);
-
 	Vector<String> editor_languages;
 	List<PropertyInfo> editor_settings_properties;
 	EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
@@ -1932,20 +1942,10 @@ ProjectManager::ProjectManager() {
 		}
 	}
 	language_btn->set_icon(get_icon("Environment", "EditorIcons"));
-
-	settings_hb->add_child(language_btn);
 	language_btn->connect("item_selected", this, "_language_selected");
+	top_right_hb->add_child(language_btn);
 
-	center_box->add_child(settings_hb);
-	settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
-
-	CenterContainer *cc = memnew(CenterContainer);
-	Button *cancel = memnew(Button);
-	cancel->set_text(TTR("Exit"));
-	cancel->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
-	cc->add_child(cancel);
-	cancel->connect("pressed", this, "_exit_dialog");
-	vb->add_child(cc);
+	center_box->add_child(top_right_hb);
 
 	//////////////////////////////////////////////////////////////
 
@@ -2057,8 +2057,10 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 
 void ProjectListFilter::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE)
+	if (p_what == NOTIFICATION_ENTER_TREE) {
 		clear_search_button->set_icon(get_icon("Close", "EditorIcons"));
+		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	}
 }
 
 void ProjectListFilter::_bind_methods() {
@@ -2077,7 +2079,7 @@ ProjectListFilter::ProjectListFilter() {
 	_current_filter = FILTER_NAME;
 
 	filter_option = memnew(OptionButton);
-	filter_option->set_custom_minimum_size(Size2(80 * EDSCALE, 10 * EDSCALE));
+	filter_option->set_custom_minimum_size(Size2(100 * EDSCALE, 10 * EDSCALE));
 	filter_option->set_clip_text(true);
 	filter_option->connect("item_selected", this, "_filter_option_selected");
 	add_child(filter_option);
