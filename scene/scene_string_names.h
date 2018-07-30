@@ -127,6 +127,8 @@ public:
 	StringName _update_scroll;
 	StringName _update_xform;
 
+	StringName _clips_input;
+
 	StringName _proxgroup_add;
 	StringName _proxgroup_remove;
 

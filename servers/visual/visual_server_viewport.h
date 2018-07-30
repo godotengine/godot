@@ -188,6 +188,7 @@ public:
 	virtual int viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw);
 
+	void set_default_clear_color(const Color &p_color);
 	void draw_viewports();
 
 	bool free(RID p_rid);

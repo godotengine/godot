@@ -252,7 +252,9 @@ void VisualServerViewport::draw_viewports() {
 	// process all our active interfaces
 	ARVRServer::get_singleton()->_process();
 
-	clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
+	if (Engine::get_singleton()->is_editor_hint()) {
+		clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
+	}
 
 	//sort viewports
 	active_viewports.sort_custom<ViewportSort>();
@@ -658,6 +660,10 @@ bool VisualServerViewport::free(RID p_rid) {
 	}
 
 	return false;
+}
+
+void VisualServerViewport::set_default_clear_color(const Color &p_color) {
+	clear_color = p_color;
 }
 
 VisualServerViewport::VisualServerViewport() {

@@ -240,7 +240,7 @@ void Node::_propagate_enter_tree() {
 
 void Node::_propagate_exit_tree() {
 
-	//block while removing children
+//block while removing children
 
 #ifdef DEBUG_ENABLED
 
@@ -723,6 +723,17 @@ const Map<StringName, MultiplayerAPI::RPCMode>::Element *Node::get_node_rpc_mode
 
 const Map<StringName, MultiplayerAPI::RPCMode>::Element *Node::get_node_rset_mode(const StringName &p_property) {
 	return data.rpc_properties.find(p_property);
+}
+
+bool Node::can_process_notification(int p_what) const {
+	switch (p_what) {
+		case NOTIFICATION_PHYSICS_PROCESS: return data.physics_process;
+		case NOTIFICATION_PROCESS: return data.idle_process;
+		case NOTIFICATION_INTERNAL_PROCESS: return data.idle_process_internal;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: return data.physics_process_internal;
+	}
+
+	return true;
 }
 
 bool Node::can_process() const {

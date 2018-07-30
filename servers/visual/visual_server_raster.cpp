@@ -161,6 +161,7 @@ void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &
 	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale);
 }
 void VisualServerRaster::set_default_clear_color(const Color &p_color) {
+	VSG::viewport->set_default_clear_color(p_color);
 }
 
 bool VisualServerRaster::has_feature(Features p_feature) const {
