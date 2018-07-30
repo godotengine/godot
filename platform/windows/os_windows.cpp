@@ -2309,6 +2309,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		if (r_exitcode)
 			*r_exitcode = ret;
 
+		CloseHandle(pi.pi.hProcess);
+		CloseHandle(pi.pi.hThread);
 	} else {
 
 		ProcessID pid = pi.pi.dwProcessId;
@@ -2322,17 +2324,15 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
 
-	HANDLE h;
+	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
 
-	if (process_map->has(p_pid)) {
-		h = (*process_map)[p_pid].pi.hProcess;
-		process_map->erase(p_pid);
-	} else {
+	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
+	process_map->erase(p_pid);
 
-		ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
-	};
+	const int ret = TerminateProcess(pi.hProcess, 0);
 
-	int ret = TerminateProcess(h, 0);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 
 	return ret != 0 ? OK : FAILED;
 };
