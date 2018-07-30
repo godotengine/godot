@@ -16,6 +16,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Returns the length of the audio stream, in seconds.
 			</description>
 		</method>
 	</methods>
