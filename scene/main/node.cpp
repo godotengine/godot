@@ -108,6 +108,10 @@ void Node::_notification(int p_notification) {
 				memdelete(data.path_cache);
 				data.path_cache = NULL;
 			}
+
+			if (is_inside_tree()) {
+				emit_signal("path_changed");
+			}
 		} break;
 		case NOTIFICATION_READY: {
 
@@ -920,6 +924,7 @@ void Node::set_name(const String &p_name) {
 	_validate_node_name(name);
 
 	ERR_FAIL_COND(name == "");
+
 	data.name = name;
 
 	if (data.parent) {
@@ -932,6 +937,7 @@ void Node::set_name(const String &p_name) {
 	if (is_inside_tree()) {
 
 		emit_signal("renamed");
+
 		get_tree()->tree_changed();
 	}
 }
@@ -1801,18 +1807,32 @@ String Node::get_filename() const {
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
-
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_COND(!is_a_parent_of(p_node));
 	NodePath p = get_path_to(p_node);
 	if (!p_editable) {
-		data.editable_instances.erase(p);
-		// Avoid this flag being needlessly saved;
-		// also give more visual feedback if editable children is re-enabled
-		set_display_folded(false);
+		remove_editable_instance_by_path(p);
+
+		if (p_node->is_connected("path_changed", this, "reconnect_editable_instance"))
+			p_node->disconnect("path_changed", this, "reconnect_editable_instance");
 	} else {
 		data.editable_instances[p] = true;
+		if (!p_node->is_connected("path_changed", this, "reconnect_editable_instance"))
+			p_node->connect("path_changed", this, "reconnect_editable_instance", varray(p_node, p));
 	}
+}
+
+void Node::remove_editable_instance_by_path(NodePath path) {
+	data.editable_instances.erase(path);
+	// Avoid this flag being needlessly saved;
+	// also give more visual feedback if editable children is re-enabled
+	set_display_folded(false);
+}
+
+void Node::reconnect_editable_instance(Node *p_node, NodePath prev_path) {
+	remove_editable_instance_by_path(prev_path);
+
+	set_editable_instance(p_node, true);
 }
 
 bool Node::is_editable_instance(Node *p_node) const {
@@ -2072,7 +2092,6 @@ Node *Node::duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const {
 #endif
 
 void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const {
-
 	if (get_owner() != get_parent()->get_owner())
 		return;
 
@@ -2655,6 +2674,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position_in_parent"), &Node::get_position_in_parent);
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
+	ClassDB::bind_method(D_METHOD("set_editable_instance"), &Node::set_editable_instance);
+	ClassDB::bind_method(D_METHOD("reconnect_editable_instance"), &Node::reconnect_editable_instance);
 
 	ClassDB::bind_method(D_METHOD("set_process_internal", "enable"), &Node::set_process_internal);
 	ClassDB::bind_method(D_METHOD("is_processing_internal"), &Node::is_processing_internal);
@@ -2743,6 +2764,7 @@ void Node::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
+	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
