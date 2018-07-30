@@ -114,7 +114,11 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 
 Variant Dictionary::get(const Variant &p_key) const {
 
-	return get_valid(p_key);
+	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
+
+	if (!E)
+		return Variant();
+	return E.get();
 }
 
 int Dictionary::size() const {
