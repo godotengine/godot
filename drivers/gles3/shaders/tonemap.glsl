@@ -163,7 +163,7 @@ vec3 tonemap_aces(vec3 color, float white)
 
 vec3 tonemap_reinhard(vec3 color, float white)
 {
-	return clamp((color) / (1.0f + color) * (1.0f + (color / (white))), vec3(0.0f), vec3(1.0f)); // whitepoint is probably not in linear space here!
+	return clamp((white + vec3(1.0f)) * color / ((color + vec3(1.0f)) * white), vec3(0.0f), vec3(1.0f));
 }
 
 vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped input in range [0;1]
