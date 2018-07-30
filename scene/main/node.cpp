@@ -244,7 +244,7 @@ void Node::_propagate_enter_tree() {
 
 void Node::_propagate_exit_tree() {
 
-//block while removing children
+	//block while removing children
 
 #ifdef DEBUG_ENABLED
 
@@ -1815,10 +1815,14 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 
 		if (p_node->is_connected("path_changed", this, "reconnect_editable_instance"))
 			p_node->disconnect("path_changed", this, "reconnect_editable_instance");
+		if (p_node->is_connected("tree_entered", this, "reconnect_editable_instance"))
+			p_node->disconnect("tree_entered", this, "reconnect_editable_instance");
 	} else {
 		data.editable_instances[p] = true;
 		if (!p_node->is_connected("path_changed", this, "reconnect_editable_instance"))
 			p_node->connect("path_changed", this, "reconnect_editable_instance", varray(p_node, p));
+		if (!p_node->is_connected("tree_entered", this, "reconnect_editable_instance"))
+			p_node->connect("tree_entered", this, "reconnect_editable_instance", varray(p_node, p));
 	}
 }
 
@@ -2764,6 +2768,7 @@ void Node::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
+	ADD_SIGNAL(MethodInfo("duplicated"));
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
