@@ -238,7 +238,7 @@ void Node::_propagate_enter_tree() {
 
 void Node::_propagate_exit_tree() {
 
-	//block while removing children
+//block while removing children
 
 #ifdef DEBUG_ENABLED
 
@@ -988,6 +988,17 @@ bool Node::can_call_rset(const StringName &p_property, int p_from) const {
 	ERR_PRINTS("RSET from " + itos(p_from) + " on unauthorized property attempted: " + String(p_property) + " on base: " + String(Variant(this)));
 
 	return false;
+}
+
+bool Node::can_process_notification(int p_what) const {
+	switch (p_what) {
+		case NOTIFICATION_PHYSICS_PROCESS: return data.physics_process;
+		case NOTIFICATION_PROCESS: return data.idle_process;
+		case NOTIFICATION_INTERNAL_PROCESS: return data.idle_process_internal;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: return data.physics_process_internal;
+	}
+
+	return true;
 }
 
 bool Node::can_process() const {
