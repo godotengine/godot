@@ -87,6 +87,17 @@
 				Return the list of values in the [code]Dictionary[/code].
 			</description>
 		</method>
+		<method name="get">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<argument index="1" name="default" type="Variant" default="null">
+			</argument>
+			<description>
+				Returns the current value for the specified key in the [code]Dictionary[/code]. If the key does not exist, the method returns the value of the optional default argument, or Null if it is omitted.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>

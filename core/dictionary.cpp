@@ -112,6 +112,15 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 	return E.get();
 }
 
+Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
+	const Variant *result = getptr(p_key);
+	if (!result) {
+		return p_default;
+	}
+
+	return *result;
+}
+
 int Dictionary::size() const {
 
 	return _p->variant_map.size();
