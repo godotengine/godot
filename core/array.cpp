@@ -366,7 +366,7 @@ Array Array::filter(Object *p_obj, const StringName &p_function, const Variant &
 				this->get(i),
 				p_args);
 
-		if (res.get_type() != Variant::Type::BOOL) {
+		if (res.get_type() != Variant::BOOL) {
 			ERR_FAIL_V(ret);
 		}
 
