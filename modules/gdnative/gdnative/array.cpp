@@ -314,13 +314,13 @@ godot_int GDAPI godot_array_bsearch_custom(godot_array *p_self, const godot_vari
 	return self->bsearch_custom((const Variant *)p_value, (Object *)p_obj, *func, p_before);
 }
 
-godot_array GDAPI godot_array_reduce(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
+godot_array GDAPI godot_array_filter(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
 	godot_array r;
 	Variant *res = (Variant *)&r;
 	memnew_placement(res, Array);
-	*res = self->reduce((Object *)p_obj, *func, (Variant) * (Array *)p_args);
+	*res = self->filter((Object *)p_obj, *func, (Variant) * (Array *)p_args);
 	return r;
 }
 

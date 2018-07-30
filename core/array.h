@@ -90,7 +90,7 @@ public:
 
 	Array duplicate(bool p_deep = false) const;
 
-	Array reduce(Object *p_obj, const StringName &p_function, const Variant &p_args);
+	Array filter(Object *p_obj, const StringName &p_function, const Variant &p_args);
 	Array map(Object *p_obj, const StringName &p_function, const Variant &p_args);
 
 	Array(const Array &p_from);

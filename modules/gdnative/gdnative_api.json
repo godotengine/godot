@@ -2645,7 +2645,7 @@
 				]
 			},
 			{
-				"name" : "godot_array_reduce",
+				"name" : "godot_array_filter",
 				"return_type" : "godot_array",
 				"arguments" : [
 					[ "godot_array *", "p_self" ],

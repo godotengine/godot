@@ -355,7 +355,7 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
-Array Array::reduce(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+Array Array::filter(Object *p_obj, const StringName &p_function, const Variant &p_args) {
 	Array ret;
 	StringName func = p_function;
 
