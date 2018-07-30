@@ -1826,6 +1826,12 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	}
 }
 
+void Node::make_editable() {
+	ERR_FAIL_NULL(get_owner());
+
+	get_owner()->set_editable_instance(this, true);
+}
+
 void Node::remove_editable_instance_by_path(NodePath path) {
 	data.editable_instances.erase(path);
 	// Avoid this flag being needlessly saved;
@@ -1839,7 +1845,7 @@ void Node::reconnect_editable_instance(Node *p_node, NodePath prev_path) {
 	set_editable_instance(p_node, true);
 }
 
-bool Node::is_editable_instance(Node *p_node) const {
+bool Node::is_editable_instance(const Node *p_node) const {
 
 	if (!p_node)
 		return false; //easier, null is never editable :)
@@ -2066,6 +2072,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			parent->move_child(dup, pos);
 		}
 	}
+
+	if (get_owner() && get_owner()->is_editable_instance(this))
+		node->connect("tree_entered", node, "make_editable", varray(), CONNECT_ONESHOT | CONNECT_DEFERRED);
 
 	return node;
 }
@@ -2680,6 +2689,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
 	ClassDB::bind_method(D_METHOD("set_editable_instance"), &Node::set_editable_instance);
 	ClassDB::bind_method(D_METHOD("reconnect_editable_instance"), &Node::reconnect_editable_instance);
+	ClassDB::bind_method(D_METHOD("make_editable"), &Node::make_editable);
 
 	ClassDB::bind_method(D_METHOD("set_process_internal", "enable"), &Node::set_process_internal);
 	ClassDB::bind_method(D_METHOD("is_processing_internal"), &Node::is_processing_internal);
