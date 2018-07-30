@@ -245,6 +245,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				case Variant::AABB: SET_FROM_STRUCT_AND_BREAK(AABB);
 				case Variant::BASIS: SET_FROM_STRUCT_AND_BREAK(Basis);
 				case Variant::TRANSFORM: SET_FROM_STRUCT_AND_BREAK(Transform);
+				case Variant::AUDIO_FRAME: SET_FROM_STRUCT_AND_BREAK(AudioFrame);
 				case Variant::COLOR: SET_FROM_STRUCT_AND_BREAK(Color);
 				case Variant::NODE_PATH: {
 					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator NodePath());

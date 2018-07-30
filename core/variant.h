@@ -37,6 +37,7 @@
 
 #include "aabb.h"
 #include "array.h"
+#include "audio_frame.h"
 #include "color.h"
 #include "dictionary.h"
 #include "dvector.h"
@@ -93,22 +94,23 @@ public:
 		AABB,
 		BASIS,
 		TRANSFORM,
+		AUDIO_FRAME,
 
 		// misc types
-		COLOR,
-		NODE_PATH, // 15
+		COLOR, // 15
+		NODE_PATH,
 		_RID,
 		OBJECT,
 		DICTIONARY,
-		ARRAY,
+		ARRAY, // 20
 
 		// arrays
-		POOL_BYTE_ARRAY, // 20
+		POOL_BYTE_ARRAY,
 		POOL_INT_ARRAY,
 		POOL_REAL_ARRAY,
 		POOL_STRING_ARRAY,
-		POOL_VECTOR2_ARRAY,
-		POOL_VECTOR3_ARRAY, // 25
+		POOL_VECTOR2_ARRAY, // 25
+		POOL_VECTOR3_ARRAY,
 		POOL_COLOR_ARRAY,
 
 		VARIANT_MAX
@@ -188,6 +190,7 @@ public:
 	operator Quat() const;
 	operator Basis() const;
 	operator Transform() const;
+	operator AudioFrame() const;
 	operator Transform2D() const;
 
 	operator Color() const;
@@ -259,6 +262,7 @@ public:
 	Variant(const Basis &p_transform);
 	Variant(const Transform2D &p_transform);
 	Variant(const Transform &p_transform);
+	Variant(const AudioFrame &p_frame);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_path);
 	Variant(const RefPtr &p_resource);

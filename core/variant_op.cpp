@@ -52,6 +52,7 @@
 	CASE_TYPE(PREFIX, OP, AABB)               \
 	CASE_TYPE(PREFIX, OP, BASIS)              \
 	CASE_TYPE(PREFIX, OP, TRANSFORM)          \
+	CASE_TYPE(PREFIX, OP, AUDIO_FRAME)        \
 	CASE_TYPE(PREFIX, OP, COLOR)              \
 	CASE_TYPE(PREFIX, OP, NODE_PATH)          \
 	CASE_TYPE(PREFIX, OP, _RID)               \
@@ -85,6 +86,7 @@
 		TYPE(PREFIX, OP, AABB),              \
 		TYPE(PREFIX, OP, BASIS),              \
 		TYPE(PREFIX, OP, TRANSFORM),          \
+		TYPE(PREFIX, OP, AUDIO_FRAME),        \
 		TYPE(PREFIX, OP, COLOR),              \
 		TYPE(PREFIX, OP, NODE_PATH),          \
 		TYPE(PREFIX, OP, _RID),               \
@@ -101,32 +103,32 @@
 }
 /* clang-format on */
 
-#define CASES(PREFIX) static const void *switch_table_##PREFIX[25][27] = { \
-	TYPES(PREFIX, OP_EQUAL),                                               \
-	TYPES(PREFIX, OP_NOT_EQUAL),                                           \
-	TYPES(PREFIX, OP_LESS),                                                \
-	TYPES(PREFIX, OP_LESS_EQUAL),                                          \
-	TYPES(PREFIX, OP_GREATER),                                             \
-	TYPES(PREFIX, OP_GREATER_EQUAL),                                       \
-	TYPES(PREFIX, OP_ADD),                                                 \
-	TYPES(PREFIX, OP_SUBTRACT),                                            \
-	TYPES(PREFIX, OP_MULTIPLY),                                            \
-	TYPES(PREFIX, OP_DIVIDE),                                              \
-	TYPES(PREFIX, OP_NEGATE),                                              \
-	TYPES(PREFIX, OP_POSITIVE),                                            \
-	TYPES(PREFIX, OP_MODULE),                                              \
-	TYPES(PREFIX, OP_STRING_CONCAT),                                       \
-	TYPES(PREFIX, OP_SHIFT_LEFT),                                          \
-	TYPES(PREFIX, OP_SHIFT_RIGHT),                                         \
-	TYPES(PREFIX, OP_BIT_AND),                                             \
-	TYPES(PREFIX, OP_BIT_OR),                                              \
-	TYPES(PREFIX, OP_BIT_XOR),                                             \
-	TYPES(PREFIX, OP_BIT_NEGATE),                                          \
-	TYPES(PREFIX, OP_AND),                                                 \
-	TYPES(PREFIX, OP_OR),                                                  \
-	TYPES(PREFIX, OP_XOR),                                                 \
-	TYPES(PREFIX, OP_NOT),                                                 \
-	TYPES(PREFIX, OP_IN),                                                  \
+#define CASES(PREFIX) static const void *switch_table_##PREFIX[OP_MAX][VARIANT_MAX] = { \
+	TYPES(PREFIX, OP_EQUAL),                                                            \
+	TYPES(PREFIX, OP_NOT_EQUAL),                                                        \
+	TYPES(PREFIX, OP_LESS),                                                             \
+	TYPES(PREFIX, OP_LESS_EQUAL),                                                       \
+	TYPES(PREFIX, OP_GREATER),                                                          \
+	TYPES(PREFIX, OP_GREATER_EQUAL),                                                    \
+	TYPES(PREFIX, OP_ADD),                                                              \
+	TYPES(PREFIX, OP_SUBTRACT),                                                         \
+	TYPES(PREFIX, OP_MULTIPLY),                                                         \
+	TYPES(PREFIX, OP_DIVIDE),                                                           \
+	TYPES(PREFIX, OP_NEGATE),                                                           \
+	TYPES(PREFIX, OP_POSITIVE),                                                         \
+	TYPES(PREFIX, OP_MODULE),                                                           \
+	TYPES(PREFIX, OP_STRING_CONCAT),                                                    \
+	TYPES(PREFIX, OP_SHIFT_LEFT),                                                       \
+	TYPES(PREFIX, OP_SHIFT_RIGHT),                                                      \
+	TYPES(PREFIX, OP_BIT_AND),                                                          \
+	TYPES(PREFIX, OP_BIT_OR),                                                           \
+	TYPES(PREFIX, OP_BIT_XOR),                                                          \
+	TYPES(PREFIX, OP_BIT_NEGATE),                                                       \
+	TYPES(PREFIX, OP_AND),                                                              \
+	TYPES(PREFIX, OP_OR),                                                               \
+	TYPES(PREFIX, OP_XOR),                                                              \
+	TYPES(PREFIX, OP_NOT),                                                              \
+	TYPES(PREFIX, OP_IN),                                                               \
 }
 
 #define SWITCH(PREFIX, op, val) goto *switch_table_##PREFIX[op][val];
@@ -469,6 +471,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, AABB, ==, _aabb);
 			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, BASIS, ==, _basis);
 			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, TRANSFORM, ==, _transform);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, AUDIO_FRAME, ==, AudioFrame);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, COLOR, ==, Color);
 			DEFAULT_OP_STR_NULL(math, OP_EQUAL, NODE_PATH, ==, NodePath);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, _RID, ==, RID);
@@ -559,6 +562,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, AABB, !=, _aabb);
 			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, BASIS, !=, _basis);
 			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, TRANSFORM, !=, _transform);
+			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, AUDIO_FRAME, !=, AudioFrame);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, COLOR, !=, Color);
 			DEFAULT_OP_STR_NULL(math, OP_NOT_EQUAL, NODE_PATH, !=, NodePath);
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, _RID, !=, RID);
@@ -616,6 +620,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_STR(math, OP_LESS, STRING, <, String);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2, <, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3, <, Vector3);
+			DEFAULT_OP_LOCALMEM(math, OP_LESS, AUDIO_FRAME, <, AudioFrame);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_BYTE_ARRAY, uint8_t);
 			DEFAULT_OP_ARRAY_LT(math, OP_LESS, POOL_INT_ARRAY, int);
@@ -651,6 +656,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_STR(math, OP_LESS_EQUAL, STRING, <=, String);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR2, <=, Vector2);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR3, <=, Vector3);
+			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, AUDIO_FRAME, <=, AudioFrame);
 			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, _RID, <=, RID);
 
 			CASE_TYPE(math, OP_LESS_EQUAL, NIL)
@@ -720,6 +726,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_STR_REV(math, OP_GREATER, STRING, <, String);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2, <, Vector2);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3, <, Vector3);
+			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, AUDIO_FRAME, <, AudioFrame);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_BYTE_ARRAY, uint8_t);
 			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, POOL_INT_ARRAY, int);
@@ -755,6 +762,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_STR_REV(math, OP_GREATER_EQUAL, STRING, <=, String);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR2, <=, Vector2);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR3, <=, Vector3);
+			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, AUDIO_FRAME, <=, AudioFrame);
 			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, _RID, <=, RID);
 
 			CASE_TYPE(math, OP_GREATER_EQUAL, NIL)
@@ -822,6 +830,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_ADD, AABB)
 			CASE_TYPE(math, OP_ADD, BASIS)
 			CASE_TYPE(math, OP_ADD, TRANSFORM)
+			CASE_TYPE(math, OP_ADD, AUDIO_FRAME)
 			CASE_TYPE(math, OP_ADD, NODE_PATH)
 			CASE_TYPE(math, OP_ADD, _RID)
 			CASE_TYPE(math, OP_ADD, OBJECT)
@@ -846,6 +855,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_SUBTRACT, AABB)
 			CASE_TYPE(math, OP_SUBTRACT, BASIS)
 			CASE_TYPE(math, OP_SUBTRACT, TRANSFORM)
+			CASE_TYPE(math, OP_SUBTRACT, AUDIO_FRAME)
 			CASE_TYPE(math, OP_SUBTRACT, NODE_PATH)
 			CASE_TYPE(math, OP_SUBTRACT, _RID)
 			CASE_TYPE(math, OP_SUBTRACT, OBJECT)
@@ -918,6 +928,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2, *, Vector2);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR3, *, Vector3);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, COLOR, *, Color);
+			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, AUDIO_FRAME, *, AudioFrame);
 
 			CASE_TYPE(math, OP_MULTIPLY, NIL)
 			CASE_TYPE(math, OP_MULTIPLY, BOOL)
@@ -958,6 +969,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2, /, Vector2);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR3, /, Vector3);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, COLOR, /, Color);
+			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, AUDIO_FRAME, /, AudioFrame);
 
 			CASE_TYPE(math, OP_DIVIDE, NIL)
 			CASE_TYPE(math, OP_DIVIDE, BOOL)
@@ -990,6 +1002,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, PLANE, Plane);
 			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, QUAT, Quat);
 			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR2, Vector2);
+			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, AUDIO_FRAME, AudioFrame);
 
 			CASE_TYPE(math, OP_POSITIVE, NIL)
 			CASE_TYPE(math, OP_POSITIVE, BOOL)
@@ -1024,6 +1037,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, PLANE, Plane);
 			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, QUAT, Quat);
 			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, COLOR, Color);
+			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, AUDIO_FRAME, AudioFrame);
 
 			CASE_TYPE(math, OP_NEGATE, NIL)
 			CASE_TYPE(math, OP_NEGATE, BOOL)
@@ -1092,6 +1106,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_MODULE, AABB)
 			CASE_TYPE(math, OP_MODULE, BASIS)
 			CASE_TYPE(math, OP_MODULE, TRANSFORM)
+			CASE_TYPE(math, OP_MODULE, AUDIO_FRAME)
 			CASE_TYPE(math, OP_MODULE, COLOR)
 			CASE_TYPE(math, OP_MODULE, NODE_PATH)
 			CASE_TYPE(math, OP_MODULE, _RID)
@@ -1384,7 +1399,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 				}
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			if (p_value.type == Variant::VECTOR3) {
@@ -1609,7 +1624,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 				return v->w;
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			const ::AABB *v = _data._aabb;
@@ -1809,7 +1824,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break; // 5
+		} break;
 		case RECT2: {
 
 			if (p_value.type != Variant::VECTOR2)
@@ -1982,7 +1997,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			if (p_value.type != Variant::VECTOR3)
@@ -2090,6 +2105,41 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			}
 
 		} break;
+		case AUDIO_FRAME: {
+
+			if (p_value.type != Variant::REAL)
+				return;
+
+			if (p_index.get_type() == Variant::REAL) {
+				// scalar index
+				int idx = p_index;
+
+				if (idx < 0)
+					idx += 2;
+				if (idx >= 0 && idx < 2) {
+
+					AudioFrame *v = reinterpret_cast<AudioFrame *>(_data._mem);
+					valid = true;
+					(*v)[idx] = p_value;
+					return;
+				}
+			} else if (p_index.get_type() == Variant::STRING) {
+				//scalar name
+
+				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
+				AudioFrame *v = reinterpret_cast<AudioFrame *>(_data._mem);
+				if (*str == "l") {
+					valid = true;
+					v->l = p_value;
+					return;
+				} else if (*str == "r") {
+					valid = true;
+					v->r = p_value;
+					return;
+				}
+			}
+
+		} break;
 		case COLOR: {
 
 			if (p_value.type != Variant::INT && p_value.type != Variant::REAL)
@@ -2158,7 +2208,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case NODE_PATH: {
-		} break; // 15
+		} break;
 		case _RID: {
 		} break;
 		case OBJECT: {
@@ -2193,12 +2243,12 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			valid = true; //always valid, i guess? should this really be ok?
 			return;
 		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
+			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return )
 			DEFAULT_OP_DVECTOR_SET(POOL_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_STRING_ARRAY, String, p_value.type != Variant::STRING)
-			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2) // 25
+			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
 			DEFAULT_OP_DVECTOR_SET(POOL_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
 			DEFAULT_OP_DVECTOR_SET(POOL_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
 		default:
@@ -2271,7 +2321,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			}
 
-		} break; // 5
+		} break;
 		case RECT2: {
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2400,7 +2450,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			}
 
-		} break; // 10
+		} break;
 		case AABB: {
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2479,6 +2529,34 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			}
 
 		} break;
+		case AUDIO_FRAME: {
+
+			if (p_index.get_type() == Variant::REAL) {
+				// scalar index
+				int idx = p_index;
+				if (idx < 0)
+					idx += 2;
+				if (idx >= 0 && idx < 2) {
+
+					const AudioFrame *v = reinterpret_cast<const AudioFrame *>(_data._mem);
+					valid = true;
+					return (*v)[idx];
+				}
+			} else if (p_index.get_type() == Variant::STRING) {
+				//scalar name
+
+				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
+				const AudioFrame *v = reinterpret_cast<const AudioFrame *>(_data._mem);
+				if (*str == "l") {
+					valid = true;
+					return v->l;
+				} else if (*str == "r") {
+					valid = true;
+					return v->r;
+				}
+			}
+
+		} break;
 		case COLOR: {
 
 			if (p_index.get_type() == Variant::STRING) {
@@ -2533,7 +2611,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 
 		} break;
 		case NODE_PATH: {
-		} break; // 15
+		} break;
 		case _RID: {
 		} break;
 		case OBJECT: {
@@ -2567,12 +2645,12 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				return *res;
 			}
 		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index]) // 20
+			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index])
 			DEFAULT_OP_DVECTOR_GET(POOL_BYTE_ARRAY, uint8_t)
 			DEFAULT_OP_DVECTOR_GET(POOL_INT_ARRAY, int)
 			DEFAULT_OP_DVECTOR_GET(POOL_REAL_ARRAY, real_t)
 			DEFAULT_OP_DVECTOR_GET(POOL_STRING_ARRAY, String)
-			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR2_ARRAY, Vector2) // 25
+			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR2_ARRAY, Vector2)
 			DEFAULT_OP_DVECTOR_GET(POOL_VECTOR3_ARRAY, Vector3)
 			DEFAULT_OP_DVECTOR_GET(POOL_COLOR_ARRAY, Color)
 		default:
@@ -2635,7 +2713,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 			return dic->has(p_index);
 
-		} break; // 20
+		} break;
 		case ARRAY: {
 
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
@@ -2797,7 +2875,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::REAL, "x"));
 			p_list->push_back(PropertyInfo(Variant::REAL, "y"));
 
-		} break; // 5
+		} break;
 		case RECT2: {
 
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, "position"));
@@ -2835,7 +2913,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::REAL, "z"));
 			p_list->push_back(PropertyInfo(Variant::REAL, "w"));
 
-		} break; // 10
+		} break;
 		case AABB: {
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "position"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "size"));
@@ -2854,6 +2932,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::VECTOR3, "origin"));
 
 		} break;
+		case AUDIO_FRAME: {
+
+			p_list->push_back(PropertyInfo(Variant::AUDIO_FRAME, "l"));
+			p_list->push_back(PropertyInfo(Variant::AUDIO_FRAME, "r"));
+
+		} break;
 		case COLOR: {
 			p_list->push_back(PropertyInfo(Variant::REAL, "r"));
 			p_list->push_back(PropertyInfo(Variant::REAL, "g"));
@@ -2869,7 +2953,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 		} break;
 		case NODE_PATH: {
-		} break; // 15
+		} break;
 		case _RID: {
 		} break;
 		case OBJECT: {
@@ -2901,12 +2985,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 				}
 			}
 		} break;
-		case ARRAY: // 20
+		case ARRAY:
 		case POOL_BYTE_ARRAY:
 		case POOL_INT_ARRAY:
 		case POOL_REAL_ARRAY:
 		case POOL_STRING_ARRAY:
-		case POOL_VECTOR2_ARRAY: // 25
+		case POOL_VECTOR2_ARRAY:
 		case POOL_VECTOR3_ARRAY:
 		case POOL_COLOR_ARRAY: {
 
@@ -3624,6 +3708,10 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			return;
 		case TRANSFORM: {
 			r_dst = a._data._transform->interpolate_with(*b._data._transform, c);
+		}
+			return;
+		case AUDIO_FRAME: {
+			r_dst = reinterpret_cast<const AudioFrame *>(a._data._mem)->linear_interpolate(*reinterpret_cast<const AudioFrame *>(b._data._mem), c);
 		}
 			return;
 		case COLOR: {

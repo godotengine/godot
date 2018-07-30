@@ -313,6 +313,18 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4 * 12;
 
 		} break;
+		case Variant::AUDIO_FRAME: {
+
+			ERR_FAIL_COND_V(len < 4 * 2, ERR_INVALID_DATA);
+			AudioFrame val;
+			val.l = decode_float(&buf[0]);
+			val.r = decode_float(&buf[4]);
+			r_variant = val;
+
+			if (r_len)
+				(*r_len) += 4 * 2;
+
+		} break;
 
 		// misc types
 		case Variant::COLOR: {
@@ -1060,6 +1072,17 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += 12 * 4;
+
+		} break;
+		case Variant::AUDIO_FRAME: {
+
+			if (buf) {
+				AudioFrame af = p_variant;
+				encode_float(af.l, &buf[0]);
+				encode_float(af.r, &buf[4]);
+			}
+
+			r_len += 4 * 2;
 
 		} break;
 

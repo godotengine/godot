@@ -113,6 +113,11 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "Transform";
 
 		} break;
+		case AUDIO_FRAME: {
+
+			return "AudioFrame";
+
+		} break;
 
 		// misc types
 		case COLOR: {
@@ -280,6 +285,16 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				TRANSFORM2D,
 				QUAT,
 				BASIS,
+				NIL
+			};
+
+			valid_types = valid;
+
+		} break;
+		case AUDIO_FRAME: {
+
+			static const Type valid[] = {
+				STRING,
 				NIL
 			};
 
@@ -532,6 +547,16 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			valid_types = valid;
 
 		} break;
+		case AUDIO_FRAME: {
+
+			static const Type valid[] = {
+				STRING,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
 
 		case COLOR: {
 
@@ -774,6 +799,11 @@ bool Variant::is_zero() const {
 			return *_data._transform == Transform();
 
 		} break;
+		case AUDIO_FRAME: {
+
+			return *reinterpret_cast<const AudioFrame *>(_data._mem) == AudioFrame();
+
+		} break;
 
 		// misc types
 		case COLOR: {
@@ -895,6 +925,11 @@ bool Variant::is_one() const {
 			return *reinterpret_cast<const Color *>(_data._mem) == Color(1, 1, 1, 1);
 
 		} break;
+		case AUDIO_FRAME: {
+
+			return *reinterpret_cast<const AudioFrame *>(_data._mem) == AudioFrame(1, 1);
+
+		} break;
 
 		default: { return !is_zero(); }
 	}
@@ -971,6 +1006,11 @@ void Variant::reference(const Variant &p_variant) {
 		case TRANSFORM: {
 
 			_data._transform = memnew(Transform(*p_variant._data._transform));
+		} break;
+		case AUDIO_FRAME: {
+
+			memnew_placement(_data._mem, AudioFrame(*reinterpret_cast<const AudioFrame *>(p_variant._data._mem)));
+
 		} break;
 
 		// misc types
@@ -1055,6 +1095,7 @@ void Variant::zero() {
 		case PLANE: *reinterpret_cast<Plane *>(this->_data._mem) = Plane(); break;
 		case QUAT: *reinterpret_cast<Quat *>(this->_data._mem) = Quat(); break;
 		case COLOR: *reinterpret_cast<Color *>(this->_data._mem) = Color(); break;
+		case AUDIO_FRAME: *reinterpret_cast<AudioFrame *>(this->_data._mem) = AudioFrame(); break;
 		default: this->clear(); break;
 	}
 }
@@ -1455,6 +1496,7 @@ Variant::operator String() const {
 		} break;
 		case TRANSFORM: return operator Transform();
 		case NODE_PATH: return operator NodePath();
+		case AUDIO_FRAME: return String::num(operator AudioFrame().l) + "," + String::num(operator AudioFrame().r);
 		case COLOR: return String::num(operator Color().r) + "," + String::num(operator Color().g) + "," + String::num(operator Color().b) + "," + String::num(operator Color().a);
 		case DICTIONARY: {
 
@@ -1663,6 +1705,14 @@ Variant::operator Transform() const {
 		return Transform(Basis(*reinterpret_cast<const Quat *>(_data._mem)), Vector3());
 	else
 		return Transform();
+}
+
+Variant::operator AudioFrame() const {
+
+	if (type == AUDIO_FRAME)
+		return *reinterpret_cast<const AudioFrame *>(_data._mem);
+	else
+		return AudioFrame();
 }
 
 Variant::operator Transform2D() const {
@@ -2227,6 +2277,11 @@ Variant::Variant(const Transform &p_transform) {
 	type = TRANSFORM;
 	_data._transform = memnew(Transform(p_transform));
 }
+Variant::Variant(const AudioFrame &p_frame) {
+
+	type = AUDIO_FRAME;
+	memnew_placement(_data._mem, AudioFrame(p_frame));
+}
 
 Variant::Variant(const Transform2D &p_transform) {
 
@@ -2567,6 +2622,10 @@ void Variant::operator=(const Variant &p_variant) {
 
 			*_data._transform = *(p_variant._data._transform);
 		} break;
+		case AUDIO_FRAME: {
+
+			*reinterpret_cast<AudioFrame *>(_data._mem) = *reinterpret_cast<const AudioFrame *>(p_variant._data._mem);
+		} break;
 
 		// misc types
 		case COLOR: {
@@ -2760,6 +2819,12 @@ uint32_t Variant::hash() const {
 			return hash;
 
 		} break;
+		case AUDIO_FRAME: {
+
+			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const AudioFrame *>(_data._mem)->l);
+			return hash_djb2_one_float(reinterpret_cast<const AudioFrame *>(_data._mem)->r, hash);
+
+		} break;
 
 		// misc types
 		case COLOR: {
@@ -2911,6 +2976,10 @@ uint32_t Variant::hash() const {
 			(hash_compare_scalar((p_lhs).b, (p_rhs).b)) && \
 			(hash_compare_scalar((p_lhs).a, (p_rhs).a))
 
+#define hash_compare_audio_frame(p_lhs, p_rhs)     \
+	(hash_compare_scalar((p_lhs).l, (p_rhs).l)) && \
+			(hash_compare_scalar((p_lhs).r, (p_rhs).r))
+
 #define hash_compare_pool_array(p_lhs, p_rhs, p_type, p_compare_func)                   \
 	const PoolVector<p_type> &l = *reinterpret_cast<const PoolVector<p_type> *>(p_lhs); \
 	const PoolVector<p_type> &r = *reinterpret_cast<const PoolVector<p_type> *>(p_rhs); \
@@ -3017,6 +3086,13 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			}
 
 			return hash_compare_vector3(l->origin, r->origin);
+		} break;
+
+		case AUDIO_FRAME: {
+			const AudioFrame *l = reinterpret_cast<const AudioFrame *>(_data._mem);
+			const AudioFrame *r = reinterpret_cast<const AudioFrame *>(p_variant._data._mem);
+
+			return hash_compare_audio_frame(*l, *r);
 		} break;
 
 		case COLOR: {

@@ -2105,6 +2105,10 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.default_argument = "new %s(" + r_iarg.default_argument + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
+		case Variant::AUDIO_FRAME:
+			r_iarg.default_argument = "new AudioFrame()";
+			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
+			break;
 		case Variant::PLANE:
 		case Variant::AABB:
 		case Variant::COLOR:

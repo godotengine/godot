@@ -98,6 +98,30 @@ struct AudioFrame {
 		r /= p_sample;
 	}
 
+	_ALWAYS_INLINE_ bool operator==(const AudioFrame &p_frame) const {
+		return (l == p_frame.l && r == p_frame.r);
+	}
+	_ALWAYS_INLINE_ bool operator!=(const AudioFrame &p_frame) const {
+		return (l != p_frame.l || r != p_frame.r);
+	}
+	_ALWAYS_INLINE_ bool operator<(const AudioFrame &p_frame) const {
+		return ((l + r) < (p_frame.l + p_frame.r));
+	}
+	_ALWAYS_INLINE_ bool operator<=(const AudioFrame &p_frame) const {
+		return ((l + r) <= (p_frame.l + p_frame.r));
+	}
+	_ALWAYS_INLINE_ bool operator>(const AudioFrame &p_frame) const {
+		return ((l + r) > (p_frame.l + p_frame.r));
+	}
+	_ALWAYS_INLINE_ bool operator>=(const AudioFrame &p_frame) const {
+		return ((l + r) >= (p_frame.l + p_frame.r));
+	}
+
+	_ALWAYS_INLINE_ AudioFrame operator-() const {
+		const AudioFrame &af = *this;
+		return AudioFrame(-af.l, -af.r);
+	}
+
 	_ALWAYS_INLINE_ void undenormalise() {
 		l = ::undenormalise(l);
 		r = ::undenormalise(r);

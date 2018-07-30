@@ -161,6 +161,7 @@ static const _bit _type_list[] = {
 	{ Variant::QUAT, "Quat" },
 	{ Variant::BASIS, "Basis" },
 	{ Variant::TRANSFORM, "Transform" },
+	{ Variant::AUDIO_FRAME, "AudioFrame" },
 	{ Variant::COLOR, "Color" },
 	{ Variant::_RID, "RID" },
 	{ Variant::OBJECT, "Object" },

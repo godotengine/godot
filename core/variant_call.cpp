@@ -946,6 +946,11 @@ struct _VariantCall {
 		r_ret = Transform(p_args[0]->operator Basis(), p_args[1]->operator Vector3());
 	}
 
+	static void AudioFrame2_init1(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = AudioFrame(*p_args[0], *p_args[1]);
+	}
+
 	static void add_constructor(VariantConstructFunc p_func, const Variant::Type p_type,
 			const String &p_name1 = "", const Variant::Type p_type1 = Variant::NIL,
 			const String &p_name2 = "", const Variant::Type p_type2 = Variant::NIL,
@@ -1092,6 +1097,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case BASIS: return Basis();
 			case TRANSFORM:
 				return Transform();
+			case AUDIO_FRAME: return AudioFrame();
 
 			// misc types
 			case COLOR: return Color();
@@ -1172,6 +1178,9 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case BASIS: return (Basis(p_args[0]->operator Basis()));
 			case TRANSFORM:
 				return (Transform(p_args[0]->operator Transform()));
+			case AUDIO_FRAME: {
+				return AudioFrame(*p_args[0]);
+			}
 
 			// misc types
 			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
@@ -1855,6 +1864,8 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
+
+	_VariantCall::add_constructor(_VariantCall::AudioFrame2_init1, Variant::AUDIO_FRAME, "l", Variant::REAL, "r", Variant::REAL);
 
 	/* REGISTER CONSTANTS */
 
