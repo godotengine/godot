@@ -161,7 +161,7 @@ vec3 tonemap_aces(vec3 color, float white)
 	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
 }
 
-vec3 tonemap_reindhart(vec3 color, float white)
+vec3 tonemap_reinhard(vec3 color, float white)
 {
 	return clamp((color) / (1.0f + color) * (1.0f + (color / (white))), vec3(0.0f), vec3(1.0f)); // whitepoint is probably not in linear space here!
 }
@@ -174,8 +174,8 @@ vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped i
 
 vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always outputs clamped [0;1] color
 {
-	#ifdef USE_REINDHART_TONEMAPPER
-		return tonemap_reindhart(color, white);
+	#ifdef USE_REINHARD_TONEMAPPER
+		return tonemap_reinhard(color, white);
 	#endif
 
 	#ifdef USE_FILMIC_TONEMAPPER
