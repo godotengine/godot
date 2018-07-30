@@ -364,6 +364,7 @@ public:
 	void set_pause_mode(PauseMode p_mode);
 	PauseMode get_pause_mode() const;
 	bool can_process() const;
+	bool can_process_notification(int p_what) const;
 
 	void request_ready();
 
