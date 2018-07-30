@@ -33,11 +33,13 @@
 #include "engine.h"
 #include "scene/2d/area_2d.h"
 #include "scene/main/viewport.h"
+#include <string>
 
 void AudioStreamPlayer2D::_mix_audio() {
 
 	if (!stream_playback.is_valid() || !active ||
-			(stream_paused && !stream_paused_fade_out)) {
+			(stream_paused && !stream_paused_fade_out) ||
+		pitch_scale < MIN_PITCH_SCALE) {
 		return;
 	}
 
@@ -296,6 +298,11 @@ float AudioStreamPlayer2D::get_volume_db() const {
 }
 
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
+	if (p_pitch_scale<MIN_PITCH_SCALE)
+	{
+		ERR_PRINT("The Pitch Value is bellow the minimum value and as such the audio will be paused");
+	}
+
 	pitch_scale = p_pitch_scale;
 }
 float AudioStreamPlayer2D::get_pitch_scale() const {

@@ -35,6 +35,8 @@
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
 
+#define MIN_PITCH_SCALE 0.02f
+
 class AudioStreamPlayer2D : public Node2D {
 
 	GDCLASS(AudioStreamPlayer2D, Node2D)
@@ -43,7 +45,6 @@ private:
 	enum {
 		MAX_OUTPUTS = 8,
 		MAX_INTERSECT_AREAS = 32
-
 	};
 
 	struct Output {
