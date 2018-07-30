@@ -951,6 +951,8 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 
 		if (!n->can_process())
 			continue;
+		if (!n->can_process_notification(p_notification))
+			continue;
 
 		n->notification(p_notification);
 		//ERR_FAIL_COND(node_count != g.nodes.size());
