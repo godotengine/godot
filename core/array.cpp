@@ -355,8 +355,8 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
-Array *Array::reduce(Object *p_obj, const StringName &p_function, const Variant &p_args) {
-	Array *ret = new Array();
+Array Array::reduce(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+	Array ret;
 	StringName func = p_function;
 
 	for (int i = 0; i < this->size(); i++) {
@@ -371,18 +371,18 @@ Array *Array::reduce(Object *p_obj, const StringName &p_function, const Variant 
 		}
 
 		if (((bool)res)) {
-			ret->append(this->get(i));
+			ret.append(this->get(i));
 		}
 	}
 
 	return ret;
 }
 
-Array *Array::map(Object *p_obj, const StringName &p_function, const Variant &p_args) {
-	Array *ret = new Array();
+Array Array::map(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+	Array ret;
 	StringName func = p_function;
 
-	ret->resize(this->size());
+	ret.resize(this->size());
 
 	for (int i = 0; i < this->size(); i++) {
 
@@ -391,7 +391,7 @@ Array *Array::map(Object *p_obj, const StringName &p_function, const Variant &p_
 				this->get(i),
 				p_args);
 
-		ret->set(i, res);
+		ret.set(i, res);
 	}
 
 	return ret;
