@@ -15,16 +15,16 @@ else:
 
 def run_in_subprocess(builder_function):
 
-    # Run in subprocess only while running the build on Windows
-    if sys.platform not in ('win32', 'cygwin'):
-        return builder_function
-
     @functools.wraps(builder_function)
     def wrapper(target, source, env):
 
         # Convert SCons Node instances to absolute paths
         target = [node.srcnode().abspath for node in target]
         source = [node.srcnode().abspath for node in source]
+
+        # Short circuit on non-Windows platforms, no need to run in subprocess
+        if sys.platform not in ('win32', 'cygwin'):
+            return builder_function(target, source, env)
 
         # Identify module
         module_name = builder_function.__module__
