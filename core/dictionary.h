@@ -55,6 +55,7 @@ public:
 	Variant *getptr(const Variant &p_key);
 
 	Variant get_valid(const Variant &p_key) const;
+	Variant get(const Variant &p_key) const;
 
 	int size() const;
 	bool empty() const;

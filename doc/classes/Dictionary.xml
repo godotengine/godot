@@ -83,6 +83,13 @@
 				Return the list of values in the [code]Dictionary[/code].
 			</description>
 		</method>
+		<method name="get">
+			<return type="Variant">
+			</return>
+			<description>
+				Return value at the specified key in the [code]Dictionary[/code]; return Null if the key doesn't exist.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
