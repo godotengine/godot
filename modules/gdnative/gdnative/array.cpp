@@ -318,7 +318,7 @@ godot_array GDAPI godot_array_filter(godot_array *p_self, godot_object *p_obj, c
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
 	godot_array r;
-	Variant *res = (Variant *)&r;
+	Array *res = (Array *)&r;
 	memnew_placement(res, Array);
 	*res = self->filter((Object *)p_obj, *func, (Variant) * (Array *)p_args);
 	return r;
@@ -328,7 +328,7 @@ godot_array GDAPI godot_array_map(godot_array *p_self, godot_object *p_obj, cons
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
 	godot_array r;
-	Variant *res = (Variant *)&r;
+	Array *res = (Array *)&r;
 	memnew_placement(res, Array);
 	*res = self->map((Object *)p_obj, *func, (Variant) * (Array *)p_args);
 	return r;
