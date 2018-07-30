@@ -7,8 +7,17 @@ import subprocess
 
 # NOTE: The multiprocessing module is not compatible with SCons due to conflict on cPickle
 
+if sys.version_info[0] < 3:
+    JSON_SERIALIZABLE_TYPES = (bool, int, long, float, basestring)
+else:
+    JSON_SERIALIZABLE_TYPES = (bool, int, float, str)
+
 
 def run_in_subprocess(builder_function):
+
+    # Run in subprocess only while running the build on Windows
+    if sys.platform not in ('win32', 'cygwin'):
+        return builder_function
 
     @functools.wraps(builder_function)
     def wrapper(target, source, env):
@@ -16,10 +25,6 @@ def run_in_subprocess(builder_function):
         # Convert SCons Node instances to absolute paths
         target = [node.srcnode().abspath for node in target]
         source = [node.srcnode().abspath for node in source]
-
-        # Short circuit on non-Windows platforms
-        if os.name != 'nt':
-            return builder_function(target, source, None)
 
         # Identify module
         module_name = builder_function.__module__
@@ -32,14 +37,25 @@ def run_in_subprocess(builder_function):
         subprocess_env = os.environ.copy()
         subprocess_env['PYTHONPATH'] = os.pathsep.join([os.getcwd()] + sys.path)
 
+        # Keep only JSON serializable environment items
+        filtered_env = dict(
+            (key, value)
+            for key, value in env.items()
+            if isinstance(value, JSON_SERIALIZABLE_TYPES)
+        )
+
         # Save parameters
-        args = (target, source, None)
+        args = (target, source, filtered_env)
         data = dict(fn=function_name, args=args)
         json_path = os.path.join(os.environ['TMP'], uuid.uuid4().hex + '.json')
         with open(json_path, 'wt') as json_file:
             json.dump(data, json_file, indent=2)
+        json_file_size = os.stat(json_path).st_size
+
+        print('Executing builder function in subprocess: '
+              'module_path=%r, parameter_file=%r, parameter_file_size=%r, target=%r, source=%r' % (
+               module_path, json_path, json_file_size, target, source))
         try:
-            print('Executing builder function in subprocess: module_path=%r; data=%r' % (module_path, data))
             exit_code = subprocess.call([sys.executable, module_path, json_path], env=subprocess_env)
         finally:
             try:
