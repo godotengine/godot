@@ -17,7 +17,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the position in the [AudioStream].
+				Returns the position in the [AudioStream] in seconds.
 			</description>
 		</method>
 		<method name="play">
