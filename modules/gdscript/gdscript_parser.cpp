@@ -2657,51 +2657,81 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				//variale declaration and (eventual) initialization
 
 				tokenizer->advance();
-				int var_line = tokenizer->get_token_line();
-				if (!tokenizer->is_token_literal(0, true)) {
 
-					_set_error("Expected identifier for local variable name.");
-					return;
+				bool unpack = false;
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_BRACKET_OPEN) {
+					unpack = true;
+					tokenizer->advance();
 				}
-				StringName n = tokenizer->get_token_literal();
-				tokenizer->advance();
-				if (current_function) {
-					for (int i = 0; i < current_function->arguments.size(); i++) {
-						if (n == current_function->arguments[i]) {
-							_set_error("Variable '" + String(n) + "' already defined in the scope (at line: " + itos(current_function->line) + ").");
+
+				Vector<LocalVarNode *> local_vars;
+				Dictionary var_lines;
+
+				while (true) {
+					int var_line = tokenizer->get_token_line();
+					if (!tokenizer->is_token_literal(0, true)) {
+
+						_set_error("Expected identifier for local variable name.");
+						return;
+					}
+					StringName n = tokenizer->get_token_literal();
+					if (var_lines.has(n)) {
+						_set_error("Variable '" + String(n) + "' already defined.");
+						return;
+					}
+					var_lines[n] = var_line; // must know when the local variable is declared
+					tokenizer->advance();
+					if (current_function) {
+						for (int i = 0; i < current_function->arguments.size(); i++) {
+							if (n == current_function->arguments[i]) {
+								_set_error("Variable '" + String(n) + "' already defined in the scope (at line: " + itos(current_function->line) + ").");
+								return;
+							}
+						}
+					}
+					BlockNode *check_block = p_block;
+					while (check_block) {
+						if (check_block->variables.has(n)) {
+							_set_error("Variable '" + String(n) + "' already defined in the scope (at line: " + itos(check_block->variables[n]->line) + ").");
+							return;
+						}
+						check_block = check_block->parent_block;
+					}
+
+					LocalVarNode *lv = alloc_node<LocalVarNode>();
+					lv->name = n;
+					lv->line = var_line;
+					p_block->statements.push_back(lv);
+					local_vars.push_back(lv);
+
+					if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+						if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
+							lv->datatype = DataType();
+#ifdef DEBUG_ENABLED
+							lv->datatype.infer_type = true;
+#endif
+							tokenizer->advance();
+						} else if (!_parse_type(lv->datatype)) {
+							_set_error("Expected type for variable.");
 							return;
 						}
 					}
-				}
-				BlockNode *check_block = p_block;
-				while (check_block) {
-					if (check_block->variables.has(n)) {
-						_set_error("Variable '" + String(n) + "' already defined in the scope (at line: " + itos(check_block->variables[n]->line) + ").");
-						return;
+
+					if (!unpack || tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+						break;
 					}
-					check_block = check_block->parent_block;
+					tokenizer->advance();
 				}
 
-				//must know when the local variable is declared
-				LocalVarNode *lv = alloc_node<LocalVarNode>();
-				lv->name = n;
-				lv->line = var_line;
-				p_block->statements.push_back(lv);
+				if (unpack) {
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
+						_set_error("] expected.");
+						return;
+					}
+					tokenizer->advance();
+				}
 
 				Node *assigned = NULL;
-
-				if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
-					if (tokenizer->get_token(1) == GDScriptTokenizer::TK_OP_ASSIGN) {
-						lv->datatype = DataType();
-#ifdef DEBUG_ENABLED
-						lv->datatype.infer_type = true;
-#endif
-						tokenizer->advance();
-					} else if (!_parse_type(lv->datatype)) {
-						_set_error("Expected type for variable.");
-						return;
-					}
-				}
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 
@@ -2714,9 +2744,18 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 						return;
 					}
 
-					lv->assignments++;
+					if (!unpack) {
+						// used in editor for inferring type.
+						local_vars[0]->assignments++;
+					}
 					assigned = subexpr;
 				} else {
+
+					if (local_vars.size() != 1) {
+						_set_error("illegal syntax.");
+						return;
+					}
+					LocalVarNode *lv = local_vars[0];
 
 					ConstantNode *c = alloc_node<ConstantNode>();
 					if (lv->datatype.has_type && lv->datatype.kind == DataType::BUILTIN) {
@@ -2725,25 +2764,46 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					} else {
 						c->value = Variant();
 					}
-					c->line = var_line;
+					c->line = lv->line;
 					assigned = c;
 				}
 				//must be added later, to avoid self-referencing.
-				p_block->variables.insert(n, lv);
+				for (int i = 0; i < local_vars.size(); i++) {
+					LocalVarNode *lv = local_vars[i];
+					p_block->variables.insert(lv->name, lv);
+				}
 
-				IdentifierNode *id = alloc_node<IdentifierNode>();
-				id->name = n;
-				id->declared_block = p_block;
-				id->line = var_line;
+				if (!unpack) {
+					LocalVarNode *lv = local_vars[0];
+					const StringName &n = lv->name;
 
-				OperatorNode *op = alloc_node<OperatorNode>();
-				op->op = OperatorNode::OP_ASSIGN;
-				op->arguments.push_back(id);
-				op->arguments.push_back(assigned);
-				op->line = var_line;
-				p_block->statements.push_back(op);
-				lv->assign_op = op;
-				lv->assign = assigned;
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = n;
+					id->declared_block = p_block;
+					id->line = lv->line;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(assigned);
+					op->line = lv->line;
+					p_block->statements.push_back(op);
+					lv->assign_op = op;
+					lv->assign = assigned;
+				} else {
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_UNPACK;
+					for (int i = 0; i < local_vars.size(); i++) {
+						LocalVarNode *lv = local_vars[0];
+						lv->assign_op = op;
+						lv->assign = assigned;
+						IdentifierNode *id = alloc_node<IdentifierNode>();
+						id->name = lv->name;
+						op->arguments.push_back(id);
+					}
+					op->arguments.push_back(assigned);
+					p_block->statements.push_back(op);
+				}
 
 				if (!_end_statement()) {
 					_set_error("Expected end of statement (var)");
@@ -2924,15 +2984,40 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				tokenizer->advance();
 
+				bool unpack = false;
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_BRACKET_OPEN) {
+					tokenizer->advance();
+					unpack = true;
+				}
+
 				if (!tokenizer->is_token_literal(0, true)) {
 
 					_set_error("identifier expected after 'for'");
 				}
 
-				IdentifierNode *id = alloc_node<IdentifierNode>();
-				id->name = tokenizer->get_token_identifier();
+				Vector<IdentifierNode *> ids;
+				while (true) {
 
-				tokenizer->advance();
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = tokenizer->get_token_identifier();
+					tokenizer->advance();
+
+					ids.push_back(id);
+
+					if (!unpack || tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+						break;
+					}
+					tokenizer->advance();
+				}
+
+				if (unpack) {
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
+						_set_error("] expected");
+						return;
+					}
+					tokenizer->advance();
+				}
 
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_OP_IN) {
 					_set_error("'in' expected after identifier");
@@ -3015,10 +3100,10 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					}
 				}
 
-				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
+				ForNode *cf_for = alloc_node<ForNode>();
 
 				cf_for->cf_type = ControlFlowNode::CF_FOR;
-				cf_for->arguments.push_back(id);
+				cf_for->ids = ids;
 				cf_for->arguments.push_back(container);
 
 				cf_for->body = alloc_node<BlockNode>();
@@ -3035,15 +3120,20 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				// this is for checking variable for redefining
 				// inside this _parse_block
-				LocalVarNode *lv = alloc_node<LocalVarNode>();
-				lv->name = id->name;
-				lv->line = id->line;
-				lv->assignments++;
-				id->declared_block = cf_for->body;
-				lv->set_datatype(iter_type);
-				id->set_datatype(iter_type);
-				cf_for->body->variables.insert(id->name, lv);
+				for (int i = 0; i < ids.size(); i++) {
+					ids[i]->declared_block = cf_for->body;
+					ids[i]->set_datatype(iter_type);
+					LocalVarNode *lv = alloc_node<LocalVarNode>();
+					lv->name = ids[i]->name;
+					lv->line = ids[i]->line;
+					lv->assignments++;
+					lv->set_datatype(iter_type);
+					cf_for->body->variables.insert(ids[i]->name, lv);
+				}
 				_parse_block(cf_for->body, p_static);
+				for (int i = 0; i < ids.size(); i++) {
+					//cf_for->body->variables.remove(ids[i]->name);
+				}
 				current_block = p_block;
 
 				if (error_set)
@@ -3179,14 +3269,64 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 			} break;
 			default: {
 
-				Node *expression = _parse_and_reduce_expression(p_block, p_static, false, true);
-				if (!expression) {
-					if (_recover_from_completion()) {
-						break;
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_BRACKET_OPEN) {
+					tokenizer->advance();
+
+					Vector<Node *> exprlist;
+
+					while (true) {
+						Node *expr = _parse_and_reduce_expression(p_block, p_static, false, false);
+						if (!expr || error_set) {
+							if (_recover_from_completion()) {
+								break;
+							}
+							return;
+						}
+
+						exprlist.push_back(expr);
+
+						if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA)
+							break;
+						tokenizer->advance();
 					}
-					return;
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_BRACKET_CLOSE) {
+						_set_error("] expected.");
+						return;
+					}
+					tokenizer->advance();
+
+					if (tokenizer->get_token() != GDScriptTokenizer::TK_OP_ASSIGN) {
+						_set_error("= expected.");
+						return;
+					}
+					tokenizer->advance();
+
+					Node *assigned = _parse_and_reduce_expression(p_block, p_static, false, false);
+					if (!assigned) {
+						if (_recover_from_completion()) {
+							break;
+						}
+						return;
+					}
+
+					OperatorNode *expr = alloc_node<OperatorNode>();
+					expr->op = OperatorNode::OP_UNPACK;
+					expr->arguments = exprlist;
+					expr->arguments.push_back(assigned);
+
+					p_block->statements.push_back(expr);
+				} else {
+
+					Node *expression = _parse_and_reduce_expression(p_block, p_static, false, true);
+					if (!expression) {
+						if (_recover_from_completion()) {
+							break;
+						}
+						return;
+					}
+					p_block->statements.push_back(expression);
 				}
-				p_block->statements.push_back(expression);
 				if (!_end_statement()) {
 					_set_error("Expected end of statement after expression.");
 					return;
@@ -5904,6 +6044,10 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					_set_error("Assignment inside expression is not allowed (parser bug?).", op->line);
 					return DataType();
 
+				} break;
+				case OperatorNode::OP_UNPACK: {
+					_mark_line_as_unsafe(op->line);
+					break;
 				} break;
 				case OperatorNode::OP_INDEX_NAMED: {
 					if (op->arguments.size() != 2) {

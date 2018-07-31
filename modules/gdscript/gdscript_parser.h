@@ -358,6 +358,7 @@ public:
 			OP_SHIFT_RIGHT,
 			OP_INIT_ASSIGN,
 			OP_ASSIGN,
+			OP_UNPACK,
 			OP_ASSIGN_ADD,
 			OP_ASSIGN_SUB,
 			OP_ASSIGN_MUL,
@@ -456,6 +457,10 @@ public:
 		virtual DataType get_datatype() const { return return_type; }
 		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
 		CastNode() { type = TYPE_CAST; }
+	};
+
+	struct ForNode : public ControlFlowNode {
+		Vector<IdentifierNode *> ids;
 	};
 
 	struct AssertNode : public Node {
