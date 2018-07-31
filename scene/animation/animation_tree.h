@@ -275,6 +275,9 @@ public:
 	void advance(float p_time);
 
 	uint64_t get_last_process_pass() const;
+
+	void invalidate_caches();
+
 	AnimationTree();
 	~AnimationTree();
 };

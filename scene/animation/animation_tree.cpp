@@ -488,12 +488,16 @@ void AnimationTree::set_process_mode(AnimationProcessMode p_mode) {
 	}
 }
 
+void AnimationTree::invalidate_caches() {
+	cache_valid = false;
+}
+
 AnimationTree::AnimationProcessMode AnimationTree::get_process_mode() const {
 	return process_mode;
 }
 
 void AnimationTree::_node_removed(Node *p_node) {
-	cache_valid = false;
+	invalidate_caches();
 }
 
 bool AnimationTree::_update_caches(AnimationPlayer *player) {
@@ -694,7 +698,7 @@ void AnimationTree::_clear_caches() {
 	playing_caches.clear();
 
 	track_cache.clear();
-	cache_valid = false;
+	invalidate_caches();
 }
 
 void AnimationTree::_process_graph(float p_delta) {
@@ -705,14 +709,14 @@ void AnimationTree::_process_graph(float p_delta) {
 	if (!root.is_valid()) {
 		ERR_PRINT("AnimationTree: root AnimationNode is not set, disabling playback.");
 		set_active(false);
-		cache_valid = false;
+		invalidate_caches();
 		return;
 	}
 
 	if (!has_node(animation_player)) {
 		ERR_PRINT("AnimationTree: no valid AnimationPlayer path set, disabling playback");
 		set_active(false);
-		cache_valid = false;
+		invalidate_caches();
 		return;
 	}
 
@@ -721,7 +725,7 @@ void AnimationTree::_process_graph(float p_delta) {
 	if (!player) {
 		ERR_PRINT("AnimationTree: path points to a node not an AnimationPlayer, disabling playback");
 		set_active(false);
-		cache_valid = false;
+		invalidate_caches();
 		return;
 	}
 
@@ -1316,6 +1320,7 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
+	ClassDB::bind_method(D_METHOD("invalidate_caches"), &AnimationTree::invalidate_caches);
 
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
 
