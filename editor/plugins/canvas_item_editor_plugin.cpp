@@ -1144,6 +1144,11 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 				viewport->update();
 				return true;
 			}
+			view_offset.x -= relative.x / zoom;
+			view_offset.y -= relative.y / zoom;
+			_update_scrollbars();
+			viewport->update();
+			return true;
 		}
 
 		if (drag_type == DRAG_NONE) {

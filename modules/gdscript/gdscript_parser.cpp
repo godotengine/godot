@@ -7690,6 +7690,2736 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 	return ret;
 }
 
+				String ident = base;
+
+				for (int i = extend_iter; i < p_class->extends_class.size(); i++) {
+
+					String subclass = p_class->extends_class[i];
+
+					ident += ("." + subclass);
+
+					if (base_script->get_subclasses().has(subclass)) {
+
+						base_script = base_script->get_subclasses()[subclass];
+					} else if (base_script->get_constants().has(subclass)) {
+
+						Ref<GDScript> new_base_class = base_script->get_constants()[subclass];
+						if (new_base_class.is_null()) {
+							_set_error("Constant is not a class: " + ident, p_class->line);
+							return;
+						}
+						base_script = new_base_class;
+					} else {
+
+						_set_error("Could not find subclass: " + ident, p_class->line);
+						return;
+					}
+				}
+
+				script = base_script;
+
+			} else if (!base_class) {
+
+				if (p_class->extends_class.size() > 1) {
+
+					_set_error("Invalid inheritance (unknown class + subclasses)", p_class->line);
+					return;
+				}
+				//if not found, try engine classes
+				if (!GDScriptLanguage::get_singleton()->get_global_map().has(base)) {
+
+					_set_error("Unknown class: '" + base + "'", p_class->line);
+					return;
+				}
+
+				native = base;
+			}
+		}
+
+		if (base_class) {
+			p_class->base_type.has_type = true;
+			p_class->base_type.kind = DataType::CLASS;
+			p_class->base_type.class_type = base_class;
+		} else if (script.is_valid()) {
+			p_class->base_type.has_type = true;
+			p_class->base_type.kind = DataType::GDSCRIPT;
+			p_class->base_type.script_type = script;
+			p_class->base_type.native_type = script->get_instance_base_type();
+		} else if (native != StringName()) {
+			p_class->base_type.has_type = true;
+			p_class->base_type.kind = DataType::NATIVE;
+			p_class->base_type.native_type = native;
+		} else {
+			_set_error("Could not determine inheritance", p_class->line);
+			return;
+		}
+
+	} else {
+		// without extends, implicitly extend Reference
+		p_class->base_type.has_type = true;
+		p_class->base_type.kind = DataType::NATIVE;
+		p_class->base_type.native_type = "Reference";
+	}
+
+	// Recursively determine subclasses
+	for (int i = 0; i < p_class->subclasses.size(); i++) {
+		_determine_inheritance(p_class->subclasses[i]);
+	}
+}
+
+String GDScriptParser::DataType::to_string() const {
+	if (!has_type) return "var";
+	switch (kind) {
+		case BUILTIN: {
+			if (builtin_type == Variant::NIL) return "null";
+			return Variant::get_type_name(builtin_type);
+		} break;
+		case NATIVE: {
+			if (is_meta_type) {
+				return "GDScriptNativeClass";
+			}
+			return native_type.operator String();
+		} break;
+
+		case GDSCRIPT: {
+			Ref<GDScript> gds = script_type;
+			const String &gds_class = gds->get_script_class_name();
+			if (!gds_class.empty()) {
+				return gds_class;
+			}
+		} // fallthrough
+		case SCRIPT: {
+			if (is_meta_type) {
+				return script_type->get_class_name().operator String();
+			}
+			String name = script_type->get_name();
+			if (name != String()) {
+				return name;
+			}
+			name = script_type->get_path().get_file();
+			if (name != String()) {
+				return name;
+			}
+			return native_type.operator String();
+		} break;
+		case CLASS: {
+			ERR_FAIL_COND_V(!class_type, String());
+			if (is_meta_type) {
+				return "GDScript";
+			}
+			if (class_type->name == StringName()) {
+				return "self";
+			}
+			return class_type->name.operator String();
+		} break;
+	}
+
+	return "Unresolved";
+}
+
+bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
+	tokenizer->advance();
+	r_type.has_type = true;
+
+	bool finished = false;
+	bool can_index = false;
+	String full_name;
+
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
+		completion_cursor = StringName();
+		completion_type = COMPLETION_TYPE_HINT;
+		completion_class = current_class;
+		completion_function = current_function;
+		completion_line = tokenizer->get_token_line();
+		completion_argument = 0;
+		completion_block = current_block;
+		completion_found = true;
+		completion_ident_is_call = p_can_be_void;
+		tokenizer->advance();
+	}
+
+	switch (tokenizer->get_token()) {
+		case GDScriptTokenizer::TK_PR_VOID: {
+			if (!p_can_be_void) {
+				return false;
+			}
+			r_type.kind = DataType::BUILTIN;
+			r_type.builtin_type = Variant::NIL;
+		} break;
+		case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
+			r_type.builtin_type = tokenizer->get_token_type();
+			if (tokenizer->get_token_type() == Variant::OBJECT) {
+				r_type.kind = DataType::NATIVE;
+				r_type.native_type = "Object";
+			} else {
+				r_type.kind = DataType::BUILTIN;
+			}
+		} break;
+		case GDScriptTokenizer::TK_IDENTIFIER: {
+			r_type.native_type = tokenizer->get_token_identifier();
+			if (ClassDB::class_exists(r_type.native_type) || ClassDB::class_exists("_" + r_type.native_type.operator String())) {
+				r_type.kind = DataType::NATIVE;
+			} else {
+				r_type.kind = DataType::UNRESOLVED;
+				can_index = true;
+				full_name = r_type.native_type;
+			}
+		} break;
+		default: {
+			return false;
+		}
+	}
+
+	tokenizer->advance();
+
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
+		completion_cursor = r_type.native_type;
+		completion_type = COMPLETION_TYPE_HINT;
+		completion_class = current_class;
+		completion_function = current_function;
+		completion_line = tokenizer->get_token_line();
+		completion_argument = 0;
+		completion_block = current_block;
+		completion_found = true;
+		completion_ident_is_call = p_can_be_void;
+		tokenizer->advance();
+	}
+
+	if (can_index) {
+		while (!finished) {
+			switch (tokenizer->get_token()) {
+				case GDScriptTokenizer::TK_PERIOD: {
+					if (!can_index) {
+						_set_error("Unexpected '.'.");
+						return false;
+					}
+					can_index = false;
+					tokenizer->advance();
+				} break;
+				case GDScriptTokenizer::TK_IDENTIFIER: {
+					if (can_index) {
+						_set_error("Unexpected identifier.");
+						return false;
+					}
+
+					StringName id;
+					bool has_completion = _get_completable_identifier(COMPLETION_TYPE_HINT_INDEX, id);
+					if (id == StringName()) {
+						id = "@temp";
+					}
+
+					full_name += "." + id.operator String();
+					can_index = true;
+					if (has_completion) {
+						completion_cursor = full_name;
+					}
+				} break;
+				default: {
+					finished = true;
+				} break;
+			}
+		}
+
+		if (tokenizer->get_token(-1) == GDScriptTokenizer::TK_PERIOD) {
+			_set_error("Expected subclass identifier.");
+			return false;
+		}
+
+		r_type.native_type = full_name;
+	}
+
+	return true;
+}
+
+GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source, int p_line) {
+	if (!p_source.has_type) return p_source;
+	if (p_source.kind != DataType::UNRESOLVED) return p_source;
+
+	Vector<String> full_name = p_source.native_type.operator String().split(".", false);
+	int name_part = 0;
+
+	DataType result;
+	result.has_type = true;
+
+	while (name_part < full_name.size()) {
+
+		bool found = false;
+		StringName id = full_name[name_part];
+		DataType base_type = result;
+
+		ClassNode *p = NULL;
+		if (name_part == 0) {
+			if (ScriptServer::is_global_class(id)) {
+				String script_path = ScriptServer::get_global_class_path(id);
+				if (script_path == self_path) {
+					result.kind = DataType::CLASS;
+					result.class_type = current_class;
+				} else {
+					Ref<Script> script = ResourceLoader::load(script_path);
+					Ref<GDScript> gds = script;
+					if (gds.is_valid()) {
+						if (!gds->is_valid()) {
+							_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic inheritance).", p_line);
+							return DataType();
+						}
+						result.kind = DataType::GDSCRIPT;
+						result.script_type = gds;
+					} else if (script.is_valid()) {
+						result.kind = DataType::SCRIPT;
+						result.script_type = script;
+					} else {
+						_set_error("Class '" + id + "' was found in global scope but its script could not be loaded.", p_line);
+						return DataType();
+					}
+				}
+				name_part++;
+				continue;
+			} else {
+				p = current_class;
+			}
+		} else if (base_type.kind == DataType::CLASS) {
+			p = base_type.class_type;
+		}
+		while (p) {
+			if (p->constant_expressions.has(id)) {
+				if (p->constant_expressions[id].expression->type != Node::TYPE_CONSTANT) {
+					_set_error("Parser bug: unresolved constant.", p_line);
+					ERR_FAIL_V(result);
+				}
+				const ConstantNode *cn = static_cast<const ConstantNode *>(p->constant_expressions[id].expression);
+				Ref<GDScript> gds = cn->value;
+				if (gds.is_valid()) {
+					result.kind = DataType::GDSCRIPT;
+					result.script_type = gds;
+					found = true;
+				} else {
+					Ref<Script> scr = cn->value;
+					if (scr.is_valid()) {
+						result.kind = DataType::SCRIPT;
+						result.script_type = scr;
+						found = true;
+					}
+				}
+				break;
+			}
+
+			// Inner classes
+			ClassNode *outer_class = p;
+			while (outer_class) {
+				for (int i = 0; i < outer_class->subclasses.size(); i++) {
+					if (outer_class->subclasses[i] == p) {
+						continue;
+					}
+					if (outer_class->subclasses[i]->name == id) {
+						found = true;
+						result.kind = DataType::CLASS;
+						result.class_type = outer_class->subclasses[i];
+						break;
+					}
+				}
+				if (found) {
+					break;
+				}
+				outer_class = outer_class->owner;
+			}
+
+			if (!found && p->base_type.kind == DataType::CLASS) {
+				p = p->base_type.class_type;
+			} else {
+				base_type = p->base_type;
+				break;
+			}
+		}
+
+		// Still look for class constants in parent script
+		if (!found && (base_type.kind == DataType::GDSCRIPT || base_type.kind == DataType::SCRIPT)) {
+			Ref<Script> scr = base_type.script_type;
+			ERR_FAIL_COND_V(scr.is_null(), result);
+			Map<StringName, Variant> constants;
+			scr->get_constants(&constants);
+
+			if (constants.has(id)) {
+				Ref<GDScript> gds = constants[id];
+
+				if (gds.is_valid()) {
+					result.kind = DataType::GDSCRIPT;
+					result.script_type = gds;
+					found = true;
+				} else {
+					Ref<Script> scr = constants[id];
+					if (scr.is_valid()) {
+						result.kind = DataType::SCRIPT;
+						result.script_type = scr;
+						found = true;
+					}
+				}
+			}
+		}
+
+		if (!found && !for_completion) {
+			String base;
+			if (name_part == 0) {
+				base = "self";
+			} else {
+				base = result.to_string();
+			}
+			_set_error("Identifier '" + String(id) + "' is not a valid type (not a script or class), or could not be found on base '" +
+							   base + "'.",
+					p_line);
+			return DataType();
+		}
+
+		name_part++;
+	}
+
+	return result;
+}
+
+GDScriptParser::DataType GDScriptParser::_type_from_variant(const Variant &p_value) const {
+	DataType result;
+	result.has_type = true;
+	result.is_constant = true;
+	result.kind = DataType::BUILTIN;
+	result.builtin_type = p_value.get_type();
+
+	if (result.builtin_type == Variant::OBJECT) {
+		Object *obj = p_value.operator Object *();
+		if (!obj) {
+			return DataType();
+		}
+		result.native_type = obj->get_class_name();
+		Ref<Script> scr = p_value;
+		if (scr.is_valid()) {
+			result.is_meta_type = true;
+		} else {
+			result.is_meta_type = false;
+			scr = obj->get_script();
+		}
+		if (scr.is_valid()) {
+			result.script_type = scr;
+			Ref<GDScript> gds = scr;
+			if (gds.is_valid()) {
+				result.kind = DataType::GDSCRIPT;
+			} else {
+				result.kind = DataType::SCRIPT;
+			}
+			result.native_type = scr->get_instance_base_type();
+		} else {
+			result.kind = DataType::NATIVE;
+		}
+	}
+
+	return result;
+}
+
+GDScriptParser::DataType GDScriptParser::_type_from_property(const PropertyInfo &p_property, bool p_nil_is_variant) const {
+	DataType ret;
+	if (p_property.type == Variant::NIL && (p_nil_is_variant || (p_property.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
+		// Variant
+		return ret;
+	}
+	ret.has_type = true;
+	ret.builtin_type = p_property.type;
+	if (p_property.type == Variant::OBJECT) {
+		ret.kind = DataType::NATIVE;
+		ret.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+	} else {
+		ret.kind = DataType::BUILTIN;
+	}
+	return ret;
+}
+
+GDScriptParser::DataType GDScriptParser::_type_from_gdtype(const GDScriptDataType &p_gdtype) const {
+	DataType result;
+	if (!p_gdtype.has_type) {
+		return result;
+	}
+
+	result.has_type = true;
+	result.builtin_type = p_gdtype.builtin_type;
+	result.native_type = p_gdtype.native_type;
+	result.script_type = p_gdtype.script_type;
+
+	switch (p_gdtype.kind) {
+		case GDScriptDataType::BUILTIN: {
+			result.kind = DataType::BUILTIN;
+		} break;
+		case GDScriptDataType::NATIVE: {
+			result.kind = DataType::NATIVE;
+		} break;
+		case GDScriptDataType::GDSCRIPT: {
+			result.kind = DataType::GDSCRIPT;
+		} break;
+		case GDScriptDataType::SCRIPT: {
+			result.kind = DataType::SCRIPT;
+		} break;
+	}
+	return result;
+}
+
+GDScriptParser::DataType GDScriptParser::_get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const {
+	if (!p_a.has_type || !p_b.has_type) {
+		r_valid = true;
+		return DataType();
+	}
+
+	Variant::Type a_type = p_a.kind == DataType::BUILTIN ? p_a.builtin_type : Variant::OBJECT;
+	Variant::Type b_type = p_b.kind == DataType::BUILTIN ? p_b.builtin_type : Variant::OBJECT;
+
+	Variant a;
+	REF a_ref;
+	if (a_type == Variant::OBJECT) {
+		a_ref.instance();
+		a = a_ref;
+	} else {
+		Variant::CallError err;
+		a = Variant::construct(a_type, NULL, 0, err);
+		if (err.error != Variant::CallError::CALL_OK) {
+			r_valid = false;
+			return DataType();
+		}
+	}
+	Variant b;
+	REF b_ref;
+	if (b_type == Variant::OBJECT) {
+		b_ref.instance();
+		b = b_ref;
+	} else {
+		Variant::CallError err;
+		b = Variant::construct(b_type, NULL, 0, err);
+		if (err.error != Variant::CallError::CALL_OK) {
+			r_valid = false;
+			return DataType();
+		}
+	}
+
+	// Avoid division by zero
+	if (a_type == Variant::INT || a_type == Variant::REAL) {
+		Variant::evaluate(Variant::OP_ADD, a, 1, a, r_valid);
+	}
+	if (b_type == Variant::INT || b_type == Variant::REAL) {
+		Variant::evaluate(Variant::OP_ADD, b, 1, b, r_valid);
+	}
+	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
+		a = "%s"; // Work around for formatting operator (%)
+	}
+
+	Variant ret;
+	Variant::evaluate(p_op, a, b, ret, r_valid);
+
+	if (r_valid) {
+		return _type_from_variant(ret);
+	}
+
+	return DataType();
+}
+
+Variant::Operator GDScriptParser::_get_variant_operation(const OperatorNode::Operator &p_op) const {
+	switch (p_op) {
+		case OperatorNode::OP_NEG: {
+			return Variant::OP_NEGATE;
+		} break;
+		case OperatorNode::OP_POS: {
+			return Variant::OP_POSITIVE;
+		} break;
+		case OperatorNode::OP_NOT: {
+			return Variant::OP_NOT;
+		} break;
+		case OperatorNode::OP_BIT_INVERT: {
+			return Variant::OP_BIT_NEGATE;
+		} break;
+		case OperatorNode::OP_IN: {
+			return Variant::OP_IN;
+		} break;
+		case OperatorNode::OP_EQUAL: {
+			return Variant::OP_EQUAL;
+		} break;
+		case OperatorNode::OP_NOT_EQUAL: {
+			return Variant::OP_NOT_EQUAL;
+		} break;
+		case OperatorNode::OP_LESS: {
+			return Variant::OP_LESS;
+		} break;
+		case OperatorNode::OP_LESS_EQUAL: {
+			return Variant::OP_LESS_EQUAL;
+		} break;
+		case OperatorNode::OP_GREATER: {
+			return Variant::OP_GREATER;
+		} break;
+		case OperatorNode::OP_GREATER_EQUAL: {
+			return Variant::OP_GREATER_EQUAL;
+		} break;
+		case OperatorNode::OP_AND: {
+			return Variant::OP_AND;
+		} break;
+		case OperatorNode::OP_OR: {
+			return Variant::OP_OR;
+		} break;
+		case OperatorNode::OP_ASSIGN_ADD:
+		case OperatorNode::OP_ADD: {
+			return Variant::OP_ADD;
+		} break;
+		case OperatorNode::OP_ASSIGN_SUB:
+		case OperatorNode::OP_SUB: {
+			return Variant::OP_SUBTRACT;
+		} break;
+		case OperatorNode::OP_ASSIGN_MUL:
+		case OperatorNode::OP_MUL: {
+			return Variant::OP_MULTIPLY;
+		} break;
+		case OperatorNode::OP_ASSIGN_DIV:
+		case OperatorNode::OP_DIV: {
+			return Variant::OP_DIVIDE;
+		} break;
+		case OperatorNode::OP_ASSIGN_MOD:
+		case OperatorNode::OP_MOD: {
+			return Variant::OP_MODULE;
+		} break;
+		case OperatorNode::OP_ASSIGN_BIT_AND:
+		case OperatorNode::OP_BIT_AND: {
+			return Variant::OP_BIT_AND;
+		} break;
+		case OperatorNode::OP_ASSIGN_BIT_OR:
+		case OperatorNode::OP_BIT_OR: {
+			return Variant::OP_BIT_OR;
+		} break;
+		case OperatorNode::OP_ASSIGN_BIT_XOR:
+		case OperatorNode::OP_BIT_XOR: {
+			return Variant::OP_BIT_XOR;
+		} break;
+		case OperatorNode::OP_ASSIGN_SHIFT_LEFT:
+		case OperatorNode::OP_SHIFT_LEFT: {
+			return Variant::OP_SHIFT_LEFT;
+		}
+		case OperatorNode::OP_ASSIGN_SHIFT_RIGHT:
+		case OperatorNode::OP_SHIFT_RIGHT: {
+			return Variant::OP_SHIFT_RIGHT;
+		}
+		default: {
+			return Variant::OP_MAX;
+		} break;
+	}
+}
+
+bool GDScriptParser::_is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion) const {
+	// Ignore for completion
+	if (!check_types || for_completion) {
+		return true;
+	}
+	// Can't test if not all have type
+	if (!p_container.has_type || !p_expression.has_type) {
+		return true;
+	}
+
+	// Should never get here unresolved
+	ERR_FAIL_COND_V(p_container.kind == DataType::UNRESOLVED, false);
+	ERR_FAIL_COND_V(p_expression.kind == DataType::UNRESOLVED, false);
+
+	if (p_container.kind == DataType::BUILTIN && p_expression.kind == DataType::BUILTIN) {
+		bool valid = p_container.builtin_type == p_expression.builtin_type;
+		if (p_allow_implicit_conversion) {
+			valid = valid || (p_container.builtin_type == Variant::INT && p_expression.builtin_type == Variant::REAL);
+			valid = valid || (p_container.builtin_type == Variant::REAL && p_expression.builtin_type == Variant::INT);
+			valid = valid || (p_container.builtin_type == Variant::STRING && p_expression.builtin_type == Variant::NODE_PATH);
+			valid = valid || (p_container.builtin_type == Variant::NODE_PATH && p_expression.builtin_type == Variant::STRING);
+			valid = valid || (p_container.builtin_type == Variant::BOOL && p_expression.builtin_type == Variant::REAL);
+			valid = valid || (p_container.builtin_type == Variant::BOOL && p_expression.builtin_type == Variant::INT);
+			valid = valid || (p_container.builtin_type == Variant::INT && p_expression.builtin_type == Variant::BOOL);
+			valid = valid || (p_container.builtin_type == Variant::REAL && p_expression.builtin_type == Variant::BOOL);
+		}
+		return valid;
+	}
+
+	if (p_container.kind == DataType::BUILTIN || (p_expression.kind == DataType::BUILTIN && p_expression.builtin_type != Variant::NIL)) {
+		// Can't mix built-ins with objects
+		return false;
+	}
+
+	// From now on everything is objects, check polymorphism
+	// The container must be the same class or a superclass of the expression
+
+	if (p_expression.kind == DataType::BUILTIN && p_expression.builtin_type == Variant::NIL) {
+		// Null can be assigned to object types
+		return true;
+	}
+
+	StringName expr_native;
+	Ref<Script> expr_script;
+	ClassNode *expr_class = NULL;
+
+	switch (p_expression.kind) {
+		case DataType::NATIVE: {
+			if (p_container.kind != DataType::NATIVE) {
+				// Non-native type can't be a superclass of a native type
+				return false;
+			}
+			if (p_expression.is_meta_type) {
+				expr_native = GDScriptNativeClass::get_class_static();
+			} else {
+				expr_native = p_expression.native_type;
+			}
+		} break;
+		case DataType::SCRIPT:
+		case DataType::GDSCRIPT: {
+			if (p_container.kind == DataType::CLASS) {
+				// This cannot be resolved without cyclic dependencies, so just bail out
+				return false;
+			}
+			if (p_expression.is_meta_type) {
+				expr_native = p_expression.script_type->get_class_name();
+			} else {
+				expr_script = p_expression.script_type;
+				expr_native = expr_script->get_instance_base_type();
+			}
+		} break;
+		case DataType::CLASS: {
+			if (p_expression.is_meta_type) {
+				expr_native = GDScript::get_class_static();
+			} else {
+				expr_class = p_expression.class_type;
+				ClassNode *base = expr_class;
+				while (base->base_type.kind == DataType::CLASS) {
+					base = base->base_type.class_type;
+				}
+				expr_native = base->base_type.native_type;
+				expr_script = base->base_type.script_type;
+			}
+		}
+	}
+
+	switch (p_container.kind) {
+		case DataType::NATIVE: {
+			if (p_container.is_meta_type) {
+				return ClassDB::is_parent_class(expr_native, GDScriptNativeClass::get_class_static());
+			} else {
+				return ClassDB::is_parent_class(expr_native, p_container.native_type);
+			}
+		} break;
+		case DataType::SCRIPT:
+		case DataType::GDSCRIPT: {
+			if (p_container.is_meta_type) {
+				return ClassDB::is_parent_class(expr_native, GDScript::get_class_static());
+			}
+			if (expr_class == head && p_container.script_type->get_path() == self_path) {
+				// Special case: container is self script and expression is self
+				return true;
+			}
+			while (expr_script.is_valid()) {
+				if (expr_script == p_container.script_type) {
+					return true;
+				}
+				expr_script = expr_script->get_base_script();
+			}
+			return false;
+		} break;
+		case DataType::CLASS: {
+			if (p_container.is_meta_type) {
+				return ClassDB::is_parent_class(expr_native, GDScript::get_class_static());
+			}
+			if (p_container.class_type == head && expr_script.is_valid() && expr_script->get_path() == self_path) {
+				// Special case: container is self and expression is self script
+				return true;
+			}
+			while (expr_class) {
+				if (expr_class == p_container.class_type) {
+					return true;
+				}
+				expr_class = expr_class->base_type.class_type;
+			}
+			return false;
+		}
+	}
+
+	return false;
+}
+
+GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
+	if (p_node->get_datatype().has_type) {
+		return p_node->get_datatype();
+	}
+
+	DataType node_type;
+
+	switch (p_node->type) {
+		case Node::TYPE_CONSTANT: {
+			node_type = _type_from_variant(static_cast<ConstantNode *>(p_node)->value);
+		} break;
+		case Node::TYPE_ARRAY: {
+			node_type.has_type = true;
+			node_type.kind = DataType::BUILTIN;
+			node_type.builtin_type = Variant::ARRAY;
+		} break;
+		case Node::TYPE_DICTIONARY: {
+			node_type.has_type = true;
+			node_type.kind = DataType::BUILTIN;
+			node_type.builtin_type = Variant::DICTIONARY;
+		} break;
+		case Node::TYPE_SELF: {
+			node_type.has_type = true;
+			node_type.kind = DataType::CLASS;
+			node_type.class_type = current_class;
+		} break;
+		case Node::TYPE_IDENTIFIER: {
+			IdentifierNode *id = static_cast<IdentifierNode *>(p_node);
+			if (id->declared_block) {
+				node_type = id->declared_block->variables[id->name]->get_datatype();
+			} else if (id->name == "#match_value") {
+				// It's a special id just for the match statetement, ignore
+				break;
+			} else if (current_function && current_function->arguments.find(id->name) >= 0) {
+				int idx = current_function->arguments.find(id->name);
+				node_type = current_function->argument_types[idx];
+			} else {
+				node_type = _reduce_identifier_type(NULL, id->name, id->line);
+			}
+		} break;
+		case Node::TYPE_CAST: {
+			CastNode *cn = static_cast<CastNode *>(p_node);
+
+			DataType source_type = _reduce_node_type(cn->source_node);
+			cn->cast_type = _resolve_type(cn->cast_type, cn->line);
+			if (source_type.has_type) {
+
+				bool valid = false;
+				if (check_types) {
+					if (cn->cast_type.kind == DataType::BUILTIN && source_type.kind == DataType::BUILTIN) {
+						valid = Variant::can_convert(source_type.builtin_type, cn->cast_type.builtin_type);
+					}
+					if (cn->cast_type.kind != DataType::BUILTIN && source_type.kind != DataType::BUILTIN) {
+						valid = _is_type_compatible(cn->cast_type, source_type) || _is_type_compatible(source_type, cn->cast_type);
+					}
+
+					if (!valid) {
+						_set_error("Invalid cast. Cannot convert from '" + source_type.to_string() +
+										   "' to '" + cn->cast_type.to_string() + "'.",
+								cn->line);
+						return DataType();
+					}
+				}
+			} else {
+				_mark_line_as_unsafe(cn->line);
+			}
+
+			node_type = cn->cast_type;
+
+		} break;
+		case Node::TYPE_OPERATOR: {
+			OperatorNode *op = static_cast<OperatorNode *>(p_node);
+
+			switch (op->op) {
+				case OperatorNode::OP_CALL:
+				case OperatorNode::OP_PARENT_CALL: {
+					node_type = _reduce_function_call_type(op);
+				} break;
+				case OperatorNode::OP_YIELD: {
+					if (op->arguments.size() == 2) {
+						DataType base_type = _reduce_node_type(op->arguments[0]);
+						DataType signal_type = _reduce_node_type(op->arguments[1]);
+						// TODO: Check if signal exists when it's a constant
+						if (base_type.has_type && base_type.kind == DataType::BUILTIN && base_type.builtin_type != Variant::NIL && base_type.builtin_type != Variant::OBJECT) {
+							_set_error("First argument of 'yield()' must be an object.", op->line);
+							return DataType();
+						}
+						if (signal_type.has_type && (signal_type.kind != DataType::BUILTIN || signal_type.builtin_type != Variant::STRING)) {
+							_set_error("Second argument of 'yield()' must be a string.", op->line);
+							return DataType();
+						}
+					}
+					// yield can return anything
+					node_type.has_type = false;
+				} break;
+				case OperatorNode::OP_IS: {
+
+					if (op->arguments.size() != 2) {
+						_set_error("Parser bug: binary operation without 2 arguments.", op->line);
+						ERR_FAIL_V(DataType());
+					}
+
+					DataType value_type = _reduce_node_type(op->arguments[0]);
+					DataType type_type = _reduce_node_type(op->arguments[1]);
+
+					if (check_types && type_type.has_type) {
+						if (!type_type.is_meta_type && (type_type.kind != DataType::NATIVE || !ClassDB::is_parent_class(type_type.native_type, "Script"))) {
+							_set_error("Invalid 'is' test: right operand is not a type (not a native type nor a script).", op->line);
+							return DataType();
+						}
+						type_type.is_meta_type = false; // Test the actual type
+						if (!_is_type_compatible(type_type, value_type) && !_is_type_compatible(value_type, type_type)) {
+							// TODO: Make this a warning?
+							_set_error("A value of type '" + value_type.to_string() + "' will never be an instance of '" + type_type.to_string() + "'.", op->line);
+							return DataType();
+						}
+					}
+
+					node_type.has_type = true;
+					node_type.is_constant = true;
+					node_type.is_meta_type = false;
+					node_type.kind = DataType::BUILTIN;
+					node_type.builtin_type = Variant::BOOL;
+				} break;
+				// Unary operators
+				case OperatorNode::OP_NEG:
+				case OperatorNode::OP_POS:
+				case OperatorNode::OP_NOT:
+				case OperatorNode::OP_BIT_INVERT: {
+
+					DataType argument_type = _reduce_node_type(op->arguments[0]);
+					if (!argument_type.has_type) {
+						break;
+					}
+
+					Variant::Operator var_op = _get_variant_operation(op->op);
+					bool valid = false;
+					node_type = _get_operation_type(var_op, argument_type, argument_type, valid);
+
+					if (check_types && !valid) {
+						_set_error("Invalid operand type ('" + argument_type.to_string() +
+										   "') to unary operator '" + Variant::get_operator_name(var_op) + "'.",
+								op->line, op->column);
+						return DataType();
+					}
+
+				} break;
+				// Binary operators
+				case OperatorNode::OP_IN:
+				case OperatorNode::OP_EQUAL:
+				case OperatorNode::OP_NOT_EQUAL:
+				case OperatorNode::OP_LESS:
+				case OperatorNode::OP_LESS_EQUAL:
+				case OperatorNode::OP_GREATER:
+				case OperatorNode::OP_GREATER_EQUAL:
+				case OperatorNode::OP_AND:
+				case OperatorNode::OP_OR:
+				case OperatorNode::OP_ADD:
+				case OperatorNode::OP_SUB:
+				case OperatorNode::OP_MUL:
+				case OperatorNode::OP_DIV:
+				case OperatorNode::OP_MOD:
+				case OperatorNode::OP_SHIFT_LEFT:
+				case OperatorNode::OP_SHIFT_RIGHT:
+				case OperatorNode::OP_BIT_AND:
+				case OperatorNode::OP_BIT_OR:
+				case OperatorNode::OP_BIT_XOR: {
+
+					if (op->arguments.size() != 2) {
+						_set_error("Parser bug: binary operation without 2 arguments.", op->line);
+						ERR_FAIL_V(DataType());
+					}
+
+					DataType argument_a_type = _reduce_node_type(op->arguments[0]);
+					DataType argument_b_type = _reduce_node_type(op->arguments[1]);
+					if (!argument_a_type.has_type || !argument_b_type.has_type) {
+						_mark_line_as_unsafe(op->line);
+						break;
+					}
+
+					Variant::Operator var_op = _get_variant_operation(op->op);
+					bool valid = false;
+					node_type = _get_operation_type(var_op, argument_a_type, argument_b_type, valid);
+
+					if (check_types && !valid) {
+						_set_error("Invalid operand types ('" + argument_a_type.to_string() + "' and '" +
+										   argument_b_type.to_string() + "') to operator '" + Variant::get_operator_name(var_op) + "'.",
+								op->line, op->column);
+						return DataType();
+					}
+
+				} break;
+				// Ternary operators
+				case OperatorNode::OP_TERNARY_IF: {
+					if (op->arguments.size() != 3) {
+						_set_error("Parser bug: ternary operation without 3 arguments");
+						ERR_FAIL_V(DataType());
+					}
+
+					DataType true_type = _reduce_node_type(op->arguments[1]);
+					DataType false_type = _reduce_node_type(op->arguments[2]);
+
+					// If types are equal, then the expression is of the same type
+					// If they are compatible, return the broader type
+					if (true_type == false_type || _is_type_compatible(true_type, false_type)) {
+						node_type = true_type;
+					} else if (_is_type_compatible(false_type, true_type)) {
+						node_type = false_type;
+					}
+
+					// TODO: Warn if types aren't compatible
+
+				} break;
+				// Assignment should never happen within an expression
+				case OperatorNode::OP_ASSIGN:
+				case OperatorNode::OP_ASSIGN_ADD:
+				case OperatorNode::OP_ASSIGN_SUB:
+				case OperatorNode::OP_ASSIGN_MUL:
+				case OperatorNode::OP_ASSIGN_DIV:
+				case OperatorNode::OP_ASSIGN_MOD:
+				case OperatorNode::OP_ASSIGN_SHIFT_LEFT:
+				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT:
+				case OperatorNode::OP_ASSIGN_BIT_AND:
+				case OperatorNode::OP_ASSIGN_BIT_OR:
+				case OperatorNode::OP_ASSIGN_BIT_XOR:
+				case OperatorNode::OP_INIT_ASSIGN: {
+
+					_set_error("Assignment inside expression is not allowed (parser bug?).", op->line);
+					return DataType();
+
+				} break;
+				case OperatorNode::OP_INDEX_NAMED: {
+					if (op->arguments.size() != 2) {
+						_set_error("Parser bug: named index with invalid arguments.", op->line);
+						ERR_FAIL_V(DataType());
+					}
+					if (op->arguments[1]->type != Node::TYPE_IDENTIFIER) {
+						_set_error("Parser bug: named index without identifier argument.", op->line);
+						ERR_FAIL_V(DataType());
+					}
+
+					DataType base_type = _reduce_node_type(op->arguments[0]);
+					IdentifierNode *member_id = static_cast<IdentifierNode *>(op->arguments[1]);
+
+					if (base_type.has_type) {
+						if (check_types && base_type.kind == DataType::BUILTIN) {
+							// Variant type, just test if it's possible
+							DataType result;
+							switch (base_type.builtin_type) {
+								case Variant::NIL:
+								case Variant::DICTIONARY: {
+									result.has_type = false;
+								} break;
+								default: {
+									Variant::CallError err;
+									Variant temp = Variant::construct(base_type.builtin_type, NULL, 0, err);
+
+									bool valid = false;
+									Variant res = temp.get(member_id->name.operator String(), &valid);
+
+									if (valid) {
+										result = _type_from_variant(res);
+									} else if (check_types) {
+										_set_error("Can't get index '" + String(member_id->name.operator String()) + "' on base '" +
+														   base_type.to_string() + "'.",
+												op->line);
+										return DataType();
+									}
+								} break;
+							}
+							result.is_constant = false;
+							node_type = result;
+						} else {
+							node_type = _reduce_identifier_type(&base_type, member_id->name, op->line);
+						}
+					} else {
+						_mark_line_as_unsafe(op->line);
+					}
+					if (error_set) {
+						return DataType();
+					}
+				} break;
+				case OperatorNode::OP_INDEX: {
+
+					if (op->arguments[1]->type == Node::TYPE_CONSTANT) {
+						ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[1]);
+						if (cn->value.get_type() == Variant::STRING) {
+							// Treat this as named indexing
+
+							IdentifierNode *id = alloc_node<IdentifierNode>();
+							id->name = cn->value.operator StringName();
+
+							op->op = OperatorNode::OP_INDEX_NAMED;
+							op->arguments.write[1] = id;
+
+							return _reduce_node_type(op);
+						}
+					}
+
+					DataType base_type = _reduce_node_type(op->arguments[0]);
+					DataType index_type = _reduce_node_type(op->arguments[1]);
+
+					if (!base_type.has_type) {
+						_mark_line_as_unsafe(op->line);
+						break;
+					}
+
+					if (check_types && index_type.has_type) {
+						if (base_type.kind == DataType::BUILTIN) {
+							// Check if indexing is valid
+							bool error = index_type.kind != DataType::BUILTIN;
+							if (!error) {
+								switch (base_type.builtin_type) {
+									// Expect int or real as index
+									case Variant::POOL_BYTE_ARRAY:
+									case Variant::POOL_COLOR_ARRAY:
+									case Variant::POOL_INT_ARRAY:
+									case Variant::POOL_REAL_ARRAY:
+									case Variant::POOL_STRING_ARRAY:
+									case Variant::POOL_VECTOR2_ARRAY:
+									case Variant::POOL_VECTOR3_ARRAY:
+									case Variant::ARRAY:
+									case Variant::STRING: {
+										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL;
+									} break;
+									// Expect String only
+									case Variant::RECT2:
+									case Variant::PLANE:
+									case Variant::QUAT:
+									case Variant::AABB:
+									case Variant::OBJECT: {
+										error = index_type.builtin_type != Variant::STRING;
+									} break;
+									// Expect String or number
+									case Variant::VECTOR2:
+									case Variant::VECTOR3:
+									case Variant::TRANSFORM2D:
+									case Variant::BASIS:
+									case Variant::TRANSFORM: {
+										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL &&
+												index_type.builtin_type != Variant::STRING;
+									} break;
+									// Expect String or int
+									case Variant::COLOR: {
+										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::STRING;
+									} break;
+								}
+							}
+							if (error) {
+								_set_error("Invalid index type (" + index_type.to_string() + ") for base '" + base_type.to_string() + "'.",
+										op->line);
+								return DataType();
+							}
+
+							if (op->arguments[1]->type == GDScriptParser::Node::TYPE_CONSTANT) {
+								ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[1]);
+								// Index is a constant, just try it if possible
+								switch (base_type.builtin_type) {
+									// Arrays/string have variable indexing, can't test directly
+									case Variant::STRING:
+									case Variant::ARRAY:
+									case Variant::DICTIONARY:
+									case Variant::POOL_BYTE_ARRAY:
+									case Variant::POOL_COLOR_ARRAY:
+									case Variant::POOL_INT_ARRAY:
+									case Variant::POOL_REAL_ARRAY:
+									case Variant::POOL_STRING_ARRAY:
+									case Variant::POOL_VECTOR2_ARRAY:
+									case Variant::POOL_VECTOR3_ARRAY: {
+										break;
+									}
+									default: {
+										Variant::CallError err;
+										Variant temp = Variant::construct(base_type.builtin_type, NULL, 0, err);
+
+										bool valid = false;
+										Variant res = temp.get(cn->value, &valid);
+
+										if (valid) {
+											node_type = _type_from_variant(res);
+											node_type.is_constant = false;
+										} else if (check_types) {
+											_set_error("Can't get index '" + String(cn->value) + "' on base '" +
+															   base_type.to_string() + "'.",
+													op->line);
+											return DataType();
+										}
+									} break;
+								}
+							} else {
+								_mark_line_as_unsafe(op->line);
+							}
+						} else if (!for_completion && (index_type.kind != DataType::BUILTIN || index_type.builtin_type != Variant::STRING)) {
+							_set_error("Only strings can be used as index in the base type '" + base_type.to_string() + "'.", op->line);
+							return DataType();
+						}
+					}
+					if (check_types && !node_type.has_type) {
+						// Can infer indexing type for some variant types
+						DataType result;
+						result.has_type = true;
+						result.kind = DataType::BUILTIN;
+						switch (base_type.builtin_type) {
+							// Can't index at all
+							case Variant::NIL:
+							case Variant::BOOL:
+							case Variant::INT:
+							case Variant::REAL:
+							case Variant::NODE_PATH:
+							case Variant::_RID: {
+								_set_error("Can't index on a value of type '" + base_type.to_string() + "'.", op->line);
+								return DataType();
+							} break;
+								// Return int
+							case Variant::POOL_BYTE_ARRAY:
+							case Variant::POOL_INT_ARRAY: {
+								result.builtin_type = Variant::INT;
+							} break;
+								// Return real
+							case Variant::POOL_REAL_ARRAY:
+							case Variant::VECTOR2:
+							case Variant::VECTOR3:
+							case Variant::QUAT: {
+								result.builtin_type = Variant::REAL;
+							} break;
+								// Return color
+							case Variant::POOL_COLOR_ARRAY: {
+								result.builtin_type = Variant::COLOR;
+							} break;
+								// Return string
+							case Variant::POOL_STRING_ARRAY:
+							case Variant::STRING: {
+								result.builtin_type = Variant::STRING;
+							} break;
+								// Return Vector2
+							case Variant::POOL_VECTOR2_ARRAY:
+							case Variant::TRANSFORM2D:
+							case Variant::RECT2: {
+								result.builtin_type = Variant::VECTOR2;
+							} break;
+								// Return Vector3
+							case Variant::POOL_VECTOR3_ARRAY:
+							case Variant::AABB:
+							case Variant::BASIS: {
+								result.builtin_type = Variant::VECTOR3;
+							} break;
+								// Depends on the index
+							case Variant::TRANSFORM:
+							case Variant::PLANE:
+							case Variant::COLOR:
+							default: {
+								result.has_type = false;
+							} break;
+						}
+						node_type = result;
+					}
+				} break;
+				default: {
+					_set_error("Parser bug: unhandled operation.", op->line);
+					ERR_FAIL_V(DataType());
+				}
+			}
+		} break;
+	}
+
+	p_node->set_datatype(_resolve_type(node_type, p_node->line));
+	return node_type;
+}
+
+bool GDScriptParser::_get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const {
+
+	r_static = false;
+	r_default_arg_count = 0;
+
+	DataType original_type = p_base_type;
+	ClassNode *base = NULL;
+	FunctionNode *callee = NULL;
+
+	if (p_base_type.kind == DataType::CLASS) {
+		base = p_base_type.class_type;
+	}
+
+	// Look up the current file (parse tree)
+	while (!callee && base) {
+		for (int i = 0; i < base->static_functions.size(); i++) {
+			FunctionNode *func = base->static_functions[i];
+			if (p_function == func->name) {
+				r_static = true;
+				callee = func;
+				break;
+			}
+		}
+		if (!callee && !p_base_type.is_meta_type) {
+			for (int i = 0; i < base->functions.size(); i++) {
+				FunctionNode *func = base->functions[i];
+				if (p_function == func->name) {
+					callee = func;
+					break;
+				}
+			}
+		}
+		p_base_type = base->base_type;
+		if (p_base_type.kind == DataType::CLASS) {
+			base = p_base_type.class_type;
+		} else {
+			break;
+		}
+	}
+
+	if (callee) {
+		r_return_type = callee->get_datatype();
+		for (int i = 0; i < callee->argument_types.size(); i++) {
+			r_arg_types.push_back(callee->argument_types[i]);
+		}
+		r_default_arg_count = callee->default_values.size();
+		return true;
+	}
+
+	// Nothing in current file, check parent script
+	Ref<GDScript> base_gdscript;
+	Ref<Script> base_script;
+	StringName native;
+	if (p_base_type.kind == DataType::GDSCRIPT) {
+		base_gdscript = p_base_type.script_type;
+	} else if (p_base_type.kind == DataType::SCRIPT) {
+		base_script = p_base_type.script_type;
+	} else if (p_base_type.kind == DataType::NATIVE) {
+		native = p_base_type.native_type;
+	}
+
+	while (base_gdscript.is_valid()) {
+		native = base_gdscript->get_instance_base_type();
+
+		Map<StringName, GDScriptFunction *> funcs = base_gdscript->get_member_functions();
+
+		if (funcs.has(p_function)) {
+			GDScriptFunction *f = funcs[p_function];
+			r_static = f->is_static();
+			r_default_arg_count = f->get_default_argument_count();
+			r_return_type = _type_from_gdtype(f->get_return_type());
+			for (int i = 0; i < f->get_argument_count(); i++) {
+				r_arg_types.push_back(_type_from_gdtype(f->get_argument_type(i)));
+			}
+			return true;
+		}
+
+		base_gdscript = base_gdscript->get_base_script();
+	}
+
+	while (base_script.is_valid()) {
+		native = base_script->get_instance_base_type();
+		MethodInfo mi = base_script->get_method_info(p_function);
+
+		if (!(mi == MethodInfo())) {
+			r_return_type = _type_from_property(mi.return_val, false);
+			r_default_arg_count = mi.default_arguments.size();
+			for (List<PropertyInfo>::Element *E = mi.arguments.front(); E; E = E->next()) {
+				r_arg_types.push_back(_type_from_property(E->get()));
+			}
+			return true;
+		}
+		base_script = base_script->get_base_script();
+	}
+
+#ifdef DEBUG_METHODS_ENABLED
+
+	// Only native remains
+	if (!ClassDB::class_exists(native)) {
+		native = "_" + native.operator String();
+	}
+	if (!ClassDB::class_exists(native)) {
+		if (!check_types) return false;
+		ERR_EXPLAIN("Parser bug: Class '" + String(native) + "' not found.");
+		ERR_FAIL_V(false);
+	}
+
+	MethodBind *method = ClassDB::get_method(native, p_function);
+
+	if (!method) {
+		// Try virtual methods
+		List<MethodInfo> virtuals;
+		ClassDB::get_virtual_methods(native, &virtuals);
+
+		for (const List<MethodInfo>::Element *E = virtuals.front(); E; E = E->next()) {
+			const MethodInfo &mi = E->get();
+			if (mi.name == p_function) {
+				r_default_arg_count = mi.default_arguments.size();
+				for (const List<PropertyInfo>::Element *pi = mi.arguments.front(); pi; pi = pi->next()) {
+					r_arg_types.push_back(_type_from_property(pi->get()));
+				}
+				r_return_type = _type_from_property(mi.return_val, false);
+				r_vararg = mi.flags & METHOD_FLAG_VARARG;
+				return true;
+			}
+		}
+
+		// If the base is a script, it might be trying to access members of the Script class itself
+		if (original_type.is_meta_type && !(p_function == "new") && (original_type.kind == DataType::SCRIPT || original_type.kind == DataType::GDSCRIPT)) {
+			method = ClassDB::get_method(original_type.script_type->get_class_name(), p_function);
+
+			if (method) {
+				r_static = true;
+			} else {
+				// Try virtual methods of the script type
+				virtuals.clear();
+				ClassDB::get_virtual_methods(original_type.script_type->get_class_name(), &virtuals);
+				for (const List<MethodInfo>::Element *E = virtuals.front(); E; E = E->next()) {
+					const MethodInfo &mi = E->get();
+					if (mi.name == p_function) {
+						r_default_arg_count = mi.default_arguments.size();
+						for (const List<PropertyInfo>::Element *pi = mi.arguments.front(); pi; pi = pi->next()) {
+							r_arg_types.push_back(_type_from_property(pi->get()));
+						}
+						r_return_type = _type_from_property(mi.return_val, false);
+						r_static = true;
+						r_vararg = mi.flags & METHOD_FLAG_VARARG;
+						return true;
+					}
+				}
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	r_default_arg_count = method->get_default_argument_count();
+	r_return_type = _type_from_property(method->get_return_info(), false);
+	r_vararg = method->is_vararg();
+
+	for (int i = 0; i < method->get_argument_count(); i++) {
+		r_arg_types.push_back(_type_from_property(method->get_argument_info(i)));
+	}
+	return true;
+#else
+	return false;
+#endif
+}
+
+GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const OperatorNode *p_call) {
+	if (p_call->arguments.size() < 1) {
+		_set_error("Parser bug: function call without enough arguments.", p_call->line);
+		ERR_FAIL_V(DataType());
+	}
+
+	DataType return_type;
+	List<DataType> arg_types;
+	int default_args_count = 0;
+	int arg_count = p_call->arguments.size();
+	String callee_name;
+	bool is_vararg = false;
+
+	switch (p_call->arguments[0]->type) {
+		case GDScriptParser::Node::TYPE_TYPE: {
+			// Built-in constructor, special case
+			TypeNode *tn = static_cast<TypeNode *>(p_call->arguments[0]);
+
+			Vector<DataType> par_types;
+			par_types.resize(p_call->arguments.size() - 1);
+			for (int i = 1; i < p_call->arguments.size(); i++) {
+				par_types.write[i - 1] = _reduce_node_type(p_call->arguments[i]);
+			}
+
+			if (error_set) return DataType();
+
+			bool match = false;
+			List<MethodInfo> constructors;
+			Variant::get_constructor_list(tn->vtype, &constructors);
+			PropertyInfo return_type;
+
+			for (List<MethodInfo>::Element *E = constructors.front(); E; E = E->next()) {
+				MethodInfo &mi = E->get();
+
+				if (p_call->arguments.size() - 1 < mi.arguments.size() - mi.default_arguments.size()) {
+					continue;
+				}
+				if (p_call->arguments.size() - 1 > mi.arguments.size()) {
+					continue;
+				}
+
+				bool types_match = true;
+				for (int i = 0; i < par_types.size(); i++) {
+					DataType arg_type;
+					if (mi.arguments[i].type != Variant::NIL) {
+						arg_type.has_type = true;
+						arg_type.kind = mi.arguments[i].type == Variant::OBJECT ? DataType::NATIVE : DataType::BUILTIN;
+						arg_type.builtin_type = mi.arguments[i].type;
+						arg_type.native_type = mi.arguments[i].class_name;
+					}
+
+					if (!_is_type_compatible(arg_type, par_types[i], true)) {
+						types_match = false;
+						break;
+					}
+				}
+
+				if (types_match) {
+					match = true;
+					return_type = mi.return_val;
+					break;
+				}
+			}
+
+			if (match) {
+				return _type_from_property(return_type, false);
+			} else if (check_types) {
+				String err = "No constructor of '";
+				err += Variant::get_type_name(tn->vtype);
+				err += "' matches the signature '";
+				err += Variant::get_type_name(tn->vtype) + "(";
+				for (int i = 0; i < par_types.size(); i++) {
+					if (i > 0) err += ", ";
+					err += par_types[i].to_string();
+				}
+				err += ")'.";
+				_set_error(err, p_call->line, p_call->column);
+				return DataType();
+			}
+			return DataType();
+		} break;
+		case GDScriptParser::Node::TYPE_BUILT_IN_FUNCTION: {
+			BuiltInFunctionNode *func = static_cast<BuiltInFunctionNode *>(p_call->arguments[0]);
+			MethodInfo mi = GDScriptFunctions::get_info(func->function);
+
+			return_type = _type_from_property(mi.return_val, false);
+
+			// Check arguments
+
+			is_vararg = mi.flags & METHOD_FLAG_VARARG;
+
+			default_args_count = mi.default_arguments.size();
+			callee_name = mi.name;
+			arg_count -= 1;
+
+			// Check each argument type
+			for (List<PropertyInfo>::Element *E = mi.arguments.front(); E; E = E->next()) {
+				arg_types.push_back(_type_from_property(E->get()));
+			}
+		} break;
+		default: {
+			if (p_call->op == OperatorNode::OP_CALL && p_call->arguments.size() < 2) {
+				_set_error("Parser bug: self method call without enough arguments.", p_call->line);
+				ERR_FAIL_V(DataType());
+			}
+
+			int arg_id = p_call->op == OperatorNode::OP_CALL ? 1 : 0;
+
+			if (p_call->arguments[arg_id]->type != Node::TYPE_IDENTIFIER) {
+				_set_error("Parser bug: invalid function call argument.", p_call->line);
+				ERR_FAIL_V(DataType());
+			}
+
+			IdentifierNode *func_id = static_cast<IdentifierNode *>(p_call->arguments[arg_id]);
+			callee_name = func_id->name;
+			arg_count -= 1 + arg_id;
+
+			DataType base_type;
+			if (p_call->op == OperatorNode::OP_PARENT_CALL) {
+				base_type = current_class->base_type;
+			} else {
+				base_type = _reduce_node_type(p_call->arguments[0]);
+			}
+
+			if (!base_type.has_type || (base_type.kind == DataType::BUILTIN && base_type.builtin_type == Variant::NIL)) {
+				_mark_line_as_unsafe(p_call->line);
+				return DataType();
+			}
+
+			if (base_type.kind == DataType::BUILTIN) {
+				Variant::CallError err;
+				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
+
+				if (check_types) {
+					if (!tmp.has_method(callee_name)) {
+						_set_error("Method '" + callee_name + "' is not declared on base '" + base_type.to_string() + "'.", p_call->line);
+						return DataType();
+					}
+
+					default_args_count = Variant::get_method_default_arguments(base_type.builtin_type, callee_name).size();
+					const Vector<Variant::Type> &var_arg_types = Variant::get_method_argument_types(base_type.builtin_type, callee_name);
+
+					for (int i = 0; i < var_arg_types.size(); i++) {
+						DataType argtype;
+						if (var_arg_types[i] != Variant::NIL) {
+							argtype.has_type = true;
+							argtype.kind = DataType::BUILTIN;
+							argtype.builtin_type = var_arg_types[i];
+						}
+						arg_types.push_back(argtype);
+					}
+				}
+
+				return_type.has_type = true;
+				return_type.kind = DataType::BUILTIN;
+				return_type.builtin_type = Variant::get_method_return_type(base_type.builtin_type, callee_name);
+				break;
+			}
+
+			DataType original_type = base_type;
+			bool is_initializer = callee_name == "new";
+			bool is_static = false;
+			bool valid = false;
+
+			if (is_initializer && original_type.is_meta_type) {
+				// Try to check it as initializer
+				base_type = original_type;
+				callee_name = "_init";
+				base_type.is_meta_type = false;
+
+				valid = _get_function_signature(base_type, callee_name, return_type, arg_types,
+						default_args_count, is_static, is_vararg);
+
+				if (valid) {
+					return_type = original_type;
+					return_type.is_meta_type = false;
+				}
+			}
+
+			if (!valid) {
+				base_type = original_type;
+				return_type = DataType();
+				valid = _get_function_signature(base_type, callee_name, return_type, arg_types,
+						default_args_count, is_static, is_vararg);
+			}
+
+			if (!valid) {
+#ifdef DEBUG_ENABLED
+				if (p_call->arguments[0]->type == Node::TYPE_SELF) {
+					_set_error("Method '" + callee_name + "' is not declared in the current class.", p_call->line);
+					return DataType();
+				}
+				_mark_line_as_unsafe(p_call->line);
+#endif
+				return DataType();
+			}
+
+#ifdef DEBUG_ENABLED
+			if (current_function && !for_completion && !is_static && p_call->arguments[0]->type == Node::TYPE_SELF && current_function->_static) {
+				if (current_function && current_function->_static && p_call->arguments[0]->type == Node::TYPE_SELF) {
+					_set_error("Can't call non-static function from a static function.", p_call->line);
+					return DataType();
+				}
+			}
+
+			if (check_types && !is_static && !is_initializer && base_type.is_meta_type) {
+				_set_error("Non-static function '" + String(callee_name) + "' can only be called from an instance.", p_call->line);
+				return DataType();
+			}
+#endif
+		} break;
+	}
+
+	if (!check_types) {
+		return return_type;
+	}
+
+	if (arg_count < arg_types.size() - default_args_count) {
+		_set_error("Too few arguments for '" + callee_name + "()' call. Expected at least " + itos(arg_types.size() - default_args_count) + ".", p_call->line);
+		return return_type;
+	}
+	if (!is_vararg && arg_count > arg_types.size()) {
+		_set_error("Too many arguments for '" + callee_name + "()' call. Expected at most " + itos(arg_types.size()) + ".", p_call->line);
+		return return_type;
+	}
+
+	int arg_diff = p_call->arguments.size() - arg_count;
+	for (int i = arg_diff; i < p_call->arguments.size(); i++) {
+		DataType par_type = _reduce_node_type(p_call->arguments[i]);
+
+		if ((i - arg_diff) >= arg_types.size()) {
+			continue;
+		}
+
+		if (!par_type.has_type) {
+			_mark_line_as_unsafe(p_call->line);
+		} else if (!_is_type_compatible(arg_types[i - arg_diff], par_type, true)) {
+			// Supertypes are acceptable for dynamic compliance
+			if (!_is_type_compatible(par_type, arg_types[i - arg_diff])) {
+				_set_error("At '" + callee_name + "()' call, argument " + itos(i - arg_diff + 1) + ". Assigned type (" +
+								   par_type.to_string() + ") doesn't match the function argument's type (" +
+								   arg_types[i - arg_diff].to_string() + ").",
+						p_call->line);
+				return DataType();
+			} else {
+				_mark_line_as_unsafe(p_call->line);
+			}
+		}
+	}
+
+	return return_type;
+}
+
+bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const {
+	DataType base_type = p_base_type;
+
+	// Check classes in current file
+	ClassNode *base = NULL;
+	if (base_type.kind == DataType::CLASS) {
+		base = base_type.class_type;
+	}
+
+	while (base) {
+		if (base->constant_expressions.has(p_member)) {
+			r_member_type = base->constant_expressions[p_member].expression->get_datatype();
+			return true;
+		}
+
+		if (!base_type.is_meta_type) {
+			for (int i = 0; i < base->variables.size(); i++) {
+				ClassNode::Member m = base->variables[i];
+				if (m.identifier == p_member) {
+					r_member_type = m.data_type;
+					return true;
+				}
+			}
+		} else {
+			for (int i = 0; i < base->subclasses.size(); i++) {
+				ClassNode *c = base->subclasses[i];
+				if (c->name == p_member) {
+					DataType class_type;
+					class_type.has_type = true;
+					class_type.is_constant = true;
+					class_type.is_meta_type = true;
+					class_type.kind = DataType::CLASS;
+					class_type.class_type = c;
+					r_member_type = class_type;
+					return true;
+				}
+			}
+		}
+
+		base_type = base->base_type;
+		if (base_type.kind == DataType::CLASS) {
+			base = base_type.class_type;
+		} else {
+			break;
+		}
+	}
+
+	Ref<GDScript> gds;
+	if (base_type.kind == DataType::GDSCRIPT) {
+		gds = base_type.script_type;
+	}
+
+	Ref<Script> scr;
+	if (base_type.kind == DataType::SCRIPT) {
+		scr = base_type.script_type;
+	}
+
+	StringName native;
+	if (base_type.kind == DataType::NATIVE) {
+		native = base_type.native_type;
+	}
+
+	// Check GDScripts
+	while (gds.is_valid()) {
+		if (gds->get_constants().has(p_member)) {
+			Variant c = gds->get_constants()[p_member];
+			r_member_type = _type_from_variant(c);
+			return true;
+		}
+
+		if (!base_type.is_meta_type) {
+			if (gds->get_members().has(p_member)) {
+				r_member_type = _type_from_gdtype(gds->get_member_type(p_member));
+				return true;
+			}
+		}
+
+		native = gds->get_instance_base_type();
+		if (gds->get_base_script().is_valid()) {
+			gds = gds->get_base_script();
+			scr = gds->get_base_script();
+			bool is_meta = base_type.is_meta_type;
+			base_type = _type_from_variant(scr.operator Variant());
+			base_type.is_meta_type = is_meta;
+		} else {
+			break;
+		}
+	}
+
+	// Check other script types
+	while (scr.is_valid()) {
+		Map<StringName, Variant> constants;
+		scr->get_constants(&constants);
+		if (constants.has(p_member)) {
+			r_member_type = _type_from_variant(constants[p_member]);
+			return true;
+		}
+
+		List<PropertyInfo> properties;
+		scr->get_script_property_list(&properties);
+		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+			if (E->get().name == p_member) {
+				r_member_type = _type_from_property(E->get());
+				return true;
+			}
+		}
+
+		base_type = _type_from_variant(scr.operator Variant());
+		native = scr->get_instance_base_type();
+		scr = scr->get_base_script();
+	}
+
+	// Check ClassDB
+	if (!ClassDB::class_exists(native)) {
+		native = "_" + native.operator String();
+	}
+	if (!ClassDB::class_exists(native)) {
+		if (!check_types) return false;
+		ERR_EXPLAIN("Parser bug: Class '" + String(native) + "' not found.");
+		ERR_FAIL_V(false);
+	}
+
+	bool valid = false;
+	ClassDB::get_integer_constant(native, p_member, &valid);
+	if (valid) {
+		DataType ct;
+		ct.has_type = true;
+		ct.is_constant = true;
+		ct.kind = DataType::BUILTIN;
+		ct.builtin_type = Variant::INT;
+		r_member_type = ct;
+		return true;
+	}
+
+	if (!base_type.is_meta_type) {
+		List<PropertyInfo> properties;
+		ClassDB::get_property_list(native, &properties);
+		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+			if (E->get().name == p_member) {
+				// Check if a getter exists
+				StringName getter_name = ClassDB::get_property_getter(native, p_member);
+				if (getter_name != StringName()) {
+					// Use the getter return type
+#ifdef DEBUG_METHODS_ENABLED
+					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
+					if (getter_method) {
+						r_member_type = _type_from_property(getter_method->get_return_info());
+					} else {
+						r_member_type = DataType();
+					}
+#else
+					r_member_type = DataType();
+#endif
+				} else {
+					r_member_type = _type_from_property(E->get());
+				}
+				return true;
+			}
+		}
+	}
+
+	// If the base is a script, it might be trying to access members of the Script class itself
+	if (p_base_type.is_meta_type && (p_base_type.kind == DataType::SCRIPT || p_base_type.kind == DataType::GDSCRIPT)) {
+		native = p_base_type.script_type->get_class_name();
+		ClassDB::get_integer_constant(native, p_member, &valid);
+		if (valid) {
+			DataType ct;
+			ct.has_type = true;
+			ct.is_constant = true;
+			ct.kind = DataType::BUILTIN;
+			ct.builtin_type = Variant::INT;
+			r_member_type = ct;
+			return true;
+		}
+
+		List<PropertyInfo> properties;
+		ClassDB::get_property_list(native, &properties);
+		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+			if (E->get().name == p_member) {
+				// Check if a getter exists
+				StringName getter_name = ClassDB::get_property_getter(native, p_member);
+				if (getter_name != StringName()) {
+					// Use the getter return type
+#ifdef DEBUG_METHODS_ENABLED
+					MethodBind *getter_method = ClassDB::get_method(native, getter_name);
+					if (getter_method) {
+						r_member_type = _type_from_property(getter_method->get_return_info());
+					} else {
+						r_member_type = DataType();
+					}
+#else
+					r_member_type = DataType();
+#endif
+				} else {
+					r_member_type = _type_from_property(E->get());
+				}
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line) {
+
+	if (p_base_type && !p_base_type->has_type) {
+		return DataType();
+	}
+
+	DataType base_type;
+
+	// Check classes in current file
+	ClassNode *base = NULL;
+	if (!p_base_type) {
+		base = current_class;
+		base_type.has_type = true;
+		base_type.is_constant = true;
+		base_type.kind = DataType::CLASS;
+		base_type.class_type = base;
+	} else {
+		base_type = DataType(*p_base_type);
+		if (base_type.kind == DataType::CLASS) {
+			base = base_type.class_type;
+		}
+	}
+
+	DataType member_type;
+
+	if (_get_member_type(base_type, p_identifier, member_type)) {
+		return member_type;
+	}
+
+	if (!p_base_type) {
+		// Possibly this is a global, check before failing
+
+		if (ClassDB::class_exists(p_identifier) || ClassDB::class_exists("_" + p_identifier.operator String())) {
+			DataType result;
+			result.has_type = true;
+			result.is_constant = true;
+			result.is_meta_type = true;
+			if (Engine::get_singleton()->has_singleton(p_identifier) || Engine::get_singleton()->has_singleton("_" + p_identifier.operator String())) {
+				result.is_meta_type = false;
+			}
+			result.kind = DataType::NATIVE;
+			result.native_type = p_identifier;
+			return result;
+		}
+
+		ClassNode *outer_class = current_class;
+		while (outer_class) {
+			if (outer_class->name == p_identifier) {
+				DataType result;
+				result.has_type = true;
+				result.is_constant = true;
+				result.is_meta_type = true;
+				result.kind = DataType::CLASS;
+				result.class_type = outer_class;
+				return result;
+			}
+			if (outer_class->constant_expressions.has(p_identifier)) {
+				return outer_class->constant_expressions[p_identifier].type;
+			}
+			for (int i = 0; i < outer_class->subclasses.size(); i++) {
+				if (outer_class->subclasses[i] == current_class) {
+					continue;
+				}
+				if (outer_class->subclasses[i]->name == p_identifier) {
+					DataType result;
+					result.has_type = true;
+					result.is_constant = true;
+					result.is_meta_type = true;
+					result.kind = DataType::CLASS;
+					result.class_type = outer_class->subclasses[i];
+					return result;
+				}
+			}
+			outer_class = outer_class->owner;
+		}
+
+		if (ScriptServer::is_global_class(p_identifier)) {
+			Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(p_identifier));
+			if (scr.is_valid()) {
+				DataType result;
+				result.has_type = true;
+				result.script_type = scr;
+				result.is_meta_type = true;
+				Ref<GDScript> gds = scr;
+				if (gds.is_valid()) {
+					if (!gds->is_valid()) {
+						_set_error("Class '" + p_identifier + "' could not be fully loaded (script error or cyclic inheritance).");
+						return DataType();
+					}
+					result.kind = DataType::GDSCRIPT;
+				} else {
+					result.kind = DataType::SCRIPT;
+				}
+				return result;
+			}
+			_set_error("Class '" + p_identifier + "' was found in global scope but its script could not be loaded.");
+			return DataType();
+		}
+
+		if (GDScriptLanguage::get_singleton()->get_global_map().has(p_identifier)) {
+			int idx = GDScriptLanguage::get_singleton()->get_global_map()[p_identifier];
+			Variant g = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+			return _type_from_variant(g);
+		}
+
+		if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(p_identifier)) {
+			Variant g = GDScriptLanguage::get_singleton()->get_named_globals_map()[p_identifier];
+			return _type_from_variant(g);
+		}
+
+		// Non-tool singletons aren't loaded, check project settings
+		List<PropertyInfo> props;
+		ProjectSettings::get_singleton()->get_property_list(&props);
+
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+			String s = E->get().name;
+			if (!s.begins_with("autoload/")) {
+				continue;
+			}
+			String name = s.get_slice("/", 1);
+			if (name == p_identifier) {
+				String script = ProjectSettings::get_singleton()->get(s);
+				if (script.begins_with("*")) {
+					script = script.right(1);
+				}
+				if (!script.begins_with("res://")) {
+					script = "res://" + script;
+				}
+				Ref<Script> singleton = ResourceLoader::load(script);
+				if (singleton.is_valid()) {
+					DataType result;
+					result.has_type = true;
+					result.script_type = singleton;
+
+					Ref<GDScript> gds = singleton;
+					if (gds.is_valid()) {
+						if (!gds->is_valid()) {
+							_set_error("Couldn't fully load singleton script '" + p_identifier + "' (possible cyclic reference or parse error).", p_line);
+							return DataType();
+						}
+						result.kind = DataType::GDSCRIPT;
+					} else {
+						result.kind = DataType::SCRIPT;
+					}
+				}
+			}
+		}
+
+		// This means looking in the current class, which type is always known
+		_set_error("Identifier '" + p_identifier.operator String() + "' is not declared in the current scope.", p_line);
+	}
+
+	_mark_line_as_unsafe(p_line);
+	return DataType();
+}
+
+void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
+
+	_mark_line_as_safe(p_class->line);
+
+	// Constants
+	for (Map<StringName, ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
+		ClassNode::Constant &c = E->get();
+		_mark_line_as_safe(c.expression->line);
+		DataType cont = _resolve_type(c.type, c.expression->line);
+		DataType expr = _resolve_type(c.expression->get_datatype(), c.expression->line);
+
+		if (!_is_type_compatible(cont, expr)) {
+			_set_error("Constant value type (" + expr.to_string() + ") is not compatible with declared type (" + cont.to_string() + ").",
+					c.expression->line);
+			return;
+		}
+
+		expr.is_constant = true;
+		c.type = expr;
+		c.expression->set_datatype(expr);
+	}
+
+	// Function declarations
+	for (int i = 0; i < p_class->static_functions.size(); i++) {
+		_check_function_types(p_class->static_functions[i]);
+		if (error_set) return;
+	}
+
+	for (int i = 0; i < p_class->functions.size(); i++) {
+		_check_function_types(p_class->functions[i]);
+		if (error_set) return;
+	}
+
+	// Class variables
+	for (int i = 0; i < p_class->variables.size(); i++) {
+		ClassNode::Member &v = p_class->variables.write[i];
+
+		DataType tmp;
+		if (_get_member_type(p_class->base_type, v.identifier, tmp)) {
+			_set_error("Member '" + String(v.identifier) + "' already exists in parent class.", v.line);
+			return;
+		}
+
+		_mark_line_as_safe(v.line);
+		v.data_type = _resolve_type(v.data_type, v.line);
+
+		if (v.expression) {
+			DataType expr_type = _reduce_node_type(v.expression);
+
+			if (!_is_type_compatible(v.data_type, expr_type)) {
+				// Try supertype test
+				if (_is_type_compatible(expr_type, v.data_type)) {
+					_mark_line_as_unsafe(v.line);
+				} else {
+					// Try with implicit conversion
+					if (v.data_type.kind != DataType::BUILTIN || !_is_type_compatible(v.data_type, expr_type, true)) {
+						_set_error("Assigned expression type (" + expr_type.to_string() + ") doesn't match the variable's type (" +
+										   v.data_type.to_string() + ").",
+								v.line);
+						return;
+					}
+
+					// Replace assigment with implict conversion
+					BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+					convert->line = v.line;
+					convert->function = GDScriptFunctions::TYPE_CONVERT;
+
+					ConstantNode *tgt_type = alloc_node<ConstantNode>();
+					tgt_type->line = v.line;
+					tgt_type->value = (int)v.data_type.builtin_type;
+
+					OperatorNode *convert_call = alloc_node<OperatorNode>();
+					convert_call->line = v.line;
+					convert_call->op = OperatorNode::OP_CALL;
+					convert_call->arguments.push_back(convert);
+					convert_call->arguments.push_back(v.expression);
+					convert_call->arguments.push_back(tgt_type);
+
+					v.expression = convert_call;
+					v.initial_assignment->arguments.write[1] = convert_call;
+				}
+			}
+
+			if (v.data_type.infer_type) {
+				if (!expr_type.has_type) {
+					_set_error("Assigned value does not have a set type, variable type cannot be inferred.", v.line);
+					return;
+				}
+				v.data_type = expr_type;
+				v.data_type.is_constant = false;
+			}
+		} else if (v.data_type.has_type && v.data_type.kind == DataType::BUILTIN) {
+			// Create default value based on the type
+			IdentifierNode *id = alloc_node<IdentifierNode>();
+			id->line = v.line;
+			id->name = v.identifier;
+
+			ConstantNode *init = alloc_node<ConstantNode>();
+			init->line = v.line;
+			Variant::CallError err;
+			init->value = Variant::construct(v.data_type.builtin_type, NULL, 0, err);
+
+			OperatorNode *op = alloc_node<OperatorNode>();
+			op->line = v.line;
+			op->op = OperatorNode::OP_INIT_ASSIGN;
+			op->arguments.push_back(id);
+			op->arguments.push_back(init);
+
+			p_class->initializer->statements.push_front(op);
+			v.initial_assignment = op;
+#ifdef DEBUG_ENABLED
+			NewLineNode *nl = alloc_node<NewLineNode>();
+			nl->line = v.line - 1;
+			p_class->initializer->statements.push_front(nl);
+#endif
+		}
+
+		// Check export hint
+		if (v.data_type.has_type && v._export.type != Variant::NIL) {
+			DataType export_type = _type_from_property(v._export);
+			if (!_is_type_compatible(v.data_type, export_type, true)) {
+				_set_error("Export hint type (" + export_type.to_string() + ") doesn't match the variable's type (" +
+								   v.data_type.to_string() + ").",
+						v.line);
+				return;
+			}
+		}
+
+		// Setter and getter
+		if (v.setter == StringName() && v.getter == StringName()) continue;
+
+		bool found_getter = false;
+		bool found_setter = false;
+		for (int j = 0; j < p_class->functions.size(); j++) {
+			if (v.setter == p_class->functions[j]->name) {
+				found_setter = true;
+				FunctionNode *setter = p_class->functions[j];
+
+				if (setter->arguments.size() != 1) {
+					_set_error("Setter function needs to receive exactly 1 argument. See '" + setter->name +
+									   "()' definition at line " + itos(setter->line) + ".",
+							v.line);
+					return;
+				}
+				if (!_is_type_compatible(v.data_type, setter->argument_types[0])) {
+					_set_error("Setter argument type (" + setter->argument_types[0].to_string() +
+									   ") doesn't match the variable's type (" + v.data_type.to_string() + "). See '" +
+									   setter->name + "()' definition at line " + itos(setter->line) + ".",
+							v.line);
+					return;
+				}
+				continue;
+			}
+			if (v.getter == p_class->functions[j]->name) {
+				found_getter = true;
+				FunctionNode *getter = p_class->functions[j];
+
+				if (getter->arguments.size() != 0) {
+					_set_error("Getter function can't receive arguments. See '" + getter->name +
+									   "()' definition at line " + itos(getter->line) + ".",
+							v.line);
+					return;
+				}
+				if (!_is_type_compatible(v.data_type, getter->get_datatype())) {
+					_set_error("Getter return type (" + getter->get_datatype().to_string() +
+									   ") doesn't match the variable's type (" + v.data_type.to_string() +
+									   "). See '" + getter->name + "()' definition at line " + itos(getter->line) + ".",
+							v.line);
+					return;
+				}
+			}
+			if (found_getter && found_setter) break;
+		}
+
+		if ((found_getter || v.getter == StringName()) && (found_setter || v.setter == StringName())) continue;
+
+		// Check for static functions
+		for (int j = 0; j < p_class->static_functions.size(); j++) {
+			if (v.setter == p_class->static_functions[j]->name) {
+				FunctionNode *setter = p_class->static_functions[j];
+				_set_error("Setter can't be a static function. See '" + setter->name + "()' definition at line " + itos(setter->line) + ".", v.line);
+				return;
+			}
+			if (v.getter == p_class->static_functions[j]->name) {
+				FunctionNode *getter = p_class->static_functions[j];
+				_set_error("Getter can't be a static function. See '" + getter->name + "()' definition at line " + itos(getter->line) + ".", v.line);
+				return;
+			}
+		}
+
+		if (!found_setter && v.setter != StringName()) {
+			_set_error("Setter function is not defined.", v.line);
+			return;
+		}
+
+		if (!found_getter && v.getter != StringName()) {
+			_set_error("Getter function is not defined.", v.line);
+			return;
+		}
+	}
+
+	// Inner classes
+	for (int i = 0; i < p_class->subclasses.size(); i++) {
+		current_class = p_class->subclasses[i];
+		_check_class_level_types(current_class);
+		if (error_set) return;
+		current_class = p_class;
+	}
+}
+
+void GDScriptParser::_check_function_types(FunctionNode *p_function) {
+
+	p_function->return_type = _resolve_type(p_function->return_type, p_function->line);
+
+	// Arguments
+	int defaults_ofs = p_function->arguments.size() - p_function->default_values.size();
+	for (int i = 0; i < p_function->arguments.size(); i++) {
+		if (i < defaults_ofs) {
+			p_function->argument_types.write[i] = _resolve_type(p_function->argument_types[i], p_function->line);
+		} else {
+			if (p_function->default_values[i - defaults_ofs]->type != Node::TYPE_OPERATOR) {
+				_set_error("Parser bug: invalid argument default value.", p_function->line, p_function->column);
+				return;
+			}
+
+			OperatorNode *op = static_cast<OperatorNode *>(p_function->default_values[i - defaults_ofs]);
+
+			if (op->op != OperatorNode::OP_ASSIGN || op->arguments.size() != 2) {
+				_set_error("Parser bug: invalid argument default value operation.", p_function->line);
+				return;
+			}
+
+			DataType def_type = _reduce_node_type(op->arguments[1]);
+
+			if (p_function->argument_types[i].infer_type) {
+				def_type.is_constant = false;
+				p_function->argument_types.write[i] = def_type;
+			} else {
+				p_function->return_type = _resolve_type(p_function->return_type, p_function->line);
+
+				if (!_is_type_compatible(p_function->argument_types[i], def_type, true)) {
+					String arg_name = p_function->arguments[i];
+					_set_error("Value type (" + def_type.to_string() + ") doesn't match the type of argument '" +
+									   arg_name + "' (" + p_function->arguments[i] + ")",
+							p_function->line);
+				}
+			}
+		}
+	}
+
+	if (!(p_function->name == "_init")) {
+		// Signature for the initializer may vary
+#ifdef DEBUG_ENABLED
+		DataType return_type;
+		List<DataType> arg_types;
+		int default_arg_count = 0;
+		bool _static = false;
+		bool vararg = false;
+
+		DataType base_type = current_class->base_type;
+		if (_get_function_signature(base_type, p_function->name, return_type, arg_types, default_arg_count, _static, vararg)) {
+			bool valid = _static == p_function->_static;
+			valid = valid && return_type == p_function->return_type;
+			int argsize_diff = p_function->arguments.size() - arg_types.size();
+			valid = valid && argsize_diff >= 0;
+			valid = valid && p_function->default_values.size() >= default_arg_count + argsize_diff;
+			int i = 0;
+			for (List<DataType>::Element *E = arg_types.front(); valid && E; E = E->next()) {
+				valid = valid && E->get() == p_function->argument_types[i++];
+			}
+
+			if (!valid) {
+				String parent_signature = return_type.has_type ? return_type.to_string() : "Variant";
+				if (parent_signature == "null") {
+					parent_signature = "void";
+				}
+				parent_signature += " " + p_function->name + "(";
+				if (arg_types.size()) {
+					int i = 0;
+					for (List<DataType>::Element *E = arg_types.front(); E; E = E->next()) {
+						if (E != arg_types.front()) {
+							parent_signature += ", ";
+						}
+						String arg = E->get().to_string();
+						if (arg == "null" || arg == "var") {
+							arg = "Variant";
+						}
+						parent_signature += arg;
+						if (i == arg_types.size() - default_arg_count) {
+							parent_signature += "=default";
+						}
+
+						i++;
+					}
+				}
+				parent_signature += ")";
+				_set_error("Function signature doesn't match the parent. Parent signature is: '" + parent_signature + "'.", p_function->line);
+				return;
+			}
+		}
+#endif // DEBUG_ENABLED
+	} else {
+		if (p_function->return_type.has_type && (p_function->return_type.kind != DataType::BUILTIN || p_function->return_type.builtin_type != Variant::NIL)) {
+			_set_error("Constructor cannot return a value.", p_function->line);
+			return;
+		}
+	}
+
+	if (p_function->return_type.has_type && (p_function->return_type.kind != DataType::BUILTIN || p_function->return_type.builtin_type != Variant::NIL)) {
+		if (!p_function->body->has_return) {
+			_set_error("Non-void function must return a value in all possible paths.", p_function->line);
+			return;
+		}
+	}
+
+	if (p_function->has_yield) {
+		// yield() will make the function return a GDScriptFunctionState, so the type is ambiguous
+		p_function->return_type.has_type = false;
+	}
+}
+
+void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
+
+	// Function blocks
+	for (int i = 0; i < p_class->static_functions.size(); i++) {
+		current_function = p_class->static_functions[i];
+		current_block = current_function->body;
+		_mark_line_as_safe(current_function->line);
+		_check_block_types(current_block);
+		current_block = NULL;
+		current_function = NULL;
+		if (error_set) return;
+	}
+
+	for (int i = 0; i < p_class->functions.size(); i++) {
+		current_function = p_class->functions[i];
+		current_block = current_function->body;
+		_mark_line_as_safe(current_function->line);
+		_check_block_types(current_block);
+		current_block = NULL;
+		current_function = NULL;
+		if (error_set) return;
+	}
+
+	// Inner classes
+	for (int i = 0; i < p_class->subclasses.size(); i++) {
+		current_class = p_class->subclasses[i];
+		_check_class_blocks_types(current_class);
+		if (error_set) return;
+		current_class = p_class;
+	}
+}
+
+void GDScriptParser::_check_block_types(BlockNode *p_block) {
+
+	Node *last_var_assign = NULL;
+
+	// Check each statement
+	for (List<Node *>::Element *E = p_block->statements.front(); E; E = E->next()) {
+		Node *statement = E->get();
+		switch (statement->type) {
+			case Node::TYPE_NEWLINE:
+			case Node::TYPE_BREAKPOINT:
+			case Node::TYPE_ASSERT: {
+				// Nothing to do
+			} break;
+			case Node::TYPE_LOCAL_VAR: {
+				LocalVarNode *lv = static_cast<LocalVarNode *>(statement);
+				lv->datatype = _resolve_type(lv->datatype, lv->line);
+				_mark_line_as_safe(lv->line);
+
+				if (lv->assign) {
+					DataType assign_type = _reduce_node_type(lv->assign);
+					if (!_is_type_compatible(lv->datatype, assign_type)) {
+						// Try supertype test
+						if (_is_type_compatible(assign_type, lv->datatype)) {
+							_mark_line_as_unsafe(lv->line);
+						} else {
+							// Try implict conversion
+							if (lv->datatype.kind != DataType::BUILTIN || !_is_type_compatible(lv->datatype, assign_type, true)) {
+								_set_error("Assigned value type (" + assign_type.to_string() + ") doesn't match the variable's type (" +
+												   lv->datatype.to_string() + ").",
+										lv->line);
+								return;
+							}
+							// Replace assigment with implict conversion
+							BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+							convert->line = lv->line;
+							convert->function = GDScriptFunctions::TYPE_CONVERT;
+
+							ConstantNode *tgt_type = alloc_node<ConstantNode>();
+							tgt_type->line = lv->line;
+							tgt_type->value = (int)lv->datatype.builtin_type;
+
+							OperatorNode *convert_call = alloc_node<OperatorNode>();
+							convert_call->line = lv->line;
+							convert_call->op = OperatorNode::OP_CALL;
+							convert_call->arguments.push_back(convert);
+							convert_call->arguments.push_back(lv->assign);
+							convert_call->arguments.push_back(tgt_type);
+
+							lv->assign = convert_call;
+							lv->assign_op->arguments.write[1] = convert_call;
+						}
+					}
+					if (lv->datatype.infer_type) {
+						if (!assign_type.has_type) {
+							_set_error("Assigned value does not have a set type, variable type cannot be inferred.", lv->line);
+							return;
+						}
+						lv->datatype = assign_type;
+						lv->datatype.is_constant = false;
+					}
+					if (lv->datatype.has_type && !assign_type.has_type) {
+						_mark_line_as_unsafe(lv->line);
+					}
+				}
+				last_var_assign = lv->assign;
+
+				// TODO: Make a warning
+				/*
+				if (lv->assignments == 0) {
+					_set_error("Variable '" + String(lv->name) + "' is never assigned.", lv->line);
+					return;
+				}
+				*/
+			} break;
+			case Node::TYPE_OPERATOR: {
+				OperatorNode *op = static_cast<OperatorNode *>(statement);
+
+				switch (op->op) {
+					case OperatorNode::OP_ASSIGN:
+					case OperatorNode::OP_ASSIGN_ADD:
+					case OperatorNode::OP_ASSIGN_SUB:
+					case OperatorNode::OP_ASSIGN_MUL:
+					case OperatorNode::OP_ASSIGN_DIV:
+					case OperatorNode::OP_ASSIGN_MOD:
+					case OperatorNode::OP_ASSIGN_SHIFT_LEFT:
+					case OperatorNode::OP_ASSIGN_SHIFT_RIGHT:
+					case OperatorNode::OP_ASSIGN_BIT_AND:
+					case OperatorNode::OP_ASSIGN_BIT_OR:
+					case OperatorNode::OP_ASSIGN_BIT_XOR: {
+						if (op->arguments.size() < 2) {
+							_set_error("Parser bug: operation without enough arguments.", op->line, op->column);
+							return;
+						}
+
+						if (op->arguments[1] == last_var_assign) {
+							// Assignment was already checked
+							break;
+						}
+
+						_mark_line_as_safe(op->line);
+
+						DataType lh_type = _reduce_node_type(op->arguments[0]);
+
+						if (error_set) {
+							return;
+						}
+
+						if (!lh_type.has_type) {
+							if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
+								_mark_line_as_unsafe(op->line);
+							}
+						} else if (lh_type.is_constant) {
+							_set_error("Cannot assign a new value to a constant.", op->line);
+							return;
+						}
+
+						DataType rh_type;
+						if (op->op != OperatorNode::OP_ASSIGN) {
+							// Validate operation
+							DataType arg_type = _reduce_node_type(op->arguments[1]);
+							if (!arg_type.has_type) {
+								_mark_line_as_unsafe(op->line);
+								break;
+							}
+
+							Variant::Operator oper = _get_variant_operation(op->op);
+							bool valid = false;
+							rh_type = _get_operation_type(oper, lh_type, arg_type, valid);
+
+							if (!valid) {
+								_set_error("Invalid operand types ('" + lh_type.to_string() + "' and '" + arg_type.to_string() +
+												   "') to assignment operator '" + Variant::get_operator_name(oper) + "'.",
+										op->line);
+								return;
+							}
+						} else {
+							rh_type = _reduce_node_type(op->arguments[1]);
+						}
+
+						if (!_is_type_compatible(lh_type, rh_type)) {
+							// Try supertype test
+							if (_is_type_compatible(rh_type, lh_type)) {
+								_mark_line_as_unsafe(op->line);
+							} else {
+								// Try implict conversion
+								if (lh_type.kind != DataType::BUILTIN || !_is_type_compatible(lh_type, rh_type, true)) {
+									_set_error("Assigned value type (" + rh_type.to_string() + ") doesn't match the variable's type (" +
+													   lh_type.to_string() + ").",
+											op->line);
+									return;
+								}
+								// Replace assigment with implict conversion
+								BuiltInFunctionNode *convert = alloc_node<BuiltInFunctionNode>();
+								convert->line = op->line;
+								convert->function = GDScriptFunctions::TYPE_CONVERT;
+
+								ConstantNode *tgt_type = alloc_node<ConstantNode>();
+								tgt_type->line = op->line;
+								tgt_type->value = (int)lh_type.builtin_type;
+
+								OperatorNode *convert_call = alloc_node<OperatorNode>();
+								convert_call->line = op->line;
+								convert_call->op = OperatorNode::OP_CALL;
+								convert_call->arguments.push_back(convert);
+								convert_call->arguments.push_back(op->arguments[1]);
+								convert_call->arguments.push_back(tgt_type);
+
+								op->arguments.write[1] = convert_call;
+							}
+						}
+						if (!rh_type.has_type && (op->op != OperatorNode::OP_ASSIGN || lh_type.has_type || op->arguments[0]->type == Node::TYPE_OPERATOR)) {
+							_mark_line_as_unsafe(op->line);
+						}
+					} break;
+					case OperatorNode::OP_CALL:
+					case OperatorNode::OP_PARENT_CALL: {
+						_mark_line_as_safe(op->line);
+						_reduce_function_call_type(op);
+						if (error_set) return;
+					} break;
+					default: {
+						_mark_line_as_safe(op->line);
+						_reduce_node_type(op); // Test for safety anyway
+						// TODO: Make this a warning
+						/*_set_error("Standalone expression, nothing is done in this line.", statement->line);
+						return; */
+					}
+				}
+			} break;
+			case Node::TYPE_CONTROL_FLOW: {
+				ControlFlowNode *cf = static_cast<ControlFlowNode *>(statement);
+				_mark_line_as_safe(cf->line);
+
+				switch (cf->cf_type) {
+					case ControlFlowNode::CF_RETURN: {
+						DataType function_type = current_function->get_datatype();
+
+						DataType ret_type;
+						if (cf->arguments.size() > 0) {
+							ret_type = _reduce_node_type(cf->arguments[0]);
+							if (error_set) {
+								return;
+							}
+						}
+
+						if (!function_type.has_type) break;
+
+						if (function_type.kind == DataType::BUILTIN && function_type.builtin_type == Variant::NIL) {
+							// Return void, should not have arguments
+							if (cf->arguments.size() > 0) {
+								_set_error("Void function cannot return a value.", cf->line, cf->column);
+								return;
+							}
+						} else {
+							// Return something, cannot be empty
+							if (cf->arguments.size() == 0) {
+								_set_error("Non-void function must return a value.", cf->line, cf->column);
+								return;
+							}
+
+							if (!_is_type_compatible(function_type, ret_type)) {
+								_set_error("Returned value type (" + ret_type.to_string() + ") doesn't match the function return type (" +
+												   function_type.to_string() + ").",
+										cf->line, cf->column);
+								return;
+							}
+						}
+					} break;
+					case ControlFlowNode::CF_MATCH: {
+						MatchNode *match_node = cf->match;
+						_transform_match_statment(match_node);
+					} break;
+					default: {
+						if (cf->body_else) {
+							_mark_line_as_safe(cf->body_else->line);
+						}
+						for (int i = 0; i < cf->arguments.size(); i++) {
+							_reduce_node_type(cf->arguments[i]);
+						}
+					} break;
+				}
+			} break;
+			case Node::TYPE_CONSTANT: {
+				ConstantNode *cn = static_cast<ConstantNode *>(statement);
+				// Strings are fine since they can be multiline comments
+				if (cn->value.get_type() == Variant::STRING) {
+					break;
+				}
+			} // falthrough
+			default: {
+				_mark_line_as_safe(statement->line);
+				_reduce_node_type(statement); // Test for safety anyway
+				// TODO: Make this a warning
+				/* _set_error("Standalone expression, nothing is done in this line.", statement->line);
+				return; */
+			}
+		}
+	}
+
+	// Parse sub blocks
+	for (int i = 0; i < p_block->sub_blocks.size(); i++) {
+		current_block = p_block->sub_blocks[i];
+		_check_block_types(current_block);
+		current_block = p_block;
+		if (error_set) return;
+	}
+}
+
+void GDScriptParser::_set_error(const String &p_error, int p_line, int p_column) {
+
+	if (error_set)
+		return; //allow no further errors
+
+	error = p_error;
+	error_line = p_line < 0 ? tokenizer->get_token_line() : p_line;
+	error_column = p_column < 0 ? tokenizer->get_token_column() : p_column;
+	error_set = true;
+}
+
+String GDScriptParser::get_error() const {
+
+	return error;
+}
+
+int GDScriptParser::get_error_line() const {
+
+	return error_line;
+}
+int GDScriptParser::get_error_column() const {
+
+	return error_column;
+}
+
+Error GDScriptParser::_parse(const String &p_base_path) {
+
+	base_path = p_base_path;
+
+	//assume class
+	ClassNode *main_class = alloc_node<ClassNode>();
+	main_class->initializer = alloc_node<BlockNode>();
+	main_class->initializer->parent_class = main_class;
+	main_class->ready = alloc_node<BlockNode>();
+	main_class->ready->parent_class = main_class;
+	current_class = main_class;
+
+	_parse_class(main_class);
+
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_ERROR) {
+		error_set = false;
+		_set_error("Parse Error: " + tokenizer->get_token_error());
+	}
+
+	if (error_set && !for_completion) {
+		return ERR_PARSE_ERROR;
+	}
+
+	_determine_inheritance(main_class);
+
+	if (error_set) {
+		return ERR_PARSE_ERROR;
+	}
+
+	current_class = main_class;
+	current_function = NULL;
+	current_block = NULL;
+#ifdef DEBUG_ENABLED
+	if (for_completion) check_types = false;
+#else
+	check_types = false;
+#endif
+
+	// Resolve all class-level stuff before getting into function blocks
+	_check_class_level_types(main_class);
+
+	if (error_set) {
+		return ERR_PARSE_ERROR;
+	}
+
+	// Resolve the function blocks
+	_check_class_blocks_types(main_class);
+
+	if (error_set) {
+		return ERR_PARSE_ERROR;
+	}
+
+	return OK;
+}
+
+Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path, const String &p_self_path) {
+
+	clear();
+
+	self_path = p_self_path;
+	GDScriptTokenizerBuffer *tb = memnew(GDScriptTokenizerBuffer);
+	tb->set_code_buffer(p_bytecode);
+	tokenizer = tb;
+	Error ret = _parse(p_base_path);
+	memdelete(tb);
+	tokenizer = NULL;
+	return ret;
+}
+
+Error GDScriptParser::parse(const String &p_code, const String &p_base_path, bool p_just_validate, const String &p_self_path, bool p_for_completion, Set<int> *r_safe_lines) {
+
+	clear();
+
+	self_path = p_self_path;
+	GDScriptTokenizerText *tt = memnew(GDScriptTokenizerText);
+	tt->set_code(p_code);
+
+	validating = p_just_validate;
+	for_completion = p_for_completion;
+#ifdef DEBUG_ENABLED
+	safe_lines = r_safe_lines;
+#endif // DEBUG_ENABLED
+	tokenizer = tt;
+	Error ret = _parse(p_base_path);
+	memdelete(tt);
+	tokenizer = NULL;
+	return ret;
+}
+
 bool GDScriptParser::is_tool_script() const {
 
 	return (head && head->type == Node::TYPE_CLASS && static_cast<const ClassNode *>(head)->tool);
