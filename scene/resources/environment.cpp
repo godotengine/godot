@@ -134,7 +134,8 @@ float Environment::get_ambient_light_sky_contribution() const {
 void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
 
 	tone_mapper = p_tone_mapper;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	_change_notify();
 }
 
 Environment::ToneMapper Environment::get_tonemapper() const {
@@ -145,7 +146,7 @@ Environment::ToneMapper Environment::get_tonemapper() const {
 void Environment::set_tonemap_exposure(float p_exposure) {
 
 	tonemap_exposure = p_exposure;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 }
 
 float Environment::get_tonemap_exposure() const {
@@ -156,17 +157,27 @@ float Environment::get_tonemap_exposure() const {
 void Environment::set_tonemap_white(float p_white) {
 
 	tonemap_white = p_white;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 }
 float Environment::get_tonemap_white() const {
 
 	return tonemap_white;
 }
 
+void Environment::set_tonemap_filmic_saturation(bool p_enabled) {
+
+	tonemap_filmic_saturation = p_enabled;
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+}
+bool Environment::get_tonemap_filmic_saturation() const {
+
+	return tonemap_filmic_saturation;
+}
+
 void Environment::set_tonemap_auto_exposure(bool p_enabled) {
 
 	tonemap_auto_exposure = p_enabled;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 	_change_notify();
 }
 bool Environment::get_tonemap_auto_exposure() const {
@@ -177,7 +188,7 @@ bool Environment::get_tonemap_auto_exposure() const {
 void Environment::set_tonemap_auto_exposure_max(float p_auto_exposure_max) {
 
 	tonemap_auto_exposure_max = p_auto_exposure_max;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 }
 float Environment::get_tonemap_auto_exposure_max() const {
 
@@ -187,7 +198,7 @@ float Environment::get_tonemap_auto_exposure_max() const {
 void Environment::set_tonemap_auto_exposure_min(float p_auto_exposure_min) {
 
 	tonemap_auto_exposure_min = p_auto_exposure_min;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 }
 float Environment::get_tonemap_auto_exposure_min() const {
 
@@ -197,7 +208,7 @@ float Environment::get_tonemap_auto_exposure_min() const {
 void Environment::set_tonemap_auto_exposure_speed(float p_auto_exposure_speed) {
 
 	tonemap_auto_exposure_speed = p_auto_exposure_speed;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 }
 float Environment::get_tonemap_auto_exposure_speed() const {
 
@@ -207,7 +218,7 @@ float Environment::get_tonemap_auto_exposure_speed() const {
 void Environment::set_tonemap_auto_exposure_grey(float p_auto_exposure_grey) {
 
 	tonemap_auto_exposure_grey = p_auto_exposure_grey;
-	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
+	VS::get_singleton()->environment_set_tonemap(environment, VS::EnvironmentToneMapper(tone_mapper), tonemap_exposure, tonemap_white, tonemap_filmic_saturation, tonemap_auto_exposure, tonemap_auto_exposure_min, tonemap_auto_exposure_max, tonemap_auto_exposure_speed, tonemap_auto_exposure_grey);
 }
 float Environment::get_tonemap_auto_exposure_grey() const {
 
@@ -282,6 +293,12 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "background_canvas_max_layer") {
 		if (bg_mode != BG_CANVAS) {
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		}
+	}
+
+	if (property.name == "tonemap_filmic_saturation") {
+		if (tone_mapper == TONE_MAPPER_LINEAR) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
@@ -945,6 +962,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tonemap_white", "white"), &Environment::set_tonemap_white);
 	ClassDB::bind_method(D_METHOD("get_tonemap_white"), &Environment::get_tonemap_white);
 
+	ClassDB::bind_method(D_METHOD("set_tonemap_filmic_saturation", "filmic_saturation"), &Environment::set_tonemap_filmic_saturation);
+	ClassDB::bind_method(D_METHOD("get_tonemap_filmic_saturation"), &Environment::get_tonemap_filmic_saturation);
+
 	ClassDB::bind_method(D_METHOD("set_tonemap_auto_exposure", "auto_exposure"), &Environment::set_tonemap_auto_exposure);
 	ClassDB::bind_method(D_METHOD("get_tonemap_auto_exposure"), &Environment::get_tonemap_auto_exposure);
 
@@ -964,6 +984,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,Aces"), "set_tonemapper", "get_tonemapper");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tonemap_filmic_saturation"), "set_tonemap_filmic_saturation", "get_tonemap_filmic_saturation");
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_exposure_enabled"), "set_tonemap_auto_exposure", "get_tonemap_auto_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_tonemap_auto_exposure_grey", "get_tonemap_auto_exposure_grey");
@@ -1205,6 +1226,7 @@ Environment::Environment() {
 	tone_mapper = TONE_MAPPER_LINEAR;
 	tonemap_exposure = 1.0;
 	tonemap_white = 1.0;
+	tonemap_filmic_saturation = false;
 	tonemap_auto_exposure = false;
 	tonemap_auto_exposure_max = 8;
 	tonemap_auto_exposure_min = 0.05;

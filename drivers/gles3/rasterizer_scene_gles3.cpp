@@ -915,7 +915,7 @@ void RasterizerSceneGLES3::environment_set_ssao(RID p_env, bool p_enable, float 
 	env->ssao_bilateral_sharpness = p_bilateral_sharpness;
 }
 
-void RasterizerSceneGLES3::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
+void RasterizerSceneGLES3::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_filmic_saturation, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -923,6 +923,7 @@ void RasterizerSceneGLES3::environment_set_tonemap(RID p_env, VS::EnvironmentTon
 	env->tone_mapper = p_tone_mapper;
 	env->tone_mapper_exposure = p_exposure;
 	env->tone_mapper_exposure_white = p_white;
+	env->tone_mapper_filmic_saturation = p_filmic_saturation;
 	env->auto_exposure = p_auto_exposure;
 	env->auto_exposure_speed = p_auto_exp_speed;
 	env->auto_exposure_min = p_min_luminance;
@@ -3945,7 +3946,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_ACES);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINHARD_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_REINHARD);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::KEEP_3D_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
-
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_SATURATION, env->tone_mapper_filmic_saturation);
+	
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE, env->auto_exposure);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_FILTER_BICUBIC, env->glow_bicubic_upscale);
 
@@ -4031,6 +4033,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_REINHARD_TONEMAPPER, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_SATURATION, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL1, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL2, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_LEVEL3, false);

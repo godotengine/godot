@@ -101,6 +101,7 @@ private:
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
 	float tonemap_white;
+	bool tonemap_filmic_saturation;
 	bool tonemap_auto_exposure;
 	float tonemap_auto_exposure_max;
 	float tonemap_auto_exposure_min;
@@ -205,6 +206,9 @@ public:
 
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
+
+	void set_tonemap_filmic_saturation(bool p_enabled);
+	bool get_tonemap_filmic_saturation() const;
 
 	void set_tonemap_auto_exposure(bool p_enabled);
 	bool get_tonemap_auto_exposure() const;

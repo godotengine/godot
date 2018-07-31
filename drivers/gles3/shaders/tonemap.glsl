@@ -41,6 +41,10 @@ uniform float white;
 	uniform highp float glow_intensity;
 #endif
 
+#if defined(USE_REINHARD_TONEMAPPER) || defined(USE_FILMIC_TONEMAPPER) || defined(USE_ACES_TONEMAPPER) // any tonemapping?
+	#define USE_TONEMAPPER
+#endif
+
 #ifdef USE_BCS
 	uniform vec3 bcs;
 #endif
@@ -174,19 +178,31 @@ vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped i
 
 vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always outputs clamped [0;1] color
 {
-	#ifdef USE_REINHARD_TONEMAPPER
-		return tonemap_reinhard(color, white);
+	#ifdef USE_TONEMAPPER
+		#ifdef USE_FILMIC_SATURATION
+			const float filmic_sat_desaturate = 0.05f;
+
+			color = mix(color, vec3((color.r + color.g + color.b) * 0.33333f), filmic_sat_desaturate);
+		#endif
+
+		#ifdef USE_REINHARD_TONEMAPPER
+			color = tonemap_reinhard(color, white);
+		#endif
+
+		#ifdef USE_FILMIC_TONEMAPPER
+			color = tonemap_filmic(color, white);
+		#endif
+
+		#ifdef USE_ACES_TONEMAPPER
+			color = tonemap_aces(color, white);
+		#endif
+
+		// TODO: add filmic re-saturation for linear glow blend modes once they are implemented
+	#else
+		color = clamp(color, vec3(0.0f), vec3(1.0f)); // no other seleced -> linear
 	#endif
 
-	#ifdef USE_FILMIC_TONEMAPPER
-		return tonemap_filmic(color, white);
-	#endif
-
-	#ifdef USE_ACES_TONEMAPPER
-		return tonemap_aces(color, white);
-	#endif
-
-	return clamp(color, vec3(0.0f), vec3(1.0f)); // no other seleced -> linear
+	return color;
 }
 
 vec3 gather_glow(sampler2D tex, vec2 uv) // sample all selected glow levels

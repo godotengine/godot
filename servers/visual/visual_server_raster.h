@@ -503,7 +503,7 @@ public:
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
 
-	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
+	BIND10(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, bool, float, float, float, float)
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
