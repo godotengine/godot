@@ -34,6 +34,10 @@ uniform float white;
 	uniform highp float auto_exposure_grey;
 #endif
 
+#if defined(USE_GLOW_LINEAR_ADD) || defined(USE_GLOW_LINEAR_MIX)
+	#define BLEND_GLOW_LINEAR // use "linear blending" codepath, otherwise blend using srgb modes
+#endif
+
 #if defined(USE_GLOW_LEVEL1) || defined(USE_GLOW_LEVEL2) || defined(USE_GLOW_LEVEL3) || defined(USE_GLOW_LEVEL4) || defined(USE_GLOW_LEVEL5) || defined(USE_GLOW_LEVEL6) || defined(USE_GLOW_LEVEL7)
 	#define USING_GLOW // only use glow when at least one glow level is selected
 
@@ -181,6 +185,7 @@ vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always out
 	#ifdef USE_TONEMAPPER
 		#ifdef USE_FILMIC_SATURATION
 			const float filmic_sat_desaturate = 0.05f;
+			const float filmic_sat_resaturate = -0.125f; // overexaggerate a little to compensate for saturation loss on tonemap
 
 			color = mix(color, vec3((color.r + color.g + color.b) * 0.33333f), filmic_sat_desaturate);
 		#endif
@@ -197,7 +202,13 @@ vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always out
 			color = tonemap_aces(color, white);
 		#endif
 
-		// TODO: add filmic re-saturation for linear glow blend modes once they are implemented
+		#ifdef BLEND_GLOW_LINEAR
+			// don't resaturate for srgb blend modes (because tonemapping is done twice there, this would result in too much saturation)
+
+			#ifdef USE_FILMIC_SATURATION
+				return mix(color, vec3((color.r + color.g + color.b) * 0.33333f), filmic_sat_resaturate);
+			#endif
+		#endif
 	#else
 		color = clamp(color, vec3(0.0f), vec3(1.0f)); // no other seleced -> linear
 	#endif
@@ -240,7 +251,7 @@ vec3 gather_glow(sampler2D tex, vec2 uv) // sample all selected glow levels
 	return glow;
 }
 
-vec3 apply_glow(vec3 color, vec3 glow) // apply glow using the selected blending mode
+vec3 apply_glow(vec3 color, vec3 glow) // apply srgb glow using the selected blending mode
 {
 	#ifdef USE_GLOW_REPLACE
 		color = glow;
@@ -260,6 +271,19 @@ vec3 apply_glow(vec3 color, vec3 glow) // apply glow using the selected blending
 
 	#if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE) // no other selected -> additive
 		color += glow;
+	#endif
+
+	return color;
+}
+
+vec3 apply_glow_linear(vec3 color, vec3 glow, float glow_blend_intensity) // apply linear glow using the selected blending mode (requires glow intensity param because of "mix"-mode
+{
+	#ifdef USE_GLOW_LINEAR_ADD
+		color = color + glow * vec3(glow_blend_intensity);
+	#endif
+
+	#ifdef USE_GLOW_LINEAR_MIX
+		color = mix(color, glow, vec3(glow_blend_intensity));
 	#endif
 
 	return color;
@@ -295,26 +319,50 @@ void main()
 
 	color *= exposure;
 
-	// Early Tonemap & SRGB Conversion
+	#ifndef BLEND_GLOW_LINEAR
+		// tonemap and then blend glow in srgb space
 
-	color = apply_tonemapping(color, white);
+		// Early Tonemap & SRGB Conversion
 
-	#ifdef KEEP_3D_LINEAR
-		// leave color as is (-> don't convert to SRGB)
+		color = apply_tonemapping(color, white);
+
+		#ifdef KEEP_3D_LINEAR
+			// leave color as is (-> don't convert to SRGB)
+		#else
+			color = linear_to_srgb(color); // regular linear -> SRGB conversion
+		#endif
+
+		// Glow
+
+		#ifdef USING_GLOW
+			vec3 glow = gather_glow(source_glow, uv_interp) * glow_intensity;
+
+			// high dynamic range -> SRGB
+			glow = apply_tonemapping(glow, white);
+			glow = linear_to_srgb(glow);
+
+			color = apply_glow(color, glow);
+		#endif
 	#else
-		color = linear_to_srgb(color); // regular linear -> SRGB conversion
-	#endif
+		// blend glow in linear space and tonemap result afterwards ("physically correct")
 
-	// Glow
+		// Glow
 
-	#ifdef USING_GLOW
-		vec3 glow = gather_glow(source_glow, uv_interp) * glow_intensity;
+		#ifdef USING_GLOW
+			vec3 glow = gather_glow(source_glow, uv_interp);
 
-		// high dynamic range -> SRGB
-		glow = apply_tonemapping(glow, white);
-		glow = linear_to_srgb(glow);
+			color = apply_glow_linear(color, glow, glow_intensity);
+		#endif
 
-		color = apply_glow(color, glow);
+		// Late Tonemap & SRGB Conversion
+
+		#ifdef KEEP_3D_LINEAR
+			// leave color as is (-> don't convert to SRGB)
+		#else
+			color = apply_tonemapping(color, white);
+
+			color = linear_to_srgb(color);
+		#endif
 	#endif
 
 	// Additional effects
