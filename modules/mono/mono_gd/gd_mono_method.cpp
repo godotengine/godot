@@ -105,9 +105,7 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 		}
 
 		MonoException *exc = NULL;
-		GD_MONO_BEGIN_RUNTIME_INVOKE;
-		MonoObject *ret = mono_runtime_invoke_array(mono_method, p_object, params, (MonoObject **)&exc);
-		GD_MONO_END_RUNTIME_INVOKE;
+		MonoObject *ret = GDMonoUtils::runtime_invoke_array(mono_method, p_object, params, &exc);
 
 		if (exc) {
 			ret = NULL;
@@ -121,9 +119,7 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 		return ret;
 	} else {
 		MonoException *exc = NULL;
-		GD_MONO_BEGIN_RUNTIME_INVOKE;
-		mono_runtime_invoke(mono_method, p_object, NULL, (MonoObject **)&exc);
-		GD_MONO_END_RUNTIME_INVOKE;
+		GDMonoUtils::runtime_invoke(mono_method, p_object, NULL, &exc);
 
 		if (exc) {
 			if (r_exc) {
@@ -144,9 +140,7 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, MonoException **r_exc) {
 
 MonoObject *GDMonoMethod::invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc) {
 	MonoException *exc = NULL;
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke(mono_method, p_object, p_params, (MonoObject **)&exc);
-	GD_MONO_END_RUNTIME_INVOKE;
+	MonoObject *ret = GDMonoUtils::runtime_invoke(mono_method, p_object, p_params, &exc);
 
 	if (exc) {
 		ret = NULL;

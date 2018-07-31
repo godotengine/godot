@@ -139,15 +139,23 @@ bool GDMonoProperty::has_setter() {
 }
 
 void GDMonoProperty::set_value(MonoObject *p_object, MonoObject *p_value, MonoException **r_exc) {
-	void *params[1] = { p_value };
-	set_value(p_object, params, r_exc);
+	MonoMethod *prop_method = mono_property_get_set_method(mono_property);
+	MonoArray *params = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), 1);
+	mono_array_set(params, MonoObject *, 0, p_value);
+	MonoException *exc = NULL;
+	GDMonoUtils::runtime_invoke_array(prop_method, p_object, params, &exc);
+	if (exc) {
+		if (r_exc) {
+			*r_exc = exc;
+		} else {
+			GDMonoUtils::set_pending_exception(exc);
+		}
+	}
 }
 
 void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoException **r_exc) {
 	MonoException *exc = NULL;
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	mono_property_set_value(mono_property, p_object, p_params, (MonoObject **)&exc);
-	GD_MONO_END_RUNTIME_INVOKE;
+	GDMonoUtils::property_set_value(mono_property, p_object, p_params, &exc);
 
 	if (exc) {
 		if (r_exc) {
@@ -160,9 +168,7 @@ void GDMonoProperty::set_value(MonoObject *p_object, void **p_params, MonoExcept
 
 MonoObject *GDMonoProperty::get_value(MonoObject *p_object, MonoException **r_exc) {
 	MonoException *exc = NULL;
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_property_get_value(mono_property, p_object, NULL, (MonoObject **)&exc);
-	GD_MONO_END_RUNTIME_INVOKE;
+	MonoObject *ret = GDMonoUtils::property_get_value(mono_property, p_object, NULL, &exc);
 
 	if (exc) {
 		ret = NULL;
