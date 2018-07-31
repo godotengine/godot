@@ -414,7 +414,7 @@ MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class) {
 	void *args[1] = { &new_array };
 
 	MonoException *exc = NULL;
-	mono_runtime_invoke(m, mono_object, args, (MonoObject **)&exc);
+	GDMonoUtils::runtime_invoke(m, mono_object, args, &exc);
 	UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 	return mono_object;
@@ -444,7 +444,7 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) 
 	void *args[1] = { &new_dict };
 
 	MonoException *exc = NULL;
-	mono_runtime_invoke(m, mono_object, args, (MonoObject **)&exc);
+	GDMonoUtils::runtime_invoke(m, mono_object, args, &exc);
 	UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 	return mono_object;
@@ -476,9 +476,7 @@ String get_exception_name_and_message(MonoException *p_exc) {
 	res += ": ";
 
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoString *msg = (MonoString *)mono_property_get_value(prop, (MonoObject *)p_exc, NULL, NULL);
-	GD_MONO_END_RUNTIME_INVOKE;
+	MonoString *msg = (MonoString *)property_get_value(prop, (MonoObject *)p_exc, NULL, NULL);
 	res += GDMonoMarshal::mono_string_to_godot(msg);
 
 	return res;
@@ -489,9 +487,7 @@ void set_exception_message(MonoException *p_exc, String message) {
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
 	MonoString *msg = GDMonoMarshal::mono_string_from_godot(message);
 	void *params[1] = { msg };
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	mono_property_set_value(prop, (MonoObject *)p_exc, params, NULL);
-	GD_MONO_END_RUNTIME_INVOKE;
+	property_set_value(prop, (MonoObject *)p_exc, params, NULL);
 }
 
 void debug_print_unhandled_exception(MonoException *p_exc) {
@@ -591,5 +587,39 @@ void set_pending_exception(MonoException *p_exc) {
 
 _THREAD_LOCAL_(int)
 current_invoke_count = 0;
+
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)&p_exc);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return ret;
+}
+
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)&p_exc);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return ret;
+}
+
+MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoString *ret = mono_object_to_string(p_obj, (MonoObject **)p_exc);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return ret;
+}
+
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	mono_property_set_value(p_prop, p_obj, p_params, (MonoObject **)p_exc);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	MonoObject *ret = mono_property_get_value(p_prop, p_obj, p_params, (MonoObject **)p_exc);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return ret;
+}
 
 } // namespace GDMonoUtils
