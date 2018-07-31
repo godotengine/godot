@@ -392,6 +392,8 @@ void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_
 		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: m_softnessOrthoLin = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: m_restitutionOrthoLin = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: m_dampingOrthoLin = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTOR_TARGET_VELOCITY: m_targetLinMotorVelocity = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTOR_FORCE_LIMIT: m_maxLinMotorForce = p_value; break;
 
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: m_upperAngLimit = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: m_lowerAngLimit = p_value; break;
@@ -404,6 +406,8 @@ void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: m_softnessOrthoAng = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: m_restitutionOrthoAng = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: m_dampingOrthoAng = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY: m_targetAngMotorVelocity = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTOR_FORCE_LIMIT: m_maxAngMotorForce = p_value; break;
 
 		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
 	}
@@ -423,6 +427,8 @@ real_t SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
 		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS: return m_softnessOrthoLin;
 		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION: return m_restitutionOrthoLin;
 		case PhysicsServer::SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING: return m_dampingOrthoLin;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTOR_TARGET_VELOCITY: return m_targetLinMotorVelocity;
+		case PhysicsServer::SLIDER_JOINT_LINEAR_MOTOR_FORCE_LIMIT: return m_maxLinMotorForce;
 
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_UPPER: return m_upperAngLimit;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_LIMIT_LOWER: return m_lowerAngLimit;
@@ -435,9 +441,32 @@ real_t SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: return m_softnessOrthoAng;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: return m_restitutionOrthoAng;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: return m_dampingOrthoAng;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY: return m_targetAngMotorVelocity;
+		case PhysicsServer::SLIDER_JOINT_ANGULAR_MOTOR_FORCE_LIMIT: return m_maxAngMotorForce;
 
 		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 
 	return 0;
+}
+
+void SliderJointSW::set_flag(PhysicsServer::SliderJointFlag p_flag, bool p_value) {
+	switch (p_flag) {
+		case PhysicsServer::SLIDER_JOINT_FLAG_ENABLE_ANGULAR_MOTOR: m_poweredAngMotor = p_value; break;
+		case PhysicsServer::SLIDER_JOINT_FLAG_ENABLE_LINEAR_MOTOR: m_poweredLinMotor = p_value; break;
+
+		case PhysicsServer::SLIDER_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+	}
+}
+
+bool SliderJointSW::get_flag(PhysicsServer::SliderJointFlag p_flag) const {
+
+	switch (p_flag) {
+		case PhysicsServer::SLIDER_JOINT_FLAG_ENABLE_ANGULAR_MOTOR: return m_poweredAngMotor;
+		case PhysicsServer::SLIDER_JOINT_FLAG_ENABLE_LINEAR_MOTOR: return m_poweredLinMotor;
+
+		case PhysicsServer::SLIDER_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+	}
+
+	return false;
 }

@@ -360,6 +360,9 @@ public:
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, float p_value);
 	virtual float slider_joint_get_param(RID p_joint, SliderJointParam p_param) const;
 
+	virtual void slider_joint_set_flag(RID p_joint, SliderJointFlag p_flag, bool p_value);
+	virtual bool slider_joint_get_flag(RID p_joint, SliderJointFlag p_flag) const;
+
 	/// Reference frame is A
 	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
 

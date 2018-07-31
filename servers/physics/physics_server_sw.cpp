@@ -1236,6 +1236,24 @@ real_t PhysicsServerSW::slider_joint_get_param(RID p_joint, SliderJointParam p_p
 	return slider_joint->get_param(p_param);
 }
 
+void PhysicsServerSW::slider_joint_set_flag(RID p_joint, SliderJointFlag p_flag, bool p_value) {
+
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_SLIDER);
+	SliderJointSW *slider_joint = static_cast<SliderJointSW *>(joint);
+	slider_joint->set_flag(p_flag, p_value);
+}
+
+bool PhysicsServerSW::slider_joint_get_flag(RID p_joint, SliderJointFlag p_flag) const {
+
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint, false);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_SLIDER, false);
+	SliderJointSW *slider_joint = static_cast<SliderJointSW *>(joint);
+	return slider_joint->get_flag(p_flag);
+}
+
 RID PhysicsServerSW::joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
 
 	BodySW *body_A = body_owner.get(p_body_A);

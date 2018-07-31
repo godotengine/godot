@@ -240,6 +240,9 @@ public:
 	void set_param(PhysicsServer::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::SliderJointParam p_param) const;
 
+	void set_flag(PhysicsServer::SliderJointFlag p_flag, bool p_value);
+	bool get_flag(PhysicsServer::SliderJointFlag p_flag) const;
+
 	bool setup(real_t p_step);
 	void solve(real_t p_step);
 

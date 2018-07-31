@@ -654,7 +654,8 @@ public:
 		SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS,
 		SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION,
 		SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING,
-
+		SLIDER_JOINT_LINEAR_MOTOR_TARGET_VELOCITY,
+		SLIDER_JOINT_LINEAR_MOTOR_FORCE_LIMIT,
 		SLIDER_JOINT_ANGULAR_LIMIT_UPPER,
 		SLIDER_JOINT_ANGULAR_LIMIT_LOWER,
 		SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS,
@@ -666,14 +667,24 @@ public:
 		SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS,
 		SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION,
 		SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING,
+		SLIDER_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY,
+		SLIDER_JOINT_ANGULAR_MOTOR_FORCE_LIMIT,
 		SLIDER_JOINT_MAX
+	};
 
+	enum SliderJointFlag {
+		SLIDER_JOINT_FLAG_ENABLE_ANGULAR_MOTOR,
+		SLIDER_JOINT_FLAG_ENABLE_LINEAR_MOTOR,
+		SLIDER_JOINT_FLAG_MAX
 	};
 
 	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) = 0; //reference frame is A
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, float p_value) = 0;
 	virtual float slider_joint_get_param(RID p_joint, SliderJointParam p_param) const = 0;
+
+	virtual void slider_joint_set_flag(RID p_joint, SliderJointFlag p_flag, bool p_value) = 0;
+	virtual bool slider_joint_get_flag(RID p_joint, SliderJointFlag p_flag) const = 0;
 
 	enum ConeTwistJointParam {
 		CONE_TWIST_JOINT_SWING_SPAN,

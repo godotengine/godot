@@ -49,6 +49,15 @@
 		<member name="angular_ortho/softness" type="float" setter="set_param" getter="get_param">
 			A factor applied to the all rotation across axes orthogonal to the slider.
 		</member>
+		<member name="angular_motor/enabled" type="bool" setter="set_flag" getter="get_flag">
+			When enabled, a motor will apply rotation around the slider axis.
+		</member>
+		<member name="angular_motor/force_limit" type="float" setter="set_param" getter="get_param">
+			Maximum force applied to rotational motor.
+		</member>
+		<member name="angular_motor/target_velocity" type="float" setter="set_param" getter="get_param">
+			Target speed for the rotational motor.
+		</member>
 		<member name="linear_limit/damping" type="float" setter="set_param" getter="get_param">
 			The amount of damping that happens once the limit defined by [member linear_limit/lower_distance] and [member linear_limit/upper_distance] is surpassed.
 		</member>
@@ -81,6 +90,15 @@
 		</member>
 		<member name="linear_ortho/softness" type="float" setter="set_param" getter="get_param">
 			A factor applied to the movement across axes orthogonal to the slider.
+		</member>
+		<member name="linear_motor/enabled" type="bool" setter="set_flag" getter="get_flag">
+			When enabled, a motor will apply linear force to the slider, similar to piston.
+		</member>
+		<member name="linear_motor/force_limit" type="float" setter="set_param" getter="get_param">
+			Maximum force applied to linear motor.
+		</member>
+		<member name="linear_motor/target_velocity" type="float" setter="set_param" getter="get_param">
+			Target speed for the linear motor.
 		</member>
 	</members>
 	<constants>

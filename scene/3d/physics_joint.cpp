@@ -386,6 +386,9 @@ void SliderJoint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint::get_param);
 
+	ClassDB::bind_method(D_METHOD("set_flag", "flag", "value"), &SliderJoint::set_flag);
+	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &SliderJoint::get_flag);
+
 	ClassDB::bind_method(D_METHOD("_set_upper_limit_angular", "upper_limit_angular"), &SliderJoint::_set_upper_limit_angular);
 	ClassDB::bind_method(D_METHOD("_get_upper_limit_angular"), &SliderJoint::_get_upper_limit_angular);
 
@@ -403,6 +406,9 @@ void SliderJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_ortho/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_LINEAR_ORTHOGONAL_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_ortho/restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_LINEAR_ORTHOGONAL_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_ortho/damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"), "set_param", "get_param", PARAM_LINEAR_ORTHOGONAL_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_motor/enabled"), "set_flag", "get_flag", FLAG_ENABLE_LINEAR_MOTOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_motor/target_velocity"), "set_param", "get_param", PARAM_LINEAR_MOTOR_TARGET_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_motor/force_limit"), "set_param", "get_param", PARAM_LINEAR_MOTOR_FORCE_LIMIT);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_limit/upper_angle", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_upper_limit_angular", "_get_upper_limit_angular");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_limit/lower_angle", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_lower_limit_angular", "_get_lower_limit_angular");
@@ -415,6 +421,9 @@ void SliderJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_ortho/softness", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_ORTHOGONAL_SOFTNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_ortho/restitution", PROPERTY_HINT_RANGE, "0.01,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_ORTHOGONAL_RESTITUTION);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_ortho/damping", PROPERTY_HINT_RANGE, "0,16.0,0.01"), "set_param", "get_param", PARAM_ANGULAR_ORTHOGONAL_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_motor/enabled"), "set_flag", "get_flag", FLAG_ENABLE_ANGULAR_MOTOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_motor/target_velocity"), "set_param", "get_param", PARAM_ANGULAR_MOTOR_TARGET_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_motor/force_limit"), "set_param", "get_param", PARAM_ANGULAR_MOTOR_FORCE_LIMIT);
 
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_UPPER);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_LIMIT_LOWER);
@@ -427,6 +436,8 @@ void SliderJoint::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_ORTHOGONAL_SOFTNESS);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_ORTHOGONAL_RESTITUTION);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_ORTHOGONAL_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_MOTOR_TARGET_VELOCITY);
+	BIND_ENUM_CONSTANT(PARAM_LINEAR_MOTOR_FORCE_LIMIT);
 
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_UPPER);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_LIMIT_LOWER);
@@ -439,8 +450,14 @@ void SliderJoint::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_SOFTNESS);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_RESTITUTION);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_ORTHOGONAL_DAMPING);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTOR_TARGET_VELOCITY);
+	BIND_ENUM_CONSTANT(PARAM_ANGULAR_MOTOR_FORCE_LIMIT);
 
 	BIND_ENUM_CONSTANT(PARAM_MAX);
+
+	BIND_ENUM_CONSTANT(FLAG_ENABLE_ANGULAR_MOTOR);
+	BIND_ENUM_CONSTANT(FLAG_ENABLE_LINEAR_MOTOR);
+	BIND_ENUM_CONSTANT(FLAG_MAX);
 }
 
 void SliderJoint::set_param(Param p_param, float p_value) {
@@ -455,6 +472,22 @@ float SliderJoint::get_param(Param p_param) const {
 
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
+}
+
+void SliderJoint::set_flag(Flag p_flag, bool p_value) {
+
+	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
+	flags[p_flag] = p_value;
+	if (get_joint().is_valid())
+		PhysicsServer::get_singleton()->slider_joint_set_flag(get_joint(), PhysicsServer::SliderJointFlag(p_flag), p_value);
+
+	update_gizmo();
+}
+
+bool SliderJoint::get_flag(Flag p_flag) const {
+
+	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
+	return flags[p_flag];
 }
 
 RID SliderJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
@@ -476,6 +509,9 @@ RID SliderJoint::_configure_joint(PhysicsBody *body_a, PhysicsBody *body_b) {
 	RID j = PhysicsServer::get_singleton()->joint_create_slider(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer::get_singleton()->slider_joint_set_param(j, PhysicsServer::SliderJointParam(i), params[i]);
+	}
+	for (int i = 0; i < FLAG_MAX; i++) {
+		PhysicsServer::get_singleton()->slider_joint_set_flag(j, PhysicsServer::SliderJointFlag(i), flags[i]);
 	}
 
 	return j;

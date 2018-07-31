@@ -1385,6 +1385,22 @@ float BulletPhysicsServer::slider_joint_get_param(RID p_joint, SliderJointParam 
 	return slider_joint->get_param(p_param);
 }
 
+void BulletPhysicsServer::slider_joint_set_flag(RID p_joint, SliderJointFlag p_flag, bool p_value) {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_SLIDER);
+	SliderJointBullet *slider_joint = static_cast<SliderJointBullet *>(joint);
+	slider_joint->set_flag(p_flag, p_value);
+}
+
+bool BulletPhysicsServer::slider_joint_get_flag(RID p_joint, SliderJointFlag p_flag) const {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint, false);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_SLIDER, false);
+	SliderJointBullet *slider_joint = static_cast<SliderJointBullet *>(joint);
+	return slider_joint->get_flag(p_flag);
+}
+
 RID BulletPhysicsServer::joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
 	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());

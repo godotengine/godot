@@ -102,20 +102,23 @@ public:
 	void setRestitutionOrthoAng(real_t restitutionOrthoAng);
 	void setDampingOrthoAng(real_t dampingOrthoAng);
 	void setPoweredLinMotor(bool onOff);
-	bool getPoweredLinMotor();
+	bool getPoweredLinMotor() const;
 	void setTargetLinMotorVelocity(real_t targetLinMotorVelocity);
-	real_t getTargetLinMotorVelocity();
+	real_t getTargetLinMotorVelocity() const;
 	void setMaxLinMotorForce(real_t maxLinMotorForce);
-	real_t getMaxLinMotorForce();
+	real_t getMaxLinMotorForce() const;
 	void setPoweredAngMotor(bool onOff);
-	bool getPoweredAngMotor();
+	bool getPoweredAngMotor() const;
 	void setTargetAngMotorVelocity(real_t targetAngMotorVelocity);
-	real_t getTargetAngMotorVelocity();
+	real_t getTargetAngMotorVelocity() const;
 	void setMaxAngMotorForce(real_t maxAngMotorForce);
-	real_t getMaxAngMotorForce();
-	real_t getLinearPos();
+	real_t getMaxAngMotorForce() const;
+	real_t getLinearPos() const;
 
 	void set_param(PhysicsServer::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::SliderJointParam p_param) const;
+
+	void set_flag(PhysicsServer::SliderJointFlag p_flag, bool p_value);
+	bool get_flag(PhysicsServer::SliderJointFlag p_flag) const;
 };
 #endif
