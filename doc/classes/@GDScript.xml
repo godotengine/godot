@@ -498,6 +498,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns True/False whether [code]a[/code] and [code]b[/code] are approximately equal to each other.
+			</description>
+		</method>
 		<method name="is_inf">
 			<return type="bool">
 			</return>
@@ -523,6 +534,15 @@
 			</argument>
 			<description>
 				Returns whether [code]s[/code] is a NaN (Not-A-Number) value.
+			</description>
+		</method>
+		<method name="is_zero_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="s" type="float">
+			</argument>
+			<description>
+				Returns True/False whether [code]s[/code] is zero or almost zero.
 			</description>
 		</method>
 		<method name="len">

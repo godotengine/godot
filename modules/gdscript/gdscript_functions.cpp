@@ -68,6 +68,8 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"exp",
 		"is_nan",
 		"is_inf",
+		"is_equal_approx",
+		"is_zero_approx",
 		"ease",
 		"decimals",
 		"stepify",
@@ -315,6 +317,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::is_inf((double)*p_args[0]);
+		} break;
+		case MATH_ISEQUALAPPROX: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::is_equal_approx((real_t)*p_args[0], (real_t)*p_args[1]);
+		} break;
+		case MATH_ISZEROAPPROX: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			r_ret = Math::is_zero_approx((real_t)*p_args[0]);
 		} break;
 		case MATH_EASE: {
 			VALIDATE_ARG_COUNT(2);
@@ -1593,6 +1606,16 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_ISINF: {
 			MethodInfo mi("is_inf", PropertyInfo(Variant::REAL, "s"));
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
+		case MATH_ISEQUALAPPROX: {
+			MethodInfo mi("is_equal_approx", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
+		case MATH_ISZEROAPPROX: {
+			MethodInfo mi("is_zero_approx", PropertyInfo(Variant::REAL, "s"));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;
