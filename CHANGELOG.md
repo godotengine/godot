@@ -4,7 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [3.0.5] - 2016-07-08
+## [3.0.6] - 2018-07-29
+
+### Added
+
+ - Upgrade bundled OpenSSL to 1.0.2o.
+
+### Fixed
+
+ - Security issue relating to deserializing Variants.
+ - Several editor crashes.
+ - GLTF import fixes.
+ - Windows: Fix touch/pen input.
+ - Mono: --build-solutions now forces editor mode.
+ - Mono: Several bugfixes.
+ - Headless: Fix scene imports.
+
+## [3.0.5] - 2018-07-08
 
 ### Added
 
