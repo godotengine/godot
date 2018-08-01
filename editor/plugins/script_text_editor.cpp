@@ -967,7 +967,6 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 
 		} break;
-
 		case HELP_CONTEXTUAL: {
 
 			String text = tx->get_selection_text();
@@ -975,6 +974,15 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				text = tx->get_word_under_cursor();
 			if (text != "") {
 				emit_signal("request_help_search", text);
+			}
+		} break;
+		case LOOKUP_SYMBOL: {
+
+			String text = tx->get_word_under_cursor();
+			if (text == "")
+				text = tx->get_selection_text();
+			if (text != "") {
+				_lookup_symbol(text, tx->cursor_get_line(), tx->cursor_get_column());
 			}
 		} break;
 	}
@@ -1182,19 +1190,13 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	if (mb.is_valid()) {
 
-		if (mb->get_button_index() == BUTTON_RIGHT) {
-
+		if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
 			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
 
 			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
-			bool has_color = (tx->get_word_at_pos(mpos) == "Color");
-			int fold_state = 0;
-			bool can_fold = tx->can_fold(row);
-			bool is_folded = tx->is_folded(row);
-
 			if (tx->is_right_click_moving_caret()) {
 				if (tx->is_selection_active()) {
 
@@ -1214,38 +1216,62 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				}
 			}
 
-			if (!mb->is_pressed()) {
-				if (has_color) {
-					String line = tx->get_line(row);
-					color_line = row;
-					int begin = 0;
-					int end = 0;
-					bool valid = false;
-					for (int i = col; i < line.length(); i++) {
-						if (line[i] == '(') {
-							begin = i;
-							continue;
-						} else if (line[i] == ')') {
-							end = i + 1;
-							valid = true;
-							break;
-						}
-					}
-					if (valid) {
-						color_args = line.substr(begin, end - begin);
-						String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
-						Vector<float> color = stripped.split_floats(",");
-						if (color.size() > 2) {
-							float alpha = color.size() > 3 ? color[3] : 1.0f;
-							color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
-						}
-						color_panel->set_position(get_global_transform().xform(get_local_mouse_position()));
-					} else {
-						has_color = false;
+			String word_at_mouse = tx->get_word_at_pos(mpos);
+			if (word_at_mouse == "")
+				word_at_mouse = tx->get_word_under_cursor();
+			if (word_at_mouse == "")
+				word_at_mouse = tx->get_selection_text();
+
+			bool has_color = (word_at_mouse == "Color");
+			int fold_state = 0;
+			bool foldable = tx->can_fold(row) || tx->is_folded(row);
+			bool open_docs = false;
+			bool goto_definition = false;
+
+			if (word_at_mouse.is_resource_file()) {
+				open_docs = true;
+			} else {
+
+				Node *base = get_tree()->get_edited_scene_root();
+				if (base) {
+					base = _find_node_for_script(base, base, script);
+				}
+				ScriptLanguage::LookupResult result;
+				if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), word_at_mouse, script->get_path().get_base_dir(), base, result) == OK) {
+					open_docs = true;
+				}
+			}
+
+			if (has_color) {
+				String line = tx->get_line(row);
+				color_line = row;
+				int begin = 0;
+				int end = 0;
+				bool valid = false;
+				for (int i = col; i < line.length(); i++) {
+					if (line[i] == '(') {
+						begin = i;
+						continue;
+					} else if (line[i] == ')') {
+						end = i + 1;
+						valid = true;
+						break;
 					}
 				}
-				_make_context_menu(tx->is_selection_active(), has_color, can_fold, is_folded);
+				if (valid) {
+					color_args = line.substr(begin, end - begin);
+					String stripped = color_args.replace(" ", "").replace("(", "").replace(")", "");
+					Vector<float> color = stripped.split_floats(",");
+					if (color.size() > 2) {
+						float alpha = color.size() > 3 ? color[3] : 1.0f;
+						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
+					}
+					color_panel->set_position(get_global_transform().xform(get_local_mouse_position()));
+				} else {
+					has_color = false;
+				}
 			}
+			_make_context_menu(tx->is_selection_active(), has_color, foldable, open_docs, goto_definition);
 		}
 	}
 }
@@ -1264,7 +1290,7 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	code_editor->get_text_edit()->set_line(color_line, new_line);
 }
 
-void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_can_fold, bool p_is_folded) {
+void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition) {
 
 	context_menu->clear();
 	if (p_selection) {
@@ -1287,13 +1313,17 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 	}
-	if (p_can_fold || p_is_folded)
+	if (p_foldable)
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
 
-	if (p_color) {
+	if (p_color || p_open_docs || p_goto_definition) {
 		context_menu->add_separator();
-		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
+		if (p_open_docs)
+			context_menu->add_item(TTR("Lookup Symbol"), LOOKUP_SYMBOL);
+		if (p_color)
+			context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
 	}
+
 	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
@@ -1327,6 +1357,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect("id_pressed", this, "_edit_option");
+	context_menu->set_hide_on_window_lose_focus(true);
 
 	color_panel = memnew(PopupPanel);
 	add_child(color_panel);
@@ -1338,6 +1369,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
@@ -1391,6 +1423,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
+	search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);

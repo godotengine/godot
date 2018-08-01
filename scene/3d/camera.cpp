@@ -468,6 +468,10 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
+
+	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera::set_cull_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera::get_cull_mask_bit);
+
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
@@ -548,6 +552,20 @@ void Camera::set_cull_mask(uint32_t p_layers) {
 uint32_t Camera::get_cull_mask() const {
 
 	return layers;
+}
+
+void Camera::set_cull_mask_bit(int p_layer, bool p_enable) {
+	ERR_FAIL_INDEX(p_layer, 32);
+	if (p_enable) {
+		set_cull_mask(layers | (1 << p_layer));
+	} else {
+		set_cull_mask(layers & (~(1 << p_layer)));
+	}
+}
+
+bool Camera::get_cull_mask_bit(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, 32, false);
+	return (layers & (1 << p_layer));
 }
 
 Vector<Plane> Camera::get_frustum() const {
