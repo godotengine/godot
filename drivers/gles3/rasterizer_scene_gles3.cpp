@@ -3912,7 +3912,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			state.effect_blur_shader.bind();
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
-			
+
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_LEVEL_WEIGHT, env->glow_level_weight);
 
 			glActiveTexture(GL_TEXTURE0);
@@ -3968,7 +3968,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_UNCHARTED_TONEMAPPER, env->tone_mapper == VS::ENV_TONE_MAPPER_UNCHARTED);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::KEEP_3D_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_SATURATION, env->tone_mapper_filmic_saturation);
-	
+
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE, env->auto_exposure);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_GLOW_FILTER_BICUBIC, env->glow_bicubic_upscale);
 
