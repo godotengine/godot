@@ -68,6 +68,13 @@ public:
 		GLOW_BLEND_MODE_LINEAR_MIX
 	};
 
+	enum GlowThresholdMode {
+		GLOW_THRESHOLD_MODE_CUT,
+		GLOW_THRESHOLD_MODE_CUT_SMOOTH,
+		GLOW_THRESHOLD_MODE_BOOST,
+		GLOW_THRESHOLD_MODE_BOOST_SMOOTH
+	};
+
 	enum DOFBlurQuality {
 		DOF_BLUR_QUALITY_LOW,
 		DOF_BLUR_QUALITY_MEDIUM,
@@ -138,12 +145,14 @@ private:
 
 	bool glow_enabled;
 	int glow_levels;
-	float glow_intensity;
-	float glow_strength;
-	float glow_bloom;
+	float glow_level_weight;
+	float glow_level_weights_total; // derived from glow_level_weight, used for normalization
+	GlowThresholdMode glow_threshold_mode;
+	float glow_threshold;
+	float glow_threshold_gain;
+	float glow_threshold_fade;
 	GlowBlendMode glow_blend_mode;
-	float glow_hdr_bleed_threshold;
-	float glow_hdr_bleed_scale;
+	float glow_blend_intensity;
 	bool glow_bicubic_upscale;
 
 	bool dof_blur_far_enabled;
@@ -302,23 +311,26 @@ public:
 	void set_glow_level(int p_level, bool p_enabled);
 	bool is_glow_level_enabled(int p_level) const;
 
-	void set_glow_intensity(float p_intensity);
-	float get_glow_intensity() const;
+	void set_glow_level_weight(float p_level_weight);
+	float get_glow_level_weight() const;
 
-	void set_glow_strength(float p_strength);
-	float get_glow_strength() const;
+	void set_glow_threshold_mode(GlowThresholdMode p_threshold_mode);
+	GlowThresholdMode get_glow_threshold_mode() const;
 
-	void set_glow_bloom(float p_threshold);
-	float get_glow_bloom() const;
+	void set_glow_threshold(float p_threshold);
+	float get_glow_threshold() const;
+
+	void set_glow_threshold_gain(float p_threshold_gain);
+	float get_glow_threshold_gain() const;
+
+	void set_glow_threshold_fade(float p_threshold_fade);
+	float get_glow_threshold_fade() const;
 
 	void set_glow_blend_mode(GlowBlendMode p_mode);
 	GlowBlendMode get_glow_blend_mode() const;
 
-	void set_glow_hdr_bleed_threshold(float p_threshold);
-	float get_glow_hdr_bleed_threshold() const;
-
-	void set_glow_hdr_bleed_scale(float p_scale);
-	float get_glow_hdr_bleed_scale() const;
+	void set_glow_blend_intensity(float p_blend_intensity);
+	float get_glow_blend_intensity() const;
 
 	void set_glow_bicubic_upscale(bool p_enable);
 	bool is_glow_bicubic_upscale_enabled() const;
@@ -401,6 +413,7 @@ public:
 VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
+VARIANT_ENUM_CAST(Environment::GlowThresholdMode)
 VARIANT_ENUM_CAST(Environment::DOFBlurQuality)
 VARIANT_ENUM_CAST(Environment::SSAOQuality)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)

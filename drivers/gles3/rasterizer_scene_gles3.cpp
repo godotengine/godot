@@ -865,19 +865,32 @@ void RasterizerSceneGLES3::environment_set_dof_blur_near(RID p_env, bool p_enabl
 	env->dof_blur_near_amount = p_amount;
 	env->dof_blur_near_quality = p_quality;
 }
-void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) {
+void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_level_weight, VS::EnvironmentGlowThresholdMode p_threshold_mode, float p_threshold, float p_threshold_gain, float p_threshold_fade, VS::EnvironmentGlowBlendMode p_blend_mode, float p_blend_intensity, bool p_bicubic_upscale) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->glow_enabled = p_enable;
 	env->glow_levels = p_level_flags;
-	env->glow_intensity = p_intensity;
-	env->glow_strength = p_strength;
-	env->glow_bloom = p_bloom_threshold;
+
+	env->glow_level_weight = p_level_weight >= 0.0 ? p_level_weight + 1.0 : (1.0 / (1.0 - p_level_weight)); // remap to [1/a, a] (-> effect of the value looks symmetrical)
+
+	// calculate total level weight: lv1 = in * w, lv2 = lv1 * w = in * w * w, lvN = in * w^N (sum up for each enabled level)
+	float layer_weight_result = env->glow_level_weight; // accumulate weights
+	env->glow_level_weights_total = 0;
+	for (int i = 0; i < VS::MAX_GLOW_LEVELS; i++) {
+		if (env->glow_levels & (1 << i)) {
+			env->glow_level_weights_total += layer_weight_result;
+			layer_weight_result *= env->glow_level_weight;
+		}
+	}
+
+	env->glow_threshold_mode = p_threshold_mode;
+	env->glow_threshold = p_threshold;
+	env->glow_threshold_gain = p_threshold_gain;
+	env->glow_threshold_fade = p_threshold_fade;
 	env->glow_blend_mode = p_blend_mode;
-	env->glow_hdr_bleed_threshold = p_hdr_bleed_threshold;
-	env->glow_hdr_bleed_scale = p_hdr_bleed_scale;
+	env->glow_blend_intensity = p_blend_intensity;
 	env->glow_bicubic_upscale = p_bicubic_upscale;
 }
 void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
@@ -3888,13 +3901,19 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			if (i == 0) {
 				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_FIRST_PASS, true);
 				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_AUTO_EXPOSURE, env->auto_exposure);
+
+				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_THRESHOLD_CUT, env->glow_threshold_mode == VS::GLOW_THRESHOLD_MODE_CUT);
+				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_THRESHOLD_CUT_SMOOTH, env->glow_threshold_mode == VS::GLOW_THRESHOLD_MODE_CUT_SMOOTH);
+				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_THRESHOLD_BOOST, env->glow_threshold_mode == VS::GLOW_THRESHOLD_MODE_BOOST);
+				state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_USE_THRESHOLD_BOOST_SMOOTH, env->glow_threshold_mode == VS::GLOW_THRESHOLD_MODE_BOOST_SMOOTH);
 			}
 
 			state.effect_blur_shader.set_conditional(EffectBlurShaderGLES3::GLOW_GAUSSIAN_HORIZONTAL, true);
 			state.effect_blur_shader.bind();
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
-			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_STRENGTH, env->glow_strength);
+			
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_LEVEL_WEIGHT, env->glow_level_weight);
 
 			glActiveTexture(GL_TEXTURE0);
 			if (i == 0) {
@@ -3908,9 +3927,9 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->exposure.color);
 
-				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_BLOOM, env->glow_bloom);
-				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_THRESHOLD, env->glow_hdr_bleed_threshold);
-				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_HDR_SCALE, env->glow_hdr_bleed_scale);
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_THRESHOLD, env->glow_threshold);
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_THRESHOLD_GAIN, env->glow_threshold_gain);
+				state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_THRESHOLD_FADE, env->glow_threshold_fade);
 
 			} else {
 				glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color); //previous level, since mipmaps[0] starts one level bigger
@@ -3926,7 +3945,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			state.effect_blur_shader.bind();
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
-			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_STRENGTH, env->glow_strength);
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_LEVEL_WEIGHT, env->glow_level_weight);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[1].color);
 			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[i + 1].fbo); //next level, since mipmaps[0] starts one level bigger
@@ -4009,7 +4028,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 
 	if (max_glow_level >= 0) {
 
-		state.tonemap_shader.set_uniform(TonemapShaderGLES3::GLOW_INTENSITY, env->glow_intensity);
+		state.tonemap_shader.set_uniform(TonemapShaderGLES3::GLOW_BLEND_INTENSITY, env->glow_blend_intensity);
+		state.tonemap_shader.set_uniform(TonemapShaderGLES3::GLOW_NORMALIZATION_FACTOR, 1.0 / env->glow_level_weights_total);
 		int ss[2] = {
 			storage->frame.current_rt->width,
 			storage->frame.current_rt->height,

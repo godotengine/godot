@@ -396,12 +396,14 @@ public:
 
 		bool glow_enabled;
 		int glow_levels;
-		float glow_intensity;
-		float glow_strength;
-		float glow_bloom;
+		float glow_level_weight;
+		float glow_level_weights_total; // derived from glow_level_weight, used for normalization
+		VS::EnvironmentGlowThresholdMode glow_threshold_mode;
+		float glow_threshold;
+		float glow_threshold_gain;
+		float glow_threshold_fade;
 		VS::EnvironmentGlowBlendMode glow_blend_mode;
-		float glow_hdr_bleed_threshold;
-		float glow_hdr_bleed_scale;
+		float glow_blend_intensity;
 		bool glow_bicubic_upscale;
 
 		VS::EnvironmentToneMapper tone_mapper;
@@ -486,12 +488,14 @@ public:
 
 			glow_enabled = false;
 			glow_levels = (1 << 2) | (1 << 4);
-			glow_intensity = 0.8;
-			glow_strength = 1.0;
-			glow_bloom = 0.0;
-			glow_blend_mode = VS::GLOW_BLEND_MODE_SOFTLIGHT;
-			glow_hdr_bleed_threshold = 1.0;
-			glow_hdr_bleed_scale = 2.0;
+			glow_level_weight = 0.0;
+			glow_level_weights_total = VS::MAX_GLOW_LEVELS;
+			glow_blend_mode = VS::GLOW_BLEND_MODE_LINEAR_ADD;
+			glow_blend_intensity = 0.12;
+			glow_threshold_mode = VS::GLOW_THRESHOLD_MODE_CUT;
+			glow_threshold = 1.2;
+			glow_threshold_gain = 4.0;
+			glow_threshold_fade = 4.0;
 			glow_bicubic_upscale = false;
 
 			dof_blur_far_enabled = false;
@@ -545,7 +549,7 @@ public:
 
 	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
 	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, bool p_bicubic_upscale);
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_level_weight, VS::EnvironmentGlowThresholdMode p_threshold_mode, float p_threshold, float p_threshold_gain, float p_threshold_fade, VS::EnvironmentGlowBlendMode p_blend_mode, float p_blend_intensity, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);

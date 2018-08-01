@@ -41,8 +41,10 @@ uniform float white;
 #if defined(USE_GLOW_LEVEL1) || defined(USE_GLOW_LEVEL2) || defined(USE_GLOW_LEVEL3) || defined(USE_GLOW_LEVEL4) || defined(USE_GLOW_LEVEL5) || defined(USE_GLOW_LEVEL6) || defined(USE_GLOW_LEVEL7)
 	#define USING_GLOW // only use glow when at least one glow level is selected
 
+	uniform float glow_normalization_factor;
+
 	uniform highp sampler2D source_glow; //texunit:2
-	uniform highp float glow_intensity;
+	uniform highp float glow_blend_intensity;
 #endif
 
 #if defined(USE_REINHARD_TONEMAPPER) || defined(USE_FILMIC_TONEMAPPER) || defined(USE_ACES_TONEMAPPER) // any tonemapping?
@@ -216,78 +218,80 @@ vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always out
 	return color;
 }
 
-vec3 gather_glow(sampler2D tex, vec2 uv) // sample all selected glow levels
-{
-	vec3 glow = vec3(0.0f);
+#ifdef USING_GLOW
+	vec3 gather_glow(sampler2D tex, vec2 uv) // sample all selected glow levels
+	{
+		vec3 glow = vec3(0.0f);
 
-	#ifdef USE_GLOW_LEVEL1
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL1
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
+		#endif
 
-	#ifdef USE_GLOW_LEVEL2
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL2
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
+		#endif
 
-	#ifdef USE_GLOW_LEVEL3
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL3
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
+		#endif
 
-	#ifdef USE_GLOW_LEVEL4
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL4
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
+		#endif
 
-	#ifdef USE_GLOW_LEVEL5
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL5
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
+		#endif
 
-	#ifdef USE_GLOW_LEVEL6
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL6
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
+		#endif
 
-	#ifdef USE_GLOW_LEVEL7
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
-	#endif
+		#ifdef USE_GLOW_LEVEL7
+			glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
+		#endif
 
-	return glow;
-}
+		return glow * glow_normalization_factor;
+	}
 
-vec3 apply_glow(vec3 color, vec3 glow) // apply srgb glow using the selected blending mode
-{
-	#ifdef USE_GLOW_REPLACE
-		color = glow;
-	#endif
+	vec3 apply_glow(vec3 color, vec3 glow) // apply srgb glow using the selected blending mode
+	{
+		#ifdef USE_GLOW_REPLACE
+			color = glow;
+		#endif
 
-	#ifdef USE_GLOW_SCREEN
-		color = max((color + glow) - (color * glow), vec3(0.0));
-	#endif
+		#ifdef USE_GLOW_SCREEN
+			color = max((color + glow) - (color * glow), vec3(0.0));
+		#endif
 
-	#ifdef USE_GLOW_SOFTLIGHT
-		glow = glow * vec3(0.5f) + vec3(0.5f);
+		#ifdef USE_GLOW_SOFTLIGHT
+			glow = glow * vec3(0.5f) + vec3(0.5f);
 
-		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
-		color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
-		color.b = (glow.b <= 0.5f) ? (color.b - (1.0f - 2.0f * glow.b) * color.b * (1.0f - color.b)) : (((glow.b > 0.5f) && (color.b <= 0.25f)) ? (color.b + (2.0f * glow.b - 1.0f) * (4.0f * color.b * (4.0f * color.b + 1.0f) * (color.b - 1.0f) + 7.0f * color.b)) : (color.b + (2.0f * glow.b - 1.0f) * (sqrt(color.b) - color.b)));
-	#endif
+			color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
+			color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
+			color.b = (glow.b <= 0.5f) ? (color.b - (1.0f - 2.0f * glow.b) * color.b * (1.0f - color.b)) : (((glow.b > 0.5f) && (color.b <= 0.25f)) ? (color.b + (2.0f * glow.b - 1.0f) * (4.0f * color.b * (4.0f * color.b + 1.0f) * (color.b - 1.0f) + 7.0f * color.b)) : (color.b + (2.0f * glow.b - 1.0f) * (sqrt(color.b) - color.b)));
+		#endif
 
-	#if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE) // no other selected -> additive
-		color += glow;
-	#endif
+		#if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE) // no other selected -> additive
+			color += glow;
+		#endif
 
-	return color;
-}
+		return color;
+	}
 
-vec3 apply_glow_linear(vec3 color, vec3 glow, float glow_blend_intensity) // apply linear glow using the selected blending mode (requires glow intensity param because of "mix"-mode
-{
-	#ifdef USE_GLOW_LINEAR_ADD
-		color = color + glow * vec3(glow_blend_intensity);
-	#endif
+	vec3 apply_glow_linear(vec3 color, vec3 glow, float glow_blend_intensity) // apply linear glow using the selected blending mode (requires glow intensity param because of "mix"-mode
+	{
+		#ifdef USE_GLOW_LINEAR_ADD
+			color = color + glow * vec3(glow_blend_intensity);
+		#endif
 
-	#ifdef USE_GLOW_LINEAR_MIX
-		color = mix(color, glow, vec3(glow_blend_intensity));
-	#endif
+		#ifdef USE_GLOW_LINEAR_MIX
+			color = mix(color, glow, vec3(glow_blend_intensity));
+		#endif
 
-	return color;
-}
+		return color;
+	}
+#endif
 
 vec3 apply_bcs(vec3 color, vec3 bcs)
 {
@@ -335,7 +339,7 @@ void main()
 		// Glow
 
 		#ifdef USING_GLOW
-			vec3 glow = gather_glow(source_glow, uv_interp) * glow_intensity;
+			vec3 glow = gather_glow(source_glow, uv_interp) * glow_blend_intensity;
 
 			// high dynamic range -> SRGB
 			glow = apply_tonemapping(glow, white);
@@ -351,7 +355,7 @@ void main()
 		#ifdef USING_GLOW
 			vec3 glow = gather_glow(source_glow, uv_interp);
 
-			color = apply_glow_linear(color, glow, glow_intensity);
+			color = apply_glow_linear(color, glow, glow_blend_intensity);
 		#endif
 
 		// Late Tonemap & SRGB Conversion

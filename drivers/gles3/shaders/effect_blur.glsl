@@ -50,7 +50,7 @@ uniform vec4 ssao_color;
 
 #if defined (GLOW_GAUSSIAN_HORIZONTAL) || defined(GLOW_GAUSSIAN_VERTICAL)
 
-uniform float glow_strength;
+uniform float glow_level_weight;
 
 #endif
 
@@ -92,7 +92,6 @@ uniform sampler2D source_dof_original; //texunit:2
 #ifdef GLOW_FIRST_PASS
 
 uniform float exposure;
-uniform float white;
 
 #ifdef GLOW_USE_AUTO_EXPOSURE
 
@@ -101,9 +100,11 @@ uniform highp float auto_exposure_grey;
 
 #endif
 
-uniform float glow_bloom;
-uniform float glow_hdr_threshold;
-uniform float glow_hdr_scale;
+#if defined(GLOW_USE_THRESHOLD_CUT) || defined(GLOW_USE_THRESHOLD_CUT_SMOOTH) || defined(GLOW_USE_THRESHOLD_BOOST) || defined(GLOW_USE_THRESHOLD_BOOST_SMOOTH)
+	uniform float glow_threshold;
+	uniform float glow_threshold_gain;
+	uniform float glow_threshold_fade;
+#endif
 
 #endif
 
@@ -148,7 +149,6 @@ void main() {
 	color+=textureLod( source_color,  uv_interp+vec2(-1.0, 0.0)*pix_size,lod )*0.165569;
 	color+=textureLod( source_color,  uv_interp+vec2(-2.0, 0.0)*pix_size,lod )*0.140367;
 	color+=textureLod( source_color,  uv_interp+vec2(-3.0, 0.0)*pix_size,lod )*0.106595;
-	color*=glow_strength;
 	frag_color = color;
 #endif
 
@@ -158,8 +158,7 @@ void main() {
 	color+=textureLod( source_color,  uv_interp+vec2(0.0, 2.0)*pixel_size,lod )*0.122581;
 	color+=textureLod( source_color,  uv_interp+vec2(0.0,-1.0)*pixel_size,lod )*0.233062;
 	color+=textureLod( source_color,  uv_interp+vec2(0.0,-2.0)*pixel_size,lod )*0.122581;
-	color*=glow_strength;
-	frag_color = color;
+	frag_color = color * glow_level_weight;
 #endif
 
 #ifdef DOF_FAR_BLUR
@@ -268,18 +267,61 @@ void main() {
 
 
 #ifdef GLOW_FIRST_PASS
-
 #ifdef GLOW_USE_AUTO_EXPOSURE
-
-	frag_color/=texelFetch(source_auto_exposure,ivec2(0,0),0).r/auto_exposure_grey;
+	frag_color.rgb /= texelFetch(source_auto_exposure,ivec2(0,0),0).r / auto_exposure_grey;
 #endif
-	frag_color*=exposure;
-
-	float luminance = max(frag_color.r,max(frag_color.g,frag_color.b));
-	float feedback = max( smoothstep(glow_hdr_threshold,glow_hdr_threshold+glow_hdr_scale,luminance), glow_bloom );
-
-	frag_color *= feedback;
-
+	
+	// apply threshold and gain
+	frag_color.rgb *= exposure;
+	
+	#ifdef GLOW_USE_THRESHOLD_CUT
+		frag_color.rgb = max((frag_color.rgb - glow_threshold) * glow_threshold_gain, vec3(0.0));
+	#endif
+	
+	#ifdef GLOW_USE_THRESHOLD_CUT_SMOOTH
+		// TODO: cleanup and maybe optimize (if possible)
+		vec3 boost_s = frag_color.rgb - vec3(glow_threshold);
+		float boost_t = glow_threshold + glow_threshold_fade;
+		float boost_t_s = glow_threshold_fade;
+		float boost_m = glow_threshold_gain + 1;
+		float boost_m_1 = glow_threshold_gain;
+		
+		float boost_normfac = 1.0f / (2.0f * boost_t_s);
+		
+		vec3 boost_b = boost_s * boost_s * boost_normfac * boost_m_1;
+		vec3 boost_c = boost_m * (boost_s - boost_t_s) + boost_t + boost_t_s * boost_t_s * boost_normfac * boost_m_1 - frag_color.rgb;
+		
+		vec3 s3 = step(vec3(boost_t_s), boost_s);
+		vec3 s2 = vec3(1.0f) - step(boost_s, vec3(0.0f)) - s3;
+		
+		frag_color.rgb = boost_b * s2 + boost_c * s3; // s1 = 0
+	#endif
+	
+	#ifdef GLOW_USE_THRESHOLD_BOOST
+		frag_color.rgb += frag_color.rgb * (glow_threshold_gain - 1.0f) * step(vec3(glow_threshold), frag_color.rgb);
+	#endif
+	
+	#ifdef GLOW_USE_THRESHOLD_BOOST_SMOOTH
+		// TODO: cleanup and maybe optimize (if possible)
+		vec3 boost_s = frag_color.rgb - vec3(glow_threshold);
+		float boost_t = glow_threshold + glow_threshold_fade;
+		float boost_t_s = glow_threshold_fade;
+		float boost_m = glow_threshold_gain;
+		float boost_m_1 = glow_threshold_gain - 1;
+		
+		float boost_normfac = 1.0f / (2.0f * boost_t_s);
+		
+		vec3 boost_a = frag_color.rgb;
+		vec3 boost_b = frag_color.rgb + boost_s * boost_s * boost_normfac * boost_m_1;
+		vec3 boost_c = boost_m * (boost_s - boost_t_s) + boost_t + boost_t_s * boost_t_s * boost_normfac * boost_m_1;
+		
+		vec3 s1 = step(boost_s, vec3(0.0f));
+		vec3 s3 = step(vec3(boost_t_s), boost_s);
+		vec3 s2 = vec3(1.0f) - s1 - s3;
+		
+		frag_color.rgb = boost_a * s1 + boost_b * s2 + boost_c * s3;
+	#endif
+	
 #endif
 
 
