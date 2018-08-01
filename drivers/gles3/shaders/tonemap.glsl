@@ -47,7 +47,7 @@ uniform float white;
 	uniform highp float glow_blend_intensity;
 #endif
 
-#if defined(USE_REINHARD_TONEMAPPER) || defined(USE_FILMIC_TONEMAPPER) || defined(USE_ACES_TONEMAPPER) // any tonemapping?
+#if defined(USE_REINHARD_TONEMAPPER) || defined(USE_FILMIC_TONEMAPPER) || defined(USE_ACES_TONEMAPPER) || defined(USE_FILMIC_SIMPLE_TONEMAPPER) || defined(USE_UNCHARTED_TONEMAPPER) // any tonemapping?
 	#define USE_TONEMAPPER
 #endif
 
@@ -184,14 +184,52 @@ vec3 tonemap_aces(vec3 color, float white)
 	return linear_to_srgb(clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f)));
 }
 
+vec3 tonemap_filmic_simple(vec3 color, float white) // simplified algorithm from the uncharted 2 paper, does not require gamma correction!
+{
+	const float A = 6.2f;
+	const float B = 0.5f;
+	const float C = 1.7f;
+	const float D = 0.06f;
+
+	color = max(color - vec3(0.004f), 0.0f); // black clip
+
+	vec3 a_color = A * color;
+	float a_white = A * white;
+
+	vec3 color_tonemapped = (color * (a_color + B)) / (color * (a_color + C) + D);
+	float white_tonemapped = (white * (a_white + B)) / (white * (a_white + C) + D);
+
+	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+}
+
+vec3 tonemap_uncharted(vec3 color, float white) // widely used uncharted 2 filmic tonemapping
+{
+	const float A = 0.22f;
+	const float B = 0.30f;
+	const float C = 0.10f;
+	const float D = 0.20f;
+	const float E = 0.01f;
+	const float F = 0.30f;
+
+	const float ExposureBias = 2.0f;
+
+	color *= vec3(ExposureBias);
+	white *= ExposureBias;
+
+	vec3 color_tonemapped = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
+	float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
+
+	return linear_to_srgb(clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f)));
+}
+
 vec3 tonemap_reinhard(vec3 color, float white)
 {
 	return linear_to_srgb(clamp((white + vec3(1.0f)) * color / ((color + vec3(1.0f)) * white), vec3(0.0f), vec3(1.0f)));
 }
 
-vec3 tonemap_linear(vec3 color, float white)
+vec3 tonemap_linear(vec3 color)
 {
-	return linear_to_srgb(clamp(color / white, 0.0f, 1.0f));
+	return linear_to_srgb(clamp(color, 0.0f, 1.0f));
 }
 
 vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always outputs clamped [0;1] color
@@ -212,8 +250,16 @@ vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always out
 			color = tonemap_filmic(color, white);
 		#endif
 
+		#ifdef USE_FILMIC_SIMPLE_TONEMAPPER
+			color = tonemap_filmic_simple(color, white);
+		#endif
+
 		#ifdef USE_ACES_TONEMAPPER
 			color = tonemap_aces(color, white);
+		#endif
+
+		#ifdef USE_UNCHARTED_TONEMAPPER
+			color = tonemap_uncharted(color, white);
 		#endif
 
 		#ifdef BLEND_GLOW_LINEAR
@@ -224,7 +270,7 @@ vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always out
 			#endif
 		#endif
 	#else
-		color = tonemap_linear(color, white); // no other seleced -> linear
+		color = tonemap_linear(color); // no other seleced -> linear
 	#endif
 
 	return color;
