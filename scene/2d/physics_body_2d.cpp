@@ -1257,6 +1257,8 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 
 			if (collided) {
 
+				colliders.push_back(collision);
+
 				motion = collision.remainder;
 
 				if (p_floor_direction == Vector2()) {
@@ -1288,8 +1290,6 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				Vector2 n = collision.normal;
 				motion = motion.slide(n);
 				lv = lv.slide(n);
-
-				colliders.push_back(collision);
 			}
 		}
 
