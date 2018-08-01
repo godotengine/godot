@@ -141,6 +141,12 @@ layout (location = 0) out vec4 frag_color;
 	#define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) textureLod(m_tex, m_uv, float(m_lod))
 #endif
 
+vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped input in range [0;1]
+{
+	const vec3 a = vec3(0.055f);
+	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
+
 vec3 tonemap_filmic(vec3 color, float white)
 {
 	const float A = 0.15f;
@@ -150,11 +156,18 @@ vec3 tonemap_filmic(vec3 color, float white)
 	const float E = 0.02f;
 	const float F = 0.30f;
 	const float W = 11.2f;
+	const float exposure_bias = 20.0f; // rather aggressive but needed to make use of the filmic curve
 
-	vec3 color_tonemapped = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
-	float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
+	color *= exposure_bias;
+	white *= exposure_bias;
 
-	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+	vec3 a_color = A * color;
+	float a_white = A * white;
+
+	vec3 color_tonemapped = ((color * (a_color + C * B) + D * E) / (color * (a_color + B) + D * F)) - E / F;
+	float white_tonemapped = ((white * (a_white + C * B) + D * E) / (white * (a_white + B) + D * F)) - E / F;
+
+	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f)); // srgb conversion seems to be baked into the constants
 }
 
 vec3 tonemap_aces(vec3 color, float white)
@@ -168,18 +181,17 @@ vec3 tonemap_aces(vec3 color, float white)
 	vec3 color_tonemapped = (color * (A * color + B)) / (color * (C * color + D) + E);
 	float white_tonemapped = (white * (A * white + B)) / (white * (C * white + D) + E);
 
-	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
+	return linear_to_srgb(clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f)));
 }
 
 vec3 tonemap_reinhard(vec3 color, float white)
 {
-	return clamp((white + vec3(1.0f)) * color / ((color + vec3(1.0f)) * white), vec3(0.0f), vec3(1.0f));
+	return linear_to_srgb(clamp((white + vec3(1.0f)) * color / ((color + vec3(1.0f)) * white), vec3(0.0f), vec3(1.0f)));
 }
 
-vec3 linear_to_srgb(vec3 color) // convert linear rgb to srgb, assumes clamped input in range [0;1]
+vec3 tonemap_linear(vec3 color, float white)
 {
-	const vec3 a = vec3(0.055f);
-	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+	return linear_to_srgb(clamp(color / white, 0.0f, 1.0f));
 }
 
 vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always outputs clamped [0;1] color
@@ -212,7 +224,7 @@ vec3 apply_tonemapping(vec3 color, float white) // inputs are LINEAR, always out
 			#endif
 		#endif
 	#else
-		color = clamp(color, vec3(0.0f), vec3(1.0f)); // no other seleced -> linear
+		color = tonemap_linear(color, white); // no other seleced -> linear
 	#endif
 
 	return color;
@@ -332,12 +344,10 @@ void main()
 
 		// Early Tonemap & SRGB Conversion
 
-		color = apply_tonemapping(color, white);
-
 		#ifdef KEEP_3D_LINEAR
 			// leave color as is (-> don't convert to SRGB)
 		#else
-			color = linear_to_srgb(color); // regular linear -> SRGB conversion
+			color = apply_tonemapping(color, white);
 		#endif
 
 		// Glow
@@ -347,7 +357,6 @@ void main()
 
 			// high dynamic range -> SRGB
 			glow = apply_tonemapping(glow, white);
-			glow = linear_to_srgb(glow);
 
 			color = apply_glow(color, glow);
 		#endif
@@ -368,8 +377,6 @@ void main()
 			// leave color as is (-> don't convert to SRGB)
 		#else
 			color = apply_tonemapping(color, white);
-
-			color = linear_to_srgb(color);
 		#endif
 	#endif
 
