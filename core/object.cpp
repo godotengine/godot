@@ -1209,7 +1209,15 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			}
 		}
 
-		if (c.flags & CONNECT_ONESHOT) {
+		bool disconnect = c.flags & CONNECT_ONESHOT;
+#ifdef TOOLS_ENABLED
+		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
+			//this signal was connected from the editor, and is being edited. just dont disconnect for now
+			disconnect = false;
+		}
+#endif
+		if (disconnect) {
+
 			_ObjectSignalDisconnectData dd;
 			dd.signal = p_name;
 			dd.target = target;

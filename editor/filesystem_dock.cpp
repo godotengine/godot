@@ -1983,9 +1983,11 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 */
 	file_options = memnew(PopupMenu);
+	file_options->set_hide_on_window_lose_focus(true);
 	add_child(file_options);
 
 	folder_options = memnew(PopupMenu);
+	folder_options->set_hide_on_window_lose_focus(true);
 	add_child(folder_options);
 
 	split_box = memnew(VSplitContainer);

@@ -78,7 +78,7 @@ bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
-Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from) const {
 
 	Ref<Image> img;
 	Ref<AtlasTexture> atex = p_from;
@@ -138,12 +138,66 @@ EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
 
 ////////////////////////////////////////////////////////////////////////////
 
+bool EditorImagePreviewPlugin::handles(const String &p_type) const {
+
+	return p_type == "Image";
+}
+
+Ref<Texture> EditorImagePreviewPlugin::generate(const RES &p_from) const {
+
+	Ref<Image> img = p_from;
+
+	if (img.is_null() || img->empty())
+		return Ref<Image>();
+
+	img = img->duplicate();
+	img->clear_mipmaps();
+
+	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+	thumbnail_size *= EDSCALE;
+	if (img->is_compressed()) {
+		if (img->decompress() != OK)
+			return Ref<Image>();
+	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
+		img->convert(Image::FORMAT_RGBA8);
+	}
+
+	int width, height;
+	if (img->get_width() > thumbnail_size && img->get_width() >= img->get_height()) {
+
+		width = thumbnail_size;
+		height = img->get_height() * thumbnail_size / img->get_width();
+	} else if (img->get_height() > thumbnail_size && img->get_height() >= img->get_width()) {
+
+		height = thumbnail_size;
+		width = img->get_width() * thumbnail_size / img->get_height();
+	} else {
+
+		width = img->get_width();
+		height = img->get_height();
+	}
+
+	img->resize(width, height);
+	post_process_preview(img);
+
+	Ref<ImageTexture> ptex;
+	ptex.instance();
+
+	ptex->create_from_image(img, 0);
+	return ptex;
+}
+
+EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
+}
+
+////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////
 bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
 
 	return ClassDB::is_parent_class(p_type, "BitMap");
 }
 
-Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES &p_from) const {
 
 	Ref<BitMap> bm = p_from;
 
@@ -215,12 +269,12 @@ bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
 
 	return ClassDB::is_parent_class(p_type, "PackedScene");
 }
-Ref<Texture> EditorPackedScenePreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorPackedScenePreviewPlugin::generate(const RES &p_from) const {
 
 	return generate_from_path(p_from->get_path());
 }
 
-Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_path) {
+Ref<Texture> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_path) const {
 
 	String temp_path = EditorSettings::get_singleton()->get_cache_dir();
 	String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
@@ -269,7 +323,7 @@ bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Material"); //any material
 }
 
-Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from) const {
 
 	Ref<Material> material = p_from;
 	ERR_FAIL_COND_V(material.is_null(), Ref<Texture>());
@@ -281,7 +335,7 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES &p_from) {
 		VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 		preview_done = false;
-		VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
+		VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
 
 		while (!preview_done) {
 			OS::get_singleton()->delay_usec(10);
@@ -436,7 +490,7 @@ bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Script");
 }
 
-Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorScriptPreviewPlugin::generate(const RES &p_from) const {
 
 	Ref<Script> scr = p_from;
 	if (scr.is_null())
@@ -559,7 +613,7 @@ bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "AudioStream");
 }
 
-Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from) const {
 
 	Ref<AudioStream> stream = p_from;
 	ERR_FAIL_COND_V(stream.is_null(), Ref<Texture>());
@@ -657,7 +711,7 @@ bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Mesh"); //any Mesh
 }
 
-Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from) const {
 
 	Ref<Mesh> mesh = p_from;
 	ERR_FAIL_COND_V(mesh.is_null(), Ref<Texture>());
@@ -684,7 +738,7 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES &p_from) {
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 	preview_done = false;
-	VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
+	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done) {
 		OS::get_singleton()->delay_usec(10);
@@ -771,16 +825,7 @@ bool EditorFontPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "DynamicFontData");
 }
 
-Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) {
-	if (canvas.is_valid()) {
-		VS::get_singleton()->viewport_remove_canvas(viewport, canvas);
-	}
-
-	canvas = VS::get_singleton()->canvas_create();
-	canvas_item = VS::get_singleton()->canvas_item_create();
-
-	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
-	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) const {
 
 	Ref<DynamicFontData> SampledFont;
 	SampledFont.instance();
@@ -809,7 +854,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) {
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 
 	preview_done = false;
-	VS::get_singleton()->request_frame_drawn_callback(this, "_preview_done", Variant());
+	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done) {
 		OS::get_singleton()->delay_usec(10);
@@ -829,7 +874,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path) {
 	return ptex;
 }
 
-Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from) {
+Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from) const {
 
 	return generate_from_path(p_from->get_path());
 }
@@ -842,6 +887,12 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+
+	canvas = VS::get_singleton()->canvas_create();
+	canvas_item = VS::get_singleton()->canvas_item_create();
+
+	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
+	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {

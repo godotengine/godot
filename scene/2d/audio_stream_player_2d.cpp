@@ -298,12 +298,13 @@ float AudioStreamPlayer2D::get_volume_db() const {
 }
 
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
-	if (p_pitch_scale<MIN_PITCH_SCALE){
+	if (p_pitch_scale < MIN_PITCH_SCALE) {
 		ERR_PRINT("The Pitch Value is bellow the minimum value and as such the audio will be paused");
 	}
 
 	pitch_scale = p_pitch_scale;
 }
+
 float AudioStreamPlayer2D::get_pitch_scale() const {
 	return pitch_scale;
 }

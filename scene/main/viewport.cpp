@@ -1860,7 +1860,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (over != top && !top->is_a_parent_of(over)) {
 
 				PopupMenu *popup_menu = Object::cast_to<PopupMenu>(top);
-				MenuButton *popup_menu_parent;
+				MenuButton *popup_menu_parent = NULL;
 				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
 
 				if (popup_menu)

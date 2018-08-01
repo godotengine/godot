@@ -1,6 +1,4 @@
 # -*- coding: ibm850 -*-
-from platform_methods import subprocess_main
-
 
 template_typed = """
 #ifdef TYPED_METHOD_BIND
@@ -274,4 +272,5 @@ def run(target, source, env):
 
 
 if __name__ == '__main__':
+    from platform_methods import subprocess_main
     subprocess_main(globals())
