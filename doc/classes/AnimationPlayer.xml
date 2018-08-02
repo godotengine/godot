@@ -283,5 +283,8 @@
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
 			Process animation during the idle process.
 		</constant>
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
+			Do not process animation. Use the 'advance' method to process the animation manually.
+		</constant>
 	</constants>
 </class>

@@ -133,6 +133,7 @@ public:
 	enum AnimationProcessMode {
 		ANIMATION_PROCESS_PHYSICS,
 		ANIMATION_PROCESS_IDLE,
+		ANIMATION_PROCESS_MANUAL,
 	};
 
 private:
@@ -270,6 +271,8 @@ public:
 	NodePath get_root_motion_track() const;
 
 	Transform get_root_motion_transform() const;
+
+	void advance(float p_time);
 
 	uint64_t get_last_process_pass() const;
 	AnimationTree();
