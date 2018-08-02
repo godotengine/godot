@@ -904,17 +904,7 @@ void VisualScriptTypeCast::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base_script", "path"), &VisualScriptTypeCast::set_base_script);
 	ClassDB::bind_method(D_METHOD("get_base_script"), &VisualScriptTypeCast::get_base_script);
 
-	List<String> script_extensions;
-	for (int i = 0; i > ScriptServer::get_language_count(); i++) {
-		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
-	}
-
-	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
-		if (script_ext_hint != String())
-			script_ext_hint += ",";
-		script_ext_hint += "*." + E->get();
-	}
+	String script_ext_hint = ScriptServer::get_default_script_ext_hint();
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_script", PROPERTY_HINT_FILE, script_ext_hint), "set_base_script", "get_base_script");

@@ -1064,16 +1064,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), "Spatial"));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), "Scene Root"));
 
-	List<String> script_extentions;
-	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extentions);
-
-	String script_ext_hint;
-
-	for (List<String>::Element *E = script_extentions.front(); E; E = E->next()) {
-		if (script_ext_hint != "")
-			script_ext_hint += ",";
-		script_ext_hint += "*." + E->get();
-	}
+	String script_ext_hint = ScriptServer::get_default_script_ext_hint();
 
 	bool materials_out = p_preset == PRESET_SEPARATE_MATERIALS || p_preset == PRESET_SEPARATE_MESHES_AND_MATERIALS || p_preset == PRESET_MULTIPLE_SCENES_AND_MATERIALS || p_preset == PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
 	bool meshes_out = p_preset == PRESET_SEPARATE_MESHES || p_preset == PRESET_SEPARATE_MESHES_AND_MATERIALS || p_preset == PRESET_SEPARATE_MESHES_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
@@ -1368,6 +1359,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["nodes/custom_script"];
+	if (post_import_script_path.empty()) {
+		post_import_script_path = ProjectSettings::get_singleton()->get("editor/default_editor_scene_importer_script");
+	}
 	Ref<EditorScenePostImport> post_import_script;
 
 	if (post_import_script_path != "") {

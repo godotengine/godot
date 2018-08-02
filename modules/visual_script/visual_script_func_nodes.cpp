@@ -709,17 +709,7 @@ void VisualScriptFunctionCall::_bind_methods() {
 		bt += Variant::get_type_name(Variant::Type(i));
 	}
 
-	List<String> script_extensions;
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
-	}
-
-	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
-		if (script_ext_hint != String())
-			script_ext_hint += ",";
-		script_ext_hint += "*." + E->get();
-	}
+	String script_ext_hint = ScriptServer::get_default_script_ext_hint();
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "call_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance,Basic Type,Singleton"), "set_call_mode", "get_call_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
@@ -1461,17 +1451,7 @@ void VisualScriptPropertySet::_bind_methods() {
 		bt += Variant::get_type_name(Variant::Type(i));
 	}
 
-	List<String> script_extensions;
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
-	}
-
-	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
-		if (script_ext_hint != String())
-			script_ext_hint += ",";
-		script_ext_hint += "*." + E->get();
-	}
+	String script_ext_hint = ScriptServer::get_default_script_ext_hint();
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "set_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance,Basic Type"), "set_call_mode", "get_call_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
@@ -2177,17 +2157,7 @@ void VisualScriptPropertyGet::_bind_methods() {
 		bt += Variant::get_type_name(Variant::Type(i));
 	}
 
-	List<String> script_extensions;
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		ScriptServer::get_language(i)->get_recognized_extensions(&script_extensions);
-	}
-
-	String script_ext_hint;
-	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
-		if (script_ext_hint != String())
-			script_ext_hint += ",";
-		script_ext_hint += "." + E->get();
-	}
+	String script_ext_hint = ScriptServer::get_default_script_ext_hint();
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "set_mode", PROPERTY_HINT_ENUM, "Self,Node Path,Instance,Basic Type"), "set_call_mode", "get_call_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_type", PROPERTY_HINT_TYPE_STRING, "Object"), "set_base_type", "get_base_type");
