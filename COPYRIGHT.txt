@@ -379,6 +379,13 @@ Comment: Zstandard
 Copyright: 2016-2018, Facebook, Inc.
 License: BSD-3-Clause
 
+Files: ./thirdparty/nanoflann/
+Comment: nanoflann
+Copyright: 2008-2009  Marius Muja (mariusm@cs.ubc.ca). All rights reserved.
+ 2008-2009  David G. Lowe (lowe@cs.ubc.ca). All rights reserved.
+ 2011 Jose L. Blanco (joseluisblancoc@gmail.com). All rights reserved.
+License: BSD-2-clause
+
 
 
 License: Apache-2.0
