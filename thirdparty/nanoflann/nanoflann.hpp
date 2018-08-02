@@ -1822,7 +1822,7 @@ namespace nanoflann
 			dataset(inputData), index_params(params), distance(inputData)
 		{
 			if (dataset.kdtree_get_point_count()) throw std::runtime_error("[nanoflann] cannot handle non empty point cloud.");
-			treeCount = std::log2(maximumPointCount);
+			treeCount = log2(maximumPointCount);
 			pointCount = 0U;
 			dim = dimensionality;
 			treeIndex.clear();
