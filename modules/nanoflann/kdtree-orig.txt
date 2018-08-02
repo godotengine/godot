@@ -1,0 +1,104 @@
+#include "nanoflann.hpp"
+#include <Urho3D/IO/Log.h>
+#include "roadmap.h"
+#include "vertex.h"
+
+namespace roadmap {
+	using namespace Urho3D;
+	using namespace nanoflann;
+	template <class U>
+	class KDTreeData {
+		struct Adaptor {
+			const Vector<U> *list;
+			bool report_once = false;
+			Adaptor(const Vector<U> *list)
+			{
+				this->list = list;
+			}
+			inline size_t kdtree_get_point_count() const
+			{
+				return list->Size();
+			}
+			inline float kdtree_get_pt(const size_t idx, int dim) const;
+			template <class BBOX>
+			bool kdtree_get_bbox(BBOX& /*bb*/) const { return false; }
+		};
+		typedef KDTreeSingleIndexAdaptor<L2_Simple_Adaptor<float, Adaptor>, Adaptor, 2> kdtree;
+		Adaptor tdata;
+		kdtree index;
+		public:
+			KDTreeData(Vector<U> *list): tdata(list), index(2, tdata, KDTreeSingleIndexAdaptorParams(10))
+			{
+				index.buildIndex();
+			}
+			void rebuild()
+			{
+				index.buildIndex();
+			}
+			std::vector<std::pair<size_t,float> > radius_search(const float *data, float radius)
+			{
+				std::vector<std::pair<size_t,float> > ret_matches;
+				nanoflann::SearchParams params;
+				size_t nmatches = index.radiusSearch(data, radius, ret_matches, params);
+				return ret_matches;
+			}
+		
+	};
+	template<>
+	inline float KDTreeData<Vertex *>::Adaptor::kdtree_get_pt(const size_t idx, int dim) const
+	{
+		if (!(list->At(idx))) {
+			URHO3D_LOGERROR("kdtree: bad array!!!");
+			abort();
+			return 0.0f;
+		}
+		if (dim == 0)
+			return list->At(idx)->coords.x_;
+		else if (dim == 1)
+			return list->At(idx)->coords.y_;
+	}
+	template<>
+	inline float KDTreeData<Lot>::Adaptor::kdtree_get_pt(const size_t idx, int dim) const
+	{
+		if (dim == 0)
+			return list->At(idx).center.x_;
+		else if (dim == 1)
+			return list->At(idx).center.y_;
+	}
+	void RoadmapData::kdtree_init()
+	{
+		kdtreep = new KDTreeData<Vertex *>(&vertex_list);
+		bkdtreep = new KDTreeData<Lot>(&lots);
+	}
+	void RoadmapData::kdtree_destroy()
+	{
+		delete kdtreep;
+		delete bkdtreep;
+	}
+	void RoadmapData::kdtree_rebuild()
+	{
+		kdtree_destroy();
+		kdtree_init();
+	}
+	template<>
+	Vector<Vertex *> RoadmapData::kdtree_search(Vector2 coords, float radius)
+	{
+		Vector<Vertex *> ret;
+		std::vector<std::pair<size_t,float> > ret_matches = kdtreep->radius_search(coords.Data(), radius);
+		ret.Resize(ret_matches.size());
+		for (int i = 0; i < ret_matches.size(); i++)
+			ret[i] = vertex_list[ret_matches[i].first];
+		return ret;
+	}
+	template<>
+	Vector<Lot> RoadmapData::kdtree_search(Vector2 coords, float radius)
+	{
+		Vector<Lot> ret;
+		std::vector<std::pair<size_t,float> > ret_matches = bkdtreep->radius_search(coords.Data(), radius);
+		ret.Resize(ret_matches.size());
+		for (int i = 0; i < ret_matches.size(); i++)
+			ret[i] = lots[ret_matches[i].first];
+		return ret;
+	}
+	
+};
