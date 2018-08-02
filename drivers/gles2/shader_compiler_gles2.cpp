@@ -704,6 +704,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				}
 				code += ";\n";
 			} else if (cf_node->flow_op == SL::FLOW_OP_DISCARD) {
+				if (p_actions.usage_flag_pointers.has("DISCARD") && !used_flag_pointers.has("DISCARD")) {
+					*p_actions.usage_flag_pointers["DISCARD"] = true;
+					used_flag_pointers.insert("DISCARD");
+				}
 				code += "discard;";
 			} else if (cf_node->flow_op == SL::FLOW_OP_CONTINUE) {
 				code += "continue;";
