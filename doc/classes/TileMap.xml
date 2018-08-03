@@ -68,7 +68,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an array of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
+				Returns a [Vector2] array with the positions of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
 			</description>
 		</method>
 		<method name="get_used_cells_by_id" qualifiers="const">
