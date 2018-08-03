@@ -290,6 +290,7 @@ public:
 
 		bind->set_name(p_name);
 		bind->set_default_arguments(p_default_args);
+		bind->set_hint_flags(p_flags);
 
 		String instance_type = bind->get_instance_class();
 

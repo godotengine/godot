@@ -32,10 +32,12 @@
 #define ARRAY_H
 
 #include "typedefs.h"
+
 class Variant;
 class ArrayPrivate;
 class Object;
 class StringName;
+class FuncRef;
 
 class Array {
 
@@ -70,10 +72,10 @@ public:
 	Variant back() const;
 
 	Array &sort();
-	Array &sort_custom(Object *p_obj, const StringName &p_function);
+	Array &sort_custom(const FuncRef p_ref);
 	void shuffle();
 	int bsearch(const Variant &p_value, bool p_before = true);
-	int bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before = true);
+	int bsearch_custom(const Variant &p_value, const FuncRef p_ref, bool p_before = true);
 	Array &invert();
 
 	int find(const Variant &p_value, int p_from = 0) const;
@@ -90,8 +92,8 @@ public:
 
 	Array duplicate(bool p_deep = false) const;
 
-	Array filter(Object *p_obj, const StringName &p_function, const Variant &p_args);
-	Array map(Object *p_obj, const StringName &p_function, const Variant &p_args);
+	Array filter(const FuncRef p_ref, const Variant &p_args);
+	Array map(const FuncRef p_ref, const Variant &p_args);
 
 	Array(const Array &p_from);
 	Array();

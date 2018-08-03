@@ -30,6 +30,7 @@
 
 #include "array.h"
 
+#include "func_ref.h"
 #include "hashfuncs.h"
 #include "object.h"
 #include "variant.h"
@@ -242,26 +243,24 @@ Array &Array::sort() {
 
 struct _ArrayVariantSortCustom {
 
-	Object *obj;
-	StringName func;
+	FuncRef *ref;
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 
 		const Variant *args[2] = { &p_l, &p_r };
 		Variant::CallError err;
-		bool res = obj->call(func, args, 2, err);
+		bool res = ref->call_func(args, 2, err);
 		if (err.error != Variant::CallError::CALL_OK)
 			res = false;
 		return res;
 	}
 };
-Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
+Array &Array::sort_custom(const FuncRef p_ref) { //TODO: FuncRef sort
 
-	ERR_FAIL_NULL_V(p_obj, *this);
+	//ERR_FAIL_NULL_V(p_ref, *this);
 
 	SortArray<Variant, _ArrayVariantSortCustom> avs;
-	avs.compare.obj = p_obj;
-	avs.compare.func = p_function;
+	avs.compare.ref = const_cast<FuncRef *>(&p_ref);
 	avs.sort(_p->array.ptrw(), _p->array.size());
 	return *this;
 }
@@ -312,13 +311,12 @@ int Array::bsearch(const Variant &p_value, bool p_before) {
 	return bisect(_p->array, p_value, p_before, _ArrayVariantSort());
 }
 
-int Array::bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before) {
+int Array::bsearch_custom(const Variant &p_value, const FuncRef p_ref, bool p_before) { //TODO: FuncRef bsearch
 
-	ERR_FAIL_NULL_V(p_obj, 0);
+	//ERR_FAIL_NULL_V(p_ref, 0);
 
 	_ArrayVariantSortCustom less;
-	less.obj = p_obj;
-	less.func = p_function;
+	less.ref = const_cast<FuncRef *>(&p_ref);
 
 	return bisect(_p->array, p_value, p_before, less);
 }
@@ -355,16 +353,17 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
-Array Array::filter(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+Array Array::filter(const FuncRef p_ref, const Variant &p_args) { //TODO: FuncRef filter
 	Array ret;
-	StringName func = p_function;
+	FuncRef *ref = const_cast<FuncRef *>(&p_ref);
 
 	for (int i = 0; i < this->size(); i++) {
 
-		Variant res = p_obj->call(
-				func,
-				this->get(i),
-				p_args);
+		const Variant *args[2] = { &(this->get(i)), &p_args };
+
+		Variant::CallError err;
+
+		Variant res = ref->call_func(args, 2, err);
 
 		if (res.get_type() != Variant::BOOL) {
 			ERR_FAIL_V(ret);
@@ -378,18 +377,19 @@ Array Array::filter(Object *p_obj, const StringName &p_function, const Variant &
 	return ret;
 }
 
-Array Array::map(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+Array Array::map(const FuncRef p_ref, const Variant &p_args) { //TODO: FuncRef map
 	Array ret;
-	StringName func = p_function;
+	FuncRef *ref = const_cast<FuncRef *>(&p_ref);
 
 	ret.resize(this->size());
 
 	for (int i = 0; i < this->size(); i++) {
 
-		Variant res = p_obj->call(
-				func,
-				this->get(i),
-				p_args);
+		const Variant *args[2] = { &(this->get(i)), &p_args };
+
+		Variant::CallError err;
+
+		Variant res = ref->call_func(args, 2, err);
 
 		ret.set(i, res);
 	}

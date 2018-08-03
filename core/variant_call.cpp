@@ -36,6 +36,8 @@
 #include "os/os.h"
 #include "script_language.h"
 
+#include "func_ref.h"
+
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
@@ -507,14 +509,46 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Array, has);
 	VCALL_LOCALMEM1(Array, erase);
 	VCALL_LOCALMEM0(Array, sort);
-	VCALL_LOCALMEM2(Array, sort_custom);
+	//VCALL_LOCALMEM1(Array, sort_custom);
 	VCALL_LOCALMEM0(Array, shuffle);
 	VCALL_LOCALMEM2R(Array, bsearch);
-	VCALL_LOCALMEM4R(Array, bsearch_custom);
-	VCALL_LOCALMEM3R(Array, filter);
-	VCALL_LOCALMEM3R(Array, map);
+	//VCALL_LOCALMEM3R(Array, bsearch_custom);
+	//VCALL_LOCALMEM3R(Array, filter);
+	//VCALL_LOCALMEM3R(Array, map);
 	VCALL_LOCALMEM1R(Array, duplicate);
 	VCALL_LOCALMEM0(Array, invert);
+
+	static void _call_Array_sort_custom(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		FuncRef *ref = dynamic_cast<FuncRef *>(p_args[0]->_get_obj().obj);
+
+		ERR_FAIL_NULL(ref)
+
+		reinterpret_cast<Array *>(p_self._data._mem)->sort_custom(*ref);
+	}
+
+	static void _call_Array_bsearch_custom(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		FuncRef *ref = dynamic_cast<FuncRef *>(p_args[1]->_get_obj().obj);
+
+		ERR_FAIL_NULL(ref)
+
+		r_ret = reinterpret_cast<Array *>(p_self._data._mem)->bsearch_custom(*p_args[0], *ref, *p_args[2]);
+	}
+
+	static void _call_Array_filter(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		FuncRef *ref = dynamic_cast<FuncRef *>(p_args[0]->_get_obj().obj);
+
+		ERR_FAIL_NULL(ref)
+
+		r_ret = reinterpret_cast<Array *>(p_self._data._mem)->filter(*ref, *p_args[1]);
+	}
+
+	static void _call_Array_map(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		FuncRef *ref = dynamic_cast<FuncRef *>(p_args[0]->_get_obj().obj);
+
+		ERR_FAIL_NULL(ref)
+
+		r_ret = reinterpret_cast<Array *>(p_self._data._mem)->map(*ref, *p_args[1]);
+	}
 
 	static void _call_PoolByteArray_get_string_from_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
@@ -1678,12 +1712,12 @@ void register_variant_methods() {
 	ADDFUNC0RNC(ARRAY, NIL, Array, pop_back, varray());
 	ADDFUNC0RNC(ARRAY, NIL, Array, pop_front, varray());
 	ADDFUNC0NC(ARRAY, NIL, Array, sort, varray());
-	ADDFUNC2NC(ARRAY, NIL, Array, sort_custom, OBJECT, "obj", STRING, "func", varray());
+	ADDFUNC1NC(ARRAY, NIL, Array, sort_custom, OBJECT, "ref", varray());
 	ADDFUNC0NC(ARRAY, NIL, Array, shuffle, varray());
 	ADDFUNC2R(ARRAY, INT, Array, bsearch, NIL, "value", BOOL, "before", varray(true));
-	ADDFUNC4R(ARRAY, INT, Array, bsearch_custom, NIL, "value", OBJECT, "obj", STRING, "func", BOOL, "before", varray(true));
-	ADDFUNC3R(ARRAY, ARRAY, Array, filter, OBJECT, "obj", STRING, "func", ARRAY, "args", varray(true));
-	ADDFUNC3R(ARRAY, ARRAY, Array, map, OBJECT, "obj", STRING, "func", ARRAY, "args", varray(true));
+	ADDFUNC3R(ARRAY, INT, Array, bsearch_custom, NIL, "value", OBJECT, "ref", BOOL, "before", varray(true));
+	ADDFUNC2R(ARRAY, ARRAY, Array, filter, OBJECT, "ref", ARRAY, "args", varray(true));
+	ADDFUNC2R(ARRAY, ARRAY, Array, map, OBJECT, "ref", ARRAY, "args", varray(true));
 	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
 	ADDFUNC1R(ARRAY, ARRAY, Array, duplicate, BOOL, "deep", varray(false));
 
