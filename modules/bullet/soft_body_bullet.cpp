@@ -123,7 +123,7 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 
-	if (p_mesh.is_null() || !p_mesh->surface_is_softbody_friendly(0))
+	if (p_mesh.is_null())
 		soft_mesh.unref();
 	else
 		soft_mesh = p_mesh;
