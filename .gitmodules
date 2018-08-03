@@ -1,0 +1,6 @@
+[submodule "modules/tts/festival"]
+	path = modules/tts/festival
+	url = https://github.com/festvox/festival
+[submodule "modules/tts/speech_tools"]
+	path = modules/tts/speech_tools
+	url = https://github.com/festvox/speech_tools
