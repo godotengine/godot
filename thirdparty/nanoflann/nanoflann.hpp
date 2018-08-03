@@ -196,7 +196,7 @@ namespace nanoflann
 		 */
 		std::pair<IndexType,DistanceType> worst_item() const
 		{
-		   if (m_indices_dists.empty()) throw std::runtime_error("Cannot invoke RadiusResultSet::worst_item() on an empty list of results.");
+		   if (m_indices_dists.empty()) fprintf(stderr, "[nanoflann] Cannot invoke RadiusResultSet::worst_item() on an empty list of results.\n");
 		   typedef typename std::vector<std::pair<IndexType, DistanceType> >::const_iterator DistIt;
 		   DistIt it = std::max_element(m_indices_dists.begin(), m_indices_dists.end(), IndexDist_Sorter());
 		   return *it;
@@ -228,7 +228,7 @@ namespace nanoflann
 	{
 		size_t read_cnt = fread(&value, sizeof(value), count, stream);
 		if (read_cnt != count) {
-			throw std::runtime_error("Cannot read from file");
+			fprintf(stderr, "[nanoflann] Cannot read from file\n");
 		}
 	}
 
@@ -239,12 +239,12 @@ namespace nanoflann
 		size_t size;
 		size_t read_cnt = fread(&size, sizeof(size_t), 1, stream);
 		if (read_cnt != 1) {
-			throw std::runtime_error("Cannot read from file");
+			fprintf(stderr, "[nanoflann] Cannot read from file\n");
 		}
 		value.resize(size);
 		read_cnt = fread(&value[0], sizeof(T), size, stream);
 		if (read_cnt != size) {
-			throw std::runtime_error("Cannot read from file");
+			fprintf(stderr, "[nanoflann] Cannot read from file\n");
 		}
 	}
 	/** @} */
@@ -625,7 +625,7 @@ namespace nanoflann
 				// use the standard C malloc to allocate memory
 				void* m = ::malloc(blocksize);
 				if (!m) {
-					fprintf(stderr, "Failed to allocate memory.\n");
+					fprintf(stderr, "[nanoflann] Failed to allocate memory.\n");
 					return NULL;
 				}
 
@@ -752,7 +752,7 @@ namespace nanoflann
         static size_type max_size() { return N; }
         enum { static_size = N };
 		/** This method has no effects in this class, but raises an exception if the expected size does not match */
-		inline void resize(const size_t nElements) { if (nElements!=N) throw std::logic_error("Try to change the size of a CArray."); }
+		inline void resize(const size_t nElements) { if (nElements!=N) fprintf(stderr, "[nanoflann] Try to change the size of a CArray.\n"); }
         // swap (note: linear complexity in N, constant for given instantiation)
         void swap (CArray<T,N>& y) { std::swap_ranges(begin(),end(),y.begin()); }
         // direct access to data (read-only)
@@ -770,7 +770,7 @@ namespace nanoflann
         void assign (const size_t n, const T& value) { assert(N==n); for (size_t i=0;i<N;i++) elems[i]=value; }
       private:
         // check range (may be private because it is static)
-        static void rangecheck (size_type i) { if (i >= size()) { throw std::out_of_range("CArray<>: index out of range"); } }
+        static void rangecheck (size_type i) { if (i >= size()) { fprintf(stderr, "[nanoflann] CArray<>: index out of range\n"); } }
     }; // end of CArray
 
 	/** Used to declare fixed-size arrays when DIM>0, dynamically-allocated vectors when DIM=-1.
@@ -1248,7 +1248,7 @@ namespace nanoflann
             if (this->size(*this) == 0)
                 return false;
 			if (!BaseClassRef::root_node)
-                throw std::runtime_error("[nanoflann] findNeighbors() called before building the index.");
+                fprintf(stderr, "[nanoflann] findNeighbors() called before building the index.\n");
 			float epsError = 1 + searchParams.eps;
 
 			distance_vector_t dists; // fixed or variable-sized container (depending on DIM)
@@ -1329,7 +1329,7 @@ namespace nanoflann
 			else
 			{
 				const size_t N = dataset.kdtree_get_point_count();
-				if (!N) throw std::runtime_error("[nanoflann] computeBoundingBox() called but no data points found.");
+				if (!N) fprintf(stderr, "[nanoflann] computeBoundingBox() called but no data points found.\n");
 				for (int i = 0; i < (DIM > 0 ? DIM : BaseClassRef::dim); ++i) {
 					bbox[i].low =
 					bbox[i].high = this->dataset_get(*this, 0, i);
@@ -1643,7 +1643,7 @@ namespace nanoflann
 			else
 			{
 				const size_t N = BaseClassRef::m_size;
-				if (!N) throw std::runtime_error("[nanoflann] computeBoundingBox() called but no data points found.");
+				if (!N) fprintf(stderr, "[nanoflann] computeBoundingBox() called but no data points found.\n");
 				for (int i = 0; i < (DIM > 0 ? DIM : BaseClassRef::dim); ++i) {
 					bbox[i].low =
 					bbox[i].high = this->dataset_get(*this, BaseClassRef::vind[0], i);
@@ -1821,7 +1821,7 @@ namespace nanoflann
 		KDTreeSingleIndexDynamicAdaptor(const int dimensionality, DatasetAdaptor& inputData, const KDTreeSingleIndexAdaptorParams& params = KDTreeSingleIndexAdaptorParams() , const size_t maximumPointCount = 1000000000U) :
 			dataset(inputData), index_params(params), distance(inputData)
 		{
-			if (dataset.kdtree_get_point_count()) throw std::runtime_error("[nanoflann] cannot handle non empty point cloud.");
+			if (dataset.kdtree_get_point_count()) fprintf(stderr, "[nanoflann] cannot handle non empty point cloud.\n");
 			treeCount = log2(maximumPointCount);
 			pointCount = 0U;
 			dim = dimensionality;
