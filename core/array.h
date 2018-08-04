@@ -88,6 +88,10 @@ public:
 	Variant pop_back();
 	Variant pop_front();
 
+	Variant min();
+	Variant max();
+	Variant sum();
+
 	Array duplicate(bool p_deep = false) const;
 
 	Array(const Array &p_from);
