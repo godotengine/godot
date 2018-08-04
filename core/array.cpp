@@ -391,7 +391,7 @@ Array Array::map(Object *p_obj, const StringName &p_function, const Variant &p_a
 				this->get(i),
 				p_args);
 
-		ret.set(i, res);
+		ret.set(i, res.duplicate());
 	}
 
 	return ret;
