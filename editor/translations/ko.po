@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-06-07 16:40+0000\n"
-"Last-Translator: pgyage3263 <pgyage3263@naver.com>\n"
+"PO-Revision-Date: 2018-07-21 04:38+0000\n"
+"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -4003,7 +4003,7 @@ msgstr "외곽선 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "메시"
+msgstr "Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -7411,6 +7411,11 @@ msgstr "프로젝트 빌드"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "경고"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "파일 보기"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

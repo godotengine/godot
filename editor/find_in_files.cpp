@@ -143,7 +143,7 @@ void FindInFiles::_iterate() {
 
 		// Scan folders first so we can build a list of files and have progress info later
 
-		PoolStringArray &folders_to_scan = _folders_stack[_folders_stack.size() - 1];
+		PoolStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
 
 		if (folders_to_scan.size() != 0) {
 			// Scan one folder below

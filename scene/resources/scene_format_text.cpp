@@ -1523,7 +1523,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
 
-		sorted_er[E->get()] = E->key();
+		sorted_er.write[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < sorted_er.size(); i++) {

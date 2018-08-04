@@ -117,7 +117,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.20a0
+- Version: 0.1.25
 - License: MIT
 
 The files we package are automatically generated.
@@ -152,7 +152,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.34
+- Version: 1.6.35
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -161,6 +161,7 @@ Files extracted from upstream source:
   `example.c` and `pngtest.c`
 - the arm/ folder
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
+- `LICENSE`
 
 
 ## libsimplewebm
@@ -262,14 +263,12 @@ Godot build configurations, check them out when updating.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.8.0
+- Version: 2.12.0
 - License: Apache 2.0
 
-File extracted from upstream release tarball `mbedtls-2.8.0-apache.tgz`:
+File extracted from upstream release tarball `mbedtls-2.12.0-apache.tgz`:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
-- In file `thirdparty/mbedtls/library/net_sockets.c` mbedTLS overrides the `_WIN32_WINNT` define.
-  Be sure to check the Godot addition to only redfine it when undefined or `< 0x0501` (PRed upstream).
 - Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453). Soon to be merged upstream. Check it out at next update.
 
 

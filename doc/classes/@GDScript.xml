@@ -202,7 +202,7 @@
 			</description>
 		</method>
 		<method name="convert">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="what" type="Variant">
 			</argument>
@@ -394,7 +394,7 @@
 			</description>
 		</method>
 		<method name="funcref">
-			<return type="Object">
+			<return type="FuncRef">
 			</return>
 			<argument index="0" name="instance" type="Object">
 			</argument>
@@ -409,6 +409,12 @@
 				a = funcref(self, "foo")
 				print(a.call_func()) # prints bar
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_stack">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="hash">
@@ -541,7 +547,7 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="Object">
+			<return type="Resource">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
@@ -674,6 +680,12 @@
 				a = [1,2,3]
 				print("a","b",a) # prints ab[1, 2, 3]
 				[/codeblock]
+			</description>
+		</method>
+		<method name="print_debug" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="print_stack">
@@ -1076,7 +1088,7 @@
 			</description>
 		</method>
 		<method name="weakref">
-			<return type="Object">
+			<return type="WeakRef">
 			</return>
 			<argument index="0" name="obj" type="Object">
 			</argument>

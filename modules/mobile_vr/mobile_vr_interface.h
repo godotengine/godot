@@ -134,7 +134,7 @@ public:
 	virtual StringName get_name() const;
 	virtual int get_capabilities() const;
 
-	virtual bool is_initialized();
+	virtual bool is_initialized() const;
 	virtual bool initialize();
 	virtual void uninitialize();
 
@@ -150,4 +150,4 @@ public:
 	~MobileVRInterface();
 };
 
-#endif // MOBILE_VR_INTERFACE_H
+#endif // !MOBILE_VR_INTERFACE_H

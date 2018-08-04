@@ -36,6 +36,7 @@
 #include "core/color.h"
 #include "core/dvector.h"
 
+#include "core/func_ref.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus
@@ -300,7 +301,10 @@ void GDAPI godot_array_sort(godot_array *p_self) {
 void GDAPI godot_array_sort_custom(godot_array *p_self, godot_object *p_obj, const godot_string *p_func) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
-	self->sort_custom((Object *)p_obj, *func);
+	FuncRef ref;
+	ref.set_instance((Object *)p_obj);
+	ref.set_function(*func);
+	self->sort_custom(ref);
 }
 
 godot_int GDAPI godot_array_bsearch(godot_array *p_self, const godot_variant *p_value, const godot_bool p_before) {
@@ -311,26 +315,35 @@ godot_int GDAPI godot_array_bsearch(godot_array *p_self, const godot_variant *p_
 godot_int GDAPI godot_array_bsearch_custom(godot_array *p_self, const godot_variant *p_value, godot_object *p_obj, const godot_string *p_func, const godot_bool p_before) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
-	return self->bsearch_custom((const Variant *)p_value, (Object *)p_obj, *func, p_before);
+	FuncRef ref;
+	ref.set_instance((Object *)p_obj);
+	ref.set_function(*func);
+	return self->bsearch_custom((const Variant *)p_value, ref, p_before);
 }
 
 godot_array GDAPI godot_array_filter(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
+	FuncRef ref;
+	ref.set_instance((Object *)p_obj);
+	ref.set_function(*func);
 	godot_array r;
 	Array *res = (Array *)&r;
 	memnew_placement(res, Array);
-	*res = self->filter((Object *)p_obj, *func, (Variant) * (Array *)p_args);
+	*res = self->filter(ref, (Variant) * (Array *)p_args);
 	return r;
 }
 
 godot_array GDAPI godot_array_map(godot_array *p_self, godot_object *p_obj, const godot_string *p_func, godot_object *p_args) {
 	Array *self = (Array *)p_self;
 	const String *func = (const String *)p_func;
+	FuncRef ref;
+	ref.set_instance((Object *)p_obj);
+	ref.set_function(*func);
 	godot_array r;
 	Array *res = (Array *)&r;
 	memnew_placement(res, Array);
-	*res = self->map((Object *)p_obj, *func, (Variant) * (Array *)p_args);
+	*res = self->map(ref, (Variant) * (Array *)p_args);
 	return r;
 }
 

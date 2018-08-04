@@ -2,25 +2,24 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # 01lifeleft <01lifeleft@gmail.com>, 2018.
 # Dlean Jeans <dleanjeans@gmail.com>, 2018.
 # Hai Le <dark.hades.1102@gmail.com>, 2017.
 # Nguyễn Tuấn Anh <anhnt.fami@gmail.com>, 2017.
 # Tung Le <tungkradle@gmail.com>, 2017.
-#
+# 38569459 <xxx38569459@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-18 15:44+0000\n"
-"Last-Translator: 01lifeleft <01lifeleft@gmail.com>\n"
+"PO-Revision-Date: 2018-07-22 06:42+0000\n"
+"Last-Translator: 38569459 <xxx38569459@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -141,24 +140,24 @@ msgstr "Chọn Scale"
 
 #: editor/animation_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Scale từ trỏ chuột"
 
 #: editor/animation_editor.cpp
 msgid "Goto Next Step"
-msgstr ""
+msgstr "Đến Step tiếp theo"
 
 #: editor/animation_editor.cpp
 msgid "Goto Prev Step"
-msgstr ""
+msgstr "Đến Step trước đó"
 
 #: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
-msgstr ""
+msgstr "Tuyến"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Cố định"
 
 #: editor/animation_editor.cpp
 msgid "In"
@@ -178,11 +177,11 @@ msgstr "Ngoài-Trong"
 
 #: editor/animation_editor.cpp
 msgid "Transitions"
-msgstr ""
+msgstr "Chuyển tiếp"
 
 #: editor/animation_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Tối ưu Animation"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation"
@@ -190,11 +189,11 @@ msgstr "Dọn dẹp Animation"
 
 #: editor/animation_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Tạo track mới cho %s và chèn key?"
 
 #: editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Tạo %d track mới và chèn key?"
 
 #: editor/animation_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
@@ -210,15 +209,15 @@ msgstr "Tạo & Chèn Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Chèn Track & Key Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Chèn Key Anim"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Len"
-msgstr ""
+msgstr "Đổi độ dài Anim"
 
 #: editor/animation_editor.cpp
 msgid "Change Anim Loop"
@@ -226,23 +225,25 @@ msgstr "Đổi vòng lặp Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Create Typed Value Key"
-msgstr ""
+msgstr "Tạo Key để nhập giá trị Anim"
 
 #: editor/animation_editor.cpp
 msgid "Anim Insert"
 msgstr "Chèn Anim"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Anim Scale Keys"
 
 #: editor/animation_editor.cpp
 msgid "Anim Add Call Track"
 msgstr "Thêm Track Gọi Function"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Animation zoom."
-msgstr ""
+msgstr "Phóng Animation."
 
 #: editor/animation_editor.cpp
 msgid "Length (s):"
@@ -266,27 +267,27 @@ msgstr "Mở/Tắt lặp animation."
 
 #: editor/animation_editor.cpp
 msgid "Add new tracks."
-msgstr ""
+msgstr "Thêm track mới."
 
 #: editor/animation_editor.cpp
 msgid "Move current track up."
-msgstr ""
+msgstr "Di chuyển track lên."
 
 #: editor/animation_editor.cpp
 msgid "Move current track down."
-msgstr ""
+msgstr "Di chuyển track xuống."
 
 #: editor/animation_editor.cpp
 msgid "Remove selected track."
-msgstr ""
+msgstr "Bỏ track đang chọn."
 
 #: editor/animation_editor.cpp
 msgid "Track tools"
-msgstr ""
+msgstr "Công cụ Track"
 
 #: editor/animation_editor.cpp
 msgid "Enable editing of individual keys by clicking them."
-msgstr ""
+msgstr "Cho phép chỉnh sửa từng key riêng bằng cách chọn chúng."
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
@@ -306,162 +307,171 @@ msgstr ""
 
 #: editor/animation_editor.cpp
 msgid "Optimize"
-msgstr ""
+msgstr "Tối ưu"
 
 #: editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
 msgstr "Chọn một AnimationPlayer từ Scene Tree để chỉnh sửa animation."
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Key"
-msgstr ""
+msgstr "Mã"
 
 #: editor/animation_editor.cpp
 msgid "Transition"
-msgstr ""
+msgstr "Chuyển tiếp"
 
 #: editor/animation_editor.cpp
 msgid "Scale Ratio:"
-msgstr ""
+msgstr "Tỉ lệ Scale:"
 
 #: editor/animation_editor.cpp
 msgid "Call Functions in Which Node?"
-msgstr ""
+msgstr "Gọi Function từ Node nào?"
 
 #: editor/animation_editor.cpp
 msgid "Remove invalid keys"
-msgstr ""
+msgstr "Hủy key không đúng chuẩn"
 
 #: editor/animation_editor.cpp
+#, fuzzy
 msgid "Remove unresolved and empty tracks"
-msgstr ""
+msgstr "Gỡ bỏ track trống và không tìm thấy"
 
 #: editor/animation_editor.cpp
 msgid "Clean-up all animations"
-msgstr ""
+msgstr "Dọn dẹp tất cả animations"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr ""
+msgstr "Dọn dẹp tất cả Animation (KHÔNG THỂ HỒI LẠI)"
 
 #: editor/animation_editor.cpp
 msgid "Clean-Up"
-msgstr ""
+msgstr "Dọn dẹp"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr ""
+msgstr "Đổi lại size Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr ""
+msgstr "Đổi loại giá trị Array"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr ""
+msgstr "Đổi giá trị Array"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Đến Dòng"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Dòng số:"
 
 #: editor/code_editor.cpp
 msgid "No Matches"
-msgstr ""
+msgstr "Không tìm thấy"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
 msgstr ""
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Match Case"
-msgstr ""
+msgstr "Trùng khớp"
 
 #: editor/code_editor.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Cả từ"
 
 #: editor/code_editor.cpp
 msgid "Replace"
-msgstr ""
+msgstr "Thay thế"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Thay thế tất cả"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Chỉ lựa chọn"
 
 #: editor/code_editor.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "Phóng to"
 
 #: editor/code_editor.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "Thu nhỏ"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Đặt lại phóng"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
-msgstr ""
+msgstr "Dòng:"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Col:"
-msgstr ""
+msgstr "Col:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr ""
+msgstr "Cách thức trong Node được chọn phải được ghi rõ!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"Cách thức của đối tượng không tìm thấy! ghi rõ một cách thức hợp lệ hoặc "
+"đính kèm một script cho đối tượng Node."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
-msgstr ""
+msgstr "Kết nối đến Node:"
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Thêm"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Xóa"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Thêm đối số:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
 msgstr ""
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Path to Node:"
-msgstr ""
+msgstr "Đường đến Node:"
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
-msgstr ""
+msgstr "Tạo Function"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid "Deferred"
-msgstr ""
+msgstr "Hoãn lại"
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -479,45 +489,45 @@ msgstr ""
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Tắt"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Kết nối"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Kết nối '%s' đến '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connecting Signal:"
-msgstr ""
+msgstr "Đang kết nối Signal:"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr ""
+msgstr "Hủy kết nối '%s' từ '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "Kết nối..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Hủy kết nối"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Tín hiệu"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr ""
+msgstr "Đổi %s Type"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Đổi"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
@@ -526,38 +536,39 @@ msgstr "Tạo %s Mới"
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Ưa thích:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
-msgstr ""
+msgstr "Gần đây:"
 
 #: editor/create_dialog.cpp editor/editor_node.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Tìm kiếm:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
 msgid "Matches:"
-msgstr ""
+msgstr "Phù hợp:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Description:"
-msgstr ""
+msgstr "Mô tả:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr ""
+msgstr "Tìm kiếm thay thế cho:"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid "Dependencies For:"
-msgstr ""
+msgstr "Phần phụ thuộc cho:"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2017,12 +2028,14 @@ msgid "Issue Tracker"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Community"
-msgstr ""
+msgstr "Cộng đồng"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "About"
-msgstr ""
+msgstr "Thông tin"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -4223,7 +4236,7 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
-msgstr ""
+msgstr "Âm lượng"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
@@ -4265,7 +4278,7 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Select Points"
-msgstr ""
+msgstr "Chọn Points"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4275,12 +4288,12 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Click: Add Point"
-msgstr ""
+msgstr "Nhấp: Tạo Point"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
-msgstr ""
+msgstr "Nhấp chuột phải: Xóa Point"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
@@ -4299,7 +4312,7 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Delete Point"
-msgstr ""
+msgstr "Xóa Point"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -4562,27 +4575,27 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr ""
+msgstr "Lưu Theme"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As"
-msgstr ""
+msgstr "Lưu Theme thành"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
-msgstr ""
+msgstr "Đóng Docs"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
-msgstr ""
+msgstr "Đóng tất cả"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "Đóng tất cả Tab"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
-msgstr ""
+msgstr "Chạy"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
@@ -4591,12 +4604,12 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find..."
-msgstr ""
+msgstr "Tìm..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
-msgstr ""
+msgstr "Tìm tiếp theo"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
@@ -4613,7 +4626,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Continue"
-msgstr ""
+msgstr "Tiếp tục"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -4645,11 +4658,11 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Discard"
-msgstr ""
+msgstr "Hủy"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "Tạo Script"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
@@ -4680,7 +4693,7 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
-msgstr ""
+msgstr "Chọn màu"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Case"
@@ -4701,13 +4714,13 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
-msgstr ""
+msgstr "Cắt"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "Copy"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6252,8 +6265,9 @@ msgid "Project Settings (project.godot)"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+#, fuzzy
 msgid "General"
-msgstr ""
+msgstr "Tổng quan"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
@@ -7281,6 +7295,10 @@ msgstr ""
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
+msgstr ""
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+msgid "View log"
 msgstr ""
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp

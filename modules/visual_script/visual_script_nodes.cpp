@@ -54,8 +54,8 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		arguments.resize(new_argc);
 
 		for (int i = argc; i < new_argc; i++) {
-			arguments[i].name = "arg" + itos(i + 1);
-			arguments[i].type = Variant::NIL;
+			arguments.write[i].name = "arg" + itos(i + 1);
+			arguments.write[i].type = Variant::NIL;
 		}
 		ports_changed_notify();
 		_change_notify();
@@ -68,7 +68,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		if (what == "type") {
 
 			Variant::Type new_type = Variant::Type(int(p_value));
-			arguments[idx].type = new_type;
+			arguments.write[idx].type = new_type;
 			ports_changed_notify();
 
 			return true;
@@ -76,7 +76,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 
 		if (what == "name") {
 
-			arguments[idx].name = p_value;
+			arguments.write[idx].name = p_value;
 			ports_changed_notify();
 			return true;
 		}
@@ -205,6 +205,8 @@ PropertyInfo VisualScriptFunction::get_output_value_port_info(int p_idx) const {
 	PropertyInfo out;
 	out.type = arguments[p_idx].type;
 	out.name = arguments[p_idx].name;
+	out.hint = arguments[p_idx].hint;
+	out.hint_string = arguments[p_idx].hint_string;
 	return out;
 }
 
@@ -218,11 +220,13 @@ String VisualScriptFunction::get_text() const {
 	return get_name(); //use name as function name I guess
 }
 
-void VisualScriptFunction::add_argument(Variant::Type p_type, const String &p_name, int p_index) {
+void VisualScriptFunction::add_argument(Variant::Type p_type, const String &p_name, int p_index, const PropertyHint p_hint, const String &p_hint_string) {
 
 	Argument arg;
 	arg.name = p_name;
 	arg.type = p_type;
+	arg.hint = p_hint;
+	arg.hint_string = p_hint_string;
 	if (p_index >= 0)
 		arguments.insert(p_index, arg);
 	else
@@ -234,7 +238,7 @@ void VisualScriptFunction::set_argument_type(int p_argidx, Variant::Type p_type)
 
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
-	arguments[p_argidx].type = p_type;
+	arguments.write[p_argidx].type = p_type;
 	ports_changed_notify();
 }
 Variant::Type VisualScriptFunction::get_argument_type(int p_argidx) const {
@@ -246,7 +250,7 @@ void VisualScriptFunction::set_argument_name(int p_argidx, const String &p_name)
 
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
-	arguments[p_argidx].name = p_name;
+	arguments.write[p_argidx].name = p_name;
 	ports_changed_notify();
 }
 String VisualScriptFunction::get_argument_name(int p_argidx) const {
@@ -2198,7 +2202,7 @@ PropertyInfo VisualScriptSceneTree::get_input_value_port_info(int p_idx) const {
 
 PropertyInfo VisualScriptSceneTree::get_output_value_port_info(int p_idx) const {
 
-	return PropertyInfo(Variant::OBJECT, "Scene Tree");
+	return PropertyInfo(Variant::OBJECT, "Scene Tree", PROPERTY_HINT_TYPE_STRING, "SceneTree");
 }
 
 String VisualScriptSceneTree::get_caption() const {
@@ -3560,8 +3564,8 @@ void VisualScriptDeconstruct::_set_elem_cache(const Array &p_elements) {
 	ERR_FAIL_COND(p_elements.size() % 2 == 1);
 	elements.resize(p_elements.size() / 2);
 	for (int i = 0; i < elements.size(); i++) {
-		elements[i].name = p_elements[i * 2 + 0];
-		elements[i].type = Variant::Type(int(p_elements[i * 2 + 1]));
+		elements.write[i].name = p_elements[i * 2 + 0];
+		elements.write[i].type = Variant::Type(int(p_elements[i * 2 + 1]));
 	}
 }
 
@@ -3606,7 +3610,7 @@ VisualScriptNodeInstance *VisualScriptDeconstruct::instance(VisualScriptInstance
 	instance->instance = p_instance;
 	instance->outputs.resize(elements.size());
 	for (int i = 0; i < elements.size(); i++) {
-		instance->outputs[i] = elements[i].name;
+		instance->outputs.write[i] = elements[i].name;
 	}
 
 	return instance;

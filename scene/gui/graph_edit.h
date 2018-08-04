@@ -81,6 +81,9 @@ private:
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
 
+	float port_grab_distance_horizontal;
+	float port_grab_distance_vertical;
+
 	bool connecting;
 	String connecting_from;
 	bool connecting_out;
@@ -127,6 +130,9 @@ private:
 	Control *connections_layer;
 	GraphEditFilter *top_layer;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
+
+	Rect2 create_hot_zone(const Vector2 &pos);
+
 	void _top_layer_draw();
 	void _connections_layer_draw();
 	void _update_scroll_offset();

@@ -104,8 +104,6 @@ private:
 
 	String autoplay;
 	TweenProcessMode tween_process_mode;
-	bool processing;
-	bool active;
 	bool repeat;
 	float speed_scale;
 	mutable int pending_update;
@@ -133,7 +131,6 @@ private:
 	bool _apply_tween_value(InterpolateData &p_data, Variant &value);
 
 	void _tween_process(float p_delta);
-	void _set_process(bool p_process, bool p_force = false);
 	void _remove(Object *p_object, StringName p_key, bool first_only);
 
 protected:
@@ -162,7 +159,6 @@ public:
 	bool reset_all();
 	bool stop(Object *p_object, StringName p_key);
 	bool stop_all();
-	bool is_stopped() const;
 	bool resume(Object *p_object, StringName p_key);
 	bool resume_all();
 	bool remove(Object *p_object, StringName p_key);

@@ -182,7 +182,6 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal;
 		bool modal_exclusive;
 		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
@@ -454,6 +453,7 @@ public:
 
 	void set_tooltip(const String &p_tooltip);
 	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	/* CURSOR */
 

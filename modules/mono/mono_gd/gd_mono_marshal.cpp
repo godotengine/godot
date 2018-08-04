@@ -120,7 +120,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(GDMonoClass::get_raw_type(p_type.type_class));
+			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
 				return Variant::ARRAY;
@@ -162,11 +162,35 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			if (CACHED_CLASS(RID) == type_class) {
 				return Variant::_RID;
 			}
+
+			if (CACHED_CLASS(Dictionary) == type_class) {
+				return Variant::DICTIONARY;
+			}
+
+			if (CACHED_CLASS(Array) == type_class) {
+				return Variant::ARRAY;
+			}
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			if (CACHED_RAW_MONO_CLASS(Dictionary) == p_type.type_class->get_mono_ptr()) {
+			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
+
+			MonoException *exc = NULL;
+			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
+			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+			if (is_dict) {
 				return Variant::DICTIONARY;
+			}
+
+			exc = NULL;
+			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
+			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+			if (is_array) {
+				return Variant::ARRAY;
 			}
 		} break;
 
@@ -216,6 +240,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var) {
 	ManagedType type;
 
 	type.type_encoding = MONO_TYPE_OBJECT;
+	// type.type_class is not needed when we specify the MONO_TYPE_OBJECT encoding
 
 	return variant_to_mono_object(p_var, type);
 }
@@ -315,7 +340,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(GDMonoClass::get_raw_type(p_type.type_class));
+			MonoArrayType *array_type = mono_type_get_array_type(p_type.type_class->get_mono_type());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
 				return (MonoObject *)Array_to_mono_array(p_var->operator Array());
@@ -359,6 +384,14 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 			if (CACHED_CLASS(RID) == type_class) {
 				return GDMonoUtils::create_managed_from(p_var->operator RID());
+			}
+
+			if (CACHED_CLASS(Dictionary) == type_class) {
+				return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
+			}
+
+			if (CACHED_CLASS(Array) == type_class) {
+				return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
 			}
 		} break;
 		case MONO_TYPE_OBJECT: {
@@ -411,9 +444,9 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return GDMonoUtils::unmanaged_get_managed(p_var->operator Object *());
 				}
 				case Variant::DICTIONARY:
-					return Dictionary_to_mono_object(p_var->operator Dictionary());
+					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
 				case Variant::ARRAY:
-					return (MonoObject *)Array_to_mono_array(p_var->operator Array());
+					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
 				case Variant::POOL_BYTE_ARRAY:
 					return (MonoObject *)PoolByteArray_to_mono_array(p_var->operator PoolByteArray());
 				case Variant::POOL_INT_ARRAY:
@@ -433,8 +466,24 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 			break;
 			case MONO_TYPE_GENERICINST: {
-				if (CACHED_RAW_MONO_CLASS(Dictionary) == p_type.type_class->get_mono_ptr()) {
-					return Dictionary_to_mono_object(p_var->operator Dictionary());
+				MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
+
+				MonoException *exc = NULL;
+				GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
+				MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+				if (is_dict) {
+					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), p_type.type_class);
+				}
+
+				exc = NULL;
+				GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
+				MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+				if (is_array) {
+					return GDMonoUtils::create_managed_from(p_var->operator Array(), p_type.type_class);
 				}
 			} break;
 		} break;
@@ -452,7 +501,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 	GDMonoClass *tclass = GDMono::get_singleton()->get_class(mono_object_get_class(p_obj));
 	ERR_FAIL_COND_V(!tclass, Variant());
 
-	MonoType *raw_type = tclass->get_raw_type(tclass);
+	MonoType *raw_type = tclass->get_mono_type();
 
 	ManagedType type;
 
@@ -531,7 +580,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 		case MONO_TYPE_ARRAY:
 		case MONO_TYPE_SZARRAY: {
-			MonoArrayType *array_type = mono_type_get_array_type(GDMonoClass::get_raw_type(type.type_class));
+			MonoArrayType *array_type = mono_type_get_array_type(type.type_class->get_mono_type());
 
 			if (array_type->eklass == CACHED_CLASS_RAW(MonoObject))
 				return mono_array_to_Array((MonoArray *)p_obj);
@@ -579,11 +628,51 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 				RID *ptr = unbox<RID *>(CACHED_FIELD(RID, ptr)->get_value(p_obj));
 				return ptr ? Variant(*ptr) : Variant();
 			}
+
+			if (CACHED_CLASS(Array) == type_class) {
+				MonoException *exc = NULL;
+				GDMonoUtils::Array_GetPtr get_ptr = CACHED_METHOD_THUNK(Array, GetPtr);
+				Array *ptr = get_ptr(p_obj, (MonoObject **)&exc);
+				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				return ptr ? Variant(*ptr) : Variant();
+			}
+
+			if (CACHED_CLASS(Dictionary) == type_class) {
+				MonoException *exc = NULL;
+				GDMonoUtils::Dictionary_GetPtr get_ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr);
+				Dictionary *ptr = get_ptr(p_obj, (MonoObject **)&exc);
+				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				return ptr ? Variant(*ptr) : Variant();
+			}
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			if (CACHED_RAW_MONO_CLASS(Dictionary) == type.type_class->get_mono_ptr()) {
-				return mono_object_to_Dictionary(p_obj);
+			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
+
+			MonoException *exc = NULL;
+
+			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
+			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+			if (is_dict) {
+				MonoException *exc = NULL;
+				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
+				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				return *unbox<Dictionary *>(ret);
+			}
+
+			exc = NULL;
+
+			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
+			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+			if (is_array) {
+				MonoException *exc = NULL;
+				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
+				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				return *unbox<Array *>(ret);
 			}
 		} break;
 	}
@@ -818,68 +907,6 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 3, i);
 		MARSHALLED_IN(Vector3, raw_elem, elem);
 		ret.set(i, elem);
-	}
-
-	return ret;
-}
-
-MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict) {
-	MonoArray *keys = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_dict.size());
-	MonoArray *values = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_dict.size());
-
-	int i = 0;
-	const Variant *dkey = NULL;
-	while ((dkey = p_dict.next(dkey))) {
-		mono_array_set(keys, MonoObject *, i, variant_to_mono_object(dkey));
-		mono_array_set(values, MonoObject *, i, variant_to_mono_object(p_dict[*dkey]));
-		i++;
-	}
-
-	GDMonoUtils::MarshalUtils_ArraysToDict arrays_to_dict = CACHED_METHOD_THUNK(MarshalUtils, ArraysToDictionary);
-
-	MonoException *exc = NULL;
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = arrays_to_dict(keys, values, (MonoObject **)&exc);
-	GD_MONO_END_RUNTIME_INVOKE;
-
-	if (exc) {
-		GDMonoUtils::set_pending_exception(exc);
-		ERR_FAIL_V(NULL);
-	}
-
-	return ret;
-}
-
-Dictionary mono_object_to_Dictionary(MonoObject *p_dict) {
-	Dictionary ret;
-
-	if (!p_dict)
-		return ret;
-
-	GDMonoUtils::MarshalUtils_DictToArrays dict_to_arrays = CACHED_METHOD_THUNK(MarshalUtils, DictionaryToArrays);
-
-	MonoArray *keys = NULL;
-	MonoArray *values = NULL;
-	MonoException *exc = NULL;
-	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	dict_to_arrays(p_dict, &keys, &values, (MonoObject **)&exc);
-	GD_MONO_END_RUNTIME_INVOKE;
-
-	if (exc) {
-		GDMonoUtils::set_pending_exception(exc);
-		ERR_FAIL_V(Dictionary());
-	}
-
-	int length = mono_array_length(keys);
-
-	for (int i = 0; i < length; i++) {
-		MonoObject *key_obj = mono_array_get(keys, MonoObject *, i);
-		MonoObject *value_obj = mono_array_get(values, MonoObject *, i);
-
-		Variant key = key_obj ? mono_object_to_variant(key_obj) : Variant();
-		Variant value = value_obj ? mono_object_to_variant(value_obj) : Variant();
-
-		ret[key] = value;
 	}
 
 	return ret;

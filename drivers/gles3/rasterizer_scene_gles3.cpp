@@ -355,7 +355,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 		bool should_redraw = shadow_atlas->quadrants[q].shadows[s].version != p_light_version;
 
 		if (!should_realloc) {
-			shadow_atlas->quadrants[q].shadows[s].version = p_light_version;
+			shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
 			//already existing, see if it should redraw or it's just OK
 			return should_redraw;
 		}
@@ -365,7 +365,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 		//find a better place
 		if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, shadow_atlas->quadrants[q].subdivision, tick, new_quadrant, new_shadow)) {
 			//found a better place!
-			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows[new_shadow];
+			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 			if (sh->owner.is_valid()) {
 				//is taken, but is invalid, erasing it
 				shadow_atlas->shadow_owners.erase(sh->owner);
@@ -374,8 +374,8 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 			}
 
 			//erase previous
-			shadow_atlas->quadrants[q].shadows[s].version = 0;
-			shadow_atlas->quadrants[q].shadows[s].owner = RID();
+			shadow_atlas->quadrants[q].shadows.write[s].version = 0;
+			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
 
 			sh->owner = p_light_intance;
 			sh->alloc_tick = tick;
@@ -395,7 +395,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 
 		//already existing, see if it should redraw or it's just OK
 
-		shadow_atlas->quadrants[q].shadows[s].version = p_light_version;
+		shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
 
 		return should_redraw;
 	}
@@ -405,7 +405,7 @@ bool RasterizerSceneGLES3::shadow_atlas_update_light(RID p_atlas, RID p_light_in
 	//find a better place
 	if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, -1, tick, new_quadrant, new_shadow)) {
 		//found a better place!
-		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows[new_shadow];
+		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 		if (sh->owner.is_valid()) {
 			//is taken, but is invalid, erasing it
 			shadow_atlas->shadow_owners.erase(sh->owner);
@@ -502,7 +502,7 @@ void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas, int p_size
 		//erase probes reference to this
 		if (reflection_atlas->reflections[i].owner.is_valid()) {
 			ReflectionProbeInstance *reflection_probe_instance = reflection_probe_instance_owner.getornull(reflection_atlas->reflections[i].owner);
-			reflection_atlas->reflections[i].owner = RID();
+			reflection_atlas->reflections.write[i].owner = RID();
 
 			ERR_CONTINUE(!reflection_probe_instance);
 			reflection_probe_instance->reflection_atlas_index = -1;
@@ -574,7 +574,7 @@ void RasterizerSceneGLES3::reflection_atlas_set_subdivision(RID p_ref_atlas, int
 			//erase probes reference to this
 			if (reflection_atlas->reflections[i].owner.is_valid()) {
 				ReflectionProbeInstance *reflection_probe_instance = reflection_probe_instance_owner.getornull(reflection_atlas->reflections[i].owner);
-				reflection_atlas->reflections[i].owner = RID();
+				reflection_atlas->reflections.write[i].owner = RID();
 
 				ERR_CONTINUE(!reflection_probe_instance);
 				reflection_probe_instance->reflection_atlas_index = -1;
@@ -629,7 +629,7 @@ void RasterizerSceneGLES3::reflection_probe_release_atlas_index(RID p_instance) 
 
 	ERR_FAIL_COND(reflection_atlas->reflections[rpi->reflection_atlas_index].owner != rpi->self);
 
-	reflection_atlas->reflections[rpi->reflection_atlas_index].owner = RID();
+	reflection_atlas->reflections.write[rpi->reflection_atlas_index].owner = RID();
 
 	rpi->reflection_atlas_index = -1;
 	rpi->atlas = RID();
@@ -701,8 +701,8 @@ bool RasterizerSceneGLES3::reflection_probe_instance_begin_render(RID p_instance
 		victim_rpi->reflection_atlas_index = -1;
 	}
 
-	reflection_atlas->reflections[best_free].owner = p_instance;
-	reflection_atlas->reflections[best_free].last_frame = storage->frame.count;
+	reflection_atlas->reflections.write[best_free].owner = p_instance;
+	reflection_atlas->reflections.write[best_free].last_frame = storage->frame.count;
 
 	rpi->reflection_atlas_index = best_free;
 	rpi->atlas = p_reflection_atlas;
@@ -3848,8 +3848,8 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		state.exposure_shader.set_conditional(ExposureShaderGLES3::EXPOSURE_END, false);
 
 		//last step, swap with the framebuffer exposure, so the right exposure is kept int he framebuffer
-		SWAP(exposure_shrink[exposure_shrink.size() - 1].fbo, storage->frame.current_rt->exposure.fbo);
-		SWAP(exposure_shrink[exposure_shrink.size() - 1].color, storage->frame.current_rt->exposure.color);
+		SWAP(exposure_shrink.write[exposure_shrink.size() - 1].fbo, storage->frame.current_rt->exposure.fbo);
+		SWAP(exposure_shrink.write[exposure_shrink.size() - 1].color, storage->frame.current_rt->exposure.color);
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
 
@@ -4086,6 +4086,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	state.ubo_data.z_slope_scale = 0;
 	state.ubo_data.shadow_dual_paraboloid_render_side = 0;
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = 0;
+	state.ubo_data.opaque_prepass_threshold = 0.99;
 
 	p_cam_projection.get_viewport_size(state.ubo_data.viewport_size[0], state.ubo_data.viewport_size[1]);
 
@@ -4698,6 +4699,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	state.ubo_data.z_slope_scale = normal_bias;
 	state.ubo_data.shadow_dual_paraboloid_render_side = dp_direction;
 	state.ubo_data.shadow_dual_paraboloid_render_zfar = zfar;
+	state.ubo_data.opaque_prepass_threshold = 0.1;
 
 	_setup_environment(NULL, light_projection, light_transform);
 
@@ -4776,7 +4778,7 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
 			uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
 
-			shadow_atlas->quadrants[q].shadows[s].owner = RID();
+			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
 			shadow_atlas->shadow_owners.erase(p_rid);
 		}
 
@@ -4866,7 +4868,7 @@ void RasterizerSceneGLES3::initialize() {
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(State::EnvironmentRadianceUBO), &state.env_radiance_ubo, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	render_list.max_elements = GLOBAL_DEF("rendering/limits/rendering/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
+	render_list.max_elements = GLOBAL_DEF_RST("rendering/limits/rendering/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
 	if (render_list.max_elements > 1000000)
 		render_list.max_elements = 1000000;
 	if (render_list.max_elements < 1024)

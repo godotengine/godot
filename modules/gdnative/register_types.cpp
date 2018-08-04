@@ -341,10 +341,10 @@ void register_gdnative_types() {
 
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(path);
 
-		singleton_gdnatives[i].instance();
-		singleton_gdnatives[i]->set_library(lib);
+		singleton_gdnatives.write[i].instance();
+		singleton_gdnatives.write[i]->set_library(lib);
 
-		if (!singleton_gdnatives[i]->initialize()) {
+		if (!singleton_gdnatives.write[i]->initialize()) {
 			// Can't initialize. Don't make a native_call then
 			continue;
 		}
@@ -374,7 +374,7 @@ void unregister_gdnative_types() {
 			continue;
 		}
 
-		singleton_gdnatives[i]->terminate();
+		singleton_gdnatives.write[i]->terminate();
 	}
 	singleton_gdnatives.clear();
 

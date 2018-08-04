@@ -1,4 +1,4 @@
-.TH GODOT "6" "February 2018" "godot 3.1" "Games"
+.TH GODOT "6" "Februaryot 2018" "godot 3.1" "Games"
 .SH NAME
 godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
 .SH SYNOPSIS
@@ -127,6 +127,9 @@ Print the frames per second to the stdout.
 \fB\-s\fR, \fB\-\-script\fR <script>
 Run a script.
 .TP
+\fB\-\-check\-only\fR
+Only parse for errors and quit (use with --script).
+.TP
 \fB\-\-export\fR <target>
 Export the project using the given export target. Export only main pack if path ends with .pck or .zip.
 .TP
@@ -146,7 +149,7 @@ Build the scripting solutions (e.g. for C# projects).
 Generate JSON dump of the Godot API for GDNative bindings.
 .TP
 \fB\-\-test\fR <test>
-Run a unit test ('string', 'containers', 'math', 'render', 'multimesh', 'gui', 'io', 'shaderlang', 'physics', 'oa_hash_map').
+Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'io', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'image', 'ordered_hash_map').
 .SH FILES
 XDG_DATA_CONFIG/godot/ or ~/.config/godot/
 .RS
@@ -156,7 +159,7 @@ XDG_DATA_HOME/godot/ or ~/.local/share/godot/
 .RS
 Contains the default configuration and user data folders for Godot\-made games (\fIuser://\fR path), as well as export templates.
 .RE
-XDG_DATA_CACHE/godot or ~/.cache/godot/
+XDG_DATA_CACHE/godot/ or ~/.cache/godot/
 .RS
 Cache folder for generated thumbnails and scene previews, as well as temporary location for downloads.
 .RE

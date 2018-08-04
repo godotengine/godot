@@ -191,13 +191,13 @@ void Skeleton2D::_update_bone_setup() {
 	bones.sort(); //sorty so they are always in the same order/index
 
 	for (int i = 0; i < bones.size(); i++) {
-		bones[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
-		bones[i].bone->skeleton_index = i;
+		bones.write[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
+		bones.write[i].bone->skeleton_index = i;
 		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
 		if (parent_bone) {
-			bones[i].parent_index = parent_bone->skeleton_index;
+			bones.write[i].parent_index = parent_bone->skeleton_index;
 		} else {
-			bones[i].parent_index = -1;
+			bones.write[i].parent_index = -1;
 		}
 	}
 
@@ -230,9 +230,9 @@ void Skeleton2D::_update_transform() {
 
 		ERR_CONTINUE(bones[i].parent_index >= i);
 		if (bones[i].parent_index >= 0) {
-			bones[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
+			bones.write[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
 		} else {
-			bones[i].accum_transform = bones[i].bone->get_transform();
+			bones.write[i].accum_transform = bones[i].bone->get_transform();
 		}
 	}
 

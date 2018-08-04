@@ -235,7 +235,7 @@ void SpriteFrames::_set_frames(const Array &p_frames) {
 
 	E->get().frames.resize(p_frames.size());
 	for (int i = 0; i < E->get().frames.size(); i++)
-		E->get().frames[i] = p_frames[i];
+		E->get().frames.write[i] = p_frames[i];
 }
 Array SpriteFrames::_get_frames() const {
 

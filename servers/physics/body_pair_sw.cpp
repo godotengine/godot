@@ -211,6 +211,44 @@ bool BodyPairSW::_test_ccd(real_t p_step, BodySW *p_A, int p_shape_A, const Tran
 	return true;
 }
 
+real_t combine_bounce(BodySW *A, BodySW *B) {
+	const PhysicsServer::CombineMode cm = A->get_bounce_combine_mode();
+
+	switch (cm) {
+		case PhysicsServer::COMBINE_MODE_INHERIT:
+			if (B->get_bounce_combine_mode() != PhysicsServer::COMBINE_MODE_INHERIT)
+				return combine_bounce(B, A);
+			// else use MAX [This is used when the two bodies doesn't use physical material]
+		case PhysicsServer::COMBINE_MODE_MAX:
+			return MAX(A->get_bounce(), B->get_bounce());
+		case PhysicsServer::COMBINE_MODE_MIN:
+			return MIN(A->get_bounce(), B->get_bounce());
+		case PhysicsServer::COMBINE_MODE_MULTIPLY:
+			return A->get_bounce() * B->get_bounce();
+		default: // Is always PhysicsServer::COMBINE_MODE_AVERAGE:
+			return (A->get_bounce() + B->get_bounce()) / 2;
+	}
+}
+
+real_t combine_friction(BodySW *A, BodySW *B) {
+	const PhysicsServer::CombineMode cm = A->get_friction_combine_mode();
+
+	switch (cm) {
+		case PhysicsServer::COMBINE_MODE_INHERIT:
+			if (B->get_friction_combine_mode() != PhysicsServer::COMBINE_MODE_INHERIT)
+				return combine_friction(B, A);
+			// else use Multiply [This is used when the two bodies doesn't use physical material]
+		case PhysicsServer::COMBINE_MODE_MULTIPLY:
+			return A->get_friction() * B->get_friction();
+		case PhysicsServer::COMBINE_MODE_MAX:
+			return MAX(A->get_friction(), B->get_friction());
+		case PhysicsServer::COMBINE_MODE_MIN:
+			return MIN(A->get_friction(), B->get_friction());
+		default: // Is always PhysicsServer::COMBINE_MODE_AVERAGE:
+			return (A->get_friction() + B->get_friction()) / 2;
+	}
+}
+
 bool BodyPairSW::setup(real_t p_step) {
 
 	//cannot collide
@@ -331,7 +369,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
 
-		c.bounce = MAX(A->get_bounce(), B->get_bounce());
+		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
 
 			Vector3 crA = A->get_angular_velocity().cross(c.rA);
@@ -421,7 +459,7 @@ void BodyPairSW::solve(real_t p_step) {
 
 		//friction impulse
 
-		real_t friction = A->get_friction() * B->get_friction();
+		real_t friction = combine_friction(A, B);
 
 		Vector3 lvA = A->get_linear_velocity() + A->get_angular_velocity().cross(c.rA);
 		Vector3 lvB = B->get_linear_velocity() + B->get_angular_velocity().cross(c.rB);

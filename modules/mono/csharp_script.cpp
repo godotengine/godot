@@ -121,7 +121,7 @@ void CSharpLanguage::init() {
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&gdsharp_editor_init_callback);
 
-	GLOBAL_DEF("mono/export/include_scripts_content", true);
+	GLOBAL_DEF("mono/export/include_scripts_content", false);
 #endif
 }
 
@@ -523,7 +523,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 	si.resize(frame_count);
 
 	for (int i = 0; i < frame_count; i++) {
-		StackInfo &sif = si[i];
+		StackInfo &sif = si.write[i];
 		MonoObject *frame = mono_array_get(frames, MonoObject *, i);
 
 		MonoString *file_name;
@@ -638,32 +638,40 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 #ifdef TOOLS_ENABLED
 void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 
-	if (gdmono->is_runtime_initialized()) {
+	if (!gdmono->is_runtime_initialized())
+		return;
 
-		GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
+	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
-		String name = ProjectSettings::get_singleton()->get("application/config/name");
-		if (name.empty()) {
-			name = "UnnamedProject";
-		}
+	String name = ProjectSettings::get_singleton()->get("application/config/name");
+	if (name.empty()) {
+		name = "UnnamedProject";
+	}
 
-		if (proj_assembly) {
-			String proj_asm_path = proj_assembly->get_path();
+	name += ".dll";
 
-			if (!FileAccess::exists(proj_assembly->get_path())) {
-				// Maybe it wasn't loaded from the default path, so check this as well
-				proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name);
-				if (!FileAccess::exists(proj_asm_path))
-					return; // No assembly to load
-			}
+	if (proj_assembly) {
+		String proj_asm_path = proj_assembly->get_path();
 
-			if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time())
-				return; // Already up to date
-		} else {
-			if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name)))
+		if (!FileAccess::exists(proj_assembly->get_path())) {
+			// Maybe it wasn't loaded from the default path, so check this as well
+			proj_asm_path = GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name);
+			if (!FileAccess::exists(proj_asm_path))
 				return; // No assembly to load
 		}
+
+		if (FileAccess::get_modified_time(proj_asm_path) <= proj_assembly->get_modified_time())
+			return; // Already up to date
+	} else {
+		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(name)))
+			return; // No assembly to load
 	}
+
+	if (!gdmono->get_core_api_assembly() && gdmono->metadata_is_api_assembly_invalidated(APIAssembly::API_CORE))
+		return; // The core API assembly to load is invalidated
+
+	if (!gdmono->get_editor_api_assembly() && gdmono->metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR))
+		return; // The editor API assembly to load is invalidated
 
 #ifndef NO_THREADS
 	lock->lock();
@@ -1609,7 +1617,7 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 
 bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
 	if (p_delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-		MonoType *raw_type = GDMonoClass::get_raw_type(p_delegate);
+		MonoType *raw_type = p_delegate->get_mono_type();
 
 		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
 			// Arguments are accessibles as arguments of .Invoke method
@@ -1963,8 +1971,6 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
-	ERR_FAIL_COND_V(!valid, NULL);
-
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
 		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
@@ -1981,12 +1987,14 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 			// The project assembly is not loaded
 			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
 			ERR_FAIL_V(NULL);
+		} else {
+			// The project assembly is loaded, but the class could not found
+			ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
+			ERR_FAIL_V(NULL);
 		}
-
-		// The project assembly is loaded, but the class could not found
-		ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
-		ERR_FAIL_V(NULL);
 	}
+
+	ERR_FAIL_COND_V(!valid, NULL);
 
 	if (native) {
 		String native_name = native->get_name();
@@ -2039,6 +2047,9 @@ void CSharpScript::set_source_code(const String &p_code) {
 }
 
 bool CSharpScript::has_method(const StringName &p_method) const {
+
+	if (!script_class)
+		return false;
 
 	return script_class->has_fetched_method_unknown_params(p_method);
 }

@@ -64,6 +64,10 @@
 			</argument>
 			<argument index="1" name="infinite_inertia" type="bool" default="true">
 			</argument>
+			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="3" name="test_only" type="bool" default="false">
+			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision2D], which contains information about the collision.
 			</description>
@@ -93,6 +97,26 @@
 				Returns the movement that remained when the body stopped. To get more detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
 		</method>
+		<method name="move_and_slide_with_snap">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector2">
+			</argument>
+			<argument index="1" name="snap" type="Vector2">
+			</argument>
+			<argument index="2" name="floor_normal" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<argument index="3" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<argument index="4" name="slope_stop_min_velocity" type="float" default="5">
+			</argument>
+			<argument index="5" name="max_bounces" type="int" default="4">
+			</argument>
+			<argument index="6" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="test_move">
 			<return type="bool">
 			</return>
@@ -110,6 +134,8 @@
 	<members>
 		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin">
 			If the body is at least this close to another body, this body will consider them to be colliding.
+		</member>
+		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled">
 		</member>
 	</members>
 	<constants>

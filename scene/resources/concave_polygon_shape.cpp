@@ -56,8 +56,8 @@ Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
 	int idx = 0;
 	for (Set<DrawEdge>::Element *E = edges.front(); E; E = E->next()) {
 
-		points[idx + 0] = E->get().a;
-		points[idx + 1] = E->get().b;
+		points.write[idx + 0] = E->get().a;
+		points.write[idx + 1] = E->get().b;
 		idx += 2;
 	}
 

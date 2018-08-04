@@ -47,8 +47,12 @@ def configure(env):
 
     if (env["target"].startswith("release")):
         env.Append(CPPFLAGS=['-DNDEBUG', '-DNS_BLOCK_ASSERTIONS=1'])
-        env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
-        env.Append(LINKFLAGS=['-O2'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
+            env.Append(LINKFLAGS=['-O2'])
+        else: #optimize for size
+            env.Append(CPPFLAGS=['-Os', '-ftree-vectorize'])
+            env.Append(LINKFLAGS=['-Os'])
 
         if env["target"] == "release_debug":
             env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])

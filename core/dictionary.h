@@ -66,6 +66,7 @@ public:
 	bool has_all(const Array &p_keys) const;
 
 	void erase(const Variant &p_key);
+	bool erase_checked(const Variant &p_key);
 
 	bool operator==(const Dictionary &p_dictionary) const;
 

@@ -43,6 +43,7 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
+#include "scene/resources/text_file.h"
 #include "script_language.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
@@ -74,7 +75,7 @@ class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
 
-	GDCLASS(ScriptEditorBase, VBoxContainer);
+	GDCLASS(ScriptEditorBase, VBoxContainer)
 
 protected:
 	static void _bind_methods();
@@ -84,9 +85,9 @@ public:
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter) = 0;
 
 	virtual void apply_code() = 0;
-	virtual Ref<Script> get_edited_script() const = 0;
+	virtual RES get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
-	virtual void set_edited_script(const Ref<Script> &p_script) = 0;
+	virtual void set_edited_resource(const RES &p_res) = 0;
 	virtual void reload_text() = 0;
 	virtual String get_name() = 0;
 	virtual Ref<Texture> get_icon() = 0;
@@ -99,7 +100,7 @@ public:
 	virtual void convert_indent_to_tabs() = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
-	virtual void reload(bool p_soft) = 0;
+	virtual void reload(bool p_soft) {}
 	virtual void get_breakpoints(List<int> *p_breakpoints) = 0;
 	virtual void add_callback(const String &p_function, PoolStringArray p_args) = 0;
 	virtual void update_settings() = 0;
@@ -116,7 +117,7 @@ public:
 };
 
 typedef SyntaxHighlighter *(*CreateSyntaxHighlighterFunc)();
-typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Script> &p_script);
+typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const RES &p_resource);
 
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
@@ -268,7 +269,7 @@ class ScriptEditor : public PanelContainer {
 	void _resave_scripts(const String &p_str);
 	void _reload_scripts();
 
-	bool _test_script_times_on_disk(Ref<Script> p_for_script = Ref<Script>());
+	bool _test_script_times_on_disk(RES p_for_script = Ref<Resource>());
 
 	void _add_recent_script(String p_path);
 	void _update_recent_scripts();
@@ -378,6 +379,9 @@ class ScriptEditor : public PanelContainer {
 	Ref<Script> _get_current_script();
 	Array _get_open_scripts() const;
 
+	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error);
+	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
+
 	void _on_find_in_files_requested(String text);
 	void _on_find_in_files_result_selected(String fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
@@ -400,8 +404,8 @@ public:
 
 	void ensure_select_current();
 
-	_FORCE_INLINE_ bool edit(const Ref<Script> &p_script, bool p_grab_focus = true) { return edit(p_script, -1, 0, p_grab_focus); }
-	bool edit(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus = true);
+	_FORCE_INLINE_ bool edit(const RES &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
+	bool edit(const RES &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
 	void get_breakpoints(List<String> *p_breakpoints);
 

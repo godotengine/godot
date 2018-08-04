@@ -10,8 +10,8 @@ this sentence.
 
 This code is released under the libpng license.
 
-libpng versions 1.0.7, July 1, 2000 through 1.6.34, September 29, 2017 are
-Copyright (c) 2000-2002, 2004, 2006-2017 Glenn Randers-Pehrson, are
+libpng versions 1.0.7, July 1, 2000 through 1.6.35, July 15, 2018 are
+Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson, are
 derived from libpng-1.0.6, and are distributed according to the same
 disclaimer and license as libpng-1.0.6 with the following individuals
 added to the list of Contributing Authors:
@@ -130,4 +130,4 @@ any encryption software.  See the EAR, paragraphs 734.3(b)(3) and
 
 Glenn Randers-Pehrson
 glennrp at users.sourceforge.net
-September 29, 2017
+July 15, 2018

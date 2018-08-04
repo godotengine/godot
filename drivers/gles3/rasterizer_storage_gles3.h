@@ -693,7 +693,6 @@ public:
 		AABB custom_aabb;
 		mutable uint64_t last_pass;
 		SelfList<MultiMesh>::List multimeshes;
-
 		_FORCE_INLINE_ void update_multimeshes() {
 
 			SelfList<MultiMesh> *mm = multimeshes.first();
@@ -1428,7 +1427,6 @@ public:
 		int canvas_draw_commands;
 		float time[4];
 		float delta;
-		uint64_t prev_tick;
 		uint64_t count;
 
 	} frame;

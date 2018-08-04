@@ -190,7 +190,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		for (int i = 0; i < plugins.size(); i++) {
-			custom_editor = plugins[i]->create_editor(vsnode);
+			custom_editor = plugins.write[i]->create_editor(vsnode);
 			if (custom_editor) {
 				break;
 			}
@@ -735,7 +735,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("duplicate_nodes_request", this, "_duplicate_nodes");
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
-	//graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_SCALAR);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_TRANSFORM);
 

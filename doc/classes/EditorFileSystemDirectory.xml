@@ -63,6 +63,22 @@
 				Returns the path to the file at index [code]idx[/code].
 			</description>
 		</method>
+		<method name="get_file_script_class_extends" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_file_script_class_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_file_type" qualifiers="const">
 			<return type="String">
 			</return>

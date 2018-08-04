@@ -154,6 +154,7 @@ private:
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SCENE_SETTINGS,
 		RUN_SETTINGS,
+		RUN_PROJECT_DATA_FOLDER,
 		RUN_PROJECT_MANAGER,
 		RUN_FILE_SERVER,
 		RUN_LIVE_DEBUG,
@@ -168,6 +169,8 @@ private:
 		SETTINGS_LAYOUT_SAVE,
 		SETTINGS_LAYOUT_DELETE,
 		SETTINGS_LAYOUT_DEFAULT,
+		SETTINGS_EDITOR_DATA_FOLDER,
+		SETTINGS_EDITOR_CONFIG_FOLDER,
 		SETTINGS_MANAGE_EXPORT_TEMPLATES,
 		SETTINGS_PICK_MAIN_SCENE,
 		SETTINGS_TOGGLE_FULLSCREEN,
@@ -182,6 +185,8 @@ private:
 		HELP_COMMUNITY,
 		HELP_ABOUT,
 
+		SET_VIDEO_DRIVER_SAVE_AND_RESTART,
+
 		IMPORT_PLUGIN_BASE = 100,
 
 		TOOL_MENU_BASE = 1000
@@ -194,6 +199,13 @@ private:
 	Control *gui_base;
 	VBoxContainer *main_vbox;
 	PanelContainer *play_button_panel;
+	OptionButton *video_driver;
+
+	ConfirmationDialog *video_restart_dialog;
+
+	int video_driver_current;
+	String video_driver_request;
+	void _video_driver_selected(int);
 
 	//split
 
@@ -211,6 +223,7 @@ private:
 	//main tabs
 
 	Tabs *scene_tabs;
+	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
 	int tab_closing;
@@ -744,6 +757,8 @@ public:
 	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	void save_all_scenes_and_restart();
 
 	void dim_editor(bool p_dimming);
 

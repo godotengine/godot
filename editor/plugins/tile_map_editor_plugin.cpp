@@ -196,7 +196,7 @@ Vector<int> TileMapEditor::get_selected_tiles() const {
 	}
 
 	for (int i = items.size() - 1; i >= 0; i--) {
-		items[i] = palette->get_item_metadata(items[i]);
+		items.write[i] = palette->get_item_metadata(items[i]);
 	}
 	return items;
 }
@@ -526,7 +526,7 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 	if (!erase) {
 		ids = get_selected_tiles();
 
-		if (ids.size() == 0 && ids[0] == TileMap::INVALID_CELL)
+		if (ids.size() == 0 || ids[0] == TileMap::INVALID_CELL)
 			return PoolVector<Vector2>();
 	} else if (prev_id == TileMap::INVALID_CELL) {
 		return PoolVector<Vector2>();
@@ -538,9 +538,7 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 		}
 	}
 
-	Rect2i r = node->_edit_get_rect();
-	r.position = r.position / node->get_cell_size();
-	r.size = r.size / node->get_cell_size();
+	Rect2i r = node->get_used_rect();
 
 	int area = r.get_area();
 	if (preview) {
@@ -985,7 +983,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						ids.push_back(0);
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
 
-							ids[0] = E->get().cell;
+							ids.write[0] = E->get().cell;
 							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose);
 						}
 						_finish_undo();
@@ -1008,7 +1006,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						}
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
 
-							ids[0] = E->get().cell;
+							ids.write[0] = E->get().cell;
 							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose);
 						}
 						_finish_undo();
@@ -1029,7 +1027,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						if (points.size() == 0)
 							return false;
 
-						undo_redo->create_action(TTR("Bucket Fill"));
+						_start_undo(TTR("Bucket Fill"));
 
 						Dictionary op;
 						op["id"] = get_selected_tiles();
@@ -1039,7 +1037,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 						_fill_points(points, op);
 
-						undo_redo->commit_action();
+						_finish_undo();
 
 						// We want to keep the bucket-tool active
 						return true;
@@ -1230,7 +1228,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
 
-					tmp_cell[0] = E->get().idx;
+					tmp_cell.write[0] = E->get().idx;
 					_set_cell(E->key(), tmp_cell, E->get().xf, E->get().yf, E->get().tr);
 				}
 			}
@@ -1267,7 +1265,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
 
-						tmp_cell[0] = E->get().idx;
+						tmp_cell.write[0] = E->get().idx;
 						_set_cell(E->key(), tmp_cell, E->get().xf, E->get().yf, E->get().tr);
 					}
 				}
@@ -1752,7 +1750,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	bucket_cache_visited = 0;
 
 	invalid_cell.resize(1);
-	invalid_cell[0] = TileMap::INVALID_CELL;
+	invalid_cell.write[0] = TileMap::INVALID_CELL;
 
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase Selection"), KEY_DELETE);
 	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_CMD + KEY_F);

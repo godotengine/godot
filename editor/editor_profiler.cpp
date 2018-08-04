@@ -37,9 +37,9 @@
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
 
 	for (int i = 0; i < m.categories.size(); i++) {
-		m.category_ptrs[m.categories[i].signature] = &m.categories[i];
+		m.category_ptrs[m.categories[i].signature] = &m.categories.write[i];
 		for (int j = 0; j < m.categories[i].items.size(); j++) {
-			m.item_ptrs[m.categories[i].items[j].signature] = &m.categories[i].items[j];
+			m.item_ptrs[m.categories[i].items[j].signature] = &m.categories.write[i].items.write[j];
 		}
 	}
 }
@@ -50,8 +50,8 @@ void EditorProfiler::add_frame_metric(const Metric &p_metric, bool p_final) {
 	if (last_metric >= frame_metrics.size())
 		last_metric = 0;
 
-	frame_metrics[last_metric] = p_metric;
-	_make_metric_ptrs(frame_metrics[last_metric]);
+	frame_metrics.write[last_metric] = p_metric;
+	_make_metric_ptrs(frame_metrics.write[last_metric]);
 
 	updating_frame = true;
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
@@ -108,7 +108,7 @@ static String _get_percent_txt(float p_value, float p_total) {
 	return String::num((p_value / p_total) * 100, 1) + "%";
 }
 
-String EditorProfiler::_get_time_as_text(Metric &m, float p_time, int p_calls) {
+String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_calls) {
 
 	int dmode = display_mode->get_selected();
 
@@ -192,18 +192,18 @@ void EditorProfiler::_update_plot() {
 	float highest = 0;
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
-		Metric &m = frame_metrics[i];
+		const Metric &m = frame_metrics[i];
 		if (!m.valid)
 			continue;
 
 		for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
 
-			Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
+			const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
 			if (F) {
 				highest = MAX(F->get()->total_time, highest);
 			}
 
-			Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
+			const Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
 			if (G) {
 				if (use_self) {
 					highest = MAX(G->get()->self, highest);
@@ -256,18 +256,18 @@ void EditorProfiler::_update_plot() {
 					}
 
 					//get
-					Metric &m = frame_metrics[idx];
+					const Metric &m = frame_metrics[idx];
 					if (m.valid == false)
 						continue; //skip because invalid
 
 					float value = 0;
 
-					Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
+					const Map<StringName, Metric::Category *>::Element *F = m.category_ptrs.find(E->get());
 					if (F) {
 						value = F->get()->total_time;
 					}
 
-					Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
+					const Map<StringName, Metric::Category::Item *>::Element *G = m.item_ptrs.find(E->get());
 					if (G) {
 						if (use_self) {
 							value = G->get()->self;
@@ -375,7 +375,7 @@ void EditorProfiler::_update_frame() {
 	variables->clear();
 
 	TreeItem *root = variables->create_item();
-	Metric &m = frame_metrics[cursor_metric];
+	const Metric &m = frame_metrics[cursor_metric];
 
 	int dtime = display_time->get_selected();
 
@@ -394,7 +394,7 @@ void EditorProfiler::_update_frame() {
 		}
 
 		for (int j = 0; j < m.categories[i].items.size(); j++) {
-			Metric::Category::Item &it = m.categories[i].items[j];
+			const Metric::Category::Item &it = m.categories[i].items[j];
 
 			TreeItem *item = variables->create_item(category);
 			item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);

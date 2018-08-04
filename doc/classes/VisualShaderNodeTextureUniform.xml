@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTextureUniform" inherits="VisualShaderNodeUniform" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="color_default" type="int" setter="set_color_default" getter="get_color_default" enum="VisualShaderNodeTextureUniform.ColorDefault">
+		</member>
+		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureUniform.TextureType">
+		</member>
+	</members>
+	<constants>
+		<constant name="TYPE_DATA" value="0" enum="TextureType">
+		</constant>
+		<constant name="TYPE_COLOR" value="1" enum="TextureType">
+		</constant>
+		<constant name="TYPE_NORMALMAP" value="2" enum="TextureType">
+		</constant>
+		<constant name="TYPE_ANISO" value="3" enum="TextureType">
+		</constant>
+		<constant name="COLOR_DEFAULT_WHITE" value="0" enum="ColorDefault">
+		</constant>
+		<constant name="COLOR_DEFAULT_BLACK" value="1" enum="ColorDefault">
+		</constant>
+	</constants>
+</class>

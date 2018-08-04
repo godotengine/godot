@@ -104,10 +104,12 @@ public:
 
 		VS::ShadowCastingSetting cast_shadows;
 
+		//fit in 32 bits
 		bool mirror : 8;
 		bool receive_shadows : 8;
 		bool visible : 8;
-		bool baked_light : 8; //this flag is only to know if it actually did use baked light
+		bool baked_light : 4; //this flag is only to know if it actually did use baked light
+		bool redraw_if_visible : 4;
 
 		float depth; //used for sorting
 
@@ -131,6 +133,7 @@ public:
 			depth_layer = 0;
 			layer_mask = 1;
 			baked_light = false;
+			redraw_if_visible = false;
 			lightmap_capture = NULL;
 		}
 	};
@@ -277,6 +280,7 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const = 0;
+
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	/* MULTIMESH API */
@@ -1074,7 +1078,7 @@ public:
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
 
 	virtual void initialize() = 0;
-	virtual void begin_frame() = 0;
+	virtual void begin_frame(double frame_step) = 0;
 	virtual void set_current_render_target(RID p_render_target) = 0;
 	virtual void restore_render_target() = 0;
 	virtual void clear_render_target(const Color &p_color) = 0;

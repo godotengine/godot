@@ -365,17 +365,17 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.vertex_global += ucode;
 					r_gen_code.fragment_global += ucode;
-					r_gen_code.texture_uniforms[E->get().texture_order] = _mkid(E->key());
-					r_gen_code.texture_hints[E->get().texture_order] = E->get().hint;
+					r_gen_code.texture_uniforms.write[E->get().texture_order] = _mkid(E->key());
+					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
 				} else {
 					if (!uses_uniforms) {
 
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
 						uses_uniforms = true;
 					}
-					uniform_defines[E->get().order] = ucode;
-					uniform_sizes[E->get().order] = _get_datatype_size(E->get().type);
-					uniform_alignments[E->get().order] = _get_datatype_alignment(E->get().type);
+					uniform_defines.write[E->get().order] = ucode;
+					uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
+					uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
 				}
 
 				p_actions.uniforms->insert(E->key(), E->get());
@@ -780,8 +780,6 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP"] = "normal_map";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP_DEPTH"] = "normal_depth";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv_interp";
-	actions[VS::SHADER_CANVAS_ITEM].renames["COLOR"] = "color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE"] = "color_texture";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE_PIXEL_SIZE"] = "color_texpixel_size";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL_TEXTURE"] = "normal_texture";
@@ -824,7 +822,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
-	//actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"]=ShaderLanguage::TYPE_INT;
+	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "gl_InstanceID";
 
 	//builtins
 
@@ -846,13 +844,11 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["CLEARCOAT_GLOSS"] = "clearcoat_gloss";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY"] = "anisotropy";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
-	//actions[VS::SHADER_SPATIAL].renames["SSS_SPREAD"] = "sss_spread";
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 	actions[VS::SHADER_SPATIAL].renames["TRANSMISSION"] = "transmission";
 	actions[VS::SHADER_SPATIAL].renames["AO"] = "ao";
 	actions[VS::SHADER_SPATIAL].renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"] = "emission";
-	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"] = "gl_PointCoord";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"] = "screen_uv";
@@ -893,8 +889,6 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_SPATIAL].usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
-	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";

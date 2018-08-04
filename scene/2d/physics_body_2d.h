@@ -32,6 +32,7 @@
 #define PHYSICS_BODY_2D_H
 
 #include "scene/2d/collision_object_2d.h"
+#include "scene/resources/physics_material.h"
 #include "servers/physics_2d_server.h"
 #include "vset.h"
 
@@ -79,18 +80,21 @@ class StaticBody2D : public PhysicsBody2D {
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity;
 
-	real_t bounce;
-	real_t friction;
+	Ref<PhysicsMaterial> physics_material_override;
 
 protected:
 	static void _bind_methods();
 
 public:
+#ifndef DISABLE_DEPRECATED
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
+#endif
+	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
+	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	void set_constant_linear_velocity(const Vector2 &p_vel);
 	void set_constant_angular_velocity(real_t p_vel);
@@ -100,6 +104,9 @@ public:
 
 	StaticBody2D();
 	~StaticBody2D();
+
+private:
+	void _reload_physics_characteristics();
 };
 
 class RigidBody2D : public PhysicsBody2D {
@@ -125,9 +132,8 @@ private:
 	Physics2DDirectBodyState *state;
 	Mode mode;
 
-	real_t bounce;
 	real_t mass;
-	real_t friction;
+	Ref<PhysicsMaterial> physics_material_override;
 	real_t gravity_scale;
 	real_t linear_damp;
 	real_t angular_damp;
@@ -204,11 +210,16 @@ public:
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
+#endif
+
+	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
+	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
@@ -245,7 +256,9 @@ public:
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;
 
+	void apply_central_impulse(const Vector2 &p_impulse);
 	void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse);
+	void apply_torque_impulse(float p_torque);
 
 	void set_applied_force(const Vector2 &p_force);
 	Vector2 get_applied_force() const;
@@ -253,7 +266,9 @@ public:
 	void set_applied_torque(const float p_torque);
 	float get_applied_torque() const;
 
+	void add_central_force(const Vector2 &p_force);
 	void add_force(const Vector2 &p_offset, const Vector2 &p_force);
+	void add_torque(float p_torque);
 
 	Array get_colliding_bodies() const; //function for script
 
@@ -261,6 +276,9 @@ public:
 
 	RigidBody2D();
 	~RigidBody2D();
+
+private:
+	void _reload_physics_characteristics();
 };
 
 VARIANT_ENUM_CAST(RigidBody2D::Mode);

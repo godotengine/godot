@@ -258,6 +258,51 @@ EditorPropertyPath::EditorPropertyPath() {
 	global = false;
 }
 
+///////////////////// CLASS NAME /////////////////////////
+
+void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type) {
+
+	base_type = p_base_type;
+	dialog->set_base_type(base_type);
+	selected_type = p_selected_type;
+	property->set_text(selected_type);
+}
+
+void EditorPropertyClassName::update_property() {
+
+	String s = get_edited_object()->get(get_edited_property());
+	property->set_text(s);
+	selected_type = s;
+}
+
+void EditorPropertyClassName::_property_selected() {
+	dialog->popup_create(true);
+}
+
+void EditorPropertyClassName::_dialog_created() {
+	selected_type = dialog->get_selected_type();
+	emit_signal("property_changed", get_edited_property(), selected_type);
+	update_property();
+}
+
+void EditorPropertyClassName::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_dialog_created"), &EditorPropertyClassName::_dialog_created);
+	ClassDB::bind_method(D_METHOD("_property_selected"), &EditorPropertyClassName::_property_selected);
+}
+
+EditorPropertyClassName::EditorPropertyClassName() {
+	property = memnew(Button);
+	property->set_clip_text(true);
+	add_child(property);
+	add_focusable(property);
+	property->set_text(selected_type);
+	property->connect("pressed", this, "_property_selected");
+	dialog = memnew(CreateDialog);
+	dialog->set_base_type(base_type);
+	dialog->connect("create", this, "_dialog_created");
+	add_child(dialog);
+}
+
 ///////////////////// MEMBER /////////////////////////
 
 void EditorPropertyMember::_property_selected(const String &p_selected) {
@@ -392,13 +437,37 @@ EditorPropertyCheck::EditorPropertyCheck() {
 
 void EditorPropertyEnum::_option_selected(int p_which) {
 
-	emit_signal("property_changed", get_edited_property(), p_which);
+	String text = options->get_item_text(p_which);
+	Vector<String> text_split = text.split(":");
+	if (text_split.size() == 1) {
+		emit_signal("property_changed", get_edited_property(), p_which);
+		return;
+	}
+	String name = text_split[1];
+	emit_signal("property_changed", get_edited_property(), name.to_int());
 }
 
 void EditorPropertyEnum::update_property() {
 
 	int which = get_edited_object()->get(get_edited_property());
-	options->select(which);
+	if (which == 0) {
+		options->select(which);
+		return;
+	}
+
+	for (int i = 0; i < options->get_item_count(); i++) {
+		String text = options->get_item_text(i);
+		Vector<String> text_split = text.split(":");
+		if (text_split.size() == 1) {
+			options->select(which);
+			return;
+		}
+		String name = text_split[1];
+		if (itos(which) == name) {
+			options->select(i);
+			return;
+		}
+	}
 }
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
@@ -499,6 +568,7 @@ public:
 	uint32_t value;
 	Vector<Rect2> flag_rects;
 	Vector<String> names;
+	Vector<String> tooltips;
 
 	virtual Size2 get_minimum_size() const {
 		Ref<Font> font = get_font("font", "Label");
@@ -507,8 +577,8 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const {
 		for (int i = 0; i < flag_rects.size(); i++) {
-			if (i < names.size() && flag_rects[i].has_point(p_pos)) {
-				return names[i];
+			if (i < tooltips.size() && flag_rects[i].has_point(p_pos)) {
+				return tooltips[i];
 			}
 		}
 		return String();
@@ -612,6 +682,7 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 	}
 
 	Vector<String> names;
+	Vector<String> tooltips;
 	for (int i = 0; i < 20; i++) {
 		String name;
 
@@ -623,12 +694,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			name = TTR("Layer") + " " + itos(i + 1);
 		}
 
-		name += "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i);
-
 		names.push_back(name);
+		tooltips.push_back(name + "\n" + vformat(TTR("Bit %d, value %d"), i, 1 << i));
 	}
 
 	grid->names = names;
+	grid->tooltips = tooltips;
 }
 
 void EditorPropertyLayers::_button_pressed() {
@@ -657,6 +728,7 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 		grid->value |= (1 << p_menu);
 	}
 	grid->update();
+	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
 	_grid_changed(grid->value);
 }
 
@@ -682,6 +754,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	set_bottom_editor(hb);
 	layers = memnew(PopupMenu);
 	add_child(layers);
+	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 }
 ///////////////////// INT /////////////////////////
@@ -2582,6 +2655,10 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText);
+				add_property_editor(p_path, editor);
+			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
+				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
+				editor->setup("Object", p_hint_text);
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 

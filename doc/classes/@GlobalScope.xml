@@ -883,6 +883,10 @@
 		<constant name="BUTTON_MIDDLE" value="3" enum="ButtonList">
 			Middle Mouse Button
 		</constant>
+		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+		</constant>
+		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
 			Mouse wheel up
 		</constant>
@@ -903,6 +907,10 @@
 		</constant>
 		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
 			Middle Mouse Button Mask
+		</constant>
+		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+		</constant>
+		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
 			Joypad Button 0
@@ -1072,6 +1080,20 @@
 		</constant>
 		<constant name="JOY_ANALOG_R2" value="7" enum="JoystickList">
 			Joypad Right Analog Trigger
+		</constant>
+		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MidiMessageList">
+		</constant>
+		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MidiMessageList">
 		</constant>
 		<constant name="OK" value="0" enum="Error">
 			Functions that return Error return OK when no error occurred. Most functions don't return errors and/or just print errors to STDOUT.

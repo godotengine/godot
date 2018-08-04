@@ -169,7 +169,7 @@ real_t BulletPhysicsServer::shape_get_custom_solver_bias(RID p_shape) const {
 }
 
 RID BulletPhysicsServer::space_create() {
-	SpaceBullet *space = bulletnew(SpaceBullet(false));
+	SpaceBullet *space = bulletnew(SpaceBullet);
 	CreateThenReturnRID(space_owner, space);
 }
 
@@ -567,9 +567,6 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 
 void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
 	CollisionObjectBullet *body = get_collisin_object(p_body);
-	if (!body) {
-		body = soft_body_owner.get(p_body);
-	}
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_ID);
@@ -647,6 +644,20 @@ float BulletPhysicsServer::body_get_param(RID p_body, BodyParameter p_param) con
 	return body->get_param(p_param);
 }
 
+void BulletPhysicsServer::body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_combine_mode(p_param, p_mode);
+}
+
+PhysicsServer::CombineMode BulletPhysicsServer::body_get_combine_mode(RID p_body, BodyParameter p_param) const {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, COMBINE_MODE_INHERIT);
+
+	return body->get_combine_mode(p_param);
+}
+
 void BulletPhysicsServer::body_set_kinematic_safe_margin(RID p_body, real_t p_margin) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -708,6 +719,34 @@ Vector3 BulletPhysicsServer::body_get_applied_torque(RID p_body) const {
 	ERR_FAIL_COND_V(!body, Vector3());
 
 	return body->get_applied_torque();
+}
+
+void BulletPhysicsServer::body_add_central_force(RID p_body, const Vector3 &p_force) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_central_force(p_force);
+}
+
+void BulletPhysicsServer::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_force(p_force, p_pos);
+}
+
+void BulletPhysicsServer::body_add_torque(RID p_body, const Vector3 &p_torque) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_torque(p_torque);
+}
+
+void BulletPhysicsServer::body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_central_impulse(p_impulse);
 }
 
 void BulletPhysicsServer::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
@@ -853,6 +892,13 @@ RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
 	CreateThenReturnRID(soft_body_owner, body);
 }
 
+void BulletPhysicsServer::soft_body_update_visual_server(RID p_body, class SoftBodyVisualServerHandler *p_visual_server_handler) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->update_visual_server(p_visual_server_handler);
+}
+
 void BulletPhysicsServer::soft_body_set_space(RID p_body, RID p_space) {
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -879,11 +925,11 @@ RID BulletPhysicsServer::soft_body_get_space(RID p_body) const {
 	return space->get_self();
 }
 
-void BulletPhysicsServer::soft_body_set_trimesh_body_shape(RID p_body, PoolVector<int> p_indices, PoolVector<Vector3> p_vertices, int p_triangles_num) {
+void BulletPhysicsServer::soft_body_set_mesh(RID p_body, const REF &p_mesh) {
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_trimesh_body_shape(p_indices, p_vertices, p_triangles_num);
+	body->set_soft_mesh(p_mesh);
 }
 
 void BulletPhysicsServer::soft_body_set_collision_layer(RID p_body, uint32_t p_layer) {
@@ -961,14 +1007,16 @@ void BulletPhysicsServer::soft_body_set_transform(RID p_body, const Transform &p
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_transform(p_transform);
+	body->set_soft_transform(p_transform);
 }
 
-Transform BulletPhysicsServer::soft_body_get_transform(RID p_body) const {
+Vector3 BulletPhysicsServer::soft_body_get_vertex_position(RID p_body, int vertex_index) const {
 	const SoftBodyBullet *body = soft_body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, Transform());
+	Vector3 pos;
+	ERR_FAIL_COND_V(!body, pos);
 
-	return body->get_transform();
+	body->get_node_position(vertex_index, pos);
+	return pos;
 }
 
 void BulletPhysicsServer::soft_body_set_ray_pickable(RID p_body, bool p_enable) {
@@ -981,6 +1029,154 @@ bool BulletPhysicsServer::soft_body_is_ray_pickable(RID p_body) const {
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	return body->is_ray_pickable();
+}
+
+void BulletPhysicsServer::soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_simulation_precision(p_simulation_precision);
+}
+
+int BulletPhysicsServer::soft_body_get_simulation_precision(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_simulation_precision();
+}
+
+void BulletPhysicsServer::soft_body_set_total_mass(RID p_body, real_t p_total_mass) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_total_mass(p_total_mass);
+}
+
+real_t BulletPhysicsServer::soft_body_get_total_mass(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_total_mass();
+}
+
+void BulletPhysicsServer::soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_linear_stiffness(p_stiffness);
+}
+
+real_t BulletPhysicsServer::soft_body_get_linear_stiffness(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_linear_stiffness();
+}
+
+void BulletPhysicsServer::soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_areaAngular_stiffness(p_stiffness);
+}
+
+real_t BulletPhysicsServer::soft_body_get_areaAngular_stiffness(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_areaAngular_stiffness();
+}
+
+void BulletPhysicsServer::soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_volume_stiffness(p_stiffness);
+}
+
+real_t BulletPhysicsServer::soft_body_get_volume_stiffness(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_volume_stiffness();
+}
+
+void BulletPhysicsServer::soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_pressure_coefficient(p_pressure_coefficient);
+}
+
+real_t BulletPhysicsServer::soft_body_get_pressure_coefficient(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_pressure_coefficient();
+}
+
+void BulletPhysicsServer::soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	return body->set_pose_matching_coefficient(p_pose_matching_coefficient);
+}
+
+real_t BulletPhysicsServer::soft_body_get_pose_matching_coefficient(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_pose_matching_coefficient();
+}
+
+void BulletPhysicsServer::soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_damping_coefficient(p_damping_coefficient);
+}
+
+real_t BulletPhysicsServer::soft_body_get_damping_coefficient(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_damping_coefficient();
+}
+
+void BulletPhysicsServer::soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_drag_coefficient(p_drag_coefficient);
+}
+
+real_t BulletPhysicsServer::soft_body_get_drag_coefficient(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_drag_coefficient();
+}
+
+void BulletPhysicsServer::soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_node_position(p_point_index, p_global_position);
+}
+
+Vector3 BulletPhysicsServer::soft_body_get_point_global_position(RID p_body, int p_point_index) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3(0., 0., 0.));
+	Vector3 pos;
+	body->get_node_position(p_point_index, pos);
+	return pos;
+}
+
+Vector3 BulletPhysicsServer::soft_body_get_point_offset(RID p_body, int p_point_index) const {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, Vector3());
+	Vector3 res;
+	body->get_node_offset(p_point_index, res);
+	return res;
+}
+
+void BulletPhysicsServer::soft_body_remove_all_pinned_points(RID p_body) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->reset_all_node_mass();
+}
+
+void BulletPhysicsServer::soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_node_mass(p_point_index, p_pin ? 0 : 1);
+}
+
+bool BulletPhysicsServer::soft_body_is_point_pinned(RID p_body, int p_point_index) {
+	SoftBodyBullet *body = soft_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0.f);
+	return body->get_node_mass(p_point_index);
 }
 
 PhysicsServer::JointType BulletPhysicsServer::joint_get_type(RID p_joint) const {

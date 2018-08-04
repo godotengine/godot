@@ -61,6 +61,13 @@ public:
 	virtual void set_transform(const Transform2D &p_transform) = 0;
 	virtual Transform2D get_transform() const = 0;
 
+	virtual void add_central_force(const Vector2 &p_force) = 0;
+	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) = 0;
+	virtual void add_torque(real_t p_torque) = 0;
+	virtual void apply_central_impulse(const Vector2 &p_impulse) = 0;
+	virtual void apply_torque_impulse(real_t p_torque) = 0;
+	virtual void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse) = 0;
+
 	virtual void set_sleep_state(bool p_enable) = 0;
 	virtual bool is_sleeping() const = 0;
 
@@ -416,6 +423,19 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value) = 0;
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const = 0;
 
+	enum CombineMode {
+		COMBINE_MODE_MAX,
+		COMBINE_MODE_MIN,
+		COMBINE_MODE_MULTIPLY,
+		COMBINE_MODE_AVERAGE,
+
+		COMBINE_MODE_INHERIT /// Inherit from other body or use COMBINE_MODE_MAX (Restitution) COMBINE_MODE_MULTIPLY (Friction)
+	};
+
+	/// p_param accept only Bounce and Friction
+	virtual void body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) = 0;
+	virtual CombineMode body_get_combine_mode(RID p_body, BodyParameter p_param) const = 0;
+
 	//state
 	enum BodyState {
 		BODY_STATE_TRANSFORM,
@@ -435,8 +455,12 @@ public:
 	virtual void body_set_applied_torque(RID p_body, float p_torque) = 0;
 	virtual float body_get_applied_torque(RID p_body) const = 0;
 
+	virtual void body_add_central_force(RID p_body, const Vector2 &p_force) = 0;
 	virtual void body_add_force(RID p_body, const Vector2 &p_offset, const Vector2 &p_force) = 0;
+	virtual void body_add_torque(RID p_body, float p_torque) = 0;
 
+	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) = 0;
+	virtual void body_apply_torque_impulse(RID p_body, float p_torque) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_offset, const Vector2 &p_impulse) = 0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity) = 0;
 

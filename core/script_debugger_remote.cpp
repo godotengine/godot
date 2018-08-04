@@ -783,13 +783,13 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		if (p_for_frame)
-			ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info[ofs], profile_info.size() - ofs);
+			ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info.write[ofs], profile_info.size() - ofs);
 		else
-			ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info[ofs], profile_info.size() - ofs);
+			ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info.write[ofs], profile_info.size() - ofs);
 	}
 
 	for (int i = 0; i < ofs; i++) {
-		profile_info_ptrs[i] = &profile_info[i];
+		profile_info_ptrs.write[i] = &profile_info.write[i];
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;
@@ -1054,7 +1054,7 @@ void ScriptDebuggerRemote::add_profiling_frame_data(const StringName &p_name, co
 	if (idx == -1) {
 		profile_frame_data.push_back(fd);
 	} else {
-		profile_frame_data[idx] = fd;
+		profile_frame_data.write[idx] = fd;
 	}
 }
 

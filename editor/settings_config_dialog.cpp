@@ -54,12 +54,12 @@ void EditorSettingsDialog::_settings_changed() {
 
 void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 
-	String full_name = property_editor->get_full_item_path(p_name);
+	String full_name = inspector->get_full_item_path(p_name);
 
 	// Small usability workaround to update the text color settings when the
 	// color theme is changed
 	if (full_name == "text_editor/theme/color_theme") {
-		property_editor->get_property_editor()->update_tree();
+		inspector->get_inspector()->update_tree();
 	} else if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
 		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
 	} else if (full_name.begins_with("text_editor/highlighting")) {
@@ -88,8 +88,8 @@ void EditorSettingsDialog::popup_edit_settings() {
 
 	EditorSettings::get_singleton()->list_text_editor_themes(); // make sure we have an up to date list of themes
 
-	property_editor->edit(EditorSettings::get_singleton());
-	property_editor->get_property_editor()->update_tree();
+	inspector->edit(EditorSettings::get_singleton());
+	inspector->get_inspector()->update_tree();
 
 	search_box->select_all();
 	search_box->grab_focus();
@@ -120,7 +120,7 @@ void EditorSettingsDialog::_clear_search_box() {
 		return;
 
 	search_box->clear();
-	property_editor->get_property_editor()->update_tree();
+	inspector->get_inspector()->update_tree();
 }
 
 void EditorSettingsDialog::_clear_shortcut_search_box() {
@@ -158,7 +158,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 			// Update theme colors.
-			property_editor->update_category_list();
+			inspector->update_category_list();
 			_update_shortcuts();
 		} break;
 	}
@@ -202,6 +202,11 @@ void EditorSettingsDialog::_update_icons() {
 	shortcut_search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
 	clear_button->set_icon(get_icon("Close", "EditorIcons"));
 	shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
+
+	restart_close_button->set_icon(get_icon("Close", "EditorIcons"));
+	restart_container->add_style_override("panel", get_stylebox("bg", "Tree"));
+	restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
+	restart_label->add_color_override("font_color", get_color("error_color", "Editor"));
 }
 
 void EditorSettingsDialog::_update_shortcuts() {
@@ -388,6 +393,18 @@ void EditorSettingsDialog::_focus_current_search_box() {
 	}
 }
 
+void EditorSettingsDialog::_editor_restart() {
+	EditorNode::get_singleton()->save_all_scenes_and_restart();
+}
+
+void EditorSettingsDialog::_editor_restart_request() {
+	restart_container->show();
+}
+
+void EditorSettingsDialog::_editor_restart_close() {
+	restart_container->hide();
+}
+
 void EditorSettingsDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
@@ -402,6 +419,10 @@ void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"), &EditorSettingsDialog::_press_a_key_confirm);
 	ClassDB::bind_method(D_METHOD("_wait_for_key"), &EditorSettingsDialog::_wait_for_key);
 	ClassDB::bind_method(D_METHOD("_tabs_tab_changed"), &EditorSettingsDialog::_tabs_tab_changed);
+
+	ClassDB::bind_method(D_METHOD("_editor_restart_request"), &EditorSettingsDialog::_editor_restart_request);
+	ClassDB::bind_method(D_METHOD("_editor_restart"), &EditorSettingsDialog::_editor_restart);
+	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &EditorSettingsDialog::_editor_restart_close);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -434,14 +455,35 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	hbc->add_child(clear_button);
 	clear_button->connect("pressed", this, "_clear_search_box");
 
-	property_editor = memnew(SectionedPropertyEditor);
-	//property_editor->hide_top_label();
-	property_editor->get_property_editor()->set_use_filter(true);
-	property_editor->register_search_box(search_box);
-	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	property_editor->get_property_editor()->set_undo_redo(undo_redo);
-	tab_general->add_child(property_editor);
-	property_editor->get_property_editor()->connect("property_edited", this, "_settings_property_edited");
+	inspector = memnew(SectionedInspector);
+	//inspector->hide_top_label();
+	inspector->get_inspector()->set_use_filter(true);
+	inspector->register_search_box(search_box);
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	inspector->get_inspector()->set_undo_redo(undo_redo);
+	tab_general->add_child(inspector);
+	inspector->get_inspector()->connect("property_edited", this, "_settings_property_edited");
+	inspector->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
+
+	restart_container = memnew(PanelContainer);
+	tab_general->add_child(restart_container);
+	HBoxContainer *restart_hb = memnew(HBoxContainer);
+	restart_container->add_child(restart_hb);
+	restart_icon = memnew(TextureRect);
+	restart_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
+	restart_hb->add_child(restart_icon);
+	restart_label = memnew(Label);
+	restart_label->set_text(TTR("Editor must be restarted for changes to take effect"));
+	restart_hb->add_child(restart_label);
+	restart_hb->add_spacer();
+	Button *restart_button = memnew(Button);
+	restart_button->connect("pressed", this, "_editor_restart");
+	restart_hb->add_child(restart_button);
+	restart_button->set_text(TTR("Save & Restart"));
+	restart_close_button = memnew(ToolButton);
+	restart_close_button->connect("pressed", this, "_editor_restart_close");
+	restart_hb->add_child(restart_close_button);
+	restart_container->hide();
 
 	// Shortcuts Tab
 

@@ -789,6 +789,22 @@ real_t Physics2DServerSW::body_get_param(RID p_body, BodyParameter p_param) cons
 	return body->get_param(p_param);
 };
 
+void Physics2DServerSW::body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_combine_mode(p_param, p_mode);
+}
+
+Physics2DServer::CombineMode Physics2DServerSW::body_get_combine_mode(RID p_body, BodyParameter p_param) const {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, COMBINE_MODE_INHERIT);
+
+	return body->get_combine_mode(p_param);
+}
+
 void Physics2DServerSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
 
 	Body2DSW *body = body_owner.get(p_body);
@@ -838,6 +854,21 @@ real_t Physics2DServerSW::body_get_applied_torque(RID p_body) const {
 	return body->get_applied_torque();
 };
 
+void Physics2DServerSW::body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) {
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_central_impulse(p_impulse);
+	body->wakeup();
+}
+
+void Physics2DServerSW::body_apply_torque_impulse(RID p_body, real_t p_torque) {
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_torque_impulse(p_torque);
+}
+
 void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2 &p_pos, const Vector2 &p_impulse) {
 
 	Body2DSW *body = body_owner.get(p_body);
@@ -847,12 +878,28 @@ void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2 &p_pos, con
 	body->wakeup();
 };
 
+void Physics2DServerSW::body_add_central_force(RID p_body, const Vector2 &p_force) {
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_central_force(p_force);
+	body->wakeup();
+};
+
 void Physics2DServerSW::body_add_force(RID p_body, const Vector2 &p_offset, const Vector2 &p_force) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->add_force(p_force, p_offset);
+	body->add_force(p_offset, p_force);
+	body->wakeup();
+};
+
+void Physics2DServerSW::body_add_torque(RID p_body, real_t p_torque) {
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_torque(p_torque);
 	body->wakeup();
 };
 

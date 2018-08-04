@@ -645,19 +645,15 @@ void Spatial::scale_object_local(const Vector3 &p_scale) {
 
 void Spatial::global_rotate(const Vector3 &p_axis, float p_angle) {
 
-	Basis rotation(p_axis, p_angle);
 	Transform t = get_global_transform();
-	t.basis = rotation * t.basis;
+	t.basis.rotate(p_axis, p_angle);
 	set_global_transform(t);
 }
 
 void Spatial::global_scale(const Vector3 &p_scale) {
 
-	Basis s;
-	s.set_scale(p_scale);
-
 	Transform t = get_global_transform();
-	t.basis = s * t.basis;
+	t.basis.scale(p_scale);
 	set_global_transform(t);
 }
 

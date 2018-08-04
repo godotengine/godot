@@ -156,6 +156,7 @@
 #include "scene/resources/sky_box.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/text_file.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
@@ -199,10 +200,12 @@
 #include "scene/3d/remote_transform.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/skeleton.h"
+#include "scene/3d/soft_body.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/physics_material.h"
 #endif
 
 static ResourceFormatLoaderTheme *resource_loader_theme = NULL;
@@ -312,21 +315,19 @@ void register_scene_types() {
 	ClassDB::register_class<CenterContainer>();
 	ClassDB::register_class<ScrollContainer>();
 	ClassDB::register_class<PanelContainer>();
-	ClassDB::register_virtual_class<SplitContainer>();
-	ClassDB::register_class<HSplitContainer>();
-	ClassDB::register_class<VSplitContainer>();
-	ClassDB::register_class<GraphNode>();
-	ClassDB::register_class<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<TextureProgress>();
 	ClassDB::register_class<ItemList>();
 
+	ClassDB::register_class<LineEdit>();
+	ClassDB::register_class<VideoPlayer>();
+
 #ifndef ADVANCED_GUI_DISABLED
 
 	ClassDB::register_class<FileDialog>();
-	ClassDB::register_class<LineEdit>();
+
 	ClassDB::register_class<PopupMenu>();
 	ClassDB::register_class<Tree>();
 
@@ -343,9 +344,13 @@ void register_scene_types() {
 	ClassDB::register_class<WindowDialog>();
 	ClassDB::register_class<AcceptDialog>();
 	ClassDB::register_class<ConfirmationDialog>();
-	ClassDB::register_class<VideoPlayer>();
 	ClassDB::register_class<MarginContainer>();
 	ClassDB::register_class<ViewportContainer>();
+	ClassDB::register_virtual_class<SplitContainer>();
+	ClassDB::register_class<HSplitContainer>();
+	ClassDB::register_class<VSplitContainer>();
+	ClassDB::register_class<GraphNode>();
+	ClassDB::register_class<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -425,6 +430,7 @@ void register_scene_types() {
 	ClassDB::register_class<KinematicCollision>();
 	ClassDB::register_class<KinematicBody>();
 	ClassDB::register_class<PhysicalBone>();
+	ClassDB::register_class<SoftBody>();
 
 	ClassDB::register_class<VehicleBody>();
 	ClassDB::register_class<VehicleWheel>();
@@ -588,6 +594,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<SpatialVelocityTracker>();
+
+	ClassDB::register_class<PhysicsMaterial>();
 #endif
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
@@ -609,6 +617,8 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
 	ClassDB::register_class<Curve>();
+
+	ClassDB::register_class<TextFile>();
 
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();

@@ -277,7 +277,7 @@ void GDNative::set_library(Ref<GDNativeLibrary> p_library) {
 	library = p_library;
 }
 
-Ref<GDNativeLibrary> GDNative::get_library() {
+Ref<GDNativeLibrary> GDNative::get_library() const {
 	return library;
 }
 
@@ -373,7 +373,7 @@ bool GDNative::initialize() {
 	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries->has(lib_path)) {
 		Vector<Ref<GDNative> > gdnatives;
 		gdnatives.resize(1);
-		gdnatives[0] = Ref<GDNative>(this);
+		gdnatives.write[0] = Ref<GDNative>(this);
 		GDNativeLibrary::loaded_libraries->insert(lib_path, gdnatives);
 	}
 
@@ -428,7 +428,7 @@ bool GDNative::terminate() {
 	return true;
 }
 
-bool GDNative::is_initialized() {
+bool GDNative::is_initialized() const {
 	return initialized;
 }
 
@@ -442,7 +442,7 @@ Vector<StringName> GDNativeCallRegistry::get_native_call_types() {
 
 	size_t idx = 0;
 	for (Map<StringName, native_call_cb>::Element *E = native_calls.front(); E; E = E->next(), idx++) {
-		call_types[idx] = E->key();
+		call_types.write[idx] = E->key();
 	}
 
 	return call_types;
@@ -474,7 +474,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 	return res;
 }
 
-Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) {
+Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) const {
 
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't get symbol from GDNative object");

@@ -21,6 +21,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_tooltip_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="update_property" qualifiers="virtual">
 			<return type="void">
 			</return>

@@ -750,7 +750,7 @@ void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
 	Vector<String> strings = p_text.split("\n");
 	for (int i = 0; i < strings.size(); i++) {
 
-		strings[i] = strings[i].strip_edges();
+		strings.write[i] = strings[i].strip_edges();
 	}
 
 	List<StringName> anim_names;

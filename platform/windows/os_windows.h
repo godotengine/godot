@@ -35,6 +35,7 @@
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
+#include "drivers/winmidi/win_midi.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "power_windows.h"
@@ -134,6 +135,7 @@ class OS_Windows : public OS {
 
 	PowerWindows *power_manager;
 
+	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
 #endif
@@ -142,6 +144,9 @@ class OS_Windows : public OS {
 #endif
 #ifdef XAUDIO2_ENABLED
 	AudioDriverXAudio2 driver_xaudio2;
+#endif
+#ifdef WINMIDI_ENABLED
+	MIDIDriverWinMidi driver_midi;
 #endif
 
 	CrashHandler crash_handler;
@@ -153,6 +158,8 @@ class OS_Windows : public OS {
 
 	// functions used by main to initialize/deintialize the OS
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 

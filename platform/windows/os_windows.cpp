@@ -1012,6 +1012,10 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
 } SHC_PROCESS_DPI_AWARENESS;
 
+int OS_Windows::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	main_loop = NULL;
@@ -1181,6 +1185,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		RasterizerGLES3::make_current();
 	}
 
+	video_driver_index = p_video_driver; // FIXME TODO - FIX IF DRIVER DETECTION HAPPENS AND GLES2 MUST BE USED
+
 	gl_context->set_use_vsync(video_mode.use_vsync);
 #endif
 
@@ -1212,6 +1218,10 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	power_manager = memnew(PowerWindows);
 
 	AudioDriverManager::initialize(p_audio_driver);
+
+#ifdef WINMIDI_ENABLED
+	driver_midi.open();
+#endif
 
 	TRACKMOUSEEVENT tme;
 	tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -1340,6 +1350,10 @@ void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
 }
 
 void OS_Windows::finalize() {
+
+#ifdef WINMIDI_ENABLED
+	driver_midi.close();
+#endif
 
 	if (main_loop)
 		memdelete(main_loop);
@@ -2285,7 +2299,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	Vector<CharType> modstr; //windows wants to change this no idea why
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++)
-		modstr[i] = cmdline[i];
+		modstr.write[i] = cmdline[i];
 	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, NORMAL_PRIORITY_CLASS, NULL, NULL, si_w, &pi.pi);
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
@@ -2356,7 +2370,7 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 	int icon_len = 40 + h * w * 4;
 	Vector<BYTE> v;
 	v.resize(icon_len);
-	BYTE *icon_bmp = &v[0];
+	BYTE *icon_bmp = v.ptrw();
 
 	encode_uint32(40, &icon_bmp[0]);
 	encode_uint32(w, &icon_bmp[4]);

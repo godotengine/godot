@@ -8,6 +8,8 @@ import os.path
 import glob
 import sys
 import methods
+import gles_builders
+from platform_methods import run_in_subprocess
 
 # scan possible build platforms
 
@@ -145,6 +147,7 @@ opts.Add(EnumVariable('bits', "Target platform bits", 'default', ('default', '32
 opts.Add('p', "Platform (alias for 'platform')", '')
 opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
+opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
 
@@ -408,6 +411,11 @@ if selected_platform in platform_list:
 
     env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+    # (SH)LIBSUFFIX will be used for our own built libraries
+    # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
+    # so we need to append the default suffixes to keep the ability
+    # to link against thirdparty libraries (.a, .so, .dll, etc.).
+    env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
@@ -416,11 +424,19 @@ if selected_platform in platform_list:
     if env['tools']:
         env.Append(CPPDEFINES=['TOOLS_ENABLED'])
     if env['disable_3d']:
-        env.Append(CPPDEFINES=['_3D_DISABLED'])
+        if env['tools']:
+            print("Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
+            sys.exit(255)
+        else:
+            env.Append(CPPDEFINES=['_3D_DISABLED'])
     if env['gdscript']:
         env.Append(CPPDEFINES=['GDSCRIPT_ENABLED'])
     if env['disable_advanced_gui']:
-        env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
+        if env['tools']:
+            print("Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
+            sys.exit(255)
+        else:
+            env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
     if env['xml']:
@@ -430,8 +446,8 @@ if selected_platform in platform_list:
         methods.no_verbose(sys, env)
 
     if (not env["platform"] == "server"): # FIXME: detect GLES3
-        env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.gen.h', src_suffix = '.glsl') } )
-        env.Append( BUILDERS = { 'GLES2_GLSL' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.gen.h', src_suffix = '.glsl') } )
+        env.Append(BUILDERS = { 'GLES3_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_gles3_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
+        env.Append(BUILDERS = { 'GLES2_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_gles2_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:

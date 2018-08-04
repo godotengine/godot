@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "mobile_interface.h"
+#include "mobile_vr_interface.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "servers/visual/visual_server_global.h"
@@ -279,7 +279,7 @@ bool MobileVRInterface::is_stereo() {
 	return true;
 };
 
-bool MobileVRInterface::is_initialized() {
+bool MobileVRInterface::is_initialized() const {
 	return (initialized);
 };
 

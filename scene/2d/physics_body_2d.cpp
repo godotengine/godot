@@ -30,6 +30,7 @@
 
 #include "physics_body_2d.h"
 
+#include "core/core_string_names.h"
 #include "core/method_bind_ext.gen.inc"
 #include "engine.h"
 #include "math_funcs.h"
@@ -186,28 +187,75 @@ real_t StaticBody2D::get_constant_angular_velocity() const {
 	return constant_angular_velocity;
 }
 
+#ifndef DISABLE_DEPRECATED
 void StaticBody2D::set_friction(real_t p_friction) {
+
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
-	friction = p_friction;
-	Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, friction);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_friction(p_friction);
+	_reload_physics_characteristics();
 }
+
 real_t StaticBody2D::get_friction() const {
 
-	return friction;
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
+	if (physics_material_override.is_null()) {
+		return 1;
+	}
+
+	return physics_material_override->get_friction();
 }
 
 void StaticBody2D::set_bounce(real_t p_bounce) {
 
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
-	bounce = p_bounce;
-	Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, bounce);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_bounce(p_bounce);
+	_reload_physics_characteristics();
 }
+
 real_t StaticBody2D::get_bounce() const {
 
-	return bounce;
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
+	if (physics_material_override.is_null()) {
+		return 0;
+	}
+
+	return physics_material_override->get_bounce();
+}
+#endif // DISABLE_DEPRECATED
+
+void StaticBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+	if (physics_material_override.is_valid()) {
+		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+
+	physics_material_override = p_physics_material_override;
+
+	if (physics_material_override.is_valid()) {
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+	_reload_physics_characteristics();
+}
+
+Ref<PhysicsMaterial> StaticBody2D::get_physics_material_override() const {
+	return physics_material_override;
 }
 
 void StaticBody2D::_bind_methods() {
@@ -216,27 +264,50 @@ void StaticBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_constant_angular_velocity", "vel"), &StaticBody2D::set_constant_angular_velocity);
 	ClassDB::bind_method(D_METHOD("get_constant_linear_velocity"), &StaticBody2D::get_constant_linear_velocity);
 	ClassDB::bind_method(D_METHOD("get_constant_angular_velocity"), &StaticBody2D::get_constant_angular_velocity);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &StaticBody2D::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &StaticBody2D::get_friction);
 
 	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &StaticBody2D::set_bounce);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &StaticBody2D::get_bounce);
+#endif // DISABLE_DEPRECATED
+
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &StaticBody2D::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &StaticBody2D::get_physics_material_override);
+
+	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &StaticBody2D::_reload_physics_characteristics);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "constant_linear_velocity"), "set_constant_linear_velocity", "get_constant_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "constant_angular_velocity"), "set_constant_angular_velocity", "get_constant_angular_velocity");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
+#endif // DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 }
 
 StaticBody2D::StaticBody2D() :
 		PhysicsBody2D(Physics2DServer::BODY_MODE_STATIC) {
 
 	constant_angular_velocity = 0;
-	bounce = 0;
-	friction = 1;
 }
 
 StaticBody2D::~StaticBody2D() {
+}
+
+void StaticBody2D::_reload_physics_characteristics() {
+	if (physics_material_override.is_null()) {
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, 0);
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, 1);
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, Physics2DServer::COMBINE_MODE_INHERIT);
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, Physics2DServer::COMBINE_MODE_INHERIT);
+	} else {
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce());
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, physics_material_override->get_friction());
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, (Physics2DServer::CombineMode)physics_material_override->get_bounce_combine_mode());
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, (Physics2DServer::CombineMode)physics_material_override->get_friction_combine_mode());
+	}
 }
 
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
@@ -545,28 +616,72 @@ real_t RigidBody2D::get_weight() const {
 	return mass * real_t(GLOBAL_DEF("physics/2d/default_gravity", 98)) / 10;
 }
 
+#ifndef DISABLE_DEPRECATED
 void RigidBody2D::set_friction(real_t p_friction) {
 
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
-	friction = p_friction;
-	Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, friction);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_friction(p_friction);
+	_reload_physics_characteristics();
 }
 real_t RigidBody2D::get_friction() const {
 
-	return friction;
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
+	if (physics_material_override.is_null()) {
+		return 1;
+	}
+
+	return physics_material_override->get_friction();
 }
 
 void RigidBody2D::set_bounce(real_t p_bounce) {
 
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
-	bounce = p_bounce;
-	Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, bounce);
+	if (physics_material_override.is_null()) {
+		physics_material_override.instance();
+	}
+	physics_material_override->set_bounce(p_bounce);
+	_reload_physics_characteristics();
 }
 real_t RigidBody2D::get_bounce() const {
 
-	return bounce;
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physical material")
+	WARN_DEPRECATED
+
+	if (physics_material_override.is_null()) {
+		return 0;
+	}
+
+	return physics_material_override->get_bounce();
+}
+#endif // DISABLE_DEPRECATED
+
+void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
+	if (physics_material_override.is_valid()) {
+		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+
+	physics_material_override = p_physics_material_override;
+
+	if (physics_material_override.is_valid()) {
+		physics_material_override->connect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+	}
+	_reload_physics_characteristics();
+}
+
+Ref<PhysicsMaterial> RigidBody2D::get_physics_material_override() const {
+	return physics_material_override;
 }
 
 void RigidBody2D::set_gravity_scale(real_t p_gravity_scale) {
@@ -690,9 +805,17 @@ int RigidBody2D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+void RigidBody2D::apply_central_impulse(const Vector2 &p_impulse) {
+	Physics2DServer::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
+}
+
 void RigidBody2D::apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse) {
 
 	Physics2DServer::get_singleton()->body_apply_impulse(get_rid(), p_offset, p_impulse);
+}
+
+void RigidBody2D::apply_torque_impulse(float p_torque) {
+	Physics2DServer::get_singleton()->body_apply_torque_impulse(get_rid(), p_torque);
 }
 
 void RigidBody2D::set_applied_force(const Vector2 &p_force) {
@@ -715,9 +838,17 @@ float RigidBody2D::get_applied_torque() const {
 	return Physics2DServer::get_singleton()->body_get_applied_torque(get_rid());
 };
 
+void RigidBody2D::add_central_force(const Vector2 &p_force) {
+	Physics2DServer::get_singleton()->body_add_central_force(get_rid(), p_force);
+}
+
 void RigidBody2D::add_force(const Vector2 &p_offset, const Vector2 &p_force) {
 
 	Physics2DServer::get_singleton()->body_add_force(get_rid(), p_offset, p_force);
+}
+
+void RigidBody2D::add_torque(const float p_torque) {
+	Physics2DServer::get_singleton()->body_add_torque(get_rid(), p_torque);
 }
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
@@ -837,11 +968,18 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_weight", "weight"), &RigidBody2D::set_weight);
 	ClassDB::bind_method(D_METHOD("get_weight"), &RigidBody2D::get_weight);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &RigidBody2D::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &RigidBody2D::get_friction);
 
 	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &RigidBody2D::set_bounce);
 	ClassDB::bind_method(D_METHOD("get_bounce"), &RigidBody2D::get_bounce);
+#endif // DISABLE_DEPRECATED
+
+	ClassDB::bind_method(D_METHOD("set_physics_material_override", "physics_material_override"), &RigidBody2D::set_physics_material_override);
+	ClassDB::bind_method(D_METHOD("get_physics_material_override"), &RigidBody2D::get_physics_material_override);
+
+	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &RigidBody2D::_reload_physics_characteristics);
 
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &RigidBody2D::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &RigidBody2D::get_gravity_scale);
@@ -871,7 +1009,9 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_continuous_collision_detection_mode"), &RigidBody2D::get_continuous_collision_detection_mode);
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody2D::set_axis_velocity);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody2D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "offset", "impulse"), &RigidBody2D::apply_impulse);
+	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "torque"), &RigidBody2D::apply_torque_impulse);
 
 	ClassDB::bind_method(D_METHOD("set_applied_force", "force"), &RigidBody2D::set_applied_force);
 	ClassDB::bind_method(D_METHOD("get_applied_force"), &RigidBody2D::get_applied_force);
@@ -879,7 +1019,9 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_applied_torque", "torque"), &RigidBody2D::set_applied_torque);
 	ClassDB::bind_method(D_METHOD("get_applied_torque"), &RigidBody2D::get_applied_torque);
 
+	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidBody2D::add_central_force);
 	ClassDB::bind_method(D_METHOD("add_force", "offset", "force"), &RigidBody2D::add_force);
+	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidBody2D::add_torque);
 
 	ClassDB::bind_method(D_METHOD("set_sleeping", "sleeping"), &RigidBody2D::set_sleeping);
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &RigidBody2D::is_sleeping);
@@ -901,8 +1043,11 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "inertia", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", 0), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "weight", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01", PROPERTY_USAGE_EDITOR), "set_weight", "get_weight");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_bounce", "get_bounce");
+#endif // DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_integrator"), "set_use_custom_integrator", "is_using_custom_integrator");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "continuous_cd", PROPERTY_HINT_ENUM, "Disabled,Cast Ray,Cast Shape"), "set_continuous_collision_detection_mode", "get_continuous_collision_detection_mode");
@@ -941,9 +1086,7 @@ RigidBody2D::RigidBody2D() :
 
 	mode = MODE_RIGID;
 
-	bounce = 0;
 	mass = 1;
-	friction = 1;
 
 	gravity_scale = 1;
 	linear_damp = -1;
@@ -967,6 +1110,20 @@ RigidBody2D::~RigidBody2D() {
 
 	if (contact_monitor)
 		memdelete(contact_monitor);
+}
+
+void RigidBody2D::_reload_physics_characteristics() {
+	if (physics_material_override.is_null()) {
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, 0);
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, 1);
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, Physics2DServer::COMBINE_MODE_INHERIT);
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, Physics2DServer::COMBINE_MODE_INHERIT);
+	} else {
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce());
+		Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, physics_material_override->get_friction());
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_BOUNCE, (Physics2DServer::CombineMode)physics_material_override->get_bounce_combine_mode());
+		Physics2DServer::get_singleton()->body_set_combine_mode(get_rid(), Physics2DServer::BODY_PARAM_FRICTION, (Physics2DServer::CombineMode)physics_material_override->get_friction_combine_mode());
+	}
 }
 
 //////////////////////////
@@ -1225,11 +1382,11 @@ Ref<KinematicCollision2D> KinematicBody2D::_get_slide_collision(int p_bounce) {
 	}
 
 	if (slide_colliders[p_bounce].is_null()) {
-		slide_colliders[p_bounce].instance();
-		slide_colliders[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce].instance();
+		slide_colliders.write[p_bounce]->owner = this;
 	}
 
-	slide_colliders[p_bounce]->collision = colliders[p_bounce];
+	slide_colliders.write[p_bounce]->collision = colliders[p_bounce];
 	return slide_colliders[p_bounce];
 }
 
@@ -1327,7 +1484,7 @@ KinematicBody2D::~KinematicBody2D() {
 
 	for (int i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
-			slide_colliders[i]->owner = NULL;
+			slide_colliders.write[i]->owner = NULL;
 		}
 	}
 }

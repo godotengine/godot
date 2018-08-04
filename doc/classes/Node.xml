@@ -733,6 +733,14 @@
 				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
 			</description>
 		</method>
+		<method name="set_process_priority">
+			<return type="void">
+			</return>
+			<argument index="0" name="priority" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_process_unhandled_input">
 			<return type="void">
 			</return>

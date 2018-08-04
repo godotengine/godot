@@ -1,4 +1,9 @@
 using System;
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
 
 // TODO: Add comments describing what this class does. It is not obvious. 
 
@@ -16,22 +21,22 @@ namespace Godot
             return NativeCalls.godot_icall_Godot_convert(what, type);
         }
 
-        public static float Db2Linear(float db)
+        public static real_t Db2Linear(real_t db)
         {
-            return (float)Math.Exp(db * 0.11512925464970228420089957273422);
+            return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
 
-        public static float Dectime(float value, float amount, float step)
+        public static real_t DecTime(real_t value, real_t amount, real_t step)
         {
-            float sgn = value < 0 ? -1.0f : 1.0f;
-            float val = Mathf.Abs(value);
+            real_t sgn = Mathf.Sign(value);
+            real_t val = Mathf.Abs(value);
             val -= amount * step;
-            if (val < 0.0f)
-                val = 0.0f;
+            if (val < 0)
+                val = 0;
             return val * sgn;
         }
 
-        public static FuncRef Funcref(Object instance, string funcname)
+        public static FuncRef FuncRef(Object instance, string funcname)
         {
             var ret = new FuncRef();
             ret.SetInstance(instance);
@@ -49,9 +54,9 @@ namespace Godot
             return NativeCalls.godot_icall_Godot_instance_from_id(instanceId);
         }
 
-        public static double Linear2Db(double linear)
+        public static real_t Linear2Db(real_t linear)
         {
-            return Math.Log(linear) * 8.6858896380650365530225783783321;
+            return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
         }
 
         public static Resource Load(string path)
@@ -69,22 +74,22 @@ namespace Godot
             Print(System.Environment.StackTrace);
         }
 
-        public static void Printerr(params object[] what)
+        public static void PrintErr(params object[] what)
         {
             NativeCalls.godot_icall_Godot_printerr(what);
         }
 
-        public static void Printraw(params object[] what)
+        public static void PrintRaw(params object[] what)
         {
             NativeCalls.godot_icall_Godot_printraw(what);
         }
 
-        public static void Prints(params object[] what)
+        public static void PrintS(params object[] what)
         {
             NativeCalls.godot_icall_Godot_prints(what);
         }
 
-        public static void Printt(params object[] what)
+        public static void PrintT(params object[] what)
         {
             NativeCalls.godot_icall_Godot_printt(what);
         }
@@ -183,7 +188,7 @@ namespace Godot
             return NativeCalls.godot_icall_Godot_var2str(var);
         }
 
-        public static WeakRef Weakref(Object obj)
+        public static WeakRef WeakRef(Object obj)
         {
             return NativeCalls.godot_icall_Godot_weakref(Object.GetPtr(obj));
         }

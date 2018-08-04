@@ -576,7 +576,7 @@ void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_sha
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
-	tile_map[p_id].shapes_data[p_shape_id].shape = p_shape;
+	tile_map[p_id].shapes_data.write[p_shape_id].shape = p_shape;
 	emit_changed();
 }
 
@@ -594,7 +594,7 @@ void TileSet::tile_set_shape_transform(int p_id, int p_shape_id, const Transform
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
-	tile_map[p_id].shapes_data[p_shape_id].shape_transform = p_offset;
+	tile_map[p_id].shapes_data.write[p_shape_id].shape_transform = p_offset;
 	emit_changed();
 }
 
@@ -622,7 +622,7 @@ void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
-	tile_map[p_id].shapes_data[p_shape_id].one_way_collision = p_one_way;
+	tile_map[p_id].shapes_data.write[p_shape_id].one_way_collision = p_one_way;
 	emit_changed();
 }
 
@@ -923,6 +923,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_normal_map", "id"), &TileSet::tile_get_normal_map);
 	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material"), &TileSet::tile_set_material);
 	ClassDB::bind_method(D_METHOD("tile_get_material", "id"), &TileSet::tile_get_material);
+	ClassDB::bind_method(D_METHOD("tile_set_modulate", "id", "color"), &TileSet::tile_set_modulate);
+	ClassDB::bind_method(D_METHOD("tile_get_modulate", "id"), &TileSet::tile_get_modulate);
 	ClassDB::bind_method(D_METHOD("tile_set_texture_offset", "id", "texture_offset"), &TileSet::tile_set_texture_offset);
 	ClassDB::bind_method(D_METHOD("tile_get_texture_offset", "id"), &TileSet::tile_get_texture_offset);
 	ClassDB::bind_method(D_METHOD("tile_set_region", "id", "region"), &TileSet::tile_set_region);

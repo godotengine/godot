@@ -139,8 +139,13 @@ def configure(env):
     ## Build type
 
     if (env["target"].startswith("release")):
-        env.Append(LINKFLAGS=['-O2'])
-        env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Append(LINKFLAGS=['-O2'])
+            env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+        else: #optimize for size
+            env.Append(CPPFLAGS=['-Os', '-DNDEBUG'])
+            env.Append(LINKFLAGS=['-Os'])
+
         if (can_vectorize):
             env.Append(CPPFLAGS=['-ftree-vectorize'])
         if (env["target"] == "release_debug"):

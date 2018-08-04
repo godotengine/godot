@@ -771,7 +771,7 @@ void VisualScript::custom_signal_set_argument_type(const StringName &p_func, int
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func][p_argidx].type = p_type;
+	custom_signals[p_func].write[p_argidx].type = p_type;
 }
 Variant::Type VisualScript::custom_signal_get_argument_type(const StringName &p_func, int p_argidx) const {
 
@@ -783,7 +783,7 @@ void VisualScript::custom_signal_set_argument_name(const StringName &p_func, int
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
-	custom_signals[p_func][p_argidx].name = p_name;
+	custom_signals[p_func].write[p_argidx].name = p_name;
 }
 String VisualScript::custom_signal_get_argument_name(const StringName &p_func, int p_argidx) const {
 
@@ -811,7 +811,7 @@ void VisualScript::custom_signal_swap_argument(const StringName &p_func, int p_a
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
 	ERR_FAIL_INDEX(p_with_argidx, custom_signals[p_func].size());
 
-	SWAP(custom_signals[p_func][p_argidx], custom_signals[p_func][p_with_argidx]);
+	SWAP(custom_signals[p_func].write[p_argidx], custom_signals[p_func].write[p_with_argidx]);
 }
 void VisualScript::remove_custom_signal(const StringName &p_name) {
 
@@ -1331,6 +1331,19 @@ void VisualScript::_bind_methods() {
 VisualScript::VisualScript() {
 
 	base_type = "Object";
+}
+
+Set<int> VisualScript::get_output_sequence_ports_connected(const String &edited_func, int from_node) {
+	List<VisualScript::SequenceConnection> *sc = memnew(List<VisualScript::SequenceConnection>);
+	get_sequence_connection_list(edited_func, sc);
+	Set<int> connected;
+	for (List<VisualScript::SequenceConnection>::Element *E = sc->front(); E; E = E->next()) {
+		if (E->get().from_node == from_node) {
+			connected.insert(E->get().from_output);
+		}
+	}
+	memdelete(sc);
+	return connected;
 }
 
 VisualScript::~VisualScript() {
@@ -2402,7 +2415,7 @@ void VisualScriptLanguage::make_template(const String &p_class_name, const Strin
 	script->set_instance_base_type(p_base_class_name);
 }
 
-bool VisualScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
+bool VisualScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, Set<int> *r_safe_lines) const {
 
 	return false;
 }

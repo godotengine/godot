@@ -17,18 +17,19 @@
 # razah <icnikerazah@gmail.com>, 2017-2018.
 # stnmycri <satenmeycri@gmail.com>, 2017-2018.
 # Yavuz Günay <yavuzgunay@gmail.com>, 2017.
+# Onur Sanır <onursanir@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-10 09:46+0000\n"
-"Last-Translator: Aykut YILDIRIM <aykutyildirim@windowslive.com>\n"
+"PO-Revision-Date: 2018-07-07 20:42+0000\n"
+"Last-Translator: Onur Sanır <onursanir@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0.1-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5696,9 +5697,8 @@ msgid "Options"
 msgstr "Seçenekler"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Bir Çok,Seçenek,Var!"
+msgstr "Birçok,Seçenek,Var"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -7437,6 +7437,11 @@ msgstr "Projeyi İnşa et"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "Uyarılar"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Dosyaları Görüntüle"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

@@ -136,6 +136,14 @@
 				Return the material of the tile.
 			</description>
 		</method>
+		<method name="tile_get_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="tile_get_name" qualifiers="const">
 			<return type="String">
 			</return>
@@ -290,6 +298,16 @@
 			</argument>
 			<description>
 				Set the material of the tile.
+			</description>
+		</method>
+		<method name="tile_set_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="tile_set_name">

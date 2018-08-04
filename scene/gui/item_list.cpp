@@ -72,7 +72,7 @@ void ItemList::set_item_text(int p_idx, const String &p_text) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].text = p_text;
+	items.write[p_idx].text = p_text;
 	update();
 	shape_changed = true;
 }
@@ -85,7 +85,7 @@ String ItemList::get_item_text(int p_idx) const {
 
 void ItemList::set_item_tooltip_enabled(int p_idx, const bool p_enabled) {
 	ERR_FAIL_INDEX(p_idx, items.size());
-	items[p_idx].tooltip_enabled = p_enabled;
+	items.write[p_idx].tooltip_enabled = p_enabled;
 }
 
 bool ItemList::is_item_tooltip_enabled(int p_idx) const {
@@ -97,7 +97,7 @@ void ItemList::set_item_tooltip(int p_idx, const String &p_tooltip) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].tooltip = p_tooltip;
+	items.write[p_idx].tooltip = p_tooltip;
 	update();
 	shape_changed = true;
 }
@@ -112,7 +112,7 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].icon = p_icon;
+	items.write[p_idx].icon = p_icon;
 	update();
 	shape_changed = true;
 }
@@ -128,7 +128,7 @@ void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].icon_region = p_region;
+	items.write[p_idx].icon_region = p_region;
 	update();
 	shape_changed = true;
 }
@@ -144,7 +144,7 @@ void ItemList::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].icon_modulate = p_modulate;
+	items.write[p_idx].icon_modulate = p_modulate;
 	update();
 }
 
@@ -159,7 +159,7 @@ void ItemList::set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_colo
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].custom_bg = p_custom_bg_color;
+	items.write[p_idx].custom_bg = p_custom_bg_color;
 }
 
 Color ItemList::get_item_custom_bg_color(int p_idx) const {
@@ -173,7 +173,7 @@ void ItemList::set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_colo
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].custom_fg = p_custom_fg_color;
+	items.write[p_idx].custom_fg = p_custom_fg_color;
 }
 
 Color ItemList::get_item_custom_fg_color(int p_idx) const {
@@ -187,7 +187,7 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].tag_icon = p_tag_icon;
+	items.write[p_idx].tag_icon = p_tag_icon;
 	update();
 	shape_changed = true;
 }
@@ -202,7 +202,7 @@ void ItemList::set_item_selectable(int p_idx, bool p_selectable) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].selectable = p_selectable;
+	items.write[p_idx].selectable = p_selectable;
 }
 
 bool ItemList::is_item_selectable(int p_idx) const {
@@ -215,7 +215,7 @@ void ItemList::set_item_disabled(int p_idx, bool p_disabled) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].disabled = p_disabled;
+	items.write[p_idx].disabled = p_disabled;
 	update();
 }
 
@@ -229,7 +229,7 @@ void ItemList::set_item_metadata(int p_idx, const Variant &p_metadata) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
-	items[p_idx].metadata = p_metadata;
+	items.write[p_idx].metadata = p_metadata;
 	update();
 	shape_changed = true;
 }
@@ -250,7 +250,7 @@ void ItemList::select(int p_idx, bool p_single) {
 		}
 
 		for (int i = 0; i < items.size(); i++) {
-			items[i].selected = p_idx == i;
+			items.write[i].selected = p_idx == i;
 		}
 
 		current = p_idx;
@@ -258,7 +258,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	} else {
 
 		if (items[p_idx].selectable && !items[p_idx].disabled) {
-			items[p_idx].selected = true;
+			items.write[p_idx].selected = true;
 		}
 	}
 	update();
@@ -268,10 +268,10 @@ void ItemList::unselect(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (select_mode != SELECT_MULTI) {
-		items[p_idx].selected = false;
+		items.write[p_idx].selected = false;
 		current = -1;
 	} else {
-		items[p_idx].selected = false;
+		items.write[p_idx].selected = false;
 	}
 	update();
 }
@@ -283,7 +283,7 @@ void ItemList::unselect_all() {
 
 	for (int i = 0; i < items.size(); i++) {
 
-		items[i].selected = false;
+		items.write[i].selected = false;
 	}
 	current = -1;
 	update();
@@ -869,8 +869,8 @@ void ItemList::_notification(int p_what) {
 				// elements need to adapt to the selected size
 				minsize.y += vseparation;
 				minsize.x += hseparation;
-				items[i].rect_cache.size = minsize;
-				items[i].min_rect_cache.size = minsize;
+				items.write[i].rect_cache.size = minsize;
+				items.write[i].min_rect_cache.size = minsize;
 			}
 
 			int fit_size = size.x - bg->get_minimum_size().width - mw;
@@ -897,8 +897,8 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (same_column_width)
-						items[i].rect_cache.size.x = max_column_width;
-					items[i].rect_cache.position = ofs;
+						items.write[i].rect_cache.size.x = max_column_width;
+					items.write[i].rect_cache.position = ofs;
 					max_h = MAX(max_h, items[i].rect_cache.size.y);
 					ofs.x += items[i].rect_cache.size.x + hseparation;
 					col++;
@@ -908,7 +908,7 @@ void ItemList::_notification(int p_what) {
 							separators.push_back(ofs.y + max_h + vseparation / 2);
 
 						for (int j = i; j >= 0 && col > 0; j--, col--) {
-							items[j].rect_cache.size.y = max_h;
+							items.write[j].rect_cache.size.y = max_h;
 						}
 
 						ofs.x = 0;
@@ -919,7 +919,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				for (int j = items.size() - 1; j >= 0 && col > 0; j--, col--) {
-					items[j].rect_cache.size.y = max_h;
+					items.write[j].rect_cache.size.y = max_h;
 				}
 
 				if (all_fit) {
@@ -1103,8 +1103,8 @@ void ItemList::_notification(int p_what) {
 
 						int cs = j < ss ? font->get_char_size(items[i].text[j], items[i].text[j + 1]).x : 0;
 						if (ofs + cs > max_len || j == ss) {
-							line_limit_cache[line] = j;
-							line_size_cache[line] = ofs;
+							line_limit_cache.write[line] = j;
+							line_size_cache.write[line] = ofs;
 							line++;
 							ofs = 0;
 							if (line >= max_text_lines)

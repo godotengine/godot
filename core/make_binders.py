@@ -1,6 +1,5 @@
 # -*- coding: ibm850 -*-
 
-
 template_typed = """
 #ifdef TYPED_METHOD_BIND
 template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
@@ -265,8 +264,13 @@ def run(target, source, env):
         else:
             text += t
 
-    with open(target[0].path, "w") as f:
+    with open(target[0], "w") as f:
         f.write(text)
 
-    with open(target[1].path, "w") as f:
+    with open(target[1], "w") as f:
         f.write(text_ext)
+
+
+if __name__ == '__main__':
+    from platform_methods import subprocess_main
+    subprocess_main(globals())

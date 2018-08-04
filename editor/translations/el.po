@@ -2,13 +2,11 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # George Tsiamasiotis <gtsiam@windowslive.com>, 2017-2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-05-20 09:37+0000\n"
+"PO-Revision-Date: 2018-07-21 22:38+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -16,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1135,7 +1133,7 @@ msgstr "Εμφάνιση στη διαχείριση αρχείων"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "Νέος φάκελος"
+msgstr "Νέος φάκελος..."
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -2698,7 +2696,7 @@ msgstr "Μετονομασία..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr "Μετακίνηση σε"
+msgstr "Μετακίνηση σε..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
@@ -2710,15 +2708,15 @@ msgstr "Στιγμιότυπο"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Επεξεργασία εξαρτήσεων"
+msgstr "Επεξεργασία εξαρτήσεων..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr "Προβολή ιδιοκτητών"
+msgstr "Προβολή ιδιοκτητών..."
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
-msgstr "Αναπαραγωγή"
+msgstr "Αναπαραγωγή..."
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -4031,7 +4029,7 @@ msgstr "Δημιουργία περιγράμματος"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "Πλέγμα"
+msgstr "Πλέγμα..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -5712,9 +5710,8 @@ msgid "Options"
 msgstr "Επιλογές"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Has,Many,Options"
-msgstr "Έχει,Πάρα,Πολλές,Επιλογές!"
+msgstr "Έχει,Πολλές,Επιλογές"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6001,9 +5998,8 @@ msgid "Imported Project"
 msgstr "Εισαγμένο έργο"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "Όνομα έργου:"
+msgstr "Άκυρο όνομα έργου."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6207,13 +6203,12 @@ msgid "Mouse Button"
 msgstr "Κουμπί ποντικιού"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'."
 msgstr ""
 "Άκυρο όνομα ενέργειας. Δεν μπορεί να είναι άδειο ή να περιέχει '/', ':', "
-"'=', '\\' ή '\"'"
+"'=', '\\' ή '\"'."
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7473,6 +7468,11 @@ msgstr "Δόμηση έργου"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "Προειδοποιήσεις"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Προβολή αρχείων"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

@@ -88,7 +88,7 @@ Error AudioDriverRtAudio::init() {
 
 	// FIXME: Adapt to the OutputFormat -> SpeakerMode change
 	/*
-	String channels = GLOBAL_DEF("audio/output","stereo");
+	String channels = GLOBAL_DEF_RST("audio/output","stereo");
 
 	if (channels=="5.1")
 		output_format=OUTPUT_5_1;
@@ -108,7 +108,7 @@ Error AudioDriverRtAudio::init() {
 	options.numberOfBuffers = 4;
 
 	parameters.firstChannel = 0;
-	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	unsigned int buffer_frames = closest_power_of_2(latency * mix_rate / 1000);

@@ -124,6 +124,10 @@ void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 	gl_extensions = p_gl_extensions;
 }
 
+int OS_Android::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
@@ -136,9 +140,11 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (use_gl2) {
 		RasterizerGLES2::register_config();
 		RasterizerGLES2::make_current();
+		video_driver_index = VIDEO_DRIVER_GLES2;
 	} else {
 		RasterizerGLES3::register_config();
 		RasterizerGLES3::make_current();
+		video_driver_index = VIDEO_DRIVER_GLES3;
 	}
 
 	visual_server = memnew(VisualServerRaster);
@@ -351,8 +357,8 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {
-				touch[i].id = p_points[i].id;
-				touch[i].pos = p_points[i].pos;
+				touch.write[i].id = p_points[i].id;
+				touch.write[i].pos = p_points[i].pos;
 			}
 
 			//send touch
@@ -393,7 +399,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
 				input->parse_input_event(ev);
-				touch[i].pos = p_points[idx].pos;
+				touch.write[i].pos = p_points[idx].pos;
 			}
 
 		} break;

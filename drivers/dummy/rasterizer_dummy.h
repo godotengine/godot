@@ -289,7 +289,7 @@ public:
 		ERR_FAIL_COND(!m);
 
 		m->surfaces.push_back(DummySurface());
-		DummySurface *s = &m->surfaces[m->surfaces.size() - 1];
+		DummySurface *s = &m->surfaces.write[m->surfaces.size() - 1];
 		s->format = p_format;
 		s->primitive = p_primitive;
 		s->array = p_array;
@@ -777,7 +777,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {}
 
 	void initialize() {}
-	void begin_frame() {}
+	void begin_frame(double frame_step) {}
 	void set_current_render_target(RID p_render_target) {}
 	void restore_render_target() {}
 	void clear_render_target(const Color &p_color) {}

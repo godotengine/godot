@@ -276,7 +276,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 	CharString cs = strnew.utf8();
 	pfile.resize(cs.size() - 1);
 	for (int i = 0; i < cs.size() - 1; i++) {
-		pfile[i] = cs[i];
+		pfile.write[i] = cs[i];
 	}
 }
 
@@ -489,7 +489,7 @@ private:
 		ret.resize(sizeof(num) * 2);
 		for (int i = 0; i < sizeof(num) * 2; ++i) {
 			uint8_t four_bits = (num >> (sizeof(num) * 8 - (i + 1) * 4)) & 0xF;
-			ret[i] = _hex_char(four_bits);
+			ret.write[i] = _hex_char(four_bits);
 		}
 		return String::utf8(ret.ptr(), ret.size());
 	}
@@ -587,7 +587,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(Vector<uint8_t> &p_project_
 	CharString cs = str.utf8();
 	p_project_data.resize(cs.size() - 1);
 	for (int i = 0; i < cs.size() - 1; i++) {
-		p_project_data[i] = cs[i];
+		p_project_data.write[i] = cs[i];
 	}
 }
 
@@ -781,7 +781,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {
+#if defined(OSX_ENABLED) || defined(X11_ENABLED)
 		bool is_execute = false;
+#endif
 
 		//get filename
 		unz_file_info info;
@@ -812,7 +814,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 				continue; //ignore!
 			}
 			found_library = true;
+#if defined(OSX_ENABLED) || defined(X11_ENABLED)
 			is_execute = true;
+#endif
 			file = "godot_ios.a";
 		}
 		if (file == project_file) {
@@ -855,7 +859,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			f->close();
 			memdelete(f);
 
-#ifdef OSX_ENABLED
+#if defined(OSX_ENABLED) || defined(X11_ENABLED)
 			if (is_execute) {
 				// we need execute rights on this file
 				chmod(file.utf8().get_data(), 0755);

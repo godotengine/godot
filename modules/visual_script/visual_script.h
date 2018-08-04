@@ -319,6 +319,7 @@ public:
 	void custom_signal_swap_argument(const StringName &p_func, int p_argidx, int p_with_argidx);
 	void remove_custom_signal(const StringName &p_name);
 	void rename_custom_signal(const StringName &p_name, const StringName &p_new_name);
+	Set<int> get_output_sequence_ports_connected(const String &edited_func, int from_node);
 
 	void get_custom_signal_list(List<StringName> *r_custom_signals) const;
 
@@ -563,7 +564,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, Set<int> *r_safe_lines = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;

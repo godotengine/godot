@@ -1900,6 +1900,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 void EditorHelpBit::_bind_methods() {
 
 	ClassDB::bind_method("_meta_clicked", &EditorHelpBit::_meta_clicked);
+	ClassDB::bind_method(D_METHOD("set_text", "text"), &EditorHelpBit::set_text);
 	ADD_SIGNAL(MethodInfo("request_hide"));
 }
 
@@ -1925,7 +1926,7 @@ EditorHelpBit::EditorHelpBit() {
 
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
-	rich_text->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	//rich_text->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	rich_text->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
 	rich_text->set_override_selected_font_color(false);

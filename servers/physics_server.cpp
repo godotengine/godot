@@ -95,6 +95,7 @@ void PhysicsDirectBodyState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &PhysicsDirectBodyState::add_central_force);
 	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &PhysicsDirectBodyState::add_force);
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &PhysicsDirectBodyState::add_torque);
+	ClassDB::bind_method(D_METHOD("apply_central_impulse", "j"), &PhysicsDirectBodyState::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "position", "j"), &PhysicsDirectBodyState::apply_impulse);
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "j"), &PhysicsDirectBodyState::apply_torque_impulse);
 
@@ -105,6 +106,7 @@ void PhysicsDirectBodyState::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_contact_local_position", "contact_idx"), &PhysicsDirectBodyState::get_contact_local_position);
 	ClassDB::bind_method(D_METHOD("get_contact_local_normal", "contact_idx"), &PhysicsDirectBodyState::get_contact_local_normal);
+	ClassDB::bind_method(D_METHOD("get_contact_impulse", "contact_idx"), &PhysicsDirectBodyState::get_contact_impulse);
 	ClassDB::bind_method(D_METHOD("get_contact_local_shape", "contact_idx"), &PhysicsDirectBodyState::get_contact_local_shape);
 	ClassDB::bind_method(D_METHOD("get_contact_collider", "contact_idx"), &PhysicsDirectBodyState::get_contact_collider);
 	ClassDB::bind_method(D_METHOD("get_contact_collider_position", "contact_idx"), &PhysicsDirectBodyState::get_contact_collider_position);
@@ -191,7 +193,7 @@ Vector<RID> PhysicsShapeQueryParameters::get_exclude() const {
 	ret.resize(exclude.size());
 	int idx = 0;
 	for (Set<RID>::Element *E = exclude.front(); E; E = E->next()) {
-		ret[idx] = E->get();
+		ret.write[idx] = E->get();
 	}
 	return ret;
 }
@@ -400,6 +402,8 @@ void PhysicsShapeQueryResult::_bind_methods() {
 
 void PhysicsServer::_bind_methods() {
 
+#ifndef _3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("shape_create", "type"), &PhysicsServer::shape_create);
 	ClassDB::bind_method(D_METHOD("shape_set_data", "shape", "data"), &PhysicsServer::shape_set_data);
 
@@ -493,6 +497,11 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer::body_get_state);
 
+	ClassDB::bind_method(D_METHOD("body_add_central_force", "body", "force"), &PhysicsServer::body_add_central_force);
+	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer::body_add_force);
+	ClassDB::bind_method(D_METHOD("body_add_torque", "body", "torque"), &PhysicsServer::body_add_torque);
+
+	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &PhysicsServer::body_apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "position", "impulse"), &PhysicsServer::body_apply_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_set_axis_velocity", "body", "axis_velocity"), &PhysicsServer::body_set_axis_velocity);
@@ -737,6 +746,8 @@ void PhysicsServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_AXIS_ANGULAR_X);
 	BIND_ENUM_CONSTANT(BODY_AXIS_ANGULAR_Y);
 	BIND_ENUM_CONSTANT(BODY_AXIS_ANGULAR_Z);
+
+#endif
 }
 
 PhysicsServer::PhysicsServer() {

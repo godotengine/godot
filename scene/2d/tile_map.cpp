@@ -62,7 +62,7 @@ void TileMap::_notification(int p_what) {
 
 			pending_update = true;
 			_recreate_quadrants();
-			_update_dirty_quadrants();
+			update_dirty_quadrants();
 			RID space = get_world_2d()->get_space();
 			_update_quadrant_transform();
 			_update_quadrant_space(space);
@@ -245,7 +245,7 @@ void TileMap::_fix_cell_transform(Transform2D &xform, const Cell &p_cell, const 
 	xform.elements[2].y += offset.y;
 }
 
-void TileMap::_update_dirty_quadrants() {
+void TileMap::update_dirty_quadrants() {
 
 	if (!pending_update)
 		return;
@@ -529,8 +529,8 @@ void TileMap::_update_dirty_quadrants() {
 								{
 									PoolVector<Vector2>::Read vr = navigation_polygon_vertices.read();
 									for (int i = 0; i < vsize; i++) {
-										vertices[i] = vr[i];
-										colors[i] = debug_navigation_color;
+										vertices.write[i] = vr[i];
+										colors.write[i] = debug_navigation_color;
 									}
 								}
 
@@ -721,7 +721,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool updat
 		return;
 
 	if (update) {
-		_update_dirty_quadrants();
+		call_deferred("update_dirty_quadrants");
 	}
 }
 
@@ -1026,7 +1026,7 @@ void TileMap::_recreate_quadrants() {
 		Q->get().cells.insert(E->key());
 		_make_quadrant_dirty(Q, false);
 	}
-	_update_dirty_quadrants();
+	update_dirty_quadrants();
 }
 
 void TileMap::_clear_quadrants() {
@@ -1611,7 +1611,7 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose", "autotile_coord"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("set_cellv", "position", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_celld", "data"), &TileMap::set_celld);
+	ClassDB::bind_method(D_METHOD("set_celld", "position", "data"), &TileMap::set_celld);
 	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
 	ClassDB::bind_method(D_METHOD("get_cellv", "position"), &TileMap::get_cellv);
 	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);
@@ -1630,7 +1630,7 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_clear_quadrants"), &TileMap::_clear_quadrants);
 	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);
-	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"), &TileMap::_update_dirty_quadrants);
+	ClassDB::bind_method(D_METHOD("update_dirty_quadrants"), &TileMap::update_dirty_quadrants);
 
 	ClassDB::bind_method(D_METHOD("update_bitmask_area", "position"), &TileMap::update_bitmask_area);
 	ClassDB::bind_method(D_METHOD("update_bitmask_region", "start", "end"), &TileMap::update_bitmask_region, DEFVAL(Vector2()), DEFVAL(Vector2()));

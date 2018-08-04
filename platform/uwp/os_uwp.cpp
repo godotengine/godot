@@ -77,6 +77,10 @@ Size2 OSUWP::get_window_size() const {
 	return size;
 }
 
+int OSUWP::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 void OSUWP::set_window_size(const Size2 p_size) {
 
 	Windows::Foundation::Size new_size;
@@ -236,6 +240,8 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		RasterizerGLES3::make_current();
 	}
 	gl_context->set_use_vsync(vm.use_vsync);
+
+	video_driver_index = p_video_driver;
 
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering? Or remove?

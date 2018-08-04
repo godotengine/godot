@@ -149,7 +149,10 @@ Ref<Script> NativeScript::get_base_script() const {
 	if (!script_data)
 		return Ref<Script>();
 
-	Ref<NativeScript> ns = Ref<NativeScript>(NSL->create_script());
+	NativeScript *script = (NativeScript *)NSL->create_script();
+	Ref<NativeScript> ns = Ref<NativeScript>(script);
+	ERR_FAIL_COND_V(!ns.is_valid(), Ref<Script>());
+
 	ns->set_class_name(script_data->base);
 	ns->set_library(get_library());
 	return ns;
@@ -553,12 +556,17 @@ bool NativeScriptInstance::set(const StringName &p_name, const Variant &p_value)
 			Variant name = p_name;
 			const Variant *args[2] = { &name, &p_value };
 
-			E->get().method.method((godot_object *)owner,
+			godot_variant result;
+			result = E->get().method.method((godot_object *)owner,
 					E->get().method.method_data,
 					userdata,
 					2,
 					(godot_variant **)args);
-			return true;
+			bool handled = *(Variant *)&result;
+			godot_variant_destroy(&result);
+			if (handled) {
+				return true;
+			}
 		}
 
 		script_data = script_data->base_data;
@@ -593,10 +601,9 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 					(godot_variant **)args);
 			r_ret = *(Variant *)&result;
 			godot_variant_destroy(&result);
-			if (r_ret.get_type() == Variant::NIL) {
-				return false;
+			if (r_ret.get_type() != Variant::NIL) {
+				return true;
 			}
-			return true;
 		}
 
 		script_data = script_data->base_data;
@@ -1053,7 +1060,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	s->set_class_name(p_class_name);
 	return Ref<NativeScript>(s);
 }
-bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
+bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, Set<int> *r_safe_lines) const {
 	return true;
 }
 
@@ -1154,8 +1161,8 @@ int NativeScriptLanguage::register_binding_functions(godot_instance_binding_func
 	}
 
 	// set the functions
-	binding_functions[idx].first = true;
-	binding_functions[idx].second = p_binding_functions;
+	binding_functions.write[idx].first = true;
+	binding_functions.write[idx].second = p_binding_functions;
 
 	return idx;
 }
@@ -1170,7 +1177,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
 	}
 
-	binding_functions[p_idx].first = false;
+	binding_functions.write[p_idx].first = false;
 
 	if (binding_functions[p_idx].second.free_func)
 		binding_functions[p_idx].second.free_func(binding_functions[p_idx].second.data);
@@ -1196,7 +1203,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		binding_data->resize(p_idx + 1);
 
 		for (int i = old_size; i <= p_idx; i++) {
-			(*binding_data)[i] = NULL;
+			(*binding_data).write[i] = NULL;
 		}
 	}
 
@@ -1205,7 +1212,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
 
 		// no binding data yet, soooooo alloc new one \o/
-		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
+		(*binding_data).write[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
 	}
 
 	return (*binding_data)[p_idx];
@@ -1218,7 +1225,7 @@ void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
 	binding_data->resize(binding_functions.size());
 
 	for (int i = 0; i < binding_functions.size(); i++) {
-		(*binding_data)[i] = NULL;
+		(*binding_data).write[i] = NULL;
 	}
 
 	binding_instances.insert(binding_data);

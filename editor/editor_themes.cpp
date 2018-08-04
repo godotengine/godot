@@ -237,8 +237,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	ImageLoaderSVG::set_convert_colors(NULL);
 
 	clock_t end_time = clock();
-
-	double time_d = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
 #else
 	print_line("Sorry no icons for you");
 #endif
@@ -257,7 +255,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	String preset = EDITOR_DEF("interface/theme/preset", "Default");
 
-	int icon_font_color_setting = EDITOR_DEF("interface/theme/icon_and_font_color", 0);
 	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
 	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
 
@@ -1089,6 +1086,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color completion_font_color = font_color;
 	const Color text_color = font_color;
 	const Color line_number_color = dim_color;
+	const Color safe_line_number_color = dim_color * Color(1, 1.2, 1, 1.5);
 	const Color caret_color = mono_color;
 	const Color caret_background_color = mono_color.inverted();
 	const Color text_selected_color = dark_color_3;
@@ -1123,6 +1121,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/completion_font_color", completion_font_color, true);
 		setting->set_initial_value("text_editor/highlighting/text_color", text_color, true);
 		setting->set_initial_value("text_editor/highlighting/line_number_color", line_number_color, true);
+		setting->set_initial_value("text_editor/highlighting/safe_line_number_color", safe_line_number_color, true);
 		setting->set_initial_value("text_editor/highlighting/caret_color", caret_color, true);
 		setting->set_initial_value("text_editor/highlighting/caret_background_color", caret_background_color, true);
 		setting->set_initial_value("text_editor/highlighting/text_selected_color", text_selected_color, true);

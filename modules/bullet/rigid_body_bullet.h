@@ -113,6 +113,7 @@ public:
 	virtual void add_central_force(const Vector3 &p_force);
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
 	virtual void add_torque(const Vector3 &p_torque);
+	virtual void apply_central_impulse(const Vector3 &p_impulse);
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j);
 	virtual void apply_torque_impulse(const Vector3 &p_j);
 
@@ -123,6 +124,7 @@ public:
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const;
+	virtual float get_contact_impulse(int p_contact_idx) const;
 	virtual int get_contact_local_shape(int p_contact_idx) const;
 
 	virtual RID get_contact_collider(int p_contact_idx) const;
@@ -149,6 +151,7 @@ public:
 		Vector3 hitLocalLocation;
 		Vector3 hitWorldLocation;
 		Vector3 hitNormal;
+		float appliedImpulse;
 	};
 
 	struct ForceIntegrationCallback {
@@ -200,6 +203,9 @@ private:
 	bool can_sleep;
 	bool omit_forces_integration;
 
+	PhysicsServer::CombineMode restitution_combine_mode;
+	PhysicsServer::CombineMode friction_combine_mode;
+
 	Vector<CollisionData> collisions;
 	// these parameters are used to avoid vector resize
 	int maxCollisionsDetection;
@@ -248,7 +254,7 @@ public:
 	}
 
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
-	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, int p_other_shape_index, int p_local_shape_index);
+	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
 
 	void assert_no_constraints();
 
@@ -294,6 +300,12 @@ public:
 
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
+
+	void set_combine_mode(const PhysicsServer::BodyParameter p_param, const PhysicsServer::CombineMode p_mode);
+	PhysicsServer::CombineMode get_combine_mode(PhysicsServer::BodyParameter p_param) const;
+
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_restitution_combine_mode() const { return restitution_combine_mode; }
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
 
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeTimeSeek" inherits="AnimationNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="seek_pos" type="float" setter="set_seek_pos" getter="get_seek_pos">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

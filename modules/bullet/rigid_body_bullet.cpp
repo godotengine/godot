@@ -126,6 +126,10 @@ void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
 	body->apply_torque(p_torque);
 }
 
+void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_j) {
+	body->apply_central_impulse(p_j);
+}
+
 void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
 	body->apply_impulse(p_pos, p_j);
 }
@@ -154,6 +158,10 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_local_normal(int p_contact_idx
 	return body->collisions[p_contact_idx].hitNormal;
 }
 
+float BulletPhysicsDirectBodyState::get_contact_impulse(int p_contact_idx) const {
+	return body->collisions[p_contact_idx].appliedImpulse;
+}
+
 int BulletPhysicsDirectBodyState::get_contact_local_shape(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].local_shape;
 }
@@ -175,7 +183,7 @@ int BulletPhysicsDirectBodyState::get_contact_collider_shape(int p_contact_idx) 
 }
 
 Vector3 BulletPhysicsDirectBodyState::get_contact_collider_velocity_at_position(int p_contact_idx) const {
-	RigidBodyBullet::CollisionData &colDat = body->collisions[p_contact_idx];
+	RigidBodyBullet::CollisionData &colDat = body->collisions.write[p_contact_idx];
 
 	btVector3 hitLocation;
 	G_TO_B(colDat.hitLocalLocation, hitLocation);
@@ -220,8 +228,8 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			continue;
 		}
 
-		shapes[i].transform = shape_wrapper->transform;
-		shapes[i].transform.getOrigin() *= owner_scale;
+		shapes.write[i].transform = shape_wrapper->transform;
+		shapes.write[i].transform.getOrigin() *= owner_scale;
 		switch (shape_wrapper->shape->get_type()) {
 			case PhysicsServer::SHAPE_SPHERE:
 			case PhysicsServer::SHAPE_BOX:
@@ -229,11 +237,11 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer::SHAPE_CYLINDER:
 			case PhysicsServer::SHAPE_CONVEX_POLYGON:
 			case PhysicsServer::SHAPE_RAY: {
-				shapes[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
+				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported to be kinematic!");
-				shapes[i].shape = NULL;
+				shapes.write[i].shape = NULL;
 		}
 	}
 }
@@ -241,7 +249,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		if (shapes[i].shape) {
-			bulletdelete(shapes[i].shape);
+			bulletdelete(shapes.write[i].shape);
 		}
 	}
 	shapes.resize(new_size);
@@ -257,6 +265,8 @@ RigidBodyBullet::RigidBodyBullet() :
 		angularDamp(0),
 		can_sleep(true),
 		omit_forces_integration(false),
+		restitution_combine_mode(PhysicsServer::COMBINE_MODE_INHERIT),
+		friction_combine_mode(PhysicsServer::COMBINE_MODE_INHERIT),
 		force_integration_callback(NULL),
 		isTransformChanged(false),
 		previousActiveState(true),
@@ -281,7 +291,7 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	areasWhereIam.resize(maxAreasWhereIam);
 	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
-		areasWhereIam[i] = NULL;
+		areasWhereIam.write[i] = NULL;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
 }
@@ -401,17 +411,18 @@ void RigidBodyBullet::on_collision_checker_start() {
 	collisionsCount = 0;
 }
 
-bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, int p_other_shape_index, int p_local_shape_index) {
+bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index) {
 
 	if (collisionsCount >= maxCollisionsDetection) {
 		return false;
 	}
 
-	CollisionData &cd = collisions[collisionsCount];
+	CollisionData &cd = collisions.write[collisionsCount];
 	cd.hitLocalLocation = p_hitLocalLocation;
 	cd.otherObject = p_otherObject;
 	cd.hitWorldLocation = p_hitWorldLocation;
 	cd.hitNormal = p_hitNormal;
+	cd.appliedImpulse = p_appliedImpulse;
 	cd.other_object_shape = p_other_shape_index;
 	cd.local_shape = p_local_shape_index;
 
@@ -750,6 +761,22 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 	return gVec;
 }
 
+void RigidBodyBullet::set_combine_mode(const PhysicsServer::BodyParameter p_param, const PhysicsServer::CombineMode p_mode) {
+	if (p_param == PhysicsServer::BODY_PARAM_BOUNCE) {
+		restitution_combine_mode = p_mode;
+	} else {
+		friction_combine_mode = p_mode;
+	}
+}
+
+PhysicsServer::CombineMode RigidBodyBullet::get_combine_mode(PhysicsServer::BodyParameter p_param) const {
+	if (p_param == PhysicsServer::BODY_PARAM_BOUNCE) {
+		return restitution_combine_mode;
+	} else {
+		return friction_combine_mode;
+	}
+}
+
 void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {
 	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 		// The kinematic use MotionState class
@@ -795,15 +822,15 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 
 		if (NULL == areasWhereIam[i]) {
 			// This area has the highest priority
-			areasWhereIam[i] = p_area;
+			areasWhereIam.write[i] = p_area;
 			break;
 		} else {
 			if (areasWhereIam[i]->get_spOv_priority() > p_area->get_spOv_priority()) {
 				// The position was found, just shift all elements
 				for (int j = i; j < areaWhereIamCount; ++j) {
-					areasWhereIam[j + 1] = areasWhereIam[j];
+					areasWhereIam.write[j + 1] = areasWhereIam[j];
 				}
-				areasWhereIam[i] = p_area;
+				areasWhereIam.write[i] = p_area;
 				break;
 			}
 		}
@@ -827,7 +854,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 		if (p_area == areasWhereIam[i]) {
 			// The area was fount, just shift down all elements
 			for (int j = i; j < areaWhereIamCount; ++j) {
-				areasWhereIam[j] = areasWhereIam[j + 1];
+				areasWhereIam.write[j] = areasWhereIam[j + 1];
 			}
 			wasTheAreaFound = true;
 			break;
@@ -840,7 +867,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 		}
 
 		--areaWhereIamCount;
-		areasWhereIam[areaWhereIamCount] = NULL; // Even if this is not required, I clear the last element to be safe
+		areasWhereIam.write[areaWhereIamCount] = NULL; // Even if this is not required, I clear the last element to be safe
 		if (PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
 			scratch_space_override_modificator();
 		}

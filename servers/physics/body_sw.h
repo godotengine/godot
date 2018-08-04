@@ -49,6 +49,8 @@ class BodySW : public CollisionObjectSW {
 	real_t mass;
 	real_t bounce;
 	real_t friction;
+	PhysicsServer::CombineMode bounce_combine_mode;
+	PhysicsServer::CombineMode friction_combine_mode;
 
 	real_t linear_damp;
 	real_t angular_damp;
@@ -157,7 +159,7 @@ public:
 	_FORCE_INLINE_ void add_area(AreaSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas[index].refCount += 1;
+			areas.write[index].refCount += 1;
 		} else {
 			areas.ordered_insert(AreaCMP(p_area));
 		}
@@ -166,7 +168,7 @@ public:
 	_FORCE_INLINE_ void remove_area(AreaSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas[index].refCount -= 1;
+			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1)
 				areas.remove(index);
 		}
@@ -216,6 +218,10 @@ public:
 
 	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const { return biased_linear_velocity; }
 	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const { return biased_angular_velocity; }
+
+	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_j) {
+		linear_velocity += p_j * _inv_mass;
+	}
 
 	_FORCE_INLINE_ void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
 
@@ -298,6 +304,12 @@ public:
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
+	void set_combine_mode(PhysicsServer::BodyParameter p_param, PhysicsServer::CombineMode p_mode);
+	PhysicsServer::CombineMode get_combine_mode(PhysicsServer::BodyParameter p_param) const;
+
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_bounce_combine_mode() const { return bounce_combine_mode; }
+	_FORCE_INLINE_ PhysicsServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
+
 	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock);
 	bool is_axis_locked(PhysicsServer::BodyAxis p_axis) const;
 
@@ -344,7 +356,7 @@ void BodySW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_norm
 	if (c_max == 0)
 		return;
 
-	Contact *c = &contacts[0];
+	Contact *c = contacts.ptrw();
 
 	int idx = -1;
 
@@ -413,6 +425,7 @@ public:
 	virtual void add_central_force(const Vector3 &p_force) { body->add_central_force(p_force); }
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) { body->add_force(p_force, p_pos); }
 	virtual void add_torque(const Vector3 &p_torque) { body->add_torque(p_torque); }
+	virtual void apply_central_impulse(const Vector3 &p_j) { body->apply_central_impulse(p_j); }
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) { body->apply_impulse(p_pos, p_j); }
 	virtual void apply_torque_impulse(const Vector3 &p_j) { body->apply_torque_impulse(p_j); }
 
@@ -428,6 +441,9 @@ public:
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector3());
 		return body->contacts[p_contact_idx].local_normal;
+	}
+	virtual float get_contact_impulse(int p_contact_idx) const {
+		return 0.0f; // Only implemented for bullet
 	}
 	virtual int get_contact_local_shape(int p_contact_idx) const {
 		ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);

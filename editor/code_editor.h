@@ -186,6 +186,29 @@ protected:
 	static void _bind_methods();
 
 public:
+	void trim_trailing_whitespace();
+
+	void convert_indent_to_spaces();
+	void convert_indent_to_tabs();
+
+	enum CaseStyle {
+		UPPER,
+		LOWER,
+		CAPITALIZE,
+	};
+	void convert_case(CaseStyle p_case);
+
+	void move_lines_up();
+	void move_lines_down();
+	void delete_lines();
+	void code_lines_down();
+
+	void goto_line(int p_line);
+	void goto_line_selection(int p_line, int p_begin, int p_end);
+
+	Variant get_edit_state();
+	void set_edit_state(const Variant &p_state);
+
 	void update_editor_settings();
 	void set_error(const String &p_error);
 	void update_line_and_column() { _line_col_changed(); }

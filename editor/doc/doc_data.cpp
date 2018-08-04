@@ -58,7 +58,7 @@ void DocData::merge_from(const DocData &p_data) {
 
 		for (int i = 0; i < c.methods.size(); i++) {
 
-			MethodDoc &m = c.methods[i];
+			MethodDoc &m = c.methods.write[i];
 
 			for (int j = 0; j < cf.methods.size(); j++) {
 
@@ -72,13 +72,13 @@ void DocData::merge_from(const DocData &p_data) {
 				Vector<bool> arg_used;
 				arg_used.resize(arg_count);
 				for (int l = 0; l < arg_count; ++l)
-					arg_used[l] = false;
+					arg_used.write[l] = false;
 				// also there is no guarantee that argument ordering will match, so we
 				// have to check one by one so we make sure we have an exact match
 				for (int k = 0; k < arg_count; ++k) {
 					for (int l = 0; l < arg_count; ++l)
 						if (cf.methods[j].arguments[k].type == m.arguments[l].type && !arg_used[l]) {
-							arg_used[l] = true;
+							arg_used.write[l] = true;
 							break;
 						}
 				}
@@ -98,7 +98,7 @@ void DocData::merge_from(const DocData &p_data) {
 
 		for (int i = 0; i < c.signals.size(); i++) {
 
-			MethodDoc &m = c.signals[i];
+			MethodDoc &m = c.signals.write[i];
 
 			for (int j = 0; j < cf.signals.size(); j++) {
 
@@ -113,7 +113,7 @@ void DocData::merge_from(const DocData &p_data) {
 
 		for (int i = 0; i < c.constants.size(); i++) {
 
-			ConstantDoc &m = c.constants[i];
+			ConstantDoc &m = c.constants.write[i];
 
 			for (int j = 0; j < cf.constants.size(); j++) {
 
@@ -128,7 +128,7 @@ void DocData::merge_from(const DocData &p_data) {
 
 		for (int i = 0; i < c.properties.size(); i++) {
 
-			PropertyDoc &p = c.properties[i];
+			PropertyDoc &p = c.properties.write[i];
 
 			for (int j = 0; j < cf.properties.size(); j++) {
 
@@ -146,7 +146,7 @@ void DocData::merge_from(const DocData &p_data) {
 
 		for (int i = 0; i < c.theme_properties.size(); i++) {
 
-			PropertyDoc &p = c.theme_properties[i];
+			PropertyDoc &p = c.theme_properties.write[i];
 
 			for (int j = 0; j < cf.theme_properties.size(); j++) {
 
@@ -1020,7 +1020,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 		for (int i = 0; i < c.methods.size(); i++) {
 
-			MethodDoc &m = c.methods[i];
+			const MethodDoc &m = c.methods[i];
 
 			String qualifiers;
 			if (m.qualifiers != "")
@@ -1040,7 +1040,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 			for (int j = 0; j < m.arguments.size(); j++) {
 
-				ArgumentDoc &a = m.arguments[j];
+				const ArgumentDoc &a = m.arguments[j];
 
 				String enum_text;
 				if (a.enumeration != String()) {
@@ -1075,7 +1075,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				if (c.properties[i].enumeration != String()) {
 					enum_text = " enum=\"" + c.properties[i].enumeration + "\"";
 				}
-				PropertyDoc &p = c.properties[i];
+				const PropertyDoc &p = c.properties[i];
 				_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + enum_text + ">");
 				_write_string(f, 3, p.description.strip_edges().xml_escape());
 				_write_string(f, 2, "</member>");
@@ -1090,11 +1090,11 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			_write_string(f, 1, "<signals>");
 			for (int i = 0; i < c.signals.size(); i++) {
 
-				MethodDoc &m = c.signals[i];
+				const MethodDoc &m = c.signals[i];
 				_write_string(f, 2, "<signal name=\"" + m.name + "\">");
 				for (int j = 0; j < m.arguments.size(); j++) {
 
-					ArgumentDoc &a = m.arguments[j];
+					const ArgumentDoc &a = m.arguments[j];
 					_write_string(f, 3, "<argument index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape() + "\" type=\"" + a.type.xml_escape() + "\">");
 					_write_string(f, 3, "</argument>");
 				}
@@ -1113,7 +1113,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 
 		for (int i = 0; i < c.constants.size(); i++) {
 
-			ConstantDoc &k = c.constants[i];
+			const ConstantDoc &k = c.constants[i];
 			if (k.enumeration != String()) {
 				_write_string(f, 2, "<constant name=\"" + k.name + "\" value=\"" + k.value + "\" enum=\"" + k.enumeration + "\">");
 			} else {
@@ -1132,7 +1132,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			_write_string(f, 1, "<theme_items>");
 			for (int i = 0; i < c.theme_properties.size(); i++) {
 
-				PropertyDoc &p = c.theme_properties[i];
+				const PropertyDoc &p = c.theme_properties[i];
 				_write_string(f, 2, "<theme_item name=\"" + p.name + "\" type=\"" + p.type + "\">");
 				_write_string(f, 2, "</theme_item>");
 			}

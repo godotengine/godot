@@ -312,7 +312,7 @@ public:
 					total += weights[i].weight;
 				if (total)
 					for (int i = 0; i < 4; i++)
-						weights[i].weight /= total;
+						weights.write[i].weight /= total;
 			}
 		}
 
@@ -515,7 +515,7 @@ public:
 			Key() { interp_type = INTERP_LINEAR; }
 		};
 
-		Vector<float> get_value_at_time(float p_time);
+		Vector<float> get_value_at_time(float p_time) const;
 
 		Vector<Key> keys;
 

@@ -211,6 +211,9 @@ public:
 	FUNC3(body_set_param, RID, BodyParameter, real_t);
 	FUNC2RC(real_t, body_get_param, RID, BodyParameter);
 
+	FUNC3(body_set_combine_mode, RID, BodyParameter, CombineMode);
+	FUNC2RC(CombineMode, body_get_combine_mode, RID, BodyParameter);
+
 	FUNC3(body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, body_get_state, RID, BodyState);
 
@@ -220,7 +223,11 @@ public:
 	FUNC2(body_set_applied_torque, RID, real_t);
 	FUNC1RC(real_t, body_get_applied_torque, RID);
 
+	FUNC2(body_add_central_force, RID, const Vector2 &);
 	FUNC3(body_add_force, RID, const Vector2 &, const Vector2 &);
+	FUNC2(body_add_torque, RID, real_t);
+	FUNC2(body_apply_central_impulse, RID, const Vector2 &);
+	FUNC2(body_apply_torque_impulse, RID, real_t);
 	FUNC3(body_apply_impulse, RID, const Vector2 &, const Vector2 &);
 	FUNC2(body_set_axis_velocity, RID, const Vector2 &);
 

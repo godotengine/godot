@@ -233,7 +233,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
-		p_anim->node_cache[i] = NULL;
+		p_anim->node_cache.write[i] = NULL;
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
@@ -265,12 +265,12 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 		if (node_cache_map.has(key)) {
 
-			p_anim->node_cache[i] = &node_cache_map[key];
+			p_anim->node_cache.write[i] = &node_cache_map[key];
 		} else {
 
 			node_cache_map[key] = TrackNodeCache();
 
-			p_anim->node_cache[i] = &node_cache_map[key];
+			p_anim->node_cache.write[i] = &node_cache_map[key];
 			p_anim->node_cache[i]->path = a->track_get_path(i);
 			p_anim->node_cache[i]->node = child;
 			p_anim->node_cache[i]->resource = resource;
@@ -331,11 +331,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 
 				TrackNodeCache::BezierAnim ba;
-				String path = leftover_path[leftover_path.size() - 1];
-				Vector<String> index = path.split(".");
-				for (int j = 0; j < index.size(); j++) {
-					ba.bezier_property.push_back(index[j]);
-				}
+				ba.bezier_property = leftover_path;
 				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				ba.owner = p_anim->node_cache[i];
 

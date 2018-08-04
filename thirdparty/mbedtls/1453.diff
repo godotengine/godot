@@ -1,5 +1,5 @@
 diff --git a/library/entropy_poll.c b/library/entropy_poll.c
-index 67900c46..cefe882d 100644
+index 67900c46c8..cefe882d2a 100644
 --- a/library/entropy_poll.c
 +++ b/library/entropy_poll.c
 @@ -54,28 +54,43 @@
@@ -54,7 +54,7 @@ index 67900c46..cefe882d 100644
  
      return( 0 );
 diff --git a/library/x509_crt.c b/library/x509_crt.c
-index 290c1eb3..038eae02 100644
+index 290c1eb3d1..3cf1743821 100644
 --- a/library/x509_crt.c
 +++ b/library/x509_crt.c
 @@ -65,6 +65,19 @@
@@ -81,7 +81,7 @@ index 290c1eb3..038eae02 100644
      char filename[MAX_PATH];
      char *p;
      size_t len = strlen( path );
-+    int lengthAsInt = 0;
++    int length_as_int = 0;
  
      WIN32_FIND_DATAW file_data;
      HANDLE hFind;
@@ -90,7 +90,7 @@ index 290c1eb3..038eae02 100644
      filename[len++] = '*';
  
 -    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, (int)len, szDir,
-+    if ( FAILED ( SizeTToInt( len, &lengthAsInt ) ) )
++    if ( FAILED ( SizeTToInt( len, &length_as_int ) ) )
 +        return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
 +
 +    /*
@@ -101,7 +101,7 @@ index 290c1eb3..038eae02 100644
 +     * incoming string are less than MAX_PATH to avoid a buffer overrun with
 +     * MultiByteToWideChar().
 +     */
-+    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, lengthAsInt, szDir,
++    w_ret = MultiByteToWideChar( CP_ACP, 0, filename, length_as_int, szDir,
                                   MAX_PATH - 3 );
      if( w_ret == 0 )
          return( MBEDTLS_ERR_X509_BAD_INPUT_DATA );
@@ -109,12 +109,12 @@ index 290c1eb3..038eae02 100644
          if( file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
              continue;
  
-+        if ( FAILED( SizeTToInt( wcslen( file_data.cFileName ), &lengthAsInt ) ) )
++        if ( FAILED( SizeTToInt( wcslen( file_data.cFileName ), &length_as_int ) ) )
 +            return( MBEDTLS_ERR_X509_FILE_IO_ERROR );
 +
          w_ret = WideCharToMultiByte( CP_ACP, 0, file_data.cFileName,
 -                                     lstrlenW( file_data.cFileName ),
-+                                     lengthAsInt,
++                                     length_as_int,
                                       p, (int) len - 1,
                                       NULL, NULL );
          if( w_ret == 0 )

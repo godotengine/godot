@@ -74,6 +74,9 @@ class OS {
 
 	CompositeLogger *_logger;
 
+	bool restart_on_exit;
+	List<String> restart_commandline;
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
@@ -182,9 +185,11 @@ public:
 
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
-
+	virtual int get_current_video_driver() const = 0;
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual PoolStringArray get_connected_midi_inputs();
 
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }
@@ -496,6 +501,11 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+
+	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
+	bool is_restart_on_exit_set() const;
+	List<String> get_restart_on_exit_arguments() const;
+
 	OS();
 	virtual ~OS();
 };

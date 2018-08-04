@@ -197,7 +197,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
-					preview_images[i].image = p_image;
+					preview_images.write[i].image = p_image;
 					if (preview_images[i].button->is_pressed()) {
 						_preview_click(p_index);
 					}

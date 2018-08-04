@@ -92,7 +92,7 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 	Map<String, Vector<uint8_t> >::Element *E = files->find(name);
 	ERR_FAIL_COND_V(!E, ERR_FILE_NOT_FOUND);
 
-	data = &(E->get()[0]);
+	data = E->get().ptrw();
 	length = E->get().size();
 	pos = 0;
 

@@ -66,6 +66,7 @@ public:
 	virtual void add_central_force(const Vector3 &p_force) = 0;
 	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos) = 0;
 	virtual void add_torque(const Vector3 &p_torque) = 0;
+	virtual void apply_central_impulse(const Vector3 &p_j) = 0;
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) = 0;
 	virtual void apply_torque_impulse(const Vector3 &p_j) = 0;
 
@@ -76,6 +77,7 @@ public:
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const = 0;
+	virtual float get_contact_impulse(int p_contact_idx) const = 0;
 	virtual int get_contact_local_shape(int p_contact_idx) const = 0;
 
 	virtual RID get_contact_collider(int p_contact_idx) const = 0;
@@ -399,6 +401,19 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value) = 0;
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const = 0;
 
+	enum CombineMode {
+		COMBINE_MODE_MAX,
+		COMBINE_MODE_MIN,
+		COMBINE_MODE_MULTIPLY,
+		COMBINE_MODE_AVERAGE,
+
+		COMBINE_MODE_INHERIT /// Inherit from other body or use COMBINE_MODE_MAX (Restitution) COMBINE_MODE_MULTIPLY (Friction)
+	};
+
+	/// p_param accept only Bounce and Friction
+	virtual void body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode) = 0;
+	virtual CombineMode body_get_combine_mode(RID p_body, BodyParameter p_param) const = 0;
+
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin) = 0;
 	virtual real_t body_get_kinematic_safe_margin(RID p_body) const = 0;
 
@@ -421,6 +436,11 @@ public:
 	virtual void body_set_applied_torque(RID p_body, const Vector3 &p_torque) = 0;
 	virtual Vector3 body_get_applied_torque(RID p_body) const = 0;
 
+	virtual void body_add_central_force(RID p_body, const Vector3 &p_force) = 0;
+	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) = 0;
+	virtual void body_add_torque(RID p_body, const Vector3 &p_torque) = 0;
+
+	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) = 0;
 	virtual void body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) = 0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) = 0;
@@ -476,6 +496,72 @@ public:
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL) = 0;
+
+	/* SOFT BODY */
+
+	virtual RID soft_body_create(bool p_init_sleeping = false) = 0;
+
+	virtual void soft_body_update_visual_server(RID p_body, class SoftBodyVisualServerHandler *p_visual_server_handler) = 0;
+
+	virtual void soft_body_set_space(RID p_body, RID p_space) = 0;
+	virtual RID soft_body_get_space(RID p_body) const = 0;
+
+	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh) = 0;
+
+	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer) = 0;
+	virtual uint32_t soft_body_get_collision_layer(RID p_body) const = 0;
+
+	virtual void soft_body_set_collision_mask(RID p_body, uint32_t p_mask) = 0;
+	virtual uint32_t soft_body_get_collision_mask(RID p_body) const = 0;
+
+	virtual void soft_body_add_collision_exception(RID p_body, RID p_body_b) = 0;
+	virtual void soft_body_remove_collision_exception(RID p_body, RID p_body_b) = 0;
+	virtual void soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) = 0;
+
+	virtual void soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) = 0;
+	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const = 0;
+
+	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform) = 0;
+	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const = 0;
+
+	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable) = 0;
+	virtual bool soft_body_is_ray_pickable(RID p_body) const = 0;
+
+	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision) = 0;
+	virtual int soft_body_get_simulation_precision(RID p_body) = 0;
+
+	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) = 0;
+	virtual real_t soft_body_get_total_mass(RID p_body) = 0;
+
+	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_linear_stiffness(RID p_body) = 0;
+
+	virtual void soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_areaAngular_stiffness(RID p_body) = 0;
+
+	virtual void soft_body_set_volume_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_volume_stiffness(RID p_body) = 0;
+
+	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) = 0;
+	virtual real_t soft_body_get_pressure_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient) = 0;
+	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
+	virtual real_t soft_body_get_damping_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) = 0;
+	virtual real_t soft_body_get_drag_coefficient(RID p_body) = 0;
+
+	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) = 0;
+	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) = 0;
+
+	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const = 0;
+
+	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
+	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) = 0;
 
 	/* JOINT API */
 

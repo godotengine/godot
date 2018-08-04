@@ -134,5 +134,7 @@
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="91">
 		</constant>
+		<constant name="NOTIFICATION_CRASH" value="92">
+		</constant>
 	</constants>
 </class>

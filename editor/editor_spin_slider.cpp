@@ -268,7 +268,8 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult
+		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult.
+		 * Just press enter to edit.
 		 * if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
 			_focus_entered();
 		}*/

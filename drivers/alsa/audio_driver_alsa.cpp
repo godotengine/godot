@@ -58,7 +58,10 @@ Error AudioDriverALSA::init_device() {
 #define CHECK_FAIL(m_cond)                                       \
 	if (m_cond) {                                                \
 		fprintf(stderr, "ALSA ERR: %s\n", snd_strerror(status)); \
-		snd_pcm_close(pcm_handle);                               \
+		if (pcm_handle) {                                        \
+			snd_pcm_close(pcm_handle);                           \
+			pcm_handle = NULL;                                   \
+		}                                                        \
 		ERR_FAIL_COND_V(m_cond, ERR_CANT_OPEN);                  \
 	}
 
@@ -150,7 +153,6 @@ Error AudioDriverALSA::init() {
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
-	pcm_open = false;
 
 	Error err = init_device();
 	if (err == OK) {
@@ -172,14 +174,14 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 
 		if (!ad->active) {
 			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out[i] = 0;
+				ad->samples_out.write[i] = 0;
 			}
 
 		} else {
 			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
 
 			for (unsigned int i = 0; i < ad->period_size * ad->channels; i++) {
-				ad->samples_out[i] = ad->samples_in[i] >> 16;
+				ad->samples_out.write[i] = ad->samples_in[i] >> 16;
 			}
 		}
 
@@ -313,9 +315,9 @@ void AudioDriverALSA::unlock() {
 
 void AudioDriverALSA::finish_device() {
 
-	if (pcm_open) {
+	if (pcm_handle) {
 		snd_pcm_close(pcm_handle);
-		pcm_open = NULL;
+		pcm_handle = NULL;
 	}
 }
 

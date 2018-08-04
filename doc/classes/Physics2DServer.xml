@@ -287,6 +287,16 @@
 				Sets the transform matrix for an area.
 			</description>
 		</method>
+		<method name="body_add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_add_collision_exception">
 			<return type="void">
 			</return>
@@ -324,6 +334,26 @@
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
 		</method>
+		<method name="body_add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="torque" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="impulse" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_apply_impulse">
 			<return type="void">
 			</return>
@@ -335,6 +365,16 @@
 			</argument>
 			<description>
 				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
+		<method name="body_apply_torque_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="impulse" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_attach_object_instance_id">

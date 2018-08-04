@@ -195,7 +195,7 @@ Vector<Pair<String, Ref<Texture> > > EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 	Vector<float> scores;
 	scores.resize(list.size());
 	for (int i = 0; i < list.size(); i++)
-		scores[i] = _path_cmp(search_text, list[i].first);
+		scores.write[i] = _path_cmp(search_text, list[i].first);
 
 	while (list.size() > 0) {
 

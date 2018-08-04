@@ -40,6 +40,11 @@
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 
+	type_list.clear();
+	ClassDB::get_class_list(&type_list);
+	ScriptServer::get_global_class_list(&type_list);
+	type_list.sort_custom<StringName::AlphCompare>();
+
 	recent->clear();
 
 	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::READ);
@@ -173,10 +178,28 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 
 	if (p_types.has(p_type))
 		return;
-	if (!ClassDB::is_parent_class(p_type, base_type) || p_type == base_type)
+
+	bool cpp_type = ClassDB::class_exists(p_type);
+	EditorData &ed = EditorNode::get_singleton()->get_editor_data();
+
+	if (p_type == base_type)
 		return;
 
-	String inherits = ClassDB::get_parent_class(p_type);
+	if (cpp_type) {
+		if (!ClassDB::is_parent_class(p_type, base_type))
+			return;
+	} else {
+		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type))
+			return;
+
+		String script_path = ScriptServer::get_global_class_path(p_type);
+		if (script_path.find("res://addons/", 0) != -1) {
+			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3)))
+				return;
+		}
+	}
+
+	String inherits = cpp_type ? ClassDB::get_parent_class(p_type) : ed.script_class_get_base(p_type);
 
 	TreeItem *parent = p_root;
 
@@ -189,17 +212,32 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 
 		if (p_types.has(inherits))
 			parent = p_types[inherits];
+		else if (ScriptServer::is_global_class(inherits))
+			return;
 	}
 
+	bool can_instance = (cpp_type && ClassDB::can_instance(p_type)) || ScriptServer::is_global_class(p_type);
+
 	TreeItem *item = search_options->create_item(parent);
-	item->set_text(0, p_type);
-	if (!ClassDB::can_instance(p_type)) {
+	if (cpp_type) {
+		item->set_text(0, p_type);
+	} else {
+		item->set_metadata(0, p_type);
+		item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+	}
+	if (!can_instance) {
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
 	} else {
 		bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
 		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
-		bool current_item_is_preffered = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(to_select_type, preferred_search_result_type);
+		to_select_type = to_select_type.split(" ")[0];
+		bool current_item_is_preffered;
+		if (cpp_type) {
+			current_item_is_preffered = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(to_select_type, preferred_search_result_type);
+		} else {
+			current_item_is_preffered = ed.script_class_is_parent(p_type, preferred_search_result_type) && !ed.script_class_is_parent(to_select_type, preferred_search_result_type);
+		}
 		if (*to_select && p_type.length() < (*to_select)->get_text(0).length()) {
 			current_item_is_preffered = true;
 		}
@@ -217,16 +255,19 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		// don't collapse the root node
 		collapse &= (item != p_root);
 		// don't collapse abstract nodes on the first tree level
-		collapse &= ((parent != p_root) || (ClassDB::can_instance(p_type)));
+		collapse &= ((parent != p_root) || (can_instance));
 		item->set_collapsed(collapse);
 	}
 
 	const String &description = EditorHelp::get_doc_data()->class_list[p_type].brief_description;
 	item->set_tooltip(0, description);
 
-	if (has_icon(p_type, "EditorIcons")) {
+	if (cpp_type && has_icon(p_type, "EditorIcons")) {
 
 		item->set_icon(0, get_icon(p_type, "EditorIcons"));
+	} else if (!cpp_type && has_icon(ScriptServer::get_global_class_base(p_type), "EditorIcons")) {
+
+		item->set_icon(0, get_icon(ScriptServer::get_global_class_base(p_type), "EditorIcons"));
 	}
 
 	p_types[p_type] = item;
@@ -243,47 +284,38 @@ void CreateDialog::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-
-	Map<String, List<String> > global_class_map;
-	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
-		String base = ScriptServer::get_global_class_base(E->get());
-		if (!global_class_map.has(base)) {
-			global_class_map[base] = List<String>();
-		}
-		global_class_map[base].push_back(E->get());
-	}
-
 	HashMap<String, TreeItem *> types;
 
 	TreeItem *root = search_options->create_item();
+	EditorData &ed = EditorNode::get_singleton()->get_editor_data();
 
 	root->set_text(0, base_type);
 	if (has_icon(base_type, "EditorIcons")) {
 		root->set_icon(0, get_icon(base_type, "EditorIcons"));
 	}
 
-	List<StringName>::Element *I = type_list.front();
 	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
 
-	for (; I; I = I->next()) {
+	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
 
 		String type = I->get();
+		bool cpp_type = ClassDB::class_exists(type);
 
 		if (base_type == "Node" && type.begins_with("Editor"))
 			continue; // do not show editor nodes
 
-		if (!ClassDB::can_instance(type))
+		if (cpp_type && !ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
 
 		bool skip = false;
-		for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
-			if (ClassDB::is_parent_class(type, E->get()))
-				skip = true;
+		if (cpp_type) {
+			for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
+				if (ClassDB::is_parent_class(type, E->get()))
+					skip = true;
+			}
+			if (skip)
+				continue;
 		}
-		if (skip)
-			continue;
 
 		if (search_box->get_text() == "") {
 			add_type(type, types, root, &to_select);
@@ -291,7 +323,7 @@ void CreateDialog::_update_search() {
 
 			bool found = false;
 			String type = I->get();
-			while (type != "" && ClassDB::is_parent_class(type, base_type) && type != base_type) {
+			while (type != "" && (cpp_type ? ClassDB::is_parent_class(type, base_type) : ed.script_class_is_parent(type, base_type)) && type != base_type) {
 				if (search_box->get_text().is_subsequence_ofi(type)) {
 
 					found = true;
@@ -303,32 +335,6 @@ void CreateDialog::_update_search() {
 
 			if (found)
 				add_type(I->get(), types, root, &to_select);
-		}
-
-		if (global_class_map.has(type) && ClassDB::is_parent_class(type, base_type)) {
-			for (List<String>::Element *J = global_class_map[type].front(); J; J = J->next()) {
-				bool show = search_box->get_text().is_subsequence_ofi(J->get());
-
-				if (!show)
-					continue;
-
-				if (!types.has(type))
-					add_type(type, types, root, &to_select);
-
-				TreeItem *ti;
-				if (types.has(type))
-					ti = types[type];
-				else
-					ti = search_options->get_root();
-
-				TreeItem *item = search_options->create_item(ti);
-				item->set_metadata(0, J->get());
-				item->set_text(0, J->get() + " (" + ScriptServer::get_global_class_path(J->get()).get_file() + ")");
-				item->set_icon(0, _get_editor_icon(type));
-				if (!to_select || J->get() == search_box->get_text()) {
-					to_select = item;
-				}
-			}
 		}
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
@@ -694,9 +700,6 @@ CreateDialog::CreateDialog() {
 
 	is_replace_mode = false;
 
-	ClassDB::get_class_list(&type_list);
-	type_list.sort_custom<StringName::AlphCompare>();
-
 	set_resizable(true);
 
 	HSplitContainer *hsc = memnew(HSplitContainer);
@@ -762,4 +765,6 @@ CreateDialog::CreateDialog() {
 
 	type_blacklist.insert("PluginScript"); // PluginScript must be initialized before use, which is not possible here
 	type_blacklist.insert("ScriptCreateDialog"); // This is an exposed editor Node that doesn't have an Editor prefix.
+
+	EDITOR_DEF("interface/editors/derive_script_globals_by_name", true);
 }

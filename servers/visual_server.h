@@ -251,6 +251,10 @@ public:
 
 	virtual RID mesh_create() = 0;
 
+	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
+	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const;
+	/// Returns stride
+	virtual uint32_t mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
 	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
 
@@ -805,6 +809,7 @@ public:
 
 	enum InstanceFlags {
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
+		INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,
 		INSTANCE_FLAG_MAX
 	};
 
@@ -950,7 +955,7 @@ public:
 
 	/* EVENT QUEUING */
 
-	virtual void draw(bool p_swap_buffers = true) = 0;
+	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
 	virtual bool has_changed() const = 0;
 	virtual void init() = 0;

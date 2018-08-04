@@ -85,6 +85,8 @@ private:
 	Control *label_reference;
 	Control *bottom_editor;
 
+	mutable String tooltip_text;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -143,6 +145,10 @@ public:
 	float get_name_split_ratio() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+
+	String get_tooltip_text() const;
+
 	EditorProperty();
 };
 
@@ -180,12 +186,17 @@ class EditorInspectorCategory : public Control {
 	Ref<Texture> icon;
 	String label;
 	Color bg_color;
+	mutable String tooltip_text;
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const;
+	virtual Control *make_custom_tooltip(const String &p_text) const;
+
+	String get_tooltip_text() const;
 
 	EditorInspectorCategory();
 };
@@ -267,8 +278,12 @@ class EditorInspector : public ScrollContainer {
 
 	Map<StringName, Map<StringName, String> > descr_cache;
 	Map<StringName, String> class_descr_cache;
+	Set<StringName> restart_request_props;
 
 	Map<ObjectID, int> scroll_cache;
+
+	String property_prefix; //used for sectioned inspector
+	String object_class;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -342,6 +357,12 @@ public:
 
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
+
+	void set_property_prefix(const String &p_prefix);
+	String get_property_prefix() const;
+
+	void set_object_class(const String &p_class);
+	String get_object_class() const;
 
 	void set_use_sub_inspector_bg(bool p_enable);
 

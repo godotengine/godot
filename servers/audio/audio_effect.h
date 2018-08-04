@@ -39,6 +39,7 @@ class AudioEffectInstance : public Reference {
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) = 0;
+	virtual bool process_silence() const { return false; }
 };
 
 class AudioEffect : public Resource {

@@ -77,5 +77,11 @@
 		<constant name="FILL_COUNTER_CLOCKWISE" value="5" enum="FillMode">
 			Turns the node into a radial bar. The [member texture_progress] fills counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to refine its behavior.
 		</constant>
+		<constant name="FILL_BILINEAR_LEFT_AND_RIGHT" value="6" enum="FillMode">
+		</constant>
+		<constant name="FILL_BILINEAR_TOP_AND_BOTTOM" value="7" enum="FillMode">
+		</constant>
+		<constant name="FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE" value="8" enum="FillMode">
+		</constant>
 	</constants>
 </class>

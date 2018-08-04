@@ -54,6 +54,8 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t mass;
 	real_t bounce;
 	real_t friction;
+	Physics2DServer::CombineMode bounce_combine_mode;
+	Physics2DServer::CombineMode friction_combine_mode;
 
 	real_t _inv_mass;
 	real_t _inv_inertia;
@@ -139,7 +141,7 @@ public:
 	_FORCE_INLINE_ void add_area(Area2DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas[index].refCount += 1;
+			areas.write[index].refCount += 1;
 		} else {
 			areas.ordered_insert(AreaCMP(p_area));
 		}
@@ -148,7 +150,7 @@ public:
 	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas[index].refCount -= 1;
+			areas.write[index].refCount -= 1;
 			if (areas[index].refCount < 1)
 				areas.remove(index);
 		}
@@ -199,10 +201,18 @@ public:
 	_FORCE_INLINE_ void set_biased_angular_velocity(real_t p_velocity) { biased_angular_velocity = p_velocity; }
 	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
 
+	_FORCE_INLINE_ void apply_central_impulse(const Vector2 &p_impulse) {
+		linear_velocity += p_impulse * _inv_mass;
+	}
+
 	_FORCE_INLINE_ void apply_impulse(const Vector2 &p_offset, const Vector2 &p_impulse) {
 
 		linear_velocity += p_impulse * _inv_mass;
 		angular_velocity += _inv_inertia * p_offset.cross(p_impulse);
+	}
+
+	_FORCE_INLINE_ void apply_torque_impulse(real_t p_torque) {
+		angular_velocity += _inv_inertia * p_torque;
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_pos, const Vector2 &p_j) {
@@ -235,10 +245,18 @@ public:
 	void set_applied_torque(real_t p_torque) { applied_torque = p_torque; }
 	real_t get_applied_torque() const { return applied_torque; }
 
-	_FORCE_INLINE_ void add_force(const Vector2 &p_force, const Vector2 &p_offset) {
+	_FORCE_INLINE_ void add_central_force(const Vector2 &p_force) {
+		applied_force += p_force;
+	}
+
+	_FORCE_INLINE_ void add_force(const Vector2 &p_offset, const Vector2 &p_force) {
 
 		applied_force += p_force;
 		applied_torque += p_offset.cross(p_force);
+	}
+
+	_FORCE_INLINE_ void add_torque(real_t p_torque) {
+		applied_torque += p_torque;
 	}
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode = p_mode; }
@@ -255,6 +273,12 @@ public:
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
 	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
+
+	void set_combine_mode(Physics2DServer::BodyParameter p_param, Physics2DServer::CombineMode p_mode);
+	Physics2DServer::CombineMode get_combine_mode(Physics2DServer::BodyParameter p_param) const;
+
+	_FORCE_INLINE_ Physics2DServer::CombineMode get_bounce_combine_mode() const { return bounce_combine_mode; }
+	_FORCE_INLINE_ Physics2DServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
@@ -287,7 +311,7 @@ void Body2DSW::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local_no
 	if (c_max == 0)
 		return;
 
-	Contact *c = &contacts[0];
+	Contact *c = contacts.ptrw();
 
 	int idx = -1;
 
@@ -348,6 +372,13 @@ public:
 
 	virtual void set_transform(const Transform2D &p_transform) { body->set_state(Physics2DServer::BODY_STATE_TRANSFORM, p_transform); }
 	virtual Transform2D get_transform() const { return body->get_transform(); }
+
+	virtual void add_central_force(const Vector2 &p_force) { body->add_central_force(p_force); }
+	virtual void add_force(const Vector2 &p_offset, const Vector2 &p_force) { body->add_force(p_offset, p_force); }
+	virtual void add_torque(real_t p_torque) { body->add_torque(p_torque); }
+	virtual void apply_central_impulse(const Vector2 &p_impulse) { body->apply_central_impulse(p_impulse); }
+	virtual void apply_impulse(const Vector2 &p_offset, const Vector2 &p_force) { body->apply_impulse(p_offset, p_force); }
+	virtual void apply_torque_impulse(real_t p_torque) { body->apply_torque_impulse(p_torque); }
 
 	virtual void set_sleep_state(bool p_enable) { body->set_active(!p_enable); }
 	virtual bool is_sleeping() const { return !body->is_active(); }
