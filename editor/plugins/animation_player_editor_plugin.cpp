@@ -145,6 +145,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_RENAME_ANIM, "Rename");
 			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
 			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
+			ITEM_ICON(TOOL_REPARENT_TRACK, "Edit");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
 			//ITEM_ICON(TOOL_COPY_ANIM, "Copy");
 			//ITEM_ICON(TOOL_PASTE_ANIM, "Paste");
@@ -708,6 +709,73 @@ void AnimationPlayerEditor::_animation_resource_edit() {
 	}
 }
 
+void AnimationPlayerEditor::_animation_reparent_track() {
+
+	if (!animation->get_item_count())
+		return;
+
+	reparent_track_nodepath_ob->get_popup()->clear();
+	reparent_track_le->set_text("");
+
+	String current = animation->get_item_text(animation->get_selected());
+	Ref<Animation> anim = player->get_animation(current);
+
+	Set<String> paths;
+	for (int i(0); i < anim->get_track_count(); ++i) {
+
+		paths.insert(NodePath(anim->track_get_path(i).get_names(), false));
+	}
+
+	int i(0);
+	for (Set<String>::Element *e = paths.front(); e; e = e->next()) {
+		reparent_track_nodepath_ob->get_popup()->add_item(e->get(), i++);
+	}
+
+	reparent_track_dialog->popup_centered(Size2(300, 90));
+}
+
+void AnimationPlayerEditor::_animation_reparent_track_confirmed() {
+
+	String current = animation->get_item_text(animation->get_selected());
+	Ref<Animation> anim = player->get_animation(current);
+
+	Set<String> paths;
+	for (int i(0); i < anim->get_track_count(); ++i) {
+
+		paths.insert(NodePath(anim->track_get_path(i).get_names(), anim->track_get_path(i).is_absolute()));
+	}
+
+	int sel = reparent_track_nodepath_ob->get_selected();
+	if (0 > sel)
+		return;
+
+	NodePath selected;
+	String new_path = reparent_track_le->get_text();
+
+	int i(0);
+	for (Set<String>::Element *e = paths.front(); e; e = e->next()) {
+		if (i == sel) {
+			selected = NodePath(e->get());
+			break;
+		}
+		++i;
+	}
+
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+	for (int i(0); i < anim->get_track_count(); ++i) {
+		NodePath p(anim->track_get_path(i).get_names(), anim->track_get_path(i).is_absolute());
+		if (selected == p) {
+			String new_path_i = new_path + ":" + anim->track_get_path(i).get_concatenated_subnames();
+
+			undo_redo->create_action("Reparented track");
+			undo_redo->add_do_method(anim.ptr(), "track_set_path", i, NodePath(new_path_i));
+			undo_redo->add_undo_method(anim.ptr(), "track_set_path", i, anim->track_get_path(i));
+			undo_redo->commit_action();
+		}
+	}
+}
+
 void AnimationPlayerEditor::_animation_edit() {
 
 	if (animation->get_item_count()) {
@@ -1211,6 +1279,9 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			editor->edit_resource(anim);
 
 		} break;
+		case TOOL_REPARENT_TRACK: {
+			_animation_reparent_track();
+		} break;
 	}
 }
 
@@ -1560,6 +1631,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_blend"), &AnimationPlayerEditor::_animation_blend);
 	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
 	ClassDB::bind_method(D_METHOD("_animation_resource_edit"), &AnimationPlayerEditor::_animation_resource_edit);
+	ClassDB::bind_method(D_METHOD("_animation_reparent_track_confirmed"), &AnimationPlayerEditor::_animation_reparent_track_confirmed);
 	ClassDB::bind_method(D_METHOD("_dialog_action"), &AnimationPlayerEditor::_dialog_action);
 	ClassDB::bind_method(D_METHOD("_seek_value_changed"), &AnimationPlayerEditor::_seek_value_changed, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
@@ -1680,6 +1752,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename...")), TOOL_RENAME_ANIM);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTR("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTR("Open in Inspector")), TOOL_EDIT_RESOURCE);
+	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/reparent_tracks", TTR("Reparent tracks")), TOOL_REPARENT_TRACK);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
 	hb->add_child(tool_anim);
@@ -1757,6 +1830,34 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	add_child(error_dialog);
 
 	name_dialog->connect("confirmed", this, "_animation_name_edited");
+
+	{
+		reparent_track_dialog = memnew(ConfirmationDialog);
+		reparent_track_dialog->set_title(TTR("Reparent track"));
+		add_child(reparent_track_dialog);
+		reparent_track_dialog->connect("confirmed", this, "_animation_reparent_track_confirmed");
+
+		VBoxContainer *vb_rtd = memnew(VBoxContainer);
+		reparent_track_dialog->add_child(vb_rtd);
+
+		Label *l = memnew(Label);
+		l->set_text(TTR("Node Path to reparent"));
+		vb_rtd->add_child(l);
+
+		reparent_track_nodepath_ob = memnew(OptionButton);
+		reparent_track_nodepath_ob->set_h_size_flags(SIZE_EXPAND_FILL);
+		vb_rtd->add_child(reparent_track_nodepath_ob);
+		reparent_track_nodepath_ob->set_tooltip(TTR("Initial Node Path"));
+		reparent_track_nodepath_ob->set_clip_text(true);
+
+		l = memnew(Label);
+		l->set_text(TTR("New Node Path"));
+		vb_rtd->add_child(l);
+
+		reparent_track_le = memnew(LineEdit);
+		reparent_track_le->set_h_size_flags(SIZE_EXPAND_FILL);
+		vb_rtd->add_child(reparent_track_le);
+	}
 
 	blend_editor.dialog = memnew(AcceptDialog);
 	add_child(blend_editor.dialog);
