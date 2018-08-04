@@ -92,6 +92,25 @@ void MIDIDriverCoreMidi::close() {
 	}
 }
 
+PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
+
+	PoolStringArray list;
+
+	for (int i = 0; i < connected_sources.size(); i++) {
+		MIDIEndpointRef source = connected_sources[i];
+		CFStringRef ref = NULL;
+		char name[256];
+
+		MIDIObjectGetStringProperty(source, kMIDIPropertyDisplayName, &ref);
+		CFStringGetCString(ref, name, sizeof(name), kCFStringEncodingUTF8);
+		CFRelease(ref);
+
+		list.push_back(name);
+	}
+
+	return list;
+}
+
 MIDIDriverCoreMidi::MIDIDriverCoreMidi() {
 
 	client = 0;
