@@ -1415,11 +1415,6 @@ bool Node::is_greater_than(const Node *p_node) const {
 	return res;
 }
 
-bool Node::has_priority_higher_than(const Node *p_node) const {
-	ERR_FAIL_NULL_V(p_node, false);
-	return data.process_priority > p_node->data.process_priority;
-}
-
 void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
 
 	if (data.owner == p_by)

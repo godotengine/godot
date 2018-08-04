@@ -600,9 +600,12 @@ PhysicalBone *Skeleton::_get_physical_bone_parent(int p_bone) {
 void Skeleton::_rebuild_physical_bones_cache() {
 	const int b_size = bones.size();
 	for (int i = 0; i < b_size; ++i) {
-		bones.write[i].cache_parent_physical_bone = _get_physical_bone_parent(i);
-		if (bones[i].physical_bone)
-			bones[i].physical_bone->_on_bone_parent_changed();
+		PhysicalBone *parent_pb = _get_physical_bone_parent(i);
+		if (parent_pb != bones[i].physical_bone) {
+			bones.write[i].cache_parent_physical_bone = parent_pb;
+			if (bones[i].physical_bone)
+				bones[i].physical_bone->_on_bone_parent_changed();
+		}
 	}
 }
 
@@ -739,6 +742,8 @@ void Skeleton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &Skeleton::physical_bones_remove_collision_exception);
 
 #endif // _3D_DISABLED
+
+	ClassDB::bind_method(D_METHOD("set_bone_ignore_animation", "bone", "ignore"), &Skeleton::set_bone_ignore_animation);
 
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }

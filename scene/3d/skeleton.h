@@ -39,6 +39,8 @@
 */
 
 #ifndef _3D_DISABLED
+typedef int BoneId;
+
 class PhysicalBone;
 #endif // _3D_DISABLED
 
@@ -96,7 +98,7 @@ class Skeleton : public Spatial {
 	void _make_dirty();
 	bool dirty;
 
-	//bind helpers
+	// bind helpers
 	Array _get_bound_child_nodes_to_bone(int p_bone) const {
 
 		Array bound;

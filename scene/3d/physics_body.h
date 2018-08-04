@@ -557,6 +557,7 @@ protected:
 
 private:
 	static Skeleton *find_skeleton_parent(Node *p_parent);
+
 	void _fix_joint_offset();
 	void _reload_joint();
 
