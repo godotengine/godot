@@ -590,14 +590,14 @@ current_invoke_count = 0;
 
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)&p_exc);
+	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)p_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
 MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)&p_exc);
+	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)p_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
