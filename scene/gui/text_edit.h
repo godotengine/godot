@@ -167,6 +167,7 @@ private:
 		Color completion_font_color;
 		Color caret_color;
 		Color caret_background_color;
+		Color indent_guide_color;
 		Color line_number_color;
 		Color safe_line_number_color;
 		Color font_color;
@@ -277,6 +278,7 @@ private:
 	int wrap_right_offset;
 
 	bool setting_row;
+	bool draw_indent_guides;
 	bool draw_tabs;
 	bool override_selected_font_color;
 	bool cursor_changed_dirty;
@@ -591,6 +593,8 @@ public:
 	bool is_indent_using_spaces() const;
 	void set_indent_size(const int p_size);
 	int get_indent_size();
+	void set_draw_indent_guides(bool p_draw);
+	bool is_drawing_indent_guides() const;
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
 	void set_override_selected_font_color(bool p_override_selected_font_color);
