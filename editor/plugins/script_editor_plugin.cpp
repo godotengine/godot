@@ -2894,7 +2894,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(140);
 	_sort_list_on_update = true;
-	script_list->connect("gui_input", this, "_script_list_gui_input");
+	script_list->connect("gui_input", this, "_script_list_gui_input", varray(), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
 	script_list->set_drag_forwarding(this);
 
