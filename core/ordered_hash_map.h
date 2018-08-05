@@ -75,11 +75,11 @@ public:
 				next_element(NULL) {
 		}
 
-		Element next() const {
+		_FORCE_INLINE_ Element next() const {
 			return Element(next_element);
 		}
 
-		Element prev() const {
+		_FORCE_INLINE_ Element prev() const {
 			return Element(prev_element);
 		}
 
@@ -103,11 +103,11 @@ public:
 			return this->list_element != p_other.list_element;
 		}
 
-		operator bool() const {
+		_FORCE_INLINE_ operator bool() const {
 			return (list_element != NULL);
 		}
 
-		const K &key() const {
+		_FORCE_INLINE_ const K &key() const {
 			CRASH_COND(!list_element);
 			return *(list_element->get().first);
 		};
@@ -138,7 +138,7 @@ public:
 
 		const typename InternalList::Element *list_element;
 
-		ConstElement(const typename InternalList::Element *p_element) :
+		_FORCE_INLINE_ ConstElement(const typename InternalList::Element *p_element) :
 				list_element(p_element) {
 		}
 
@@ -147,20 +147,25 @@ public:
 				list_element(NULL) {
 		}
 
-		ConstElement(const ConstElement &other) :
+		_FORCE_INLINE_ ConstElement(const ConstElement &other) :
 				list_element(other.list_element) {
 		}
 
-		ConstElement &operator=(const ConstElement &other) {
+		_FORCE_INLINE_ ConstElement &operator=(const ConstElement &other) {
 			list_element = other.list_element;
 			return *this;
 		}
 
-		ConstElement next() const {
+		_FORCE_INLINE_ ConstElement &operator=(const Element &other) {
+			list_element = other.list_element;
+			return *this;
+		}
+
+		_FORCE_INLINE_ ConstElement next() const {
 			return ConstElement(list_element ? list_element->next() : NULL);
 		}
 
-		ConstElement prev() const {
+		_FORCE_INLINE_ ConstElement prev() const {
 			return ConstElement(list_element ? list_element->prev() : NULL);
 		}
 
@@ -171,11 +176,11 @@ public:
 			return this->list_element != p_other.list_element;
 		}
 
-		operator bool() const {
+		_FORCE_INLINE_ operator bool() const {
 			return (list_element != NULL);
 		}
 
-		const K &key() const {
+		_FORCE_INLINE_ const K &key() const {
 			CRASH_COND(!list_element);
 			return *(list_element->get().first);
 		};
