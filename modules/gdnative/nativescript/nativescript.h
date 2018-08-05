@@ -118,6 +118,9 @@ class NativeScript : public Script {
 
 	String class_name;
 
+	String script_class_name;
+	String script_class_icon_path;
+
 #ifndef NO_THREADS
 	Mutex *owners_lock;
 #endif
@@ -134,6 +137,11 @@ public:
 
 	void set_library(Ref<GDNativeLibrary> p_library);
 	Ref<GDNativeLibrary> get_library() const;
+
+	void set_script_class_name(String p_type);
+	String get_script_class_name() const;
+	void set_script_class_icon_path(String p_icon_path);
+	String get_script_class_icon_path() const;
 
 	virtual bool can_instance() const;
 
@@ -332,6 +340,9 @@ public:
 
 	void set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag);
 	const void *get_global_type_tag(int p_idx, StringName p_class_name) const;
+
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const;
 };
 
 inline NativeScriptDesc *NativeScript::get_script_desc() const {

@@ -62,6 +62,11 @@ void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library", "library"), &NativeScript::set_library);
 	ClassDB::bind_method(D_METHOD("get_library"), &NativeScript::get_library);
 
+	ClassDB::bind_method(D_METHOD("set_script_class_name", "class_name"), &NativeScript::set_script_class_name);
+	ClassDB::bind_method(D_METHOD("get_script_class_name"), &NativeScript::get_script_class_name);
+	ClassDB::bind_method(D_METHOD("set_script_class_icon_path", "icon_path"), &NativeScript::set_script_class_icon_path);
+	ClassDB::bind_method(D_METHOD("get_script_class_icon_path"), &NativeScript::get_script_class_icon_path);
+
 	ClassDB::bind_method(D_METHOD("get_class_documentation"), &NativeScript::get_class_documentation);
 	ClassDB::bind_method(D_METHOD("get_method_documentation", "method"), &NativeScript::get_method_documentation);
 	ClassDB::bind_method(D_METHOD("get_signal_documentation", "signal_name"), &NativeScript::get_signal_documentation);
@@ -69,6 +74,9 @@ void NativeScript::_bind_methods() {
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+	ADD_GROUP("Script Class", "script_class_");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
 }
@@ -129,6 +137,22 @@ void NativeScript::set_library(Ref<GDNativeLibrary> p_library) {
 
 Ref<GDNativeLibrary> NativeScript::get_library() const {
 	return library;
+}
+
+void NativeScript::set_script_class_name(String p_type) {
+	script_class_name = p_type;
+}
+
+String NativeScript::get_script_class_name() const {
+	return script_class_name;
+}
+
+void NativeScript::set_script_class_icon_path(String p_icon_path) {
+	script_class_icon_path = p_icon_path;
+}
+
+String NativeScript::get_script_class_icon_path() const {
+	return script_class_icon_path;
 }
 
 bool NativeScript::can_instance() const {
@@ -1395,6 +1419,22 @@ void NativeScriptLanguage::thread_exit() {
 }
 
 #endif // NO_THREADS
+
+bool NativeScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "NativeScript";
+}
+
+String NativeScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
+	if (script.is_valid()) {
+		*r_base_type = script->get_instance_base_type();
+		*r_icon_path = script->get_script_class_icon_path();
+		return script->get_script_class_name();
+	}
+	*r_base_type = String();
+	*r_icon_path = String();
+	return String();
+}
 
 void NativeReloadNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_notification"), &NativeReloadNode::_notification);
