@@ -438,11 +438,16 @@ private:
 	RID origin;
 	RID origin_instance;
 	RID grid[3];
+	RID grid_origin[3];
 	RID grid_instance[3];
+	RID grid_origin_instance[3];
 	bool grid_visible[3]; //currently visible
+	bool grid_origin_visible[3];
 	float last_grid_snap;
 	bool grid_enable[3]; //should be always visible if true
+	bool grid_origin_enable[3];
 	bool grid_enabled;
+	bool origin_enabled;
 
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
