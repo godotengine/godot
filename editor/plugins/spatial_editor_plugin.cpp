@@ -3308,7 +3308,7 @@ void SpatialEditorViewport::_perform_drop_data() {
 			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str = files_str.substr(0, files_str.length() - 1);
-		accept->get_ok()->set_text(TTR("Ugh"));
+		accept->get_ok()->set_text(TTR("OK"));
 		accept->set_text(vformat(TTR("Error instancing scene from %s"), files_str.c_str()));
 		accept->popup_centered_minsize();
 	}
@@ -3397,7 +3397,7 @@ void SpatialEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p
 		}
 	}
 	if (list.size() != 1) {
-		accept->get_ok()->set_text(TTR("I see..."));
+		accept->get_ok()->set_text(TTR("OK"));
 		accept->set_text(TTR("This operation requires a single selected node."));
 		accept->popup_centered_minsize();
 		_remove_preview();

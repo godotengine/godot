@@ -142,7 +142,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	RES res = ResourceLoader::load(p_file);
 
 	if (res.is_null()) {
-		warning_dialog->get_ok()->set_text("Ugh");
+		warning_dialog->get_ok()->set_text(TTR("OK"));
 		warning_dialog->set_text(TTR("Failed to load resource."));
 		return;
 	};
