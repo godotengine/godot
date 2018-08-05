@@ -3,9 +3,7 @@
 # SCsub
 
 Import('env')
-Import('env_modules')
 
-# env_tts = env_modules.Clone()
 env_tts = env
 
 env_tts.add_source_files(env.modules_sources,"*.cpp") # Add all cpp files to the build
