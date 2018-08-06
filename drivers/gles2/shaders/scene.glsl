@@ -48,7 +48,7 @@ attribute highp vec4 bone_transform_row_2; // attrib:11
 attribute vec4 bone_ids; // attrib:6
 attribute highp vec4 bone_weights; // attrib:7
 
-uniform highp sampler2D bone_transforms; // texunit:4
+uniform highp sampler2D bone_transforms; // texunit:-1
 uniform ivec2 skeleton_texture_size;
 
 #endif
@@ -294,17 +294,17 @@ uniform highp float time;
 uniform vec2 screen_pixel_size;
 #endif
 
-uniform highp sampler2D depth_buffer; //texunit:1
+uniform highp sampler2D depth_buffer; //texunit:-5
 
 #if defined(SCREEN_TEXTURE_USED)
-uniform highp sampler2D screen_texture; //texunit:2
+uniform highp sampler2D screen_texture; //texunit:-6
 #endif
 
 #ifdef USE_RADIANCE_MAP
 
 #define RADIANCE_MAX_LOD 6.0
 
-uniform samplerCube radiance_map; // texunit:0
+uniform samplerCube radiance_map; // texunit:-2
 
 uniform mat4 radiance_inverse_xform;
 
@@ -345,7 +345,7 @@ uniform float light_spot_angle;
 
 
 // shadows
-uniform highp sampler2D light_shadow_atlas; //texunit:3
+uniform highp sampler2D light_shadow_atlas; //texunit:-4
 uniform float light_has_shadow;
 
 uniform mat4 light_shadow_matrix;
@@ -353,7 +353,7 @@ uniform vec4 light_clamp;
 
 // directional shadow
 
-uniform highp sampler2D light_directional_shadow; // texunit:3
+uniform highp sampler2D light_directional_shadow; // texunit:-4
 uniform vec4 light_split_offsets;
 
 uniform mat4 light_shadow_matrix1;
@@ -439,11 +439,10 @@ void light_compute(vec3 N,
 	{
 		// calculate specular reflection
 
-		 vec3 R = normalize(-reflect(L,N));
-		 float cRdotV = max(dot(R, V), 0.0);
-		 float blob_intensity = pow(cRdotV, (1.0 - roughness) * 256.0);
-		 specular_light += light_color * attenuation * blob_intensity * specular_blob_intensity;
-
+		vec3 R = normalize(-reflect(L,N));
+		float cRdotV = max(dot(R, V), 0.0);
+		float blob_intensity = pow(cRdotV, (1.0 - roughness) * 256.0);
+		specular_light += light_color * attenuation * blob_intensity * specular_blob_intensity;
 
 	}
 }
@@ -808,7 +807,6 @@ FRAGMENT_SHADER_CODE
 		              anisotropy,
 		              diffuse_light,
 		              specular_light);
-
 	}
 
 	gl_FragColor = vec4(ambient_light + diffuse_light + specular_light, alpha);

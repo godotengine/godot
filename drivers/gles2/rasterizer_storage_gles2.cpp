@@ -567,7 +567,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
 	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
 
-	if (!texture->images[p_layer].is_null()) {
+	if (texture->type == VS::TEXTURE_TYPE_CUBEMAP && p_layer < 6 && p_layer >= 0 && !texture->images[p_layer].is_null()) {
 		return texture->images[p_layer];
 	}
 #ifdef GLES_OVER_GL
@@ -594,9 +594,13 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 			ofs = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, texture->format, i - 1);
 		}
 
-		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-		glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &wb[ofs]);
+		if (texture->compressed) {
+			glPixelStorei(GL_PACK_ALIGNMENT, 4);
+			glGetCompressedTexImage(texture->target, i, &wb[ofs]);
+		} else {
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			glGetTexImage(texture->target, i, texture->gl_format_cache, texture->gl_type_cache, &wb[ofs]);
+		}
 	}
 
 	wb = PoolVector<uint8_t>::Write();
@@ -3961,7 +3965,7 @@ void RasterizerStorageGLES2::initialize() {
 	frame.clear_request = false;
 	// config.keep_original_textures = false;
 
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 
 	shaders.copy.init();
