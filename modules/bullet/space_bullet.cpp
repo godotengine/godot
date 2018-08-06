@@ -986,7 +986,10 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				normalLine->end();
 #endif
 			} else {
-				r_result->remainder = Vector3();
+				if (!l_has_penetration)
+					break;
+				else
+					has_penetration = true;
 			}
 		}
 	}

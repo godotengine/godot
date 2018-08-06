@@ -1755,8 +1755,6 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	}
 
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-	file_options->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_position(files->get_global_position() + p_pos);
@@ -1768,8 +1766,6 @@ void FileSystemDock::_rmb_pressed(const Vector2 &p_pos) {
 	file_options->set_size(Size2(1, 1));
 
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-	file_options->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();

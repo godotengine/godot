@@ -1329,6 +1329,31 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 	return ret;
 }
 
+Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction, bool p_infinite_inertia, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle) {
+
+	bool was_on_floor = on_floor;
+
+	Vector2 ret = move_and_slide(p_linear_velocity, p_floor_direction, p_infinite_inertia, p_slope_stop_min_velocity, p_max_slides, p_floor_max_angle);
+	if (!was_on_floor || p_snap == Vector2()) {
+		return ret;
+	}
+
+	Collision col;
+	Transform2D gt = get_global_transform();
+
+	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+		gt.elements[2] += col.travel;
+		if (p_floor_direction != Vector2() && Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
+			on_floor = true;
+			on_floor_body = col.collider_rid;
+			floor_velocity = col.collider_vel;
+		}
+		set_global_transform(gt);
+	}
+
+	return ret;
+}
+
 bool KinematicBody2D::is_on_floor() const {
 
 	return on_floor;

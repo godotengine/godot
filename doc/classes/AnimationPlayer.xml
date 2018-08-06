@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" category="Core" version="3.1">
+<class name="AnimationPlayer" inherits="Node" category="Core" version="3.0.6">
 	<brief_description>
 		Container and player of [Animation] resources.
 	</brief_description>
@@ -7,8 +7,8 @@
 		An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html</link>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/animation/index.html</link>
+		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html
+		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
 	</tutorials>
 	<demos>
 	</demos>

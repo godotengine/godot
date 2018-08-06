@@ -128,6 +128,10 @@ int OS_Android::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+int OS_Android::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
@@ -357,8 +361,8 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {
-				touch.write[i].id = p_points[i].id;
-				touch.write[i].pos = p_points[i].pos;
+				touch[i].id = p_points[i].id;
+				touch[i].pos = p_points[i].pos;
 			}
 
 			//send touch

@@ -100,7 +100,22 @@ real_t Vector2::cross(const Vector2 &p_other) const {
 
 Vector2 Vector2::floor() const {
 
-	return Vector2(Math::floor(x), Math::floor(y));
+	return Vector2(Math::ceil(x), Math::ceil(y));
+}
+
+Vector2 Vector2::round() const {
+
+	return Vector2(Math::round(x), Math::round(y));
+}
+
+Vector2 Vector2::ceil() const {
+
+	return Vector2(Math::ceil(x), Math::ceil(y));
+}
+
+Vector2 Vector2::round() const {
+
+	return Vector2(Math::round(x), Math::round(y));
 }
 
 Vector2 Vector2::ceil() const {

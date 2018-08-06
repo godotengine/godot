@@ -27,15 +27,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-30 15:36+0000\n"
-"Last-Translator: Tahar Meijs <tntmeijs@gmail.com>\n"
+"PO-Revision-Date: 2018-05-21 18:36+0000\n"
+"Last-Translator: Johannes Smit <smitjohannes96@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.0-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5730,6 +5730,18 @@ msgid "Has"
 msgstr "Had"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Has"
+msgstr "Had"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Has"
+msgstr "Had"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Has"
+msgstr "Had"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Many"
 msgstr "Veel"
 
@@ -7490,11 +7502,6 @@ msgstr "Project"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr ""
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "View log"
-msgstr "Bekijk Bestanden"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

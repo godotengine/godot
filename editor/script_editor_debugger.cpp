@@ -1893,6 +1893,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		hbc->add_child(memnew(VSeparator));
 
+		copy = memnew(ToolButton);
+		hbc->add_child(copy);
+		copy->set_tooltip(TTR("Copy Error"));
+		copy->connect("pressed", this, "debug_copy");
+
+		hbc->add_child(memnew(VSeparator));
+
 		step = memnew(ToolButton);
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));

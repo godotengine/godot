@@ -519,8 +519,8 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (exc) {
 		exited = true;
-		GDMonoUtils::debug_unhandled_exception(exc);
-		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(exc);
+		GDMonoUtils::print_unhandled_exception(ex);
+		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
 		ERR_FAIL();
@@ -541,8 +541,8 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	if (exc) {
 		exited = true;
-		GDMonoUtils::debug_unhandled_exception(exc);
-		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(exc);
+		GDMonoUtils::print_unhandled_exception(ex);
+		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
 		ERR_FAIL();

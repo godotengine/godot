@@ -59,11 +59,10 @@ if env['tools']:
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
-    env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, run_in_subprocess(editor_builders.make_doc_header))
-
+    env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, make_doc_header)
     # Certificates
     env.Depends("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt")
-    env.CommandNoCache("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", run_in_subprocess(editor_builders.make_certs_header))
+    env.CommandNoCache("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
 
     import glob
 
@@ -72,13 +71,13 @@ if env['tools']:
     # Translations
     tlist = glob.glob(path + "/translations/*.po")
     env.Depends('#editor/translations.gen.h', tlist)
-    env.CommandNoCache('#editor/translations.gen.h', tlist, run_in_subprocess(editor_builders.make_translations_header))
+    env.CommandNoCache('#editor/translations.gen.h', tlist, make_translations_header)
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
     env.Depends('#editor/builtin_fonts.gen.h', flist)
-    env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
+    env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
     # Authors
     env.Depends('#editor/authors.gen.h', "../AUTHORS.md")

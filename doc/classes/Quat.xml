@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Quat" category="Built-In Types" version="3.1">
+<class name="Quat" category="Built-In Types" version="3.0.6">
 	<brief_description>
 		Quaternion.
 	</brief_description>
@@ -9,8 +9,7 @@
 		Quaternions need to be (re)normalized.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
-		<link>http://docs.godotengine.org/en/latest/tutorials/math/rotations.html</link>
+		http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions
 	</tutorials>
 	<demos>
 	</demos>

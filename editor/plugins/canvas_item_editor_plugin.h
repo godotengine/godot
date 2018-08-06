@@ -267,6 +267,14 @@ class CanvasItemEditor : public VBoxContainer {
 	};
 	Vector<_HoverResult> hovering_results;
 
+	struct _HoverResult {
+
+		Point2 position;
+		Ref<Texture> icon;
+		String name;
+	};
+	Vector<_HoverResult> hovering_results;
+
 	struct BoneList {
 
 		Transform2D xform;

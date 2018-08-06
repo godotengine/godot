@@ -84,7 +84,6 @@ name is available.
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Sjursen (binbitten)
-    marynate
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
@@ -107,8 +106,6 @@ name is available.
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
     Roberto F. Arroyo (robfram)
-    romulox-x
-    rraallvv
     Ruslan Mustakov (endragor)
     Saniko (sanikoyes)
     SaracenOne
@@ -123,8 +120,16 @@ name is available.
     Will Nations (willnationsdev)
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
-    yg2f (SuperUserNameMan)
     Yuri Roubinski (Chaosus)
     Zher Huei Lee (leezh)
     ZuBsPaCe
-    Дмитрий Сальников (DmitriySalnikov)
+    박한얼 (volzhs)
+    bruvzg
+    est31
+    m4nu3lf
+    marynate
+    mrezai
+    romulox-x
+    rraallvv
+    sersoong
+    yg2f (SuperUserNameMan)

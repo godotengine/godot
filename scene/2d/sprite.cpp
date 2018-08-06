@@ -81,8 +81,12 @@ void Sprite::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_cli
 		r_filter_clip = region_filter_clip;
 		base_rect = region_rect;
 	} else {
-		r_filter_clip = false;
-		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
+		s = Size2(texture->get_size());
+		s = s / Size2(hframes, vframes);
+
+		r_src_rect.size = s;
+		r_src_rect.position.x = float(frame % hframes) * s.x;
+		r_src_rect.position.y = float(frame / hframes) * s.y;
 	}
 
 	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
@@ -315,6 +319,27 @@ bool Sprite::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	if (vflip)
 		q.y = 1.0f - q.y;
 	q = q * src_rect.size + src_rect.position;
+
+	Ref<Image> image;
+	Ref<AtlasTexture> atlasTexture = texture;
+	if (atlasTexture.is_null()) {
+		image = texture->get_data();
+	} else {
+		ERR_FAIL_COND_V(atlasTexture->get_atlas().is_null(), false);
+
+		image = atlasTexture->get_atlas()->get_data();
+
+		Rect2 region = atlasTexture->get_region();
+		Rect2 margin = atlasTexture->get_margin();
+
+		q -= margin.position;
+
+		if ((q.x > region.size.width) || (q.y > region.size.height)) {
+			return false;
+		}
+
+		q += region.position;
+	}
 
 	Ref<Image> image;
 	Ref<AtlasTexture> atlasTexture = texture;

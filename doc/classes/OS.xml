@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.1">
+<class name="OS" inherits="Object" category="Core" version="3.0.6">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -122,22 +122,6 @@
 			</argument>
 			<description>
 				Returns the scancode of the given string (e.g. "Escape")
-			</description>
-		</method>
-		<method name="get_audio_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the total number of available audio drivers.
-			</description>
-		</method>
-		<method name="get_audio_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="driver" type="int">
-			</argument>
-			<description>
-				Returns the audio driver name for the given index.
 			</description>
 		</method>
 		<method name="get_cmdline_args">
@@ -426,20 +410,6 @@
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On Windows, this is [code]%APPDATA%/Godot/app_userdata/[project_name][/code], or [code]%APPDATA%/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
-			</description>
-		</method>
-		<method name="get_video_driver_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_video_driver_name" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="driver" type="int">
-			</argument>
-			<description>
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
@@ -741,8 +711,6 @@
 		</member>
 		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
 			If [code]true[/code] the window is minimized.
-		</member>
-		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
 		</member>
 		<member name="window_position" type="Vector2" setter="set_window_position" getter="get_window_position">
 			The window position relative to the screen, the origin is the top left corner, +Y axis goes to the bottom and +X axis goes to the right.

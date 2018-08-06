@@ -34,6 +34,127 @@
 #include "scene/3d/cpu_particles.h"
 bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
 
+void ParticlesEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = NULL;
+		hide();
+	}
+}
+
+void ParticlesEditor::_node_selected(const NodePath &p_path) {
+
+	Node *sel = get_node(p_path);
+	if (!sel)
+		return;
+
+	VisualInstance *vi = Object::cast_to<VisualInstance>(sel);
+	if (!vi) {
+
+		err_dialog->set_text(TTR("Node does not contain geometry."));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
+
+	geometry = vi->get_faces(VisualInstance::FACES_SOLID);
+
+	if (geometry.size() == 0) {
+
+		err_dialog->set_text(TTR("Node does not contain geometry (faces)."));
+		err_dialog->popup_centered_minsize();
+		return;
+	}
+
+	Transform geom_xform = node->get_global_transform().affine_inverse() * vi->get_global_transform();
+
+	int gc = geometry.size();
+	PoolVector<Face3>::Write w = geometry.write();
+
+	for (int i = 0; i < gc; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i].vertex[j] = geom_xform.xform(w[i].vertex[j]);
+		}
+	}
+
+	w = PoolVector<Face3>::Write();
+
+	emission_dialog->popup_centered(Size2(300, 130));
+}
+
+void ParticlesEditor::_notification(int p_notification) {
+
+	if (p_notification == NOTIFICATION_ENTER_TREE) {
+		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
+	}
+}
+
+void ParticlesEditor::_menu_option(int p_option) {
+
+	switch (p_option) {
+
+		case MENU_OPTION_GENERATE_AABB: {
+			generate_aabb->popup_centered_minsize();
+		} break;
+		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
+
+			Ref<ParticlesMaterial> material = node->get_process_material();
+			if (material.is_null()) {
+				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
+				return;
+			}
+			emission_file_dialog->popup_centered_ratio();
+
+		} break;
+
+		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
+			Ref<ParticlesMaterial> material = node->get_process_material();
+			if (material.is_null()) {
+				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
+				return;
+			}
+
+			emission_tree_dialog->popup_centered_ratio();
+
+		} break;
+	}
+}
+
+void ParticlesEditor::_generate_aabb() {
+
+	float time = generate_seconds->get_value();
+
+	float running = 0.0;
+
+	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
+
+	AABB rect;
+	while (running < time) {
+
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		ep.step("Generating...", int(running), true);
+		OS::get_singleton()->delay_usec(1000);
+
+		AABB capture = node->capture_aabb();
+		if (rect == AABB())
+			rect = capture;
+		else
+			rect.merge_with(capture);
+
+		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+	}
+
+	node->set_visibility_aabb(rect);
+}
+
+void ParticlesEditor::edit(Particles *p_particles) {
+
+	node = p_particles;
+}
+
+void ParticlesEditor::_generate_emission_points() {
+
+	/// hacer codigo aca
+	PoolVector<float> points;
 	bool use_normals = emission_fill->get_selected() == 1;
 
 	if (emission_fill->get_selected() < 2) {

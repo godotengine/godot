@@ -233,12 +233,6 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select_prev();
 		}
 
-		if (k->get_scancode() == KEY_ESCAPE) {
-			for (int i = 0; i < bottom_panel_items.size(); i++) {
-				_bottom_panel_switch(false, i);
-			}
-		}
-
 		if (old_editor != editor_plugin_screen) {
 			get_tree()->set_input_as_handled();
 		}
@@ -469,19 +463,19 @@ void EditorNode::_fs_changed() {
 			preset.unref();
 		}
 		if (preset.is_null()) {
-			String errstr = "Unknown export preset: " + export_defer.preset;
-			ERR_PRINTS(errstr);
+			String err = "Unknown export preset: " + export_defer.preset;
+			ERR_PRINTS(err);
 		} else {
 			Ref<EditorExportPlatform> platform = preset->get_platform();
 			if (platform.is_null()) {
-				String errstr = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
-				ERR_PRINTS(errstr);
+				String err = "Preset \"" + export_defer.preset + "\" doesn't have a platform.";
+				ERR_PRINTS(err);
 			} else {
 				// ensures export_project does not loop infinitely, because notifications may
 				// come during the export
 				export_defer.preset = "";
-				Error err = OK;
-				if (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip")) {
+				Error err;
+				if (!preset->is_runnable() && (export_defer.path.ends_with(".pck") || export_defer.path.ends_with(".zip"))) {
 					if (export_defer.path.ends_with(".zip")) {
 						err = platform->export_zip(preset, export_defer.debug, export_defer.path);
 					} else if (export_defer.path.ends_with(".pck")) {
@@ -600,7 +594,9 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
-		show_accept(TTR("Error saving resource!"), TTR("I see..."));
+		current_option = -1;
+		accept->set_text(TTR("Error saving resource!"));
+		accept->popup_centered_minsize();
 		return;
 	}
 
@@ -686,6 +682,9 @@ void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
 
 	if (p_error) {
 
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see..."));
+
 		switch (p_error) {
 
 			case ERR_FILE_CANT_WRITE: {
@@ -707,6 +706,9 @@ void EditorNode::_dialog_display_save_error(String p_file, Error p_error) {
 void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 
 	if (p_error) {
+
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see..."));
 
 		switch (p_error) {
 
@@ -990,7 +992,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (!scene) {
 
-		show_accept(TTR("This operation can't be done without a tree root."), TTR("I see..."));
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see..."));
+		accept->set_text(TTR("This operation can't be done without a tree root."));
+		accept->popup_centered_minsize();
 		return;
 	}
 
@@ -1018,7 +1023,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 
-		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("I see..."));
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see..."));
+		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
+		accept->popup_centered_minsize();
 		return;
 	}
 
@@ -1026,7 +1034,10 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	// (hacky but needed for the tree to update properly)
 	Node *dummy_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!dummy_scene) {
-		show_accept(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."), TTR("I see..."));
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see..."));
+		accept->set_text(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
+		accept->popup_centered_minsize();
 		return;
 	}
 	memdelete(dummy_scene);
@@ -1188,7 +1199,10 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = ResourceLoader::load(p_file, "MeshLibrary");
 
 				if (ml.is_null()) {
-					show_accept(TTR("Can't load MeshLibrary for merging!"), TTR("I see..."));
+					current_option = -1;
+					accept->get_ok()->set_text(TTR("I see..."));
+					accept->set_text(TTR("Can't load MeshLibrary for merging!"));
+					accept->popup_centered_minsize();
 					return;
 				}
 			}
@@ -1201,20 +1215,31 @@ void EditorNode::_dialog_action(String p_file) {
 
 			Error err = ResourceSaver::save(p_file, ml);
 			if (err) {
-				show_accept(TTR("Error saving MeshLibrary!"), TTR("I see..."));
+
+				current_option = -1;
+				accept->get_ok()->set_text(TTR("I see..."));
+				accept->set_text(TTR("Error saving MeshLibrary!"));
+				accept->popup_centered_minsize();
 				return;
 			}
 
 		} break;
 		case FILE_EXPORT_TILESET: {
 
-			Ref<TileSet> tileset;
+			Ref<TileSet> ml;
 			if (FileAccess::exists(p_file) && file_export_lib_merge->is_pressed()) {
-				tileset = ResourceLoader::load(p_file, "TileSet");
+				ml = ResourceLoader::load(p_file, "TileSet");
 
-				if (tileset.is_null()) {
-					show_accept(TTR("Can't load TileSet for merging!"), TTR("I see..."));
-					return;
+				if (ml.is_null()) {
+					if (file_export_lib_merge->is_pressed()) {
+						current_option = -1;
+						accept->get_ok()->set_text(TTR("I see..."));
+						accept->set_text(TTR("Can't load TileSet for merging!"));
+						accept->popup_centered_minsize();
+						return;
+					}
+				} else if (!file_export_lib_merge->is_pressed()) {
+					ml->clear();
 				}
 
 			} else {
@@ -1226,7 +1251,10 @@ void EditorNode::_dialog_action(String p_file) {
 			Error err = ResourceSaver::save(p_file, tileset);
 			if (err) {
 
-				show_accept("Error saving TileSet!", "I see...");
+				current_option = -1;
+				accept->get_ok()->set_text(TTR("I see..."));
+				accept->set_text(TTR("Error saving TileSet!"));
+				accept->popup_centered_minsize();
 				return;
 			}
 		} break;
@@ -1498,7 +1526,21 @@ void EditorNode::_edit_current() {
 
 	if (!inspector_only) {
 
-		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
+		// special case if use of external editor is true
+		if (main_plugin->get_name() == "Script" && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (!changing_scene)
+				main_plugin->edit(current_obj);
+		}
+
+		else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+			// update screen main_plugin
+
+			if (!changing_scene) {
+
+				if (editor_plugin_screen)
+					editor_plugin_screen->make_visible(false);
+				editor_plugin_screen = main_plugin;
+				editor_plugin_screen->edit(current_obj);
 
 		if (main_plugin) {
 
@@ -1580,7 +1622,10 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
-			show_accept(TTR("There is no defined scene to run."), TTR("I see..."));
+			current_option = -1;
+			accept->get_ok()->set_text(TTR("I see..."));
+			accept->set_text(TTR("There is no defined scene to run."));
+			accept->popup_centered_minsize();
 			return;
 		}
 
@@ -1634,7 +1679,10 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 				if (scene->get_filename() == "") {
 
-					show_accept(TTR("Current scene was never saved, please save it prior to running."), TTR("I see..."));
+					current_option = -1;
+					accept->get_ok()->set_text(TTR("I see..."));
+					accept->set_text(TTR("Current scene was never saved, please save it prior to running."));
+					accept->popup_centered_minsize();
 					return;
 				}
 
@@ -1665,7 +1713,10 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	if (error != OK) {
 
-		show_accept(TTR("Could not start subprocess!"), TTR("I see..."));
+		current_option = -1;
+		accept->get_ok()->set_text(TTR("I see..."));
+		accept->set_text(TTR("Could not start subprocess!"));
+		accept->popup_centered_minsize();
 		return;
 	}
 
@@ -1788,7 +1839,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!scene) {
 
-				show_accept(TTR("This operation can't be done without a tree root."), TTR("I see..."));
+				current_option = -1;
+				//confirmation->get_cancel()->hide();
+				accept->get_ok()->set_text(TTR("I see..."));
+				accept->set_text(TTR("This operation can't be done without a tree root."));
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -1851,7 +1906,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!editor_data.get_edited_scene_root()) {
 
-				show_accept(TTR("This operation can't be done without a scene."), TTR("I see..."));
+				current_option = -1;
+				//confirmation->get_cancel()->hide();
+				accept->get_ok()->set_text(TTR("I see..."));
+				accept->set_text(TTR("This operation can't be done without a scene."));
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -1871,7 +1930,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			//Make sure that the scene has a root before trying to convert to tileset
 			if (!editor_data.get_edited_scene_root()) {
-				show_accept(TTR("This operation can't be done without a root node."), TTR("I see..."));
+				current_option = -1;
+				accept->get_ok()->set_text(TTR("I see..."));
+				accept->set_text(TTR("This operation can't be done without a root node."));
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -1892,7 +1954,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!editor_data.get_edited_scene_root()) {
 
-				show_accept(TTR("This operation can't be done without a selected node."), TTR("I see..."));
+				current_option = -1;
+				accept->get_ok()->set_text(TTR("I see..."));
+				accept->set_text(TTR("This operation can't be done without a selected node."));
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -2169,7 +2234,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->set_low_processor_usage_mode(false);
 			EditorSettings::get_singleton()->set_project_metadata("editor_options", "update_always", true);
 
-			show_accept(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."), TTR("I see..."));
+			current_option = -1;
+			accept->get_ok()->set_text(TTR("I see..."));
+			accept->set_text(TTR("This option is deprecated. Situations where refresh must be forced are now considered a bug. Please report."));
+			accept->popup_centered_minsize();
 		} break;
 		case SETTINGS_UPDATE_CHANGES: {
 
@@ -5374,9 +5442,125 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(scene_tree_dock->get_index(), TTR("Scene"));
 	dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 
-	inspector_dock = memnew(InspectorDock(this, editor_data));
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(inspector_dock);
-	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(inspector_dock->get_index(), TTR("Inspector"));
+	VBoxContainer *prop_editor_base = memnew(VBoxContainer);
+	prop_editor_base->set_name("Inspector");
+	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(prop_editor_base);
+	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(prop_editor_base->get_index(), TTR("Inspector"));
+
+	HBoxContainer *prop_editor_hb = memnew(HBoxContainer);
+
+	prop_editor_base->add_child(prop_editor_hb);
+	prop_editor_vb = prop_editor_base;
+
+	resource_new_button = memnew(ToolButton);
+	resource_new_button->set_tooltip(TTR("Create a new resource in memory and edit it."));
+	resource_new_button->set_icon(gui_base->get_icon("New", "EditorIcons"));
+	prop_editor_hb->add_child(resource_new_button);
+	resource_new_button->connect("pressed", this, "_menu_option", varray(RESOURCE_NEW));
+	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
+
+	resource_load_button = memnew(ToolButton);
+	resource_load_button->set_tooltip(TTR("Load an existing resource from disk and edit it."));
+	resource_load_button->set_icon(gui_base->get_icon("Load", "EditorIcons"));
+	prop_editor_hb->add_child(resource_load_button);
+	resource_load_button->connect("pressed", this, "_menu_option", varray(RESOURCE_LOAD));
+	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
+
+	resource_save_button = memnew(MenuButton);
+	resource_save_button->set_tooltip(TTR("Save the currently edited resource."));
+	resource_save_button->set_icon(gui_base->get_icon("Save", "EditorIcons"));
+	prop_editor_hb->add_child(resource_save_button);
+	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
+	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
+	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_disabled(true);
+
+	prop_editor_hb->add_spacer();
+
+	property_back = memnew(ToolButton);
+	property_back->set_icon(gui_base->get_icon("Back", "EditorIcons"));
+	property_back->set_flat(true);
+	property_back->set_tooltip(TTR("Go to the previous edited object in history."));
+	property_back->set_disabled(true);
+
+	prop_editor_hb->add_child(property_back);
+
+	property_forward = memnew(ToolButton);
+	property_forward->set_icon(gui_base->get_icon("Forward", "EditorIcons"));
+	property_forward->set_flat(true);
+	property_forward->set_tooltip(TTR("Go to the next edited object in history."));
+	property_forward->set_disabled(true);
+
+	prop_editor_hb->add_child(property_forward);
+
+	editor_history_menu = memnew(MenuButton);
+	editor_history_menu->set_tooltip(TTR("History of recently edited objects."));
+	editor_history_menu->set_icon(gui_base->get_icon("History", "EditorIcons"));
+	prop_editor_hb->add_child(editor_history_menu);
+	editor_history_menu->connect("about_to_show", this, "_prepare_history");
+	editor_history_menu->get_popup()->connect("id_pressed", this, "_select_history");
+
+	prop_editor_hb = memnew(HBoxContainer); //again...
+	prop_editor_base->add_child(prop_editor_hb);
+
+	editor_path = memnew(EditorPath(&editor_history));
+	editor_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	prop_editor_hb->add_child(editor_path);
+
+	search_button = memnew(ToolButton);
+	search_button->set_toggle_mode(true);
+	search_button->set_pressed(false);
+	search_button->set_icon(gui_base->get_icon("Search", "EditorIcons"));
+	prop_editor_hb->add_child(search_button);
+	search_button->connect("toggled", this, "_toggle_search_bar");
+
+	object_menu = memnew(MenuButton);
+	object_menu->set_icon(gui_base->get_icon("Tools", "EditorIcons"));
+	prop_editor_hb->add_child(object_menu);
+	object_menu->set_tooltip(TTR("Object properties."));
+
+	create_dialog = memnew(CreateDialog);
+	gui_base->add_child(create_dialog);
+	create_dialog->set_base_type("Resource");
+	create_dialog->connect("create", this, "_resource_created");
+
+	search_bar = memnew(HBoxContainer);
+	search_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	prop_editor_base->add_child(search_bar);
+	search_bar->hide();
+
+	Label *l = memnew(Label(TTR("Search:") + " "));
+	search_bar->add_child(l);
+
+	search_box = memnew(LineEdit);
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_bar->add_child(search_box);
+
+	ToolButton *clear_button = memnew(ToolButton);
+	clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons"));
+	search_bar->add_child(clear_button);
+	clear_button->connect("pressed", this, "_clear_search_box");
+
+	property_editable_warning = memnew(Button);
+	property_editable_warning->set_text(TTR("Changes may be lost!"));
+	prop_editor_base->add_child(property_editable_warning);
+	property_editable_warning_dialog = memnew(AcceptDialog);
+	gui_base->add_child(property_editable_warning_dialog);
+	property_editable_warning->hide();
+	property_editable_warning->connect("pressed", this, "_property_editable_warning_pressed");
+
+	property_editor = memnew(PropertyEditor);
+	property_editor->set_autoclear(true);
+	property_editor->set_show_categories(true);
+	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	property_editor->set_use_doc_hints(true);
+	property_editor->set_hide_script(false);
+	property_editor->set_enable_capitalize_paths(bool(EDITOR_DEF("interface/editor/capitalize_properties", true)));
+	property_editor->set_use_folding(!bool(EDITOR_DEF("interface/editor/disable_inspector_folding", false)));
+
+	property_editor->hide_top_label();
+	property_editor->register_text_enter(search_box);
 
 	Button *property_editable_warning;
 

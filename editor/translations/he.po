@@ -7282,6 +7282,18 @@ msgstr ""
 msgid "Create C# solution"
 msgstr "יצירת פתרון C#‎"
 
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "Create C# solution"
+msgstr "יצירת פתרון C#‎"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "Create C# solution"
+msgstr "יצירת פתרון C#‎"
+
+#: modules/mono/editor/godotsharp_editor.cpp
+msgid "Create C# solution"
+msgstr "יצירת פתרון C#‎"
+
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr ""
@@ -7293,10 +7305,6 @@ msgstr ""
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "אזהרות"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr ""
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

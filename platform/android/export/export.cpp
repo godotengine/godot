@@ -745,27 +745,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 						if (tname == "supports-screens") {
 
-							if (attrname == "smallScreens") {
-
-								encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-
-							} else if (attrname == "normalScreens") {
-
-								encode_uint32(screen_support_normal ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-
-							} else if (attrname == "largeScreens") {
-
-								encode_uint32(screen_support_large ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-
-							} else if (attrname == "xlargeScreens") {
-
-								encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
-							}
-						}
-
-						iofs += 20;
-					}
-
 				} break;
 				case CHUNK_XML_END_TAG: {
 					int iofs = ofs + 8;
@@ -852,6 +831,91 @@ class EditorExportAndroid : public EditorExportPlatform {
 						memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
 					}
 				} break;
+				case CHUNK_XML_END_TAG: {
+					int iofs = ofs + 8;
+					uint32_t name = decode_uint32(&p_manifest[iofs + 12]);
+					String tname = string_table[name];
+
+					if (tname == "manifest") {
+						print_line("Found manifest end");
+
+						// save manifest ending so we can restore it
+						Vector<uint8_t> manifest_end;
+						uint32_t manifest_cur_size = p_manifest.size();
+						uint32_t node_size = size;
+
+						manifest_end.resize(p_manifest.size() - ofs);
+						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
+
+						int32_t attr_name_string = string_table.find("name");
+						ERR_EXPLAIN("Template does not have 'name' attribute");
+						ERR_FAIL_COND(attr_name_string == -1);
+
+						int32_t ns_android_string = string_table.find("android");
+						ERR_EXPLAIN("Template does not have 'android' namespace");
+						ERR_FAIL_COND(ns_android_string == -1);
+
+						int32_t attr_uses_permission_string = string_table.find("uses-permission");
+						if (attr_uses_permission_string == -1) {
+							string_table.push_back("uses-permission");
+							attr_uses_permission_string = string_table.size() - 1;
+						}
+
+						for (int i = 0; i < perms.size(); ++i) {
+							print_line("Adding permission " + perms[i]);
+
+							manifest_cur_size += 56 + 24; // node + end node
+							p_manifest.resize(manifest_cur_size);
+
+							// Add permission to the string pool
+							int32_t perm_string = string_table.find(perms[i]);
+							if (perm_string == -1) {
+								string_table.push_back(perms[i]);
+								perm_string = string_table.size() - 1;
+							}
+
+							// start tag
+							encode_uint16(0x102, &p_manifest[ofs]); // type
+							encode_uint16(16, &p_manifest[ofs + 2]); // headersize
+							encode_uint32(56, &p_manifest[ofs + 4]); // size
+							encode_uint32(0, &p_manifest[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest[ofs + 20]); // name
+							encode_uint16(20, &p_manifest[ofs + 24]); // attr_start
+							encode_uint16(20, &p_manifest[ofs + 26]); // attr_size
+							encode_uint16(1, &p_manifest[ofs + 28]); // num_attrs
+							encode_uint16(0, &p_manifest[ofs + 30]); // id_index
+							encode_uint16(0, &p_manifest[ofs + 32]); // class_index
+							encode_uint16(0, &p_manifest[ofs + 34]); // style_index
+
+							// attribute
+							encode_uint32(ns_android_string, &p_manifest[ofs + 36]); // ns
+							encode_uint32(attr_name_string, &p_manifest[ofs + 40]); // 'name'
+							encode_uint32(perm_string, &p_manifest[ofs + 44]); // raw_value
+							encode_uint16(8, &p_manifest[ofs + 48]); // typedvalue_size
+							p_manifest[ofs + 50] = 0; // typedvalue_always0
+							p_manifest[ofs + 51] = 0x03; // typedvalue_type (string)
+							encode_uint32(perm_string, &p_manifest[ofs + 52]); // typedvalue reference
+
+							ofs += 56;
+
+							// end tag
+							encode_uint16(0x103, &p_manifest[ofs]); // type
+							encode_uint16(16, &p_manifest[ofs + 2]); // headersize
+							encode_uint32(24, &p_manifest[ofs + 4]); // size
+							encode_uint32(0, &p_manifest[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest[ofs + 20]); // name
+
+							ofs += 24;
+						}
+
+						// copy footer back in
+						memcpy(&p_manifest[ofs], manifest_end.ptr(), manifest_end.size());
+					}
+				} break;
 			}
 
 			ofs += size;
@@ -876,7 +940,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 		ret.resize(ret.size() + ofs);
 		string_data_offset = ret.size() - ofs;
-		uint8_t *chars = &ret.write[string_data_offset];
+		uint8_t *chars = &ret[string_data_offset];
 		for (int i = 0; i < string_table.size(); i++) {
 
 			String s = string_table[i];
@@ -909,9 +973,9 @@ class EditorExportAndroid : public EditorExportPlatform {
 			ret.push_back(0);
 		encode_uint32(ret.size(), &ret.write[4]); //update new file size
 
-		encode_uint32(new_stable_end - 8, &ret.write[12]); //update new string table size
-		encode_uint32(string_table.size(), &ret.write[16]); //update new number of strings
-		encode_uint32(string_data_offset - 8, &ret.write[28]); //update new string data offset
+		encode_uint32(new_stable_end - 8, &ret[12]); //update new string table size
+		encode_uint32(string_table.size(), &ret[16]); //update new number of strings
+		encode_uint32(string_data_offset - 8, &ret[28]); //update new string data offset
 
 		//print_line("file size: "+itos(ret.size()));
 
@@ -1092,7 +1156,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,2147483647,1"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name"), "org.godotengine.$genname"));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name"), ""));

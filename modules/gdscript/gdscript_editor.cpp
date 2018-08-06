@@ -60,18 +60,18 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	bool th = false;
 #endif
 
-	String _template = "extends %BASE%\n"
-					   "\n"
-					   "# Declare member variables here. Examples:\n"
-					   "# var a %INT_TYPE%= 2\n"
-					   "# var b %STRING_TYPE%= \"text\"\n"
-					   "\n"
-					   "# Called when the node enters the scene tree for the first time.\n"
-					   "func _ready()%VOID_RETURN%:\n"
-					   "%TS%pass # Replace with function body.\n"
-					   "\n"
-					   "# Called every frame. 'delta' is the elapsed time since the previous frame.\n"
-					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
+	String _template = String() +
+					   "extends %BASE%\n\n" +
+					   "# class member variables go here, for example:\n" +
+					   "# var a = 2\n" +
+					   "# var b = \"textvar\"\n\n" +
+					   "func _ready():\n" +
+					   "%TS%# Called when the node is added to the scene for the first time.\n" +
+					   "%TS%# Initialization here\n" +
+					   "%TS%pass\n\n" +
+					   "#func _process(delta):\n" +
+					   "#%TS%# Called every frame. Delta is time since last frame.\n" +
+					   "#%TS%# Update game logic here.\n" +
 					   "#%TS%pass\n";
 
 #ifdef TOOLS_ENABLED
@@ -870,6 +870,8 @@ static bool _guess_expression_type(const GDScriptCompletionContext &p_context, c
 												r_type = _type_from_variant(ret);
 												found = true;
 											}
+										} else {
+											all_is_const = false;
 										}
 									}
 								}
@@ -1665,6 +1667,7 @@ static bool _guess_method_return_type_from_base(const GDScriptCompletionContext 
 			default: {
 				return false;
 			}
+			arghint += " = " + def_val;
 		}
 	}
 	return false;
@@ -1759,7 +1762,6 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		if (i == p_arg_idx) {
 			arghint += String::chr(0xFFFF);
 		}
-	}
 
 	if (p_function->arguments.size() > 0) {
 		arghint += " ";
@@ -1771,27 +1773,23 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 
 static void _find_enumeration_candidates(const String p_enum_hint, Set<String> &r_result) {
 
-	if (p_enum_hint.find(".") == -1) {
-		// Global constant
-		StringName current_enum = p_enum_hint;
-		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
-			if (GlobalConstants::get_global_constant_enum(i) == current_enum) {
-				r_result.insert(GlobalConstants::get_global_constant_name(i));
+		GDScriptParser::Node *statement = context.block->statements[i];
+		if (statement->line > p_line)
+			continue;
+
+		GDScriptParser::BlockNode::Type statementType = statement->type;
+		if (statementType == GDScriptParser::BlockNode::TYPE_LOCAL_VAR) {
+
+			const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(statement);
+			result.insert(lv->name.operator String());
+		} else if (statementType == GDScriptParser::BlockNode::TYPE_CONTROL_FLOW) {
+
+			const GDScriptParser::ControlFlowNode *cf = static_cast<const GDScriptParser::ControlFlowNode *>(statement);
+			if (cf->cf_type == GDScriptParser::ControlFlowNode::CF_FOR) {
+
+				const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(cf->arguments[0]);
+				result.insert(id->name.operator String());
 			}
-		}
-	} else {
-		String class_name = p_enum_hint.get_slice(".", 0);
-		String enum_name = p_enum_hint.get_slice(".", 1);
-
-		if (!ClassDB::class_exists(class_name)) {
-			return;
-		}
-
-		List<StringName> enum_constants;
-		ClassDB::get_enum_constants(class_name, enum_name, &enum_constants);
-		for (List<StringName>::Element *E = enum_constants.front(); E; E = E->next()) {
-			String candidate = class_name + "." + E->get();
-			r_result.insert(candidate);
 		}
 	}
 }
@@ -2109,7 +2107,14 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 		kw++;
 	}
 
-	// Autoload singletons
+	List<String> reserved_words;
+	GDScriptLanguage::get_singleton()->get_reserved_words(&reserved_words);
+
+	for (List<String>::Element *E = reserved_words.front(); E; E = E->next()) {
+		result.insert(E->get());
+	}
+
+	//autoload singletons
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -2223,6 +2228,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 								_find_enumeration_candidates(arg_info.class_name, r_result);
 							}
 						}
+					}
+				}
 
 						r_arghint = _make_arguments_hint(E->get(), p_argidx);
 						break;
@@ -3165,6 +3172,19 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	context.line = parser.get_completion_line();
 	context.base = p_owner;
 	context.base_path = p_base_path;
+
+	if (context._class && context._class->extends_class.size() > 0) {
+		bool success = false;
+		ClassDB::get_integer_constant(context._class->extends_class[0], p_symbol, &success);
+		if (success) {
+			r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
+			r_result.class_name = context._class->extends_class[0];
+			r_result.class_member = p_symbol;
+			return OK;
+		}
+	}
+
+	bool isfunction = false;
 
 	if (context._class && context._class->extends_class.size() > 0) {
 		bool success = false;

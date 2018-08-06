@@ -77,12 +77,12 @@ void setup_runtime_main_args() {
 	Vector<char *> main_args;
 	main_args.resize(cmdline_args.size() + 1);
 
-	main_args.write[0] = execpath.ptrw();
+	main_args[0] = execpath.ptrw();
 
 	int i = 1;
 	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		CharString &stored = cmdline_args_utf8.push_back(E->get().utf8())->get();
-		main_args.write[i] = stored.ptrw();
+		main_args[i] = stored.ptrw();
 		i++;
 	}
 
@@ -255,6 +255,23 @@ void GDMono::initialize() {
 				ERR_PRINT("The loaded Editor API assembly is out of sync");
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
+
+			OS::get_singleton()->print("Mono: Proceeding to unload scripts domain because of invalid API assemblies\n");
+
+			Error err = _unload_scripts_domain();
+			if (err != OK) {
+				WARN_PRINT("Mono: Failed to unload scripts domain");
+			}
+#else
+			ERR_PRINT("The loaded API assembly is invalid");
+			CRASH_NOW();
+#endif
+		}
+	}
+#else
+	if (OS::get_singleton()->is_stdout_verbose())
+		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
+#endif
 
 			OS::get_singleton()->print("Mono: Proceeding to unload scripts domain because of invalid API assemblies\n");
 
@@ -755,12 +772,12 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
 
-	MonoException *exc = NULL;
-	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
+	MonoObject *ex = NULL;
+	mono_domain_try_unload(p_domain, &ex);
 
-	if (exc) {
-		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`");
-		GDMonoUtils::debug_unhandled_exception(exc);
+	if (ex) {
+		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`:");
+		mono_print_unhandled_exception(ex);
 		return FAILED;
 	}
 

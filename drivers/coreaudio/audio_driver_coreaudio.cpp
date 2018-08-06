@@ -52,9 +52,7 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 }
 #endif
 
-Error AudioDriverCoreAudio::init() {
-	mutex = Mutex::create();
-
+Error AudioDriverCoreAudio::init_device() {
 	AudioComponentDescription desc;
 	zeromem(&desc, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
@@ -146,6 +144,42 @@ Error AudioDriverCoreAudio::init() {
 
 	return OK;
 }
+
+Error AudioDriverCoreAudio::finish_device() {
+	OSStatus result;
+
+	if (active) {
+		result = AudioOutputUnitStop(audio_unit);
+		ERR_FAIL_COND_V(result != noErr, FAILED);
+
+		active = false;
+	}
+
+	result = AudioUnitUninitialize(audio_unit);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	return OK;
+}
+
+Error AudioDriverCoreAudio::init() {
+	OSStatus result;
+
+	mutex = Mutex::create();
+	active = false;
+	channels = 2;
+
+#ifdef OSX_ENABLED
+	AudioObjectPropertyAddress prop;
+	prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+	prop.mScope = kAudioObjectPropertyScopeGlobal;
+	prop.mElement = kAudioObjectPropertyElementMaster;
+
+	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+#endif
+
+	return init_device();
+};
 
 OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
 		AudioUnitRenderActionFlags *ioActionFlags,
@@ -349,7 +383,6 @@ void AudioDriverCoreAudio::set_device(String device) {
 	}
 
 	if (!found) {
-		// If we haven't found the desired device get the system default one
 		UInt32 size = sizeof(AudioDeviceID);
 		AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 
@@ -386,28 +419,7 @@ bool AudioDriverCoreAudio::try_lock() {
 void AudioDriverCoreAudio::finish() {
 	OSStatus result;
 
-	lock();
-
-	AURenderCallbackStruct callback;
-	zeromem(&callback, sizeof(AURenderCallbackStruct));
-	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
-	if (result != noErr) {
-		ERR_PRINT("AudioUnitSetProperty failed");
-	}
-
-	if (active) {
-		result = AudioOutputUnitStop(audio_unit);
-		if (result != noErr) {
-			ERR_PRINT("AudioOutputUnitStop failed");
-		}
-
-		active = false;
-	}
-
-	result = AudioUnitUninitialize(audio_unit);
-	if (result != noErr) {
-		ERR_PRINT("AudioUnitUninitialize failed");
-	}
+	finish_device();
 
 #ifdef OSX_ENABLED
 	AudioObjectPropertyAddress prop;

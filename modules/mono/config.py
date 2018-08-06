@@ -4,8 +4,7 @@ import os
 import sys
 import subprocess
 
-from distutils.version import LooseVersion
-from SCons.Script import BoolVariable, Dir, Environment, File, PathVariable, SCons, Variables
+from SCons.Script import BoolVariable, Dir, Environment, PathVariable, Variables
 
 
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')
@@ -22,27 +21,6 @@ def is_enabled():
     return False
 
 
-def get_doc_classes():
-    return [
-        '@C#',
-        'CSharpScript',
-        'GodotSharp',
-    ]
-
-
-def get_doc_path():
-    return 'doc_classes'
-
-
-def find_file_in_dir(directory, files, prefix='', extension=''):
-    if not extension.startswith('.'):
-        extension = '.' + extension
-    for curfile in files:
-        if os.path.isfile(os.path.join(directory, prefix + curfile + extension)):
-            return curfile
-    return ''
-
-
 def copy_file(src_dir, dst_dir, name):
     from shutil import copyfile
 
@@ -55,24 +33,13 @@ def copy_file(src_dir, dst_dir, name):
     copyfile(src_path, dst_path)
 
 
-def custom_path_is_dir_create(key, val, env):
-    """Validator to check if Path is a directory, creating it if it does not exist.
-       Similar to PathIsDirCreate, except it uses SCons.Script.Dir() and
-       SCons.Script.File() in order to support the '#' top level directory token.
-       """
-    # Dir constructor will throw an error if the path points to a file
-    fsDir = Dir(val)
-    if not fsDir.exists:
-        os.makedirs(fsDir.abspath)
-
-
 def configure(env):
     env.use_ptrcall = True
     env.add_module_version_string('mono')
 
     envvars = Variables()
     envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))
-    envvars.Add(PathVariable('mono_assemblies_output_dir', 'Path to the assemblies output directory', '#bin', custom_path_is_dir_create))
+    envvars.Add(PathVariable('mono_assemblies_output_dir', 'Path to the assemblies output directory', '#bin', PathVariable.PathIsDirCreate))
     envvars.Update(env)
 
     bits = env['bits']
@@ -221,7 +188,7 @@ def configure(env):
 
             mono_lib_path = ''
             mono_so_name = ''
-            mono_prefix = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
+            mono_prefix = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).strip()
 
             tmpenv = Environment()
             tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))

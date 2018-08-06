@@ -219,16 +219,12 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			// Version number should be of the form major.minor[.patch].status[.module_config]
 			// so it can in theory have 3 or more slices.
 			if (data_str.get_slice_count(".") < 3) {
-				EditorNode::get_singleton()->show_warning(vformat(TTR("Invalid version.txt format inside templates: %s."), data_str));
+				EditorNode::get_singleton()->show_warning(TTR("Invalid version.txt format inside templates."));
 				unzClose(pkg);
 				return;
 			}
 
 			version = data_str;
-		}
-
-		if (file.get_file().size() != 0) {
-			fc++;
 		}
 
 		ret = unzGoToNextFile(pkg);
@@ -440,10 +436,6 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 	template_download_progress->set_value(0);
 	template_download_progress->show();
 	template_list_state->set_text(TTR("Connecting to Mirror..."));
-}
-
-void ExportTemplateManager::_window_template_downloader_closed() {
-	download_templates->cancel_request();
 }
 
 void ExportTemplateManager::_notification(int p_what) {

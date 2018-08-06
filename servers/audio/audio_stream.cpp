@@ -99,6 +99,13 @@ void AudioStream::_bind_methods() {
 
 ////////////////////////////////
 
+void AudioStream::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
+}
+
+////////////////////////////////
+
 void AudioStreamRandomPitch::set_audio_stream(const Ref<AudioStream> &p_audio_stream) {
 
 	audio_stream = p_audio_stream;

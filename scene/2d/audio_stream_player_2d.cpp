@@ -50,11 +50,7 @@ void AudioStreamPlayer2D::_mix_audio() {
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
-	if (stream_paused_fade_out) {
-		// Short fadeout ramp
-		buffer_size = MIN(buffer_size, 128);
-	}
-
+	//mix
 	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
 	//write all outputs
@@ -249,7 +245,6 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 		//stop playing if no longer active
 		if (!active) {
 			set_physics_process_internal(false);
-			//do not update, this makes it easier to animate (will shut off otherwise)
 			//_change_notify("playing"); //update property in editor
 			emit_signal("finished");
 		}
@@ -334,6 +329,11 @@ void AudioStreamPlayer2D::stop() {
 
 bool AudioStreamPlayer2D::is_playing() const {
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint())
+		return fake_active;
+#endif
+
 	if (stream_playback.is_valid()) {
 		return active; // && stream_playback->is_playing();
 	}
@@ -378,11 +378,16 @@ bool AudioStreamPlayer2D::is_autoplay_enabled() {
 
 void AudioStreamPlayer2D::_set_playing(bool p_enable) {
 
+#ifdef TOOLS_ENABLED
+	fake_active = p_enable;
+#endif
+
 	if (p_enable)
 		play();
 	else
 		stop();
 }
+
 bool AudioStreamPlayer2D::_is_active() const {
 
 	return active;

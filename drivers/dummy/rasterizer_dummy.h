@@ -67,7 +67,7 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
+	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
 
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {}
 
@@ -127,26 +127,7 @@ public:
 		String path;
 	};
 
-	struct DummySurface {
-		uint32_t format;
-		VS::PrimitiveType primitive;
-		PoolVector<uint8_t> array;
-		int vertex_count;
-		PoolVector<uint8_t> index_array;
-		int index_count;
-		AABB aabb;
-		Vector<PoolVector<uint8_t> > blend_shapes;
-		Vector<AABB> bone_aabbs;
-	};
-
-	struct DummyMesh : public RID_Data {
-		Vector<DummySurface> surfaces;
-		int blend_shape_count;
-		VS::BlendShapeMode blend_shape_mode;
-	};
-
 	mutable RID_Owner<DummyTexture> texture_owner;
-	mutable RID_Owner<DummyMesh> mesh_owner;
 
 	RID texture_create() {
 
@@ -235,7 +216,6 @@ public:
 	void textures_keep_original(bool p_enable) {}
 
 	void texture_set_proxy(RID p_proxy, RID p_base) {}
-	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 
 	/* SKY API */
 
@@ -276,128 +256,46 @@ public:
 
 	/* MESH API */
 
-	RID mesh_create() {
-		DummyMesh *mesh = memnew(DummyMesh);
-		ERR_FAIL_COND_V(!mesh, RID());
-		mesh->blend_shape_count = 0;
-		mesh->blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
-		return mesh_owner.make_rid(mesh);
-	}
+	RID mesh_create() { return RID(); }
 
-	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
+	void mesh_add_surface_from_arrays(RID p_mesh, VS::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_compress_format = Mesh::ARRAY_COMPRESS_DEFAULT) {}
+	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {}
 
-		m->surfaces.push_back(DummySurface());
-		DummySurface *s = &m->surfaces.write[m->surfaces.size() - 1];
-		s->format = p_format;
-		s->primitive = p_primitive;
-		s->array = p_array;
-		s->vertex_count = p_vertex_count;
-		s->index_array = p_index_array;
-		s->index_count = p_index_count;
-		s->aabb = p_aabb;
-		s->blend_shapes = p_blend_shapes;
-		s->bone_aabbs = p_bone_aabbs;
-	}
+	void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data) {}
+	void mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes) {}
 
-	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_count = p_amount;
-	}
-	int mesh_get_blend_shape_count(RID p_mesh) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->blend_shape_count;
-	}
+	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) {}
+	int mesh_get_blend_shape_count(RID p_mesh) const { return 0; }
 
-	void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_mode = p_mode;
-	}
-	VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, VS::BLEND_SHAPE_MODE_NORMALIZED);
-		return m->blend_shape_mode;
-	}
+	void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {}
+	VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const { return VS::BLEND_SHAPE_MODE_NORMALIZED; }
 
 	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}
 
 	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {}
 	RID mesh_surface_get_material(RID p_mesh, int p_surface) const { return RID(); }
 
-	int mesh_surface_get_array_len(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].vertex_count;
-	}
-	int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].index_count;
-	}
+	int mesh_surface_get_array_len(RID p_mesh, int p_surface) const { return 0; }
+	int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const { return 0; }
 
 	PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
-
-		return m->surfaces[p_surface].array;
+		PoolVector<uint8_t> p;
+		return p;
 	}
 	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
-
-		return m->surfaces[p_surface].index_array;
+		PoolVector<uint8_t> p;
+		return p;
 	}
 
-	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
+	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const { return 0; }
+	VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const { return VS::PRIMITIVE_POINTS; }
 
-		return m->surfaces[p_surface].format;
-	}
-	VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, VS::PRIMITIVE_POINTS);
+	AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const { return AABB(); }
+	Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const { return Vector<PoolVector<uint8_t> >(); }
+	Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const { return Vector<AABB>(); }
 
-		return m->surfaces[p_surface].primitive;
-	}
-
-	AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, AABB());
-
-		return m->surfaces[p_surface].aabb;
-	}
-	Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<PoolVector<uint8_t> >());
-
-		return m->surfaces[p_surface].blend_shapes;
-	}
-	Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<AABB>());
-
-		return m->surfaces[p_surface].bone_aabbs;
-	}
-
-	void mesh_remove_surface(RID p_mesh, int p_index) {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		ERR_FAIL_COND(p_index >= m->surfaces.size());
-
-		m->surfaces.remove(p_index);
-	}
-	int mesh_get_surface_count(RID p_mesh) const {
-		DummyMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->surfaces.size();
-	}
+	void mesh_remove_surface(RID p_mesh, int p_index) {}
+	int mesh_get_surface_count(RID p_mesh) const { return 0; }
 
 	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {}
 	AABB mesh_get_custom_aabb(RID p_mesh) const { return AABB(); }
@@ -409,23 +307,19 @@ public:
 
 	virtual RID multimesh_create() { return RID(); }
 
-	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
+	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format) {}
 	int multimesh_get_instance_count(RID p_multimesh) const { return 0; }
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
 	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
 
 	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
 
 	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
 	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
-
-	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
@@ -704,14 +598,7 @@ public:
 	RID canvas_light_occluder_create() { return RID(); }
 	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
 
-	VS::InstanceType get_base_type(RID p_rid) const {
-		if (mesh_owner.owns(p_rid)) {
-			return VS::INSTANCE_MESH;
-		}
-
-		return VS::INSTANCE_NONE;
-	}
-
+	VS::InstanceType get_base_type(RID p_rid) const { return VS::INSTANCE_NONE; }
 	bool free(RID p_rid) {
 
 		if (texture_owner.owns(p_rid)) {
@@ -750,7 +637,7 @@ public:
 	void canvas_begin(){};
 	void canvas_end(){};
 
-	void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_transform){};
+	void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light){};
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow){};
 
 	void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, CameraMatrix *p_xform_cache) {}
@@ -777,7 +664,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {}
 
 	void initialize() {}
-	void begin_frame(double frame_step) {}
+	void begin_frame() {}
 	void set_current_render_target(RID p_render_target) {}
 	void restore_render_target() {}
 	void clear_render_target(const Color &p_color) {}

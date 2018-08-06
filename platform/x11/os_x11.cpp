@@ -1062,12 +1062,8 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
-
 	if (current_videomode.fullscreen == p_enabled)
 		return;
-
-	if (layered_window)
-		set_window_per_pixel_transparency_enabled(false);
 
 	if (p_enabled && current_videomode.always_on_top) {
 		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
@@ -1967,7 +1963,6 @@ void OS_X11::process_xevents() {
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
-#ifdef TOUCH_ENABLED
 				// Avoidance of spurious mouse motion (see handling of touch)
 				bool filter = false;
 				// Adding some tolerance to match better Point2i to Vector2
@@ -1979,7 +1974,6 @@ void OS_X11::process_xevents() {
 				if (filter) {
 					break;
 				}
-#endif
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 

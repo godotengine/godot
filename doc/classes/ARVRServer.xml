@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRServer" inherits="Object" category="Core" version="3.1">
+<class name="ARVRServer" inherits="Object" category="Core" version="3.0.6">
 	<brief_description>
 		This is our AR/VR Server.
 	</brief_description>
@@ -40,7 +40,6 @@
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the primary interface's transformation.
 			</description>
 		</method>
 		<method name="get_interface" qualifiers="const">
@@ -80,6 +79,12 @@
 		</method>
 		<method name="get_last_process_usec">
 			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_primary_interface" qualifiers="const">
+			<return type="ARVRInterface">
 			</return>
 			<description>
 			</description>

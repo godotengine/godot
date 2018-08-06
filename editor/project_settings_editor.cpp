@@ -160,13 +160,14 @@ void ProjectSettingsEditor::_action_edited() {
 		String new_name = ti->get_text(0);
 		String old_name = add_at.substr(add_at.find("/") + 1, add_at.length());
 
-		if (new_name == old_name)
-			return;
+	if (new_name == "" || !_validate_action_name(new_name)) {
 
 		if (new_name == "" || !_validate_action_name(new_name)) {
 
-			ti->set_text(0, old_name);
-			add_at = "input/" + old_name;
+		message->set_text(TTR("Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or '\"'."));
+		message->popup_centered(Size2(300, 100) * EDSCALE);
+		return;
+	}
 
 			message->set_text(TTR("Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or '\"'"));
 			message->popup_centered(Size2(300, 100) * EDSCALE);

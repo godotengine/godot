@@ -659,6 +659,36 @@ void TextEdit::_notification(int p_what) {
 				if (cache.background_color.a > 0.01) {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(), get_size()), cache.background_color);
 				}
+				//compute actual region to start (may be inside say, a comment).
+				//slow in very large documents :( but ok for source!
+
+				for (int i = 0; i < cursor.line_ofs; i++) {
+
+					const Map<int, Text::ColorRegionInfo> &cri_map = text.get_color_region_info(i);
+
+					if (in_region >= 0 && color_regions[in_region].line_only) {
+						in_region = -1; //reset regions that end at end of line
+					}
+
+					for (const Map<int, Text::ColorRegionInfo>::Element *E = cri_map.front(); E; E = E->next()) {
+
+						const Text::ColorRegionInfo &cri = E->get();
+
+						if (in_region == -1) {
+
+							if (!cri.end) {
+
+								in_region = cri.region;
+							}
+						} else if (in_region == cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
+
+							if (cri.end || color_regions[cri.region].eq) {
+
+								in_region = -1;
+							}
+						}
+					}
+				}
 			}
 
 			int brace_open_match_line = -1;
@@ -879,10 +909,17 @@ void TextEdit::_notification(int p_what) {
 						ofs_x = cache.style_readonly->get_offset().x / 2;
 					}
 
-					int ofs_y = (i * get_row_height() + cache.line_spacing / 2) + ofs_readonly;
-					ofs_y -= cursor.wrap_ofs * get_row_height();
-					if (smooth_scroll_enabled)
-						ofs_y += (-get_v_scroll_offset()) * get_row_height();
+					// give visual indication of empty selected line
+					if (selection.active && line >= selection.from_line && line <= selection.to_line && char_margin >= xmargin_beg) {
+						int char_w = cache.font->get_char_size(' ').width;
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, char_w, get_row_height()), cache.selection_color);
+					}
+				} else {
+					// if it has text, then draw current line marker in the margin, as line number etc will draw over it, draw the rest of line marker later.
+					if (line == cursor.line && highlight_current_line) {
+						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(0, ofs_y, xmargin_beg + ofs_x, get_row_height()), cache.current_line_color);
+					}
+				}
 
 					// check if line contains highlighted word
 					int highlighted_text_col = -1;
@@ -1073,14 +1110,16 @@ void TextEdit::_notification(int p_what) {
 
 								bool in_highlighted_word = (j >= highlighted_text_col && j < highlighted_text_col + highlighted_text.length());
 
-								// if this is the original highlighted text we don't want to highlight it again
-								if (cursor.line == line && cursor_wrap_index == line_wrap_index && (cursor.column >= highlighted_text_col && cursor.column <= highlighted_text_col + highlighted_text.length())) {
-									in_highlighted_word = false;
-								}
+						// line highlighting handle horizontal clipping
+						if (line == cursor.line && highlight_current_line) {
 
-								if (in_highlighted_word) {
-									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(char_w, get_row_height())), cache.word_highlighted_color);
-								}
+							if (j == str.length() - 1) {
+								// end of line when last char is skipped
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - (xmargin_beg + ofs_x), get_row_height()), cache.current_line_color);
+
+							} else if ((char_ofs + char_margin) > xmargin_beg) {
+								// char next to margin is skipped
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, (char_ofs + char_margin) - xmargin_beg, get_row_height()), cache.current_line_color);
 							}
 						}
 
@@ -5095,7 +5134,7 @@ int TextEdit::get_indent_level(int p_line) const {
 			break;
 		}
 	}
-	return tab_count * indent_size + whitespace_count;
+	return false;
 }
 
 bool TextEdit::is_line_comment(int p_line) const {

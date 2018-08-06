@@ -356,8 +356,7 @@ ConnectDialog::ConnectDialog() {
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
 	dstm_hb->add_child(dst_method);
 
-	/*
-	dst_method_list = memnew( MenuButton );
+	/*dst_method_list = memnew( MenuButton );
 	dst_method_list->set_text("List...");
 	dst_method_list->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	dst_method_list->set_anchor( MARGIN_LEFT, ANCHOR_END );
@@ -451,7 +450,12 @@ void ConnectionsDock::_make_or_edit_connection() {
 		hide();
 	}
 
-	update_tree();
+	undo_redo->add_do_method(this, "update_tree");
+	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree");
+
+	undo_redo->commit_action();
 }
 
 /*
@@ -707,7 +711,26 @@ void ConnectionsDock::_connect_pressed() {
 	TreeItem *item = tree->get_selected();
 	if (!item) {
 		connect_button->set_disabled(true);
+	} else if (_is_item_signal(*item)) {
+		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_disabled(false);
+	} else {
+		connect_button->set_text(TTR("Disconnect"));
+		connect_button->set_disabled(false);
+	}
+}
+
+void ConnectionsDock::_tree_item_activated() { //"Activation" on double-click.
+
+	TreeItem *item = tree->get_selected();
+
+	if (!item)
 		return;
+
+	if (_is_item_signal(*item)) {
+		_open_connection_dialog(*item);
+	} else {
+		_go_to_script(*item);
 	}
 
 	if (_is_item_signal(*item)) {
@@ -887,6 +910,88 @@ void ConnectionsDock::update_tree() {
 
 	connect_button->set_text(TTR("Connect"));
 	connect_button->set_disabled(true);
+}
+
+void ConnectionsDock::set_node(Node *p_node) {
+
+	node = p_node;
+	update_tree();
+}
+
+void ConnectionsDock::_something_selected() {
+
+	TreeItem *item = tree->get_selected();
+	if (!item) {
+		//no idea how this happened, but disable
+		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_disabled(true);
+
+	} else if (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root()) {
+		//a signal - connect
+		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_disabled(false);
+
+	} else {
+		//a slot- disconnect
+		connect_button->set_text(TTR("Disconnect"));
+		connect_button->set_disabled(false);
+	}
+}
+
+void ConnectionsDock::_something_activated() {
+
+	TreeItem *item = tree->get_selected();
+
+	if (!item)
+		return;
+
+	if (item->get_parent() == tree->get_root() || item->get_parent()->get_parent() == tree->get_root()) {
+		// a signal - connect
+		String signal = item->get_metadata(0).operator Dictionary()["name"];
+		String midname = node->get_name();
+		for (int i = 0; i < midname.length(); i++) {
+			CharType c = midname[i];
+			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
+				//all good
+			} else if (c == ' ') {
+				c = '_';
+			} else {
+				midname.remove(i);
+				i--;
+				continue;
+			}
+
+			midname[i] = c;
+		}
+
+		connect_dialog->edit(node);
+		connect_dialog->popup_centered_ratio();
+		connect_dialog->set_dst_method("_on_" + midname + "_" + signal);
+		connect_dialog->set_dst_node(node->get_owner() ? node->get_owner() : node);
+	} else {
+		// a slot - go to target method
+		Connection c = item->get_metadata(0);
+		ERR_FAIL_COND(c.source != node); //shouldn't happen but...bugcheck
+
+		if (!c.target)
+			return;
+
+		Ref<Script> script = c.target->get_script();
+
+		if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
+			editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+		}
+	}
+}
+
+void ConnectionsDock::_bind_methods() {
+
+	ClassDB::bind_method("_connect", &ConnectionsDock::_connect);
+	ClassDB::bind_method("_something_selected", &ConnectionsDock::_something_selected);
+	ClassDB::bind_method("_something_activated", &ConnectionsDock::_something_activated);
+	ClassDB::bind_method("_close", &ConnectionsDock::_close);
+	ClassDB::bind_method("_connect_pressed", &ConnectionsDock::_connect_pressed);
+	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
 }
 
 ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {

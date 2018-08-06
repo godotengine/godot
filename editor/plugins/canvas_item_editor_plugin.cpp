@@ -229,7 +229,6 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 				Point2 begin = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(0, 0)));
 				Point2 end = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(1, 1)));
 				_snap_if_closer_point(p_target, begin, output, snapped, rotation);
-				_snap_if_closer_point(p_target, (begin + end) / 2.0, output, snapped, rotation);
 				_snap_if_closer_point(p_target, end, output, snapped, rotation);
 			} else if (const CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_canvas_item->get_parent())) {
 				if (parent_ci->_edit_use_rect()) {
@@ -364,11 +363,79 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 
 void CanvasItemEditor::_keying_changed() {
 
-	if (AnimationPlayerEditor::singleton->get_track_editor()->is_visible_in_tree())
-		animation_hb->show();
-	else
-		animation_hb->hide();
+	Dictionary state;
+	state["zoom"] = zoom;
+	state["ofs"] = Point2(h_scroll->get_value(), v_scroll->get_value());
+	state["grid_offset"] = grid_offset;
+	state["grid_step"] = grid_step;
+	state["snap_rotation_offset"] = snap_rotation_offset;
+	state["snap_rotation_step"] = snap_rotation_step;
+	state["snap_active"] = snap_active;
+	state["snap_node_parent"] = snap_node_parent;
+	state["snap_node_anchors"] = snap_node_anchors;
+	state["snap_node_sides"] = snap_node_sides;
+	state["snap_other_nodes"] = snap_other_nodes;
+	state["snap_grid"] = snap_grid;
+	state["snap_guides"] = snap_guides;
+	state["show_grid"] = show_grid;
+	state["show_origin"] = show_origin;
+	state["show_viewport"] = show_viewport;
+	state["show_rulers"] = show_rulers;
+	state["show_guides"] = show_guides;
+	state["show_helpers"] = show_helpers;
+	state["snap_rotation"] = snap_rotation;
+	state["snap_relative"] = snap_relative;
+	state["snap_pixel"] = snap_pixel;
+	state["skeleton_show_bones"] = skeleton_show_bones;
+	return state;
 }
+
+void CanvasItemEditor::set_state(const Dictionary &p_state) {
+
+	Dictionary state = p_state;
+	if (state.has("zoom")) {
+		zoom = p_state["zoom"];
+	}
+
+	if (state.has("ofs")) {
+		_update_scrollbars(); // i wonder how safe is calling this here..
+		Point2 ofs = p_state["ofs"];
+		h_scroll->set_value(ofs.x);
+		v_scroll->set_value(ofs.y);
+	}
+
+	if (state.has("grid_offset")) {
+		grid_offset = state["grid_offset"];
+	}
+
+	if (state.has("grid_step")) {
+		grid_step = state["grid_step"];
+	}
+
+	if (state.has("snap_rotation_step")) {
+		snap_rotation_step = state["snap_rotation_step"];
+	}
+
+	if (state.has("snap_rotation_offset")) {
+		snap_rotation_offset = state["snap_rotation_offset"];
+	}
+
+	if (state.has("snap_active")) {
+		snap_active = state["snap_active"];
+		snap_button->set_pressed(snap_active);
+	}
+
+	if (state.has("snap_node_parent")) {
+		snap_node_parent = state["snap_node_parent"];
+		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_PARENT);
+		smartsnap_config_popup->set_item_checked(idx, snap_node_parent);
+	}
+
+	if (state.has("snap_node_anchors")) {
+		snap_node_anchors = state["snap_node_anchors"];
+		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_ANCHORS);
+		smartsnap_config_popup->set_item_checked(idx, snap_node_anchors);
+	}
 
 Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_list) {
 	ERR_FAIL_COND_V(p_list.empty(), Rect2());
@@ -398,8 +465,23 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_li
 		}
 	}
 
-	return rect;
-}
+	if (state.has("show_origin")) {
+		show_origin = state["show_origin"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_ORIGIN);
+		view_menu->get_popup()->set_item_checked(idx, show_origin);
+	}
+
+	if (state.has("show_viewport")) {
+		show_viewport = state["show_viewport"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
+		view_menu->get_popup()->set_item_checked(idx, show_viewport);
+	}
+
+	if (state.has("show_rulers")) {
+		show_rulers = state["show_rulers"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
+		view_menu->get_popup()->set_item_checked(idx, show_rulers);
+	}
 
 void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	if (!p_node)
@@ -490,8 +572,6 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			r_items.push_back(res);
 		}
 	}
-
-	return;
 }
 
 void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, int p_limit) {
@@ -1052,6 +1132,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 				return true;
 			}
 		}
+	}
+	return false;
+}
 
 		if (b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_RIGHT) {
 			// Pan right
@@ -1061,6 +1144,11 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 				viewport->update();
 				return true;
 			}
+			view_offset.x -= relative.x / zoom;
+			view_offset.y -= relative.y / zoom;
+			_update_scrollbars();
+			viewport->update();
+			return true;
 		}
 
 		if (drag_type == DRAG_NONE) {
@@ -1156,6 +1244,8 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 					drag_selection.push_back(canvas_item);
 				}
 			}
+		}
+	}
 
 			// Start dragging if we still have nodes
 			if (drag_selection.size() > 0) {
@@ -1305,6 +1395,8 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				_save_canvas_item_state(drag_selection);
 				return true;
 			}
+			canvas_item->_edit_set_rect(Rect2(current_begin, current_end - current_begin));
+			return true;
 		}
 	}
 
@@ -1548,8 +1640,19 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 			//Reset state
 			canvas_item->_edit_set_state(se->undo_state);
 
-			bool uniform = m->get_shift();
-			bool symmetric = m->get_alt();
+	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && tool == TOOL_SELECT &&
+			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
+		// Confirm canvas items move by arrow keys
+		if ((!Input::get_singleton()->is_key_pressed(KEY_UP)) &&
+				(!Input::get_singleton()->is_key_pressed(KEY_DOWN)) &&
+				(!Input::get_singleton()->is_key_pressed(KEY_LEFT)) &&
+				(!Input::get_singleton()->is_key_pressed(KEY_RIGHT))) {
+			_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
+			drag_type = DRAG_NONE;
+		}
+		viewport->update();
+		return true;
+	}
 
 			Rect2 local_rect = canvas_item->_edit_get_rect();
 			float aspect = local_rect.get_size().y / local_rect.get_size().x;
@@ -2620,56 +2723,18 @@ void CanvasItemEditor::_draw_selection() {
 	}
 }
 
-void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_color) {
-	// Draw a line going through the whole screen from a vector
-	RID ci = viewport->get_canvas_item();
-	Vector<Point2> points;
-	Point2 from = transform.xform(p_from);
-	Point2 to = transform.xform(p_to);
-	Size2 viewport_size = viewport->get_size();
-
-	if (to.x == from.x) {
-		// Vertical line
-		points.push_back(Point2(to.x, 0));
-		points.push_back(Point2(to.x, viewport_size.y));
-	} else if (to.y == from.y) {
-		// Horizontal line
-		points.push_back(Point2(0, to.y));
-		points.push_back(Point2(viewport_size.x, to.y));
-	} else {
-		float y_for_zero_x = (to.y * from.x - from.y * to.x) / (from.x - to.x);
-		float x_for_zero_y = (to.x * from.y - from.x * to.y) / (from.y - to.y);
-		float y_for_viewport_x = ((to.y - from.y) * (viewport_size.x - from.x)) / (to.x - from.x) + from.y;
-		float x_for_viewport_y = ((to.x - from.x) * (viewport_size.y - from.y)) / (to.y - from.y) + from.x; // faux
-
-		//bool start_set = false;
-		if (y_for_zero_x >= 0 && y_for_zero_x <= viewport_size.y) {
-			points.push_back(Point2(0, y_for_zero_x));
-		}
-		if (x_for_zero_y >= 0 && x_for_zero_y <= viewport_size.x) {
-			points.push_back(Point2(x_for_zero_y, 0));
-		}
-		if (y_for_viewport_x >= 0 && y_for_viewport_x <= viewport_size.y) {
-			points.push_back(Point2(viewport_size.x, y_for_viewport_x));
-		}
-		if (x_for_viewport_y >= 0 && x_for_viewport_y <= viewport_size.x) {
-			points.push_back(Point2(x_for_viewport_y, viewport_size.y));
-		}
-	}
-	if (points.size() >= 2) {
-		VisualServer::get_singleton()->canvas_item_add_line(ci, points[0], points[1], p_color);
-	}
-}
-
 void CanvasItemEditor::_draw_axis() {
 
 	if (show_origin) {
 
+		RID ci = viewport->get_canvas_item();
+
+		Point2 origin = transform.get_origin();
 		Color x_axis_color(1.0, 0.4, 0.4, 0.6);
 		Color y_axis_color(0.4, 1.0, 0.4, 0.6);
 
-		_draw_straight_line(Point2(), Point2(1, 0), x_axis_color);
-		_draw_straight_line(Point2(), Point2(0, 1), y_axis_color);
+		VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(0, origin.y), Point2(viewport->get_size().x, origin.y), x_axis_color);
+		VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(origin.x, 0), Point2(origin.x, viewport->get_size().y), y_axis_color);
 	}
 
 	if (show_viewport) {
@@ -2748,6 +2813,14 @@ void CanvasItemEditor::_draw_bones() {
 			VisualServer::get_singleton()->canvas_item_add_polygon(ci, bone_shape_outline, outline_colors);
 			VisualServer::get_singleton()->canvas_item_add_primitive(ci, bone_shape, colors, Vector<Vector2>(), RID());
 		}
+
+		previous_rects.push_back(Rect2(pos, item_size));
+
+		// Draw icon
+		viewport->draw_texture(node_icon, pos, Color(1.0, 1.0, 1.0, 0.5));
+
+		// Draw name
+		viewport->draw_string(font, pos + Point2(node_icon->get_size().x + 4, item_size.y - 3), node_name, Color(1.0, 1.0, 1.0, 0.5));
 	}
 }
 
@@ -3438,6 +3511,18 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_grid = !show_grid;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_GRID);
 			view_menu->get_popup()->set_item_checked(idx, show_grid);
+			viewport->update();
+		} break;
+		case SHOW_ORIGIN: {
+			show_origin = !show_origin;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_ORIGIN);
+			view_menu->get_popup()->set_item_checked(idx, show_origin);
+			viewport->update();
+		} break;
+		case SHOW_VIEWPORT: {
+			show_viewport = !show_viewport;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
+			view_menu->get_popup()->set_item_checked(idx, show_viewport);
 			viewport->update();
 		} break;
 		case SHOW_ORIGIN: {

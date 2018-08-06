@@ -87,7 +87,7 @@ public:
 	static class btConvexPointCloudShape *create_shape_convex(btAlignedObjectArray<btVector3> &p_vertices, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
 	static class btScaledBvhTriangleMeshShape *create_shape_concave(btBvhTriangleMeshShape *p_mesh_shape, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
 	static class btHeightfieldTerrainShape *create_shape_height_field(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
-	static class btRayShape *create_shape_ray(real_t p_length, bool p_slips_on_slope);
+	static class btRayShape *create_shape_ray(real_t p_length);
 };
 
 class PlaneShapeBullet : public ShapeBullet {
@@ -147,25 +147,6 @@ class CapsuleShapeBullet : public ShapeBullet {
 
 public:
 	CapsuleShapeBullet();
-
-	_FORCE_INLINE_ real_t get_height() { return height; }
-	_FORCE_INLINE_ real_t get_radius() { return radius; }
-	virtual void set_data(const Variant &p_data);
-	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
-
-private:
-	void setup(real_t p_height, real_t p_radius);
-};
-
-class CylinderShapeBullet : public ShapeBullet {
-
-	real_t height;
-	real_t radius;
-
-public:
-	CylinderShapeBullet();
 
 	_FORCE_INLINE_ real_t get_height() { return height; }
 	_FORCE_INLINE_ real_t get_radius() { return radius; }

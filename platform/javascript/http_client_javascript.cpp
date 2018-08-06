@@ -260,6 +260,36 @@ Error HTTPClient::poll() {
 				status = STATUS_CONNECTION_ERROR;
 				return ERR_CONNECTION_ERROR;
 			}
+			last_polling_frame = Engine::get_singleton()->get_idle_frames();
+#endif
+
+			polled_response_code = godot_xhr_get_status(xhr_id);
+			if (godot_xhr_get_ready_state(xhr_id) != XHR_READY_STATE_DONE) {
+				return OK;
+			} else if (!polled_response_code) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
+			last_polling_frame = Engine::get_singleton()->get_idle_frames();
+#endif
+
+			polled_response_code = godot_xhr_get_status(xhr_id);
+			if (godot_xhr_get_ready_state(xhr_id) != XHR_READY_STATE_DONE) {
+				return OK;
+			} else if (!polled_response_code) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
+			last_polling_frame = Engine::get_singleton()->get_idle_frames();
+#endif
+
+			polled_response_code = godot_xhr_get_status(xhr_id);
+			if (godot_xhr_get_ready_state(xhr_id) != XHR_READY_STATE_DONE) {
+				return OK;
+			} else if (!polled_response_code) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
 
 			status = STATUS_BODY;
 

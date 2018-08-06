@@ -176,57 +176,85 @@ def configure_msvc(env, manual_msvc_config):
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
             env.Append(CCFLAGS=['/O2'])
-        else: # optimize for size
-            env.Append(CCFLAGS=['/O1'])
-        env.AppendUnique(CPPDEFINES = ['DEBUG_ENABLED'])
-        env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+            env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
+            env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
-    elif (env["target"] == "debug_release"):
-        env.Append(CCFLAGS=['/Z7', '/Od'])
-        env.Append(LINKFLAGS=['/DEBUG'])
-        env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
-        env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
+        elif (env["target"] == "release_debug"):
+            env.Append(CCFLAGS=['/O2', '/DDEBUG_ENABLED'])
+            env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 
-    elif (env["target"] == "debug"):
-        env.AppendUnique(CCFLAGS=['/Z7', '/Od', '/EHsc'])
-        env.AppendUnique(CPPDEFINES = ['DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED',
-                                       'D3D_DEBUG_INFO'])
-        env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
-        env.Append(LINKFLAGS=['/DEBUG'])
+        elif (env["target"] == "debug_release"):
+            env.Append(CCFLAGS=['/Z7', '/Od'])
+            env.Append(LINKFLAGS=['/DEBUG'])
+            env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
+            env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
-    ## Compile/link flags
+        elif (env["target"] == "debug"):
+            env.Append(CCFLAGS=['/Z7', '/DDEBUG_ENABLED', '/DDEBUG_MEMORY_ENABLED', '/DD3D_DEBUG_INFO', '/Od', '/EHsc'])
+            env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+            env.Append(LINKFLAGS=['/DEBUG'])
 
-    env.AppendUnique(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
-    env.AppendUnique(CXXFLAGS=['/TP']) # assume all sources are C++
-    if manual_msvc_config: # should be automatic if SCons found it
+        ## Architecture
+
+        # Note: this detection/override code from here onward should be here instead of in SConstruct because it's platform and compiler specific (MSVC/Windows)
+        if (env["bits"] != "default"):
+            print("Error: bits argument is disabled for MSVC")
+            print("""
+                Bits argument is not supported for MSVC compilation. Architecture depends on the Native/Cross Compile Tools Prompt/Developer Console
+                (or Visual Studio settings) that is being used to run SCons. As a consequence, bits argument is disabled. Run scons again without bits
+                argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you.
+                """)
+            sys.exit()
+
+        # Forcing bits argument because MSVC does not have a flag to set this through SCons... it's different compilers (cl.exe's) called from the proper command prompt
+        # that decide the architecture that is build for. Scons can only detect the os.getenviron (because vsvarsall.bat sets a lot of stuff for cl.exe to work with)
+        env["bits"] = "32"
+        env["x86_libtheora_opt_vc"] = True
+
+        ## Compiler configuration
+
+        env['ENV'] = os.environ
+        # This detection function needs the tools env (that is env['ENV'], not SCons's env), and that is why it's this far below in the code
+        compiler_version_str = methods.detect_visual_c_compiler_version(env['ENV'])
+
+        print("Detected MSVC compiler: " + compiler_version_str)
+        # If building for 64bit architecture, disable assembly optimisations for 32 bit builds (theora as of writing)... vc compiler for 64bit can not compile _asm
+        if(compiler_version_str == "amd64" or compiler_version_str == "x86_amd64"):
+            env["bits"] = "64"
+            env["x86_libtheora_opt_vc"] = False
+            print("Compiled program architecture will be a 64 bit executable (forcing bits=64).")
+        elif (compiler_version_str == "x86" or compiler_version_str == "amd64_x86"):
+            print("Compiled program architecture will be a 32 bit executable. (forcing bits=32).")
+        else:
+            print("Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup.")
+
+        ## Compile flags
+
+        env.Append(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
+        env.Append(CXXFLAGS=['/TP'])
+        env.Append(CPPFLAGS=['/DMSVC', '/GR', ])
         if os.getenv("WindowsSdkDir") is not None:
-            env.Append(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
+            env.Append(CCFLAGS=['/I' + os.getenv("WindowsSdkDir") + "/Include"])
         else:
             print("Missing environment variable: WindowsSdkDir")
 
-    env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
-                                   'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
-                                   'WINMIDI_ENABLED', 'TYPED_METHOD_BIND',
-                                   'WIN32', 'MSVC',
-                                   {'WINVER' : '$target_win_version',
-                                    '_WIN32_WINNT': '$target_win_version'}])
-    if env["bits"] == "64":
-        env.AppendUnique(CPPDEFINES=['_WIN64'])
+        env.Append(CCFLAGS=['/DWINDOWS_ENABLED'])
+        env.Append(CCFLAGS=['/DOPENGL_ENABLED'])
+        env.Append(CCFLAGS=['/DRTAUDIO_ENABLED'])
+        env.Append(CCFLAGS=['/DWASAPI_ENABLED'])
+        env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
+        env.Append(CCFLAGS=['/DWIN32'])
+        env.Append(CCFLAGS=['/DWINVER=%s' % env['target_win_version'], '/D_WIN32_WINNT=%s' % env['target_win_version']])
+        if env["bits"] == "64":
+            env.Append(CCFLAGS=['/D_WIN64'])
 
-    ## Libs
+        LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32', 'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32', 'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32']
+        env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
-    LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32',
-            'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',
-            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt']
-    env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
-
-    if manual_msvc_config:
         if os.getenv("WindowsSdkDir") is not None:
             env.Append(LIBPATH=[os.getenv("WindowsSdkDir") + "/Lib"])
         else:
             print("Missing environment variable: WindowsSdkDir")
-
-    ## LTO
 
     if (env["use_lto"]):
         env.AppendUnique(CCFLAGS=['/GL'])
@@ -341,23 +369,12 @@ def configure(env):
 
     print("Configuring for Windows: target=%s, bits=%s" % (env['target'], env['bits']))
 
-    if (os.name == "nt"):
-        env['ENV'] = os.environ # this makes build less repeatable, but simplifies some things
-        env['ENV']['TMP'] = os.environ['TMP']
-
-    # First figure out which compiler, version, and target arch we're using
-    if os.getenv("VCINSTALLDIR"):
-        # Manual setup of MSVC
-        setup_msvc_manual(env)
-        env.msvc = True
-        manual_msvc_config = True
-    elif env.get('MSVC_VERSION', ''):
-        setup_msvc_auto(env)
-        env.msvc = True
-        manual_msvc_config = False
-    else:
-        setup_mingw(env)
-        env.msvc = False
+        env.Append(CCFLAGS=['-DWINDOWS_ENABLED', '-mwindows'])
+        env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
+        env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
+        env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
+        env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
+        env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32'])
 
     # Now set compiler/linker flags
     if env.msvc:

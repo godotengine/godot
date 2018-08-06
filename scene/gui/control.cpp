@@ -1296,7 +1296,7 @@ Size2 Control::get_parent_area_size() const {
 	return get_parent_anchorable_rect().size;
 }
 
-void Control::_size_changed() {
+Size2 Control::get_parent_area_size() const {
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
 

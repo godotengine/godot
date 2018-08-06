@@ -911,4 +911,62 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 
 	return ret;
 }
-} // namespace GDMonoMarshal
+
+MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict) {
+	MonoArray *keys = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_dict.size());
+	MonoArray *values = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_dict.size());
+
+	int i = 0;
+	const Variant *dkey = NULL;
+	while ((dkey = p_dict.next(dkey))) {
+		mono_array_set(keys, MonoObject *, i, variant_to_mono_object(dkey));
+		mono_array_set(values, MonoObject *, i, variant_to_mono_object(p_dict[*dkey]));
+		i++;
+	}
+
+	GDMonoUtils::MarshalUtils_ArraysToDict arrays_to_dict = CACHED_METHOD_THUNK(MarshalUtils, ArraysToDictionary);
+
+	MonoObject *ex = NULL;
+	MonoObject *ret = arrays_to_dict(keys, values, &ex);
+
+	if (ex) {
+		mono_print_unhandled_exception(ex);
+		ERR_FAIL_V(NULL);
+	}
+
+	return ret;
+}
+
+Dictionary mono_object_to_Dictionary(MonoObject *p_dict) {
+	Dictionary ret;
+
+	if (!p_dict)
+		return ret;
+
+	GDMonoUtils::MarshalUtils_DictToArrays dict_to_arrays = CACHED_METHOD_THUNK(MarshalUtils, DictionaryToArrays);
+
+	MonoArray *keys = NULL;
+	MonoArray *values = NULL;
+	MonoObject *ex = NULL;
+	dict_to_arrays(p_dict, &keys, &values, &ex);
+
+	if (ex) {
+		mono_print_unhandled_exception(ex);
+		ERR_FAIL_V(Dictionary());
+	}
+
+	int length = mono_array_length(keys);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *key_obj = mono_array_get(keys, MonoObject *, i);
+		MonoObject *value_obj = mono_array_get(values, MonoObject *, i);
+
+		Variant key = key_obj ? mono_object_to_variant(key_obj) : Variant();
+		Variant value = value_obj ? mono_object_to_variant(value_obj) : Variant();
+
+		ret[key] = value;
+	}
+
+	return ret;
+}
+}

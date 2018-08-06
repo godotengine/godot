@@ -30,7 +30,8 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-#include "drivers/dummy/texture_loader_dummy.h"
+#include "../x11/crash_handler_x11.h"
+#include "../x11/power_x11.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
@@ -65,14 +66,13 @@ class OS_Server : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	int video_driver_index;
-
-	ResourceFormatDummyTexture *resource_loader_dummy;
-
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const;
+	virtual int get_audio_driver_count() const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
+
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 

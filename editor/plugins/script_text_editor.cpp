@@ -347,9 +347,51 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	code_editor->set_edit_state(p_state);
 }
 
-void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
+void ScriptTextEditor::_convert_case(CaseStyle p_case) {
+	TextEdit *te = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+	if (scr.is_null()) {
+		return;
+	}
 
-	code_editor->convert_case(p_case);
+	if (te->is_selection_active()) {
+		te->begin_complex_operation();
+
+		int begin = te->get_selection_from_line();
+		int end = te->get_selection_to_line();
+		int begin_col = te->get_selection_from_column();
+		int end_col = te->get_selection_to_column();
+
+		for (int i = begin; i <= end; i++) {
+			int len = te->get_line(i).length();
+			if (i == end)
+				len -= len - end_col;
+			if (i == begin)
+				len -= begin_col;
+			String new_line = te->get_line(i).substr(i == begin ? begin_col : 0, len);
+
+			switch (p_case) {
+				case UPPER: {
+					new_line = new_line.to_upper();
+				} break;
+				case LOWER: {
+					new_line = new_line.to_lower();
+				} break;
+				case CAPITALIZE: {
+					new_line = new_line.capitalize();
+				} break;
+			}
+
+			if (i == begin) {
+				new_line = te->get_line(i).left(begin_col) + new_line;
+			}
+			if (i == end) {
+				new_line = new_line + te->get_line(i).right(end_col);
+			}
+			te->set_line(i, new_line);
+		}
+		te->end_complex_operation();
+	}
 }
 
 void ScriptTextEditor::trim_trailing_whitespace() {
@@ -373,8 +415,10 @@ void ScriptTextEditor::tag_saved_version() {
 }
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-
-	code_editor->goto_line(p_line);
+	TextEdit *tx = code_editor->get_text_edit();
+	tx->deselect();
+	tx->unfold_line(p_line);
+	tx->call_deferred("cursor_set_line", p_line);
 }
 
 void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
@@ -720,7 +764,31 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_DELETE_LINE: {
 
-			code_editor->delete_lines();
+			Ref<Script> scr = get_edited_script();
+			if (scr.is_null())
+				return;
+			tx->begin_complex_operation();
+			if (tx->is_selection_active()) {
+				int to_line = tx->get_selection_to_line();
+				int from_line = tx->get_selection_from_line();
+				int count = Math::abs(to_line - from_line) + 1;
+				while (count) {
+					tx->set_line(tx->cursor_get_line(), "");
+					tx->backspace_at_cursor();
+					count--;
+					if (count)
+						tx->unfold_line(from_line);
+				}
+				tx->cursor_set_line(from_line - 1);
+				tx->deselect();
+			} else {
+				int line = tx->cursor_get_line();
+				tx->set_line(tx->cursor_get_line(), "");
+				tx->backspace_at_cursor();
+				tx->unfold_line(line);
+				tx->cursor_set_line(line);
+			}
+			tx->end_complex_operation();
 		} break;
 		case EDIT_CLONE_DOWN: {
 
@@ -1504,18 +1572,11 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F2);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F);
-#ifdef OSX_ENABLED
-	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_MASK_CMD | KEY_G);
-	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G);
-#else
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
-#endif
 	ED_SHORTCUT("script_text_editor/replace", TTR("Replace..."), KEY_MASK_CMD | KEY_R);
 
-	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
-
-	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function..."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
+	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function..."), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_F);
 	ED_SHORTCUT("script_text_editor/goto_line", TTR("Goto Line..."), KEY_MASK_CMD | KEY_L);
 
 #ifdef OSX_ENABLED

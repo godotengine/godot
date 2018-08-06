@@ -135,6 +135,8 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 	bool relaxed = false;
 
+	bool relaxed = false;
+
 	int nv = n;
 
 	/*  remove nv-2 Vertices, creating 1 triangle every time */

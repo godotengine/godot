@@ -121,7 +121,7 @@ void CSharpLanguage::init() {
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&gdsharp_editor_init_callback);
 
-	GLOBAL_DEF("mono/export/include_scripts_content", false);
+	GLOBAL_DEF("mono/export/include_scripts_content", true);
 #endif
 }
 
@@ -318,8 +318,8 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 							 "}\n";
 
 	String base_class_name = get_base_class_name(p_base_class_name, p_class_name);
-	script_template = script_template.replace("%BASE%", base_class_name)
-							  .replace("%CLASS%", p_class_name);
+	script_template = script_template.replace("%BASE_CLASS_NAME%", base_class_name)
+							  .replace("%CLASS_NAME%", p_class_name);
 
 	Ref<CSharpScript> script;
 	script.instance();
@@ -789,7 +789,7 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::get_singleton()->get_inspector()->update_tree();
+		EditorNode::get_singleton()->get_property_editor()->update_tree();
 		NodeDock::singleton->update_lists();
 	}
 }
@@ -1617,7 +1617,7 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 
 bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params) {
 	if (p_delegate->has_attribute(CACHED_CLASS(SignalAttribute))) {
-		MonoType *raw_type = p_delegate->get_mono_type();
+		MonoType *raw_type = GDMonoClass::get_raw_type(p_delegate);
 
 		if (mono_type_get_type(raw_type) == MONO_TYPE_CLASS) {
 			// Arguments are accessibles as arguments of .Invoke method
@@ -1971,6 +1971,8 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
+	ERR_FAIL_COND_V(!valid, NULL);
+
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
 		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
@@ -1981,20 +1983,18 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		return NULL;
 #endif
 	}
-
+	
 	if (!script_class) {
 		if (GDMono::get_singleton()->get_project_assembly() == NULL) {
 			// The project assembly is not loaded
 			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
 			ERR_FAIL_V(NULL);
-		} else {
-			// The project assembly is loaded, but the class could not found
-			ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
-			ERR_FAIL_V(NULL);
 		}
+		
+			// The project assembly is loaded, but the class could not found
+		ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
+		ERR_FAIL_V(NULL);
 	}
-
-	ERR_FAIL_COND_V(!valid, NULL);
 
 	if (native) {
 		String native_name = native->get_name();

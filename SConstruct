@@ -159,11 +159,11 @@ opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable('xml', "Enable XML format support for resources", True))
 
 # Advanced options
-opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
-opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D GUI nodes and behaviors", False))
+opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for smaller executable", False))
+opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D gui nodes and behaviors", False))
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
-opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
+opts.Add(BoolVariable('vsproj', "Generate Visual Studio Project", False))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
 opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
@@ -341,6 +341,8 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['-w'])
         env.Append(CCFLAGS=['-Werror=return-type'])
 
+    #env['platform_libsuffix'] = env['LIBSUFFIX']
+
     suffix = "." + selected_platform
 
     if (env["target"] == "release"):
@@ -446,8 +448,7 @@ if selected_platform in platform_list:
         methods.no_verbose(sys, env)
 
     if (not env["platform"] == "server"): # FIXME: detect GLES3
-        env.Append(BUILDERS = { 'GLES3_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_gles3_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
-        env.Append(BUILDERS = { 'GLES2_GLSL' : env.Builder(action=run_in_subprocess(gles_builders.build_gles2_headers), suffix='glsl.gen.h', src_suffix='.glsl')})
+        env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.gen.h',src_suffix = '.glsl') } )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
@@ -490,6 +491,19 @@ else:
     for x in platform_list:
         print("\t" + x)
     print("\nPlease run SCons again with the argument: platform=<string>")
+
+# The following only makes sense when the env is defined, and assumes it is
+if 'env' in locals():
+    screen = sys.stdout
+    # Progress reporting is not available in non-TTY environments since it
+    # messes with the output (for example, when writing to a file)
+    show_progress = (env['progress'] and sys.stdout.isatty())
+    node_count = 0
+    node_count_max = 0
+    node_count_interval = 1
+    node_count_fname = str(env.Dir('#')) + '/.scons_node_count'
+
+    import time, math
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():

@@ -524,7 +524,7 @@ void VehicleBody::_update_suspension(PhysicsDirectBodyState *s) {
 
 //bilateral constraint between two dynamic objects
 void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1,
-		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
+		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, real_t p_rollInfluence) {
 
 	real_t normalLenSqr = normal.length_squared();
 	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
@@ -706,7 +706,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 				_resolve_single_bilateral(s, wheelInfo.m_raycastInfo.m_contactPointWS,
 						wheelInfo.m_raycastInfo.m_groundObject, wheelInfo.m_raycastInfo.m_contactPointWS,
-						m_axle[i], m_sideImpulse.write[i], wheelInfo.m_rollInfluence);
+						m_axle[i], m_sideImpulse[i], wheelInfo.m_rollInfluence);
 
 				m_sideImpulse.write[i] *= sideFrictionStiffness2;
 			}

@@ -67,7 +67,7 @@ public:
 
 	struct Comparator {
 
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->has_priority_higher_than(p_a) || p_b->is_greater_than(p_a); }
 	};
 
 	struct ComparatorWithPriority {
@@ -147,8 +147,6 @@ private:
 		NAME_CASING_CAMEL_CASE,
 		NAME_CASING_SNAKE_CASE
 	};
-
-	Ref<MultiplayerAPI> multiplayer;
 
 	void _print_tree_pretty(const String prefix, const bool last);
 	void _print_tree(const Node *p_node);

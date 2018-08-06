@@ -113,20 +113,50 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 
 void OS_JavaScript::set_window_size(const Size2 p_size) {
 
-	windowed_size = p_size;
-	if (is_window_fullscreen()) {
-		window_maximized = false;
-		set_window_fullscreen(false);
-	} else if (is_window_maximized()) {
-		set_window_maximized(false);
+	int mask = _input->get_mouse_button_mask();
+	int button_flag = 1 << (ev->get_button_index() - 1);
+	if (ev->is_pressed()) {
+		// Since the event is consumed, focus manually. The containing iframe,
+		// if used, may not have focus yet, so focus even if already focused.
+		focus_canvas();
+		mask |= button_flag;
+	} else if (mask & button_flag) {
+		mask &= ~button_flag;
 	} else {
 		video_mode.width = p_size.x;
 		video_mode.height = p_size.y;
 		emscripten_set_canvas_size(p_size.x, p_size.y);
 	}
+	ev->set_button_mask(mask);
+
+	_input->parse_input_event(ev);
+	// Prevent multi-click text selection and wheel-click scrolling anchor.
+	// Context menu is prevented through contextmenu event.
+	return true;
 }
 
-Size2 OS_JavaScript::get_window_size() const {
+static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
+	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
+	int input_mask = _input->get_mouse_button_mask();
+	Point2 pos = Point2(mouse_event->canvasX, mouse_event->canvasY);
+	// outside the canvas, only read mouse movement if dragging started inside
+	// the canvas; imitating desktop app behaviour
+	if (!is_cursor_inside_canvas() && !input_mask)
+		return false;
+
+	Ref<InputEventMouseMotion> ev;
+	ev.instance();
+	dom2godot_mod(mouse_event, ev);
+	ev->set_button_mask(input_mask);
+
+	ev->set_position(pos);
+	ev->set_global_position(ev->get_position());
+
+	ev->set_relative(Vector2(mouse_event->movementX, mouse_event->movementY));
+	_input->set_mouse_position(ev->get_position());
+	ev->set_speed(_input->get_last_mouse_speed());
 
 	int canvas[3];
 	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
@@ -173,50 +203,14 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 	if (p_enabled == is_window_fullscreen()) {
 		return;
 	}
-
-	// Just request changes here, if successful, canvas is resized in
-	// _browser_resize_callback or _fullscreen_change_callback.
-	EMSCRIPTEN_RESULT result;
-	if (p_enabled) {
-		if (window_maximized) {
-			// Soft fullsreen during real fulllscreen can cause issues.
-			set_window_maximized(false);
-			window_maximized = true;
-		}
-		EmscriptenFullscreenStrategy strategy;
-		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
-		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
-		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-		strategy.canvasResizedCallback = NULL;
-		emscripten_request_fullscreen_strategy(NULL, false, &strategy);
-	} else {
-		result = emscripten_exit_fullscreen();
-		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
-			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
-		}
-	}
+	return true;
 }
 
 bool OS_JavaScript::is_window_fullscreen() const {
 
-	return video_mode.fullscreen;
-}
-
-void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-
-	Size2 screen = get_screen_size();
-	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
-}
-
-// Keys
-
-template <typename T>
-static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
-
-	godot_event->set_shift(emscripten_event_ptr->shiftKey);
-	godot_event->set_alt(emscripten_event_ptr->altKey);
-	godot_event->set_control(emscripten_event_ptr->ctrlKey);
-	godot_event->set_metakey(emscripten_event_ptr->metaKey);
+		_input->parse_input_event(ev);
+	}
+	return true;
 }
 
 static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {

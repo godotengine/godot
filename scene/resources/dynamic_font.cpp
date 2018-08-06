@@ -379,15 +379,75 @@ void DynamicFontAtSize::_ft_stream_close(FT_Stream stream) {
 	memdelete(f);
 }
 
-DynamicFontAtSize::Character DynamicFontAtSize::Character::not_found() {
-	Character ch;
-	ch.texture_idx = -1;
-	ch.advance = 0;
-	ch.h_align = 0;
-	ch.v_align = 0;
-	ch.found = false;
-	return ch;
-}
+void DynamicFontAtSize::_update_char(CharType p_char) {
+
+	if (char_map.has(p_char))
+		return;
+
+	_THREAD_SAFE_METHOD_
+
+	FT_GlyphSlot slot = face->glyph;
+
+	if (FT_Get_Char_Index(face, p_char) == 0) {
+		//not found
+		Character ch;
+		ch.texture_idx = -1;
+		ch.advance = 0;
+		ch.h_align = 0;
+		ch.v_align = 0;
+		ch.found = false;
+
+		char_map[p_char] = ch;
+		return;
+	}
+
+	int ft_hinting;
+
+	switch (font->hinting) {
+		case DynamicFontData::HINTING_NONE:
+			ft_hinting = FT_LOAD_NO_HINTING;
+			break;
+		case DynamicFontData::HINTING_LIGHT:
+			ft_hinting = FT_LOAD_TARGET_LIGHT;
+			break;
+		default:
+			ft_hinting = FT_LOAD_TARGET_NORMAL;
+			break;
+	}
+
+	int error = FT_Load_Char(face, p_char, FT_HAS_COLOR(face) ? FT_LOAD_COLOR : FT_LOAD_DEFAULT | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0) | ft_hinting);
+	if (!error) {
+		error = FT_Render_Glyph(face->glyph, ft_render_mode_normal);
+	}
+	if (error) {
+
+		int advance = 0;
+		Character ch;
+		ch.texture_idx = -1;
+		ch.advance = advance;
+		ch.h_align = 0;
+		ch.v_align = 0;
+		ch.found = false;
+
+		char_map[p_char] = ch;
+
+		return;
+	}
+
+	int w = slot->bitmap.width;
+	int h = slot->bitmap.rows;
+	int yofs = slot->bitmap_top;
+	int xofs = slot->bitmap_left;
+	int advance = slot->advance.x >> 6;
+
+	int mw = w + rect_margin * 2;
+	int mh = h + rect_margin * 2;
+
+	if (mw > 4096 || mh > 4096) {
+
+		ERR_FAIL_COND(mw > 4096);
+		ERR_FAIL_COND(mh > 4096);
+	}
 
 DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height) {
 	TexturePosition ret;
@@ -435,9 +495,7 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 		break;
 	}
 
-	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
-
-	if (ret.index == -1) {
+	if (tex_index == -1) {
 		//could not find texture to fit, create one
 		ret.x = 0;
 		ret.y = 0;
@@ -585,14 +643,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_make_outline_char(CharType p_ch
 	if (FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, 0, 1) != 0)
 		goto cleanup_glyph;
 
-	glyph_bitmap = (FT_BitmapGlyph)glyph;
-	ret = _bitmap_to_character(glyph_bitmap->bitmap, glyph_bitmap->top, glyph_bitmap->left, glyph->advance.x / 65536.0);
-
-cleanup_glyph:
-	FT_Done_Glyph(glyph);
-cleanup_stroker:
-	FT_Stroker_Done(stroker);
-	return ret;
+	char_map[p_char] = chr;
 }
 
 void DynamicFontAtSize::_update_char(CharType p_char) {

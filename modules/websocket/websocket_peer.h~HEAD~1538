@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  scroll_container.h                                                   */
+/*  websocket_peer.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
+/*                      GODOT WEBSOCKET MODULE                           */
+/*            https://github.com/LudiDorici/godot-websocket              */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2017 Ludi Dorici, di Alessandrelli Fabio                */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,76 +26,47 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifndef WEBSOCKETPEER_H
+#define WEBSOCKETPEER_H
 
-#ifndef SCROLL_CONTAINER_H
-#define SCROLL_CONTAINER_H
+#include "core/error_list.h"
+#include "core/io/packet_peer.h"
+#include "core/ring_buffer.h"
+#include "websocket_macros.h"
 
-#include "container.h"
+class WebSocketPeer : public PacketPeer {
 
-#include "scroll_bar.h"
-
-class ScrollContainer : public Container {
-
-	GDCLASS(ScrollContainer, Container);
-
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
-
-	Size2 child_max_size;
-	Size2 scroll;
-
-	void update_scrollbars();
-
-	Vector2 drag_speed;
-	Vector2 drag_accum;
-	Vector2 drag_from;
-	Vector2 last_drag_accum;
-	float last_drag_time;
-	float time_since_motion;
-	bool drag_touching;
-	bool drag_touching_deaccel;
-	bool click_handled;
-	bool beyond_deadzone;
-
-	bool scroll_h;
-	bool scroll_v;
-
-	int deadzone;
-
-	void _cancel_drag();
-
-protected:
-	Size2 get_minimum_size() const;
-
-	void _gui_input(const Ref<InputEvent> &p_gui_input);
-	void _notification(int p_what);
-
-	void _scroll_moved(float);
-	static void _bind_methods();
-
-	void _update_scrollbar_position();
+	GDCLASS(WebSocketPeer, PacketPeer);
+	GDCICLASS(WebSocketPeer);
 
 public:
-	int get_v_scroll() const;
-	void set_v_scroll(int p_pos);
+	enum WriteMode {
+		WRITE_MODE_TEXT,
+		WRITE_MODE_BINARY,
+	};
 
-	int get_h_scroll() const;
-	void set_h_scroll(int p_pos);
+protected:
+	static void _bind_methods();
 
-	void set_enable_h_scroll(bool p_enable);
-	bool is_h_scroll_enabled() const;
+public:
+	virtual int get_available_packet_count() const = 0;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
+	virtual int get_max_packet_size() const = 0;
 
-	void set_enable_v_scroll(bool p_enable);
-	bool is_v_scroll_enabled() const;
+	virtual WriteMode get_write_mode() const = 0;
+	virtual void set_write_mode(WriteMode p_mode) = 0;
 
-	int get_deadzone() const;
-	void set_deadzone(int p_deadzone);
+	virtual void close() = 0;
 
-	virtual bool clips_input() const;
+	virtual bool is_connected_to_host() const = 0;
+	virtual IP_Address get_connected_host() const = 0;
+	virtual uint16_t get_connected_port() const = 0;
+	virtual bool was_string_packet() const = 0;
 
-	virtual String get_configuration_warning() const;
-
-	ScrollContainer();
+	WebSocketPeer();
+	~WebSocketPeer();
 };
 
-#endif
+VARIANT_ENUM_CAST(WebSocketPeer::WriteMode);
+#endif // WEBSOCKETPEER_H

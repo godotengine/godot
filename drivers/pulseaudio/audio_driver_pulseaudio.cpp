@@ -155,7 +155,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 	}
 
-	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
@@ -204,7 +204,7 @@ Error AudioDriverPulseAudio::init() {
 	thread_exited = false;
 	exit_thread = false;
 
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == NULL, ERR_CANT_OPEN);
@@ -295,15 +295,17 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		if (!ad->active) {
 			for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-				ad->samples_out.write[i] = 0;
+				ad->samples_out[i] = 0;
 			}
 
 		} else {
 			ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 
+			ad->unlock();
+
 			if (ad->channels == ad->pa_map.channels) {
 				for (unsigned int i = 0; i < ad->pa_buffer_size; i++) {
-					ad->samples_out.write[i] = ad->samples_in[i] >> 16;
+					ad->samples_out[i] = ad->samples_in[i] >> 16;
 				}
 			} else {
 				// Uneven amount of channels
@@ -312,17 +314,20 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 				for (unsigned int i = 0; i < ad->buffer_frames; i++) {
 					for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
-						ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
+						ad->samples_out[out_idx++] = ad->samples_in[in_idx++] >> 16;
 					}
 					uint32_t l = ad->samples_in[in_idx++];
 					uint32_t r = ad->samples_in[in_idx++];
-					ad->samples_out.write[out_idx++] = (l >> 1 + r >> 1) >> 16;
+					ad->samples_out[out_idx++] = (l >> 1 + r >> 1) >> 16;
 				}
 			}
 		}
 
 		int error_code;
 		int byte_size = ad->pa_buffer_size * sizeof(int16_t);
+
+		ad->lock();
+
 		int ret;
 		do {
 			ret = pa_mainloop_iterate(ad->pa_ml, 0, NULL);
@@ -347,13 +352,11 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					if (ret == 0) {
 						// If pa_mainloop_iterate returns 0 sleep for 1 msec to wait
 						// for the stream to be able to process more bytes
-						ad->stop_counting_ticks();
 						ad->unlock();
 
 						OS::get_singleton()->delay_usec(1000);
 
 						ad->lock();
-						ad->start_counting_ticks();
 					}
 				}
 			}
@@ -379,7 +382,6 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			}
 		}
 
-		ad->stop_counting_ticks();
 		ad->unlock();
 	}
 
@@ -403,6 +405,7 @@ AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
 
 void AudioDriverPulseAudio::pa_sinklist_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
+	int ctr = 0;
 
 	// If eol is set to a positive number, you're at the end of the list
 	if (eol > 0) {
@@ -452,9 +455,7 @@ String AudioDriverPulseAudio::get_device() {
 
 void AudioDriverPulseAudio::set_device(String device) {
 
-	lock();
 	new_device = device;
-	unlock();
 }
 
 void AudioDriverPulseAudio::lock() {

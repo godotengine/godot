@@ -615,8 +615,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int x_ofs = 0;
-			bool using_placeholder = text.empty();
-			int cached_text_width = using_placeholder ? cached_placeholder_width : cached_width;
+			int cached_text_width = text.empty() ? cached_placeholder_width : cached_width;
 
 			switch (align) {
 
@@ -1529,7 +1528,6 @@ LineEdit::LineEdit() {
 	window_has_focus = true;
 	max_length = 0;
 	pass = false;
-	secret_character = "*";
 	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 
