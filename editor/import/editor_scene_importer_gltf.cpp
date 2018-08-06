@@ -794,7 +794,9 @@ Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state,
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			Quat quat_norm = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			quat_norm.normalize();
+			ret.write[i] = quat_norm;
 		}
 	}
 	return ret;
@@ -1959,6 +1961,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 
 					Vector3 pos = base_pos;
 					Quat rot = base_rot;
+					rot.normalize();
 					Vector3 scale = base_scale;
 
 					if (track.translation_track.times.size()) {
@@ -1988,6 +1991,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 						xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
 
 						rot = xform.basis.get_rotation_quat();
+						rot.normalize();
 						scale = xform.basis.get_scale();
 						pos = xform.origin;
 					}
@@ -2077,6 +2081,12 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	for (Map<Node *, Skeleton *>::Element *E = state.paths_to_skeleton.front(); E; E = E->next()) {
 		MeshInstance *mi = Object::cast_to<MeshInstance>(E->key());
 		ERR_CONTINUE(!mi);
+		mi->set_transform(Object::cast_to<Spatial>(E->get()->get_parent())->get_transform());
+		Skeleton *s = E->get();
+		Node *owner = s->get_owner();
+		s->get_parent()->remove_child(s);
+		mi->add_child(s);
+		s->set_owner(owner);
 		mi->set_skeleton_path(mi->get_path_to(E->get()));
 	}
 
