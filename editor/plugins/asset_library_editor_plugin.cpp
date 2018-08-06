@@ -384,14 +384,11 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		return;
 	}
 
-	progress->set_max(download->get_body_size());
-	progress->set_value(download->get_downloaded_bytes());
-
 	install->set_disabled(false);
+	status->set_text(TTR("Success!"));
+	// Make the progress bar invisible but don't reflow other Controls around it
+	progress->set_modulate(Color(0, 0, 0, 0));
 
-	progress->set_value(download->get_downloaded_bytes());
-
-	status->set_text(TTR("Success!") + " (" + String::humanize_size(download->get_downloaded_bytes()) + ")");
 	set_process(false);
 }
 
@@ -413,25 +410,37 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PROCESS) {
 
-		progress->set_max(download->get_body_size());
-		progress->set_value(download->get_downloaded_bytes());
+		// Make the progress bar visible again when retrying the download
+		progress->set_modulate(Color(1, 1, 1, 1));
+
+		if (download->get_downloaded_bytes() > 0) {
+			progress->set_max(download->get_body_size());
+			progress->set_value(download->get_downloaded_bytes());
+		}
 
 		int cstatus = download->get_http_client_status();
 
-		if (cstatus == HTTPClient::STATUS_BODY)
-			status->set_text(TTR("Fetching:") + " " + String::humanize_size(download->get_downloaded_bytes()));
+		if (cstatus == HTTPClient::STATUS_BODY) {
+			status->set_text(vformat(TTR("Downloading (%s / %s)..."), String::humanize_size(download->get_downloaded_bytes()), String::humanize_size(download->get_body_size())));
+		}
 
 		if (cstatus != prev_status) {
 			switch (cstatus) {
 
 				case HTTPClient::STATUS_RESOLVING: {
 					status->set_text(TTR("Resolving..."));
+					progress->set_max(1);
+					progress->set_value(0);
 				} break;
 				case HTTPClient::STATUS_CONNECTING: {
 					status->set_text(TTR("Connecting..."));
+					progress->set_max(1);
+					progress->set_value(0);
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
 					status->set_text(TTR("Requesting..."));
+					progress->set_max(1);
+					progress->set_value(0);
 				} break;
 				default: {}
 			}
@@ -527,7 +536,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
-	set_custom_minimum_size(Size2(250, 0));
+	set_custom_minimum_size(Size2(310, 0));
 
 	download = memnew(HTTPRequest);
 	add_child(download);
