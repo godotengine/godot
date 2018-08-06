@@ -666,6 +666,8 @@ public:
 	void set_meta(const String &p_name, const Variant &p_value);
 	Variant get_meta(const String &p_name) const;
 	void get_meta_list(List<String> *p_list) const;
+	void _set_metadata(const Dictionary &p_metadata);
+	Dictionary _get_metadata() const;
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);

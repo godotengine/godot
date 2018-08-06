@@ -1604,6 +1604,16 @@ void Object::clear_internal_resource_paths() {
 	}
 }
 
+void Object::_set_metadata(const Dictionary &p_metadata) {
+
+	metadata = p_metadata;
+}
+
+Dictionary Object::_get_metadata() const {
+
+	return metadata;
+}
+
 void Object::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
@@ -1624,6 +1634,11 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_meta", "name"), &Object::get_meta);
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
+
+	ClassDB::bind_method(D_METHOD("_set_metadata", "metadata"), &Object::_set_metadata);
+	ClassDB::bind_method(D_METHOD("_get_metadata"), &Object::_get_metadata);
+
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "metadata", PROPERTY_HINT_RESOURCE_TYPE, "Dictionary"), "_set_metadata", "_get_metadata");
 
 	//todo reimplement this per language so all 5 arguments can be called
 
