@@ -63,6 +63,7 @@
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_csv_translation.h"
 #include "editor/import/resource_importer_image.h"
+#include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
@@ -4665,6 +4666,16 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterTexture> import_texture;
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+
+		Ref<ResourceImporterLayeredTexture> import_3d;
+		import_3d.instance();
+		import_3d->set_3d(true);
+		ResourceFormatImporter::get_singleton()->add_importer(import_3d);
+
+		Ref<ResourceImporterLayeredTexture> import_array;
+		import_array.instance();
+		import_array->set_3d(false);
+		ResourceFormatImporter::get_singleton()->add_importer(import_array);
 
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();

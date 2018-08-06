@@ -401,39 +401,33 @@ VARIANT_ENUM_CAST(CubeMap::Flags)
 VARIANT_ENUM_CAST(CubeMap::Side)
 VARIANT_ENUM_CAST(CubeMap::Storage)
 
-class Texture3D : public Resource {
+class TextureLayered : public Resource {
 
-	GDCLASS(Texture3D, Resource)
-	RES_BASE_EXTENSION("tex3d")
+	GDCLASS(TextureLayered, Resource)
 
 public:
 	enum Flags {
 		FLAG_MIPMAPS = VisualServer::TEXTURE_FLAG_MIPMAPS,
 		FLAG_REPEAT = VisualServer::TEXTURE_FLAG_REPEAT,
 		FLAG_FILTER = VisualServer::TEXTURE_FLAG_FILTER,
-		FLAGS_DEFAULT = FLAG_REPEAT | FLAG_FILTER,
+		FLAG_CONVERT_TO_LINEAR = VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
+		FLAGS_DEFAULT = FLAG_FILTER,
 	};
 
 private:
+	bool is_3d;
 	RID texture;
 	Image::Format format;
 	uint32_t flags;
 
-	uint32_t width;
-	uint32_t height;
-	uint32_t depth;
+	int width;
+	int height;
+	int depth;
 
-	// for setting an image as a property
-	bool split_single_image_enabled;
-
-	uint32_t split_single_image_h_split;
-	uint32_t split_single_image_v_split;
-	uint32_t split_single_image_num_layers;
-	Ref<Image> split_single_image_image;
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
-
 	static void _bind_methods();
 
 public:
@@ -446,30 +440,47 @@ public:
 	uint32_t get_depth() const;
 
 	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
-	void create_from_image(const Ref<Image> &p_image, uint32_t p_h_split, uint32_t p_v_split, uint32_t p_num_layer, uint32_t flags = FLAGS_DEFAULT);
-
-	void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_layer, int p_mipmap = 0);
+	void set_layer_data(const Ref<Image> &p_image, int p_layer);
+	Ref<Image> get_layer_data(int p_layer) const;
+	void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap = 0);
 
 	virtual RID get_rid() const;
-
-	bool get_split_single_image_enabled() const;
-	void set_split_single_image_enabled(bool p_split_enabled);
-
-	uint32_t get_split_single_image_h_split() const;
-	void set_split_single_image_h_split(uint32_t p_h_split);
-	uint32_t get_split_single_image_v_split() const;
-	void set_split_single_image_v_split(uint32_t p_v_split);
-
-	uint32_t get_split_single_image_num_layers() const;
-	void set_split_single_image_num_layers(uint32_t p_num_layers);
-
-	Ref<Image> get_split_single_image_image() const;
-	void set_split_single_image_image(const Ref<Image> &p_image);
-
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 
-	Texture3D();
-	~Texture3D();
+	TextureLayered(bool p_3d = false);
+	~TextureLayered();
+};
+
+VARIANT_ENUM_CAST(TextureLayered::Flags)
+
+class Texture3D : public TextureLayered {
+
+	GDCLASS(Texture3D, TextureLayered)
+public:
+	Texture3D() :
+			TextureLayered(true) {}
+};
+
+class TextureArray : public TextureLayered {
+
+	GDCLASS(TextureArray, TextureLayered)
+public:
+	TextureArray() :
+			TextureLayered(false) {}
+};
+
+class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
+public:
+	enum Compression {
+		COMPRESSION_LOSSLESS,
+		COMPRESSION_VRAM,
+		COMPRESSION_UNCOMPRESSED
+	};
+
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
 };
 
 class CurveTexture : public Texture {

@@ -277,7 +277,7 @@ public:
 
 		RenderTarget *render_target;
 
-		Ref<Image> images[6];
+		Vector<Ref<Image> > images;
 
 		VisualServer::TextureDetectCallback detect_3d;
 		void *detect_3d_ud;

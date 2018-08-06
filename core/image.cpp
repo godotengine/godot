@@ -987,8 +987,10 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 	int pixsize = get_format_pixel_size(p_format);
 	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
-	int minw, minh;
-	get_format_min_pixel_size(p_format, minw, minh);
+	//technically, you can still compress up to 1 px no matter the format, so commenting this
+	//int minw, minh;
+	//get_format_min_pixel_size(p_format, minw, minh);
+	int minw = 1, minh = 1;
 
 	while (true) {
 
@@ -1304,7 +1306,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 
 	if (size != p_data.size()) {
-		ERR_EXPLAIN("Expected data size of " + itos(size) + " in Image::create()");
+		ERR_EXPLAIN("Expected data size of " + itos(size) + " bytes in Image::create(), got instead " + itos(p_data.size()) + " bytes.");
 		ERR_FAIL_COND(p_data.size() != size);
 	}
 
@@ -1592,10 +1594,10 @@ Error Image::save_png(const String &p_path) const {
 	return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
-int Image::get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps) {
+int Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
 
 	int mm;
-	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmaps);
+	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmaps ? -1 : 0);
 }
 
 int Image::get_image_required_mipmaps(int p_width, int p_height, Format p_format) {
@@ -2374,6 +2376,17 @@ Image::DetectChannels Image::get_detected_channels() {
 		return DETECTED_RGB;
 
 	return DETECTED_RGBA;
+}
+
+void Image::optimize_channels() {
+	switch (get_detected_channels()) {
+		case DETECTED_L: convert(FORMAT_L8); break;
+		case DETECTED_LA: convert(FORMAT_LA8); break;
+		case DETECTED_R: convert(FORMAT_R8); break;
+		case DETECTED_RG: convert(FORMAT_RG8); break;
+		case DETECTED_RGB: convert(FORMAT_RGB8); break;
+		case DETECTED_RGBA: convert(FORMAT_RGBA8); break;
+	}
 }
 
 void Image::_bind_methods() {

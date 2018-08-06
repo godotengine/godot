@@ -116,7 +116,8 @@ public:
 	enum CompressSource {
 		COMPRESS_SOURCE_GENERIC,
 		COMPRESS_SOURCE_SRGB,
-		COMPRESS_SOURCE_NORMAL
+		COMPRESS_SOURCE_NORMAL,
+		COMPRESS_SOURCE_LAYERED,
 	};
 
 	//some functions provided by something else
@@ -272,7 +273,7 @@ public:
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
-	static int get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmaps = 0);
+	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 
 	enum CompressMode {
@@ -329,6 +330,7 @@ public:
 	};
 
 	DetectChannels get_detected_channels();
+	void optimize_channels();
 
 	Color get_pixelv(const Point2 &p_src) const;
 	Color get_pixel(int p_x, int p_y) const;

@@ -258,7 +258,7 @@ public:
 
 		RenderTarget *render_target;
 
-		Ref<Image> images[6];
+		Vector<Ref<Image> > images;
 
 		bool redraw_if_visible;
 

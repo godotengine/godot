@@ -98,6 +98,33 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	Image::Format img_format = p_img->get_format();
 	Image::DetectChannels detected_channels = p_img->get_detected_channels();
 
+	if (p_source == Image::COMPRESS_SOURCE_LAYERED) {
+		//keep what comes in
+		switch (p_img->get_format()) {
+			case Image::FORMAT_L8: {
+				detected_channels = Image::DETECTED_L;
+			} break;
+			case Image::FORMAT_LA8: {
+				detected_channels = Image::DETECTED_LA;
+			} break;
+			case Image::FORMAT_R8: {
+				detected_channels = Image::DETECTED_R;
+			} break;
+			case Image::FORMAT_RG8: {
+				detected_channels = Image::DETECTED_RG;
+			} break;
+			case Image::FORMAT_RGB8: {
+				detected_channels = Image::DETECTED_RGB;
+			} break;
+			case Image::FORMAT_RGBA8:
+			case Image::FORMAT_RGBA4444:
+			case Image::FORMAT_RGBA5551: {
+				detected_channels = Image::DETECTED_RGBA;
+			} break;
+			default: {}
+		}
+	}
+
 	if (p_source == Image::COMPRESS_SOURCE_SRGB && (detected_channels == Image::DETECTED_R || detected_channels == Image::DETECTED_RG)) {
 		//R and RG do not support SRGB
 		detected_channels = Image::DETECTED_RGB;
@@ -147,7 +174,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	PoolVector<uint8_t>::Read r = img->get_data().read();
 
-	int target_size = Image::get_image_data_size(imgw, imgh, etc_format, p_img->has_mipmaps() ? -1 : 0);
+	int target_size = Image::get_image_data_size(imgw, imgh, etc_format, p_img->has_mipmaps());
 	int mmc = 1 + (p_img->has_mipmaps() ? Image::get_image_required_mipmaps(imgw, imgh, etc_format) : 0);
 
 	PoolVector<uint8_t> dst_data;

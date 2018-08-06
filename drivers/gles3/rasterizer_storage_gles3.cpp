@@ -622,15 +622,19 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 	switch (p_type) {
 		case VS::TEXTURE_TYPE_2D: {
 			texture->target = GL_TEXTURE_2D;
+			texture->images.resize(1);
 		} break;
 		case VS::TEXTURE_TYPE_CUBEMAP: {
 			texture->target = GL_TEXTURE_CUBE_MAP;
+			texture->images.resize(6);
 		} break;
 		case VS::TEXTURE_TYPE_2D_ARRAY: {
 			texture->target = GL_TEXTURE_2D_ARRAY;
+			texture->images.resize(p_depth_3d);
 		} break;
 		case VS::TEXTURE_TYPE_3D: {
 			texture->target = GL_TEXTURE_3D;
+			texture->images.resize(p_depth_3d);
 		} break;
 	}
 
@@ -703,7 +707,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	bool srgb;
 
 	if (config.keep_original_textures && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
-		texture->images[p_layer] = p_image;
+		texture->images.write[p_layer] = p_image;
 	}
 
 	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, format, internal_format, type, compressed, srgb);
