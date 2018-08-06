@@ -275,7 +275,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFAnimation> animations;
 
 		Map<int, Vector<int> > skeleton_nodes;
-		Map<Node *, Skeleton *> paths_to_skeleton;
 
 		//Map<int, Vector<int> > skin_users; //cache skin users
 

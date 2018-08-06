@@ -203,7 +203,6 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 		GLTFNode *node = memnew(GLTFNode);
 		Dictionary n = nodes[i];
 
-		print_line("node " + itos(i) + ": " + String(Variant(n)));
 		if (n.has("name")) {
 			node->name = n["name"];
 		}
@@ -1686,19 +1685,21 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 
 	node->set_name(n->name);
 
-	p_parent->add_child(node);
-	node->set_owner(p_owner);
-	node->set_transform(n->xform);
-
 	n->godot_nodes.push_back(node);
 
 	if (n->skin >= 0 && Object::cast_to<MeshInstance>(node)) {
 		MeshInstance *mi = Object::cast_to<MeshInstance>(node);
-		//move skeleton around and place it on node, as the node _is_ a skeleton.
+
 		Skeleton *s = skeletons[n->skin];
-		state.paths_to_skeleton[mi] = s;
-		//move it later, as skeleton may be moved around first
+		s->add_child(node); //According to spec, mesh should actually act as a child of the skeleton, as it inherits its transform
+		mi->set_skeleton_path(String(".."));
+
+	} else {
+		p_parent->add_child(node);
+		node->set_transform(n->xform);
 	}
+
+	node->set_owner(p_owner);
 
 #if 0
 	for (int i = 0; i < n->skeleton_children.size(); i++) {
@@ -1744,10 +1745,8 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 		const int parent = gltf_bone_node->parent;
 		const int parent_index = s->find_bone(state.nodes[parent]->name);
 
-		s->add_bone(bone_name);
 		const int bone_index = s->find_bone(bone_name);
 		s->set_bone_parent(bone_index, parent_index);
-		s->set_bone_rest(bone_index, state.skins[skin].bones[n->joints[i].bone].inverse_bind.affine_inverse());
 
 		n->godot_nodes.push_back(s);
 		n->joints.write[i].godot_bone_index = bone_index;
@@ -2061,6 +2060,10 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 		if (name == "") {
 			name = _gen_unique_name(state, "Skeleton");
 		}
+		for (int j = 0; j < state.skins[i].bones.size(); j++) {
+			s->add_bone(state.nodes[state.skins[i].bones[j].node]->name);
+			s->set_bone_rest(j, state.skins[i].bones[j].inverse_bind.affine_inverse());
+		}
 		s->set_name(name);
 		root->add_child(s);
 		s->set_owner(root);
@@ -2072,12 +2075,6 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 		} else {
 			_generate_node(state, state.root_nodes[i], root, root, skeletons);
 		}
-	}
-
-	for (Map<Node *, Skeleton *>::Element *E = state.paths_to_skeleton.front(); E; E = E->next()) {
-		MeshInstance *mi = Object::cast_to<MeshInstance>(E->key());
-		ERR_CONTINUE(!mi);
-		mi->set_skeleton_path(mi->get_path_to(E->get()));
 	}
 
 	for (int i = 0; i < skeletons.size(); i++) {
