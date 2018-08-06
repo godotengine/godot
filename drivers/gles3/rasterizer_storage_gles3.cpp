@@ -595,7 +595,7 @@ RID RasterizerStorageGLES3::texture_create() {
 	return texture_owner.make_rid(texture);
 }
 
-void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
+void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VisualServer::TextureType p_type, uint32_t p_flags) {
 
 	GLenum format;
 	GLenum internal_format;
@@ -612,15 +612,33 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 	ERR_FAIL_COND(!texture);
 	texture->width = p_width;
 	texture->height = p_height;
+	texture->depth = p_depth_3d;
 	texture->format = p_format;
 	texture->flags = p_flags;
 	texture->stored_cube_sides = 0;
-	texture->target = (p_flags & VS::TEXTURE_FLAG_CUBEMAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
+
+	texture->type = p_type;
+
+	switch (p_type) {
+		case VS::TEXTURE_TYPE_2D: {
+			texture->target = GL_TEXTURE_2D;
+		} break;
+		case VS::TEXTURE_TYPE_CUBEMAP: {
+			texture->target = GL_TEXTURE_CUBE_MAP;
+		} break;
+		case VS::TEXTURE_TYPE_2D_ARRAY: {
+			texture->target = GL_TEXTURE_2D_ARRAY;
+		} break;
+		case VS::TEXTURE_TYPE_3D: {
+			texture->target = GL_TEXTURE_3D;
+		} break;
+	}
 
 	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, format, internal_format, type, compressed, srgb);
 
 	texture->alloc_width = texture->width;
 	texture->alloc_height = texture->height;
+	texture->alloc_depth = texture->depth;
 
 	texture->gl_format_cache = format;
 	texture->gl_type_cache = type;
@@ -633,7 +651,34 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
-	if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+	if (p_type == VS::TEXTURE_TYPE_3D || p_type == VS::TEXTURE_TYPE_2D_ARRAY) {
+
+		int width = p_width;
+		int height = p_height;
+		int depth = p_depth_3d;
+
+		int mipmaps = 0;
+
+		while (width != 1 && height != 1) {
+			glTexImage3D(texture->target, 0, internal_format, width, height, depth, 0, format, type, NULL);
+
+			width = MAX(1, width / 2);
+			height = MAX(1, height / 2);
+
+			if (p_type == VS::TEXTURE_TYPE_3D) {
+				depth = MAX(1, depth / 2);
+			}
+
+			mipmaps++;
+
+			if (!(p_flags & VS::TEXTURE_FLAG_MIPMAPS))
+				break;
+		}
+
+		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
+
+	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
 		glTexImage2D(texture->target, 0, internal_format, p_width, p_height, 0, format, type, NULL);
 	}
@@ -641,7 +686,7 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 	texture->active = true;
 }
 
-void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side) {
+void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 
 	Texture *texture = texture_owner.get(p_texture);
 
@@ -658,7 +703,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	bool srgb;
 
 	if (config.keep_original_textures && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
-		texture->images[p_cube_side] = p_image;
+		texture->images[p_layer] = p_image;
 	}
 
 	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, format, internal_format, type, compressed, srgb);
@@ -677,7 +722,23 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 		}
 	};
 
-	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_cube_side] : GL_TEXTURE_2D;
+	GLenum blit_target;
+
+	switch (texture->type) {
+		case VS::TEXTURE_TYPE_2D: {
+			blit_target = GL_TEXTURE_2D;
+		} break;
+		case VS::TEXTURE_TYPE_CUBEMAP: {
+			ERR_FAIL_INDEX(p_layer, 6);
+			blit_target = _cube_side_enum[p_layer];
+		} break;
+		case VS::TEXTURE_TYPE_2D_ARRAY: {
+			blit_target = GL_TEXTURE_2D_ARRAY;
+		} break;
+		case VS::TEXTURE_TYPE_3D: {
+			blit_target = GL_TEXTURE_3D;
+		} break;
+	}
 
 	texture->data_size = img->get_data().size();
 	PoolVector<uint8_t>::Read read = img->get_data().read();
@@ -785,20 +846,36 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 		//print_line("mipmap: "+itos(i)+" size: "+itos(size)+" w: "+itos(mm_w)+", h: "+itos(mm_h));
 
-		if (texture->compressed) {
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		if (texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP) {
 
-			int bw = w;
-			int bh = h;
+			if (texture->compressed) {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-			glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
+				int bw = w;
+				int bh = h;
 
-		} else {
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			if (texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
-				glTexSubImage2D(blit_target, i, 0, 0, w, h, format, type, &read[ofs]);
+				glCompressedTexImage2D(blit_target, i, internal_format, bw, bh, 0, size, &read[ofs]);
+
 			} else {
-				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type, &read[ofs]);
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+				if (texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
+					glTexSubImage2D(blit_target, i, 0, 0, w, h, format, type, &read[ofs]);
+				} else {
+					glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type, &read[ofs]);
+				}
+			}
+		} else {
+			if (texture->compressed) {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+				int bw = w;
+				int bh = h;
+
+				glCompressedTexSubImage3D(blit_target, i, 0, 0, p_layer, bw, bh, 1, internal_format, size, &read[ofs]);
+			} else {
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+				glTexSubImage3D(blit_target, i, 0, 0, p_layer, w, h, 1, format, type, &read[ofs]);
 			}
 		}
 		tsize += size;
@@ -813,14 +890,17 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	//printf("texture: %i x %i - size: %i - total: %i\n",texture->width,texture->height,tsize,_rinfo.texture_mem);
 
-	texture->stored_cube_sides |= (1 << p_cube_side);
+	texture->stored_cube_sides |= (1 << p_layer);
 
-	if ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (!(texture->flags & VS::TEXTURE_FLAG_CUBEMAP) || texture->stored_cube_sides == (1 << 6) - 1)) {
+	if ((texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP) && (texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != VS::TEXTURE_TYPE_CUBEMAP || texture->stored_cube_sides == (1 << 6) - 1)) {
 		//generate mipmaps if they were requested and the image does not contain them
 		glGenerateMipmap(texture->target);
 	} else if (mipmaps > 1) {
 		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
+	} else {
+		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, 0);
 	}
 
 	texture->mipmaps = mipmaps;
@@ -831,7 +911,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 // Uploads pixel data to a sub-region of a texture, for the specified mipmap.
 // The texture pixels must have been allocated before, because most features seen in texture_set_data() make no sense in a partial update.
 // TODO If we want this to be usable without pre-filling pixels with a full image, we have to call glTexImage2D() with null data.
-void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, VS::CubeMapSide p_cube_side) {
+void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer) {
 
 	Texture *texture = texture_owner.get(p_texture);
 
@@ -859,7 +939,23 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 
 	Ref<Image> img = _get_gl_image_and_format(p_sub_img, p_sub_img->get_format(), texture->flags, format, internal_format, type, compressed, srgb);
 
-	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_cube_side] : GL_TEXTURE_2D;
+	GLenum blit_target;
+
+	switch (texture->type) {
+		case VS::TEXTURE_TYPE_2D: {
+			blit_target = GL_TEXTURE_2D;
+		} break;
+		case VS::TEXTURE_TYPE_CUBEMAP: {
+			ERR_FAIL_INDEX(p_layer, 6);
+			blit_target = _cube_side_enum[p_layer];
+		} break;
+		case VS::TEXTURE_TYPE_2D_ARRAY: {
+			blit_target = GL_TEXTURE_2D_ARRAY;
+		} break;
+		case VS::TEXTURE_TYPE_3D: {
+			blit_target = GL_TEXTURE_3D;
+		} break;
+	}
 
 	PoolVector<uint8_t>::Read read = img->get_data().read();
 
@@ -869,18 +965,38 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	int src_data_size = img->get_data().size();
 	int src_ofs = 0;
 
-	if (texture->compressed) {
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-		glCompressedTexSubImage2D(blit_target, p_dst_mip, dst_x, dst_y, src_w, src_h, internal_format, src_data_size, &read[src_ofs]);
+	if (texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP) {
+		if (texture->compressed) {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			glCompressedTexSubImage2D(blit_target, p_dst_mip, dst_x, dst_y, src_w, src_h, internal_format, src_data_size, &read[src_ofs]);
+
+		} else {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			// `format` has to match the internal_format used when the texture was created
+			glTexSubImage2D(blit_target, p_dst_mip, dst_x, dst_y, src_w, src_h, format, type, &read[src_ofs]);
+		}
+	} else {
+		if (texture->compressed) {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			glCompressedTexSubImage3D(blit_target, p_dst_mip, dst_x, dst_y, p_layer, src_w, src_h, 1, format, src_data_size, &read[src_ofs]);
+		} else {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			// `format` has to match the internal_format used when the texture was created
+			glTexSubImage3D(blit_target, p_dst_mip, dst_x, dst_y, p_layer, src_w, src_h, 1, format, type, &read[src_ofs]);
+		}
+	}
+
+	if (texture->flags & VS::TEXTURE_FLAG_FILTER) {
+
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Linear Filtering
 
 	} else {
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		// `format` has to match the internal_format used when the texture was created
-		glTexSubImage2D(blit_target, p_dst_mip, dst_x, dst_y, src_w, src_h, format, type, &read[src_ofs]);
+
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
 	}
 }
 
-Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side) const {
+Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) const {
 
 	Texture *texture = texture_owner.get(p_texture);
 
@@ -888,8 +1004,8 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSi
 	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
 	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
 
-	if (!texture->images[p_cube_side].is_null()) {
-		return texture->images[p_cube_side];
+	if (texture->type == VS::TEXTURE_TYPE_CUBEMAP && p_layer < 6 && !texture->images[p_layer].is_null()) {
+		return texture->images[p_layer];
 	}
 
 #ifdef GLES_OVER_GL
@@ -977,10 +1093,10 @@ void RasterizerStorageGLES3::texture_set_flags(RID p_texture, uint32_t p_flags) 
 
 	bool had_mipmaps = texture->flags & VS::TEXTURE_FLAG_MIPMAPS;
 
+	texture->flags = p_flags;
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
-	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
-	texture->flags = p_flags | cube; // can't remove a cube from being a cube
 
 	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT)) && texture->target != GL_TEXTURE_CUBE_MAP) {
 
@@ -1058,6 +1174,14 @@ Image::Format RasterizerStorageGLES3::texture_get_format(RID p_texture) const {
 
 	return texture->format;
 }
+
+VisualServer::TextureType RasterizerStorageGLES3::texture_get_type(RID p_texture) const {
+	Texture *texture = texture_owner.get(p_texture);
+
+	ERR_FAIL_COND_V(!texture, VS::TEXTURE_TYPE_2D);
+
+	return texture->type;
+}
 uint32_t RasterizerStorageGLES3::texture_get_texid(RID p_texture) const {
 
 	Texture *texture = texture_owner.get(p_texture);
@@ -1083,7 +1207,16 @@ uint32_t RasterizerStorageGLES3::texture_get_height(RID p_texture) const {
 	return texture->height;
 }
 
-void RasterizerStorageGLES3::texture_set_size_override(RID p_texture, int p_width, int p_height) {
+uint32_t RasterizerStorageGLES3::texture_get_depth(RID p_texture) const {
+
+	Texture *texture = texture_owner.get(p_texture);
+
+	ERR_FAIL_COND_V(!texture, 0);
+
+	return texture->depth;
+}
+
+void RasterizerStorageGLES3::texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth) {
 
 	Texture *texture = texture_owner.get(p_texture);
 
@@ -1123,8 +1256,9 @@ void RasterizerStorageGLES3::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 		VS::TextureInfo tinfo;
 		tinfo.path = t->path;
 		tinfo.format = t->format;
-		tinfo.size.x = t->alloc_width;
-		tinfo.size.y = t->alloc_height;
+		tinfo.width = t->alloc_width;
+		tinfo.height = t->alloc_height;
+		tinfo.depth = 0;
 		tinfo.bytes = t->total_data_size;
 		r_info->push_back(tinfo);
 	}
@@ -1169,7 +1303,7 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
 
 	Texture *texture = texture_owner.get(p_source);
 	ERR_FAIL_COND_V(!texture, RID());
-	ERR_FAIL_COND_V(!(texture->flags & VS::TEXTURE_FLAG_CUBEMAP), RID());
+	ERR_FAIL_COND_V(texture->type != VS::TEXTURE_TYPE_CUBEMAP, RID());
 
 	bool use_float = config.hdr_supported;
 
@@ -1285,7 +1419,8 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
 
 	Texture *ctex = memnew(Texture);
 
-	ctex->flags = VS::TEXTURE_FLAG_CUBEMAP | VS::TEXTURE_FLAG_MIPMAPS | VS::TEXTURE_FLAG_FILTER;
+	ctex->type = VS::TEXTURE_TYPE_CUBEMAP;
+	ctex->flags = VS::TEXTURE_FLAG_MIPMAPS | VS::TEXTURE_FLAG_FILTER;
 	ctex->width = p_resolution;
 	ctex->height = p_resolution;
 	ctex->alloc_width = p_resolution;
@@ -1765,6 +1900,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	p_shader->ubo_offsets = gen_code.uniform_offsets;
 	p_shader->texture_count = gen_code.texture_uniforms.size();
 	p_shader->texture_hints = gen_code.texture_hints;
+	p_shader->texture_types = gen_code.texture_types;
 
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
@@ -1874,6 +2010,13 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 				pi.type = Variant::OBJECT;
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 				pi.hint_string = "Texture";
+			} break;
+			case ShaderLanguage::TYPE_SAMPLER3D:
+			case ShaderLanguage::TYPE_ISAMPLER3D:
+			case ShaderLanguage::TYPE_USAMPLER3D: {
+				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "Texture3D";
 			} break;
 			case ShaderLanguage::TYPE_SAMPLERCUBE: {
 
@@ -2649,6 +2792,7 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 	//set up the texture array, for easy access when it needs to be drawn
 	if (material->shader && material->shader->texture_count) {
 
+		material->texture_is_3d.resize(material->shader->texture_count);
 		material->textures.resize(material->shader->texture_count);
 
 		for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
@@ -2657,6 +2801,16 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 				continue; // not a texture, does not go here
 
 			RID texture;
+
+			switch (E->get().type) {
+				case ShaderLanguage::TYPE_SAMPLER3D:
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+					material->texture_is_3d.write[E->get().texture_order] = true;
+				} break;
+				default: {
+					material->texture_is_3d.write[E->get().texture_order] = false;
+				} break;
+			}
 
 			Map<StringName, Variant>::Element *V = material->params.find(E->key());
 			if (V) {
@@ -2675,6 +2829,7 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 
 	} else {
 		material->textures.clear();
+		material->texture_is_3d.clear();
 	}
 }
 
@@ -6999,6 +7154,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		info.texture_mem -= texture->total_data_size;
 		texture_owner.free(p_rid);
 		memdelete(texture);
+
 	} else if (sky_owner.owns(p_rid)) {
 		// delete the sky
 		Sky *sky = sky_owner.get(p_rid);
@@ -7408,6 +7564,15 @@ void RasterizerStorageGLES3::initialize() {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 8, 8, 0, GL_RGB, GL_UNSIGNED_BYTE, anisotexdata);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glGenTextures(1, &resources.white_tex_3d);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_3D, resources.white_tex_3d);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, 2, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
+
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
 	}
 
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);

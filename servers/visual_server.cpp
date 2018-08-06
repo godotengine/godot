@@ -55,7 +55,7 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 
 	ERR_FAIL_COND_V(!p_image.is_valid(), RID());
 	RID texture = texture_create();
-	texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), p_flags); //if it has mipmaps, use, else generate
+	texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_flags); //if it has mipmaps, use, else generate
 	ERR_FAIL_COND_V(!texture.is_valid(), texture);
 
 	texture_set_data(texture, p_image);
@@ -72,7 +72,9 @@ Array VisualServer::_texture_debug_usage_bind() {
 
 		Dictionary dict;
 		dict["texture"] = E->get().texture;
-		dict["size"] = E->get().size;
+		dict["width"] = E->get().width;
+		dict["height"] = E->get().height;
+		dict["depth"] = E->get().depth;
 		dict["format"] = E->get().format;
 		dict["bytes"] = E->get().bytes;
 		dict["path"] = E->get().path;
@@ -333,7 +335,7 @@ RID VisualServer::get_white_texture() {
 	}
 	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
 	white_texture = texture_create();
-	texture_allocate(white_texture, 4, 4, Image::FORMAT_RGB8);
+	texture_allocate(white_texture, 4, 4, 0, Image::FORMAT_RGB8, TEXTURE_TYPE_2D);
 	texture_set_data(white_texture, white);
 	return white_texture;
 }
@@ -1658,17 +1660,19 @@ void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
-	ClassDB::bind_method(D_METHOD("texture_allocate", "texture", "width", "height", "format", "flags"), &VisualServer::texture_allocate, DEFVAL(TEXTURE_FLAGS_DEFAULT));
-	ClassDB::bind_method(D_METHOD("texture_set_data", "texture", "image", "cube_side"), &VisualServer::texture_set_data, DEFVAL(CUBEMAP_LEFT));
-	ClassDB::bind_method(D_METHOD("texture_set_data_partial", "texture", "image", "src_x", "src_y", "src_w", "src_h", "dst_x", "dst_y", "dst_mip", "cube_side"), &VisualServer::texture_set_data_partial, DEFVAL(CUBEMAP_LEFT));
+	ClassDB::bind_method(D_METHOD("texture_allocate", "texture", "width", "height", "depth_3d", "format", "type", "flags"), &VisualServer::texture_allocate, DEFVAL(TEXTURE_FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("texture_set_data", "texture", "image", "layer"), &VisualServer::texture_set_data, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_set_data_partial", "texture", "image", "src_x", "src_y", "src_w", "src_h", "dst_x", "dst_y", "dst_mip", "layer"), &VisualServer::texture_set_data_partial, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "cube_side"), &VisualServer::texture_get_data, DEFVAL(CUBEMAP_LEFT));
 	ClassDB::bind_method(D_METHOD("texture_set_flags", "texture", "flags"), &VisualServer::texture_set_flags);
 	ClassDB::bind_method(D_METHOD("texture_get_flags", "texture"), &VisualServer::texture_get_flags);
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &VisualServer::texture_get_format);
+	ClassDB::bind_method(D_METHOD("texture_get_type", "texture"), &VisualServer::texture_get_type);
 	ClassDB::bind_method(D_METHOD("texture_get_texid", "texture"), &VisualServer::texture_get_texid);
 	ClassDB::bind_method(D_METHOD("texture_get_width", "texture"), &VisualServer::texture_get_width);
 	ClassDB::bind_method(D_METHOD("texture_get_height", "texture"), &VisualServer::texture_get_height);
-	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height"), &VisualServer::texture_set_size_override);
+	ClassDB::bind_method(D_METHOD("texture_get_depth", "texture"), &VisualServer::texture_get_depth);
+	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height", "depth"), &VisualServer::texture_set_size_override);
 	ClassDB::bind_method(D_METHOD("texture_set_path", "texture", "path"), &VisualServer::texture_set_path);
 	ClassDB::bind_method(D_METHOD("texture_get_path", "texture"), &VisualServer::texture_get_path);
 	ClassDB::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", "shrink"), &VisualServer::texture_set_shrink_all_x2_on_set_data);
@@ -2059,13 +2063,17 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUBEMAP_FRONT);
 	BIND_ENUM_CONSTANT(CUBEMAP_BACK);
 
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D);
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_CUBEMAP);
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D_ARRAY);
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_3D);
+
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_MIPMAPS);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_REPEAT);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_FILTER);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_ANISOTROPIC_FILTER);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_CONVERT_TO_LINEAR);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_MIRRORED_REPEAT);
-	BIND_ENUM_CONSTANT(TEXTURE_FLAG_CUBEMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_USED_FOR_STREAMING);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAGS_DEFAULT);
 

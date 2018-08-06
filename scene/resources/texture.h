@@ -401,6 +401,77 @@ VARIANT_ENUM_CAST(CubeMap::Flags)
 VARIANT_ENUM_CAST(CubeMap::Side)
 VARIANT_ENUM_CAST(CubeMap::Storage)
 
+class Texture3D : public Resource {
+
+	GDCLASS(Texture3D, Resource)
+	RES_BASE_EXTENSION("tex3d")
+
+public:
+	enum Flags {
+		FLAG_MIPMAPS = VisualServer::TEXTURE_FLAG_MIPMAPS,
+		FLAG_REPEAT = VisualServer::TEXTURE_FLAG_REPEAT,
+		FLAG_FILTER = VisualServer::TEXTURE_FLAG_FILTER,
+		FLAGS_DEFAULT = FLAG_REPEAT | FLAG_FILTER,
+	};
+
+private:
+	RID texture;
+	Image::Format format;
+	uint32_t flags;
+
+	uint32_t width;
+	uint32_t height;
+	uint32_t depth;
+
+	// for setting an image as a property
+	bool split_single_image_enabled;
+
+	uint32_t split_single_image_h_split;
+	uint32_t split_single_image_v_split;
+	uint32_t split_single_image_num_layers;
+	Ref<Image> split_single_image_image;
+
+protected:
+	void _validate_property(PropertyInfo &property) const;
+
+	static void _bind_methods();
+
+public:
+	void set_flags(uint32_t p_flags);
+	uint32_t get_flags() const;
+
+	Image::Format get_format() const;
+	uint32_t get_width() const;
+	uint32_t get_height() const;
+	uint32_t get_depth() const;
+
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
+	void create_from_image(const Ref<Image> &p_image, uint32_t p_h_split, uint32_t p_v_split, uint32_t p_num_layer, uint32_t flags = FLAGS_DEFAULT);
+
+	void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_layer, int p_mipmap = 0);
+
+	virtual RID get_rid() const;
+
+	bool get_split_single_image_enabled() const;
+	void set_split_single_image_enabled(bool p_split_enabled);
+
+	uint32_t get_split_single_image_h_split() const;
+	void set_split_single_image_h_split(uint32_t p_h_split);
+	uint32_t get_split_single_image_v_split() const;
+	void set_split_single_image_v_split(uint32_t p_v_split);
+
+	uint32_t get_split_single_image_num_layers() const;
+	void set_split_single_image_num_layers(uint32_t p_num_layers);
+
+	Ref<Image> get_split_single_image_image() const;
+	void set_split_single_image_image(const Ref<Image> &p_image);
+
+	virtual void set_path(const String &p_path, bool p_take_over = false);
+
+	Texture3D();
+	~Texture3D();
+};
+
 class CurveTexture : public Texture {
 
 	GDCLASS(CurveTexture, Texture)

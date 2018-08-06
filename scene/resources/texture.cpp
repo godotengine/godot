@@ -124,7 +124,7 @@ bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 		Size2 s = p_value;
 		w = s.width;
 		h = s.height;
-		VisualServer::get_singleton()->texture_set_size_override(texture, w, h);
+		VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 	} else if (p_name == "_data") {
 		_set_data(p_value);
 	} else
@@ -183,7 +183,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
 
 	flags = p_flags;
-	VisualServer::get_singleton()->texture_allocate(texture, p_width, p_height, p_format, p_flags);
+	VisualServer::get_singleton()->texture_allocate(texture, p_width, p_height, 0, p_format, VS::TEXTURE_TYPE_2D, p_flags);
 	format = p_format;
 	w = p_width;
 	h = p_height;
@@ -196,7 +196,7 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags
 	h = p_image->get_height();
 	format = p_image->get_format();
 
-	VisualServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), p_flags);
+	VisualServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_flags);
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 	_change_notify();
 }
@@ -301,7 +301,7 @@ void ImageTexture::set_size_override(const Size2 &p_size) {
 		w = s.x;
 	if (s.y != 0)
 		h = s.y;
-	VisualServer::get_singleton()->texture_set_size_override(texture, w, h);
+	VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
 }
 
 void ImageTexture::set_path(const String &p_path, bool p_take_over) {
@@ -648,7 +648,7 @@ Error StreamTexture::load(const String &p_path) {
 	if (err)
 		return err;
 
-	VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), image->get_format(), lflags);
+	VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, image->get_format(), VS::TEXTURE_TYPE_2D, lflags);
 	VS::get_singleton()->texture_set_data(texture, image);
 
 	w = lw;
@@ -1195,7 +1195,7 @@ void CubeMap::set_flags(uint32_t p_flags) {
 
 	flags = p_flags;
 	if (_is_valid())
-		VS::get_singleton()->texture_set_flags(cubemap, flags | VS::TEXTURE_FLAG_CUBEMAP);
+		VS::get_singleton()->texture_set_flags(cubemap, flags);
 }
 
 uint32_t CubeMap::get_flags() const {
@@ -1211,7 +1211,7 @@ void CubeMap::set_side(Side p_side, const Ref<Image> &p_image) {
 		format = p_image->get_format();
 		w = p_image->get_width();
 		h = p_image->get_height();
-		VS::get_singleton()->texture_allocate(cubemap, w, h, p_image->get_format(), flags | VS::TEXTURE_FLAG_CUBEMAP);
+		VS::get_singleton()->texture_allocate(cubemap, w, h, 0, p_image->get_format(), VS::TEXTURE_TYPE_CUBEMAP, flags);
 	}
 
 	VS::get_singleton()->texture_set_data(cubemap, p_image, VS::CubeMapSide(p_side));
@@ -1474,7 +1474,7 @@ void CurveTexture::_update() {
 
 	Ref<Image> image = memnew(Image(_width, 1, false, Image::FORMAT_RF, data));
 
-	VS::get_singleton()->texture_allocate(_texture, _width, 1, Image::FORMAT_RF, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_allocate(_texture, _width, 1, 0, Image::FORMAT_RF, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
 	VS::get_singleton()->texture_set_data(_texture, image);
 
 	emit_changed();
@@ -1583,7 +1583,7 @@ void GradientTexture::_update() {
 
 	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
 
-	VS::get_singleton()->texture_allocate(texture, width, 1, Image::FORMAT_RGBA8, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
 	VS::get_singleton()->texture_set_data(texture, image);
 
 	emit_changed();
@@ -1875,4 +1875,210 @@ AnimatedTexture::AnimatedTexture() {
 
 AnimatedTexture::~AnimatedTexture() {
 	VS::get_singleton()->free(proxy);
+}
+
+bool Texture3D::get_split_single_image_enabled() const {
+	return split_single_image_enabled;
+}
+
+void Texture3D::set_split_single_image_enabled(bool p_split_enabled) {
+	split_single_image_enabled = p_split_enabled;
+
+	_change_notify();
+}
+
+uint32_t Texture3D::get_split_single_image_h_split() const {
+	return split_single_image_h_split;
+}
+
+void Texture3D::set_split_single_image_h_split(uint32_t p_h_split) {
+	split_single_image_h_split = p_h_split;
+
+	if (split_single_image_image.is_valid())
+		create_from_image(split_single_image_image, split_single_image_h_split, split_single_image_v_split, split_single_image_num_layers, flags);
+}
+
+uint32_t Texture3D::get_split_single_image_v_split() const {
+	return split_single_image_v_split;
+}
+
+void Texture3D::set_split_single_image_v_split(uint32_t p_v_split) {
+	split_single_image_v_split = p_v_split;
+
+	if (split_single_image_image.is_valid())
+		create_from_image(split_single_image_image, split_single_image_h_split, split_single_image_v_split, split_single_image_num_layers, flags);
+}
+
+uint32_t Texture3D::get_split_single_image_num_layers() const {
+	return split_single_image_num_layers;
+}
+
+void Texture3D::set_split_single_image_num_layers(uint32_t p_num_layers) {
+	split_single_image_num_layers = p_num_layers;
+
+	if (split_single_image_image.is_valid())
+		create_from_image(split_single_image_image, split_single_image_h_split, split_single_image_v_split, split_single_image_num_layers, flags);
+}
+
+Ref<Image> Texture3D::get_split_single_image_image() const {
+	return split_single_image_image;
+}
+
+void Texture3D::set_split_single_image_image(const Ref<Image> &p_image) {
+	split_single_image_image = p_image;
+
+	create_from_image(split_single_image_image, split_single_image_h_split, split_single_image_v_split, split_single_image_num_layers, flags);
+}
+
+void Texture3D::_validate_property(PropertyInfo &property) const {
+	if (property.name.begins_with("split_single_image_") && property.name != "split_single_image_enabled" && !split_single_image_enabled) {
+		property.usage = 0;
+	}
+}
+
+void Texture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_flags", "flags"), &Texture3D::set_flags);
+	ClassDB::bind_method(D_METHOD("get_flags"), &Texture3D::get_flags);
+
+	ClassDB::bind_method(D_METHOD("get_format"), &Texture3D::get_format);
+
+	ClassDB::bind_method(D_METHOD("get_width"), &Texture3D::get_width);
+	ClassDB::bind_method(D_METHOD("get_height"), &Texture3D::get_height);
+	ClassDB::bind_method(D_METHOD("get_depth"), &Texture3D::get_depth);
+
+	ClassDB::bind_method(D_METHOD("set_split_single_image_enabled", "split_enabled"), &Texture3D::set_split_single_image_enabled);
+	ClassDB::bind_method(D_METHOD("get_split_single_image_enabled"), &Texture3D::get_split_single_image_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_split_single_image_h_split", "h_split"), &Texture3D::set_split_single_image_h_split);
+	ClassDB::bind_method(D_METHOD("get_split_single_image_h_split"), &Texture3D::get_split_single_image_h_split);
+
+	ClassDB::bind_method(D_METHOD("set_split_single_image_v_split", "v_split"), &Texture3D::set_split_single_image_v_split);
+	ClassDB::bind_method(D_METHOD("get_split_single_image_v_split"), &Texture3D::get_split_single_image_v_split);
+
+	ClassDB::bind_method(D_METHOD("set_split_single_image_num_layers", "num_layers"), &Texture3D::set_split_single_image_num_layers);
+	ClassDB::bind_method(D_METHOD("get_split_single_image_num_layers"), &Texture3D::get_split_single_image_num_layers);
+
+	ClassDB::bind_method(D_METHOD("set_split_single_image_image", "image"), &Texture3D::set_split_single_image_image);
+	ClassDB::bind_method(D_METHOD("get_split_single_image_image"), &Texture3D::get_split_single_image_image);
+
+	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &Texture3D::create, DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("create_from_image", "image", "h_split", "v_split", "num_layer", "flags"), &Texture3D::create_from_image, DEFVAL(FLAGS_DEFAULT));
+
+	ClassDB::bind_method(D_METHOD("set_data_partial", "image", "x_offset", "y_offset", "layer", "mipmap"), &Texture3D::set_data_partial, DEFVAL(0));
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter"), "set_flags", "get_flags");
+
+	BIND_ENUM_CONSTANT(FLAG_MIPMAPS);
+	BIND_ENUM_CONSTANT(FLAG_REPEAT);
+	BIND_ENUM_CONSTANT(FLAG_FILTER);
+	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
+
+	ADD_GROUP("Split single image", "split_single_image_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "split_single_image_enabled"), "set_split_single_image_enabled", "get_split_single_image_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_single_image_h_split", PROPERTY_HINT_RANGE, "0,1000"), "set_split_single_image_h_split", "get_split_single_image_h_split");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_single_image_v_split", PROPERTY_HINT_RANGE, "0,1000"), "set_split_single_image_v_split", "get_split_single_image_v_split");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_single_image_num_layers"), "set_split_single_image_num_layers", "get_split_single_image_num_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "split_single_image_image", PROPERTY_HINT_RESOURCE_TYPE, "Image"), "set_split_single_image_image", "get_split_single_image_image");
+}
+
+void Texture3D::set_flags(uint32_t p_flags) {
+	flags = p_flags;
+
+	if (texture.is_valid()) {
+		VS::get_singleton()->texture_set_flags(texture, flags);
+	}
+}
+
+uint32_t Texture3D::get_flags() const {
+	return flags;
+}
+
+Image::Format Texture3D::get_format() const {
+	return format;
+}
+
+uint32_t Texture3D::get_width() const {
+	return width;
+}
+
+uint32_t Texture3D::get_height() const {
+	return height;
+}
+
+uint32_t Texture3D::get_depth() const {
+	return depth;
+}
+
+void Texture3D::create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags) {
+	VS::get_singleton()->texture_allocate(texture, p_width, p_height, p_depth, p_format, VS::TEXTURE_TYPE_3D, p_flags);
+
+	width = p_width;
+	height = p_height;
+	depth = p_depth;
+
+	flags = p_flags;
+}
+
+void Texture3D::create_from_image(const Ref<Image> &p_image, uint32_t p_h_split, uint32_t p_v_split, uint32_t p_num_layer, uint32_t flags) {
+
+	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND((p_h_split + 1) * (p_v_split + 1) < p_num_layer);
+
+	uint32_t total_width = p_image->get_width();
+	uint32_t total_height = p_image->get_height();
+
+	uint32_t width = total_width / (p_h_split + 1);
+	uint32_t height = total_height / (p_v_split + 1);
+
+	create(width, height, p_num_layer, p_image->get_format(), flags);
+
+	for (uint32_t i = 0; i < p_num_layer; i++) {
+		uint32_t row = i / (p_v_split + 1);
+		uint32_t col = i % (p_v_split + 1);
+
+		uint32_t x_offset = col * width;
+		uint32_t y_offset = row * height;
+
+		VS::get_singleton()->texture_set_data_partial(texture, p_image, x_offset, y_offset, width, height, 0, 0, 0, i);
+	}
+}
+
+void Texture3D::set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_layer, int p_mipmap) {
+	ERR_FAIL_COND(!texture.is_valid());
+	VS::get_singleton()->texture_set_data_partial(texture, p_image, 0, 0, p_image->get_width(), p_image->get_height(), p_x_ofs, p_y_ofs, p_mipmap, p_layer);
+}
+
+RID Texture3D::get_rid() const {
+	return texture;
+}
+
+void Texture3D::set_path(const String &p_path, bool p_take_over) {
+	if (texture.is_valid()) {
+		VS::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
+
+Texture3D::Texture3D() {
+	format = Image::FORMAT_MAX;
+	flags = FLAGS_DEFAULT;
+
+	width = 0;
+	height = 0;
+	depth = 0;
+
+	split_single_image_enabled = false;
+	split_single_image_h_split = 0;
+	split_single_image_v_split = 0;
+	split_single_image_num_layers = 0;
+	split_single_image_image = Ref<Image>();
+
+	texture = VS::get_singleton()->texture_create();
+}
+
+Texture3D::~Texture3D() {
+	if (texture.is_valid()) {
+		VS::get_singleton()->free(texture);
+	}
 }
