@@ -1069,18 +1069,35 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector2::EditorPropertyVector2() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector2_editing");
+
+	BoxContainer *bc;
+
+	if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
 	static const char *desc[2] = { "x", "y" };
 	for (int i = 0; i < 2; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(desc[i]);
-		vb->add_child(spin[i]);
+		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
 	setting = false;
 }
 
@@ -1195,19 +1212,35 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector3::EditorPropertyVector3() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector3_editing");
+
+	BoxContainer *bc;
+
+	if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
 	static const char *desc[3] = { "x", "y", "z" };
 	for (int i = 0; i < 3; i++) {
 		spin[i] = memnew(EditorSpinSlider);
-		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-
-		vb->add_child(spin[i]);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
 	setting = false;
 }
 ///////////////////// PLANE /////////////////////////
@@ -1259,18 +1292,36 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyPlane::EditorPropertyPlane() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector3_editing");
+
+	BoxContainer *bc;
+
+	if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
 	static const char *desc[4] = { "x", "y", "z", "d" };
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
-		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		vb->add_child(spin[i]);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
 	setting = false;
 }
 
@@ -1323,19 +1374,35 @@ void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p
 }
 
 EditorPropertyQuat::EditorPropertyQuat() {
-	VBoxContainer *vb = memnew(VBoxContainer);
-	add_child(vb);
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector3_editing");
+
+	BoxContainer *bc;
+
+	if (horizontal) {
+		bc = memnew(HBoxContainer);
+		add_child(bc);
+		set_bottom_editor(bc);
+	} else {
+		bc = memnew(VBoxContainer);
+		add_child(bc);
+	}
+
 	static const char *desc[4] = { "x", "y", "z", "w" };
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
-		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-
-		vb->add_child(spin[i]);
+		spin[i]->set_label(desc[i]);
+		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
+		if (horizontal) {
+			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		}
 	}
-	set_label_reference(spin[0]); //show text and buttons around this
+
+	if (!horizontal) {
+		set_label_reference(spin[0]); //show text and buttons around this
+	}
 	setting = false;
 }
 

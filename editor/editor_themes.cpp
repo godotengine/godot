@@ -367,6 +367,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color success_color = accent_color.linear_interpolate(Color(0.2, 1, 0.2), 0.6) * 1.2;
 	Color warning_color = accent_color.linear_interpolate(Color(1, 1, 0), 0.7) * 1.2;
 	Color error_color = accent_color.linear_interpolate(Color(1, 0, 0), 0.8) * 1.7;
+	Color property_color = font_color.linear_interpolate(Color(0.5, 0.5, 0.5), 0.5);
+
 	if (!dark_theme) {
 		// yellow on white themes is a P.I.T.A.
 		warning_color = accent_color.linear_interpolate(Color(1, 0.8, 0), 0.9);
@@ -377,6 +379,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("success_color", "Editor", success_color);
 	theme->set_color("warning_color", "Editor", warning_color);
 	theme->set_color("error_color", "Editor", error_color);
+	theme->set_color("property_color", "Editor", property_color);
 
 	// 2d grid color
 	const Color grid_minor_color = mono_color * Color(1.0, 1.0, 1.0, 0.07);

@@ -82,6 +82,8 @@ protected:
 	void _focus_entered();
 
 public:
+	String get_tooltip(const Point2 &p_pos) const;
+
 	String get_text_value() const;
 	void set_label(const String &p_label);
 	String get_label() const;

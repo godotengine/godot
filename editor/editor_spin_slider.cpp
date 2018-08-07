@@ -31,6 +31,11 @@
 #include "editor_spin_slider.h"
 #include "editor_scale.h"
 #include "os/input.h"
+
+String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
+	return rtos(get_value());
+}
+
 String EditorSpinSlider::get_text_value() const {
 	int zeros = Math::step_decimals(get_step());
 	return String::num(get_value(), zeros);

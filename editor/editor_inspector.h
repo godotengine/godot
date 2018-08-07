@@ -68,6 +68,7 @@ private:
 	bool can_revert;
 
 	bool use_folding;
+	bool draw_top_bg;
 
 	bool _might_be_in_instance();
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage);
@@ -148,6 +149,8 @@ public:
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	String get_tooltip_text() const;
+
+	void set_draw_top_bg(bool p_draw) { draw_top_bg = p_draw; }
 
 	EditorProperty();
 };

@@ -43,6 +43,9 @@
 Size2 EditorProperty::get_minimum_size() const {
 
 	Size2 ms;
+	Ref<Font> font = get_font("font", "Tree");
+	ms.height = font->get_height();
+
 	for (int i = 0; i < get_child_count(); i++) {
 
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -70,12 +73,10 @@ Size2 EditorProperty::get_minimum_size() const {
 		ms.width += check->get_width() + get_constant("hseparator", "Tree");
 	}
 
-	if (bottom_editor != NULL) {
-		Ref<Font> font = get_font("font", "Tree");
-		ms.height += font->get_height();
+	if (bottom_editor != NULL && bottom_editor->is_visible()) {
 		ms.height += get_constant("vseparation", "Tree");
 		Size2 bems = bottom_editor->get_combined_minimum_size();
-		bems.width += get_constant("item_margin", "Tree");
+		//bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
 		ms.width = MAX(ms.width, bems.width);
 	}
@@ -98,6 +99,7 @@ void EditorProperty::_notification(int p_what) {
 			int child_room = size.width * (1.0 - split_ratio);
 			Ref<Font> font = get_font("font", "Tree");
 			int height = font->get_height();
+			bool no_children = true;
 
 			//compute room needed
 			for (int i = 0; i < get_child_count(); i++) {
@@ -113,11 +115,16 @@ void EditorProperty::_notification(int p_what) {
 				Size2 minsize = c->get_combined_minimum_size();
 				child_room = MAX(child_room, minsize.width);
 				height = MAX(height, minsize.height);
+				no_children = false;
 			}
 
-			text_size = MAX(0, size.width - child_room + 4 * EDSCALE);
-
-			rect = Rect2(text_size, 0, size.width - text_size, height);
+			if (no_children) {
+				text_size = size.width;
+				rect = Rect2(size.width - 1, 0, 1, height);
+			} else {
+				text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
+				rect = Rect2(size.width - child_room, 0, child_room, height);
+			}
 
 			if (bottom_editor) {
 
@@ -178,7 +185,7 @@ void EditorProperty::_notification(int p_what) {
 			draw_style_box(sb, Rect2(Vector2(), size));
 		}
 
-		if (right_child_rect != Rect2()) {
+		if (draw_top_bg && right_child_rect != Rect2()) {
 			draw_rect(right_child_rect, dark_color);
 		}
 		if (bottom_child_rect != Rect2()) {
@@ -189,7 +196,7 @@ void EditorProperty::_notification(int p_what) {
 		if (draw_red) {
 			color = get_color("error_color", "Editor");
 		} else {
-			color = get_color("font_color", "Tree");
+			color = get_color("property_color", "Editor");
 		}
 		if (label.find(".") != -1) {
 			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
@@ -787,6 +794,8 @@ void EditorProperty::_bind_methods() {
 
 EditorProperty::EditorProperty() {
 
+	draw_top_bg = true;
+	object = NULL;
 	split_ratio = 0.5;
 	selectable = true;
 	text_size = 0;
@@ -1613,32 +1622,10 @@ void EditorInspector::update_tree() {
 			for (List<EditorInspectorPlugin::AddedEditor>::Element *F = editors.front(); F; F = F->next()) {
 
 				EditorProperty *ep = Object::cast_to<EditorProperty>(F->get().property_editor);
-				current_vbox->add_child(F->get().property_editor);
 
 				if (ep) {
-
+					//set all this before the control gets the ENTER_TREE notification
 					ep->object = object;
-					ep->connect("property_changed", this, "_property_changed");
-					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
-						ep->connect("property_changed", this, "_property_changed_update_all", varray(), CONNECT_DEFERRED);
-					}
-					ep->connect("property_keyed", this, "_property_keyed");
-					ep->connect("property_keyed_with_value", this, "_property_keyed_with_value");
-					ep->connect("property_checked", this, "_property_checked");
-					ep->connect("selected", this, "_property_selected");
-					ep->connect("multiple_properties_changed", this, "_multiple_properties_changed");
-					ep->connect("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
-					ep->connect("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
-					if (doc_hint != String()) {
-						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
-					} else {
-						ep->set_tooltip(property_prefix + p.name);
-					}
-					ep->set_draw_red(draw_red);
-					ep->set_use_folding(use_folding);
-					ep->set_checkable(checkable);
-					ep->set_checked(checked);
-					ep->set_keying(keying);
 
 					if (F->get().properties.size()) {
 
@@ -1664,8 +1651,35 @@ void EditorInspector::update_tree() {
 							editor_property_map[prop].push_back(ep);
 						}
 					}
+					ep->set_draw_red(draw_red);
+					ep->set_use_folding(use_folding);
+					ep->set_checkable(checkable);
+					ep->set_checked(checked);
+					ep->set_keying(keying);
 
 					ep->set_read_only(read_only);
+				}
+
+				current_vbox->add_child(F->get().property_editor);
+
+				if (ep) {
+
+					ep->connect("property_changed", this, "_property_changed");
+					if (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED) {
+						ep->connect("property_changed", this, "_property_changed_update_all", varray(), CONNECT_DEFERRED);
+					}
+					ep->connect("property_keyed", this, "_property_keyed");
+					ep->connect("property_keyed_with_value", this, "_property_keyed_with_value");
+					ep->connect("property_checked", this, "_property_checked");
+					ep->connect("selected", this, "_property_selected");
+					ep->connect("multiple_properties_changed", this, "_multiple_properties_changed");
+					ep->connect("resource_selected", this, "_resource_selected", varray(), CONNECT_DEFERRED);
+					ep->connect("object_id_selected", this, "_object_id_selected", varray(), CONNECT_DEFERRED);
+					if (doc_hint != String()) {
+						ep->set_tooltip(property_prefix + p.name + "::" + doc_hint);
+					} else {
+						ep->set_tooltip(property_prefix + p.name);
+					}
 					ep->update_property();
 					ep->update_reload_status();
 
