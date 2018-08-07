@@ -270,7 +270,6 @@ String FileAccess::get_token() const {
 		c = get_8();
 	}
 
-	token += '0';
 	return String::utf8(token.get_data());
 }
 
