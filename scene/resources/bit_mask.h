@@ -44,6 +44,8 @@ class BitMap : public Resource {
 	int width;
 	int height;
 
+	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
+
 protected:
 	void _set_data(const Dictionary &p_d);
 	Dictionary _get_data() const;
@@ -52,7 +54,7 @@ protected:
 
 public:
 	void create(const Size2 &p_size);
-	void create_from_image_alpha(const Ref<Image> &p_image);
+	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
 
 	void set_bit(const Point2 &p_pos, bool p_value);
 	bool get_bit(const Point2 &p_pos) const;
@@ -60,6 +62,10 @@ public:
 	int get_true_bit_count() const;
 
 	Size2 get_size() const;
+
+	void grow_mask(int p_pixels, const Rect2 &p_rect);
+
+	Vector<Vector<Vector2> > clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon = 2.0) const;
 
 	BitMap();
 };
