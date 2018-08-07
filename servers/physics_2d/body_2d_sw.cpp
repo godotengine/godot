@@ -405,22 +405,6 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	area_angular_damp += p_area->get_angular_damp();
 }
 
-void Body2DSW::set_combine_mode(Physics2DServer::BodyParameter p_param, Physics2DServer::CombineMode p_mode) {
-	if (p_param == Physics2DServer::BODY_PARAM_BOUNCE) {
-		bounce_combine_mode = p_mode;
-	} else {
-		friction_combine_mode = p_mode;
-	}
-}
-
-Physics2DServer::CombineMode Body2DSW::get_combine_mode(Physics2DServer::BodyParameter p_param) const {
-	if (p_param == Physics2DServer::BODY_PARAM_BOUNCE) {
-		return bounce_combine_mode;
-	} else {
-		return friction_combine_mode;
-	}
-}
-
 void Body2DSW::integrate_forces(real_t p_step) {
 
 	if (mode == Physics2DServer::BODY_MODE_STATIC)

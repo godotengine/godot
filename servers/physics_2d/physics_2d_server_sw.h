@@ -200,10 +200,6 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
 	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 
-	/// p_param accept only Bounce and Friction
-	virtual void body_set_combine_mode(RID p_body, BodyParameter p_param, CombineMode p_mode);
-	virtual CombineMode body_get_combine_mode(RID p_body, BodyParameter p_param) const;
-
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant);
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const;
 

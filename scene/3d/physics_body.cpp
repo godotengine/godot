@@ -189,9 +189,10 @@ void StaticBody::set_friction(real_t p_friction) {
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
+		set_physics_material_override(physics_material_override);
 	}
+
 	physics_material_override->set_friction(p_friction);
-	_reload_physics_characteristics();
 }
 
 real_t StaticBody::get_friction() const {
@@ -215,9 +216,9 @@ void StaticBody::set_bounce(real_t p_bounce) {
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
+		set_physics_material_override(physics_material_override);
 	}
 	physics_material_override->set_bounce(p_bounce);
-	_reload_physics_characteristics();
 }
 
 real_t StaticBody::get_bounce() const {
@@ -235,7 +236,8 @@ real_t StaticBody::get_bounce() const {
 
 void StaticBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics"))
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
 	}
 
 	physics_material_override = p_physics_material_override;
@@ -313,13 +315,9 @@ void StaticBody::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
 		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, 0);
 		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, 1);
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, PhysicsServer::COMBINE_MODE_INHERIT);
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, PhysicsServer::COMBINE_MODE_INHERIT);
 	} else {
-		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce());
-		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction());
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce_combine_mode());
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction_combine_mode());
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
 }
 
@@ -626,9 +624,9 @@ void RigidBody::set_friction(real_t p_friction) {
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
+		set_physics_material_override(physics_material_override);
 	}
 	physics_material_override->set_friction(p_friction);
-	_reload_physics_characteristics();
 }
 real_t RigidBody::get_friction() const {
 
@@ -648,9 +646,9 @@ void RigidBody::set_bounce(real_t p_bounce) {
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
+		set_physics_material_override(physics_material_override);
 	}
 	physics_material_override->set_bounce(p_bounce);
-	_reload_physics_characteristics();
 }
 real_t RigidBody::get_bounce() const {
 	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physical material")
@@ -665,7 +663,8 @@ real_t RigidBody::get_bounce() const {
 
 void RigidBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
+		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics"))
+			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
 	}
 
 	physics_material_override = p_physics_material_override;
@@ -1070,13 +1069,9 @@ void RigidBody::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
 		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, 0);
 		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, 1);
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, PhysicsServer::COMBINE_MODE_INHERIT);
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, PhysicsServer::COMBINE_MODE_INHERIT);
 	} else {
-		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce());
-		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction());
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->get_bounce_combine_mode());
-		PhysicsServer::get_singleton()->body_set_combine_mode(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->get_friction_combine_mode());
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
+		PhysicsServer::get_singleton()->body_set_param(get_rid(), PhysicsServer::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
 }
 

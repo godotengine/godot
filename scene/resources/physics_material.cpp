@@ -29,66 +29,48 @@
 /*************************************************************************/
 #include "physics_material.h"
 
-bool PhysicsMaterial::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "bounce") {
-		set_bounce(p_value);
-	} else if (p_name == "bounce_combine_mode") {
-		set_bounce_combine_mode(static_cast<PhysicsServer::CombineMode>(int(p_value)));
-	} else if (p_name == "friction") {
-		set_friction(p_value);
-	} else if (p_name == "friction_combine_mode") {
-		set_friction_combine_mode(static_cast<PhysicsServer::CombineMode>(int(p_value)));
-	} else {
-		return false;
-	}
+void PhysicsMaterial::_bind_methods() {
 
-	emit_changed();
-	return true;
-}
+	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicsMaterial::set_friction);
+	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicsMaterial::get_friction);
 
-bool PhysicsMaterial::_get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == "bounce") {
-		r_ret = bounce;
-	} else if (p_name == "bounce_combine_mode") {
-		r_ret = int(bounce_combine_mode);
-	} else if (p_name == "friction") {
-		r_ret = friction;
-	} else if (p_name == "friction_combine_mode") {
-		r_ret = int(friction_combine_mode);
-	} else {
-		return false;
-	}
+	ClassDB::bind_method(D_METHOD("set_rough", "rough"), &PhysicsMaterial::set_rough);
+	ClassDB::bind_method(D_METHOD("is_rough"), &PhysicsMaterial::is_rough);
 
-	return true;
-}
+	ClassDB::bind_method(D_METHOD("set_bounce", "bounce"), &PhysicsMaterial::set_bounce);
+	ClassDB::bind_method(D_METHOD("get_bounce"), &PhysicsMaterial::get_bounce);
 
-void PhysicsMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::REAL, "bounce"));
-	p_list->push_back(PropertyInfo(Variant::INT, "bounce_combine_mode", PROPERTY_HINT_ENUM, "Max,Min,Multiply,Average"));
-	p_list->push_back(PropertyInfo(Variant::REAL, "friction"));
-	p_list->push_back(PropertyInfo(Variant::INT, "friction_combine_mode", PROPERTY_HINT_ENUM, "Max,Min,Multiply,Average"));
-}
+	ClassDB::bind_method(D_METHOD("set_absorbent", "absorbent"), &PhysicsMaterial::set_absorbent);
+	ClassDB::bind_method(D_METHOD("is_absorbent"), &PhysicsMaterial::is_absorbent);
 
-void PhysicsMaterial::_bind_methods() {}
-
-void PhysicsMaterial::set_bounce(real_t p_val) {
-	bounce = p_val;
-}
-
-void PhysicsMaterial::set_bounce_combine_mode(PhysicsServer::CombineMode p_val) {
-	bounce_combine_mode = p_val;
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction"), "set_friction", "get_friction");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rough"), "set_rough", "is_rough");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bounce"), "set_bounce", "get_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "absorbent"), "set_absorbent", "is_absorbent");
 }
 
 void PhysicsMaterial::set_friction(real_t p_val) {
 	friction = p_val;
+	emit_changed();
 }
 
-void PhysicsMaterial::set_friction_combine_mode(PhysicsServer::CombineMode p_val) {
-	friction_combine_mode = p_val;
+void PhysicsMaterial::set_rough(bool p_val) {
+	rough = p_val;
+	emit_changed();
+}
+
+void PhysicsMaterial::set_bounce(real_t p_val) {
+	bounce = p_val;
+	emit_changed();
+}
+
+void PhysicsMaterial::set_absorbent(bool p_val) {
+	absorbent = p_val;
+	emit_changed();
 }
 
 PhysicsMaterial::PhysicsMaterial() :
+		friction(1),
+		rough(false),
 		bounce(0),
-		bounce_combine_mode(PhysicsServer::COMBINE_MODE_MAX),
-		friction(0),
-		friction_combine_mode(PhysicsServer::COMBINE_MODE_MULTIPLY) {}
+		absorbent(false) {}
