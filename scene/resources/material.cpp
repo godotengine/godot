@@ -2106,10 +2106,10 @@ void SpatialMaterial::_bind_methods() {
 SpatialMaterial::SpatialMaterial() :
 		element(this) {
 
-	//initialize to right values
+	// Initialize to the same values as the shader
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
-	set_roughness(0.0);
+	set_roughness(1.0);
 	set_metallic(0.0);
 	set_emission(Color(0, 0, 0));
 	set_emission_energy(1.0);
