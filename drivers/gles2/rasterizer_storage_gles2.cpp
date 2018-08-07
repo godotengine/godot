@@ -567,7 +567,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	ERR_FAIL_COND_V(!texture->active, Ref<Image>());
 	ERR_FAIL_COND_V(texture->data_size == 0 && !texture->render_target, Ref<Image>());
 
-	if (!texture->images[p_layer].is_null()) {
+	if (texture->images.size() > p_layer && !texture->images[p_layer].is_null()) {
 		return texture->images[p_layer];
 	}
 #ifdef GLES_OVER_GL
