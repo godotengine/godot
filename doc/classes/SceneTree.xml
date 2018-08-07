@@ -384,20 +384,28 @@
 			Call a group only once even if the call is executed many times.
 		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0" enum="StretchMode">
+			No stretching.
 		</constant>
 		<constant name="STRETCH_MODE_2D" value="1" enum="StretchMode">
+			Render stretching in higher resolution (interpolated).
 		</constant>
 		<constant name="STRETCH_MODE_VIEWPORT" value="2" enum="StretchMode">
+			Keep the specified display resolution. No interpolation. Content may appear pixelated.
 		</constant>
 		<constant name="STRETCH_ASPECT_IGNORE" value="0" enum="StretchAspect">
+			Fill the window with the content stretched to cover excessive space. Content may appear elongated.
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP" value="1" enum="StretchAspect">
+			Retain the same aspect ratio by padding with black bars in either axes. No expansion of content.
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP_WIDTH" value="2" enum="StretchAspect">
+			Expand vertically. Left/right black bars may appear if the window is too wide.
 		</constant>
 		<constant name="STRETCH_ASPECT_KEEP_HEIGHT" value="3" enum="StretchAspect">
+			Expand horizontally. Top/bottom black bars may appear if the window is too tall.
 		</constant>
 		<constant name="STRETCH_ASPECT_EXPAND" value="4" enum="StretchAspect">
+			Expand in both directions, retaining the same aspect ratio. No black bars.
 		</constant>
 	</constants>
 </class>
