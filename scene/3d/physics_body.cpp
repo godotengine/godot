@@ -664,7 +664,8 @@ real_t RigidBody::get_bounce() const {
 #endif // DISABLE_DEPRECATED
 
 void RigidBody::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
-	if (physics_material_override.is_valid()) {
+	if (physics_material_override.is_valid() &&
+			physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics")) {
 		physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, this, "_reload_physics_characteristics");
 	}
 
