@@ -131,12 +131,65 @@ void Skeleton::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		String prep = "bones/" + itos(i) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, prep + "name"));
-		p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(i - 1) + ",1"));
+		p_list->push_back(PropertyInfo(Variant::INT, prep + "parent", PROPERTY_HINT_RANGE, "-1," + itos(bones.size() - 1) + ",1"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "rest"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, prep + "enabled"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, prep + "pose", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, prep + "bound_children"));
 	}
+}
+
+void Skeleton::_update_process_order() {
+
+	if (!process_order_dirty)
+		return;
+
+	Bone *bonesptr = bones.ptrw();
+	int len = bones.size();
+
+	process_order.resize(len);
+	int *order = process_order.ptrw();
+	for (int i = 0; i < len; i++) {
+
+		if (bonesptr[i].parent >= len) {
+			//validate this just in case
+			ERR_PRINTS("Bone " + itos(i) + " has invalid parent: " + itos(bonesptr[i].parent));
+			bonesptr[i].parent = -1;
+		}
+		order[i] = i;
+		bonesptr[i].sort_index = i;
+	}
+	//now check process order
+	int pass_count = 0;
+	while (pass_count < len * len) {
+		//using bubblesort because of simplicity, it wont run every frame though.
+		//bublesort worst case is O(n^2), and this may be an infinite loop if cyclic
+		bool swapped = false;
+		for (int i = 0; i < len; i++) {
+			int parent_idx = bonesptr[order[i]].parent;
+			if (parent_idx < 0)
+				continue; //do nothing because it has no parent
+			//swap indices
+			int parent_order = bonesptr[parent_idx].sort_index;
+			if (parent_order > i) {
+				bonesptr[order[i]].sort_index = parent_order;
+				bonesptr[parent_idx].sort_index = i;
+				//swap order
+				SWAP(order[i], order[parent_order]);
+				swapped = true;
+			}
+		}
+
+		if (!swapped)
+			break;
+		pass_count++;
+	}
+
+	if (pass_count == len * len) {
+		ERR_PRINT("Skeleton parenthood graph is cyclic");
+	}
+
+	process_order_dirty = false;
 }
 
 void Skeleton::_notification(int p_what) {
@@ -181,19 +234,23 @@ void Skeleton::_notification(int p_what) {
 
 			vs->skeleton_allocate(skeleton, len); // if same size, nothin really happens
 
+			_update_process_order();
+
+			const int *order = process_order.ptr();
+
 			// pose changed, rebuild cache of inverses
 			if (rest_global_inverse_dirty) {
 
 				// calculate global rests and invert them
 				for (int i = 0; i < len; i++) {
-					Bone &b = bonesptr[i];
+					Bone &b = bonesptr[order[i]];
 					if (b.parent >= 0)
 						b.rest_global_inverse = bonesptr[b.parent].rest_global_inverse * b.rest;
 					else
 						b.rest_global_inverse = b.rest;
 				}
 				for (int i = 0; i < len; i++) {
-					Bone &b = bonesptr[i];
+					Bone &b = bonesptr[order[i]];
 					b.rest_global_inverse.affine_invert();
 				}
 
@@ -205,7 +262,7 @@ void Skeleton::_notification(int p_what) {
 
 			for (int i = 0; i < len; i++) {
 
-				Bone &b = bonesptr[i];
+				Bone &b = bonesptr[order[i]];
 
 				if (b.disable_rest) {
 					if (b.enabled) {
@@ -319,12 +376,13 @@ void Skeleton::add_bone(const String &p_name) {
 
 	for (int i = 0; i < bones.size(); i++) {
 
-		ERR_FAIL_COND(bones[i].name == "p_name");
+		ERR_FAIL_COND(bones[i].name == p_name);
 	}
 
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
+	process_order_dirty = true;
 
 	rest_global_inverse_dirty = true;
 	_make_dirty();
@@ -368,16 +426,19 @@ int Skeleton::get_bone_count() const {
 void Skeleton::set_bone_parent(int p_bone, int p_parent) {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	ERR_FAIL_COND(p_parent != -1 && (p_parent < 0 || p_parent >= p_bone));
+	ERR_FAIL_COND(p_parent != -1 && (p_parent < 0));
 
 	bones.write[p_bone].parent = p_parent;
 	rest_global_inverse_dirty = true;
+	process_order_dirty = true;
 	_make_dirty();
 }
 
 void Skeleton::unparent_bone_and_rest(int p_bone) {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
+
+	_update_process_order();
 
 	int parent = bones[p_bone].parent;
 	while (parent >= 0) {
@@ -387,6 +448,7 @@ void Skeleton::unparent_bone_and_rest(int p_bone) {
 
 	bones.write[p_bone].parent = -1;
 	bones.write[p_bone].rest_global_inverse = bones[p_bone].rest.affine_inverse(); //same thing
+	process_order_dirty = true;
 
 	_make_dirty();
 }
@@ -489,6 +551,8 @@ void Skeleton::clear_bones() {
 
 	bones.clear();
 	rest_global_inverse_dirty = true;
+	process_order_dirty = true;
+
 	_make_dirty();
 }
 
@@ -538,12 +602,21 @@ void Skeleton::_make_dirty() {
 	dirty = true;
 }
 
+int Skeleton::get_process_order(int p_idx) {
+	ERR_FAIL_INDEX_V(p_idx, bones.size(), -1);
+	_update_process_order();
+	return process_order[p_idx];
+}
+
 void Skeleton::localize_rests() {
 
-	for (int i = bones.size() - 1; i >= 0; i--) {
+	_update_process_order();
 
-		if (bones[i].parent >= 0)
-			set_bone_rest(i, bones[bones[i].parent].rest.affine_inverse() * bones[i].rest);
+	for (int i = bones.size() - 1; i >= 0; i--) {
+		int idx = process_order[i];
+		if (bones[idx].parent >= 0) {
+			set_bone_rest(idx, bones[bones[idx].parent].rest.affine_inverse() * bones[idx].rest);
+		}
 	}
 }
 
@@ -752,6 +825,7 @@ Skeleton::Skeleton() {
 
 	rest_global_inverse_dirty = true;
 	dirty = false;
+	process_order_dirty = true;
 	skeleton = VisualServer::get_singleton()->skeleton_create();
 	set_notify_transform(true);
 }

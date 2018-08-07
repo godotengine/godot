@@ -54,6 +54,7 @@ class Skeleton : public Spatial {
 
 		bool enabled;
 		int parent;
+		int sort_index; //used for re-sorting process order
 
 		bool ignore_animation;
 
@@ -92,6 +93,8 @@ class Skeleton : public Spatial {
 	bool rest_global_inverse_dirty;
 
 	Vector<Bone> bones;
+	Vector<int> process_order;
+	bool process_order_dirty;
 
 	RID skeleton;
 
@@ -111,6 +114,8 @@ class Skeleton : public Spatial {
 		}
 		return bound;
 	}
+
+	void _update_process_order();
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
@@ -172,6 +177,7 @@ public:
 	Transform get_bone_custom_pose(int p_bone) const;
 
 	void localize_rests(); // used for loaders and tools
+	int get_process_order(int p_idx);
 
 #ifndef _3D_DISABLED
 	// Physical bone API

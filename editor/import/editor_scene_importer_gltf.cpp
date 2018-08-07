@@ -1656,6 +1656,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 	if (n->mesh >= 0) {
 		ERR_FAIL_INDEX(n->mesh, state.meshes.size());
 		MeshInstance *mi = memnew(MeshInstance);
+		print_line("**creating mesh for: " + n->name);
 		GLTFMesh &mesh = state.meshes.write[n->mesh];
 		mi->set_mesh(mesh.mesh);
 		if (mesh.mesh->get_name() == "") {
@@ -1730,6 +1731,10 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 			skeletons[i]->get_parent()->remove_child(skeletons[i]);
 			p_parent_node->add_child(skeletons[i]);
 			skeletons[i]->set_owner(owner);
+			//may have meshes as children, set owner in them too
+			for (int j = 0; j < skeletons[i]->get_child_count(); j++) {
+				skeletons[i]->get_child(j)->set_owner(owner);
+			}
 		}
 	}
 
@@ -1978,8 +1983,9 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 					if (node->joints.size()) {
 
 						Transform xform;
-						xform.basis = Basis(rot);
-						xform.basis.scale(scale);
+						//xform.basis = Basis(rot);
+						//xform.basis.scale(scale);
+						xform.basis.set_quat_scale(rot, scale);
 						xform.origin = pos;
 
 						Skeleton *skeleton = skeletons[node->joints[i].skin];

@@ -1452,7 +1452,9 @@ void SkeletonSpatialGizmo::redraw() {
 	Color bonecolor = Color(1.0, 0.4, 0.4, 0.3);
 	Color rootcolor = Color(0.4, 1.0, 0.4, 0.1);
 
-	for (int i = 0; i < skel->get_bone_count(); i++) {
+	for (int i_bone = 0; i_bone < skel->get_bone_count(); i_bone++) {
+
+		int i = skel->get_process_order(i_bone);
 
 		int parent = skel->get_bone_parent(i);
 
@@ -3371,10 +3373,10 @@ NavigationMeshSpatialGizmo::NavigationMeshSpatialGizmo(NavigationMeshInstance *p
 	navmesh = p_navmesh;
 }
 
-//////
-///
-///
-///
+	//////
+	///
+	///
+	///
 
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
