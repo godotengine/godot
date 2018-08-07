@@ -532,14 +532,14 @@ ProceduralSky::ProceduralSky() {
 	texture = VS::get_singleton()->texture_create();
 
 	update_queued = false;
-	sky_top_color = Color::hex(0x0c74f9ff);
-	sky_horizon_color = Color::hex(0x8ed2e8ff);
-	sky_curve = 0.25;
+	sky_top_color = Color::hex(0xa5d6f1ff);
+	sky_horizon_color = Color::hex(0xd6eafaff);
+	sky_curve = 0.09;
 	sky_energy = 1;
 
-	ground_bottom_color = Color::hex(0x1a2530ff);
-	ground_horizon_color = Color::hex(0x7bc9f3ff);
-	ground_curve = 0.01;
+	ground_bottom_color = Color::hex(0x282f36ff);
+	ground_horizon_color = Color::hex(0x6c655fff);
+	ground_curve = 0.02;
 	ground_energy = 1;
 
 	sun_color = Color(1, 1, 1);
