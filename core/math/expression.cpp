@@ -1350,11 +1350,26 @@ Expression::ENode *Expression::_parse_expression() {
 					//named indexing
 					str_ofs = cofs;
 
-					NamedIndexNode *index = alloc_node<NamedIndexNode>();
-					SelfNode *self_node = alloc_node<SelfNode>();
-					index->base = self_node;
-					index->name = identifier;
-					expr = index;
+					int input_index = -1;
+					for (int i = 0; i < input_names.size(); i++) {
+						if (input_names[i] == identifier) {
+							input_index = i;
+							break;
+						}
+					}
+
+					if (input_index != -1) {
+						InputNode *input = alloc_node<InputNode>();
+						input->index = input_index;
+						expr = input;
+					} else {
+
+						NamedIndexNode *index = alloc_node<NamedIndexNode>();
+						SelfNode *self_node = alloc_node<SelfNode>();
+						index->base = self_node;
+						index->name = identifier;
+						expr = index;
+					}
 				}
 			} break;
 			case TK_INPUT: {
@@ -2042,7 +2057,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 	return false;
 }
 
-Error Expression::parse(const String &p_expression) {
+Error Expression::parse(const String &p_expression, const Vector<String> &p_input_names) {
 
 	if (nodes) {
 		memdelete(nodes);
@@ -2053,6 +2068,7 @@ Error Expression::parse(const String &p_expression) {
 	error_str = String();
 	error_set = false;
 	str_ofs = 0;
+	input_names = p_input_names;
 
 	expression = p_expression;
 	root = _parse_expression();
@@ -2097,7 +2113,7 @@ String Expression::get_error_text() const {
 
 void Expression::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("parse", "expression"), &Expression::parse);
+	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
 	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error"), &Expression::execute, DEFVAL(Array()), DEFVAL(NULL), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
