@@ -181,7 +181,7 @@ void main() {
 #else
 	// look up transform from the "pose texture"
 	{
-		
+
 		for (int i = 0; i < 4; i++) {
 			ivec2 tex_ofs = ivec2(int(bone_ids[i]) * 3, 0);
 
@@ -252,7 +252,7 @@ VERTEX_SHADER_CODE
 
 	float z_ofs = light_bias;
 	z_ofs += (1.0 - abs(normal_interp.z)) * light_normal_bias;
-	
+
 	vertex_interp.z -= z_ofs;
 
 #endif
@@ -460,7 +460,7 @@ float sample_shadow(highp sampler2D shadow,
                     vec4 clamp_rect)
 {
 	// vec4 depth_value = texture2D(shadow, pos);
-	
+
 	// return depth_value.z;
 	return texture2DProj(shadow, vec4(pos, depth, 1.0)).r;
 	// return (depth_value.x + depth_value.y + depth_value.z + depth_value.w) / 4.0;
@@ -469,22 +469,22 @@ float sample_shadow(highp sampler2D shadow,
 
 #endif
 
-void main() 
+void main()
 {
 
 	highp vec3 vertex = vertex_interp;
-	vec3 albedo = vec3(0.8, 0.8, 0.8);
+	vec3 albedo = vec3(1.0);
 	vec3 transmission = vec3(0.0);
 	float metallic = 0.0;
 	float specular = 0.5;
-	vec3 emission = vec3(0.0, 0.0, 0.0);
+	vec3 emission = vec3(0.0);
 	float roughness = 1.0;
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
 	float clearcoat_gloss = 0.0;
-	float anisotropy = 1.0;
-	vec2 anisotropy_flow = vec2(1.0,0.0);
+	float anisotropy = 0.0;
+	vec2 anisotropy_flow = vec2(1.0, 0.0);
 
 	float alpha = 1.0;
 	float side = 1.0;
@@ -536,7 +536,7 @@ FRAGMENT_SHADER_CODE
 	normal = normalize(normal);
 
 	vec3 N = normal;
-	
+
 	vec3 specular_light = vec3(0.0, 0.0, 0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 
@@ -551,7 +551,7 @@ FRAGMENT_SHADER_CODE
 		discard;
 	}
 #endif
-	
+
 //
 // Lighting
 //
@@ -621,11 +621,11 @@ FRAGMENT_SHADER_CODE
 
 		vec3 light_vec = -light_direction;
 		vec3 attenuation = vec3(1.0, 1.0, 1.0);
-		
+
 		float depth_z = -vertex.z;
-		
+
 		if (light_has_shadow > 0.5) {
-		
+
 #ifdef LIGHT_USE_PSSM4
 			if (depth_z < light_split_offsets.w) {
 #elif defined(LIGHT_USE_PSSM2)
@@ -633,36 +633,36 @@ FRAGMENT_SHADER_CODE
 #else
 			if (depth_z < light_split_offsets.x) {
 #endif
-		
+
 			vec3 pssm_coord;
 			float pssm_fade = 0.0;
-			
+
 #ifdef LIGHT_USE_PSSM_BLEND
 			float pssm_blend;
 			vec3 pssm_coord2;
 			bool use_blend = true;
 #endif
-			
+
 #ifdef LIGHT_USE_PSSM4
 			if (depth_z < light_split_offsets.y) {
 				if (depth_z < light_split_offsets.x) {
 					highp vec4 splane = (light_shadow_matrix1 * vec4(vertex, 1.0));
 					pssm_coord = splane.xyz / splane.w;
-					
+
 #ifdef LIGHT_USE_PSSM_BLEND
 					splane = (light_shadow_matrix2 * vec4(vertex, 1.0));
 					pssm_coord2 = splane.xyz / splane.w;
-					
+
 					pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 				} else {
 					highp vec4 splane = (light_shadow_matrix2 * vec4(vertex, 1.0));
 					pssm_coord = splane.xyz / splane.w;
-					
+
 #ifdef LIGHT_USE_PSSM_BLEND
 					splane = (light_shadow_matrix3 * vec4(vertex, 1.0));
 					pssm_coord2 = splane.xyz / splane.w;
-					
+
 					pssm_blend = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #endif
 				}
@@ -689,15 +689,15 @@ FRAGMENT_SHADER_CODE
 #endif
 				}
 			}
-			
+
 #endif // LIGHT_USE_PSSM4
-			
+
 #ifdef LIGHT_USE_PSSM2
 			if (depth_z < light_split_offsets.x) {
-				
+
 				highp vec4 splane = (light_shadow_matrix1 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
-				
+
 #ifdef LIGHT_USE_PSSM_BLEND
 				splane = (light_shadow_matrix2 * vec4(vertex, 1.0));
 				pssm_coord2 = splane.xyz / splane.w;
@@ -711,29 +711,29 @@ FRAGMENT_SHADER_CODE
 				use_blend = false;
 #endif
 			}
-			
+
 #endif // LIGHT_USE_PSSM2
-			
+
 #if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
 			{
 				highp vec4 splane = (light_shadow_matrix1 * vec4(vertex, 1.0));
 				pssm_coord = splane.xyz / splane.w;
 			}
 #endif
-			
+
 			float shadow = sample_shadow(light_shadow_atlas, vec2(0.0), pssm_coord.xy, pssm_coord.z, light_clamp);
-			
+
 #ifdef LIGHT_USE_PSSM_BLEND
 			if (use_blend) {
 				shadow = mix(shadow, sample_shadow(light_shadow_atlas, vec2(0.0), pssm_coord2.xy, pssm_coord2.z, light_clamp), pssm_blend);
 			}
 #endif
-			
+
 			attenuation *= shadow;
-			
-			
+
+
 		}
-			
+
 		}
 
 		light_compute(normal,
@@ -758,19 +758,19 @@ FRAGMENT_SHADER_CODE
 	} else if (light_type == LIGHT_TYPE_SPOT) {
 
 		vec3 light_att = vec3(1.0);
-		
+
 		if (light_has_shadow > 0.5) {
 			highp vec4 splane =  (light_shadow_matrix * vec4(vertex, 1.0));
 			splane.xyz /= splane.w;
-			
+
 			float shadow = sample_shadow(light_shadow_atlas, vec2(0.0), splane.xy, splane.z, light_clamp);
-			
+
 			if (shadow > splane.z) {
 			} else {
 				light_att = vec3(0.0);
 			}
-			
-			
+
+
 		}
 
 		vec3 light_rel_vec = light_position - vertex;
@@ -788,7 +788,7 @@ FRAGMENT_SHADER_CODE
 		spot_attenuation *= 1.0 - pow(spot_rim, light_spot_attenuation);
 
 		light_att *= vec3(spot_attenuation);
-		
+
 		light_compute(normal,
 		              normalize(light_rel_vec),
 		              eye_position,
@@ -837,9 +837,9 @@ FRAGMENT_SHADER_CODE
 	}
 
 	ambient_light *= ambient_energy;
-	
+
 	specular_light += env_reflection_light;
-	
+
 	ambient_light *= albedo;
 
 #if defined(ENABLE_AO)
@@ -848,12 +848,12 @@ FRAGMENT_SHADER_CODE
 	specular_light *= ao_light_affect;
 	diffuse_light *= ao_light_affect;
 #endif
-	
+
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
-	
+
 	// environment BRDF approximation
-	
+
 	// TODO shadeless
 	{
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
