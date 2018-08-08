@@ -30,6 +30,7 @@
 
 #include "editor_spin_slider.h"
 #include "editor_scale.h"
+#include "math/expression.h"
 #include "os/input.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
@@ -275,10 +276,12 @@ void EditorSpinSlider::_notification(int p_what) {
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
 		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult.
 		 * Just press enter to edit.
-		 * if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
+		 * if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
 			_focus_entered();
 		}*/
-
+		if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+			_focus_entered();
+		}
 		value_input_just_closed = false;
 	}
 }
@@ -312,6 +315,21 @@ String EditorSpinSlider::get_label() const {
 	return label;
 }
 
+void EditorSpinSlider::_evaluate_input_text() {
+	String text = value_input->get_text();
+	Ref<Expression> expr;
+	expr.instance();
+	Error err = expr->parse(text);
+	if (err != OK) {
+		return;
+	}
+
+	Variant v = expr->execute(Array(), NULL, false);
+	if (v.get_type() == Variant::NIL)
+		return;
+	set_value(v);
+}
+
 //text_entered signal
 void EditorSpinSlider::_value_input_entered(const String &p_text) {
 	value_input_just_closed = true;
@@ -320,13 +338,13 @@ void EditorSpinSlider::_value_input_entered(const String &p_text) {
 
 //modal_closed signal
 void EditorSpinSlider::_value_input_closed() {
-	set_value(value_input->get_text().to_double());
+	_evaluate_input_text();
 	value_input_just_closed = true;
 }
 
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
-	set_value(value_input->get_text().to_double());
+	_evaluate_input_text();
 	// focus is not on the same element after the vlalue_input was exited
 	// -> focus is on next element
 	// -> TAB was pressed

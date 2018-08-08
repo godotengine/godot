@@ -73,6 +73,8 @@ class EditorSpinSlider : public Range {
 	bool use_custom_label_color;
 	Color custom_label_color;
 
+	void _evaluate_input_text();
+
 protected:
 	void _notification(int p_what);
 	void _gui_input(const Ref<InputEvent> &p_event);

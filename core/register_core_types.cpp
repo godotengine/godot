@@ -54,6 +54,7 @@
 #include "io/tcp_server.h"
 #include "io/translation_loader_po.h"
 #include "math/a_star.h"
+#include "math/expression.h"
 #include "math/triangle_mesh.h"
 #include "os/input.h"
 #include "os/main_loop.h"
@@ -216,6 +217,7 @@ void register_core_singletons() {
 	ClassDB::register_virtual_class<Input>();
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
+	ClassDB::register_class<Expression>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
