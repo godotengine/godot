@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_spin_slider.h"
+#include "editor_node.h"
 #include "editor_scale.h"
 #include "os/input.h"
 
@@ -324,9 +325,53 @@ void EditorSpinSlider::_value_input_closed() {
 	value_input_just_closed = true;
 }
 
+double EditorSpinSlider::_evaluate_value(const String &p_text) {
+	// If range value contains a comma replace it with dot (issue #6028)
+	const String &p_new_text = p_text.replace(",", ".");
+
+	Object *obj = EditorNode::get_singleton()->get_inspector()->get_edited_object();
+	ScriptLanguage *script_language;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		if (ScriptServer::get_language(i)->get_name() == "GDScript") {
+			script_language = ScriptServer::get_language(i);
+			break;
+		}
+	}
+
+	if (!obj || !script_language) {
+		return p_new_text.to_double();
+	}
+
+	Ref<Script> script = Ref<Script>(script_language->create_script());
+	String script_text = "tool\nextends Object\nfunc eval(s):\n\tself = s\n\treturn " + p_new_text.strip_edges() + "\n";
+	script->set_source_code(script_text);
+	Error err = script->reload();
+	if (err) {
+		print_line("[EditorSpinSlider::_evaluate_value] Error loading script for expression: " + p_new_text);
+		return p_new_text.to_double();
+	}
+
+	Object dummy;
+	ScriptInstance *script_instance = script->instance_create(&dummy);
+	if (!script_instance) {
+		return p_new_text.to_double();
+	}
+
+	Variant::CallError call_err;
+	Variant arg = obj;
+	const Variant *args[] = { &arg };
+	double result = script_instance->call("eval", args, 1, call_err);
+	if (call_err.error == Variant::CallError::CALL_OK) {
+		return result;
+	}
+
+	print_line("[EditorSpinSlider::_evaluate_value]: Error eval! Error code: " + itos(call_err.error));
+	return p_new_text.to_double();
+}
+
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
-	set_value(value_input->get_text().to_double());
+	set_value(_evaluate_value(value_input->get_text()));
 	// focus is not on the same element after the vlalue_input was exited
 	// -> focus is on next element
 	// -> TAB was pressed
