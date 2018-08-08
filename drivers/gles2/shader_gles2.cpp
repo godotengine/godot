@@ -950,21 +950,21 @@ void ShaderGLES2::use_material(void *p_material) {
 					}
 
 					value.second.write[0].real = val.basis.elements[0][0];
-					value.second.write[0].real = val.basis.elements[0][1];
-					value.second.write[0].real = val.basis.elements[0][2];
-					value.second.write[0].real = 0;
-					value.second.write[0].real = val.basis.elements[1][0];
-					value.second.write[0].real = val.basis.elements[1][1];
-					value.second.write[0].real = val.basis.elements[1][2];
-					value.second.write[0].real = 0;
-					value.second.write[0].real = val.basis.elements[2][0];
-					value.second.write[0].real = val.basis.elements[2][1];
-					value.second.write[0].real = val.basis.elements[2][2];
-					value.second.write[0].real = 0;
-					value.second.write[0].real = val.origin[0];
-					value.second.write[0].real = val.origin[1];
-					value.second.write[0].real = val.origin[2];
-					value.second.write[0].real = 1;
+					value.second.write[1].real = val.basis.elements[0][1];
+					value.second.write[2].real = val.basis.elements[0][2];
+					value.second.write[3].real = 0;
+					value.second.write[4].real = val.basis.elements[1][0];
+					value.second.write[5].real = val.basis.elements[1][1];
+					value.second.write[6].real = val.basis.elements[1][2];
+					value.second.write[7].real = 0;
+					value.second.write[8].real = val.basis.elements[2][0];
+					value.second.write[9].real = val.basis.elements[2][1];
+					value.second.write[10].real = val.basis.elements[2][2];
+					value.second.write[11].real = 0;
+					value.second.write[12].real = val.origin[0];
+					value.second.write[13].real = val.origin[1];
+					value.second.write[14].real = val.origin[2];
+					value.second.write[15].real = 1;
 				} break;
 
 				case ShaderLanguage::TYPE_SAMPLER2D: {
