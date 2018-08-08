@@ -442,7 +442,9 @@ Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, fl
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
 
+#ifdef DEBUG_ENABLED
 	print_line("Rect: " + r);
+#endif
 	Point2i from;
 	Ref<BitMap> fill;
 	fill.instance();
@@ -454,9 +456,13 @@ Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, fl
 			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
 
 				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
+#ifdef DEBUG_ENABLED
 				print_line("pre reduce: " + itos(polygon.size()));
+#endif
 				polygon = reduce(polygon, r, p_epsilon);
+#ifdef DEBUG_ENABLED
 				print_line("post reduce: " + itos(polygon.size()));
+#endif
 				polygons.push_back(polygon);
 				fill_bits(this, fill, Point2i(j, i), r);
 			}
@@ -510,6 +516,34 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 	}
 }
 
+Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const {
+
+	Vector<Vector<Vector2> > result = clip_opaque_to_polygons(p_rect, p_epsilon);
+
+	// Convert result to bindable types
+
+	Array result_array;
+	result_array.resize(result.size());
+	for (int i = 0; i < result.size(); i++) {
+
+		const Vector<Vector2> &polygon = result[i];
+
+		PoolVector2Array polygon_array;
+		polygon_array.resize(polygon.size());
+
+		{
+			PoolVector2Array::Write w = polygon_array.write();
+			for (int j = 0; j < polygon.size(); j++) {
+				w[j] = polygon[j];
+			}
+		}
+
+		result_array[i] = polygon_array;
+	}
+
+	return result_array;
+}
+
 void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
@@ -525,6 +559,9 @@ void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_data"), &BitMap::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &BitMap::_get_data);
+
+	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
+	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
