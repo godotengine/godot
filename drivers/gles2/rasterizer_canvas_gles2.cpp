@@ -349,7 +349,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				_bind_canvas_texture(RID(), RID());
@@ -393,7 +393,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				RasterizerStorageGLES2::Texture *tex = _bind_canvas_texture(r->texture, r->normal_map);
@@ -476,7 +476,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				glDisableVertexAttribArray(VS::ARRAY_COLOR);
@@ -642,7 +642,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				static const int num_points = 32;
@@ -673,7 +673,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
@@ -694,7 +694,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				_bind_canvas_texture(RID(), RID());
@@ -727,7 +727,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
-					state.canvas_shader.use_material((void *)p_material, 2);
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
 				ERR_CONTINUE(primitive->points.size() < 1);
@@ -926,7 +926,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 				state.canvas_shader.set_custom_shader(0);
 				state.canvas_shader.bind();
 			}
-			state.canvas_shader.use_material((void *)material_ptr, 2);
+			state.canvas_shader.use_material((void *)material_ptr);
 
 			shader_cache = shader_ptr;
 

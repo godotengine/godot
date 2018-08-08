@@ -465,7 +465,7 @@ public:
 
 	// this void* is actually a RasterizerStorageGLES2::Material, but C++ doesn't
 	// like forward declared nested classes.
-	void use_material(void *p_material, int p_num_predef_textures);
+	void use_material(void *p_material);
 
 	uint32_t get_version() const { return new_conditional_version.version; }
 
