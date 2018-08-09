@@ -694,6 +694,8 @@ void SpatialMaterial::_update_shader() {
 		}
 
 		code += "\t\tbase_uv=ofs;\n";
+		code += "\t\tif(base_uv.x > 1.0 || base_uv.y > 1.0 || base_uv.x < 0.0 || base_uv.y < 0.0)\n";
+		code += "\t\t\tdiscard;\n";
 		if (features[FEATURE_DETAIL] && detail_uv == DETAIL_UV_2) {
 			code += "\t\tbase_uv2-=ofs;\n";
 		}
