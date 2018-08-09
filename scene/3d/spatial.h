@@ -51,6 +51,7 @@ public:
 	virtual bool can_draw() const = 0;
 
 	SpatialGizmo();
+	virtual ~SpatialGizmo() {}
 };
 
 class Spatial : public Node {

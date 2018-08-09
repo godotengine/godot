@@ -202,6 +202,7 @@ void Spatial::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 			if (data.gizmo.is_valid()) {
 				data.gizmo->free();
+				data.gizmo.unref();
 			}
 #endif
 
