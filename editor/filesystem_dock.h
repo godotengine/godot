@@ -175,6 +175,8 @@ private:
 	void _update_file_display_toggle_button();
 	void _change_file_display();
 	void _fs_changed();
+	bool _file_exists(const String &basename, const String &extension) const;
+	String _get_unique_name(const String &fullname) const;
 
 	void _go_to_tree();
 	void _go_to_file_list();
