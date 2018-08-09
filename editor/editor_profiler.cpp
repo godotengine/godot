@@ -628,6 +628,7 @@ bool EditorProfiler::is_profiling() {
 EditorProfiler::EditorProfiler() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(hb);
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
