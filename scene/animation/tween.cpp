@@ -615,7 +615,7 @@ void Tween::_tween_process(float p_delta) {
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 			// not repeat mode, remove completed action
 			if (!repeat)
-				call_deferred("_remove", object, NodePath(Vector<StringName>(), data.key, false), true);
+				call_deferred("_remove", object, data.concatenated_key, true);
 		} else if (!repeat)
 			all_finished = all_finished && data.finish;
 	}
