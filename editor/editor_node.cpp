@@ -4839,6 +4839,7 @@ EditorNode::EditorNode() {
 	VBoxContainer *center_vb = memnew(VBoxContainer);
 	main_hsplit->add_child(center_vb);
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	center_vb->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
 
 	center_split = memnew(VSplitContainer);
 	center_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
