@@ -418,26 +418,84 @@ static Vector<Vector2> reduce(const Vector<Vector2> &points, const Rect2i &rect,
 	return result;
 }
 
+struct FillBitsStackEntry {
+	Point2i pos;
+	int i;
+	int j;
+};
+
 static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_pos, const Rect2i &rect) {
 
-	for (int i = p_pos.x - 1; i <= p_pos.x + 1; i++) {
-		for (int j = p_pos.y - 1; j <= p_pos.y + 1; j++) {
+	// Using a custom stack to work iteratively to avoid stack overflow on big bitmaps
+	PoolVector<FillBitsStackEntry> stack;
+	// Tracking size since we won't be shrinking the stack vector
+	int stack_size = 0;
 
-			if (i < rect.position.x || i >= rect.position.x + rect.size.x)
-				continue;
-			if (j < rect.position.y || j >= rect.position.y + rect.size.y)
-				continue;
+	Point2i pos = p_pos;
+	int next_i;
+	int next_j;
 
-			if (p_map->get_bit(Vector2(i, j)))
-				continue;
+	bool reenter = true;
+	bool popped = false;
+	do {
+		if (reenter) {
+			next_i = pos.x - 1;
+			next_j = pos.y - 1;
+			reenter = false;
+		}
 
-			else if (p_src->get_bit(Vector2(i, j))) {
-				p_map->set_bit(Vector2(i, j), true);
-				fill_bits(p_src, p_map, Point2i(i, j), rect);
+		for (int i = next_i; i <= pos.x + 1; i++) {
+			for (int j = next_j; j <= pos.y + 1; j++) {
+				if (popped) {
+					// The next loop over j must start normally
+					next_j = pos.y;
+					popped = false;
+					// Skip because an iteration was already executed with current counter values
+					continue;
+				}
+
+				if (i < rect.position.x || i >= rect.position.x + rect.size.x)
+					continue;
+				if (j < rect.position.y || j >= rect.position.y + rect.size.y)
+					continue;
+
+				if (p_map->get_bit(Vector2(i, j)))
+					continue;
+
+				else if (p_src->get_bit(Vector2(i, j))) {
+					p_map->set_bit(Vector2(i, j), true);
+
+					FillBitsStackEntry se = { pos, i, j };
+					stack.resize(MAX(stack_size + 1, stack.size()));
+					stack.set(stack_size, se);
+					stack_size++;
+
+					pos = Point2i(i, j);
+					reenter = true;
+					break;
+				}
+			}
+			if (reenter) {
+				break;
 			}
 		}
-	}
+		if (!reenter) {
+			if (stack_size) {
+				FillBitsStackEntry se = stack.get(stack_size - 1);
+				stack_size--;
+				pos = se.pos;
+				next_i = se.i;
+				next_j = se.j;
+				popped = true;
+			}
+		}
+	} while (reenter || popped);
+
+#ifdef DEBUG_ENABLED
+	print_line("max stack size: " + itos(stack.size()));
+#endif
 }
+
 Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
