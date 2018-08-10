@@ -607,7 +607,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				_set_error("Built-in type constant or static function expected after '.'");
 				return NULL;
 			}
-			if (!Variant::has_numeric_constant(bi_type, identifier)) {
+			if (!Variant::has_constant(bi_type, identifier)) {
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN &&
 						Variant::is_method_const(bi_type, identifier) &&
@@ -642,7 +642,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			} else {
 
 				ConstantNode *cn = alloc_node<ConstantNode>();
-				cn->value = Variant::get_numeric_constant_value(bi_type, identifier);
+				cn->value = Variant::get_constant_value(bi_type, identifier);
 				cn->datatype = _type_from_variant(cn->value);
 				expr = cn;
 			}

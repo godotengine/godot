@@ -1663,7 +1663,7 @@ Variant::Type VisualScriptBasicTypeConstant::get_basic_type() const {
 
 class VisualScriptNodeInstanceBasicTypeConstant : public VisualScriptNodeInstance {
 public:
-	int value;
+	Variant value;
 	bool valid;
 	//virtual int get_working_memory_size() const { return 0; }
 
@@ -1682,7 +1682,7 @@ public:
 VisualScriptNodeInstance *VisualScriptBasicTypeConstant::instance(VisualScriptInstance *p_instance) {
 
 	VisualScriptNodeInstanceBasicTypeConstant *instance = memnew(VisualScriptNodeInstanceBasicTypeConstant);
-	instance->value = Variant::get_numeric_constant_value(type, name, &instance->valid);
+	instance->value = Variant::get_constant_value(type, name, &instance->valid);
 	return instance;
 }
 
@@ -1691,7 +1691,7 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo &property) c
 	if (property.name == "constant") {
 
 		List<StringName> constants;
-		Variant::get_numeric_constants_for_type(type, &constants);
+		Variant::get_constants_for_type(type, &constants);
 
 		if (constants.size() == 0) {
 			property.usage = 0;

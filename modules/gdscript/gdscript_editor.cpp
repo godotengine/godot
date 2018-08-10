@@ -2442,7 +2442,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 		} break;
 		case GDScriptParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
 			List<StringName> constants;
-			Variant::get_numeric_constants_for_type(parser.get_completion_built_in_constant(), &constants);
+			Variant::get_constants_for_type(parser.get_completion_built_in_constant(), &constants);
 			for (List<StringName>::Element *E = constants.front(); E; E = E->next()) {
 				options.insert(E->get().operator String());
 			}
@@ -3065,7 +3065,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			case GDScriptParser::DataType::BUILTIN: {
 				base_type.has_type = false;
 
-				if (Variant::has_numeric_constant(base_type.builtin_type, p_symbol)) {
+				if (Variant::has_constant(base_type.builtin_type, p_symbol)) {
 					r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
 					r_result.class_name = Variant::get_type_name(base_type.builtin_type);
 					r_result.class_member = p_symbol;

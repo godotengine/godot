@@ -398,9 +398,9 @@ public:
 
 	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
-	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
-	static bool has_numeric_constant(Variant::Type p_type, const StringName &p_value);
-	static int get_numeric_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
+	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
+	static bool has_constant(Variant::Type p_type, const StringName &p_value);
+	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
