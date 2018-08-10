@@ -1991,6 +1991,16 @@ int OS_OSX::get_screen_dpi(int p_screen) const {
 	return 72;
 }
 
+String OS_OSX::get_unique_id() const {
+  char buf[256];
+  io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault,"IOService:/");
+  CFStringRef uuidCf = (CFStringRef) IORegistryEntryCreateCFProperty(ioRegistryRoot, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
+  IOObjectRelease(ioRegistryRoot);
+  CFStringGetCString(uuidCf, buf, sizeof(buf), kCFStringEncodingMacRoman);
+  CFRelease(uuidCf);
+  return String::utf8(buf);
+}
+
 Size2 OS_OSX::get_screen_size(int p_screen) const {
 	if (p_screen == -1) {
 		p_screen = get_current_screen();
