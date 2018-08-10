@@ -143,12 +143,6 @@ public:
 		return f._get_modified_time(p_file);
 	}
 
-// NEW FUNCTION
-	virtual uint64_t _get_creation_time(const String &p_file) {
-
-		return f._get_creation_time(p_file);
-	}
-
 	FileAccessBufferedFA(){
 
 	};
