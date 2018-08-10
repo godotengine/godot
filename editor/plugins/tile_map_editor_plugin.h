@@ -184,6 +184,7 @@ class TileMapEditor : public VBoxContainer {
 	void _update_palette();
 	void _menu_option(int p_option);
 	void _palette_selected(int index);
+	void _palette_multi_selected(int index, bool selected);
 
 	void _start_undo(const String &p_action);
 	void _finish_undo();
