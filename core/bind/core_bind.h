@@ -55,7 +55,8 @@ public:
 	PoolVector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PoolStringArray get_dependencies(const String &p_path);
-	bool has(const String &p_path);
+	bool has_cached(const String &p_path);
+	bool exists(const String &p_path, const String &p_type_hint = "");
 
 	_ResourceLoader();
 };

@@ -123,6 +123,9 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const Stri
 	return ril;
 }
 
+bool ResourceFormatLoader::exists(const String &p_path) const {
+	return FileAccess::exists(p_path); //by default just check file
+}
 RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
 
 	String path = p_path;
@@ -237,6 +240,36 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 #endif
 
 	return res;
+}
+
+bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
+
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path = "res://" + p_path;
+	else
+		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+
+	if (ResourceCache::has(local_path)) {
+
+		return false; //if cached, it probably exists i guess
+	}
+
+	bool xl_remapped = false;
+	String path = _path_remap(local_path, &xl_remapped);
+
+	// Try all loaders and pick the first match for the type hint
+	for (int i = 0; i < loader_count; i++) {
+
+		if (!loader[i]->recognize_path(path, p_type_hint)) {
+			continue;
+		}
+
+		if (loader[i]->exists(path))
+			return true;
+	}
+
+	return false;
 }
 
 Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
