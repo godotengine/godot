@@ -274,6 +274,23 @@ void ScriptTextEditor::_set_theme_for_script() {
 	}
 }
 
+void ScriptTextEditor::_toggle_warning_pannel(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		warnings_panel->set_visible(!warnings_panel->is_visible());
+	}
+}
+
+void ScriptTextEditor::_warning_clicked(Variant p_line) {
+	if (p_line.get_type() == Variant::INT) {
+		code_editor->get_text_edit()->cursor_set_line(p_line.operator int64_t());
+	} else if (p_line.get_type() == Variant::DICTIONARY) {
+		Dictionary meta = p_line.operator Dictionary();
+		code_editor->get_text_edit()->insert_at("#warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
+		_validate_script();
+	}
+}
+
 void ScriptTextEditor::reload_text() {
 
 	ERR_FAIL_COND(script.is_null());
@@ -421,8 +438,9 @@ void ScriptTextEditor::_validate_script() {
 	String text = te->get_text();
 	List<String> fnc;
 	Set<int> safe_lines;
+	List<ScriptLanguage::Warning> warnings;
 
-	if (!script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc, &safe_lines)) {
+	if (!script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc, &warnings, &safe_lines)) {
 		String error_text = "error(" + itos(line) + "," + itos(col) + "): " + errortxt;
 		code_editor->set_error(error_text);
 	} else {
@@ -441,6 +459,37 @@ void ScriptTextEditor::_validate_script() {
 			functions.push_back(E->get());
 		}
 	}
+
+	code_editor->get_warning_count_label()->set_text(itos(warnings.size()));
+	warnings_panel->clear();
+	warnings_panel->push_table(3);
+	for (List<ScriptLanguage::Warning>::Element *E = warnings.front(); E; E = E->next()) {
+		ScriptLanguage::Warning w = E->get();
+
+		warnings_panel->push_cell();
+		warnings_panel->push_meta(w.line - 1);
+		warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));
+		warnings_panel->add_text(TTR("Line") + " " + itos(w.line));
+		warnings_panel->add_text(" (" + w.string_code + "):");
+		warnings_panel->pop(); // Color
+		warnings_panel->pop(); // Meta goto
+		warnings_panel->pop(); // Cell
+
+		warnings_panel->push_cell();
+		warnings_panel->add_text(w.message);
+		warnings_panel->pop(); // Cell
+
+		Dictionary ignore_meta;
+		ignore_meta["line"] = w.line;
+		ignore_meta["code"] = w.string_code.to_lower();
+		warnings_panel->push_cell();
+		warnings_panel->push_meta(ignore_meta);
+		warnings_panel->add_text(TTR("(ignore)"));
+		warnings_panel->pop(); // Meta ignore
+		warnings_panel->pop(); // Cell
+		//warnings_panel->add_newline();
+	}
+	warnings_panel->pop(); // Table
 
 	line--;
 	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
@@ -1022,6 +1071,8 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_line", &ScriptTextEditor::_goto_line);
 	ClassDB::bind_method("_lookup_symbol", &ScriptTextEditor::_lookup_symbol);
 	ClassDB::bind_method("_text_edit_gui_input", &ScriptTextEditor::_text_edit_gui_input);
+	ClassDB::bind_method("_toggle_warning_pannel", &ScriptTextEditor::_toggle_warning_pannel);
+	ClassDB::bind_method("_warning_clicked", &ScriptTextEditor::_warning_clicked);
 	ClassDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
 
 	ClassDB::bind_method("get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
@@ -1333,8 +1384,13 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	theme_loaded = false;
 
+	VSplitContainer *editor_box = memnew(VSplitContainer);
+	add_child(editor_box);
+	editor_box->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
+
 	code_editor = memnew(CodeTextEditor);
-	add_child(code_editor);
+	editor_box->add_child(code_editor);
 	code_editor->add_constant_override("separation", 0);
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	code_editor->connect("validate_script", this, "_validate_script");
@@ -1342,7 +1398,20 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->get_text_edit()->connect("breakpoint_toggled", this, "_breakpoint_toggled");
 	code_editor->get_text_edit()->connect("symbol_lookup", this, "_lookup_symbol");
-	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	warnings_panel = memnew(RichTextLabel);
+	editor_box->add_child(warnings_panel);
+	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
+	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	warnings_panel->set_meta_underline(true);
+	warnings_panel->set_selection_enabled(true);
+	warnings_panel->set_focus_mode(FOCUS_CLICK);
+	warnings_panel->hide();
+
+	code_editor->get_warning_label()->connect("gui_input", this, "_toggle_warning_pannel");
+	code_editor->get_warning_count_label()->connect("gui_input", this, "_toggle_warning_pannel");
+	warnings_panel->connect("meta_clicked", this, "_warning_clicked");
 
 	update_settings();
 

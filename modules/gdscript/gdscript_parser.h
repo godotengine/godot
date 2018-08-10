@@ -38,6 +38,7 @@
 #include "script_language.h"
 
 struct GDScriptDataType;
+struct GDScriptWarning;
 
 class GDScriptParser {
 public:
@@ -57,6 +58,7 @@ public:
 		bool is_constant;
 		bool is_meta_type; // Whether the value can be used as a type
 		bool infer_type;
+		bool may_yield; // For function calls
 
 		Variant::Type builtin_type;
 		StringName native_type;
@@ -95,6 +97,7 @@ public:
 				is_constant(false),
 				is_meta_type(false),
 				infer_type(false),
+				may_yield(false),
 				builtin_type(Variant::NIL),
 				class_type(NULL) {}
 	};
@@ -160,6 +163,7 @@ public:
 			Node *expression;
 			OperatorNode *initial_assignment;
 			MultiplayerAPI::RPCMode rpc_mode;
+			int usages;
 		};
 		struct Constant {
 			Node *expression;
@@ -169,6 +173,8 @@ public:
 		struct Signal {
 			StringName name;
 			Vector<StringName> arguments;
+			int emissions;
+			int line;
 		};
 
 		Vector<ClassNode *> subclasses;
@@ -197,12 +203,16 @@ public:
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
 		bool has_yield;
+		bool has_unreachable_code;
 		StringName name;
 		DataType return_type;
 		Vector<StringName> arguments;
 		Vector<DataType> argument_types;
 		Vector<Node *> default_values;
 		BlockNode *body;
+#ifdef DEBUG_ENABLED
+		Vector<int> arguments_usage;
+#endif // DEBUG_ENABLED
 
 		virtual DataType get_datatype() const { return return_type; }
 		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
@@ -212,6 +222,7 @@ public:
 			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 			has_yield = false;
+			has_unreachable_code = false;
 		}
 	};
 
@@ -267,6 +278,7 @@ public:
 		Node *assign;
 		OperatorNode *assign_op;
 		int assignments;
+		int usages;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
@@ -275,6 +287,7 @@ public:
 			assign = NULL;
 			assign_op = NULL;
 			assignments = 0;
+			usages = 0;
 		}
 	};
 
@@ -518,6 +531,10 @@ private:
 	Set<int> *safe_lines;
 #endif // DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
+	List<GDScriptWarning> warnings;
+#endif // DEBUG_ENABLED
+
 	int pending_newline;
 
 	List<int> tab_level;
@@ -550,6 +567,10 @@ private:
 	MultiplayerAPI::RPCMode rpc_mode;
 
 	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
+#ifdef DEBUG_ENABLED
+	void _add_warning(int p_code, int p_line = -1, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
+	void _add_warning(int p_code, int p_line, const Vector<String> &p_symbols);
+#endif // DEBUG_ENABLED
 	bool _recover_from_completion();
 
 	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
@@ -605,6 +626,9 @@ public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
+#ifdef DEBUG_ENABLED
+	const List<GDScriptWarning> &get_warnings() const { return warnings; }
+#endif // DEBUG_ENABLED
 	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = NULL);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 

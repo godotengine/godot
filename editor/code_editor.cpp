@@ -1246,6 +1246,29 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar->add_child(memnew(Label)); //to keep the height if the other labels are not visible
 
+	warning_label = memnew(Label);
+	status_bar->add_child(warning_label);
+	warning_label->set_align(Label::ALIGN_RIGHT);
+	warning_label->set_valign(Label::VALIGN_CENTER);
+	warning_label->set_v_size_flags(SIZE_FILL);
+	warning_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_label->set_mouse_filter(MOUSE_FILTER_STOP);
+	warning_label->set_text(TTR("Warnings:"));
+	warning_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+
+	warning_count_label = memnew(Label);
+	status_bar->add_child(warning_count_label);
+	warning_count_label->set_valign(Label::VALIGN_CENTER);
+	warning_count_label->set_v_size_flags(SIZE_FILL);
+	warning_count_label->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
+	warning_count_label->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
+	warning_count_label->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
+	warning_count_label->set_align(Label::ALIGN_RIGHT);
+	warning_count_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_count_label->set_mouse_filter(MOUSE_FILTER_STOP);
+	warning_count_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	warning_count_label->set_text("0");
+
 	Label *zoom_txt = memnew(Label);
 	status_bar->add_child(zoom_txt);
 	zoom_txt->set_align(Label::ALIGN_RIGHT);

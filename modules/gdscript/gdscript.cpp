@@ -596,6 +596,13 @@ Error GDScript::reload(bool p_keep_state) {
 			return err;
 		}
 	}
+#if DEBUG_ENABLED
+	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
+		String msg = "Script warning: " + E->get().get_name() + " (" + path + ") line " + itos(E->get().line) + ": ";
+		msg += E->get().get_message();
+		WARN_PRINTS(msg);
+	}
+#endif
 
 	valid = true;
 
@@ -1867,6 +1874,162 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	return String();
 }
 
+#ifdef DEBUG_ENABLED
+String GDScriptWarning::get_message() const {
+
+#define CHECK_SYMBOLS(m_amount) ERR_FAIL_COND_V(symbols.size() < m_amount, String());
+
+	switch (code) {
+		case UNASSIGNED_VARIABLE_OP_ASSIGN: {
+			CHECK_SYMBOLS(1);
+			return "Using assignment with operation but the variable '" + symbols[0] + "' was not previously assigned a value.";
+		} break;
+		case UNASSIGNED_VARIABLE: {
+			CHECK_SYMBOLS(1);
+			return "The variable '" + symbols[0] + "' was used but never assigned a value.";
+		} break;
+		case UNUSED_VARIABLE: {
+			CHECK_SYMBOLS(1);
+			return "The local variable '" + symbols[0] + "' is declared but never used in the block.";
+		} break;
+		case UNUSED_CLASS_VARIABLE: {
+			CHECK_SYMBOLS(1);
+			return "The class variable '" + symbols[0] + "' is declared but never used in the script.";
+		} break;
+		case UNUSED_ARGUMENT: {
+			CHECK_SYMBOLS(2);
+			return "The argument '" + symbols[1] + "' is never used in the function '" + symbols[0] + "'.";
+		} break;
+		case UNREACHABLE_CODE: {
+			CHECK_SYMBOLS(1);
+			return "Unreachable code (statement after return) in function '" + symbols[0] + "()'.";
+		} break;
+		case STANDALONE_EXPRESSION: {
+			return "Standalone expression (the line has no effect).";
+		} break;
+		case VOID_ASSIGNMENT: {
+			CHECK_SYMBOLS(1);
+			return "Assignment operation, but the function '" + symbols[0] + "()' returns void.";
+		} break;
+		case NARROWING_CONVERSION: {
+			return "Narrowing coversion (float is converted to int and lose precision).";
+		} break;
+		case FUNCTION_MAY_YIELD: {
+			CHECK_SYMBOLS(1);
+			return "Assigned variable is typed but the function '" + symbols[0] + "()' may yield and return a GDScriptFunctionState instead.";
+		} break;
+		case VARIABLE_CONFLICTS_FUNCTION: {
+			CHECK_SYMBOLS(1);
+			return "Variable declaration of '" + symbols[0] + "' conflicts with a function of the same name.";
+		} break;
+		case FUNCTION_CONFLICTS_VARIABLE: {
+			CHECK_SYMBOLS(1);
+			return "Function declaration of '" + symbols[0] + "()' conflicts with a variable of the same name.";
+		} break;
+		case FUNCTION_CONFLICTS_CONSTANT: {
+			CHECK_SYMBOLS(1);
+			return "Function declaration of '" + symbols[0] + "()' conflicts with a constant of the same name.";
+		} break;
+		case INCOMPATIBLE_TERNARY: {
+			return "Values of the ternary conditional are not mutually compatible.";
+		} break;
+		case UNUSED_SIGNAL: {
+			CHECK_SYMBOLS(1);
+			return "The signal '" + symbols[0] + "' is declared but never emitted.";
+		} break;
+		case RETURN_VALUE_DISCARDED: {
+			CHECK_SYMBOLS(1);
+			return "The function '" + symbols[0] + "()' returns a value, but this value is never used.";
+		} break;
+		case PROPERTY_USED_AS_FUNCTION: {
+			CHECK_SYMBOLS(2);
+			return "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a property with the same name. Did you mean to access it?";
+		} break;
+		case CONSTANT_USED_AS_FUNCTION: {
+			CHECK_SYMBOLS(2);
+			return "The method '" + symbols[0] + "()' was not found in base '" + symbols[1] + "' but there's a constant with the same name. Did you mean to access it?";
+		} break;
+		case FUNCTION_USED_AS_PROPERTY: {
+			CHECK_SYMBOLS(2);
+			return "The property '" + symbols[0] + "' was not found in base '" + symbols[1] + "' but there's a method with the same name. Did you mean to call it?";
+		} break;
+		case INTEGER_DIVISION: {
+			return "Integer division, decimal part will be discarded.";
+		} break;
+		case UNSAFE_PROPERTY_ACCESS: {
+			CHECK_SYMBOLS(2);
+			return "The property '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
+		} break;
+		case UNSAFE_METHOD_ACCESS: {
+			CHECK_SYMBOLS(2);
+			return "The method '" + symbols[0] + "' is not present on the inferred type '" + symbols[1] + "' (but may be present on a subtype).";
+		} break;
+		case UNSAFE_CAST: {
+			CHECK_SYMBOLS(1);
+			return "The value is cast to '" + symbols[0] + "' but has an unkown type.";
+		} break;
+		case UNSAFE_CALL_ARGUMENT: {
+			CHECK_SYMBOLS(4);
+			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
+		} break;
+	}
+	ERR_EXPLAIN("Invalid GDScript waring code: " + get_name_from_code(code));
+	ERR_FAIL_V(String());
+
+#undef CHECK_SYMBOLS
+}
+
+String GDScriptWarning::get_name() const {
+	return get_name_from_code(code);
+}
+
+String GDScriptWarning::get_name_from_code(Code p_code) {
+	ERR_FAIL_COND_V(p_code < 0 || p_code >= WARNING_MAX, String());
+
+	static const char *names[] = {
+		"UNASSIGNED_VARIABLE",
+		"UNASSIGNED_VARIABLE_OP_ASSIGN",
+		"UNUSED_VARIABLE",
+		"UNUSED_CLASS_VARIABLE",
+		"UNUSED_ARGUMENT",
+		"UNREACHABLE_CODE",
+		"STANDALONE_EXPRESSION",
+		"VOID_ASSIGNMENT",
+		"NARROWING_CONVERSION",
+		"FUNCTION_MAY_YIELD",
+		"VARIABLE_CONFLICTS_FUNCTION",
+		"FUNCTION_CONFLICTS_VARIABLE",
+		"FUNCTION_CONFLICTS_CONSTANT",
+		"INCOMPATIBLE_TERNARY",
+		"UNUSED_SIGNAL",
+		"RETURN_VALUE_DISCARDED",
+		"PROPERTY_USED_AS_FUNCTION",
+		"CONSTANT_USED_AS_FUNCTION",
+		"FUNCTION_USED_AS_PROPERTY",
+		"INTEGER_DIVISION",
+		"UNSAFE_PROPERTY_ACCESS",
+		"UNSAFE_METHOD_ACCESS",
+		"UNSAFE_CAST",
+		"UNSAFE_CALL_ARGUMENT",
+		NULL
+	};
+
+	return names[(int)p_code];
+}
+
+GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) {
+	for (int i = 0; i < WARNING_MAX; i++) {
+		if (get_name_from_code((Code)i) == p_name) {
+			return (Code)i;
+		}
+	}
+
+	ERR_EXPLAIN("Invalid GDScript waring name: " + p_name);
+	ERR_FAIL_V(WARNING_MAX);
+}
+
+#endif // DEBUG_ENABLED
+
 GDScriptLanguage::GDScriptLanguage() {
 
 	calls = 0;
@@ -1903,6 +2066,15 @@ GDScriptLanguage::GDScriptLanguage() {
 		_debug_max_call_stack = 0;
 		_call_stack = NULL;
 	}
+
+#ifdef DEBUG_ENABLED
+	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
+	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
+	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
+		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
+		GLOBAL_DEF("debug/gdscript/warnings/" + warning, !warning.begins_with("unsafe_"));
+	}
+#endif // DEBUG_ENABLED
 }
 
 GDScriptLanguage::~GDScriptLanguage() {

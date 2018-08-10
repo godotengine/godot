@@ -526,8 +526,13 @@ void GDScriptTokenizerText::_advance() {
 				return;
 			}
 			case '#': { // line comment skip
-
+#ifdef DEBUG_ENABLED
+				String comment;
+#endif // DEBUG_ENABLED
 				while (GETCHAR(0) != '\n') {
+#ifdef DEBUG_ENABLED
+					comment += GETCHAR(0);
+#endif // DEBUG_ENABLED
 					code_pos++;
 					if (GETCHAR(0) == 0) { //end of file
 						//_make_error("Unterminated Comment");
@@ -535,6 +540,17 @@ void GDScriptTokenizerText::_advance() {
 						return;
 					}
 				}
+#ifdef DEBUG_ENABLED
+				if (comment.begins_with("#warning-ignore:")) {
+					String code = comment.get_slice(":", 1);
+					warning_skips.push_back(Pair<int, String>(line, code.strip_edges().to_lower()));
+				} else if (comment.begins_with("#warning-ignore-all:")) {
+					String code = comment.get_slice(":", 1);
+					warning_global_skips.insert(code.strip_edges().to_lower());
+				} else if (comment.strip_edges() == "#warnings-disable") {
+					ignore_warnings = true;
+				}
+#endif // DEBUG_ENABLED
 				INCPOS(1);
 				column = 1;
 				line++;
@@ -1045,6 +1061,9 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	column = 1; //the same holds for columns
 	tk_rb_pos = 0;
 	error_flag = false;
+#ifdef DEBUG_ENABLED
+	ignore_warnings = false;
+#endif // DEBUG_ENABLED
 	last_error = "";
 	for (int i = 0; i < MAX_LOOKAHEAD + 1; i++)
 		_advance();
