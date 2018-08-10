@@ -11,21 +11,9 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform2D : IEquatable<Transform2D>
     {
-        private static readonly Transform2D identity = new Transform2D
-        (
-            new Vector2(1f, 0f),
-            new Vector2(0f, 1f),
-            new Vector2(0f, 0f)
-        );
-
         public Vector2 x;
         public Vector2 y;
         public Vector2 o;
-
-        public static Transform2D Identity
-        {
-            get { return identity; }
-        }
 
         public Vector2 Origin
         {
@@ -264,6 +252,15 @@ namespace Godot
             Vector2 vInv = v - o;
             return new Vector2(x.Dot(vInv), y.Dot(vInv));
         }
+
+        // Constants
+        private static readonly Transform2D _identity = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
+        private static readonly Transform2D _flipX = new Transform2D(new Vector2(-1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
+        private static readonly Transform2D _flipY = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, -1f), Vector2.Zero);
+
+        public static Transform2D Identity { get { return _identity; } }
+        public static Transform2D FlipX { get { return _flipX; } }
+        public static Transform2D FlipY { get { return _flipY; } }
         
         // Constructors 
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
