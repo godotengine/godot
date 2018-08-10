@@ -142,6 +142,7 @@ class FileAccessPack : public FileAccess {
 	FileAccess *f;
 	virtual Error _open(const String &p_path, int p_mode_flags);
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
+	virtual uint64_t _get_creation_time(const String &p_file) { return 0; } // NEW FUNCTION
 
 public:
 	virtual void close();

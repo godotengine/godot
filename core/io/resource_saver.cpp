@@ -80,6 +80,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 			((Resource *)p_resource.ptr())->set_edited(false);
 			if (timestamp_on_save) {
 				uint64_t mt = FileAccess::get_modified_time(p_path);
+				uint64_t ct = FileAccess::get_creation_time(p_path); // NEW FUNCTION
 
 				((Resource *)p_resource.ptr())->set_last_modified_time(mt);
 			}

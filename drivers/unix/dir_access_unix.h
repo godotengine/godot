@@ -75,6 +75,7 @@ public:
 	virtual bool dir_exists(String p_dir);
 
 	virtual uint64_t get_modified_time(String p_file);
+	virtual uint64_t get_creation_time(String p_file); // NEW FUNCTION
 
 	virtual Error rename(String p_path, String p_new_path);
 	virtual Error remove(String p_path);

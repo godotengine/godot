@@ -372,6 +372,15 @@ uint64_t FileAccessCompressed::_get_modified_time(const String &p_file) {
 		return 0;
 }
 
+// NEW FUNCTION
+uint64_t FileAccessCompressed::_get_creation_time(const String &p_file) {
+
+	if (f)
+		return f->get_creation_time(p_file);
+	else
+		return 0;
+}
+
 FileAccessCompressed::FileAccessCompressed() {
 
 	f = NULL;

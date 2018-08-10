@@ -84,6 +84,7 @@ public:
 	virtual bool file_exists(const String &p_path); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String &p_file);
+	virtual uint64_t _get_creation_time(const String &p_file); // NEW FUNCTION
 
 	virtual Error _chmod(const String &p_path, int p_mod);
 

@@ -124,6 +124,26 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	return 0;
 };
 
+// NEW FUNCTION
+uint64_t DirAccessUnix::get_creation_time(String p_file) {
+
+	if (p_file.is_rel_path())
+		p_file = current_dir.plus_file(p_file);
+
+	p_file = fix_path(p_file);
+
+	struct stat flags;
+	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
+
+	if (success) {
+		return flags.st_ctime;
+	} else {
+
+		ERR_FAIL_V(0);
+	};
+	return 0;
+};
+
 String DirAccessUnix::get_next() {
 
 	if (!dir_stream)

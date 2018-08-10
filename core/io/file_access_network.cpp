@@ -498,6 +498,24 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	return exists_modtime;
 }
 
+// NEW FUNCTION
+uint64_t FileAccessNetwork::_get_creation_time(const String &p_file) {
+
+	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
+	nc->lock_mutex();
+	nc->put_32(id);
+	nc->put_32(COMMAND_GET_MODTIME);
+	CharString cs = p_file.utf8();
+	nc->put_32(cs.length());
+	nc->client->put_data((const uint8_t *)cs.ptr(), cs.length());
+	nc->unlock_mutex();
+	DEBUG_PRINT("MODTIME POST");
+	nc->sem->post();
+	sem->wait();
+
+	return exists_modtime;
+}
+
 void FileAccessNetwork::configure() {
 
 	GLOBAL_DEF("network/remote_fs/page_size", 65536);
