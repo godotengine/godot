@@ -642,7 +642,7 @@ void LineEdit::_notification(int p_what) {
 			int char_ofs = window_pos;
 
 			int y_area = height - style->get_minimum_size().height;
-			int y_ofs = style->get_offset().y;
+			int y_ofs = style->get_offset().y + (y_area - font->get_height()) / 2;
 
 			int font_ascent = font->get_ascent();
 
