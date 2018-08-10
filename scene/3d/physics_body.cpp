@@ -1125,6 +1125,9 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	return colliding;
 }
 
+//so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
+#define FLOOR_ANGLE_THRESHOLD 0.01
+
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	Vector3 lv = p_linear_velocity;
@@ -1157,7 +1160,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				//all is a wall
 				on_wall = true;
 			} else {
-				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
+				if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //floor
 
 					on_floor = true;
 					floor_velocity = collision.collider_vel;
@@ -1171,7 +1174,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						set_global_transform(gt);
 						return floor_velocity - p_floor_direction * p_floor_direction.dot(floor_velocity);
 					}
-				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
+				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
 					on_ceiling = true;
 				} else {
 					on_wall = true;
