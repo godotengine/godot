@@ -787,6 +787,9 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Spatial::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Spatial::to_global);
 
+	ClassDB::bind_method(D_METHOD("set_inherits_transform", "enable"), &Spatial::set_inherits_transform);
+	ClassDB::bind_method(D_METHOD("get_inherits_transform"), &Spatial::get_inherits_transform);
+
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_WORLD);
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
@@ -804,6 +807,8 @@ void Spatial::_bind_methods() {
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gizmo", PROPERTY_HINT_RESOURCE_TYPE, "SpatialGizmo", 0), "set_gizmo", "get_gizmo");
+	ADD_GROUP("Context", "");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "inherits_transform"), "set_inherits_transform", "get_inherits_transform");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 }

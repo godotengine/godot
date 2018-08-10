@@ -205,6 +205,9 @@ protected:
 
 	void item_rect_changed(bool p_size_changed = true);
 
+	void set_inherits_transform(bool p_inherits_transform) { set_as_toplevel(!p_inherits_transform); }
+	bool get_inherits_transform() const { return !is_set_as_toplevel(); }
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
