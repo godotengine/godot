@@ -33,6 +33,7 @@
 #include "os/file_access.h"
 #include "os/os.h"
 #include "project_settings.h"
+#include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 #ifdef TOOLS_ENABLED
@@ -79,6 +80,17 @@ double AudioDriver::get_mix_time() const {
 	return total;
 }
 
+void AudioDriver::input_buffer_write(int32_t sample) {
+
+	input_buffer.write[input_position++] = sample;
+	if (input_position >= input_buffer.size()) {
+		input_position = 0;
+	}
+	if (input_size < input_buffer.size()) {
+		input_size++;
+	}
+}
+
 AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_channels) const {
 	switch (p_channels) {
 		case 4: return SPEAKER_SURROUND_31;
@@ -111,6 +123,14 @@ Array AudioDriver::get_device_list() {
 
 String AudioDriver::get_device() {
 	return "Default";
+}
+
+Array AudioDriver::capture_get_device_list() {
+	Array list;
+
+	list.push_back("Default");
+
+	return list;
 }
 
 AudioDriver::AudioDriver() {
@@ -1201,6 +1221,21 @@ void AudioServer::set_device(String device) {
 	AudioDriver::get_singleton()->set_device(device);
 }
 
+Array AudioServer::capture_get_device_list() {
+
+	return AudioDriver::get_singleton()->capture_get_device_list();
+}
+
+String AudioServer::capture_get_device() {
+
+	return AudioDriver::get_singleton()->capture_get_device();
+}
+
+void AudioServer::capture_set_device(const String &p_name) {
+
+	AudioDriver::get_singleton()->capture_set_device(p_name);
+}
+
 void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_count", "amount"), &AudioServer::set_bus_count);
@@ -1250,6 +1285,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_device_list"), &AudioServer::get_device_list);
 	ClassDB::bind_method(D_METHOD("get_device"), &AudioServer::get_device);
 	ClassDB::bind_method(D_METHOD("set_device"), &AudioServer::set_device);
+
+	ClassDB::bind_method(D_METHOD("capture_get_device_list"), &AudioServer::capture_get_device_list);
+	ClassDB::bind_method(D_METHOD("capture_get_device"), &AudioServer::capture_get_device);
+	ClassDB::bind_method(D_METHOD("capture_set_device"), &AudioServer::capture_set_device);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);

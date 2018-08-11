@@ -104,6 +104,7 @@ void register_server_types() {
 
 	ClassDB::register_virtual_class<AudioStream>();
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
+	ClassDB::register_class<AudioStreamMicrophone>();
 	ClassDB::register_class<AudioStreamRandomPitch>();
 	ClassDB::register_virtual_class<AudioEffect>();
 	ClassDB::register_class<AudioEffectEQ>();
