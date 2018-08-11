@@ -48,7 +48,7 @@
 // It's so ugly it will eat them alive
 
 // The previous comment is kept only for historical reasons.
-// No children will be harmed by the visioning of this file... hopefully.
+// No children will be harmed by the viewing of this file... hopefully.
 
 #define HANDLE_HALF_SIZE 9.5
 
@@ -531,6 +531,8 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 		rect.set_position(center - rect.get_size() / 2.0);
 
 		if (rect.has_point(p_point)) {
+			r_pos = t.origin;
+			r_normal = -p_camera->project_ray_normal(p_point);
 			return true;
 		}
 
@@ -1472,34 +1474,6 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Ref<Material> material = get_material("skeleton_material", p_gizmo);
-	SpatialMaterial *sm = Object::cast_to<SpatialMaterial>(material.ptr());
-
-	{ // Reset
-		Color c(sm->get_albedo());
-		c.a = 1;
-		sm->set_albedo(c);
-	}
-	if (sm) {
-		switch (SpatialEditor::get_singleton()->get_skeleton_visibility_state()) {
-			case 0: {
-				// Hidden
-				Color c(sm->get_albedo());
-				c.a = 0;
-				sm->set_albedo(c);
-				sm->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-			} break;
-			case 1:
-				// Visible
-				sm->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, false);
-				sm->set_render_priority(SpatialMaterial::RENDER_PRIORITY_MIN);
-				sm->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, false);
-				break;
-			case 2:
-				// x-ray
-				sm->set_on_top_of_alpha();
-				break;
-		}
-	}
 
 	Ref<SurfaceTool> surface_tool(memnew(SurfaceTool));
 
