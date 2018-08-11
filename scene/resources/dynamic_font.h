@@ -79,7 +79,6 @@ private:
 	const uint8_t *font_mem;
 	int font_mem_size;
 	bool force_autohinter;
-	bool use_antialias;
 	Hinting hinting;
 
 	String font_path;
@@ -99,8 +98,6 @@ public:
 	void set_font_path(const String &p_path);
 	String get_font_path() const;
 	void set_force_autohinter(bool p_force);
-	void set_use_antialias(bool p_use);
-	bool get_use_antialias() const;
 
 	DynamicFontData();
 	~DynamicFontData();
@@ -263,6 +260,9 @@ public:
 
 	bool get_use_filter() const;
 	void set_use_filter(bool p_enable);
+
+	bool get_use_antialias() const;
+	void set_use_antialias(bool p_enable);
 
 	int get_spacing(int p_type) const;
 	void set_spacing(int p_type, int p_value);

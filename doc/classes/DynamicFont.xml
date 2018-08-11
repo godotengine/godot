@@ -86,6 +86,9 @@
 		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps">
 			If [code]true[/code] mipmapping is used.
 		</member>
+		<member name="use_antialias" type="bool" setter="set_use_antialias" getter="get_use_antialias">
+			If [code]true[/code] antialias is used.
+		</member>
 	</members>
 	<constants>
 		<constant name="SPACING_TOP" value="0" enum="SpacingType">

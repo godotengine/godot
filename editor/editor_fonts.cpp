@@ -76,6 +76,7 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
+	m_name->set_use_antialias(true);                            \
 	if (CustomFont.is_valid()) {                                \
 		m_name->set_font_data(CustomFont);                      \
 		m_name->add_fallback(DefaultFont);                      \
@@ -90,6 +91,7 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
+	m_name->set_use_antialias(true);                            \
 	if (CustomFont.is_valid()) {                                \
 		m_name->set_font_data(CustomFontBold);                  \
 		m_name->add_fallback(DefaultFontBold);                  \
@@ -100,10 +102,11 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	m_name->set_spacing(DynamicFont::SPACING_BOTTOM, -EDSCALE); \
 	MAKE_FALLBACKS(m_name);
 
-#define MAKE_SOURCE_FONT(m_name, m_size)                        \
+#define MAKE_SOURCE_FONT(m_name, m_size, m_antialias)           \
 	Ref<DynamicFont> m_name;                                    \
 	m_name.instance();                                          \
 	m_name->set_size(m_size);                                   \
+	m_name->set_use_antialias(m_antialias);                     \
 	if (CustomFontSource.is_valid()) {                          \
 		m_name->set_font_data(CustomFontSource);                \
 		m_name->add_fallback(dfmono);                           \
@@ -205,11 +208,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	FontThai->set_force_autohinter(true); //just looks better..i think?
 
 	/* Hack */
-	bool font_source_antialias = EditorSettings::get_singleton()->get("interface/editor/code_font_antialias");
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
 	dfmono->set_hinting(font_source_hinting);
-	dfmono->set_use_antialias(font_source_antialias);
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 	//dfd->set_force_autohinter(true); //just looks better..i think?
 
@@ -235,7 +236,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
 
-	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
+	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE, true);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 
 	// Ruler font
@@ -243,12 +244,13 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
 
 	// Code font
-	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE);
+	bool font_source_antialias = EditorSettings::get_singleton()->get("interface/editor/code_font_antialias");
+	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE, font_source_antialias);
 	p_theme->set_font("source", "EditorFonts", df_code);
 
-	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
+	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE, true);
 	p_theme->set_font("output_source", "EditorFonts", df_output_code);
 
-	MAKE_SOURCE_FONT(df_text_editor_status_code, 14 * EDSCALE);
+	MAKE_SOURCE_FONT(df_text_editor_status_code, 14 * EDSCALE, true);
 	p_theme->set_font("status_source", "EditorFonts", df_text_editor_status_code);
 }

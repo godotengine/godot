@@ -81,21 +81,11 @@ void DynamicFontData::set_force_autohinter(bool p_force) {
 	force_autohinter = p_force;
 }
 
-void DynamicFontData::set_use_antialias(bool p_use) {
-	use_antialias = p_use;
-}
-
-bool DynamicFontData::get_use_antialias() const {
-	return use_antialias;
-}
-
 void DynamicFontData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_path", "path"), &DynamicFontData::set_font_path);
 	ClassDB::bind_method(D_METHOD("get_font_path"), &DynamicFontData::get_font_path);
 	ClassDB::bind_method(D_METHOD("set_hinting", "mode"), &DynamicFontData::set_hinting);
 	ClassDB::bind_method(D_METHOD("get_hinting"), &DynamicFontData::get_hinting);
-	ClassDB::bind_method(D_METHOD("set_use_antialias", "enabled"), &DynamicFontData::set_use_antialias);
-	ClassDB::bind_method(D_METHOD("is_using_antialias"), &DynamicFontData::get_use_antialias);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 
@@ -104,14 +94,12 @@ void DynamicFontData::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINTING_NORMAL);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "font_path", PROPERTY_HINT_FILE, "*.ttf,*.otf"), "set_font_path", "get_font_path");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialias"), "set_use_antialias", "is_using_antialias");
 }
 
 DynamicFontData::DynamicFontData() {
 
 	force_autohinter = false;
 	hinting = DynamicFontData::HINTING_NORMAL;
-	use_antialias = true;
 	font_mem = NULL;
 	font_mem_size = 0;
 }
@@ -646,7 +634,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	if (id.outline_size > 0) {
 		character = _make_outline_char(p_char);
 	} else {
-		error = FT_Render_Glyph(face->glyph, (font->use_antialias) ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO);
+		error = FT_Render_Glyph(face->glyph, (id.antialias) ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO);
 		if (!error)
 			character = _bitmap_to_character(slot->bitmap, slot->bitmap_top, slot->bitmap_left, slot->advance.x / 64.0);
 	}
@@ -796,6 +784,18 @@ void DynamicFont::set_use_filter(bool p_enable) {
 		return;
 	cache_id.filter = p_enable;
 	outline_cache_id.filter = p_enable;
+	_reload_cache();
+}
+
+bool DynamicFont::get_use_antialias() const {
+	return cache_id.antialias;
+}
+
+void DynamicFont::set_use_antialias(bool p_enable) {
+	if (cache_id.antialias == p_enable)
+		return;
+	cache_id.antialias = p_enable;
+	outline_cache_id.antialias = p_enable;
 	_reload_cache();
 }
 
@@ -1012,6 +1012,8 @@ void DynamicFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_use_mipmaps"), &DynamicFont::get_use_mipmaps);
 	ClassDB::bind_method(D_METHOD("set_use_filter", "enable"), &DynamicFont::set_use_filter);
 	ClassDB::bind_method(D_METHOD("get_use_filter"), &DynamicFont::get_use_filter);
+	ClassDB::bind_method(D_METHOD("set_use_antialias", "enabled"), &DynamicFont::set_use_antialias);
+	ClassDB::bind_method(D_METHOD("get_use_antialias"), &DynamicFont::get_use_antialias);
 	ClassDB::bind_method(D_METHOD("set_spacing", "type", "value"), &DynamicFont::set_spacing);
 	ClassDB::bind_method(D_METHOD("get_spacing", "type"), &DynamicFont::get_spacing);
 
@@ -1027,6 +1029,7 @@ void DynamicFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "outline_color"), "set_outline_color", "get_outline_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_mipmaps"), "set_use_mipmaps", "get_use_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_filter"), "set_use_filter", "get_use_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_antialias"), "set_use_antialias", "get_use_antialias");
 	ADD_GROUP("Extra Spacing", "extra_spacing");
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "extra_spacing_top"), "set_spacing", "get_spacing", SPACING_TOP);
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "extra_spacing_bottom"), "set_spacing", "get_spacing", SPACING_BOTTOM);
