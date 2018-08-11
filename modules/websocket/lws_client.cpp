@@ -127,11 +127,6 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 		case LWS_CALLBACK_CLIENT_ESTABLISHED:
 			peer->set_wsi(wsi);
 			peer_data->peer_id = 0;
-			peer_data->in_size = 0;
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbw.resize(16);
-			peer_data->rbr.resize(16);
 			peer_data->force_close = false;
 			_on_connect(lws_get_protocol(wsi)->name);
 			break;
@@ -142,10 +137,6 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			return -1; // we should close the connection (would probably happen anyway)
 
 		case LWS_CALLBACK_CLIENT_CLOSED:
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbw.resize(0);
-			peer_data->rbr.resize(0);
 			peer->close();
 			destroy_context();
 			_on_disconnect();
