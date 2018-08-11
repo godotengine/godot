@@ -558,7 +558,9 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 	if (single_item_selected) {
 		item_menu->add_separator();
-		item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Show In File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+		Dictionary item_meta = item_list->get_item_metadata(p_item);
+		String item_text = item_meta["dir"] ? TTR("Open In File Manager") : TTR("Show In File Manager");
+		item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -582,7 +584,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	}
 	item_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
 	item_menu->add_separator();
-	item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Show In File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open In File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
 	item_menu->set_position(item_list->get_global_position() + p_pos);
 	item_menu->popup();
