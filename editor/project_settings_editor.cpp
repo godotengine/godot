@@ -81,7 +81,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			globals_editor->edit(ProjectSettings::get_singleton());
 
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
-			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
 
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
@@ -120,7 +120,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
-			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
 			action_add_error->add_color_override("font_color", get_color("error_color", "Editor"));
 			popup_add->set_item_icon(popup_add->get_item_index(INPUT_KEY), get_icon("Keyboard", "EditorIcons"));

@@ -182,9 +182,9 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 void EditorSettingsDialog::_update_icons() {
 
-	search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 	search_box->set_clear_button_enabled(true);
-	shortcut_search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	shortcut_search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 	shortcut_search_box->set_clear_button_enabled(true);
 
 	restart_close_button->set_icon(get_icon("Close", "EditorIcons"));

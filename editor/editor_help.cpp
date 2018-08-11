@@ -253,7 +253,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		//_update_icons
-		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 
 		connect("confirmed", this, "_confirmed");
@@ -268,7 +268,7 @@ void EditorHelpSearch::_notification(int p_what) {
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		//_update_icons
-		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 	} else if (p_what == NOTIFICATION_PROCESS) {
 
@@ -383,7 +383,7 @@ void EditorHelpIndex::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		//_update_icons
-		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 		_update_class_list();
 
@@ -395,7 +395,7 @@ void EditorHelpIndex::_notification(int p_what) {
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		//_update_icons
-		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 	}
 }

@@ -3032,7 +3032,7 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		node_filter->add_icon_override("right_icon", Control::get_icon("Search", "EditorIcons"));
+		node_filter->set_right_icon(Control::get_icon("Search", "EditorIcons"));
 		node_filter->set_clear_button_enabled(true);
 		variable_editor->connect("changed", this, "_update_members");
 		signal_editor->connect("changed", this, "_update_members");

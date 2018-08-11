@@ -700,8 +700,8 @@ void LineEdit::_notification(int p_what) {
 			font_color.a *= disabled_alpha;
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
-			if (has_icon("right_icon") || display_clear_icon) {
-				Ref<Texture> r_icon = Control::get_icon(display_clear_icon ? "clear" : "right_icon");
+			if (right_icon.is_valid() || display_clear_icon) {
+				Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
 				Color color_icon(1, 1, 1, disabled_alpha * .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
@@ -1154,9 +1154,8 @@ void LineEdit::set_cursor_position(int p_pos) {
 	} else if (cursor_pos > window_pos) {
 		/* Adjust window if cursor goes too much to the right */
 		int window_width = get_size().width - style->get_minimum_size().width;
-		if (has_icon("right_icon")) {
-			Ref<Texture> r_icon = Control::get_icon("right_icon");
-			window_width -= r_icon->get_width();
+		if (right_icon.is_valid()) {
+			window_width -= right_icon->get_width();
 		}
 
 		if (window_width < 0)
@@ -1453,6 +1452,14 @@ void LineEdit::set_clear_button_enabled(bool p_enabled) {
 
 bool LineEdit::is_clear_button_enabled() const {
 	return clear_button_enabled;
+}
+
+void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
+	if (right_icon == p_icon) {
+		return;
+	}
+	right_icon = p_icon;
+	update();
 }
 
 void LineEdit::_ime_text_callback(void *p_self, String p_text, Point2 p_selection) {

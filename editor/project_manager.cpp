@@ -2046,7 +2046,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 void ProjectListFilter::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 	}
 }

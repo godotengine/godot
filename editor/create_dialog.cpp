@@ -425,7 +425,7 @@ void CreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", this, "_confirmed");
-			search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
 			favorite->set_icon(get_icon("Favorites", "EditorIcons"));
 		} break;
