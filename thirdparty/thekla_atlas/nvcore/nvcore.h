@@ -44,6 +44,9 @@
 #elif defined POSH_OS_FREEBSD
 #   define NV_OS_FREEBSD 1
 #   define NV_OS_UNIX 1
+#elif defined POSH_OS_HAIKU
+#   define NV_OS_HAIKU 1
+#   define NV_OS_UNIX 1
 #elif defined POSH_OS_OPENBSD
 #   define NV_OS_OPENBSD 1
 #   define NV_OS_UNIX 1
@@ -341,7 +344,7 @@ template <typename T, size_t N> char (&ArraySizeHelper(T (&array)[N]))[N];
 #elif NV_CC_GNUC
 #   if NV_OS_LINUX
 #       include "DefsGnucLinux.h"
-#   elif NV_OS_DARWIN || NV_OS_FREEBSD || NV_OS_OPENBSD
+#   elif NV_OS_DARWIN || NV_OS_FREEBSD || NV_OS_OPENBSD || NV_OS_HAIKU
 #       include "DefsGnucDarwin.h"
 #   elif NV_OS_ORBIS
 #       include "DefsOrbis.h"

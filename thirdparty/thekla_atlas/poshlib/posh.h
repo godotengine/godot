@@ -298,6 +298,11 @@ Metrowerks:
 #  define POSH_OS_STRING "Linux"
 #endif
 
+#if defined __HAIKU__
+#  define POSH_OS_HAIKU 1
+#  define POSH_OS_STRING "Haiku"
+#endif
+
 #if defined __FreeBSD__
 #  define POSH_OS_FREEBSD 1 
 #  define POSH_OS_STRING "FreeBSD"

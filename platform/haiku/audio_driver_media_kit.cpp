@@ -100,7 +100,7 @@ int AudioDriverMediaKit::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::SpeakerMode AudioDriverMediaKit::get_speaker_mode() const {
+AudioDriverMediaKit::SpeakerMode AudioDriverMediaKit::get_speaker_mode() const {
 	return speaker_mode;
 }
 
