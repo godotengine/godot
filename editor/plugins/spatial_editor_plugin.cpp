@@ -3849,10 +3849,6 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 	}
 }
 
-int SpatialEditor::get_skeleton_visibility_state() const {
-	return view_menu->get_popup()->get_item_state(view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON));
-}
-
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -4008,9 +4004,9 @@ Dictionary SpatialEditor::get_state() const {
 	Dictionary gizmos_status;
 	for (int i = 0; i < gizmo_plugins.size(); i++) {
 		if (!gizmo_plugins[i]->can_be_hidden()) continue;
-		bool checked = gizmos_menu->get_popup()->is_item_checked(gizmos_menu->get_popup()->get_item_index(i));
+		int state = gizmos_menu->get_item_state(gizmos_menu->get_item_index(i));
 		String name = gizmo_plugins[i]->get_name();
-		gizmos_status[name] = checked;
+		gizmos_status[name] = state;
 	}
 
 	d["gizmos_status"] = gizmos_status;
@@ -4096,14 +4092,29 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 
 		for (int j = 0; j < gizmo_plugins.size(); ++j) {
 			if (!gizmo_plugins[j]->can_be_hidden()) continue;
-			bool checked = true;
+			int state = EditorSpatialGizmoPlugin::ON_TOP;
 			for (uint32_t i = 0; i < keys.size(); i++) {
 				if (gizmo_plugins.write[j]->get_name() == keys[i]) {
-					checked = gizmos_status[keys[i]];
+					state = gizmos_status[keys[i]];
 				}
 			}
-			gizmos_menu->get_popup()->set_item_checked(gizmos_menu->get_popup()->get_item_index(j), checked);
-			gizmo_plugins.write[j]->set_hidden(!checked);
+
+			const int idx = gizmos_menu->get_item_index(j);
+
+			gizmos_menu->set_item_multistate(idx, state);
+			gizmo_plugins.write[j]->set_state(state);
+
+			switch (state) {
+				case EditorSpatialGizmoPlugin::ON_TOP:
+					gizmos_menu->set_item_icon(idx, gizmos_menu->get_icon("visibility_visible"));
+					break;
+				case EditorSpatialGizmoPlugin::VISIBLE:
+					gizmos_menu->set_item_icon(idx, gizmos_menu->get_icon("visibility_xray"));
+					break;
+				case EditorSpatialGizmoPlugin::HIDDEN:
+					gizmos_menu->set_item_icon(idx, gizmos_menu->get_icon("visibility_hidden"));
+					break;
+			}
 		}
 	}
 }
@@ -4200,12 +4211,27 @@ void SpatialEditor::_menu_item_toggled(bool pressed, int p_option) {
 }
 
 void SpatialEditor::_menu_gizmo_toggled(int p_option) {
-	bool is_checked = gizmos_menu->get_popup()->is_item_checked(gizmos_menu->get_popup()->get_item_index(p_option));
 
-	is_checked = !is_checked;
-	gizmo_plugins.write[p_option]->set_hidden(!is_checked);
+	const int idx = gizmos_menu->get_item_index(p_option);
+	gizmos_menu->toggle_item_multistate(idx);
 
-	gizmos_menu->get_popup()->set_item_checked(gizmos_menu->get_popup()->get_item_index(p_option), is_checked);
+	// Change icon
+	const int state = gizmos_menu->get_item_state(idx);
+	switch (state) {
+		case EditorSpatialGizmoPlugin::ON_TOP:
+			gizmos_menu->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_visible"));
+			break;
+		case EditorSpatialGizmoPlugin::VISIBLE:
+			gizmos_menu->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_xray"));
+			break;
+		case EditorSpatialGizmoPlugin::HIDDEN:
+			gizmos_menu->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_hidden"));
+			break;
+	}
+
+	gizmo_plugins.write[p_option]->set_state(state);
+
+	update_all_gizmos();
 }
 
 void SpatialEditor::_menu_item_pressed(int p_option) {
@@ -4381,28 +4407,6 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			}
 
 			_refresh_menu_icons();
-		} break;
-		case MENU_VISIBILITY_SKELETON: {
-
-			const int idx = view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON);
-			view_menu->get_popup()->toggle_item_multistate(idx);
-
-			// Change icon
-			const int state = view_menu->get_popup()->get_item_state(idx);
-			switch (state) {
-				case 0:
-					view_menu->get_popup()->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_hidden"));
-					break;
-				case 1:
-					view_menu->get_popup()->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_visible"));
-					break;
-				case 2:
-					view_menu->get_popup()->set_item_icon(idx, view_menu->get_popup()->get_icon("visibility_xray"));
-					break;
-			}
-
-			update_all_gizmos();
-
 		} break;
 	}
 }
@@ -4729,14 +4733,13 @@ struct _GizmoPluginComparator {
 void SpatialEditor::_init_gizmos_menu() {
 	_register_all_gizmos();
 
-	PopupMenu *p = gizmos_menu->get_popup();
-
 	gizmo_plugins.sort_custom<_GizmoPluginComparator>();
 
 	for (int i = 0; i < gizmo_plugins.size(); ++i) {
 		if (!gizmo_plugins[i]->can_be_hidden()) continue;
 		String plugin_name = gizmo_plugins[i]->get_name();
-		p->add_check_item(TTR(plugin_name), i);
+		gizmos_menu->add_multistate_item(TTR(plugin_name), 3, EditorSpatialGizmoPlugin::ON_TOP, i);
+		gizmos_menu->set_item_icon(gizmos_menu->get_item_index(i), gizmos_menu->get_icon("visibility_visible"));
 	}
 }
 
@@ -5020,7 +5023,6 @@ void SpatialEditor::_notification(int p_what) {
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), get_icon("Panels3", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_icon("Panels3Alt", "EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_icon("Panels4", "EditorIcons"));
-		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VISIBILITY_SKELETON), view_menu->get_popup()->get_icon("visibility_visible"));
 
 		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 
@@ -5397,24 +5399,22 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/4_viewports", TTR("4 Viewports"), KEY_MASK_CMD + KEY_4), MENU_VIEW_USE_4_VIEWPORTS);
 	p->add_separator();
 
+	p->add_submenu_item(TTR("Gizmos"), "GizmosMenu");
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_origin", TTR("View Origin")), MENU_VIEW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_grid", TTR("View Grid")), MENU_VIEW_GRID);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/settings", TTR("Settings")), MENU_VIEW_CAMERA_SETTINGS);
-
-	p->add_separator();
-	p->add_multistate_item(TTR("Skeleton Gizmo visibility"), 3, 1, MENU_VISIBILITY_SKELETON);
 
 	p->set_item_checked(p->get_item_index(MENU_VIEW_ORIGIN), true);
 	p->set_item_checked(p->get_item_index(MENU_VIEW_GRID), true);
 
 	p->connect("id_pressed", this, "_menu_item_pressed");
 
-	gizmos_menu = memnew(MenuButton);
-	gizmos_menu->set_text(TTR("Gizmos"));
-	hbc_menu->add_child(gizmos_menu);
-	gizmos_menu->get_popup()->set_hide_on_checkable_item_selection(false);
-	gizmos_menu->get_popup()->connect("id_pressed", this, "_menu_gizmo_toggled");
+	gizmos_menu = memnew(PopupMenu);
+	p->add_child(gizmos_menu);
+	gizmos_menu->set_name("GizmosMenu");
+	gizmos_menu->set_hide_on_checkable_item_selection(false);
+	gizmos_menu->connect("id_pressed", this, "_menu_gizmo_toggled");
 
 	/* REST OF MENU */
 
@@ -5662,6 +5662,7 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 		material->set_albedo(color);
 		material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		material->set_render_priority(SpatialMaterial::RENDER_PRIORITY_MIN + 1);
 
 		if (p_use_vertex_color) {
 			material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
@@ -5709,6 +5710,7 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 		icon->set_texture(SpatialMaterial::TEXTURE_ALBEDO, p_texture);
 		icon->set_flag(SpatialMaterial::FLAG_FIXED_SIZE, true);
 		icon->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+		icon->set_render_priority(SpatialMaterial::RENDER_PRIORITY_MIN);
 
 		if (p_on_top && selected) {
 			icon->set_on_top_of_alpha();
@@ -5755,7 +5757,16 @@ Ref<SpatialMaterial> EditorSpatialGizmoPlugin::get_material(const String &p_name
 	if (p_gizmo == NULL) return materials[p_name][0];
 
 	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
-	return materials[p_name][index];
+
+	Ref<SpatialMaterial> mat = materials[p_name][index];
+
+	if (current_state == ON_TOP && p_gizmo->is_selected()) {
+		mat->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, true);
+	} else {
+		mat->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, false);
+	}
+
+	return mat;
 }
 
 Ref<EditorSpatialGizmo> EditorSpatialGizmoPlugin::get_gizmo(Spatial *p_spatial) {
@@ -5766,7 +5777,7 @@ Ref<EditorSpatialGizmo> EditorSpatialGizmoPlugin::get_gizmo(Spatial *p_spatial) 
 
 	ref->set_plugin(this);
 	ref->set_spatial_node(p_spatial);
-	ref->set_hidden(hidden);
+	ref->set_hidden(current_state == HIDDEN);
 
 	current_gizmos.push_back(ref.ptr());
 	return ref;
@@ -5791,10 +5802,10 @@ bool EditorSpatialGizmoPlugin::is_selectable_when_hidden() const {
 	return false;
 }
 
-void EditorSpatialGizmoPlugin::set_hidden(bool p_hidden) {
-	hidden = p_hidden;
+void EditorSpatialGizmoPlugin::set_state(int p_state) {
+	current_state = p_state;
 	for (int i = 0; i < current_gizmos.size(); ++i) {
-		current_gizmos[i]->set_hidden(hidden);
+		current_gizmos[i]->set_hidden(current_state == HIDDEN);
 	}
 }
 
@@ -5803,7 +5814,7 @@ void EditorSpatialGizmoPlugin::unregister_gizmo(EditorSpatialGizmo *p_gizmo) {
 }
 
 EditorSpatialGizmoPlugin::EditorSpatialGizmoPlugin() {
-	hidden = false;
+	current_state = ON_TOP;
 }
 
 EditorSpatialGizmoPlugin::~EditorSpatialGizmoPlugin() {
