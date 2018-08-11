@@ -38,6 +38,8 @@ class Tween : public Node {
 	GDCLASS(Tween, Node);
 
 public:
+	typedef int HANDLE;
+
 	enum TweenProcessMode {
 		TWEEN_PROCESS_PHYSICS,
 		TWEEN_PROCESS_IDLE,
@@ -78,9 +80,13 @@ private:
 		TARGETING_PROPERTY,
 		TARGETING_METHOD,
 		INTER_CALLBACK,
+		SEQUENCE,
+		SPAWNER
 	};
 
 	struct InterpolateData {
+		HANDLE handle;
+		HANDLE parent;
 		bool active;
 		InterpolateType type;
 		bool finish;
@@ -100,15 +106,21 @@ private:
 		real_t delay;
 		int args;
 		Variant arg[5];
+
+		InterpolateData() :
+				handle(0),
+				parent(0) {}
 	};
 
 	String autoplay;
 	TweenProcessMode tween_process_mode;
 	bool repeat;
 	float speed_scale;
+	HANDLE last_index;
 	mutable int pending_update;
 
 	List<InterpolateData> interpolates;
+	List<InterpolateData> interpolates_queued;
 
 	struct PendingCommand {
 		StringName key;
@@ -120,6 +132,9 @@ private:
 	void _add_pending_command(StringName p_key, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant(), const Variant &p_arg6 = Variant(), const Variant &p_arg7 = Variant(), const Variant &p_arg8 = Variant(), const Variant &p_arg9 = Variant(), const Variant &p_arg10 = Variant());
 	void _process_pending_commands();
 
+	List<InterpolateData>::Element *get_element(HANDLE handle);
+	List<InterpolateData>::Element *get_element_queued(HANDLE handle);
+
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
 
@@ -129,6 +144,7 @@ private:
 	Variant _run_equation(InterpolateData &p_data);
 	bool _calc_delta_val(const Variant &p_initial_val, const Variant &p_final_val, Variant &p_delta_val);
 	bool _apply_tween_value(InterpolateData &p_data, Variant &value);
+	void _add_delay_recursive(InterpolateData &p_data, real_t delay);
 
 	void _tween_process(float p_delta);
 	void _remove(Object *p_object, StringName p_key, bool first_only);
@@ -162,27 +178,32 @@ public:
 	bool resume(Object *p_object, StringName p_key);
 	bool resume_all();
 	bool remove(Object *p_object, StringName p_key);
+	bool remove_element(HANDLE handle);
 	bool remove_all();
 
 	bool seek(real_t p_time);
 	real_t tell() const;
 	real_t get_runtime() const;
 
-	bool interpolate_property(Object *p_object, NodePath p_property, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	HANDLE interpolate_property(Object *p_object, NodePath p_property, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool interpolate_method(Object *p_object, StringName p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	HANDLE interpolate_method(Object *p_object, StringName p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool interpolate_callback(Object *p_object, real_t p_duration, String p_callback, VARIANT_ARG_DECLARE);
+	HANDLE interpolate_callback(Object *p_object, real_t p_duration, String p_callback, VARIANT_ARG_DECLARE);
 
-	bool interpolate_deferred_callback(Object *p_object, real_t p_duration, String p_callback, VARIANT_ARG_DECLARE);
+	HANDLE interpolate_deferred_callback(Object *p_object, real_t p_duration, String p_callback, VARIANT_ARG_DECLARE);
 
-	bool follow_property(Object *p_object, NodePath p_property, Variant p_initial_val, Object *p_target, NodePath p_target_property, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	HANDLE create_sequence(HANDLE h0, HANDLE h1 = 0, HANDLE h2 = 0, HANDLE h3 = 0, HANDLE h4 = 0, HANDLE h5 = 0, HANDLE h6 = 0, HANDLE h7 = 0, HANDLE h8 = 0, HANDLE h9 = 0, HANDLE h10 = 0, HANDLE h11 = 0, HANDLE h12 = 0);
 
-	bool follow_method(Object *p_object, StringName p_method, Variant p_initial_val, Object *p_target, StringName p_target_method, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	HANDLE create_spawner(HANDLE h0, HANDLE h1 = 0, HANDLE h2 = 0, HANDLE h3 = 0, HANDLE h4 = 0, HANDLE h5 = 0, HANDLE h6 = 0, HANDLE h7 = 0, HANDLE h8 = 0, HANDLE h9 = 0, HANDLE h10 = 0, HANDLE h11 = 0, HANDLE h12 = 0);
 
-	bool targeting_property(Object *p_object, NodePath p_property, Object *p_initial, NodePath p_initial_property, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	HANDLE follow_property(Object *p_object, NodePath p_property, Variant p_initial_val, Object *p_target, NodePath p_target_property, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
-	bool targeting_method(Object *p_object, StringName p_method, Object *p_initial, StringName p_initial_method, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+	HANDLE follow_method(Object *p_object, StringName p_method, Variant p_initial_val, Object *p_target, StringName p_target_method, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+
+	HANDLE targeting_property(Object *p_object, NodePath p_property, Object *p_initial, NodePath p_initial_property, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
+
+	HANDLE targeting_method(Object *p_object, StringName p_method, Object *p_initial, StringName p_initial_method, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 
 	Tween();
 	~Tween();
