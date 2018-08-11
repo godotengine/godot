@@ -1128,7 +1128,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 //so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
+Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	Vector3 lv = p_linear_velocity;
 
@@ -1146,14 +1146,18 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	colliders.clear();
 	floor_velocity = Vector3();
 
+	Vector3 lv_n = p_linear_velocity.normalized();
+
 	while (p_max_slides) {
 
 		Collision collision;
 
 		bool collided = move_and_collide(motion, p_infinite_inertia, collision);
 
+		bool is_on_slope = false;
 		if (collided) {
 
+			colliders.push_back(collision);
 			motion = collision.remainder;
 
 			if (p_floor_direction == Vector3()) {
@@ -1165,15 +1169,17 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					on_floor = true;
 					floor_velocity = collision.collider_vel;
 
-					Vector3 rel_v = lv - floor_velocity;
-					Vector3 hv = rel_v - p_floor_direction * p_floor_direction.dot(rel_v);
-
-					if (collision.travel.length() < 0.05 && hv.length() < p_slope_stop_min_velocity) {
-						Transform gt = get_global_transform();
-						gt.origin -= collision.travel;
-						set_global_transform(gt);
-						return floor_velocity - p_floor_direction * p_floor_direction.dot(floor_velocity);
+					if (p_stop_on_slope) {
+						if (Vector3() == lv_n + p_floor_direction) {
+							Transform gt = get_global_transform();
+							gt.origin -= collision.travel;
+							set_global_transform(gt);
+							return Vector3();
+						}
 					}
+
+					is_on_slope = true;
+
 				} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
 					on_ceiling = true;
 				} else {
@@ -1181,17 +1187,20 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				}
 			}
 
-			Vector3 n = collision.normal;
-			motion = motion.slide(n);
-			lv = lv.slide(n);
+			if (p_stop_on_slope && is_on_slope) {
+				motion = motion.slide(p_floor_direction);
+				lv = lv.slide(p_floor_direction);
+			} else {
+				Vector3 n = collision.normal;
+				motion = motion.slide(n);
+				lv = lv.slide(n);
+			}
 
 			for (int i = 0; i < 3; i++) {
 				if (locked_axis & (1 << i)) {
 					lv[i] = 0;
 				}
 			}
-
-			colliders.push_back(collision);
 
 		} else {
 			break;
@@ -1277,7 +1286,7 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia"), &KinematicBody::_move, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(0.05), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody::test_move);
 

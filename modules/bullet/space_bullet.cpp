@@ -924,11 +924,11 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		btVector3 __rec(0, 0, 0);
 		RecoverResult r_recover_result;
 
-		has_penetration = recover_from_penetration(p_body, body_transform, 0, p_infinite_inertia, __rec, &r_recover_result);
+		has_penetration = recover_from_penetration(p_body, body_transform, 1, p_infinite_inertia, __rec, &r_recover_result);
 
 		// Parse results
 		if (r_result) {
-			B_TO_G(motion + initial_recover_motion, r_result->motion);
+			B_TO_G(motion + initial_recover_motion + __rec, r_result->motion);
 
 			if (has_penetration) {
 
