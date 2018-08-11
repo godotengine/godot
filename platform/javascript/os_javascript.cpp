@@ -788,7 +788,7 @@ bool OS_JavaScript::main_loop_iterate() {
 			/* clang-format off */
 			EM_ASM(
 				FS.syncfs(function(err) {
-					if (err) { Module.printErr('Failed to save IDB file system: ' + err.message); }
+					if (err) { console.warn('Failed to save IDB file system: ' + err.message); }
 				});
 			);
 			/* clang-format on */
