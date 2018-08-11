@@ -31,7 +31,7 @@
 #ifndef OSUWP_H
 #define OSUWP_H
 
-#include "core/math/math_2d.h"
+#include "core/math/transform_2d.h"
 #include "core/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "gl_context_egl.h"

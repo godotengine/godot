@@ -33,9 +33,9 @@
 
 #include "dvector.h"
 #include "face3.h"
-#include "math_2d.h"
 #include "object.h"
 #include "print_string.h"
+#include "rect2.h"
 #include "triangulate.h"
 #include "vector.h"
 #include "vector3.h"
