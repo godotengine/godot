@@ -184,6 +184,8 @@
 			<argument index="0" name="property" type="NodePath">
 			</argument>
 			<description>
+				Get indexed object property by String.
+				Property indices get accessed with colon seperation, for example: [code]position:x[/code]
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">
