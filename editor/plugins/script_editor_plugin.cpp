@@ -1774,9 +1774,66 @@ void ScriptEditor::_update_script_names() {
 		_sort_list_on_update = false;
 	}
 
+	//Count the number of times each script name occurs
+	Dictionary name_counts;
+	for (int i = 0; i < sedata.size(); i++) {
+		String name = sedata[i].name.substr(sedata[i].name.length() - 3, 3) == "(*)" ?
+							  sedata[i].name.substr(0, sedata[i].name.length() - 3) :
+							  sedata[i].name;
+		name_counts[name] = name_counts.has(name) ? int(name_counts[name]) + 1 : 1;
+	}
+	Array paths;
+	for (int i = 0; i < sedata.size(); i++) {
+		String display_name = sedata[i].name;
+		String name_to_check = display_name.substr(display_name.length() - 3, 3) == "(*)" ?
+									   display_name.substr(0, display_name.length() - 3) :
+									   display_name;
+		if (int(name_counts[name_to_check]) > 1) {
+			int name_idx = sedata[i].tooltip.rfind("/");
+			int start_idx = sedata[i].tooltip.rfind("/", name_idx - 1);
+			String parent = sedata[i].tooltip.substr(start_idx + 1, name_idx - start_idx);
+			if (parent.length() && parent != "/") {
+				paths.append(parent);
+			} else {
+				paths.append("");
+			}
+		} else {
+			paths.append("");
+		}
+	}
+	bool duplicates_exist = true;
+	while (duplicates_exist) {
+		duplicates_exist = false;
+		for (int i = 0; i < paths.size(); i++) {
+			if (paths[i] != "" && paths.count(paths[i]) > 1) {
+				duplicates_exist = true;
+				for (int k = i + 1; k < paths.size() + i + 1; k++) {
+					int j = k % paths.size();
+					if (paths[i] == paths[j]) {
+						String name = sedata[j].name;
+						String full_path = sedata[j].tooltip;
+						int last_idx = full_path.length() - String(paths[j]).length() - name.length() - 1;
+						if (name.substr(name.length() - 3, 3) == "(*)") {
+							last_idx += 3;
+						}
+						int start_idx = full_path.rfind("/", last_idx - 1);
+						String to_prepend = full_path.substr(start_idx + 1, last_idx - start_idx);
+						if (to_prepend != "/") {
+							paths[j] = to_prepend + paths[j];
+						}
+					}
+				}
+			}
+		}
+	}
+	Array display_names;
+	for (int i = 0; i < sedata.size(); i++) {
+		display_names.append(String(paths[i]) + sedata[i].name);
+	}
+
 	for (int i = 0; i < sedata.size(); i++) {
 
-		script_list->add_item(sedata[i].name, sedata[i].icon);
+		script_list->add_item(display_names[i], sedata[i].icon);
 		int index = script_list->get_item_count() - 1;
 		script_list->set_item_tooltip(index, sedata[i].tooltip);
 		script_list->set_item_metadata(index, sedata[i].index);

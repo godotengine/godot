@@ -136,6 +136,56 @@ void EditorNode::_update_scene_tabs() {
 
 	scene_tabs->clear_tabs();
 	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
+
+	//Counts the number of times each scene title is repeated
+	Dictionary name_counts;
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		String name = editor_data.get_scene_title(i);
+		name_counts[name] = name_counts.has(name) ? int(name_counts[name]) + 1 : 1;
+	}
+	Array paths;
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		String display_name = editor_data.get_scene_title(i);
+		if (int(name_counts[display_name]) > 1) {
+			int name_idx = editor_data.get_scene_path(i).rfind("/");
+			int start_idx = editor_data.get_scene_path(i).rfind("/", name_idx - 1);
+			String parent = editor_data.get_scene_path(i).substr(start_idx + 1, name_idx - start_idx);
+			if (parent.length() && parent != "/") {
+				paths.append(parent);
+			} else {
+				paths.append("");
+			}
+		} else {
+			paths.append("");
+		}
+	}
+	bool duplicates_exist = true;
+	while (duplicates_exist) {
+		duplicates_exist = false;
+		for (int i = 0; i < paths.size(); i++) {
+			if (paths[i] != "" && paths.count(paths[i]) > 1) {
+				duplicates_exist = true;
+				for (int k = i + 1; k < paths.size() + i + 1; k++) {
+					int j = k % paths.size();
+					if (paths[i] == paths[j]) {
+						String full_path = editor_data.get_scene_path(j);
+						String name = full_path.substr(full_path.rfind("/") + 1, full_path.length());
+						int last_idx = full_path.length() - String(paths[j]).length() - name.length() - 1;
+						int start_idx = full_path.rfind("/", last_idx - 1);
+						String to_prepend = full_path.substr(start_idx + 1, last_idx - start_idx);
+						if (to_prepend != "/") {
+							paths[j] = to_prepend + paths[j];
+						}
+					}
+				}
+			}
+		}
+	}
+	Array display_names;
+	for (int i = 0; i < paths.size(); i++) {
+		display_names.append(String(paths[i]) + editor_data.get_scene_title(i));
+	}
+
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
 		String type = editor_data.get_scene_type(i);
@@ -151,7 +201,7 @@ void EditorNode::_update_scene_tabs() {
 
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
-		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
+		scene_tabs->add_tab(String(display_names[i]) + (unsaved ? "(*)" : ""), icon);
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_right_button(i, script_icon);
