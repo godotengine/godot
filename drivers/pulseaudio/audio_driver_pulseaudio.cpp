@@ -349,7 +349,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 						}
 						uint32_t l = ad->samples_in[in_idx++];
 						uint32_t r = ad->samples_in[in_idx++];
-						ad->samples_out.write[out_idx++] = (l >> 1 + r >> 1) >> 16;
+						ad->samples_out.write[out_idx++] = ((l >> 1) + (r >> 1)) >> 16;
 					}
 				}
 			}
@@ -373,7 +373,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			if (bytes > 0) {
 				size_t bytes_to_write = MIN(bytes, avail_bytes);
 				const void *ptr = ad->samples_out.ptr();
-				ret = pa_stream_write(ad->pa_str, ptr + write_ofs, bytes_to_write, NULL, 0LL, PA_SEEK_RELATIVE);
+				ret = pa_stream_write(ad->pa_str, (char *)ptr + write_ofs, bytes_to_write, NULL, 0LL, PA_SEEK_RELATIVE);
 				if (ret != 0) {
 					ERR_PRINT("pa_stream_write error");
 				} else {
