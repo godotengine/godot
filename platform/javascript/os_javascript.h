@@ -44,8 +44,8 @@ class OS_JavaScript : public OS_Unix {
 	VideoMode video_mode;
 	Vector2 windowed_size;
 	bool window_maximized;
-	bool soft_fullscreen_enabled;
-	bool canvas_size_adjustment_requested;
+	bool entering_fullscreen;
+	bool just_exited_fullscreen;
 
 	InputDefault *input;
 	Ref<InputEventKey> deferred_key_event;
@@ -59,7 +59,6 @@ class OS_JavaScript : public OS_Unix {
 	int64_t sync_wait_time;
 	int64_t last_sync_check_time;
 
-	static EM_BOOL browser_resize_callback(int p_event_type, const EmscriptenUiEvent *p_event, void *p_user_data);
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 
 	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);

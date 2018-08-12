@@ -71,14 +71,6 @@ static bool is_canvas_focused() {
 
 static bool cursor_inside_canvas = true;
 
-EM_BOOL OS_JavaScript::browser_resize_callback(int p_event_type, const EmscriptenUiEvent *p_event, void *p_user_data) {
-
-	// The order of the fullscreen change event and the window size change
-	// event varies, even within just one browser, so defer handling.
-	get_singleton()->canvas_size_adjustment_requested = true;
-	return false;
-}
-
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 
 	OS_JavaScript *os = get_singleton();
@@ -88,7 +80,13 @@ EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const Emscri
 		// This event property is the only reliable data on
 		// browser fullscreen state.
 		os->video_mode.fullscreen = p_event->isFullscreen;
-		os->canvas_size_adjustment_requested = true;
+		if (os->video_mode.fullscreen) {
+			os->entering_fullscreen = false;
+		} else {
+			// Restoring maximized window now will cause issues,
+			// so delay until main_loop_iterate.
+			os->just_exited_fullscreen = true;
+		}
 	}
 	return false;
 }
@@ -114,14 +112,14 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 void OS_JavaScript::set_window_size(const Size2 p_size) {
 
 	windowed_size = p_size;
-	if (is_window_fullscreen()) {
+	if (video_mode.fullscreen) {
 		window_maximized = false;
 		set_window_fullscreen(false);
-	} else if (is_window_maximized()) {
-		set_window_maximized(false);
 	} else {
-		video_mode.width = p_size.x;
-		video_mode.height = p_size.y;
+		if (window_maximized) {
+			emscripten_exit_soft_fullscreen();
+			window_maximized = false;
+		}
 		emscripten_set_canvas_size(p_size.x, p_size.y);
 	}
 }
@@ -135,31 +133,22 @@ Size2 OS_JavaScript::get_window_size() const {
 
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
 
-	window_maximized = p_enabled;
-	if (is_window_fullscreen()) {
+	if (video_mode.fullscreen) {
+		window_maximized = p_enabled;
 		set_window_fullscreen(false);
-		return;
-	}
-	// Calling emscripten_enter_soft_fullscreen mutltiple times hides all
-	// page elements except the canvas permanently, so track state.
-	if (p_enabled && !soft_fullscreen_enabled) {
-
+	} else if (!p_enabled) {
+		emscripten_exit_soft_fullscreen();
+		window_maximized = false;
+	} else if (!window_maximized) {
+		// Prevent calling emscripten_enter_soft_fullscreen mutltiple times,
+		// this would hide page elements permanently.
 		EmscriptenFullscreenStrategy strategy;
 		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
 		emscripten_enter_soft_fullscreen(NULL, &strategy);
-		soft_fullscreen_enabled = true;
-		video_mode.width = get_window_size().width;
-		video_mode.height = get_window_size().height;
-	} else if (!p_enabled) {
-
-		emscripten_exit_soft_fullscreen();
-		soft_fullscreen_enabled = false;
-		video_mode.width = windowed_size.width;
-		video_mode.height = windowed_size.height;
-		emscripten_set_canvas_size(video_mode.width, video_mode.height);
+		window_maximized = p_enabled;
 	}
 }
 
@@ -170,30 +159,33 @@ bool OS_JavaScript::is_window_maximized() const {
 
 void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 
-	if (p_enabled == is_window_fullscreen()) {
+	if (p_enabled == video_mode.fullscreen) {
 		return;
 	}
 
-	// Just request changes here, if successful, canvas is resized in
-	// _browser_resize_callback or _fullscreen_change_callback.
-	EMSCRIPTEN_RESULT result;
+	// Just request changes here, if successful, logic continues in
+	// fullscreen_change_callback.
 	if (p_enabled) {
 		if (window_maximized) {
-			// Soft fullsreen during real fulllscreen can cause issues.
-			set_window_maximized(false);
-			window_maximized = true;
+			// Soft fullsreen during real fullscreen can cause issues, so exit.
+			// This must be called before requesting full screen.
+			emscripten_exit_soft_fullscreen();
 		}
 		EmscriptenFullscreenStrategy strategy;
 		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
-		emscripten_request_fullscreen_strategy(NULL, false, &strategy);
+		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(NULL, false, &strategy);
+		ERR_EXPLAIN("Enabling fullscreen is only possible from an input callback for the HTML5 platform");
+		ERR_FAIL_COND(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED);
+		ERR_FAIL_COND(result != EMSCRIPTEN_RESULT_SUCCESS);
+		// Not fullscreen yet, so prevent "windowed" canvas dimensions from
+		// being overwritten.
+		entering_fullscreen = true;
 	} else {
-		result = emscripten_exit_fullscreen();
-		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
-			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
-		}
+		// No logic allowed here, since exiting w/ ESC key won't use this function.
+		ERR_FAIL_COND(emscripten_exit_fullscreen() != EMSCRIPTEN_RESULT_SUCCESS);
 	}
 }
 
@@ -720,7 +712,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	SET_EM_CALLBACK("#canvas", keydown, keydown_callback)
 	SET_EM_CALLBACK("#canvas", keypress, keypress_callback)
 	SET_EM_CALLBACK("#canvas", keyup, keyup_callback)
-	SET_EM_CALLBACK(NULL, resize, browser_resize_callback)
 	SET_EM_CALLBACK(NULL, fullscreenchange, fullscreen_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepadconnected, gamepad_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepaddisconnected, gamepad_change_callback)
@@ -789,18 +780,32 @@ bool OS_JavaScript::main_loop_iterate() {
 			/* clang-format on */
 		}
 	}
-	process_joypads();
-	if (canvas_size_adjustment_requested) {
 
-		if (video_mode.fullscreen || window_maximized) {
-			video_mode.width = get_window_size().width;
-			video_mode.height = get_window_size().height;
+	process_joypads();
+
+	if (just_exited_fullscreen) {
+		if (window_maximized) {
+			EmscriptenFullscreenStrategy strategy;
+			strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
+			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+			strategy.canvasResizedCallback = NULL;
+			emscripten_enter_soft_fullscreen(NULL, &strategy);
+		} else {
+			emscripten_set_canvas_size(windowed_size.width, windowed_size.height);
 		}
-		if (!video_mode.fullscreen) {
-			set_window_maximized(window_maximized);
-		}
-		canvas_size_adjustment_requested = false;
+		just_exited_fullscreen = false;
 	}
+
+	int canvas[3];
+	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
+	video_mode.width = canvas[0];
+	video_mode.height = canvas[1];
+	if (!window_maximized && !video_mode.fullscreen && !just_exited_fullscreen && !entering_fullscreen) {
+		windowed_size.width = canvas[0];
+		windowed_size.height = canvas[1];
+	}
+
 	return Main::iteration();
 }
 
@@ -953,8 +958,8 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	set_cmdline(p_argv[0], arguments);
 
 	window_maximized = false;
-	soft_fullscreen_enabled = false;
-	canvas_size_adjustment_requested = false;
+	entering_fullscreen = false;
+	just_exited_fullscreen = false;
 
 	main_loop = NULL;
 
