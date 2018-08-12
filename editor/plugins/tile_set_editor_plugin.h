@@ -40,12 +40,12 @@
 #define WORKSPACE_MARGIN Vector2(10, 10)
 class TilesetEditorContext;
 
-class TileSetEditor : public Panel {
+class TileSetEditor : public Control {
 
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
-	GDCLASS(TileSetEditor, Panel)
+	GDCLASS(TileSetEditor, Control)
 
 	enum TextureToolButtons {
 		TOOL_TILESET_ADD_TEXTURE,
@@ -131,8 +131,11 @@ class TileSetEditor : public Panel {
 	Control *workspace;
 	Button *tool_workspacemode[WORKSPACE_MODE_MAX];
 	Button *tool_editmode[EDITMODE_MAX];
+	HSeparator *separator_editmode;
 	HBoxContainer *toolbar;
 	ToolButton *tools[TOOL_MAX];
+	VSeparator *separator_delete;
+	VSeparator *separator_grid;
 	SpinBox *spin_priority;
 	WorkspaceMode workspace_mode;
 	EditMode edit_mode;
