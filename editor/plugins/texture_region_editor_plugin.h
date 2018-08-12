@@ -56,7 +56,6 @@ class TextureRegionEditor : public Control {
 
 	friend class TextureRegionEditorPlugin;
 	MenuButton *snap_mode_button;
-	TextureRect *icon_zoom;
 	ToolButton *zoom_in;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_out;
