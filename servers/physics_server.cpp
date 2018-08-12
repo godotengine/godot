@@ -664,6 +664,7 @@ void PhysicsServer::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("init"),&PhysicsServer::init);
 	//ClassDB::bind_method(D_METHOD("step"),&PhysicsServer::step);
 	//ClassDB::bind_method(D_METHOD("sync"),&PhysicsServer::sync);
+	ClassDB::bind_method(D_METHOD("force_step", "step"), &PhysicsServer::force_step);
 	//ClassDB::bind_method(D_METHOD("flush_queries"),&PhysicsServer::flush_queries);
 
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &PhysicsServer::get_process_info);
