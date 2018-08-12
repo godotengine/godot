@@ -81,7 +81,8 @@ private:
 		TARGETING_METHOD,
 		INTER_CALLBACK,
 		SEQUENCE,
-		SPAWNER
+		SPAWNER,
+		DELAY
 	};
 
 	struct InterpolateData {
@@ -196,6 +197,8 @@ public:
 	HANDLE create_sequence(HANDLE h0, HANDLE h1 = 0, HANDLE h2 = 0, HANDLE h3 = 0, HANDLE h4 = 0, HANDLE h5 = 0, HANDLE h6 = 0, HANDLE h7 = 0, HANDLE h8 = 0, HANDLE h9 = 0, HANDLE h10 = 0, HANDLE h11 = 0, HANDLE h12 = 0);
 
 	HANDLE create_spawner(HANDLE h0, HANDLE h1 = 0, HANDLE h2 = 0, HANDLE h3 = 0, HANDLE h4 = 0, HANDLE h5 = 0, HANDLE h6 = 0, HANDLE h7 = 0, HANDLE h8 = 0, HANDLE h9 = 0, HANDLE h10 = 0, HANDLE h11 = 0, HANDLE h12 = 0);
+
+	HANDLE create_delay(real_t p_duration);
 
 	HANDLE follow_property(Object *p_object, NodePath p_property, Variant p_initial_val, Object *p_target, NodePath p_target_property, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay = 0);
 

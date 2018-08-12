@@ -256,6 +256,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("targeting_method", "object", "method", "initial", "initial_method", "final_val", "duration", "trans_type", "ease_type", "delay"), &Tween::targeting_method, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("create_sequence", "h0", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12"), &Tween::create_sequence, DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("create_spawner", "h0", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12"), &Tween::create_spawner, DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("create_delay", "delay"), &Tween::create_delay);
 
 	ADD_SIGNAL(MethodInfo("tween_started", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
 	ADD_SIGNAL(MethodInfo("tween_step", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key"), PropertyInfo(Variant::REAL, "elapsed"), PropertyInfo(Variant::OBJECT, "value")));
@@ -513,7 +514,7 @@ Variant Tween::_run_equation(InterpolateData &p_data) {
 }
 
 bool Tween::_apply_tween_value(InterpolateData &p_data, Variant &value) {
-	if (p_data.type == SEQUENCE || p_data.type == SPAWNER)
+	if (p_data.type == SEQUENCE || p_data.type == SPAWNER || p_data.type == DELAY)
 		return true;
 
 	Object *object = ObjectDB::get_instance(p_data.id);
@@ -604,7 +605,7 @@ void Tween::_tween_process(float p_delta) {
 			continue;
 
 		Object *object = ObjectDB::get_instance(data.id);
-		if (data.type != SEQUENCE && data.type != SPAWNER && object == NULL)
+		if (data.type != SEQUENCE && data.type != SPAWNER && data.type != DELAY && object == NULL)
 			continue;
 
 		bool prev_delaying = data.elapsed <= data.delay;
@@ -669,7 +670,7 @@ void Tween::_tween_process(float p_delta) {
 			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
 			// not repeat mode, remove completed action
 			if (!repeat) {
-				if (data.type != SEQUENCE && data.type != SPAWNER)
+				if (data.type != SEQUENCE && data.type != SPAWNER && data.type != DELAY)
 					call_deferred("_remove", object, NodePath(Vector<StringName>(), data.key, false), true);
 				else
 					call_deferred("remove", data.handle);
@@ -1352,6 +1353,30 @@ Tween::HANDLE Tween::create_spawner(Tween::HANDLE h0, Tween::HANDLE h1, Tween::H
 	}
 
 	data.duration = added_delay;
+
+	if (pending_update) {
+		interpolates_queued.push_back(data);
+		_add_pending_command("interpolate_queued", data.handle);
+	} else {
+		interpolates.push_back(data);
+	}
+
+	return data.handle;
+}
+
+Tween::HANDLE Tween::create_delay(real_t p_duration) {
+	InterpolateData data;
+	data.handle = ++last_index;
+	data.active = true;
+	data.type = DELAY;
+	data.finish = false;
+	data.elapsed = 0;
+
+	data.id = 0;
+	data.duration = p_duration;
+	data.trans_type = TRANS_LINEAR;
+	data.ease_type = EASE_IN;
+	data.delay = 0;
 
 	if (pending_update) {
 		interpolates_queued.push_back(data);
