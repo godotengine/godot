@@ -32,8 +32,6 @@
 
 #include "audio_driver_wasapi.h"
 
-#include <Functiondiscoverykeys_devpkey.h>
-
 #include "os/os.h"
 #include "project_settings.h"
 
