@@ -2042,6 +2042,8 @@ void PhysicalBone::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_simulating_physics"), &PhysicalBone::is_simulating_physics);
 
+	ClassDB::bind_method(D_METHOD("get_bone_id"), &PhysicalBone::get_bone_id);
+
 	ClassDB::bind_method(D_METHOD("set_mass", "mass"), &PhysicalBone::set_mass);
 	ClassDB::bind_method(D_METHOD("get_mass"), &PhysicalBone::get_mass);
 
