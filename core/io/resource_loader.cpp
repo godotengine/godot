@@ -126,6 +126,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const Stri
 bool ResourceFormatLoader::exists(const String &p_path) const {
 	return FileAccess::exists(p_path); //by default just check file
 }
+
 RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
 
 	String path = p_path;
@@ -252,7 +253,7 @@ bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 
 	if (ResourceCache::has(local_path)) {
 
-		return false; //if cached, it probably exists i guess
+		return true; // If cached, it probably exists
 	}
 
 	bool xl_remapped = false;
