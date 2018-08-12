@@ -119,6 +119,9 @@ void VisualShaderEditor::_update_graph() {
 	if (updating)
 		return;
 
+	if (visual_shader.is_null())
+		return;
+
 	graph->set_scroll_ofs(visual_shader->get_graph_offset() * EDSCALE);
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
