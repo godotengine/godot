@@ -331,5 +331,10 @@ namespace Godot
         {
             return GetEnumerator();
         }
+
+        internal IntPtr GetPtr()
+        {
+            return objectArray.GetPtr();
+        }
     }
 }
