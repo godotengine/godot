@@ -83,6 +83,7 @@ def configure(env):
     mono_lib_names = ['mono-2.0-sgen', 'monosgen-2.0']
 
     if env['platform'] == 'windows':
+        mono_root = None
         if bits == '32':
             if os.getenv('MONO32_PREFIX'):
                 mono_root = os.getenv('MONO32_PREFIX')
