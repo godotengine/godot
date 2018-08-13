@@ -541,6 +541,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		String class_name;
 		if (select.find(".") != -1) {
 			class_name = select.get_slice(".", 0);
+			select = select.get_slice(".", 1);
 		} else {
 			class_name = "@GlobalScope";
 		}
