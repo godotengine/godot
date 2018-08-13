@@ -1408,7 +1408,7 @@ void FileSystemDock::_resource_created() const {
 
 	RES current_res = RES(r);
 
-	editor->save_resource_as(current_res);
+	editor->save_resource_as(current_res, path);
 }
 
 void FileSystemDock::_go_to_file_list() {
