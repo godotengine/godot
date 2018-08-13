@@ -1177,7 +1177,12 @@ void TextEdit::_notification(int p_what) {
 							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
 							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							if (underlined) {
-								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, 1), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+								float line_width = 1.0;
+#ifdef TOOLS_ENABLED
+								line_width *= EDSCALE;
+#endif
+
+								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, line_width), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							}
 						} else if (draw_tabs && str[j] == '\t') {
 							int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
