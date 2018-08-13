@@ -175,7 +175,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	const Color warning_color = p_theme->get_color("warning_color", "Editor");
 	dark_icon_color_dictionary[Color::html("#ff5d5d")] = error_color;
 	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
-	dark_icon_color_dictionary[Color::html("#ffdd65")] = warning_color;
+	dark_icon_color_dictionary[Color::html("#dbab09")] = warning_color;
 
 	List<String> exceptions;
 	exceptions.push_back("EditorPivot");
@@ -365,13 +365,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("mono_color", "Editor", mono_color);
 
 	Color success_color = accent_color.linear_interpolate(Color(0.2, 1, 0.2), 0.6) * 1.2;
-	Color warning_color = accent_color.linear_interpolate(Color(1, 1, 0), 0.7) * 1.2;
+	Color warning_color = accent_color.linear_interpolate(Color(1, 1, 0), 0.7) * 1.0;
 	Color error_color = accent_color.linear_interpolate(Color(1, 0, 0), 0.8) * 1.7;
 	Color property_color = font_color.linear_interpolate(Color(0.5, 0.5, 0.5), 0.5);
 
 	if (!dark_theme) {
 		// yellow on white themes is a P.I.T.A.
-		warning_color = accent_color.linear_interpolate(Color(1, 0.8, 0), 0.9);
+		warning_color = accent_color.linear_interpolate(Color(0.9, 0.7, 0), 0.9);
 		warning_color = warning_color.linear_interpolate(mono_color, 0.2);
 		success_color = success_color.linear_interpolate(mono_color, 0.2);
 		error_color = error_color.linear_interpolate(mono_color, 0.2);

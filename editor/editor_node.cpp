@@ -4566,7 +4566,7 @@ static Node *_resource_get_edited_scene() {
 
 void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error) {
 	EditorNode *en = (EditorNode *)p_this;
-	en->log->add_message(p_string, p_error);
+	en->log->add_message(p_string, p_error ? EditorLog::MSG_TYPE_ERROR : EditorLog::MSG_TYPE_STD);
 }
 
 EditorNode::EditorNode() {
