@@ -77,10 +77,12 @@ name is available.
     Justo Delgado (mrcdk)
     Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
+    K. S. Ernest (iFire) Lee (fire)
     Leon Krause (eska014)
     m4nu3lf
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
+    Marcin Zawiejski (dragmz)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Sjursen (binbitten)
