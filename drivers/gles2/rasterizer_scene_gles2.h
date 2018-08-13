@@ -74,6 +74,8 @@ public:
 
 		GLuint sky_verts;
 
+		GLuint immediate_buffer;
+
 		// ResolveShaderGLES3 resolve_shader;
 		// ScreenSpaceReflectionShaderGLES3 ssr_shader;
 		// EffectBlurShaderGLES3 effect_blur_shader;
