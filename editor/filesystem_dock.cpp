@@ -196,7 +196,8 @@ void FileSystemDock::_notification(int p_what) {
 			files->connect("item_activated", this, "_select_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_box->add_icon_override("right_icon", get_icon("Search", ei));
+			search_box->set_right_icon(get_icon("Search", ei));
+			search_box->set_clear_button_enabled(true);
 
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
@@ -252,7 +253,8 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
 
-			search_box->add_icon_override("right_icon", get_icon("Search", ei));
+			search_box->set_right_icon(get_icon("Search", ei));
+			search_box->set_clear_button_enabled(true);
 
 			if (new_mode != display_mode) {
 				set_display_mode(new_mode);

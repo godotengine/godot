@@ -287,8 +287,10 @@ void GroupDialog::_notification(int p_what) {
 			add_button->set_icon(get_icon("Forward", "EditorIcons"));
 			remove_button->set_icon(get_icon("Back", "EditorIcons"));
 
-			add_filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
-			remove_filter->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+			add_filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			add_filter->set_clear_button_enabled(true);
+			remove_filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			remove_filter->set_clear_button_enabled(true);
 		} break;
 	}
 }

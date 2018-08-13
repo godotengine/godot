@@ -114,22 +114,6 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_focus_current_search_box();
 }
 
-void EditorSettingsDialog::_clear_search_box() {
-
-	if (search_box->get_text() == "")
-		return;
-
-	search_box->clear();
-	inspector->get_inspector()->update_tree();
-}
-
-void EditorSettingsDialog::_clear_shortcut_search_box() {
-	if (shortcut_search_box->get_text() == "")
-		return;
-
-	shortcut_search_box->clear();
-}
-
 void EditorSettingsDialog::_filter_shortcuts(const String &p_filter) {
 	shortcut_filter = p_filter;
 	_update_shortcuts();
@@ -198,10 +182,10 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 void EditorSettingsDialog::_update_icons() {
 
-	search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
-	shortcut_search_box->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
-	clear_button->set_icon(get_icon("Close", "EditorIcons"));
-	shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
+	search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+	search_box->set_clear_button_enabled(true);
+	shortcut_search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+	shortcut_search_box->set_clear_button_enabled(true);
 
 	restart_close_button->set_icon(get_icon("Close", "EditorIcons"));
 	restart_container->add_style_override("panel", get_stylebox("bg", "Tree"));
@@ -411,8 +395,6 @@ void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_settings_save"), &EditorSettingsDialog::_settings_save);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
 	ClassDB::bind_method(D_METHOD("_settings_property_edited"), &EditorSettingsDialog::_settings_property_edited);
-	ClassDB::bind_method(D_METHOD("_clear_search_box"), &EditorSettingsDialog::_clear_search_box);
-	ClassDB::bind_method(D_METHOD("_clear_shortcut_search_box"), &EditorSettingsDialog::_clear_shortcut_search_box);
 	ClassDB::bind_method(D_METHOD("_shortcut_button_pressed"), &EditorSettingsDialog::_shortcut_button_pressed);
 	ClassDB::bind_method(D_METHOD("_filter_shortcuts"), &EditorSettingsDialog::_filter_shortcuts);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
@@ -450,10 +432,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(search_box);
-
-	clear_button = memnew(ToolButton);
-	hbc->add_child(clear_button);
-	clear_button->connect("pressed", this, "_clear_search_box");
 
 	inspector = memnew(SectionedInspector);
 	//inspector->hide_top_label();
@@ -499,10 +477,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", this, "_filter_shortcuts");
-
-	shortcut_clear_button = memnew(ToolButton);
-	hbc->add_child(shortcut_clear_button);
-	shortcut_clear_button->connect("pressed", this, "_clear_shortcut_search_box");
 
 	shortcuts = memnew(Tree);
 	tab_shortcuts->add_child(shortcuts, true);

@@ -52,8 +52,6 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	LineEdit *search_box;
 	LineEdit *shortcut_search_box;
-	ToolButton *clear_button;
-	ToolButton *shortcut_clear_button;
 	SectionedInspector *inspector;
 
 	Timer *timer;
