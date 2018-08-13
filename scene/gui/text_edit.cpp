@@ -5770,8 +5770,11 @@ void TextEdit::_update_completion_candidates() {
 			}
 			// Calculate the similarity to keep completions in good order
 			float similarity;
-			if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
-				// Substrings are the best candidates
+			if (completion_strings[i].begins_with(s)) {
+				// Substrings (same case) are the best candidates
+				similarity = 1.2;
+			} else if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
+				// then any substrings
 				similarity = 1.1;
 			} else {
 				// Otherwise compute the similarity
