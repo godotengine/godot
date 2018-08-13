@@ -836,6 +836,7 @@ void Viewport::_camera_set(Camera *p_camera) {
 
 	_update_listener();
 	_camera_transform_changed_notify();
+	emit_signal("current_camera_changed", p_camera);
 #endif
 }
 
@@ -2848,6 +2849,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", 0), "set_global_canvas_transform", "get_global_canvas_transform");
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
+	ADD_SIGNAL(MethodInfo("current_camera_changed", PropertyInfo(Variant::OBJECT, "new_camera")));
 
 	BIND_ENUM_CONSTANT(UPDATE_DISABLED);
 	BIND_ENUM_CONSTANT(UPDATE_ONCE);
