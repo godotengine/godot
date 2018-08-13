@@ -5797,7 +5797,6 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 			if (id->declared_block) {
 				node_type = id->declared_block->variables[id->name]->get_datatype();
 				id->declared_block->variables[id->name]->usages += 1;
-				print_line("var " + id->name + " line " + itos(id->line) + " usages " + itos(id->declared_block->variables[id->name]->usages));
 			} else if (id->name == "#match_value") {
 				// It's a special id just for the match statetement, ignore
 				break;
