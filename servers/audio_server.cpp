@@ -143,14 +143,19 @@ AudioDriver::AudioDriver() {
 #endif
 }
 
-AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS];
-int AudioDriverManager::driver_count = 0;
 AudioDriverDummy AudioDriverManager::dummy_driver;
+AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS] = {
+	&AudioDriverManager::dummy_driver,
+};
+int AudioDriverManager::driver_count = 1;
 
 void AudioDriverManager::add_driver(AudioDriver *p_driver) {
 
 	ERR_FAIL_COND(driver_count >= MAX_DRIVERS);
-	drivers[driver_count++] = p_driver;
+	drivers[driver_count - 1] = p_driver;
+
+	// Last driver is always our dummy driver
+	drivers[driver_count++] = &AudioDriverManager::dummy_driver;
 }
 
 int AudioDriverManager::get_driver_count() {
@@ -182,14 +187,6 @@ void AudioDriverManager::initialize(int p_driver) {
 			drivers[i]->set_singleton();
 			return;
 		}
-	}
-
-	// Fallback to our dummy driver
-	if (dummy_driver.init() == OK) {
-		ERR_PRINT("AudioDriverManager: all drivers failed, falling back to dummy driver");
-		dummy_driver.set_singleton();
-	} else {
-		ERR_PRINT("AudioDriverManager: dummy driver failed to init()");
 	}
 }
 
