@@ -661,6 +661,7 @@
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
+			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter">
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Use one of the [code]MOUSE_FILTER_*[/code] constants. See the constants to learn what each does.

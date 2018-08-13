@@ -514,7 +514,8 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc.
+				[b]Note:[/b] Generates a fatal error if Variant can not provide a length.
 				[codeblock]
 				a = [1, 2, 3, 4]
 				len(a) # returns 4
@@ -552,7 +553,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads a resource from the filesystem located at [code]path[/code]. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				Loads a resource from the filesystem located at [code]path[/code].
+				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = load("res://main.tscn")
@@ -565,7 +567,8 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Natural logarithm. The amount of time needed to reach a certain level of continuous growth. Note: This is not the same as the log function on your calculator which is a base 10 logarithm.
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
+				[b]Note:[/b] This is not the same as the log function on your calculator which is a base 10 logarithm.
 				[codeblock]
 				log(10) # returns 2.302585
 				[/codeblock]
@@ -664,7 +667,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns a resource from the filesystem that is loaded during script parsing. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				Returns a resource from the filesystem that is loaded during script parsing.
+				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = preload("res://main.tscn")
