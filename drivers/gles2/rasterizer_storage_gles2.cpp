@@ -2679,45 +2679,132 @@ void RasterizerStorageGLES2::update_dirty_multimeshes() {
 /* IMMEDIATE API */
 
 RID RasterizerStorageGLES2::immediate_create() {
-	return RID();
+	Immediate *im = memnew(Immediate);
+	return immediate_owner.make_rid(im);
 }
 
-void RasterizerStorageGLES2::immediate_begin(RID p_immediate, VS::PrimitiveType p_rimitive, RID p_texture) {
+void RasterizerStorageGLES2::immediate_begin(RID p_immediate, VS::PrimitiveType p_primitive, RID p_texture) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(im->building);
+
+	Immediate::Chunk ic;
+	ic.texture = p_texture;
+	ic.primitive = p_primitive;
+	im->chunks.push_back(ic);
+	im->mask = 0;
+	im->building = true;
 }
 
 void RasterizerStorageGLES2::immediate_vertex(RID p_immediate, const Vector3 &p_vertex) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	Immediate::Chunk *c = &im->chunks.back()->get();
+
+	if (c->vertices.empty() && im->chunks.size() == 1) {
+		im->aabb.position = p_vertex;
+		im->aabb.size = Vector3();
+	} else {
+		im->aabb.expand_to(p_vertex);
+	}
+
+	if (im->mask & VS::ARRAY_FORMAT_NORMAL)
+		c->normals.push_back(chunk_normal);
+	if (im->mask & VS::ARRAY_FORMAT_TANGENT)
+		c->tangents.push_back(chunk_tangent);
+	if (im->mask & VS::ARRAY_FORMAT_COLOR)
+		c->colors.push_back(chunk_color);
+	if (im->mask & VS::ARRAY_FORMAT_TEX_UV)
+		c->uvs.push_back(chunk_uv);
+	if (im->mask & VS::ARRAY_FORMAT_TEX_UV2)
+		c->uv2s.push_back(chunk_uv2);
+	im->mask |= VS::ARRAY_FORMAT_VERTEX;
+	c->vertices.push_back(p_vertex);
 }
 
 void RasterizerStorageGLES2::immediate_normal(RID p_immediate, const Vector3 &p_normal) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	im->mask |= VS::ARRAY_FORMAT_NORMAL;
+	chunk_normal = p_normal;
 }
 
 void RasterizerStorageGLES2::immediate_tangent(RID p_immediate, const Plane &p_tangent) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	im->mask |= VS::ARRAY_FORMAT_TANGENT;
+	chunk_tangent = p_tangent;
 }
 
 void RasterizerStorageGLES2::immediate_color(RID p_immediate, const Color &p_color) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	im->mask |= VS::ARRAY_FORMAT_COLOR;
+	chunk_color = p_color;
 }
 
 void RasterizerStorageGLES2::immediate_uv(RID p_immediate, const Vector2 &tex_uv) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	im->mask |= VS::ARRAY_FORMAT_TEX_UV;
+	chunk_uv = tex_uv;
 }
 
 void RasterizerStorageGLES2::immediate_uv2(RID p_immediate, const Vector2 &tex_uv) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	im->mask |= VS::ARRAY_FORMAT_TEX_UV2;
+	chunk_uv2 = tex_uv;
 }
 
 void RasterizerStorageGLES2::immediate_end(RID p_immediate) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(!im->building);
+
+	im->building = false;
+	im->instance_change_notify();
 }
 
 void RasterizerStorageGLES2::immediate_clear(RID p_immediate) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	ERR_FAIL_COND(im->building);
+
+	im->chunks.clear();
+	im->instance_change_notify();
 }
 
 AABB RasterizerStorageGLES2::immediate_get_aabb(RID p_immediate) const {
-	return AABB();
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND_V(!im, AABB());
+	return im->aabb;
 }
 
 void RasterizerStorageGLES2::immediate_set_material(RID p_immediate, RID p_material) {
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+
+	im->material = p_material;
+	im->instance_material_change_notify();
 }
 
 RID RasterizerStorageGLES2::immediate_get_material(RID p_immediate) const {
-	return RID();
+	const Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND_V(!im, RID());
+	return im->material;
 }
 
 /* SKELETON API */
@@ -3729,15 +3816,15 @@ VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
 
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
-	}
-	if (light_owner.owns(p_rid)) {
+	} else if (light_owner.owns(p_rid)) {
 		return VS::INSTANCE_LIGHT;
-	}
-	if (multimesh_owner.owns(p_rid)) {
+	} else if (multimesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MULTIMESH;
+	} else if (immediate_owner.owns(p_rid)) {
+		return VS::INSTANCE_IMMEDIATE;
+	} else {
+		return VS::INSTANCE_NONE;
 	}
-
-	return VS::INSTANCE_NONE;
 }
 
 bool RasterizerStorageGLES2::free(RID p_rid) {
@@ -3893,6 +3980,14 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		multimesh_owner.free(p_rid);
 		memdelete(multimesh);
+
+		return true;
+	} else if (immediate_owner.owns(p_rid)) {
+		Immediate *im = immediate_owner.get(p_rid);
+		im->instance_remove_deps();
+
+		immediate_owner.free(p_rid);
+		memdelete(im);
 
 		return true;
 	} else if (light_owner.owns(p_rid)) {
