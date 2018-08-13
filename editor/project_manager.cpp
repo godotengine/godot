@@ -1782,7 +1782,6 @@ ProjectManager::ProjectManager() {
 
 	String cp;
 	cp += 0xA9;
-	cp += '0';
 	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2018 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	HBoxContainer *top_hb = memnew(HBoxContainer);

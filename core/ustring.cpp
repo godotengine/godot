@@ -3881,8 +3881,6 @@ String String::percent_decode() const {
 		pe += c;
 	}
 
-	pe += '0';
-
 	return String::utf8(pe.ptr());
 }
 
