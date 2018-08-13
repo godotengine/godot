@@ -223,6 +223,8 @@ public:
 		INVALID_CELL = -1
 	};
 
+	virtual Rect2 _edit_get_rect() const;
+
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
 

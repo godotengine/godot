@@ -375,45 +375,30 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_li
 
 	// Handles the first element
 	CanvasItem *canvas_item = p_list.front()->get();
-	Rect2 rect;
-	if (canvas_item->_edit_use_rect()) {
-		rect = Rect2(canvas_item->get_global_transform_with_canvas().xform(canvas_item->_edit_get_rect().position + canvas_item->_edit_get_rect().size / 2), Size2());
-	} else {
-		rect = Rect2(canvas_item->get_global_transform_with_canvas().xform(Point2()), Size2());
-	}
+	Rect2 rect = Rect2(canvas_item->get_global_transform_with_canvas().xform(canvas_item->_edit_get_rect().position + canvas_item->_edit_get_rect().size / 2), Size2());
 
 	// Expand with the other ones
 	for (List<CanvasItem *>::Element *E = p_list.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = E->get();
 		Transform2D xform = canvas_item->get_global_transform_with_canvas();
-		if (canvas_item->_edit_use_rect()) {
-			Rect2 current_rect = canvas_item->_edit_get_rect();
 
-			rect.expand_to(xform.xform(current_rect.position));
-			rect.expand_to(xform.xform(current_rect.position + Vector2(current_rect.size.x, 0)));
-			rect.expand_to(xform.xform(current_rect.position + current_rect.size));
-			rect.expand_to(xform.xform(current_rect.position + Vector2(0, current_rect.size.y)));
-		} else {
-			rect.expand_to(xform.xform(Point2()));
-		}
+		Rect2 current_rect = canvas_item->_edit_get_rect();
+		rect.expand_to(xform.xform(current_rect.position));
+		rect.expand_to(xform.xform(current_rect.position + Vector2(current_rect.size.x, 0)));
+		rect.expand_to(xform.xform(current_rect.position + current_rect.size));
+		rect.expand_to(xform.xform(current_rect.position + Vector2(0, current_rect.size.y)));
 	}
 
 	return rect;
 }
 
-void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
+void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, bool include_locked_nodes) {
 	if (!p_node)
 		return;
 	if (Object::cast_to<Viewport>(p_node))
 		return;
 
 	const CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
-
-	/*bool inherited = p_node != get_tree()->get_edited_scene_root() && p_node->get_filename() != "";
-	bool editable = !inherited || EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(p_node);
-	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
-
-	if (!lock_children && editable) {}*/
 
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 		if (canvas_item && !canvas_item->is_set_as_toplevel()) {
@@ -424,28 +409,17 @@ void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, c
 		}
 	}
 
-	if (canvas_item && canvas_item->is_visible_in_tree() && !canvas_item->has_meta("_edit_lock_")) {
+	if (canvas_item && canvas_item->is_visible_in_tree() && (include_locked_nodes || !canvas_item->has_meta("_edit_lock_"))) {
 		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
-		if (canvas_item->_edit_use_rect()) {
-			Rect2 rect = canvas_item->_edit_get_rect();
-			if (r_first) {
-				r_rect = Rect2(xform.xform(rect.position + rect.size / 2), Size2());
-				r_first = false;
-			}
-			if (r_rect.size != Size2()) {
-				r_rect.expand_to(xform.xform(rect.position));
-				r_rect.expand_to(xform.xform(rect.position + Point2(rect.size.x, 0)));
-				r_rect.expand_to(xform.xform(rect.position + Point2(0, rect.size.y)));
-				r_rect.expand_to(xform.xform(rect.position + rect.size));
-			}
-		} else {
-			if (r_first) {
-				r_rect = Rect2(xform.xform(Point2()), Size2());
-				r_first = false;
-			} else {
-				r_rect.expand_to(xform.xform(Point2()));
-			}
+		Rect2 rect = canvas_item->_edit_get_rect();
+		if (r_first) {
+			r_rect = Rect2(xform.xform(rect.position + rect.size / 2), Size2());
+			r_first = false;
 		}
+		r_rect.expand_to(xform.xform(rect.position));
+		r_rect.expand_to(xform.xform(rect.position + Point2(rect.size.x, 0)));
+		r_rect.expand_to(xform.xform(rect.position + Point2(0, rect.size.y)));
+		r_rect.expand_to(xform.xform(rect.position + rect.size));
 	}
 }
 
