@@ -718,16 +718,22 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	if (p_class == edited_class)
 		return OK; //already there
 
+	edited_class = p_class;
+	_update_doc();
+	return OK;
+}
+
+void EditorHelp::_update_doc() {
+
 	scroll_locked = true;
 
 	class_desc->clear();
 	method_line.clear();
 	section_line.clear();
-	edited_class = p_class;
 
 	_init_colors();
 
-	DocData::ClassDoc cd = doc->class_list[p_class]; //make a copy, so we can sort without worrying
+	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
 
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
 	Ref<Font> doc_title_font = get_font("doc_title", "EditorFonts");
@@ -739,7 +745,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	class_desc->push_color(title_color);
 	class_desc->add_text(TTR("Class:") + " ");
 	class_desc->push_color(headline_color);
-	_add_text(p_class);
+	_add_text(edited_class);
 	class_desc->pop();
 	class_desc->pop();
 	class_desc->pop();
@@ -1458,8 +1464,6 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	}
 
 	scroll_locked = false;
-
-	return OK;
 }
 
 void EditorHelp::_request_help(const String &p_string) {
@@ -1756,9 +1760,6 @@ void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc);
 }
 
-void EditorHelp::_update_doc() {
-}
-
 void EditorHelp::generate_doc() {
 
 	doc = memnew(DocData);
@@ -1781,6 +1782,7 @@ void EditorHelp::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			class_desc->add_color_override("selection_color", get_color("text_editor/theme/selection_color", "Editor"));
+			_update_doc();
 
 		} break;
 
