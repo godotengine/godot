@@ -270,6 +270,12 @@ void ParticlesEditor::_menu_option(int p_option) {
 	switch (p_option) {
 
 		case MENU_OPTION_GENERATE_AABB: {
+			float gen_time = node->get_lifetime();
+
+			if (gen_time < 1.0)
+				generate_seconds->set_value(1.0);
+			else
+				generate_seconds->set_value(trunc(gen_time) + 1.0);
 			generate_aabb->popup_centered_minsize();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
@@ -323,7 +329,15 @@ void ParticlesEditor::_generate_aabb() {
 
 	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
 
+	bool was_emitting = node->is_emitting();
+	if (!was_emitting) {
+		node->set_emitting(true);
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	running = 0.0;
 	AABB rect;
+
 	while (running < time) {
 
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
@@ -337,6 +351,10 @@ void ParticlesEditor::_generate_aabb() {
 			rect.merge_with(capture);
 
 		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+	}
+
+	if (!was_emitting) {
+		node->set_emitting(false);
 	}
 
 	node->set_visibility_aabb(rect);
