@@ -1649,6 +1649,17 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 	for (Map<Ref<GDScript>, Map<ObjectID, List<Pair<StringName, Variant> > > >::Element *E = to_reload.front(); E; E = E->next()) {
 
 		Ref<GDScript> scr = E->key();
+		Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), true);
+		ERR_CONTINUE(!rel_scr.is_valid());
+		scr->set_source_code(rel_scr->get_source_code());
+
+#ifdef TOOLS_ENABLED
+
+		scr->set_last_modified_time(rel_scr->get_last_modified_time());
+
+#endif
+
+		scr->update_exports();
 		scr->reload(p_soft_reload);
 
 		//restore state if saved
