@@ -2387,9 +2387,23 @@ void ScriptEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
 void ScriptEditor::_script_list_gui_input(const Ref<InputEvent> &ev) {
 
 	Ref<InputEventMouseButton> mb = ev;
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
+	if (mb.is_valid() && mb->is_pressed()) {
+		switch (mb->get_button_index()) {
 
-		_make_script_list_context_menu();
+			case BUTTON_MIDDLE: {
+				// Right-click selects automatically; middle-click does not.
+				int idx = script_list->get_item_at_position(mb->get_position(), true);
+				if (idx >= 0) {
+					script_list->select(idx);
+					_script_selected(idx);
+					_menu_option(FILE_CLOSE);
+				}
+			} break;
+
+			case BUTTON_RIGHT: {
+				_make_script_list_context_menu();
+			} break;
+		}
 	}
 }
 
