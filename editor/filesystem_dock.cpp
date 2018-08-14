@@ -618,6 +618,49 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	}
 }
 
+String _extract_trailing_number(String name) {
+	String nums;
+	int i = name.length() - 1;
+	while (i >= 0 && name[i] >= '0' && name[i] <= '9') {
+		nums = String::chr(name[i]) + nums;
+		i--;
+	}
+	return nums;
+}
+
+bool FileSystemDock::_file_exists(const String &basename, const String &extension) const {
+	String tmp_file;
+	for (int i = 0; i < files->get_item_count(); i++) {
+		tmp_file = (files->get_item_metadata(i).operator String()).get_file();
+		if (tmp_file.get_extension() == extension && tmp_file.get_basename() == basename) {
+			return true;
+		}
+	}
+	return false;
+}
+
+String FileSystemDock::_get_unique_name(const String &fullname) const {
+	String basename = fullname.get_basename();
+	String const extension = fullname.get_extension();
+	String const trailing_numbers = _extract_trailing_number(basename);
+	int n = 0;
+	if (!trailing_numbers.empty()) {
+		basename = basename.substr(0, basename.length() - trailing_numbers.length());
+		n = trailing_numbers.to_int();
+	}
+	++n;
+
+	String result;
+	while (true) {
+		result = basename + itos(n);
+		if (!_file_exists(result, extension)) {
+			break;
+		}
+		++n;
+	}
+	return result + "." + extension;
+}
+
 void FileSystemDock::_select_file(int p_idx) {
 	String fpath = files->get_item_metadata(p_idx);
 	if (fpath.ends_with("/")) {
@@ -1273,6 +1316,7 @@ void FileSystemDock::_file_option(int p_option) {
 			if (to_duplicate.is_file) {
 				String name = to_duplicate.path.get_file();
 				duplicate_dialog->set_title(TTR("Duplicating file:") + " " + name);
+				name = _get_unique_name(name);
 				duplicate_dialog_text->set_text(name);
 				duplicate_dialog_text->select(0, name.find_last("."));
 			} else {
