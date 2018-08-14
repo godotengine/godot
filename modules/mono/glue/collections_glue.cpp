@@ -182,7 +182,7 @@ bool godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key) {
 }
 
 bool godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key) {
-	return ptr->erase_checked(GDMonoMarshal::mono_object_to_variant(key));
+	return ptr->erase(GDMonoMarshal::mono_object_to_variant(key));
 }
 
 bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value) {
@@ -191,7 +191,7 @@ bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject 
 	// no dupes
 	Variant *ret = ptr->getptr(varKey);
 	if (ret != NULL && *ret == GDMonoMarshal::mono_object_to_variant(value)) {
-		ptr->erase_checked(varKey);
+		ptr->erase(varKey);
 		return true;
 	}
 

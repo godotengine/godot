@@ -135,12 +135,7 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
-void Dictionary::erase(const Variant &p_key) {
-
-	_p->variant_map.erase(p_key);
-}
-
-bool Dictionary::erase_checked(const Variant &p_key) {
+bool Dictionary::erase(const Variant &p_key) {
 
 	return _p->variant_map.erase(p_key);
 }
