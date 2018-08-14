@@ -736,6 +736,9 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 					obj->get_script_instance()->get_property_state(state);
 					map[obj->get_instance_id()] = state;
 					obj->set_script(RefPtr());
+				} else {
+					// no instance found. Let's remove it so we don't loop forever
+					E->get()->placeholders.erase(E->get()->placeholders.front()->get());
 				}
 			}
 
@@ -747,8 +750,24 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 		}
 	}
 
-	if (gdmono->reload_scripts_domain() != OK)
+	if (gdmono->reload_scripts_domain() != OK) {
+		// Failed to reload the scripts domain
+		// Make sure to add the scripts back to their owners before returning
+		for (Map<Ref<CSharpScript>, Map<ObjectID, List<Pair<StringName, Variant> > > >::Element *E = to_reload.front(); E; E = E->next()) {
+			Ref<CSharpScript> scr = E->key();
+			for (Map<ObjectID, List<Pair<StringName, Variant> > >::Element *F = E->get().front(); F; F = F->next()) {
+				Object *obj = ObjectDB::get_instance(F->key());
+				if (!obj)
+					continue;
+				obj->set_script(scr.get_ref_ptr());
+				// Save reload state for next time if not saved
+				if (!scr->pending_reload_state.has(obj->get_instance_id())) {
+					scr->pending_reload_state[obj->get_instance_id()] = F->get();
+				}
+			}
+		}
 		return;
+	}
 
 	for (Map<Ref<CSharpScript>, Map<ObjectID, List<Pair<StringName, Variant> > > >::Element *E = to_reload.front(); E; E = E->next()) {
 
@@ -776,6 +795,14 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 					scr->pending_reload_state[obj->get_instance_id()] = F->get();
 				}
 				continue;
+			}
+
+			if (scr->valid && scr->is_tool() && obj->get_script_instance()->is_placeholder()) {
+				// Script instance was a placeholder, but now the script was built successfully and is a tool script.
+				// We have to replace the placeholder with an actual C# script instance.
+				scr->placeholders.erase(static_cast<PlaceHolderScriptInstance *>(obj->get_script_instance()));
+				ScriptInstance *script_instance = scr->instance_create(obj);
+				obj->set_script_instance(script_instance); // Not necessary as it's already done in instance_create, but just in case...
 			}
 
 			for (List<Pair<StringName, Variant> >::Element *G = F->get().front(); G; G = G->next()) {
@@ -1474,8 +1501,12 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 bool CSharpScript::_update_exports() {
 
 #ifdef TOOLS_ENABLED
-	if (!valid)
+	if (!valid) {
+		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+			E->get()->set_build_failed(true);
+		}
 		return false;
+	}
 
 	bool changed = false;
 
@@ -1577,6 +1608,7 @@ bool CSharpScript::_update_exports() {
 		_update_exports_values(values, propnames);
 
 		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+			E->get()->set_build_failed(false);
 			E->get()->update(propnames, values);
 		}
 	}
@@ -1687,7 +1719,7 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p
 
 		MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
 
-		PropertyHint hint;
+		PropertyHint hint = PROPERTY_HINT_NONE;
 		String hint_string;
 
 		if (variant_type == Variant::NIL) {
@@ -1873,7 +1905,11 @@ bool CSharpScript::can_instance() const {
 	}
 #endif
 
-	return valid || (!tool && !ScriptServer::is_scripting_enabled());
+#ifdef TOOLS_ENABLED
+	return valid && (tool || ScriptServer::is_scripting_enabled());
+#else
+	return valid;
+#endif
 }
 
 StringName CSharpScript::get_instance_base_type() const {
@@ -1971,16 +2007,9 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
-	if (!tool && !ScriptServer::is_scripting_enabled()) {
-#ifdef TOOLS_ENABLED
-		PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
-		placeholders.insert(si);
-		_update_exports();
-		return si;
-#else
-		return NULL;
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!valid);
 #endif
-	}
 
 	if (!script_class) {
 		if (GDMono::get_singleton()->get_project_assembly() == NULL) {
@@ -2009,6 +2038,18 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
 	Variant::CallError unchecked_error;
 	return _create_instance(NULL, 0, p_this, Object::cast_to<Reference>(p_this), unchecked_error);
+}
+
+PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_this) {
+
+#ifdef TOOLS_ENABLED
+	PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(CSharpLanguage::get_singleton(), Ref<Script>(this), p_this));
+	placeholders.insert(si);
+	_update_exports();
+	return si;
+#else
+	return NULL;
+#endif
 }
 
 bool CSharpScript::instance_has(const Object *p_this) const {
@@ -2077,9 +2118,11 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 		if (script_class) {
 #ifdef DEBUG_ENABLED
-			OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
-											  script_class->get_name() + " for script " + get_path() + "\n")
-											   .utf8());
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
+												  script_class->get_name() + " for script " + get_path() + "\n")
+												   .utf8());
+			}
 #endif
 
 			tool = script_class->has_attribute(CACHED_CLASS(ToolAttribute));
