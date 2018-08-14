@@ -192,10 +192,5 @@ namespace Godot
         {
             return NativeCalls.godot_icall_Godot_var2str(var);
         }
-
-        public static WeakRef WeakRef(Object obj)
-        {
-            return NativeCalls.godot_icall_Godot_weakref(Object.GetPtr(obj));
-        }
     }
 }
