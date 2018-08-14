@@ -56,7 +56,7 @@ void NavigationMeshEditor::_notification(int p_option) {
 void NavigationMeshEditor::_bake_pressed() {
 
 	ERR_FAIL_COND(!node);
-	const String conf_warning = node->get_configuration_warning();
+	const String conf_warning = node->call("get_configuration_warning");
 	if (!conf_warning.empty()) {
 		err_dialog->set_text(conf_warning);
 		err_dialog->popup_centered_minsize();

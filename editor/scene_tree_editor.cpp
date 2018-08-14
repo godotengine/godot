@@ -106,7 +106,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 	} else if (p_id == BUTTON_WARNING) {
 
-		String config_err = n->get_configuration_warning();
+		String config_err = n->call("get_configuration_warning");
 		if (config_err == String())
 			return;
 		config_err = config_err.word_wrap(80);
@@ -220,9 +220,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	if (can_rename) { //should be can edit..
 
-		String warning = p_node->get_configuration_warning();
+		String warning = p_node->call("get_configuration_warning");
 		if (warning != String()) {
-			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
+			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->call("get_configuration_warning"));
 		}
 
 		bool has_connections = p_node->has_persistent_signal_connections();
