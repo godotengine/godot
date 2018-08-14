@@ -1159,7 +1159,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return Variant(bool(*p_args[0]));
 			}
 			case INT: {
-				return (int(*p_args[0]));
+				return (int64_t(*p_args[0]));
 			}
 			case REAL: {
 				return real_t(*p_args[0]);
