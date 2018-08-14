@@ -867,7 +867,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
 	ttnc->set_draw_center(false);
 
-	theme->set_stylebox("border", "ReferenceRect", make_stylebox(reference_border_png, 4, 4, 4, 4));
 	theme->set_stylebox("panelnc", "Panel", ttnc);
 	theme->set_stylebox("panelf", "Panel", tc_sb);
 
