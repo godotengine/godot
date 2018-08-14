@@ -4755,7 +4755,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			case GDScriptTokenizer::TK_PR_ENUM: {
 				//multiple constant declarations..
 
-				int last_assign = -1; // Incremented by 1 right before the assingment.
+				int last_assign = -1; // Incremented by 1 right before the assignment.
 				String enum_name;
 				Dictionary enum_dict;
 
@@ -4794,7 +4794,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						tokenizer->advance();
 
-						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN || tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
 							tokenizer->advance();
 
 							Node *subexpr = _parse_and_reduce_expression(p_class, true, true);
@@ -4812,12 +4812,15 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							ConstantNode *subexpr_const = static_cast<ConstantNode *>(subexpr);
 
-							if (subexpr_const->value.get_type() != Variant::INT) {
-								_set_error("Expected an int value for enum");
+							if (subexpr_const->value.get_type() == Variant::INT) {
+								last_assign = subexpr_const->value;
+							} else if (subexpr_const->value.get_type() == Variant::STRING) {
+								last_assign++;
+								subexpr_const->datatype.builtin_type = Variant::STRING;
+							} else {
+								_set_error("Expected an int or string value for enum");
 								return;
 							}
-
-							last_assign = subexpr_const->value;
 
 							constant.expression = subexpr_const;
 
@@ -4833,14 +4836,15 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							tokenizer->advance();
 						}
 
-						if (enum_name != "") {
-							const ConstantNode *cn = static_cast<const ConstantNode *>(constant.expression);
+						const ConstantNode *cn = static_cast<const ConstantNode *>(constant.expression);
+
+						if (cn && enum_name != "") {
 							enum_dict[const_id] = cn->value;
 						}
 
 						constant.type.has_type = true;
 						constant.type.kind = DataType::BUILTIN;
-						constant.type.builtin_type = Variant::INT;
+						constant.type.builtin_type = (cn && cn->value.get_type() == Variant::STRING) ? Variant::STRING : Variant::INT;
 						p_class->constant_expressions.insert(const_id, constant);
 					}
 				}
