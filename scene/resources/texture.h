@@ -33,9 +33,9 @@
 
 #include "curve.h"
 #include "io/resource_loader.h"
-#include "math_2d.h"
 #include "os/mutex.h"
 #include "os/thread_safe.h"
+#include "rect2.h"
 #include "resource.h"
 #include "scene/resources/color_ramp.h"
 #include "servers/visual_server.h"

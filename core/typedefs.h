@@ -33,7 +33,7 @@
 
 #include <stddef.h>
 /**
- * Basic definitions and simple functions to be used everywhere..
+ * Basic definitions and simple functions to be used everywhere.
  */
 
 #include "platform_config.h"
@@ -71,7 +71,7 @@ T *_nullptr() {
 #define OFFSET_OF(st, m) \
 	((size_t)((char *)&(_nullptr<st>()->m) - (char *)0))
 /**
- * Some platforms (devices) not define NULL
+ * Some platforms (devices) don't define NULL
  */
 
 #ifndef NULL
@@ -79,7 +79,7 @@ T *_nullptr() {
 #endif
 
 /**
- * Windows defines a lot of badly stuff we'll never ever use. undefine it.
+ * Windows badly defines a lot of stuff we'll never use. Undefine it.
  */
 
 #ifdef _WIN32
@@ -296,4 +296,4 @@ struct _GlobalLock {
 #define unlikely(x) x
 #endif
 
-#endif /* typedefs.h */
+#endif // TYPEDEFS_H

@@ -31,9 +31,9 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
-#include "math_2d.h"
 #include "os/copymem.h"
 #include "resource.h"
+#include "transform_2d.h"
 #include "typedefs.h"
 #include "ustring.h"
 /**

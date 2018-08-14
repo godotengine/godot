@@ -33,7 +33,7 @@
 
 #include "color.h"
 #include "dvector.h"
-#include "math_2d.h"
+#include "rect2.h"
 #include "resource.h"
 
 /**

@@ -42,7 +42,6 @@
 #include "dvector.h"
 #include "face3.h"
 #include "io/ip_address.h"
-#include "math_2d.h"
 #include "matrix3.h"
 #include "node_path.h"
 #include "plane.h"
@@ -50,6 +49,7 @@
 #include "ref_ptr.h"
 #include "rid.h"
 #include "transform.h"
+#include "transform_2d.h"
 #include "ustring.h"
 #include "vector3.h"
 

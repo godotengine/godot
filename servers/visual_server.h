@@ -34,9 +34,9 @@
 #include "bsp_tree.h"
 #include "geometry.h"
 #include "image.h"
-#include "math_2d.h"
 #include "object.h"
 #include "rid.h"
+#include "transform_2d.h"
 #include "variant.h"
 
 /**

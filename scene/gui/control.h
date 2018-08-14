@@ -31,13 +31,13 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "math_2d.h"
 #include "rid.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
+#include "transform_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
