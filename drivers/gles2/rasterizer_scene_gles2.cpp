@@ -2031,7 +2031,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 			} break;
 
 			default: {
-				print_line("uhm");
+				// FIXME: implement other background modes
 			} break;
 		}
 	}
