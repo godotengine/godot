@@ -86,7 +86,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 		memdelete(f);
 	}
 
-	_update_favorite_list();
+	_save_and_update_favorite_list();
 
 	// Restore valid window bounds or pop up at default size.
 	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/create_new_node_bounds")) {
@@ -545,8 +545,7 @@ void CreateDialog::_favorite_toggled() {
 		favorite->set_pressed(false);
 	}
 
-	_save_favorite_list();
-	_update_favorite_list();
+	_save_and_update_favorite_list();
 }
 
 void CreateDialog::_save_favorite_list() {
@@ -556,8 +555,11 @@ void CreateDialog::_save_favorite_list() {
 	if (f) {
 
 		for (int i = 0; i < favorite_list.size(); i++) {
-
-			f->store_line(favorite_list[i]);
+			String l = favorite_list[i];
+			String name = l.split(" ")[0];
+			if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name)))
+				continue;
+			f->store_line(l);
 		}
 		memdelete(f);
 	}
@@ -568,11 +570,15 @@ void CreateDialog::_update_favorite_list() {
 	favorites->clear();
 	TreeItem *root = favorites->create_item();
 	for (int i = 0; i < favorite_list.size(); i++) {
-		TreeItem *ti = favorites->create_item(root);
 		String l = favorite_list[i];
+		String name = l.split(" ")[0];
+		if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name)))
+			continue;
+		TreeItem *ti = favorites->create_item(root);
 		ti->set_text(0, l);
 		ti->set_icon(0, _get_editor_icon(l));
 	}
+	emit_signal("favorites_updated");
 }
 
 void CreateDialog::_history_selected() {
@@ -675,6 +681,10 @@ void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 		}
 	}
 
+	_save_and_update_favorite_list();
+}
+
+void CreateDialog::_save_and_update_favorite_list() {
 	_save_favorite_list();
 	_update_favorite_list();
 }
@@ -690,12 +700,14 @@ void CreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_favorite_selected"), &CreateDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_history_activated"), &CreateDialog::_history_activated);
 	ClassDB::bind_method(D_METHOD("_favorite_activated"), &CreateDialog::_favorite_activated);
+	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
 
 	ClassDB::bind_method("get_drag_data_fw", &CreateDialog::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &CreateDialog::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw", &CreateDialog::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("create"));
+	ADD_SIGNAL(MethodInfo("favorites_updated"));
 }
 
 CreateDialog::CreateDialog() {

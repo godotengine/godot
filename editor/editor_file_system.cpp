@@ -1366,6 +1366,7 @@ void EditorFileSystem::update_script_classes() {
 	}
 
 	ScriptServer::save_global_classes();
+	emit_signal("script_classes_updated");
 }
 
 void EditorFileSystem::_queue_update_script_classes() {
@@ -1704,6 +1705,7 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
+	ADD_SIGNAL(MethodInfo("script_classes_updated"));
 }
 
 void EditorFileSystem::_update_extensions() {
