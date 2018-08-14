@@ -1450,7 +1450,7 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 		}
 		folder_options->add_separator();
 		folder_options->add_item(TTR("New Folder..."), FOLDER_NEW_FOLDER);
-		folder_options->add_item(TTR("Show In File Manager"), FOLDER_SHOW_IN_EXPLORER);
+		folder_options->add_item(TTR("Open In File Manager"), FOLDER_SHOW_IN_EXPLORER);
 	}
 	folder_options->set_position(tree->get_global_position() + p_pos);
 	folder_options->popup();
@@ -1759,7 +1759,10 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	file_options->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_options->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_options->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
-	file_options->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
+
+	String fpath = files->get_item_metadata(p_item);
+	String item_text = fpath.ends_with("/") ? TTR("Open In File Manager") : TTR("Show In File Manager");
+	file_options->add_item(item_text, FILE_SHOW_IN_EXPLORER);
 
 	file_options->set_position(files->get_global_position() + p_pos);
 	file_options->popup();
