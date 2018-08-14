@@ -3386,6 +3386,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	clicked = 0;
 	clicked_includes_current = false;
 	orthogonal = false;
+	lock_rotation = false;
 	message_time = 0;
 	zoom_indicator_delay = 0.0;
 
