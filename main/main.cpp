@@ -867,9 +867,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/allow_per_pixel_transparency", false);
 
-	video_mode.use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
-	OS::get_singleton()->_use_vsync = video_mode.use_vsync;
-
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency", false);
 	video_mode.layered_splash = GLOBAL_DEF("display/window/per_pixel_transparency_splash", false);
 
@@ -878,9 +875,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
+		// VSync is always disabled to increase UI responsiveness,
+		// although the graphics driver may override that
 		OS::get_singleton()->_allow_hidpi = true;
 		OS::get_singleton()->_allow_layered = false;
+		video_mode.use_vsync = false;
+	} else {
+		video_mode.use_vsync = GLOBAL_DEF("display/window/vsync/use_vsync", true);
 	}
+
+	OS::get_singleton()->_use_vsync = video_mode.use_vsync;
 
 	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
