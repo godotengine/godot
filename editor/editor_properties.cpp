@@ -46,11 +46,22 @@ EditorPropertyNil::EditorPropertyNil() {
 }
 
 ///////////////////// TEXT /////////////////////////
+
+void EditorPropertyText::_text_entered(const String &p_string) {
+	if (updating)
+		return;
+
+	if (text->has_focus()) {
+		text->release_focus();
+		_text_changed(p_string);
+	}
+}
+
 void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_signal("property_changed", get_edited_property(), p_string, true);
+	emit_signal("property_changed", get_edited_property(), p_string);
 }
 
 void EditorPropertyText::update_property() {
@@ -64,6 +75,7 @@ void EditorPropertyText::update_property() {
 void EditorPropertyText::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_text_changed", "txt"), &EditorPropertyText::_text_changed);
+	ClassDB::bind_method(D_METHOD("_text_entered", "txt"), &EditorPropertyText::_text_entered);
 }
 
 EditorPropertyText::EditorPropertyText() {
@@ -71,6 +83,8 @@ EditorPropertyText::EditorPropertyText() {
 	add_child(text);
 	add_focusable(text);
 	text->connect("text_changed", this, "_text_changed");
+	text->connect("text_entered", this, "_text_entered");
+
 	updating = false;
 }
 
@@ -78,12 +92,12 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_signal("property_changed", get_edited_property(), big_text->get_text(), true);
+	emit_signal("property_changed", get_edited_property(), big_text->get_text());
 }
 
 void EditorPropertyMultilineText::_text_changed() {
 
-	emit_signal("property_changed", get_edited_property(), text->get_text(), true);
+	emit_signal("property_changed", get_edited_property(), text->get_text());
 }
 
 void EditorPropertyMultilineText::_open_big_text() {

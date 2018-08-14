@@ -54,6 +54,7 @@ class EditorPropertyText : public EditorProperty {
 
 	bool updating;
 	void _text_changed(const String &p_string);
+	void _text_entered(const String &p_string);
 
 protected:
 	static void _bind_methods();
