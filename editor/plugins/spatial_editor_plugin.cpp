@@ -2081,6 +2081,15 @@ void SpatialEditorViewport::set_message(String p_message, float p_time) {
 	message_time = p_time;
 }
 
+void SpatialEditorPlugin::edited_scene_changed() {
+	for (int i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
+		SpatialEditorViewport *viewport = SpatialEditor::get_singleton()->get_editor_viewport(i);
+		if (viewport->is_visible()) {
+			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
+		}
+	}
+}
+
 void SpatialEditorViewport::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
