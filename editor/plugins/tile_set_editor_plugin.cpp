@@ -307,6 +307,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 		tool_workspacemode[i]->connect("pressed", this, "_on_workspace_mode_changed", p);
 		tool_hb->add_child(tool_workspacemode[i]);
 	}
+	Control *spacer = memnew(Control);
+	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tool_hb->add_child(spacer);
+	tool_hb->move_child(spacer, (int)WORKSPACE_CREATE_SINGLE);
+
 	tool_workspacemode[WORKSPACE_EDIT]->set_pressed(true);
 	workspace_mode = WORKSPACE_EDIT;
 
@@ -314,9 +319,6 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	main_vb->add_child(memnew(HSeparator));
 
 	tool_hb = memnew(HBoxContainer);
-	Control *spacer = memnew(Control);
-	spacer->set_custom_minimum_size(Size2(30, 0));
-	tool_hb->add_child(spacer);
 
 	g = Ref<ButtonGroup>(memnew(ButtonGroup));
 	String label[EDITMODE_MAX] = { "Region", "Collision", "Occlusion", "Navigation", "Bitmask", "Priority", "Icon" };
@@ -335,7 +337,8 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	edit_mode = EDITMODE_COLLISION;
 
 	main_vb->add_child(tool_hb);
-	main_vb->add_child(memnew(HSeparator));
+	separator_editmode = memnew(HSeparator);
+	main_vb->add_child(separator_editmode);
 
 	toolbar = memnew(HBoxContainer);
 	Ref<ButtonGroup> tg(memnew(ButtonGroup));
@@ -369,13 +372,17 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	toolbar->add_child(tools[SHAPE_NEW_POLYGON]);
 	tools[SHAPE_NEW_POLYGON]->set_toggle_mode(true);
 	tools[SHAPE_NEW_POLYGON]->set_button_group(tg);
-	toolbar->add_child(memnew(VSeparator));
+
+	separator_delete = memnew(VSeparator);
+	toolbar->add_child(separator_delete);
 	tools[SHAPE_DELETE] = memnew(ToolButton);
 	p = Vector<Variant>();
 	p.push_back((int)SHAPE_DELETE);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", p);
 	toolbar->add_child(tools[SHAPE_DELETE]);
-	toolbar->add_child(memnew(VSeparator));
+
+	separator_grid = memnew(VSeparator);
+	toolbar->add_child(separator_grid);
 	tools[SHAPE_KEEP_INSIDE_TILE] = memnew(ToolButton);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_toggle_mode(true);
 	tools[SHAPE_KEEP_INSIDE_TILE]->set_pressed(true);
@@ -588,10 +595,16 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->hide();
 			tools[BITMASK_CLEAR]->hide();
 			tools[SHAPE_NEW_POLYGON]->hide();
-			if (workspace_mode == WORKSPACE_EDIT)
+
+			if (workspace_mode == WORKSPACE_EDIT) {
+				separator_delete->show();
 				tools[SHAPE_DELETE]->show();
-			else
+			} else {
+				separator_delete->hide();
 				tools[SHAPE_DELETE]->hide();
+			}
+
+			separator_grid->show();
 			tools[SHAPE_KEEP_INSIDE_TILE]->hide();
 			tools[TOOL_GRID_SNAP]->show();
 
@@ -605,7 +618,11 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->show();
 			tools[BITMASK_CLEAR]->show();
 			tools[SHAPE_NEW_POLYGON]->hide();
+
+			separator_delete->hide();
 			tools[SHAPE_DELETE]->hide();
+
+			separator_grid->hide();
 			tools[SHAPE_KEEP_INSIDE_TILE]->hide();
 			tools[TOOL_GRID_SNAP]->hide();
 
@@ -621,7 +638,11 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->hide();
 			tools[BITMASK_CLEAR]->hide();
 			tools[SHAPE_NEW_POLYGON]->show();
+
+			separator_delete->show();
 			tools[SHAPE_DELETE]->show();
+
+			separator_grid->show();
 			tools[SHAPE_KEEP_INSIDE_TILE]->show();
 			tools[TOOL_GRID_SNAP]->show();
 
@@ -635,9 +656,14 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->hide();
 			tools[BITMASK_CLEAR]->hide();
 			tools[SHAPE_NEW_POLYGON]->hide();
+
+			separator_delete->hide();
 			tools[SHAPE_DELETE]->hide();
+
+			separator_grid->show();
 			tools[SHAPE_KEEP_INSIDE_TILE]->hide();
 			tools[TOOL_GRID_SNAP]->show();
+
 			if (edit_mode == EDITMODE_ICON) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.\nClick on another Tile to edit it."));
 				spin_priority->hide();
@@ -661,6 +687,7 @@ void TileSetEditor::_on_workspace_mode_changed(int p_workspace_mode) {
 		tool_editmode[EDITMODE_REGION]->show();
 		tool_editmode[EDITMODE_REGION]->set_pressed(true);
 		_on_edit_mode_changed(EDITMODE_REGION);
+		separator_editmode->show();
 	}
 }
 
@@ -2076,6 +2103,7 @@ void TileSetEditor::update_workspace_tile_mode() {
 		tool_editmode[EDITMODE_REGION]->show();
 		tool_editmode[EDITMODE_REGION]->set_pressed(true);
 		_on_edit_mode_changed(EDITMODE_REGION);
+		separator_editmode->show();
 		return;
 	}
 
@@ -2086,12 +2114,16 @@ void TileSetEditor::update_workspace_tile_mode() {
 		for (int i = 0; i < ZOOM_OUT; i++) {
 			tools[i]->hide();
 		}
+		separator_editmode->hide();
+		separator_delete->hide();
+		separator_grid->hide();
 		return;
 	}
 
 	for (int i = 0; i < EDITMODE_MAX; i++) {
 		tool_editmode[i]->show();
 	}
+	separator_editmode->show();
 
 	if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
 		if (tool_editmode[EDITMODE_ICON]->is_pressed() || tool_editmode[EDITMODE_PRIORITY]->is_pressed() || tool_editmode[EDITMODE_BITMASK]->is_pressed()) {
@@ -2336,12 +2368,10 @@ bool TileSetEditorPlugin::handles(Object *p_node) const {
 void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		tileset_editor_button->show();
-		if (tileset_editor_button->is_pressed()) {
-			tileset_editor->show();
-		}
+		editor->make_bottom_panel_item_visible(tileset_editor);
 		get_tree()->connect("idle_frame", tileset_editor, "_on_workspace_process");
 	} else {
-		tileset_editor->hide();
+		editor->hide_bottom_panel();
 		tileset_editor_button->hide();
 		get_tree()->disconnect("idle_frame", tileset_editor, "_on_workspace_process");
 	}

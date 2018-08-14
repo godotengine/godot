@@ -603,7 +603,6 @@ void TextureRegionEditor::_notification(int p_what) {
 			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
 			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
-			icon_zoom->set_texture(get_icon("Zoom", "EditorIcons"));
 		} break;
 	}
 }
@@ -865,7 +864,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hb_grid->add_child(sb_step_y);
 
 	hb_grid->add_child(memnew(VSeparator));
-	hb_grid->add_child(memnew(Label(TTR("Separation:"))));
+	hb_grid->add_child(memnew(Label(TTR("Sep.:"))));
 
 	sb_sep_x = memnew(SpinBox);
 	sb_sep_x->set_min(0);
@@ -897,10 +896,6 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	Control *separator = memnew(Control);
 	separator->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb_tools->add_child(separator);
-
-	icon_zoom = memnew(TextureRect);
-	icon_zoom->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	hb_tools->add_child(icon_zoom);
 
 	zoom_out = memnew(ToolButton);
 	zoom_out->connect("pressed", this, "_zoom_out");
@@ -940,16 +935,15 @@ bool TextureRegionEditorPlugin::handles(Object *p_object) const {
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		if (region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region())) {
+		if (region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region()) || texture_region_button->is_pressed()) {
 			editor->make_bottom_panel_item_visible(region_editor);
-		} else {
-			if (texture_region_button->is_pressed())
-				region_editor->show();
 		}
 	} else {
+		if (region_editor->is_visible_in_tree()) {
+			editor->hide_bottom_panel();
+		}
 		texture_region_button->hide();
 		region_editor->edit(NULL);
-		region_editor->hide();
 	}
 }
 
@@ -1001,10 +995,9 @@ TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	region_editor = memnew(TextureRegionEditor(p_node));
 
-	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
-	texture_region_button->set_tooltip(TTR("Texture Region Editor"));
-
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
+
+	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->hide();
 }
