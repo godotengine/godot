@@ -869,6 +869,14 @@ bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, 
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, r_result);
 }
 
+int BulletPhysicsServer::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body->get_space(), 0);
+
+	return body->get_space()->test_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
+}
+
 RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
 	SoftBodyBullet *body = bulletnew(SoftBodyBullet);
 	body->set_collision_layer(1);
