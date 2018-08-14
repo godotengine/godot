@@ -9,6 +9,14 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="advance">
+			<return type="void">
+			</return>
+			<argument index="0" name="delta" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_root_motion_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -32,6 +40,8 @@
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
+		</constant>
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
 		</constant>
 	</constants>
 </class>
