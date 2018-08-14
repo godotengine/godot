@@ -3346,7 +3346,7 @@ void SpatialEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p
 		if (root_node) {
 			list.push_back(root_node);
 		} else {
-			accept->get_ok()->set_text(TTR("OK :("));
+			accept->get_ok()->set_text(TTR("OK"));
 			accept->set_text(TTR("No parent to instance a child at."));
 			accept->popup_centered_minsize();
 			_remove_preview();

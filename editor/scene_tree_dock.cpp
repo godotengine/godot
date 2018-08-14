@@ -119,7 +119,7 @@ void SceneTreeDock::instance(const String &p_file) {
 	if (!edited_scene) {
 
 		current_option = -1;
-		accept->get_ok()->set_text(TTR("OK :("));
+		accept->get_ok()->set_text(TTR("OK"));
 		accept->set_text(TTR("No parent to instance a child at."));
 		accept->popup_centered_minsize();
 		return;
@@ -1251,7 +1251,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 		if (E->get() != edited_scene && E->get()->get_owner() != edited_scene) {
 
-			accept->get_ok()->set_text(TTR("Makes Sense!"));
+			accept->get_ok()->set_text(TTR("OK"));
 			accept->set_text(TTR("Can't operate on nodes from a foreign scene!"));
 			accept->popup_centered_minsize();
 			return false;
@@ -1259,7 +1259,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get())) >= 0) {
 
-			accept->get_ok()->set_text(TTR("Makes Sense!"));
+			accept->get_ok()->set_text(TTR("OK"));
 			accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
 			accept->popup_centered_minsize();
 			return false;
@@ -2349,7 +2349,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
 	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
-	clear_inherit_confirm->get_ok()->set_text(TTR("Clear!"));
+	clear_inherit_confirm->get_ok()->set_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);
