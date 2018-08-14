@@ -2789,23 +2789,17 @@ bool OS_Windows::is_disable_crash_handler() const {
 }
 
 Error OS_Windows::move_to_trash(const String &p_path) {
-	SHFILEOPSTRUCTA sf;
-	TCHAR *from = new TCHAR[p_path.length() + 2];
-	strcpy(from, p_path.utf8().get_data());
-	from[p_path.length()] = 0;
-	from[p_path.length() + 1] = 0;
-
+	SHFILEOPSTRUCTW sf;
 	sf.hwnd = hWnd;
 	sf.wFunc = FO_DELETE;
-	sf.pFrom = from;
+	sf.pFrom = p_path.c_str();
 	sf.pTo = NULL;
 	sf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
 	sf.fAnyOperationsAborted = FALSE;
 	sf.hNameMappings = NULL;
 	sf.lpszProgressTitle = NULL;
 
-	int ret = SHFileOperation(&sf);
-	delete[] from;
+	int ret = SHFileOperationW(&sf);
 
 	if (ret) {
 		ERR_PRINTS("SHFileOperation error: " + itos(ret));
