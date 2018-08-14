@@ -915,12 +915,6 @@ void ProjectManager::_update_project_buttons() {
 
 		CanvasItem *item = Object::cast_to<CanvasItem>(scroll_children->get_child(i));
 		item->update();
-
-		Button *show = Object::cast_to<Button>(item->get_node(NodePath("project/path_box/show")));
-		if (show) {
-			String current = item->get_meta("name");
-			show->set_visible(selected_list.has(current));
-		}
 	}
 
 	bool empty_selection = selected_list.empty();
@@ -1316,7 +1310,6 @@ void ProjectManager::_load_recent_projects() {
 		path_hb->add_child(show);
 		show->connect("pressed", this, "_show_project", varray(path));
 		show->set_tooltip(TTR("Show In File Manager"));
-		show->set_visible(false);
 
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");
