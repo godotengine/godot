@@ -139,41 +139,56 @@ void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_ro
 	updating_tree = false;
 }
 
+void FileSystemDock::_update_display_mode() {
+
+	bool disable_split = bool(EditorSettings::get_singleton()->get("docks/filesystem/disable_split"));
+	bool compact_mode = get_size().height < int(EditorSettings::get_singleton()->get("docks/filesystem/split_mode_minimum_height"));
+	DisplayMode new_mode;
+	if (disable_split || compact_mode) {
+		new_mode = file_list_view ? DISPLAY_FILE_LIST_ONLY : DISPLAY_TREE_ONLY;
+	} else {
+		new_mode = DISPLAY_SPLIT;
+	}
+
+	if (new_mode != display_mode) {
+		switch (new_mode) {
+			case DISPLAY_TREE_ONLY:
+				tree->show();
+				tree->set_v_size_flags(SIZE_EXPAND_FILL);
+				_update_tree(true);
+
+				file_list_vb->hide();
+				break;
+
+			case DISPLAY_FILE_LIST_ONLY:
+				tree->hide();
+				button_tree->show();
+
+				file_list_vb->show();
+				_update_files(true);
+				break;
+
+			case DISPLAY_SPLIT:
+				tree->show();
+				tree->set_v_size_flags(SIZE_EXPAND_FILL);
+				button_tree->hide();
+				tree->ensure_cursor_is_visible();
+				_update_tree(true);
+
+				file_list_vb->show();
+				_update_files(true);
+				break;
+		}
+		display_mode = new_mode;
+	}
+}
+
 void FileSystemDock::_notification(int p_what) {
 
 	switch (p_what) {
 
 		case NOTIFICATION_RESIZED: {
-
-			bool new_mode = get_size().height < get_viewport_rect().size.height / 2;
-
-			if (new_mode != low_height_mode) {
-
-				low_height_mode = new_mode;
-
-				if (low_height_mode) {
-
-					tree->hide();
-					tree->set_v_size_flags(SIZE_EXPAND_FILL);
-					button_tree->show();
-				} else {
-
-					tree->set_v_size_flags(SIZE_FILL);
-					button_tree->hide();
-					if (!tree->is_visible()) {
-						tree->show();
-						button_favorite->show();
-						_update_tree(true);
-					}
-					tree->ensure_cursor_is_visible();
-
-					if (!file_list_vb->is_visible()) {
-						file_list_vb->show();
-						_update_files(true);
-					}
-				}
-			}
-
+			_update_display_mode();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
@@ -190,8 +205,8 @@ void FileSystemDock::_notification(int p_what) {
 			//button_instance->set_icon(get_icon("Add", ei));
 			//button_open->set_icon(get_icon("Folder", ei));
 			button_tree->set_icon(get_icon("Filesystem", ei));
-			_update_file_display_toggle_button();
-			button_display_mode->connect("pressed", this, "_change_file_display");
+			_update_file_list_display_mode_button();
+			button_file_list_display_mode->connect("pressed", this, "_change_file_display");
 			//file_options->set_icon( get_icon("Tools","ei"));
 			files->connect("item_activated", this, "_select_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
@@ -207,6 +222,8 @@ void FileSystemDock::_notification(int p_what) {
 
 			button_tree->connect("pressed", this, "_go_to_tree", varray(), CONNECT_DEFERRED);
 			current_path->connect("text_entered", this, "navigate_to_path");
+
+			_update_display_mode();
 
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
 				_set_scanning_mode();
@@ -241,12 +258,8 @@ void FileSystemDock::_notification(int p_what) {
 
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
+			// Update icons
 			String ei = "EditorIcons";
-			int new_mode = int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode"));
-
-			//_update_icons
-
 			button_reload->set_icon(get_icon("Reload", ei));
 			button_favorite->set_icon(get_icon("Favorites", ei));
 			button_tree->set_icon(get_icon("Filesystem", ei));
@@ -256,14 +269,18 @@ void FileSystemDock::_notification(int p_what) {
 			search_box->set_right_icon(get_icon("Search", ei));
 			search_box->set_clear_button_enabled(true);
 
-			if (new_mode != display_mode) {
-				set_display_mode(new_mode);
+			// Change size mode
+			int new_file_list_mode = int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode"));
+			if (new_file_list_mode != file_list_display_mode) {
+				set_file_list_display_mode(new_file_list_mode);
 			} else {
-				_update_file_display_toggle_button();
+				_update_file_list_display_mode_button();
 				_update_files(true);
 			}
 
-			_update_tree(true);
+			// Change full tree mode
+			_update_display_mode();
+
 		} break;
 	}
 }
@@ -289,7 +306,7 @@ void FileSystemDock::_dir_selected() {
 	current_path->set_text(path);
 	_push_to_history();
 
-	if (!low_height_mode) {
+	if (display_mode == DISPLAY_SPLIT) {
 		_update_files(false);
 	}
 }
@@ -360,7 +377,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	current_path->set_text(path);
 	_push_to_history();
 
-	if (!low_height_mode) {
+	if (display_mode == DISPLAY_SPLIT) {
 		_update_tree(true);
 		_update_files(false);
 	} else {
@@ -390,24 +407,24 @@ void FileSystemDock::_thumbnail_done(const String &p_path, const Ref<Texture> &p
 	}
 }
 
-void FileSystemDock::_update_file_display_toggle_button() {
+void FileSystemDock::_update_file_list_display_mode_button() {
 
-	if (button_display_mode->is_pressed()) {
-		display_mode = DISPLAY_LIST;
-		button_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
-		button_display_mode->set_tooltip(TTR("View items as a grid of thumbnails."));
+	if (button_file_list_display_mode->is_pressed()) {
+		file_list_display_mode = FILE_LIST_DISPLAY_LIST;
+		button_file_list_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
+		button_file_list_display_mode->set_tooltip(TTR("View items as a grid of thumbnails."));
 	} else {
-		display_mode = DISPLAY_THUMBNAILS;
-		button_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
-		button_display_mode->set_tooltip(TTR("View items as a list."));
+		file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
+		button_file_list_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
+		button_file_list_display_mode->set_tooltip(TTR("View items as a list."));
 	}
 }
 
 void FileSystemDock::_change_file_display() {
 
-	_update_file_display_toggle_button();
+	_update_file_list_display_mode_button();
 
-	EditorSettings::get_singleton()->set("docks/filesystem/display_mode", display_mode);
+	EditorSettings::get_singleton()->set("docks/filesystem/display_mode", file_list_display_mode);
 
 	_update_files(true);
 }
@@ -472,8 +489,8 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 
 	bool always_show_folders = EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders");
 
-	bool use_thumbnails = (display_mode == DISPLAY_THUMBNAILS);
-	bool use_folders = search_box->get_text().length() == 0 && (low_height_mode || always_show_folders);
+	bool use_thumbnails = (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS);
+	bool use_folders = search_box->get_text().length() == 0 && ((display_mode == DISPLAY_FILE_LIST_ONLY || display_mode == DISPLAY_TREE_ONLY) || always_show_folders);
 
 	if (use_thumbnails) {
 
@@ -617,24 +634,28 @@ void FileSystemDock::_select_file(int p_idx) {
 	}
 }
 
+void FileSystemDock::_go_to_file_list() {
+
+	if (display_mode == DISPLAY_TREE_ONLY) {
+		file_list_view = true;
+		_update_display_mode();
+	} else {
+		bool collapsed = tree->get_selected()->is_collapsed();
+		tree->get_selected()->set_collapsed(!collapsed);
+		_update_files(false);
+	}
+}
 void FileSystemDock::_go_to_tree() {
 
-	if (low_height_mode) {
-		tree->show();
-		button_favorite->show();
-		file_list_vb->hide();
-	}
-
-	_update_tree(true);
+	file_list_view = false;
 	tree->grab_focus();
+	_update_display_mode();
 	tree->ensure_cursor_is_visible();
-	//button_open->hide();
-	//file_options->hide();
 }
 
 void FileSystemDock::_preview_invalidated(const String &p_path) {
 
-	if (display_mode == DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && search_box->get_text() == String() && file_list_vb->is_visible_in_tree()) {
+	if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && search_box->get_text() == String() && file_list_vb->is_visible_in_tree()) {
 
 		for (int i = 0; i < files->get_item_count(); i++) {
 
@@ -1413,24 +1434,6 @@ void FileSystemDock::_resource_created() const {
 	editor->save_resource_as(current_res, path);
 }
 
-void FileSystemDock::_go_to_file_list() {
-
-	if (low_height_mode) {
-		tree->hide();
-		file_list_vb->show();
-		button_favorite->hide();
-	} else {
-		bool collapsed = tree->get_selected()->is_collapsed();
-		tree->get_selected()->set_collapsed(!collapsed);
-	}
-
-	//file_options->show();
-
-	_update_files(false);
-
-	//emit_signal("open",path);
-}
-
 void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 	folder_options->clear();
 	folder_options->set_size(Size2(1, 1));
@@ -1474,7 +1477,7 @@ void FileSystemDock::fix_dependencies(const String &p_for_file) {
 
 void FileSystemDock::focus_on_filter() {
 
-	if (low_height_mode && tree->is_visible()) {
+	if (display_mode == DISPLAY_FILE_LIST_ONLY && tree->is_visible()) {
 		// Tree mode, switch to files list with search box
 		tree->hide();
 		file_list_vb->show();
@@ -1484,12 +1487,12 @@ void FileSystemDock::focus_on_filter() {
 	search_box->grab_focus();
 }
 
-void FileSystemDock::set_display_mode(int p_mode) {
+void FileSystemDock::set_file_list_display_mode(int p_mode) {
 
-	if (p_mode == display_mode)
+	if (p_mode == file_list_display_mode)
 		return;
 
-	button_display_mode->set_pressed(p_mode == DISPLAY_LIST);
+	button_file_list_display_mode->set_pressed(p_mode == FILE_LIST_DISPLAY_LIST);
 	_change_file_display();
 }
 
@@ -2030,9 +2033,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	search_box->connect("text_changed", this, "_search_changed");
 	path_hb->add_child(search_box);
 
-	button_display_mode = memnew(ToolButton);
-	button_display_mode->set_toggle_mode(true);
-	path_hb->add_child(button_display_mode);
+	button_file_list_display_mode = memnew(ToolButton);
+	button_file_list_display_mode->set_toggle_mode(true);
+	path_hb->add_child(button_file_list_display_mode);
 
 	files = memnew(ItemList);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -2128,8 +2131,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	history_max_size = 20;
 	history.push_back("res://");
 
-	low_height_mode = false;
-	display_mode = DISPLAY_THUMBNAILS;
+	display_mode = DISPLAY_SPLIT;
+	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 }
 
 FileSystemDock::~FileSystemDock() {
