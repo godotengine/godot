@@ -755,7 +755,7 @@ void EditorSettings::create() {
 		}
 
 		if (dir->change_dir(data_dir) != OK) {
-			dir->make_dir(data_dir);
+			dir->make_dir_recursive(data_dir);
 			if (dir->change_dir(data_dir) != OK) {
 				ERR_PRINT("Cannot create data directory!");
 				memdelete(dir);
@@ -771,14 +771,8 @@ void EditorSettings::create() {
 
 		// Validate/create cache dir
 
-		if (dir->change_dir(cache_path) != OK) {
-			ERR_PRINT("Cannot find path for cache directory!");
-			memdelete(dir);
-			goto fail;
-		}
-
 		if (dir->change_dir(cache_dir) != OK) {
-			dir->make_dir(cache_dir);
+			dir->make_dir_recursive(cache_dir);
 			if (dir->change_dir(cache_dir) != OK) {
 				ERR_PRINT("Cannot create cache directory!");
 				memdelete(dir);
@@ -788,14 +782,8 @@ void EditorSettings::create() {
 
 		// Validate/create config dir and subdirectories
 
-		if (dir->change_dir(config_path) != OK) {
-			ERR_PRINT("Cannot find path for config directory!");
-			memdelete(dir);
-			goto fail;
-		}
-
 		if (dir->change_dir(config_dir) != OK) {
-			dir->make_dir(config_dir);
+			dir->make_dir_recursive(config_dir);
 			if (dir->change_dir(config_dir) != OK) {
 				ERR_PRINT("Cannot create config directory!");
 				memdelete(dir);
