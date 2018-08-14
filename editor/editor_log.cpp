@@ -54,7 +54,11 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		self->emit_signal("show_request");
 	*/
 
-	self->add_message(err_str, true);
+	if (p_type == ERR_HANDLER_WARNING) {
+		self->add_message(err_str, MSG_TYPE_WARNING);
+	} else {
+		self->add_message(err_str, MSG_TYPE_ERROR);
+	}
 }
 
 void EditorLog::_notification(int p_what) {
@@ -95,22 +99,32 @@ void EditorLog::clear() {
 	_clear_request();
 }
 
-void EditorLog::add_message(const String &p_msg, bool p_error) {
+void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 
 	log->add_newline();
 
-	if (p_error) {
-		log->push_color(get_color("error_color", "Editor"));
-		Ref<Texture> icon = get_icon("Error", "EditorIcons");
-		log->add_image(icon);
-		log->add_text(" ");
-		tool_button->set_icon(icon);
+	bool restore = p_type != MSG_TYPE_STD;
+	switch (p_type) {
+		case MSG_TYPE_ERROR: {
+			log->push_color(get_color("error_color", "Editor"));
+			Ref<Texture> icon = get_icon("Error", "EditorIcons");
+			log->add_image(icon);
+			log->add_text(" ");
+			tool_button->set_icon(icon);
+		} break;
+		case MSG_TYPE_WARNING: {
+			log->push_color(get_color("warning_color", "Editor"));
+			Ref<Texture> icon = get_icon("Warning", "EditorIcons");
+			log->add_image(icon);
+			log->add_text(" ");
+			tool_button->set_icon(icon);
+		} break;
 	}
 
 	log->add_text(p_msg);
 	//button->set_text(p_msg);
 
-	if (p_error)
+	if (restore)
 		log->pop();
 }
 
