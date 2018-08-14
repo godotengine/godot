@@ -214,9 +214,10 @@ Image::Format ImageTexture::get_format() const {
 
 	return format;
 }
-
+#ifndef DISABLE_DEPRECATED
 Error ImageTexture::load(const String &p_path) {
 
+	WARN_DEPRECATED
 	Ref<Image> img;
 	img.instance();
 	Error err = img->load(p_path);
@@ -225,7 +226,7 @@ Error ImageTexture::load(const String &p_path) {
 	}
 	return err;
 }
-
+#endif
 void ImageTexture::set_data(const Ref<Image> &p_image) {
 
 	ERR_FAIL_COND(p_image.is_null());
@@ -345,7 +346,9 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "format", "flags"), &ImageTexture::create, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("create_from_image", "image", "flags"), &ImageTexture::create_from_image, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("load", "path"), &ImageTexture::load);
+#endif
 	ClassDB::bind_method(D_METHOD("set_data", "image"), &ImageTexture::set_data);
 	ClassDB::bind_method(D_METHOD("set_storage", "mode"), &ImageTexture::set_storage);
 	ClassDB::bind_method(D_METHOD("get_storage"), &ImageTexture::get_storage);
