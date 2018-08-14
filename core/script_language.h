@@ -90,6 +90,8 @@ public:
 
 	static void init_languages();
 	static void finish_languages();
+
+	static String get_default_script_ext_hint();
 };
 
 class ScriptInstance;

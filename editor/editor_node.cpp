@@ -4757,6 +4757,9 @@ EditorNode::EditorNode() {
 
 	GLOBAL_DEF("editor/main_run_args", "");
 
+	GLOBAL_DEF("editor/default_editor_scene_importer_script", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("editor/default_editor_scene_importer_script", PropertyInfo(Variant::STRING, "editor/default_editor_scene_importer_script", PROPERTY_HINT_FILE, ScriptServer::get_default_script_ext_hint()));
+
 	ClassDB::set_class_enabled("RootMotionView", true);
 
 	//defs here, use EDITOR_GET in logic

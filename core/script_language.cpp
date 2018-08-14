@@ -131,6 +131,29 @@ void ScriptServer::finish_languages() {
 	global_classes_clear();
 }
 
+String ScriptServer::get_default_script_ext_hint() {
+
+	List<String> script_extensions;
+
+	// returns *.tres,*.res,*.vs,*.gdns,*.gd,*.gdc,*.gde
+	/*List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);*/
+
+	// returns *.gdns,*.gd,*.vs
+	for (int i = 0; i < get_language_count(); i++) {
+		get_language(i)->get_recognized_extensions(&script_extensions);
+	}
+
+	String script_ext_hint;
+	for (List<String>::Element *E = script_extensions.front(); E; E = E->next()) {
+		if (script_ext_hint != String())
+			script_ext_hint += ",";
+		script_ext_hint += "*." + E->get();
+	}
+
+	return script_ext_hint;
+}
+
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
 
 	reload_scripts_on_save = p_enable;
