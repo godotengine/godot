@@ -1959,7 +1959,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		if (!se)
 			continue;
 
-		if (se->get_edited_resource() == p_resource) {
+		if ((script != NULL && se->get_edited_resource() == p_resource) || se->get_edited_resource()->get_path() == p_resource->get_path()) {
 
 			if (should_open) {
 				if (tab_container->get_current_tab() != i) {
