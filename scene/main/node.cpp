@@ -2555,7 +2555,7 @@ void Node::clear_internal_tree_resource_paths() {
 
 String Node::get_configuration_warning() const {
 
-	if (get_script_instance()) {
+	if (get_script_instance() && get_script_instance()->has_method("_get_configuration_warning")) {
 		return get_script_instance()->call("_get_configuration_warning");
 	}
 	return String();
