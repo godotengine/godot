@@ -47,14 +47,6 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_CONE_TWIST; }
 
-	void set_angular_only(bool angularOnly);
-
-	void set_limit(real_t _swingSpan1, real_t _swingSpan2, real_t _twistSpan, real_t _softness = 0.8f, real_t _biasFactor = 0.3f, real_t _relaxationFactor = 1.0f);
-	int get_solve_twist_limit();
-
-	int get_solve_swing_limit();
-	real_t get_twist_limit_sign();
-
 	void set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer::ConeTwistJointParam p_param) const;
 };
