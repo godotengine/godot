@@ -806,6 +806,10 @@ void ProjectSettingsEditor::popup_project_settings() {
 	plugin_settings->update_plugins();
 }
 
+void ProjectSettingsEditor::update_plugins() {
+	plugin_settings->update_plugins();
+}
+
 void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
 	String selected_path = p_path;
