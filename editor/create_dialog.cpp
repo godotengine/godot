@@ -158,12 +158,15 @@ Ref<Texture> CreateDialog::_get_editor_icon(const String &p_type) const {
 	}
 
 	if (ScriptServer::is_global_class(p_type)) {
-		RES icon = ResourceLoader::load(EditorNode::get_editor_data().script_class_get_icon_path(p_type));
-		if (icon.is_valid())
-			return icon;
-		icon = get_icon(ScriptServer::get_global_class_base(p_type), "EditorIcons");
-		if (icon.is_valid())
-			return icon;
+		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_type);
+		RES icon;
+		if (FileAccess::exists(icon_path)) {
+			icon = ResourceLoader::load(icon_path);
+		}
+		if (!icon.is_valid()) {
+			icon = get_icon(ScriptServer::get_global_class_base(p_type), "EditorIcons");
+		}
+		return icon;
 	}
 
 	const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
