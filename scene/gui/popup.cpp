@@ -44,18 +44,23 @@ void Popup::_notification(int p_what) {
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
 		}
-
-		update_configuration_warning();
+	} else if (!popped_up && is_visible_in_tree()) {
+		popped_up = true;
+		_post_popup();
+		notification(NOTIFICATION_POST_POPUP);
 	}
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	update_configuration_warning();
+}
+
+if (p_what == NOTIFICATION_ENTER_TREE) {
 //small helper to make editing of these easier in editor
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
-			set_as_toplevel(false);
-		}
-#endif
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+		set_as_toplevel(false);
 	}
+#endif
+}
 }
 
 void Popup::_fix_size() {
