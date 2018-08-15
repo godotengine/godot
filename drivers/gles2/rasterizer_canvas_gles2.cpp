@@ -75,6 +75,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	}
 
 	if (storage->frame.clear_request) {
+		glColorMask(true, true, true, true);
 		glClearColor(storage->frame.clear_request_color.r,
 				storage->frame.clear_request_color.g,
 				storage->frame.clear_request_color.b,
