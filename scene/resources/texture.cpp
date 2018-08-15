@@ -621,7 +621,11 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 
 				memdelete(f);
 
-				if (bytes != total_size - ofs) {
+				int expected = total_size - ofs;
+				if (bytes < expected) {
+					//this is a compatibility workaround for older format, which saved less mipmaps. It is still recommended the image is reimported.
+					zeromem(w.ptr() + bytes, (expected - bytes));
+				} else if (bytes != expected) {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
 				}
 			}
