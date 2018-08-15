@@ -4352,10 +4352,19 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
 
-			is_checked = !is_checked;
-			VisualServer::get_singleton()->instance_set_visible(origin_instance, is_checked);
+			origin_enabled = !is_checked;
+			VisualServer::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
 
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), is_checked);
+			if (grid_enabled) {
+				for (int i = 0; i < 3; ++i) {
+					if (grid_origin_enable[i]) {
+						VisualServer::get_singleton()->instance_set_visible(grid_origin_instance[i], !origin_enabled);
+						grid_origin_visible[i] = !origin_enabled;
+					}
+				}
+			}
+
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), origin_enabled);
 		} break;
 		case MENU_VIEW_GRID: {
 
@@ -4367,6 +4376,10 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				if (grid_enable[i]) {
 					VisualServer::get_singleton()->instance_set_visible(grid_instance[i], grid_enabled);
 					grid_visible[i] = grid_enabled;
+				}
+				if (grid_origin_enable[i] && !origin_enabled) {
+					VisualServer::get_singleton()->instance_set_visible(grid_origin_instance[i], grid_enabled);
+					grid_origin_visible[i] = grid_enabled;
 				}
 			}
 
@@ -4438,7 +4451,9 @@ void SpatialEditor::_init_indicators() {
 			axis[i] = 1;
 
 			grid_enable[i] = false;
+			grid_origin_enable[i] = false;
 			grid_visible[i] = false;
+			grid_origin_visible[i] = false;
 
 			origin_colors.push_back(Color(axis.x, axis.y, axis.z));
 			origin_colors.push_back(Color(axis.x, axis.y, axis.z));
@@ -4447,7 +4462,9 @@ void SpatialEditor::_init_indicators() {
 		}
 
 		grid_enable[1] = true;
+		grid_origin_enable[1] = true;
 		grid_visible[1] = true;
+		grid_origin_visible[1] = true;
 
 		_init_grid();
 
@@ -4756,7 +4773,9 @@ void SpatialEditor::_init_gizmos_menu() {
 void SpatialEditor::_init_grid() {
 
 	PoolVector<Color> grid_colors[3];
+	PoolVector<Color> grid_origin_colors[3];
 	PoolVector<Vector3> grid_points[3];
+	PoolVector<Vector3> grid_origin_points[3];
 
 	Color primary_grid_color = EditorSettings::get_singleton()->get("editors/3d/primary_grid_color");
 	Color secondary_grid_color = EditorSettings::get_singleton()->get("editors/3d/secondary_grid_color");
@@ -4778,7 +4797,19 @@ void SpatialEditor::_init_grid() {
 			Vector3 p2_dest = p2 * (-axis_n1 + axis_n2);
 
 			Color line_color = secondary_grid_color;
-			if (j % primary_grid_steps == 0) {
+			if (j == 0) {
+				grid_origin_points[i].push_back(p1);
+				grid_origin_points[i].push_back(p1_dest);
+				grid_origin_colors[i].push_back(primary_grid_color);
+				grid_origin_colors[i].push_back(primary_grid_color);
+
+				grid_origin_points[i].push_back(p2);
+				grid_origin_points[i].push_back(p2_dest);
+				grid_origin_colors[i].push_back(primary_grid_color);
+				grid_origin_colors[i].push_back(primary_grid_color);
+				continue;
+
+			} else if (j % primary_grid_steps == 0) {
 				line_color = primary_grid_color;
 			}
 
@@ -4805,6 +4836,19 @@ void SpatialEditor::_init_grid() {
 		VisualServer::get_singleton()->instance_set_visible(grid_instance[i], grid_visible[i]);
 		VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 		VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << SpatialEditorViewport::GIZMO_GRID_LAYER);
+
+		grid_origin[i] = VisualServer::get_singleton()->mesh_create();
+		Array grid_origin_arr;
+		grid_origin_arr.resize(VS::ARRAY_MAX);
+		grid_origin_arr[VisualServer::ARRAY_VERTEX] = grid_origin_points[i];
+		grid_origin_arr[VisualServer::ARRAY_COLOR] = grid_origin_colors[i];
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid_origin[i], VisualServer::PRIMITIVE_LINES, grid_origin_arr);
+		VisualServer::get_singleton()->mesh_surface_set_material(grid_origin[i], 0, indicator_mat->get_rid());
+		grid_origin_instance[i] = VisualServer::get_singleton()->instance_create2(grid_origin[i], get_tree()->get_root()->get_world()->get_scenario());
+
+		VisualServer::get_singleton()->instance_set_visible(grid_origin_instance[i], grid_origin_visible[i]);
+		VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_origin_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
+		VS::get_singleton()->instance_set_layer_mask(grid_origin_instance[i], 1 << SpatialEditorViewport::GIZMO_GRID_LAYER);
 	}
 }
 
@@ -4820,6 +4864,8 @@ void SpatialEditor::_finish_grid() {
 	for (int i = 0; i < 3; i++) {
 		VisualServer::get_singleton()->free(grid_instance[i]);
 		VisualServer::get_singleton()->free(grid[i]);
+		VisualServer::get_singleton()->free(grid_origin_instance[i]);
+		VisualServer::get_singleton()->free(grid_origin[i]);
 	}
 }
 
@@ -5236,6 +5282,10 @@ void SpatialEditor::clear() {
 		if (grid_enable[i]) {
 			VisualServer::get_singleton()->instance_set_visible(grid_instance[i], true);
 			grid_visible[i] = true;
+		}
+		if (grid_origin_enable[i]) {
+			VisualServer::get_singleton()->instance_set_visible(grid_origin_instance[i], true);
+			grid_origin_visible[i] = true;
 		}
 	}
 
