@@ -1700,7 +1700,7 @@ FRAGMENT_SHADER_CODE
 #if defined(ENABLE_NORMALMAP)
 
 	normalmap.xy=normalmap.xy*2.0-1.0;
-	normalmap.z=sqrt(1.0-dot(normalmap.xy,normalmap.xy)); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
+	normalmap.z=sqrt(max(0.0, 1.0-dot(normalmap.xy,normalmap.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
 	normal = normalize( mix(normal_interp,tangent * normalmap.x + binormal * normalmap.y + normal * normalmap.z,normaldepth) ) * side;
 
