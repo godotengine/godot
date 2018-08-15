@@ -46,6 +46,8 @@ private:
 	friend class EditorInspector;
 	Object *object;
 	StringName property;
+	Object *parent_object;
+	StringName parent_property;
 
 	int property_usage;
 
@@ -106,6 +108,9 @@ public:
 	Object *get_edited_object();
 	StringName get_edited_property();
 
+	Object *get_edited_parent_object();
+	StringName get_edited_parent_property();
+
 	virtual void update_property();
 	void update_reload_status();
 
@@ -146,6 +151,7 @@ public:
 	float get_name_split_ratio() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
+	void set_parent_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	String get_tooltip_text() const;
