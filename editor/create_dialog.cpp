@@ -333,7 +333,7 @@ void CreateDialog::_update_search() {
 					break;
 				}
 
-				type = ClassDB::get_parent_class(type);
+				type = cpp_type ? ClassDB::get_parent_class(type) : ed.script_class_get_base(type);
 			}
 
 			if (found)
