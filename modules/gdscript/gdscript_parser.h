@@ -149,6 +149,7 @@ public:
 		StringName extends_file;
 		Vector<StringName> extends_class;
 		DataType base_type;
+		String icon_path;
 
 		struct Member {
 			PropertyInfo _export;

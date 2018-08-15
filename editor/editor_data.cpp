@@ -888,11 +888,56 @@ StringName EditorData::script_class_get_base(const String &p_class) {
 	return script->get_language()->get_global_class_name(base_script->get_path());
 }
 
+Object *EditorData::script_class_instance(const String &p_class) {
+	if (ScriptServer::is_global_class(p_class)) {
+		Object *obj = ClassDB::instance(ScriptServer::get_global_class_base(p_class));
+		if (obj) {
+			RES script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
+			if (script.is_valid())
+				obj->set_script(script.get_ref_ptr());
+
+			RES icon = ResourceLoader::load(script_class_get_icon_path(p_class));
+			if (icon.is_valid())
+				obj->set_meta("_editor_icon", icon);
+
+			return obj;
+		}
+	}
+	return NULL;
+}
+
+void EditorData::script_class_save_icon_paths() {
+	List<StringName> keys;
+	_script_class_icon_paths.get_key_list(&keys);
+
+	Dictionary d;
+	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
+		d[E->get()] = _script_class_icon_paths[E->get()];
+	}
+
+	ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	ProjectSettings::get_singleton()->save();
+}
+
+void EditorData::script_class_load_icon_paths() {
+	script_class_clear_icon_paths();
+
+	Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+	List<Variant> keys;
+	d.get_key_list(&keys);
+
+	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+		String key = E->get().operator String();
+		_script_class_icon_paths[key] = d[key];
+	}
+}
+
 EditorData::EditorData() {
 
 	current_edited_scene = -1;
 
 	//load_imported_scenes_from_globals();
+	script_class_load_icon_paths();
 }
 
 ///////////

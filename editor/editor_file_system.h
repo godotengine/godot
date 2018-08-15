@@ -60,6 +60,7 @@ class EditorFileSystemDirectory : public Object {
 		bool verified; //used for checking changes
 		String script_class_name;
 		String script_class_extends;
+		String script_class_icon_path;
 	};
 
 	struct FileInfoSort {
@@ -90,6 +91,7 @@ public:
 	bool get_file_import_is_valid(int p_idx) const;
 	String get_file_script_class_name(int p_idx) const; //used for scripts
 	String get_file_script_class_extends(int p_idx) const; //used for scripts
+	String get_file_script_class_icon_path(int p_idx) const; //used for scripts
 
 	EditorFileSystemDirectory *get_parent();
 
@@ -163,6 +165,7 @@ class EditorFileSystem : public Node {
 		bool import_valid;
 		String script_class_name;
 		String script_class_extends;
+		String script_class_icon_path;
 	};
 
 	HashMap<String, FileCache> file_cache;
@@ -225,7 +228,7 @@ class EditorFileSystem : public Node {
 	volatile bool update_script_classes_queued;
 	void _queue_update_script_classes();
 
-	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends) const;
+	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
 protected:
 	void _notification(int p_what);

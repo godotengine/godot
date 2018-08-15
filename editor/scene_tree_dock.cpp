@@ -365,10 +365,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 					ScriptLanguage *l = ScriptServer::get_language(i);
 					if (l->get_type() == existing->get_class()) {
-						if (EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
-							String name = l->get_global_class_name(existing->get_path(), NULL);
-							inherits = editor->get_editor_data().script_class_get_base(name);
-						} else if (l->can_inherit_from_file()) {
+						String name = l->get_global_class_name(existing->get_path());
+						if (ScriptServer::is_global_class(name)) {
+							if (EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+								inherits = editor->get_editor_data().script_class_get_base(name);
+							} else if (l->can_inherit_from_file()) {
+								inherits = "\"" + existing->get_path() + "\"";
+							}
+						} else {
 							inherits = "\"" + existing->get_path() + "\"";
 						}
 					}
@@ -395,6 +399,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					const RefPtr empty;
 					editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
 					editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+
+					editor_data->get_undo_redo().add_do_method(E->get(), "set_meta", "_editor_icon", get_icon(E->get()->get_class(), "EditorIcons"));
+					editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", E->get()->get_meta("_editor_icon"));
 				}
 			}
 
@@ -402,7 +409,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
 
 			editor_data->get_undo_redo().commit_action();
-
 		} break;
 		case TOOL_MOVE_UP:
 		case TOOL_MOVE_DOWN: {
@@ -1490,9 +1496,23 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		Ref<Script> existing = E->get()->get_script();
 		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script.get_ref_ptr());
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+
+		String icon_path;
+		String name = p_script->get_language()->get_global_class_name(p_script->get_path(), NULL, &icon_path);
+		if (ScriptServer::is_global_class(name)) {
+			RES icon = ResourceLoader::load(icon_path);
+			editor_data->get_undo_redo().add_do_method(E->get(), "set_meta", "_editor_icon", icon);
+			String existing_name = existing.is_valid() ? existing->get_language()->get_global_class_name(existing->get_path()) : String();
+			if (existing.is_null() || !ScriptServer::is_global_class(existing_name)) {
+				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", get_icon(E->get()->get_class(), "EditorIcons"));
+			} else {
+				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", editor_data->script_class_get_icon_path(existing_name));
+			}
+		}
 	}
 
 	editor_data->get_undo_redo().commit_action();
+	print_line("test: " + String(Variant(selected.front()->get()->get_meta("_editor_icon"))));
 
 	editor->push_item(p_script.operator->());
 }
