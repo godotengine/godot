@@ -44,6 +44,11 @@ void Popup::_notification(int p_what) {
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
 		}
+		else if (!popped_up && is_visible_in_tree()) {
+			popped_up = true;
+			_post_popup();
+			notification(NOTIFICATION_POST_POPUP);
+		}
 
 		update_configuration_warning();
 	}
