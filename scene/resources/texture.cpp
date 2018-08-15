@@ -175,12 +175,19 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 
 void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
 
+	Ref<Image> img;
+	img.instance();
+	img->create(p_width, p_height, true, p_format);
 	flags = p_flags;
-	VisualServer::get_singleton()->texture_allocate(texture, p_width, p_height, 0, p_format, VS::TEXTURE_TYPE_2D, p_flags);
-	format = p_format;
 	w = p_width;
 	h = p_height;
+	format = p_format;
+
+	VisualServer::get_singleton()->texture_allocate(texture, p_width, p_height, 0, p_format, VS::TEXTURE_TYPE_2D, p_flags);
+	VisualServer::get_singleton()->texture_set_data(texture, img);
+	_change_notify();
 }
+
 void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
 	ERR_FAIL_COND(p_image.is_null());
