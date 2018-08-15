@@ -1877,7 +1877,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			}
 		}
 		if (r_icon_path) {
-			if (c->icon_path.is_abs_path())
+			if (c->icon_path.empty() || c->icon_path.is_abs_path())
 				*r_icon_path = c->icon_path;
 			else if (c->icon_path.is_rel_path())
 				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();
