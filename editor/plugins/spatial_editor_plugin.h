@@ -741,6 +741,8 @@ public:
 	virtual void set_state(const Dictionary &p_state);
 	virtual void clear() { spatial_editor->clear(); }
 
+	virtual void edited_scene_changed();
+
 	SpatialEditorPlugin(EditorNode *p_node);
 	~SpatialEditorPlugin();
 };
