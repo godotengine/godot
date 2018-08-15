@@ -392,6 +392,12 @@ void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 		OS::get_singleton()->swap_buffers();
 	else
 		glFinish();
+
+	if (p_swap_buffers) {
+		glColorMask(true, true, true, true);
+		glClearColor(0, 0, 0, 1);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
 }
 
 void RasterizerGLES2::finalize() {
