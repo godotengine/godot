@@ -842,6 +842,19 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 void ScriptEditor::_file_dialog_action(String p_file) {
 
 	switch (file_dialog_option) {
+		case FILE_NEW_TEXTFILE: {
+			Error err;
+			FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+			if (err) {
+				memdelete(file);
+				editor->show_warning(TTR("Error writing TextFile:") + "\n" + p_file, TTR("Error!"));
+				break;
+			}
+			file->close();
+			memdelete(file);
+
+			// fallthrough to open the file.
+		}
 		case FILE_OPEN: {
 
 			List<String> extensions;
@@ -870,7 +883,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 				file_dialog_option = -1;
 				return;
 			}
-		}
+		} break;
 		case FILE_SAVE_AS: {
 			ScriptEditorBase *current = _get_current_editor();
 
@@ -928,6 +941,15 @@ void ScriptEditor::_menu_option(int p_option) {
 		case FILE_NEW: {
 			script_create_dialog->config("Node", ".gd");
 			script_create_dialog->popup_centered(Size2(300, 300) * EDSCALE);
+		} break;
+		case FILE_NEW_TEXTFILE: {
+			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+			file_dialog_option = FILE_NEW_TEXTFILE;
+
+			file_dialog->clear_filters();
+			file_dialog->popup_centered_ratio();
+			file_dialog->set_title(TTR("New TextFile..."));
 		} break;
 		case FILE_OPEN: {
 			file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
@@ -2974,7 +2996,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(file_menu);
 	file_menu->set_text(TTR("File"));
 	file_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New")), FILE_NEW);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script")), FILE_NEW);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New TextFile")), FILE_NEW_TEXTFILE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open")), FILE_OPEN);
 	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
 

@@ -130,6 +130,7 @@ class ScriptEditor : public PanelContainer {
 	EditorNode *editor;
 	enum {
 		FILE_NEW,
+		FILE_NEW_TEXTFILE,
 		FILE_OPEN,
 		FILE_OPEN_RECENT,
 		FILE_SAVE,
