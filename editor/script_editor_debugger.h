@@ -96,7 +96,9 @@ class ScriptEditorDebugger : public Control {
 	EditorFileDialog *file_dialog;
 
 	int error_count;
+	int warning_count;
 	int last_error_count;
+	int last_warning_count;
 
 	bool hide_on_stop;
 	bool enable_external_editor;
