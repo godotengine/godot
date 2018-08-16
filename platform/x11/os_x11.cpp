@@ -1339,7 +1339,7 @@ void OS_X11::request_attention() {
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
 	// Will be unset by the window manager after user react on the request for attention
-	//
+
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
@@ -1353,6 +1353,7 @@ void OS_X11::request_attention() {
 	xev.xclient.data.l[1] = wm_attention;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
@@ -2436,7 +2437,19 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 
 void OS_X11::move_window_to_foreground() {
 
-	XRaiseWindow(x11_display, x11_window);
+	XEvent xev;
+	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = net_active_window;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
