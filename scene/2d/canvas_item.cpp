@@ -1075,6 +1075,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
+	ClassDB::bind_method(D_METHOD("set_inherits_transform", "enable"), &CanvasItem::set_inherits_transform);
+	ClassDB::bind_method(D_METHOD("get_inherits_transform"), &CanvasItem::get_inherits_transform);
+
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_GROUP("Visibility", "");
@@ -1088,8 +1091,9 @@ void CanvasItem::_bind_methods() {
 	ADD_GROUP("Material", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,CanvasItemMaterial"), "set_material", "get_material");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "use_parent_material"), "set_use_parent_material", "get_use_parent_material");
+	ADD_GROUP("Context", "");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "inherits_transform"), "set_inherits_transform", "get_inherits_transform");
 	//exporting these things doesn't really make much sense i think
-	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toplevel", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_as_toplevel", "is_set_as_toplevel");
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
 
 	ADD_SIGNAL(MethodInfo("draw"));
