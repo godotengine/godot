@@ -109,7 +109,6 @@ private:
 class VideoStreamWebm : public VideoStream {
 
 	GDCLASS(VideoStreamWebm, VideoStream);
-	RES_BASE_EXTENSION("webm");
 
 	String file;
 	int audio_track;

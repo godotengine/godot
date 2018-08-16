@@ -163,7 +163,6 @@ public:
 class VideoStreamTheora : public VideoStream {
 
 	GDCLASS(VideoStreamTheora, VideoStream);
-	RES_BASE_EXTENSION("ogv");
 
 	String file;
 	int audio_track;
