@@ -1531,10 +1531,13 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 	if (!active)
 		return;
 
+	force_step(p_deltaTime);
+}
+
+void BulletPhysicsServer::force_step(float p_deltaTime) {
 	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
 
 	for (int i = 0; i < active_spaces_count; ++i) {
-
 		active_spaces[i]->step(p_deltaTime);
 	}
 }

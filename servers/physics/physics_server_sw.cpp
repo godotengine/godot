@@ -1405,7 +1405,10 @@ void PhysicsServerSW::step(real_t p_step) {
 
 	if (!active)
 		return;
+	force_step(p_step);
+}
 
+void PhysicsServerSW::force_step(real_t p_step) {
 	_update_shapes();
 
 	doing_sync = false;
