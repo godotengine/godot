@@ -585,7 +585,7 @@ void CreateDialog::_history_selected() {
 	if (!item)
 		return;
 
-	search_box->set_text(item->get_text(0));
+	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
 	_update_search();
 }
 
@@ -595,7 +595,7 @@ void CreateDialog::_favorite_selected() {
 	if (!item)
 		return;
 
-	search_box->set_text(item->get_text(0));
+	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
 	_update_search();
 }
 
