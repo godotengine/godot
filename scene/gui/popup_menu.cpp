@@ -1071,6 +1071,9 @@ void PopupMenu::activate_item(int p_item) {
 		pop = Object::cast_to<PopupMenu>(next);
 	}
 
+	emit_signal("id_pressed", id);
+	emit_signal("index_pressed", p_item);
+
 	// Hides popup by default; unless otherwise specified
 	// by using set_hide_on_item_selection and set_hide_on_checkable_item_selection
 
@@ -1084,9 +1087,6 @@ void PopupMenu::activate_item(int p_item) {
 		return;
 
 	hide();
-
-	emit_signal("id_pressed", id);
-	emit_signal("index_pressed", p_item);
 }
 
 void PopupMenu::remove_item(int p_idx) {
