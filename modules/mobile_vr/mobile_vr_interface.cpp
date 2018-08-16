@@ -297,6 +297,47 @@ bool MobileVRInterface::initialize() {
 		mag_current_min = Vector3(0, 0, 0);
 		mag_current_max = Vector3(0, 0, 0);
 
+		// build our shader
+		if (lens_shader == NULL) {
+			///@TODO need to switch between GLES2 and GLES3 version, Reduz suggested moving this into our drivers and making this a core shader
+			// create a shader
+			lens_shader = new LensDistortedShaderGLES3();
+
+			// create our shader stuff
+			lens_shader->init();
+
+			glGenBuffers(1, &half_screen_quad);
+			glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
+			{
+				/* clang-format off */
+				const float qv[16] = {
+					0, -1,
+					-1, -1,
+					0, 1,
+					-1, 1,
+					1, 1,
+					1, 1,
+					1, -1,
+					1, -1,
+				};
+				/* clang-format on */
+
+				glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
+			}
+
+			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+			glGenVertexArrays(1, &half_screen_array);
+			glBindVertexArray(half_screen_array);
+			glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
+			glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, ((uint8_t *)NULL) + 8);
+			glEnableVertexAttribArray(4);
+			glBindVertexArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		}
+
 		// reset our orientation
 		orientation = Basis();
 
@@ -304,7 +345,7 @@ bool MobileVRInterface::initialize() {
 		arvr_server->set_primary_interface(this);
 
 		last_ticks = OS::get_singleton()->get_ticks_usec();
-		;
+
 		initialized = true;
 	};
 
@@ -317,6 +358,15 @@ void MobileVRInterface::uninitialize() {
 		if (arvr_server != NULL) {
 			// no longer our primary interface
 			arvr_server->clear_primary_interface_if(this);
+		}
+
+		// cleanup our shader and buffers
+		if (lens_shader != NULL) {
+			glDeleteVertexArrays(1, &half_screen_array);
+			glDeleteBuffers(1, &half_screen_quad);
+
+			delete lens_shader;
+			lens_shader = NULL;
 		}
 
 		initialized = false;
@@ -394,6 +444,9 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	// We must have a valid render target
 	ERR_FAIL_COND(!p_render_target.is_valid());
 
+	// We must have an initialised shader
+	ERR_FAIL_COND(lens_shader != NULL);
+
 	// Because we are rendering to our device we must use our main viewport!
 	ERR_FAIL_COND(p_screen_rect == Rect2());
 
@@ -420,13 +473,13 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texid);
 
-	lens_shader.bind();
-	lens_shader.set_uniform(LensDistortedShaderGLES3::OFFSET_X, offset_x);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::K1, k1);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::K2, k2);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::EYE_CENTER, eye_center);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::UPSCALE, oversample);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::ASPECT_RATIO, aspect_ratio);
+	lens_shader->bind();
+	lens_shader->set_uniform(LensDistortedShaderGLES3::OFFSET_X, offset_x);
+	lens_shader->set_uniform(LensDistortedShaderGLES3::K1, k1);
+	lens_shader->set_uniform(LensDistortedShaderGLES3::K2, k2);
+	lens_shader->set_uniform(LensDistortedShaderGLES3::EYE_CENTER, eye_center);
+	lens_shader->set_uniform(LensDistortedShaderGLES3::UPSCALE, oversample);
+	lens_shader->set_uniform(LensDistortedShaderGLES3::ASPECT_RATIO, aspect_ratio);
 
 	glBindVertexArray(half_screen_array);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -454,41 +507,7 @@ MobileVRInterface::MobileVRInterface() {
 	k2 = 0.215;
 	last_ticks = 0;
 
-	// create our shader stuff
-	lens_shader.init();
-
-	{
-		glGenBuffers(1, &half_screen_quad);
-		glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
-		{
-			/* clang-format off */
-			const float qv[16] = {
-				0, -1,
-				-1, -1,
-				0, 1,
-				-1, 1,
-				1, 1,
-				1, 1,
-				1, -1,
-				1, -1,
-			};
-			/* clang-format on */
-
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-
-		glGenVertexArrays(1, &half_screen_array);
-		glBindVertexArray(half_screen_array);
-		glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
-		glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, ((uint8_t *)NULL) + 8);
-		glEnableVertexAttribArray(4);
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-	}
+	lens_shader = NULL;
 };
 
 MobileVRInterface::~MobileVRInterface() {
