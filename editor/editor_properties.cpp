@@ -2052,7 +2052,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			ERR_BREAK(!resp);
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
 				//make visual script the right type
-				res->call("set_instance_base_type", get_edited_object()->get_class());
+				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
 			res = Ref<Resource>(resp);
