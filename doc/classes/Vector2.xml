@@ -130,6 +130,15 @@
 				Returns the distance to vector [code]b[/code].
 			</description>
 		</method>
+		<method name="project">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<description>
+				Returns the vector projected onto the vector [code]b[/code].
+			</description>
+		</method>
 		<method name="dot">
 			<return type="float">
 			</return>
