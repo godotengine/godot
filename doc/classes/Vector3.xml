@@ -99,6 +99,15 @@
 				Returns the distance to [code]b[/code].
 			</description>
 		</method>
+		<method name="project_onto">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Returns the vector projected onto the vector [code]b[/code].
+			</description>
+		</method>
 		<method name="dot">
 			<return type="float">
 			</return>

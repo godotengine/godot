@@ -121,11 +121,8 @@ Vector2 Vector2::rotated(real_t p_by) const {
 	return v;
 }
 
-Vector2 Vector2::project(const Vector2 &p_vec) const {
-
-	Vector2 v1 = p_vec;
-	Vector2 v2 = *this;
-	return v2 * (v1.dot(v2) / v2.dot(v2));
+Vector2 Vector2::project(const Vector2 &p_b) const {
+	return p_b * (dot(p_b) / p_b.dot(p_b));
 }
 
 Vector2 Vector2::snapped(const Vector2 &p_by) const {
