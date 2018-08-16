@@ -58,7 +58,7 @@ private:
 	float eye_height;
 	uint64_t last_ticks;
 
-	LensDistortedShaderGLES3 lens_shader;
+	LensDistortedShaderGLES3 *lens_shader;
 	GLuint half_screen_quad;
 	GLuint half_screen_array;
 
