@@ -734,7 +734,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		error_list->set_item_metadata(error_list->get_item_count() - 1, stack);
 
-		error_count++;
+		if (warning)
+			warning_count++;
+		else
+			error_count++;
 
 	} else if (p_msg == "profile_sig") {
 		//cache a signature
@@ -1011,20 +1014,26 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 			}
 
-			if (error_count != last_error_count) {
+			if (error_count != last_error_count || warning_count != last_warning_count) {
 
-				if (error_count == 0) {
+				if (error_count == 0 && warning_count == 0) {
 					error_split->set_name(TTR("Errors"));
 					debugger_button->set_text(TTR("Debugger"));
 					debugger_button->set_icon(Ref<Texture>());
 					tabs->set_tab_icon(error_split->get_index(), Ref<Texture>());
 				} else {
-					error_split->set_name(TTR("Errors") + " (" + itos(error_count) + ")");
-					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count) + ")");
-					debugger_button->set_icon(get_icon("Error", "EditorIcons"));
-					tabs->set_tab_icon(error_split->get_index(), get_icon("Error", "EditorIcons"));
+					error_split->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
+					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+					if (error_count == 0) {
+						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
+						tabs->set_tab_icon(error_split->get_index(), get_icon("Warning", "EditorIcons"));
+					} else {
+						debugger_button->set_icon(get_icon("Error", "EditorIcons"));
+						tabs->set_tab_icon(error_split->get_index(), get_icon("Error", "EditorIcons"));
+					}
 				}
 				last_error_count = error_count;
+				last_warning_count = warning_count;
 			}
 
 			if (connection.is_null()) {
@@ -1054,6 +1063,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					error_list->clear();
 					error_stack->clear();
 					error_count = 0;
+					warning_count = 0;
 					profiler_signature.clear();
 					//live_edit_root->set_text("/root");
 
@@ -1750,6 +1760,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	error_list->clear();
 	error_count = 0;
+	warning_count = 0;
 	_notification(NOTIFICATION_PROCESS);
 }
 
@@ -2162,9 +2173,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	live_debug = false;
 	last_path_id = false;
 	error_count = 0;
+	warning_count = 0;
 	hide_on_stop = true;
 	enable_external_editor = false;
 	last_error_count = 0;
+	last_warning_count = 0;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");
 }
