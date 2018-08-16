@@ -1099,6 +1099,7 @@ void PopupMenu::remove_item(int p_idx) {
 
 	items.remove(p_idx);
 	update();
+	minimum_size_changed();
 }
 
 void PopupMenu::add_separator(const String &p_text) {
