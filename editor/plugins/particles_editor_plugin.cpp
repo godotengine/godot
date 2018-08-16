@@ -335,7 +335,6 @@ void ParticlesEditor::_generate_aabb() {
 		OS::get_singleton()->delay_usec(1000);
 	}
 
-	running = 0.0;
 	AABB rect;
 
 	while (running < time) {
