@@ -173,7 +173,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	const Color error_color = p_theme->get_color("error_color", "Editor");
 	const Color success_color = p_theme->get_color("success_color", "Editor");
 	const Color warning_color = p_theme->get_color("warning_color", "Editor");
-	dark_icon_color_dictionary[Color::html("#ff5d5d")] = error_color;
+	dark_icon_color_dictionary[Color::html("#ff0000")] = error_color;
 	dark_icon_color_dictionary[Color::html("#45ff8b")] = success_color;
 	dark_icon_color_dictionary[Color::html("#dbab09")] = warning_color;
 
