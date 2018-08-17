@@ -512,6 +512,15 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 		data.resize(file_data.uncompressed_size);
 		Compression::decompress(data.ptrw(), file_data.uncompressed_size, file_data.data, file_data.compressed_size, Compression::MODE_DEFLATE);
 
+		String output_dir = output_file.get_base_dir();
+
+		if (!DirAccess::exists(output_dir)) {
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+			Error err = da->make_dir_recursive(ProjectSettings::get_singleton()->globalize_path(output_dir));
+			ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+		}
+
 		FileAccessRef file = FileAccess::open(output_file, FileAccess::WRITE);
 		ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
 		file->store_buffer(data.ptr(), data.size());
