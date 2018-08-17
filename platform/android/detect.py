@@ -128,7 +128,7 @@ def configure(env):
             env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
         if get_platform(env["ndk_platform"]) < 21:
-            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than andorid-21; setting ndk_platform=android-21")
+            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
             env["ndk_platform"] = "android-21"
         env['ARCH'] = 'arch-arm64'
         target_subpath = "aarch64-linux-android-4.9"
