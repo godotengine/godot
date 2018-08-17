@@ -18,14 +18,20 @@ def make_cs_files_header(src, dst):
         header.write('#include "ustring.h"\n')
         inserted_files = ''
         import os
-        for file in os.listdir(src):
-            if file.endswith('.cs'):
-                with open(os.path.join(src, file), 'rb') as f:
+        latest_mtime = 0
+        for root, _, files in os.walk(src):
+            files = [f for f in files if f.endswith('.cs')]
+            for file in files:
+                filepath = os.path.join(root, file)
+                filepath_src_rel = os.path.relpath(filepath, src)
+                mtime = os.path.getmtime(filepath)
+                latest_mtime = mtime if mtime > latest_mtime else latest_mtime
+                with open(filepath, 'rb') as f:
                     buf = f.read()
                     decomp_size = len(buf)
                     import zlib
                     buf = zlib.compress(buf)
-                    name = os.path.splitext(file)[0]
+                    name = os.path.splitext(os.path.normpath(filepath_src_rel))[0].strip(os.sep).replace(os.sep, '_').replace('.', '_dotto_')
                     header.write('\nstatic const int _cs_' + name + '_compressed_size = ' + str(len(buf)) + ';\n')
                     header.write('static const int _cs_' + name + '_uncompressed_size = ' + str(decomp_size) + ';\n')
                     header.write('static const unsigned char _cs_' + name + '_compressed[] = { ')
@@ -33,18 +39,13 @@ def make_cs_files_header(src, dst):
                         if i > 0:
                             header.write(', ')
                         header.write(byte_to_str(buf[buf_idx]))
-                    inserted_files += '\tr_files.insert("' + file + '", ' \
+                    inserted_files += '\tr_files.insert("' + filepath_src_rel + '", ' \
                                         'CompressedFile(_cs_' + name + '_compressed_size, ' \
                                         '_cs_' + name + '_uncompressed_size, ' \
                                         '_cs_' + name + '_compressed));\n'
                     header.write(' };\n')
-        version_file = os.path.join(src, 'VERSION.txt')
-        with open(version_file, 'r') as content_file:
-            try:
-                glue_version = int(content_file.read()) # make sure the format is valid
-                header.write('\n#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
-            except ValueError:
-                raise ValueError('Invalid C# glue version in: ' + version_file)
+        glue_version = int(latest_mtime) # The latest modified time will do for now
+        header.write('\n#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
         header.write('\nstruct CompressedFile\n' '{\n'
             '\tint compressed_size;\n' '\tint uncompressed_size;\n' '\tconst unsigned char* data;\n'
             '\n\tCompressedFile(int p_comp_size, int p_uncomp_size, const unsigned char* p_data)\n'
