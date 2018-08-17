@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" category="Core" version="3.1">
 	<brief_description>
-		All User Interface nodes inherit from Control. Features anchors and margins to adapt its position and size to its parent.
+		All User Interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
 	</brief_description>
 	<description>
 		Base class for all User Interface or [i]UI[/i] related nodes. [code]Control[/code] features a bounding rectangle that defines its extents, an anchor position relative to its parent and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
@@ -23,7 +23,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the minimum size this Control can shrink to. The node can never be smaller than this minimum size.
+				Returns the minimum size for this control. See [member rect_min_size].
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -129,7 +129,7 @@
 				This method should only be used to test the data. Process the data in [method drop_data].
 				[codeblock]
 				extends Control
-				
+
 				func can_drop_data(position, data):
 				    # check position if it is relevant to you
 				    # otherwise just check data
@@ -148,10 +148,10 @@
 				Godot calls this method to pass you the [code]data[/code] from a control's [method get_drag_data] result. Godot first calls [method can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
 				[codeblock]
 				extends ColorRect
-				
+
 				func can_drop_data(position, data):
 				    return typeof(data) == TYPE_DICTIONARY and data.has('color')
-				
+
 				func drop_data(position, data):
 				    color = data['color']
 				[/codeblock]
@@ -173,6 +173,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns [member margin_left] and [member margin_top]. See also [member rect_position].
 			</description>
 		</method>
 		<method name="get_color" qualifiers="const">
@@ -207,7 +208,7 @@
 			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Returns the mouse cursor shape the control displays on mouse hover, one of the [code]CURSOR_*[/code] constants.
+				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
 			</description>
 		</method>
 		<method name="get_drag_data" qualifiers="virtual">
@@ -220,7 +221,7 @@
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
 				[codeblock]
 				extends Control
-				
+
 				func get_drag_data(position):
 					var mydata = make_data()
 					set_drag_preview(make_preview(mydata))
@@ -232,14 +233,14 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns MARGIN_LEFT and MARGIN_TOP at the same time. This is a helper (see [method set_margin]).
+				Returns [member margin_right] and [member margin_bottom].
 			</description>
 		</method>
 		<method name="get_focus_owner" qualifiers="const">
 			<return type="Control">
 			</return>
 			<description>
-				Return which control is owning the keyboard focus, or null if no one.
+				Returns the control that has the keyboard focus or [code]null[/code] if none.
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -256,7 +257,7 @@
 			<return type="Rect2">
 			</return>
 			<description>
-				Return position and size of the Control, relative to the top-left corner of the [i]window[/i] Control. This is a helper (see [method get_global_position], [method get_size]).
+				Returns the position and size of the control relative to the top-left corner of the screen. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
 		<method name="get_icon" qualifiers="const">
@@ -273,33 +274,35 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Return the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
+				Returns the minimum size for this control. See [member rect_min_size].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
+				Returns the width/height occupied in the parent control.
 			</description>
 		</method>
 		<method name="get_parent_control" qualifiers="const">
 			<return type="Control">
 			</return>
 			<description>
+				Returns the parent control node.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
-				Return position and size of the Control, relative to the top-left corner of the parent Control. This is a helper (see [method get_position], [method get_size]).
+				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member rect_position] and [member rect_size].
 			</description>
 		</method>
 		<method name="get_rotation" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Return the rotation (in radians)
+				Returns the rotation (in radians).
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -318,7 +321,7 @@
 			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Return the tooltip, which will appear when the cursor is resting over this control.
+				Returns the tooltip, which will appear when the cursor is resting over this control.
 			</description>
 		</method>
 		<method name="grab_click_focus">
@@ -374,7 +377,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the Control is the current focused control (see [method set_focus_mode]).
+				Returns [code]true[/code] if this is the current focused control. See [member focus_mode].
 			</description>
 		</method>
 		<method name="has_font" qualifiers="const">
@@ -457,7 +460,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Give up the focus, no other control will be able to receive keyboard input.
+				Give up the focus. No other control will be able to receive keyboard input.
 			</description>
 		</method>
 		<method name="set_anchor">
@@ -516,7 +519,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Sets MARGIN_LEFT and MARGIN_TOP at the same time. This is a helper (see [method set_margin]).
+				Sets [member margin_left] and [member margin_top] at the same time.
 			</description>
 		</method>
 		<method name="set_drag_forwarding">
@@ -534,15 +537,15 @@
 				extends Control
 				func _ready():
 				    set_drag_forwarding(target_control)
-				
+
 				# TargetControl.gd
 				extends Control
 				func can_drop_data_fw(position, data, from_control):
 				    return true
-				
+
 				func drop_data_fw(position, data, from_control):
 				    my_handle_data(data)
-				
+
 				func get_drag_data_fw(position, from_control):
 				    set_drag_preview(my_preview)
 				    return my_data()
@@ -564,7 +567,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Sets MARGIN_RIGHT and MARGIN_BOTTOM at the same time. This is a helper (see [method set_margin]).
+				Sets [member margin_right] and [member margin_bottom] at the same time.
 			</description>
 		</method>
 		<method name="set_margins_preset">
@@ -585,7 +588,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Set the rotation (in radians).
+				Sets the rotation (in radians).
 			</description>
 		</method>
 		<method name="show_modal">
@@ -594,7 +597,7 @@
 			<argument index="0" name="exclusive" type="bool" default="false">
 			</argument>
 			<description>
-				Display a Control as modal. Control must be a subwindow. Modal controls capture the input signals until closed or the area outside them is accessed. When a modal control loses focus, or the ESC key is pressed, they automatically hide. Modal controls are used extensively for popup dialogs and menus.
+				Displays a control as modal. Control must be a subwindow. Modal controls capture the input signals until closed or the area outside them is accessed. When a modal control loses focus, or the ESC key is pressed, they automatically hide. Modal controls are used extensively for popup dialogs and menus.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -753,22 +756,22 @@
 	</signals>
 	<constants>
 		<constant name="FOCUS_NONE" value="0" enum="FocusMode">
-			The node cannot grab focus. Use with [member set_focus_mode].
+			The node cannot grab focus. Use with [member focus_mode].
 		</constant>
 		<constant name="FOCUS_CLICK" value="1" enum="FocusMode">
-			The node can only grab focus on mouse clicks. Use with [member set_focus_mode].
+			The node can only grab focus on mouse clicks. Use with [member focus_mode].
 		</constant>
 		<constant name="FOCUS_ALL" value="2" enum="FocusMode">
-			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member set_focus_mode].
+			The node can grab focus on mouse click or using the arrows and the Tab keys on the keyboard. Use with [member focus_mode].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member rect_size] to get the new size.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_ENTER" value="41">
-			Sent when the mouse pointer enters the node's [code]Rect[/code] area.
+			Sent when the mouse pointer enters the node.
 		</constant>
 		<constant name="NOTIFICATION_MOUSE_EXIT" value="42">
-			Sent when the mouse pointer exits the node's [code]Rect[/code] area.
+			Sent when the mouse pointer exits the node.
 		</constant>
 		<constant name="NOTIFICATION_FOCUS_ENTER" value="43">
 			Sent when the node grabs focus.
@@ -777,7 +780,7 @@
 			Sent when the node loses focus.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
-			Sent when the node's [member theme] changes, right before Godot redraws the [code]Control[/code]. Happens when you call one of the [code]add_*_override[/code]
+			Sent when the node's [member theme] changes, right before Godot redraws the control. Happens when you call one of the [code]add_*_override[/code]
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Sent when an open modal dialog closes. See [member show_modal].
@@ -903,7 +906,7 @@
 			Sets the node's size flags to both fill and expand. See the 2 constants above for more information.
 		</constant>
 		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags">
-			Tells the parent [Container] to center the node in itself. It centers the [code]Control[/code] based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			Tells the parent [Container] to center the node in itself. It centers the control based on its bounding box, so it doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags">
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It doesn't work with the fill or expand size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].

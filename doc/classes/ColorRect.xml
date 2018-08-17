@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ColorRect" inherits="Control" category="Core" version="3.1">
 	<brief_description>
-		Colored rect for canvas.
+		Colored rectangle.
 	</brief_description>
 	<description>
-		An object that is represented on the canvas as a rect with color. [Color] is used to set or get color info for the rect.
+		Displays a colored rectangle.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,9 +14,9 @@
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_frame_color" getter="get_frame_color">
-			The color to fill the [code]ColorRect[/code].
+			The fill color.
 			[codeblock]
-			$ColorRect.color = Color(1, 0, 0, 1) # Set ColorRect node's color to red
+			$ColorRect.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.
 			[/codeblock]
 		</member>
 	</members>
