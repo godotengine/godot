@@ -4352,10 +4352,13 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			bool is_checked = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(p_option));
 
-			is_checked = !is_checked;
-			VisualServer::get_singleton()->instance_set_visible(origin_instance, is_checked);
+			origin_enabled = !is_checked;
+			VisualServer::get_singleton()->instance_set_visible(origin_instance, origin_enabled);
+			// Update the grid since its appearance depends on whether the origin is enabled
+			_finish_grid();
+			_init_grid();
 
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), is_checked);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), origin_enabled);
 		} break;
 		case MENU_VIEW_GRID: {
 
@@ -4778,7 +4781,11 @@ void SpatialEditor::_init_grid() {
 			Vector3 p2_dest = p2 * (-axis_n1 + axis_n2);
 
 			Color line_color = secondary_grid_color;
-			if (j % primary_grid_steps == 0) {
+			if (origin_enabled && j == 0) {
+				// Don't draw the center lines of the grid if the origin is enabled
+				// The origin would overlap the grid lines in this case, causing flickering
+				continue;
+			} else if (j % primary_grid_steps == 0) {
 				line_color = primary_grid_color;
 			}
 

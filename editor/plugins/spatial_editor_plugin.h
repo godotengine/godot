@@ -508,6 +508,7 @@ private:
 
 	RID origin;
 	RID origin_instance;
+	bool origin_enabled;
 	RID grid[3];
 	RID grid_instance[3];
 	bool grid_visible[3]; //currently visible
