@@ -74,14 +74,14 @@ void Particles2D::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 	VS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
-void Particles2D::set_visibility_rect(const Rect2 &p_aabb) {
+void Particles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
-	visibility_rect = p_aabb;
+	visibility_rect = p_visibility_rect;
 	AABB aabb;
-	aabb.position.x = p_aabb.position.x;
-	aabb.position.y = p_aabb.position.y;
-	aabb.size.x = p_aabb.size.x;
-	aabb.size.y = p_aabb.size.y;
+	aabb.position.x = p_visibility_rect.position.x;
+	aabb.position.y = p_visibility_rect.position.y;
+	aabb.size.x = p_visibility_rect.size.x;
+	aabb.size.y = p_visibility_rect.size.y;
 
 	VS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
@@ -326,7 +326,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pre_process_time", "secs"), &Particles2D::set_pre_process_time);
 	ClassDB::bind_method(D_METHOD("set_explosiveness_ratio", "ratio"), &Particles2D::set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("set_randomness_ratio", "ratio"), &Particles2D::set_randomness_ratio);
-	ClassDB::bind_method(D_METHOD("set_visibility_rect", "aabb"), &Particles2D::set_visibility_rect);
+	ClassDB::bind_method(D_METHOD("set_visibility_rect", "visibility_rect"), &Particles2D::set_visibility_rect);
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &Particles2D::set_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &Particles2D::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &Particles2D::set_fractional_delta);
@@ -378,7 +378,7 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
 	ADD_GROUP("Drawing", "");
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_rect"), "set_visibility_rect", "get_visibility_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "visibility_rect"), "set_visibility_rect", "get_visibility_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_GROUP("Process Material", "process_");
