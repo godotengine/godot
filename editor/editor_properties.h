@@ -61,6 +61,7 @@ protected:
 
 public:
 	virtual void update_property();
+	void set_placeholder(const String &p_string);
 	EditorPropertyText();
 };
 
