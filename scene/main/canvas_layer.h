@@ -45,7 +45,7 @@ class CanvasLayer : public Node {
 	real_t rot;
 	int layer;
 	Transform2D transform;
-	Ref<World2D> canvas;
+	RID canvas;
 
 	ObjectID custom_viewport_id; // to check validity
 	Viewport *custom_viewport;
@@ -93,7 +93,10 @@ public:
 	void reset_sort_index();
 	int get_sort_index();
 
+	RID get_canvas() const;
+
 	CanvasLayer();
+	~CanvasLayer();
 };
 
 #endif // CANVAS_LAYER_H
