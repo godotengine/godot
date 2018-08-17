@@ -355,12 +355,12 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 
 void AABB::grow_by(real_t p_amount) {
 
-	position.x -= p_amount;
-	position.y -= p_amount;
-	position.z -= p_amount;
-	size.x += 2.0 * p_amount;
-	size.y += 2.0 * p_amount;
-	size.z += 2.0 * p_amount;
+	position.x -= 0.5 * p_amount;
+	position.y -= 0.5 * p_amount;
+	position.z -= 0.5 * p_amount;
+	size.x += p_amount;
+	size.y += p_amount;
+	size.z += p_amount;
 }
 
 #endif // AABB_H
