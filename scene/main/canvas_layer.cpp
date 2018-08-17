@@ -133,6 +133,12 @@ Vector2 CanvasLayer::get_scale() const {
 	return scale;
 }
 
+Ref<World2D> CanvasLayer::get_world_2d() const {
+
+	ERR_EXPLAIN("CanvasLayers no longer have their own World2D. Returning an empty one.");
+	ERR_FAIL_V(Ref<World2D>());
+}
+
 void CanvasLayer::_notification(int p_what) {
 
 	switch (p_what) {
@@ -247,6 +253,7 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &CanvasLayer::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &CanvasLayer::get_custom_viewport);
 
+	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasLayer::get_world_2d);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasLayer::get_canvas);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasLayer::get_viewport);
 
