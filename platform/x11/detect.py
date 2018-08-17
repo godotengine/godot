@@ -48,6 +48,11 @@ def can_build():
         print("xrender not found.. x11 disabled.")
         return False
 
+    x11_error = os.system("pkg-config xi --modversion > /dev/null ")
+    if (x11_error):
+        print("xi not found.. Aborting.")
+        return False
+
     return True
 
 def get_opts():
@@ -170,13 +175,9 @@ def configure(env):
     env.ParseConfig('pkg-config xinerama --cflags --libs')
     env.ParseConfig('pkg-config xrandr --cflags --libs')
     env.ParseConfig('pkg-config xrender --cflags --libs')
+    env.ParseConfig('pkg-config xi --cflags --libs')
 
     if (env['touch']):
-        x11_error = os.system("pkg-config xi --modversion > /dev/null ")
-        if (x11_error):
-            print("xi not found.. cannot build with touch. Aborting.")
-            sys.exit(255)
-        env.ParseConfig('pkg-config xi --cflags --libs')
         env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
