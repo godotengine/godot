@@ -4,7 +4,7 @@
 		Button that pops out a [ColorPicker].
 	</brief_description>
 	<description>
-		Encapsulates a [ColorPicker] making it accesible by pressing a button, pressing the button will toggle the [ColorPicker] visibility
+		Encapsulates a [ColorPicker] making it accesible by pressing a button. Pressing the button will toggle the [ColorPicker] visibility.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,14 +15,14 @@
 			<return type="ColorPicker">
 			</return>
 			<description>
-				Returns the [code]ColorPicker[/code] that this [code]ColorPickerButton[/code] toggles.
+				Returns the [ColorPicker] that this node toggles.
 			</description>
 		</method>
 		<method name="get_popup">
 			<return type="PopupPanel">
 			</return>
 			<description>
-				Returns the control's [PopupPanel] which allows you to connect to Popup Signals. This allows you to handle events when the ColorPicker is shown or hidden.
+				Returns the control's [PopupPanel] which allows you to connect to popup signals. This allows you to handle events when the ColorPicker is shown or hidden.
 			</description>
 		</method>
 	</methods>
