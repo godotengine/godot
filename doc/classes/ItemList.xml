@@ -77,6 +77,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_item_custom_fg_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -223,6 +231,16 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<argument index="1" name="custom_bg_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_custom_fg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="custom_fg_color" type="Color">
 			</argument>
 			<description>
 			</description>
