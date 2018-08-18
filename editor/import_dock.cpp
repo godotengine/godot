@@ -420,10 +420,9 @@ ImportDock::ImportDock() {
 	preset->get_popup()->connect("index_pressed", this, "_preset_selected");
 	hb->add_child(preset);
 
-	import_opts = memnew(PropertyEditor);
+	import_opts = memnew(EditorInspector);
 	add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
-	import_opts->hide_top_label();
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
