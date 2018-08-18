@@ -476,6 +476,7 @@ class EditorPropertyColor : public EditorProperty {
 	GDCLASS(EditorPropertyColor, EditorProperty)
 	ColorPickerButton *picker;
 	void _color_changed(const Color &p_color);
+	void _popup_closed();
 
 protected:
 	static void _bind_methods();
