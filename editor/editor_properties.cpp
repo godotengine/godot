@@ -1734,12 +1734,18 @@ EditorPropertyTransform::EditorPropertyTransform() {
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
 
-	emit_signal("property_changed", get_edited_property(), p_color);
+	emit_signal("property_changed", get_edited_property(), p_color, true);
+}
+
+void EditorPropertyColor::_popup_closed() {
+
+	emit_signal("property_changed", get_edited_property(), picker->get_pick_color(), false);
 }
 
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
+	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1757,6 +1763,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
+	picker->connect("popup_closed", this, "_popup_closed");
 }
 
 ////////////// NODE PATH //////////////////////
