@@ -32,6 +32,7 @@
 #define TEXT_EDIT_H
 
 #include "scene/gui/control.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/main/timer.h"
@@ -265,7 +266,6 @@ private:
 	String completion_base;
 	int completion_index;
 	Rect2i completion_rect;
-	int completion_line_ofs;
 	String completion_hint;
 	int completion_hint_offset;
 
@@ -351,6 +351,8 @@ private:
 	VScrollBar *v_scroll;
 	bool updating_scrolls;
 
+	Point2 cursor_pos;
+
 	Object *tooltip_obj;
 	StringName tooltip_func;
 	Variant tooltip_ud;
@@ -358,6 +360,7 @@ private:
 	bool next_operation_is_complex;
 
 	bool callhint_below;
+	bool completion_below;
 	Vector2 callhint_offset;
 
 	String search_text;
@@ -447,11 +450,11 @@ private:
 	PoolVector<int> _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
 
 	PopupMenu *menu;
+	ItemList *completion;
 
 	void _clear();
 	void _cancel_completion();
 	void _cancel_code_hint();
-	void _confirm_completion();
 	void _update_completion_candidates();
 
 	int _calculate_spaces_till_next_left_indent(int column);
@@ -478,6 +481,33 @@ public:
 	int _is_line_in_region(int p_line);
 	ColorRegion _get_color_region(int p_region) const;
 	Map<int, Text::ColorRegionInfo> _get_line_color_region_info(int p_line) const;
+
+   struct SortOptions {
+		bool operator()(ScriptCodeCompletionOption p_a, ScriptCodeCompletionOption p_b) const {
+			//Hack check case for first character
+			String input = p_a.input.substr(0, 1);
+			if (input != p_a.input.substr(0, 1).to_lower()) { //input is upper -> prefer upper results
+				if ((int)((Array)((Array)p_a.occurrences[0])[1])[0] == 0 &&
+						(int)((Array)((Array)p_b.occurrences[0])[1])[0] == 0) {
+					if (p_a.display.substr(0, 1) != p_b.display.substr(0, 1)) {
+						return p_a.display.substr(0, 1) != p_a.display.substr(0, 1).to_lower();
+					}
+				}
+			}
+			int min_size = p_a.occurrences.size() < p_b.occurrences.size() ? p_a.occurrences.size() : p_b.occurrences.size();
+			for (int i = 0; i < min_size; i++) {
+				if (((Array)((Array)p_a.occurrences[i])[1])[0] < ((Array)((Array)p_b.occurrences[i])[1])[0])
+					return true;
+				else if (((Array)((Array)p_b.occurrences[i])[1])[0] < ((Array)((Array)p_a.occurrences[i])[1])[0])
+					return false;
+				else if (((Array)((Array)p_b.occurrences[i])[1])[1] < ((Array)((Array)p_a.occurrences[i])[1])[1])
+					return true;
+				else if (((Array)((Array)p_a.occurrences[i])[1])[1] < ((Array)((Array)p_b.occurrences[i])[1])[1])
+					return false;
+			}
+			return p_a.display.length() < p_b.display.length();
+		}
+	};
 
 	enum MenuItems {
 		MENU_CUT,
@@ -681,6 +711,7 @@ public:
 	uint32_t get_saved_version() const;
 	void tag_saved_version();
 
+	void confirm_completion(int id);
 	void menu_option(int p_option);
 
 	void set_show_line_numbers(bool p_show);

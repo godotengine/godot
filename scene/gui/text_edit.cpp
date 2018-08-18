@@ -890,10 +890,9 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			Point2 cursor_pos;
-			int cursor_insert_offset_y = 0;
+                        int cursor_insert_offset_y = 0;
 
-			// Get the highlighted words.
+                        // Get the highlighted words
 			String highlighted_text = get_selection_text();
 
 			// Check if highlighted words contains only whitespaces (tabs or spaces).
@@ -1553,106 +1552,23 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			bool completion_below = false;
-			if (completion_active) {
-				// Code completion box.
-				Ref<StyleBox> csb = get_stylebox("completion");
-				int maxlines = get_constant("completion_lines");
-				int cmax_width = get_constant("completion_max_width") * cache.font->get_char_size('x').x;
-				int scrollw = get_constant("completion_scroll_width");
-				Color scrollc = get_color("completion_scroll_color");
-
-				int lines = MIN(completion_options.size(), maxlines);
-				int w = 0;
-				int h = lines * get_row_height();
-				int nofs = cache.font->get_string_size(completion_base).width;
-
-				if (completion_options.size() < 50) {
-					for (int i = 0; i < completion_options.size(); i++) {
-						int w2 = MIN(cache.font->get_string_size(completion_options[i].display).x, cmax_width);
-						if (w2 > w)
-							w = w2;
-					}
-				} else {
-					w = cmax_width;
+			if (line_length_guideline) {
+				int x = xmargin_beg + cache.font->get_char_size('0').width * line_length_guideline_col - cursor.x_ofs;
+				if (x > xmargin_beg && x < xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x, 0), Point2(x, size.height), cache.line_length_guideline_color);
 				}
+			}
 
-				// Add space for completion icons.
-				const int icon_hsep = get_constant("hseparation", "ItemList");
-				Size2 icon_area_size(get_row_height(), get_row_height());
-				w += icon_area_size.width + icon_hsep;
-
-				int th = h + csb->get_minimum_size().y;
-
-				if (cursor_pos.y + get_row_height() + th > get_size().height) {
-					completion_rect.position.y = cursor_pos.y - th - (cache.line_spacing / 2.0f) - cursor_insert_offset_y;
-				} else {
-					completion_rect.position.y = cursor_pos.y + cache.font->get_height() + (cache.line_spacing / 2.0f) + csb->get_offset().y - cursor_insert_offset_y;
-					completion_below = true;
-				}
-
-				if (cursor_pos.x - nofs + w + scrollw > get_size().width) {
-					completion_rect.position.x = get_size().width - w - scrollw;
-				} else {
-					completion_rect.position.x = cursor_pos.x - nofs;
-				}
-
-				completion_rect.size.width = w + 2;
-				completion_rect.size.height = h;
-				if (completion_options.size() <= maxlines)
-					scrollw = 0;
-
-				draw_style_box(csb, Rect2(completion_rect.position - csb->get_offset(), completion_rect.size + csb->get_minimum_size() + Size2(scrollw, 0)));
-
-				if (cache.completion_background_color.a > 0.01) {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
-				}
-				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options.size() - lines);
-				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
-				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
-
-				for (int i = 0; i < lines; i++) {
-
-					int l = line_from + i;
-					ERR_CONTINUE(l < 0 || l >= completion_options.size());
-					Color text_color = cache.completion_font_color;
-					for (int j = 0; j < color_regions.size(); j++) {
-						if (completion_options[l].insert_text.begins_with(color_regions[j].begin_key)) {
-							text_color = color_regions[j].color;
-						}
-					}
-					int yofs = (get_row_height() - cache.font->get_height()) / 2;
-					Point2 title_pos(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs);
-
-					// Draw completion icon if it is valid.
-					Ref<Texture> icon = completion_options[l].icon;
-					Rect2 icon_area(completion_rect.position.x, completion_rect.position.y + i * get_row_height(), icon_area_size.width, icon_area_size.height);
-					if (icon.is_valid()) {
-						const real_t max_scale = 0.7f;
-						const real_t side = max_scale * icon_area.size.width;
-						real_t scale = MIN(side / icon->get_width(), side / icon->get_height());
-						Size2 icon_size = icon->get_size() * scale;
-						draw_texture_rect(icon, Rect2(icon_area.position + (icon_area.size - icon_size) / 2, icon_size));
-					}
-
-					title_pos.x = icon_area.position.x + icon_area.size.width + icon_hsep;
-					draw_string(cache.font, title_pos, completion_options[l].display, text_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
-				}
-
-				if (scrollw) {
-					// Draw a small scroll rectangle to show a position in the options.
-					float r = maxlines / (float)completion_options.size();
-					float o = line_from / (float)completion_options.size();
-					draw_rect(Rect2(completion_rect.position.x + completion_rect.size.width, completion_rect.position.y + o * completion_rect.size.y, scrollw, completion_rect.size.y * r), scrollc);
-				}
-
-				completion_line_ofs = line_from;
+			if (has_focus()) {
+				OS::get_singleton()->set_ime_active(true);
+				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
 			}
 
 			// Check to see if the hint should be drawn.
 			bool show_hint = false;
+			completion_below = true;
 			if (completion_hint != "") {
-				if (completion_active) {
+				if (completion->is_visible_in_tree()) {
 					if (completion_below && !callhint_below) {
 						show_hint = true;
 					} else if (!completion_below && callhint_below) {
@@ -1722,10 +1638,6 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			if (has_focus()) {
-				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
-			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
@@ -1734,8 +1646,8 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			OS::get_singleton()->set_ime_active(true);
-			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			Point2 _cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
+			OS::get_singleton()->set_ime_position(get_global_position() + _cursor_pos);
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
@@ -2129,35 +2041,31 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
-		if (completion_active && completion_rect.has_point(mb->get_position())) {
-
+		if (completion->is_visible_in_tree()) {
 			if (!mb->is_pressed())
 				return;
 
 			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
-				if (completion_index > 0) {
-					completion_index--;
-					completion_current = completion_options[completion_index];
-					update();
+
+				if (completion->is_anything_selected() && completion->get_current() > 0) {
+					completion->select(completion->get_current() - 1);
 				}
 			}
+
 			if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
 
-				if (completion_index < completion_options.size() - 1) {
-					completion_index++;
-					completion_current = completion_options[completion_index];
-					update();
+				if (completion->is_anything_selected() && completion->get_current() < completion->get_item_count() - 1) {
+					completion->select(completion->get_current() + 1);
 				}
 			}
 
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->get_button_index() == BUTTON_LEFT && !completion_rect.has_point(mb->get_position())) {
+				completion->select(completion->get_item_at_position(mb->get_position()));
 
-				completion_index = CLAMP(completion_line_ofs + (mb->get_position().y - completion_rect.position.y) / get_row_height(), 0, completion_options.size() - 1);
-
-				completion_current = completion_options[completion_index];
-				update();
 				if (mb->is_doubleclick())
-					_confirm_completion();
+					confirm_completion(completion->get_current());
+
+				completion->hide();
 			}
 			return;
 		} else {
@@ -2473,7 +2381,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (!k->is_pressed())
 			return;
 
-		if (completion_active) {
+		if (completion->is_visible_in_tree()) {
 			if (readonly)
 				return;
 
@@ -2486,13 +2394,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (!k->get_alt()) {
 					if (k->get_scancode() == KEY_UP) {
 
-						if (completion_index > 0) {
-							completion_index--;
+						if (completion->get_current() > 0) {
+							completion->select(completion->get_current() - 1);
 						} else {
-							completion_index = completion_options.size() - 1;
+							completion->select(completion->get_item_count() - 1);
 						}
-						completion_current = completion_options[completion_index];
-						update();
+						completion->ensure_current_is_visible();
 
 						accept_event();
 						return;
@@ -2500,13 +2407,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 					if (k->get_scancode() == KEY_DOWN) {
 
-						if (completion_index < completion_options.size() - 1) {
-							completion_index++;
+						if (completion->get_current() < completion->get_item_count() - 1) {
+							completion->select(completion->get_current() + 1);
 						} else {
-							completion_index = 0;
+							completion->select(0);
 						}
-						completion_current = completion_options[completion_index];
-						update();
+						completion->ensure_current_is_visible();
 
 						accept_event();
 						return;
@@ -2514,47 +2420,49 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 					if (k->get_scancode() == KEY_PAGEUP) {
 
-						completion_index -= get_constant("completion_lines");
-						if (completion_index < 0)
-							completion_index = 0;
-						completion_current = completion_options[completion_index];
-						update();
+						int new_index = completion->get_current() - get_constant("completion_lines");
+						if (new_index < 0)
+							new_index = 0;
+
+						completion->select(new_index);
+						completion->ensure_current_is_visible();
+
 						accept_event();
 						return;
 					}
 
 					if (k->get_scancode() == KEY_PAGEDOWN) {
 
-						completion_index += get_constant("completion_lines");
-						if (completion_index >= completion_options.size())
-							completion_index = completion_options.size() - 1;
-						completion_current = completion_options[completion_index];
-						update();
+						int new_index = completion->get_current() + get_constant("completion_lines");
+						if (new_index >= completion->get_item_count())
+							new_index = completion->get_item_count() - 1;
+
+						completion->select(new_index);
+						completion->ensure_current_is_visible();
+
 						accept_event();
 						return;
 					}
 
-					if (k->get_scancode() == KEY_HOME && completion_index > 0) {
+					if (k->get_scancode() == KEY_HOME && completion->get_current() > 0) {
 
-						completion_index = 0;
-						completion_current = completion_options[completion_index];
-						update();
+						completion->select(0);
+						completion->ensure_current_is_visible();
 						accept_event();
 						return;
 					}
 
-					if (k->get_scancode() == KEY_END && completion_index < completion_options.size() - 1) {
+					if (k->get_scancode() == KEY_END && completion->get_current() < completion_options.size() - 1) {
 
-						completion_index = completion_options.size() - 1;
-						completion_current = completion_options[completion_index];
-						update();
+						completion->select(completion->get_item_count() - 1);
+						completion->ensure_current_is_visible();
 						accept_event();
 						return;
 					}
 
 					if (k->get_scancode() == KEY_KP_ENTER || k->get_scancode() == KEY_ENTER || k->get_scancode() == KEY_TAB) {
 
-						_confirm_completion();
+						confirm_completion(completion->get_current());
 						accept_event();
 						return;
 					}
@@ -2600,7 +2508,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							end_complex_operation();
 						}
 					}
-					_update_completion_candidates();
 					accept_event();
 
 					return;
@@ -4578,8 +4485,8 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if (highlighted_word != String())
 		return CURSOR_POINTING_HAND;
 
-	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
-	if ((completion_active && completion_rect.has_point(p_pos))) {
+	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width;
+	if ((completion->is_visible_in_tree() && completion_rect.has_point(p_pos))) {
 		return CURSOR_ARROW;
 	}
 	if (p_pos.x < gutter) {
@@ -6208,13 +6115,13 @@ void TextEdit::set_completion(bool p_enabled, const Vector<String> &p_prefixes) 
 		completion_prefixes.insert(p_prefixes[i]);
 }
 
-void TextEdit::_confirm_completion() {
+void TextEdit::confirm_completion(int id) {
 
 	begin_complex_operation();
 
 	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
 	cursor_set_column(cursor.column - completion_base.length(), false);
-	insert_text_at_cursor(completion_current.insert_text);
+	insert_text_at_cursor(completion->get_item_text(id));
 
 	// When inserted into the middle of an existing string/method, don't add an unnecessary quote/bracket.
 	String line = text[cursor.line];
@@ -6258,10 +6165,11 @@ void TextEdit::_cancel_code_hint() {
 
 void TextEdit::_cancel_completion() {
 
-	if (!completion_active)
+        VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 0);
+	if (!completion->is_visible_in_tree())
 		return;
 
-	completion_active = false;
+	completion->hide();
 	completion_forced = false;
 	update();
 }
@@ -6272,6 +6180,7 @@ static bool _is_completable(CharType c) {
 }
 
 void TextEdit::_update_completion_candidates() {
+	completion->hide();
 
 	String l = text[cursor.line];
 	int cofs = CLAMP(cursor.column, 0, l.length());
@@ -6375,25 +6284,19 @@ void TextEdit::_update_completion_candidates() {
 		} else if (option.display.to_lower().begins_with(s.to_lower())) {
 			completion_options_casei.push_back(option);
 		}
-	}
 
-	completion_options.append_array(completion_options_casei);
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_of(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
+                // find_occurrences
+                String curr = option.display;
+                Array occurrences = curr.find_occurrences(s, false);
+                if (occurrences.size() > 0) {
+                    option.occurrences = occurrences;
+                    option.input = s;
+                }
 	}
+        completion_options.append_array(completion_options_casei);
 
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_sources.size(); i++) {
-			if (s.is_subsequence_ofi(completion_sources[i].display)) {
-				completion_options.push_back(completion_sources[i]);
-			}
-		}
-	}
+        //Sort
+        completion_options.sort_custom<TextEdit::SortOptions>();
 
 	if (completion_options.size() == 0) {
 		// No options to complete, cancel.
@@ -6408,8 +6311,64 @@ void TextEdit::_update_completion_candidates() {
 	}
 
 	// The top of the list is the best match.
-	completion_current = completion_options[0];
-	completion_enabled = true;
+        completion_current = completion_options[0].display;
+
+	if (completion_options.size() > 0) {
+		// code completion box
+                Vector2 s_size = completion->get_font("font")->get_string_size(completion_options[0].display);
+
+		int nofs = cache.font->get_string_size(completion_base).width;
+
+		int maxlines = get_constant("completion_lines");
+                int icon_width = 32; // guessing max icon width
+                int cmax_width = (get_constant("completion_max_width") * cache.font->get_char_size('x').x) + icon_width;
+                int scrollw = get_constant("completion_scroll_width");
+
+                completion->clear();
+
+		for (int i = 0; i < completion_options.size(); i++) {
+                        ScriptCodeCompletionOption option = completion_options[i];
+                        completion->add_icon_item(option.icon);
+                        completion->set_item_text(i, option.display);
+			completion->set_item_custom_hl_color(completion->get_item_count() - 1, Color(1, 0, 0));
+
+                        completion->set_item_highlights(completion->get_item_count() - 1, option.occurrences); // TODO add occurrences
+
+			for (int j = 0; j < color_regions.size(); j++) {
+                                if (option.display.begins_with(color_regions[j].begin_key)) {
+					completion->set_item_custom_fg_color(i, color_regions[j].color);
+				}
+			}
+		}
+
+                int w = MIN(completion->get_max_length(), cmax_width) + 20;
+		int h = MIN(((completion_options.size() + 1) * s_size.height) + 3, maxlines * s_size.height);
+
+		if (cursor_pos.y + get_row_height() + h > get_size().height) {
+			completion_rect.position.y = cursor_pos.y - h;
+		} else {
+			completion_rect.position.y = cursor_pos.y + get_row_height();
+			completion_below = true;
+		}
+
+		if (cursor_pos.x - nofs + w + scrollw > get_size().width) {
+			completion_rect.position.x = get_size().width - w - scrollw;
+		} else {
+			completion_rect.position.x = cursor_pos.x - nofs;
+		}
+
+		completion_rect.size.width = w;
+		completion_rect.size.height = h;
+
+		completion->set_position(completion_rect.position);
+		completion->set_size(completion_rect.size);
+
+		completion->show();
+
+		completion->select(0);
+		completion->ensure_current_is_visible();
+		completion->get_h_scroll()->set_value(0);
+	}
 }
 
 void TextEdit::query_code_comple() {
@@ -6873,6 +6832,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_color_region", "begin_key", "end_key", "color", "line_only"), &TextEdit::add_color_region, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_colors"), &TextEdit::clear_colors);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &TextEdit::menu_option);
+	ClassDB::bind_method(D_METHOD("confirm_completion", "id"), &TextEdit::confirm_completion);
 	ClassDB::bind_method(D_METHOD("get_menu"), &TextEdit::get_menu);
 
 	ClassDB::bind_method(D_METHOD("get_breakpoints"), &TextEdit::get_breakpoints_array);
@@ -7014,8 +6974,8 @@ TextEdit::TextEdit() {
 	saved_version = 0;
 
 	completion_enabled = false;
-	completion_active = false;
-	completion_line_ofs = 0;
+	completion_below = true;
+
 	tooltip_obj = NULL;
 	line_numbers = false;
 	line_numbers_zero_padded = false;
@@ -7054,6 +7014,14 @@ TextEdit::TextEdit() {
 	minimap_line_spacing = 1;
 
 	context_menu_enabled = true;
+
+	completion = memnew(ItemList);
+	completion->set_h_scroll_enabled(true);
+	add_child(completion);
+	completion->connect("item_activated", this, "confirm_completion");
+	completion->set_focus_mode(FOCUS_NONE);
+	completion->hide();
+
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.

@@ -52,6 +52,7 @@ public:
 private:
 	struct Item {
 
+		Array highlight_columns;
 		Ref<Texture> icon;
 		bool icon_transposed;
 		Rect2i icon_region;
@@ -66,6 +67,7 @@ private:
 		String tooltip;
 		Color custom_fg;
 		Color custom_bg;
+		Color custom_hl;
 
 		Rect2 rect_cache;
 		Rect2 min_rect_cache;
@@ -85,12 +87,15 @@ private:
 	bool auto_height;
 	float auto_height_value;
 
+	bool h_scroll_enabled;
+
 	Vector<Item> items;
 	Vector<int> separators;
 
 	SelectMode select_mode;
 	IconMode icon_mode;
-	VScrollBar *scroll_bar;
+	VScrollBar *v_scroll;
+	HScrollBar *h_scroll;
 
 	uint64_t search_time_msec;
 	String search_string;
@@ -118,6 +123,8 @@ private:
 	void _set_items(const Array &p_items);
 
 	void _scroll_changed(double);
+	void _h_scroll_resized();
+
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 protected:
@@ -127,6 +134,9 @@ protected:
 public:
 	void add_item(const String &p_item, const Ref<Texture> &p_texture = Ref<Texture>(), bool p_selectable = true);
 	void add_icon_item(const Ref<Texture> &p_item, bool p_selectable = true);
+
+	void set_item_highlights(int p_idx, const Array &columns);
+	Array get_item_highlights(int p_idx) const;
 
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
@@ -166,6 +176,9 @@ public:
 
 	void set_item_custom_fg_color(int p_idx, const Color &p_custom_fg_color);
 	Color get_item_custom_fg_color(int p_idx) const;
+
+	void set_item_custom_hl_color(int p_idx, const Color &p_custom_hl_color);
+	Color get_item_custom_hl_color(int p_idx) const;
 
 	void select(int p_idx, bool p_single = true);
 	void unselect(int p_idx);
@@ -226,11 +239,17 @@ public:
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
 
+	void set_h_scroll_enabled(bool p_enable);
+	bool is_h_scroll_enabled() const;
+
 	Size2 get_minimum_size() const;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 
-	VScrollBar *get_v_scroll() { return scroll_bar; }
+	int get_max_length() const;
+
+	VScrollBar *get_v_scroll() { return v_scroll; }
+	HScrollBar *get_h_scroll() { return h_scroll; }
 
 	ItemList();
 	~ItemList();

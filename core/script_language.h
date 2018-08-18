@@ -212,6 +212,8 @@ struct ScriptCodeCompletionOption {
 	Kind kind;
 	String display;
 	String insert_text;
+	String input;
+	Array occurrences;
 	RES icon;
 
 	ScriptCodeCompletionOption() {
