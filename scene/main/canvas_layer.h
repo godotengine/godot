@@ -81,6 +81,8 @@ public:
 	void set_scale(const Size2 &p_scale);
 	Size2 get_scale() const;
 
+	Ref<World2D> get_world_2d() const;
+
 	Size2 get_viewport_size() const;
 
 	RID get_viewport() const;
