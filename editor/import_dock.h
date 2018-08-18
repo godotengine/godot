@@ -31,12 +31,10 @@
 #ifndef IMPORTDOCK_H
 #define IMPORTDOCK_H
 
-#include "core/io/config_file.h"
-#include "core/io/resource_import.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
+#include "editor_file_system.h"
+#include "io/resource_import.h"
+#include "property_editor.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 
@@ -47,7 +45,7 @@ class ImportDock : public VBoxContainer {
 	Label *imported;
 	OptionButton *import_as;
 	MenuButton *preset;
-	EditorInspector *import_opts;
+	PropertyEditor *import_opts;
 
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> property_values;
