@@ -582,7 +582,8 @@ void FileDialog::set_current_file(const String &p_file) {
 	int lp = p_file.find_last(".");
 	if (lp != -1) {
 		file->select(0, lp);
-		file->grab_focus();
+		if (file->is_inside_tree())
+			file->grab_focus();
 	}
 }
 void FileDialog::set_current_path(const String &p_path) {
