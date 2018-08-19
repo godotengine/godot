@@ -349,23 +349,12 @@ void CanvasItem::_update_callback() {
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
-	const CanvasItem *ci = this;
-	Transform2D xform;
-	const CanvasItem *last_valid = NULL;
-
-	while (ci) {
-
-		last_valid = ci;
-		xform = ci->get_transform() * xform;
-		ci = ci->get_parent_item();
-	}
-
-	if (last_valid->canvas_layer)
-		return last_valid->canvas_layer->get_transform() * xform;
+	if (canvas_layer)
+		return canvas_layer->get_transform() * get_global_transform();
 	else if (is_inside_tree())
-		return get_viewport()->get_canvas_transform() * xform;
-
-	return xform;
+		return get_viewport()->get_canvas_transform() * get_global_transform();
+	else
+		return get_global_transform();
 }
 
 Transform2D CanvasItem::get_global_transform() const {
