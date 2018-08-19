@@ -79,6 +79,9 @@
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
 		</member>
+		<member name="pause" type="bool" setter="set_pause" getter="is_paused">
+			If [code]true[/code] particles are paused (no more movements). Default value: [code]false[/code].
+		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">

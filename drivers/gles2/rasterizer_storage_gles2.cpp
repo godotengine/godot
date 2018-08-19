@@ -3502,7 +3502,14 @@ RID RasterizerStorageGLES2::particles_create() {
 void RasterizerStorageGLES2::particles_set_emitting(RID p_particles, bool p_emitting) {
 }
 
+void RasterizerStorageGLES2::particles_set_pause(RID p_particles, bool p_pause) {
+}
+
 bool RasterizerStorageGLES2::particles_get_emitting(RID p_particles) {
+	return false;
+}
+
+bool RasterizerStorageGLES2::particles_get_pause(RID p_particles) {
 	return false;
 }
 

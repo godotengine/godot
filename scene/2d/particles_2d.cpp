@@ -39,6 +39,11 @@ void Particles2D::set_emitting(bool p_emitting) {
 	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
+void Particles2D::set_pause(bool p_pause) {
+
+	VS::get_singleton()->particles_set_pause(particles, p_pause);
+}
+
 void Particles2D::set_amount(int p_amount) {
 
 	ERR_FAIL_COND(p_amount < 1);
@@ -135,6 +140,10 @@ void Particles2D::set_speed_scale(float p_scale) {
 bool Particles2D::is_emitting() const {
 
 	return VS::get_singleton()->particles_get_emitting(particles);
+}
+bool Particles2D::is_paused() const {
+
+	return VS::get_singleton()->particles_get_pause(particles);
 }
 int Particles2D::get_amount() const {
 
@@ -320,6 +329,7 @@ void Particles2D::_notification(int p_what) {
 void Particles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &Particles2D::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_pause", "pause"), &Particles2D::set_pause);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &Particles2D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &Particles2D::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "secs"), &Particles2D::set_one_shot);
@@ -334,6 +344,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &Particles2D::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &Particles2D::is_emitting);
+	ClassDB::bind_method(D_METHOD("is_paused"), &Particles2D::is_paused);
 	ClassDB::bind_method(D_METHOD("get_amount"), &Particles2D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &Particles2D::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &Particles2D::get_one_shot);
@@ -367,6 +378,7 @@ void Particles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart"), &Particles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");

@@ -35,6 +35,9 @@
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
 			If [code]true[/code] particles are being emitted. Default value: [code]true[/code].
 		</member>
+		<member name="pause" type="bool" setter="set_pause" getter="is_paused">
+			If [code]true[/code] particles are paused (no more movements). Default value: [code]false[/code].
+		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins. Default value: [code]0[/code].
 		</member>
