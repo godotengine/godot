@@ -198,6 +198,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
@@ -354,6 +355,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	int srgb = p_options["flags/srgb"];
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
+	bool invert_color = p_options["process/invert_color"];
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
 	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
@@ -407,6 +409,19 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 	if (premult_alpha) {
 		image->premultiply_alpha();
+	}
+
+	if (invert_color) {
+		int height = image->get_height();
+		int width = image->get_width();
+
+		image->lock();
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
+			}
+		}
+		image->unlock();
 	}
 
 	bool detect_3d = p_options["detect_3d"];
