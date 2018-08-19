@@ -51,8 +51,8 @@ bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
-		if (m_pickRay && gObj->is_ray_pickable()) {
-			return true;
+		if (m_pickRay && !gObj->is_ray_pickable()) {
+			return false;
 		} else if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
