@@ -11,17 +11,10 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public struct Quat : IEquatable<Quat>
     {
-        private static readonly Quat identity = new Quat(0f, 0f, 0f, 1f);
-
         public real_t x;
         public real_t y;
         public real_t z;
         public real_t w;
-
-        public static Quat Identity
-        {
-            get { return identity; }
-        }
 
         public real_t this[int index]
         {
@@ -63,6 +56,16 @@ namespace Godot
             }
         }
 
+        public real_t Length
+        {
+            get { return Mathf.Sqrt(LengthSquared); }
+        }
+
+        public real_t LengthSquared
+        {
+            get { return Dot(this); }
+        }
+
         public Quat CubicSlerp(Quat b, Quat preA, Quat postB, real_t t)
         {
             real_t t2 = (1.0f - t) * t * 2f;
@@ -76,24 +79,20 @@ namespace Godot
             return x * b.x + y * b.y + z * b.z + w * b.w;
         }
 
+        public Vector3 GetEuler()
+        {
+            var basis = new Basis(this);
+            return basis.GetEuler();
+        }
+
         public Quat Inverse()
         {
             return new Quat(-x, -y, -z, w);
         }
 
-        public real_t Length()
-        {
-            return Mathf.Sqrt(LengthSquared());
-        }
-
-        public real_t LengthSquared()
-        {
-            return Dot(this);
-        }
-
         public Quat Normalized()
         {
-            return this / Length();
+            return this / Length;
         }
 
         public void Set(real_t x, real_t y, real_t z, real_t w)
@@ -103,12 +102,20 @@ namespace Godot
             this.z = z;
             this.w = w;
         }
+
         public void Set(Quat q)
         {
-            x = q.x;
-            y = q.y;
-            z = q.z;
-            w = q.w;
+            this = q;
+        }
+
+        public void SetAxisAngle(Vector3 axis, real_t angle)
+        {
+            this = new Quat(axis, angle);
+        }
+
+        public void SetEuler(Vector3 eulerYXZ)
+        {
+            this = new Quat(eulerYXZ);
         }
 
         public Quat Slerp(Quat b, real_t t)
@@ -192,6 +199,9 @@ namespace Godot
             return new Vector3(q.x, q.y, q.z);
         }
 
+        // Static Readonly Properties
+        public static Quat Identity { get; } = new Quat(0f, 0f, 0f, 1f);
+
         // Constructors 
         public Quat(real_t x, real_t y, real_t z, real_t w)
         {
@@ -199,15 +209,46 @@ namespace Godot
             this.y = y;
             this.z = z;
             this.w = w;
-        }   
-        public Quat(Quat q)
-        {                     
-            x = q.x;
-            y = q.y;
-            z = q.z;
-            w = q.w;
         }
-        
+
+        public bool IsNormalized()
+        {
+            return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
+        }
+
+        public Quat(Quat q)
+        {
+            this = q;
+        }
+
+        public Quat(Basis basis)
+        {
+            this = basis.Quat();
+        }
+
+        public Quat(Vector3 eulerYXZ)
+        {
+            real_t half_a1 = eulerYXZ.y * (real_t)0.5;
+            real_t half_a2 = eulerYXZ.x * (real_t)0.5;
+            real_t half_a3 = eulerYXZ.z * (real_t)0.5;
+
+            // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
+            // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
+            // a3 is the angle of the first rotation, following the notation in this reference.
+
+            real_t cos_a1 = Mathf.Cos(half_a1);
+            real_t sin_a1 = Mathf.Sin(half_a1);
+            real_t cos_a2 = Mathf.Cos(half_a2);
+            real_t sin_a2 = Mathf.Sin(half_a2);
+            real_t cos_a3 = Mathf.Cos(half_a3);
+            real_t sin_a3 = Mathf.Sin(half_a3);
+
+            x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
+            y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
+            z = -sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3;
+            w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
+        }
+
         public Quat(Vector3 axis, real_t angle)
         {
             real_t d = axis.Length();

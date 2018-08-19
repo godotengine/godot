@@ -134,7 +134,7 @@ Quat Quat::normalized() const {
 }
 
 bool Quat::is_normalized() const {
-	return Math::is_equal_approx(length(), 1.0);
+	return Math::is_equal_approx(length_squared(), 1.0);
 }
 
 Quat Quat::inverse() const {
