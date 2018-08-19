@@ -46,12 +46,12 @@
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("#");
-	p_delimiters->push_back("\"\"\" \"\"\"");
 }
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
+	p_delimiters->push_back("\"\"\" \"\"\"");
 }
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 #ifdef TOOLS_ENABLED
