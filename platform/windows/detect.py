@@ -172,6 +172,7 @@ def configure_msvc(env, manual_msvc_config):
             env.Append(CCFLAGS=['/O1'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
         env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
+        env.Append(LINKFLAGS=['/OPT:REF'])
 
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
@@ -180,6 +181,7 @@ def configure_msvc(env, manual_msvc_config):
             env.Append(CCFLAGS=['/O1'])
         env.AppendUnique(CPPDEFINES = ['DEBUG_ENABLED'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+        env.Append(LINKFLAGS=['/OPT:REF'])
 
     elif (env["target"] == "debug_release"):
         env.Append(CCFLAGS=['/Z7', '/Od'])
@@ -193,6 +195,10 @@ def configure_msvc(env, manual_msvc_config):
                                        'D3D_DEBUG_INFO'])
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
         env.Append(LINKFLAGS=['/DEBUG'])
+
+    if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes"):
+        env.AppendUnique(CCFLAGS=['/Z7'])
+        env.AppendUnique(LINKFLAGS=['/DEBUG'])
 
     ## Compile/link flags
 
