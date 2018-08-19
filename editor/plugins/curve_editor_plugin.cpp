@@ -616,8 +616,8 @@ void CurveEditor::_draw() {
 	Vector2 min_edge = get_world_pos(Vector2(0, view_size.y));
 	Vector2 max_edge = get_world_pos(Vector2(view_size.x, 0));
 
-	const Color grid_color0 = get_color("grid_major_color", "Editor");
-	const Color grid_color1 = get_color("grid_minor_color", "Editor");
+	const Color grid_color0 = Color(1.0, 1.0, 1.0, 0.15);
+	const Color grid_color1 = Color(1.0, 1.0, 1.0, 0.07);
 	draw_line(Vector2(min_edge.x, curve.get_min_value()), Vector2(max_edge.x, curve.get_min_value()), grid_color0);
 	draw_line(Vector2(max_edge.x, curve.get_max_value()), Vector2(min_edge.x, curve.get_max_value()), grid_color0);
 	draw_line(Vector2(0, min_edge.y), Vector2(0, max_edge.y), grid_color0);

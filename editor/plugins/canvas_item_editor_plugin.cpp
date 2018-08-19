@@ -2276,14 +2276,14 @@ void CanvasItemEditor::_draw_grid() {
 			real_grid_offset = grid_offset;
 		}
 
-		const Color grid_minor_color = get_color("grid_minor_color", "Editor");
+		const Color grid_color = EditorSettings::get_singleton()->get("editors/2d/grid_color");
 		if (grid_step.x != 0) {
 			for (int i = 0; i < s.width; i++) {
 				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i, 0)).x - real_grid_offset.x) / (grid_step.x * Math::pow(2.0, grid_step_multiplier))));
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
-					viewport->draw_line(Point2(i, 0), Point2(i, s.height), grid_minor_color);
+					viewport->draw_line(Point2(i, 0), Point2(i, s.height), grid_color);
 				last_cell = cell;
 			}
 		}
@@ -2294,7 +2294,7 @@ void CanvasItemEditor::_draw_grid() {
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
-					viewport->draw_line(Point2(0, i), Point2(s.width, i), grid_minor_color);
+					viewport->draw_line(Point2(0, i), Point2(s.width, i), grid_color);
 				last_cell = cell;
 			}
 		}

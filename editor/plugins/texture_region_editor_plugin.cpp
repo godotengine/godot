@@ -70,7 +70,7 @@ void TextureRegionEditor::_region_draw() {
 	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
 	if (snap_mode == SNAP_GRID) {
-		Color grid_color = get_color("grid_major_color", "Editor");
+		Color grid_color = Color(1.0, 1.0, 1.0, 0.15);
 		Size2 s = edit_draw->get_size();
 		int last_cell = 0;
 

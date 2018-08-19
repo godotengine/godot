@@ -381,12 +381,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("error_color", "Editor", error_color);
 	theme->set_color("property_color", "Editor", property_color);
 
-	// 2d grid color
-	const Color grid_minor_color = mono_color * Color(1.0, 1.0, 1.0, 0.07);
-	const Color grid_major_color = Color(font_color_disabled.r, font_color_disabled.g, font_color_disabled.b, 0.15);
-	theme->set_color("grid_major_color", "Editor", grid_major_color);
-	theme->set_color("grid_minor_color", "Editor", grid_minor_color);
-
 	const int thumb_size = EDITOR_DEF("filesystem/file_dialog/thumbnail_size", 64);
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
@@ -971,8 +965,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphEdit
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
-	theme->set_color("grid_major", "GraphEdit", grid_major_color);
-	theme->set_color("grid_minor", "GraphEdit", grid_minor_color);
+	theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.15));
+	theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.07));
 	theme->set_color("activity", "GraphEdit", accent_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
