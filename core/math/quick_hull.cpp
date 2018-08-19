@@ -397,7 +397,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			Map<Edge, RetFaceConnect>::Element *F = ret_edges.find(e);
 
 			ERR_CONTINUE(!F);
-
 			List<Geometry::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
 			ERR_CONTINUE(O == E);
 			ERR_CONTINUE(O == NULL);
@@ -426,7 +425,6 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 							Edge e2(idx, idxn);
 
 							Map<Edge, RetFaceConnect>::Element *F2 = ret_edges.find(e2);
-
 							ERR_CONTINUE(!F2);
 							//change faceconnect, point to this face instead
 							if (F2->get().left == O)
@@ -437,6 +435,15 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 						break;
 					}
+				}
+
+				// remove all edge connections to this face
+				for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
+					if (E->get().left == O)
+						E->get().left = NULL;
+
+					if (E->get().right == O)
+						E->get().right = NULL;
 				}
 
 				ret_edges.erase(F); //remove the edge
