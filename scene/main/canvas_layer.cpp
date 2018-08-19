@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "canvas_layer.h"
+#include "engine.h"
 #include "viewport.h"
 
 void CanvasLayer::set_layer(int p_xform) {
@@ -70,6 +71,27 @@ void CanvasLayer::_update_locrotscale() {
 	rot = transform.get_rotation();
 	scale = transform.get_scale();
 	locrotscale_dirty = false;
+}
+
+void CanvasLayer::_attach_to_viewport() {
+
+	if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
+		vp = custom_viewport;
+	} else {
+		vp = Node::get_viewport();
+	}
+	ERR_FAIL_COND(!vp);
+	viewport = vp->get_viewport_rid();
+
+	VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
+	VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
+	VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
+}
+
+void CanvasLayer::_detach_from_viewport() {
+
+	VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
+	viewport = RID();
 }
 
 void CanvasLayer::set_offset(const Vector2 &p_offset) {
@@ -133,31 +155,22 @@ Vector2 CanvasLayer::get_scale() const {
 	return scale;
 }
 
+Ref<World2D> CanvasLayer::get_world_2d() const {
+
+	return own_world;
+}
+
 void CanvasLayer::_notification(int p_what) {
 
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
-
-				vp = custom_viewport;
-			} else {
-				vp = Node::get_viewport();
-			}
-			ERR_FAIL_COND(!vp);
-			viewport = vp->get_viewport_rid();
-
-			VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
-			VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
-			VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
-
+			_attach_to_viewport();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
-			viewport = RID();
-
+			_detach_from_viewport();
 		} break;
 	}
 }
@@ -179,8 +192,7 @@ RID CanvasLayer::get_viewport() const {
 void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	ERR_FAIL_NULL(p_viewport);
 	if (is_inside_tree()) {
-		VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
-		viewport = RID();
+		_detach_from_viewport();
 	}
 
 	custom_viewport = Object::cast_to<Viewport>(p_viewport);
@@ -192,23 +204,46 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	}
 
 	if (is_inside_tree()) {
-
-		if (custom_viewport)
-			vp = custom_viewport;
-		else
-			vp = Node::get_viewport();
-
-		viewport = vp->get_viewport_rid();
-
-		VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
-		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
-		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
+		_attach_to_viewport();
 	}
 }
 
 Node *CanvasLayer::get_custom_viewport() const {
 
 	return custom_viewport;
+}
+
+void CanvasLayer::set_use_own_world(bool p_enable) {
+
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
+		// Technically, it should be possible by propagating enter/exit world notifications
+		// and having 2D physics objects handling them, but it's probably not worth
+		ERR_EXPLAIN("Own world flag can only be changed while the CanvasLayer is not in the tree.");
+		ERR_FAIL();
+	}
+
+	if (p_enable == own_world.is_valid())
+		return;
+
+	if (p_enable) {
+		own_world = Ref<World2D>(memnew(World2D));
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			// Use canvas from the World2D
+			VS::get_singleton()->free(canvas);
+			canvas = own_world->get_canvas();
+		}
+	} else {
+		own_world = Ref<World2D>();
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			// Create new canvas
+			canvas = VS::get_singleton()->canvas_create();
+		}
+	}
+}
+
+bool CanvasLayer::is_using_own_world() const {
+
+	return own_world.is_valid();
 }
 
 void CanvasLayer::reset_sort_index() {
@@ -224,6 +259,7 @@ RID CanvasLayer::get_canvas() const {
 
 	return canvas;
 }
+
 void CanvasLayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_layer", "layer"), &CanvasLayer::set_layer);
@@ -247,8 +283,12 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &CanvasLayer::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &CanvasLayer::get_custom_viewport);
 
+	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasLayer::get_world_2d);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasLayer::get_canvas);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasLayer::get_viewport);
+
+	ClassDB::bind_method(D_METHOD("set_use_own_world", "enable"), &CanvasLayer::set_use_own_world);
+	ClassDB::bind_method(D_METHOD("is_using_own_world"), &CanvasLayer::is_using_own_world);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),"set_transform","get_transform") ;
@@ -258,6 +298,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale"), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", 0), "set_custom_viewport", "get_custom_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world"), "set_use_own_world", "is_using_own_world");
 }
 
 CanvasLayer::CanvasLayer() {
@@ -267,7 +308,14 @@ CanvasLayer::CanvasLayer() {
 	rot = 0;
 	locrotscale_dirty = false;
 	layer = 1;
-	canvas = VS::get_singleton()->canvas_create();
+	own_world = Ref<World2D>(memnew(World2D));
+	// Since own world flag cannot be changed while in tree, unconditionally use own canvas in the editor
+	if (Engine::get_singleton()->is_editor_hint()) {
+		canvas = VS::get_singleton()->canvas_create();
+	} else {
+		canvas = own_world->get_canvas();
+	}
+
 	custom_viewport = NULL;
 	custom_viewport_id = 0;
 	sort_index = 0;
@@ -275,5 +323,6 @@ CanvasLayer::CanvasLayer() {
 
 CanvasLayer::~CanvasLayer() {
 
-	VS::get_singleton()->free(canvas);
+	if (own_world.is_null() || Engine::get_singleton()->is_editor_hint())
+		VS::get_singleton()->free(canvas);
 }
