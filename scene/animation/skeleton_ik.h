@@ -31,6 +31,8 @@
 #ifndef SKELETON_IK_H
 #define SKELETON_IK_H
 
+#ifndef _3D_DISABLED
+
 /**
  * @author AndreaCatania
  */
@@ -208,5 +210,7 @@ private:
 	void reload_goal();
 	void _solve_chain();
 };
+
+#endif // _3D_DISABLED
 
 #endif // SKELETON_IK_H

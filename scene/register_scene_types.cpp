@@ -51,7 +51,6 @@
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/particles_2d.h"
-
 #include "scene/2d/path_2d.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/2d/polygon_2d.h"
@@ -366,14 +365,12 @@ void register_scene_types() {
 	ClassDB::register_class<Spatial>();
 	ClassDB::register_virtual_class<SpatialGizmo>();
 	ClassDB::register_class<Skeleton>();
-	ClassDB::register_class<SkeletonIK>();
 	ClassDB::register_class<AnimationPlayer>();
 	ClassDB::register_class<Tween>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
 #ifndef _3D_DISABLED
-	ClassDB::register_class<BoneAttachment>();
 	ClassDB::register_virtual_class<VisualInstance>();
 	ClassDB::register_virtual_class<GeometryInstance>();
 	ClassDB::register_class<Camera>();
@@ -437,6 +434,9 @@ void register_scene_types() {
 	ClassDB::register_class<KinematicBody>();
 	ClassDB::register_class<PhysicalBone>();
 	ClassDB::register_class<SoftBody>();
+
+	ClassDB::register_class<SkeletonIK>();
+	ClassDB::register_class<BoneAttachment>();
 
 	ClassDB::register_class<VehicleBody>();
 	ClassDB::register_class<VehicleWheel>();
