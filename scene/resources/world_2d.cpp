@@ -350,12 +350,12 @@ void World2D::_update() {
 	indexer->_update();
 }
 
-RID World2D::get_canvas() {
+RID World2D::get_canvas() const {
 
 	return canvas;
 }
 
-RID World2D::get_space() {
+RID World2D::get_space() const {
 
 	return space;
 }

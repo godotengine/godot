@@ -846,6 +846,10 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), Ref<World2D>());
 
+	if (canvas_layer && canvas_layer->is_using_own_world()) {
+		return canvas_layer->get_world_2d();
+	}
+
 	CanvasItem *tl = get_toplevel();
 
 	if (tl->get_viewport()) {
