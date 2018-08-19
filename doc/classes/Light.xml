@@ -15,28 +15,40 @@
 	</methods>
 	<members>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only">
+			If [code]true[/code] the light only appears in the editor and will not be visible at runtime. Default value:[code]false[/code].
 		</member>
 		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light.BakeMode">
+			The light's bake mode. See [enum BakeMode].
 		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color">
+			The light's color.
 		</member>
 		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask">
+			The light will affect objects in the selected layers.
 		</member>
 		<member name="light_energy" type="float" setter="set_param" getter="get_param">
+			The light's strength multiplier.
 		</member>
 		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param">
+			Secondary multiplier used with indirect light (light bounces). This works in baked light or GIProbe.
 		</member>
 		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative">
+			If [code]true[/code] the light's effect is reversed, darkening areas and casting bright shadows. Default value: [code]false[/code].
 		</member>
 		<member name="light_specular" type="float" setter="set_param" getter="get_param">
+			The intensity of the specular blob in objects affected by the light. At [code]0[/code] the light becomes a pure diffuse light.
 		</member>
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param">
+			Used to adjust shadow appearance. Too small a value results in self shadowing, while too large a value causes shadows to separate from casters. Adjust as needed.
 		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
+			The color of shadows cast by this light.
 		</member>
 		<member name="shadow_contact" type="float" setter="set_param" getter="get_param">
+			Attempts to reduce [member shadow_bias] gap.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow">
+			If [code]true[/code] the light will cast shadows. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face">
 		</member>
@@ -75,10 +87,13 @@
 		<constant name="PARAM_MAX" value="15" enum="Param">
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
+			Light is ignored when baking. Note: hiding a light does [i]not[/i] affect baking.
 		</constant>
 		<constant name="BAKE_INDIRECT" value="1" enum="BakeMode">
+			Only indirect lighting will be baked. Default value.
 		</constant>
 		<constant name="BAKE_ALL" value="2" enum="BakeMode">
+			Both direct and indirect light will be baked. Note: you should hide the light if you don't want it to appear twice (dynamic and baked).
 		</constant>
 	</constants>
 </class>

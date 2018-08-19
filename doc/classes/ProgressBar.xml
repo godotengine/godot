@@ -14,6 +14,7 @@
 	</methods>
 	<members>
 		<member name="percent_visible" type="bool" setter="set_percent_visible" getter="is_percent_visible">
+			If [code]true[/code] the fill percentage is displayed on the bar. Default value: [code]true[/code].
 		</member>
 	</members>
 	<constants>
