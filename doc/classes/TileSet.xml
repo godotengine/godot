@@ -58,7 +58,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear all tiles.
+				Clears all tiles.
 			</description>
 		</method>
 		<method name="create_tile">
@@ -67,7 +67,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Create a new tile which will be referenced by the given ID.
+				Creates a new tile which will be referenced by the given ID.
 			</description>
 		</method>
 		<method name="find_tile_by_name" qualifiers="const">
@@ -76,21 +76,21 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Find the first tile matching the given name.
+				Returns the first tile matching the given name.
 			</description>
 		</method>
 		<method name="get_last_unused_tile_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the ID following the last currently used ID, useful when creating a new tile.
+				Returns the ID following the last currently used ID, useful when creating a new tile.
 			</description>
 		</method>
 		<method name="get_tiles_ids" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return an array of all currently used tile IDs.
+				Returns an array of all currently used tile IDs.
 			</description>
 		</method>
 		<method name="remove_tile">
@@ -99,7 +99,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Remove the tile referenced by the given ID.
+				Removes the tile referenced by the given ID.
 			</description>
 		</method>
 		<method name="tile_add_shape">
@@ -124,7 +124,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the light occluder of the tile.
+				Returns the light occluder of the tile.
 			</description>
 		</method>
 		<method name="tile_get_material" qualifiers="const">
@@ -133,7 +133,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the material of the tile.
+				Returns the material of the tile.
 			</description>
 		</method>
 		<method name="tile_get_modulate" qualifiers="const">
@@ -150,7 +150,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the name of the tile.
+				Returns the name of the tile.
 			</description>
 		</method>
 		<method name="tile_get_navigation_polygon" qualifiers="const">
@@ -159,7 +159,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the navigation polygon of the tile.
+				Returns the navigation polygon of the tile.
 			</description>
 		</method>
 		<method name="tile_get_navigation_polygon_offset" qualifiers="const">
@@ -168,7 +168,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the offset of the tile's navigation polygon.
+				Returns the offset of the tile's navigation polygon.
 			</description>
 		</method>
 		<method name="tile_get_normal_map" qualifiers="const">
@@ -185,7 +185,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the offset of the tile's light occluder.
+				Returns the offset of the tile's light occluder.
 			</description>
 		</method>
 		<method name="tile_get_region" qualifiers="const">
@@ -194,7 +194,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the tile sub-region in the texture.
+				Returns the tile sub-region in the texture.
 			</description>
 		</method>
 		<method name="tile_get_shape" qualifiers="const">
@@ -241,7 +241,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the array of shapes of the tile.
+				Returns the array of shapes of the tile.
 			</description>
 		</method>
 		<method name="tile_get_texture" qualifiers="const">
@@ -250,7 +250,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the texture of the tile.
+				Returns the texture of the tile.
 			</description>
 		</method>
 		<method name="tile_get_texture_offset" qualifiers="const">
@@ -259,7 +259,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the texture offset of the tile.
+				Returns the texture offset of the tile.
 			</description>
 		</method>
 		<method name="tile_get_tile_mode" qualifiers="const">
@@ -286,7 +286,7 @@
 			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
 			</argument>
 			<description>
-				Set a light occluder for the tile.
+				Sets a light occluder for the tile.
 			</description>
 		</method>
 		<method name="tile_set_material">
@@ -297,7 +297,7 @@
 			<argument index="1" name="material" type="ShaderMaterial">
 			</argument>
 			<description>
-				Set the material of the tile.
+				Sets the tile's material.
 			</description>
 		</method>
 		<method name="tile_set_modulate">
@@ -308,6 +308,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+				Sets the tile's modulation color.
 			</description>
 		</method>
 		<method name="tile_set_name">
@@ -318,7 +319,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Set the name of the tile, for descriptive purposes.
+				Sets the tile's name.
 			</description>
 		</method>
 		<method name="tile_set_navigation_polygon">
@@ -329,7 +330,7 @@
 			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
 			</argument>
 			<description>
-				Set a navigation polygon for the tile.
+				Sets the tile's navigation polygon.
 			</description>
 		</method>
 		<method name="tile_set_navigation_polygon_offset">
@@ -340,7 +341,7 @@
 			<argument index="1" name="navigation_polygon_offset" type="Vector2">
 			</argument>
 			<description>
-				Set an offset for the tile's navigation polygon.
+				Sets an offset for the tile's navigation polygon.
 			</description>
 		</method>
 		<method name="tile_set_normal_map">
@@ -351,6 +352,7 @@
 			<argument index="1" name="normal_map" type="Texture">
 			</argument>
 			<description>
+				Sets the tile's normal map texture.
 			</description>
 		</method>
 		<method name="tile_set_occluder_offset">
@@ -372,7 +374,7 @@
 			<argument index="1" name="region" type="Rect2">
 			</argument>
 			<description>
-				Set the tile sub-region in the texture. This is common in texture atlases.
+				Set the tile's sub-region in the texture. This is common in texture atlases.
 			</description>
 		</method>
 		<method name="tile_set_shape">
@@ -419,7 +421,7 @@
 			<argument index="1" name="shapes" type="Array">
 			</argument>
 			<description>
-				Set an array of shapes for the tile, enabling physics to collide with it.
+				Sets an array of shapes for the tile, enabling collision.
 			</description>
 		</method>
 		<method name="tile_set_texture">
@@ -430,7 +432,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Set the texture of the tile.
+				Sets the tile's texture.
 			</description>
 		</method>
 		<method name="tile_set_texture_offset">
@@ -441,7 +443,7 @@
 			<argument index="1" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
-				Set the texture offset of the tile.
+				Sets the tile's texture offset.
 			</description>
 		</method>
 		<method name="tile_set_tile_mode">
@@ -452,6 +454,7 @@
 			<argument index="1" name="tilemode" type="int" enum="TileSet.TileMode">
 			</argument>
 			<description>
+				Sets the tile's [enum TileMode].
 			</description>
 		</method>
 		<method name="tile_set_z_index">
@@ -462,6 +465,7 @@
 			<argument index="1" name="z_index" type="int">
 			</argument>
 			<description>
+				Sets the tile's drawing index.
 			</description>
 		</method>
 	</methods>
