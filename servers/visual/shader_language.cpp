@@ -3875,8 +3875,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
-				if (!uniform && (type < TYPE_FLOAT || type > TYPE_VEC4)) {
-					_set_error("Invalid type for varying, only float,vec2,vec3,vec4 allowed.");
+				if (!uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
+					_set_error("Invalid type for varying, only float,vec2,vec3,vec4,mat2,mat3,mat4 allowed.");
 					return ERR_PARSE_ERROR;
 				}
 
