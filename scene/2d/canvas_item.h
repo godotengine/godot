@@ -139,6 +139,8 @@ class CanvasItem : public Node {
 
 	GDCLASS(CanvasItem, Node);
 
+	friend class CanvasLayer;
+
 public:
 	enum BlendMode {
 
