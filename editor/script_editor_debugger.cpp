@@ -1240,6 +1240,9 @@ void ScriptEditorDebugger::stop() {
 	if (connection.is_valid()) {
 		EditorNode::get_log()->add_message("** Debug Process Stopped **");
 		connection.unref();
+
+		reason->set_text("");
+		reason->set_tooltip("");
 	}
 
 	pending_in_queue = 0;
