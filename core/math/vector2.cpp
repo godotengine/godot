@@ -122,7 +122,11 @@ Vector2 Vector2::rotated(real_t p_by) const {
 }
 
 Vector2 Vector2::project(const Vector2 &p_b) const {
-	return p_b * (dot(p_b) / p_b.dot(p_b));
+	real_t lengthsq = length_squared();
+	if (lengthsq < CMP_EPSILON) {
+		return Vector2(0, 0);
+	}
+	return p_b * (dot(p_b) / lengthsq);
 }
 
 Vector2 Vector2::snapped(const Vector2 &p_by) const {
