@@ -252,7 +252,7 @@ public:
 		int mipmaps;
 
 		bool active;
-		GLuint tex_id;
+		GLenum tex_id;
 
 		uint16_t stored_cube_sides;
 
@@ -429,8 +429,6 @@ public:
 			bool uses_screen_texture;
 			bool uses_screen_uv;
 			bool uses_time;
-			bool uses_modelview_matrix;
-			bool uses_vertex;
 
 		} canvas_item;
 

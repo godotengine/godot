@@ -208,7 +208,6 @@ public:
 	GLint get_uniform_location(int p_index) const;
 
 	static _FORCE_INLINE_ ShaderGLES2 *get_active() { return active; }
-	bool is_dirty() const;
 	bool bind();
 	void unbind();
 	void bind_uniforms();

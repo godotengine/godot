@@ -64,13 +64,9 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_PIXEL_SIZE, screen_pixel_size);
 	}
-
-	state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, state.uniforms.texpixel_size);
 }
 
 void RasterizerCanvasGLES2::canvas_begin() {
-	data.primitive = GL_TRIANGLES;
-	data.texture = GL_NONE;
 
 	state.canvas_shader.bind();
 	if (storage->frame.current_rt) {
@@ -99,7 +95,6 @@ void RasterizerCanvasGLES2::canvas_begin() {
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
-	data.texture = storage->resources.white_tex;
 
 	glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 	glDisableVertexAttribArray(VS::ARRAY_COLOR);
@@ -130,7 +125,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	state.uniforms.extra_matrix = Transform2D();
 
 	_set_uniforms();
-	state.prev_uniforms = state.uniforms;
+	_bind_quad_buffer();
 }
 
 void RasterizerCanvasGLES2::canvas_end() {
@@ -148,7 +143,6 @@ void RasterizerCanvasGLES2::canvas_end() {
 RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
 
 	RasterizerStorageGLES2::Texture *tex_return = NULL;
-	GLuint newtexid;
 
 	if (p_texture.is_valid()) {
 
@@ -158,7 +152,8 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 			state.current_tex = RID();
 			state.current_tex_ptr = NULL;
 
-			newtexid = storage->resources.white_tex;
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 		} else {
 
@@ -172,7 +167,8 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 				texture->render_target->used_in_frame = true;
 			}
 
-			newtexid = texture->tex_id;
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture->tex_id);
 
 			state.current_tex = p_texture;
 			state.current_tex_ptr = texture;
@@ -183,15 +179,8 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 		state.current_tex = RID();
 		state.current_tex_ptr = NULL;
 
-		newtexid = storage->resources.white_tex;
-	}
-
-	if (data.texture != newtexid) {
-		_flush();
-
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, newtexid);
-		data.texture = newtexid;
+		glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 	}
 
 	return tex_return;
@@ -201,46 +190,145 @@ void RasterizerCanvasGLES2::_set_texture_rect_mode(bool p_enable, bool p_ninepat
 }
 
 void RasterizerCanvasGLES2::_draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
-	_begin(GL_TRIANGLES);
-	_prepare(p_vertex_count, p_index_count);
 
-	Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
+	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
-	bool single;
-	Color color;
+	uint32_t buffer_ofs = 0;
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vector2) * p_vertex_count, p_vertices);
+	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), NULL);
+	buffer_ofs += sizeof(Vector2) * p_vertex_count;
 
 	if (p_singlecolor) {
-		single = true;
-		color = *p_colors;
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		Color m = *p_colors;
+		glVertexAttrib4f(VS::ARRAY_COLOR, m.r, m.g, m.b, m.a);
 	} else if (!p_colors) {
-		single = true;
-		color = Color(1, 1, 1, 1);
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 	} else {
-		single = false;
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		glEnableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(Color), ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(Color) * p_vertex_count;
 	}
 
-	const bool use_single_color = single;
-	const Color single_color = color;
-
-	for (int i = 0; i < p_vertex_count; ++i) {
-		v->v = p_vertices[i];
-
-		if (use_single_color)
-			v->c = single_color;
-		else
-			v->c = p_colors[i];
-
-		if (p_uvs)
-			v->uv = p_uvs[i];
-		else
-			v->uv = Vector2();
-
-		++v;
+	if (p_uvs) {
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(Vector2) * p_vertex_count;
+	} else {
+		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
 	}
 
-	memcpy(data.mem_index_buffer + data.mem_index_buffer_offset, p_indices, p_index_count * sizeof(int));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
 
-	_commit(p_vertex_count, p_index_count);
+	glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void RasterizerCanvasGLES2::_draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor) {
+
+	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+
+	uint32_t buffer_ofs = 0;
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vector2) * p_vertex_count, p_vertices);
+	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), (uint8_t *)0);
+	buffer_ofs += sizeof(Vector2) * p_vertex_count;
+
+	if (p_singlecolor) {
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		Color m = *p_colors;
+		glVertexAttrib4f(VS::ARRAY_COLOR, m.r, m.g, m.b, m.a);
+	} else if (!p_colors) {
+		glDisableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
+	} else {
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		glEnableVertexAttribArray(VS::ARRAY_COLOR);
+		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(Color), ((uint8_t *)0) + buffer_ofs);
+		buffer_ofs += sizeof(Color) * p_vertex_count;
+	}
+
+	if (p_uvs) {
+		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), ((uint8_t *)0) + buffer_ofs);
+	} else {
+		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
+	}
+
+	glDrawArrays(p_primitive, 0, p_vertex_count);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void RasterizerCanvasGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs) {
+
+	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
+
+	int color_offset = 0;
+	int uv_offset = 0;
+	int stride = 2;
+
+	if (p_colors) {
+		color_offset = stride;
+		stride += 4;
+	}
+
+	if (p_uvs) {
+		uv_offset = stride;
+		stride += 2;
+	}
+
+	float buffer_data[(2 + 2 + 4) * 4];
+
+	for (int i = 0; i < p_points; i++) {
+		buffer_data[stride * i + 0] = p_vertices[i].x;
+		buffer_data[stride * i + 1] = p_vertices[i].y;
+	}
+
+	if (p_colors) {
+		for (int i = 0; i < p_points; i++) {
+			buffer_data[stride * i + color_offset + 0] = p_colors[i].r;
+			buffer_data[stride * i + color_offset + 1] = p_colors[i].g;
+			buffer_data[stride * i + color_offset + 2] = p_colors[i].b;
+			buffer_data[stride * i + color_offset + 3] = p_colors[i].a;
+		}
+	}
+
+	if (p_uvs) {
+		for (int i = 0; i < p_points; i++) {
+			buffer_data[stride * i + uv_offset + 0] = p_uvs[i].x;
+			buffer_data[stride * i + uv_offset + 1] = p_uvs[i].y;
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, p_points * stride * 4 * sizeof(float), buffer_data);
+
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), NULL);
+
+	if (p_colors) {
+		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, stride * sizeof(float), (uint8_t *)0 + color_offset * sizeof(float));
+		glEnableVertexAttribArray(VS::ARRAY_COLOR);
+	}
+
+	if (p_uvs) {
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, stride * sizeof(float), (uint8_t *)0 + uv_offset * sizeof(float));
+		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+	}
+
+	glDrawArrays(prim[p_points], 0, p_points);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip, RasterizerStorageGLES2::Material *p_material) {
@@ -252,103 +340,67 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 		Item::Command *command = commands[i];
 
-		if (command->type != Item::Command::TYPE_RECT && state.tiled) {
-			_flush();
-			_untile();
-		}
-
 		switch (command->type) {
 
 			case Item::Command::TYPE_LINE: {
-				const Item::CommandLine *line = static_cast<Item::CommandLine *>(command);
 
-				if (line->width <= 1) {
-					const int p_vertex_count = 2;
-					const int p_index_count = 2;
+				Item::CommandLine *line = static_cast<Item::CommandLine *>(command);
 
-					_begin(GL_LINES);
-					_prepare(p_vertex_count, p_index_count);
-
-					_bind_shader(p_material);
-					_bind_canvas_texture(RID(), RID());
-
-					Vertex vertices[p_vertex_count];
-
-					vertices[0].v = Vector2(line->from.x, line->from.y);
-					vertices[0].c = line->color;
-					vertices[0].uv = Vector2();
-
-					vertices[1].v = Vector2(line->to.x, line->to.y);
-					vertices[1].c = line->color;
-					vertices[1].uv = Vector2();
-
-					memcpy(data.mem_vertex_buffer + data.mem_vertex_buffer_offset, vertices, sizeof(vertices));
-
-					const int indices[p_index_count] = { 0, 1 };
-
-					memcpy(data.mem_index_buffer + data.mem_index_buffer_offset, indices, sizeof(indices));
-
-					_commit(p_vertex_count, p_index_count);
-				} else {
-					const int p_vertex_count = 4;
-					const int p_index_count = 6;
-
-					_begin(GL_TRIANGLES);
-					_prepare(p_vertex_count, p_index_count);
-
-					_bind_shader(p_material);
-					_bind_canvas_texture(RID(), RID());
-
-					Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
-
-					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
-
-					v[0].v = line->from - t;
-					v[0].c = line->color;
-					v[0].uv = Vector2();
-
-					v[1].v = line->from + t;
-					v[1].c = line->color;
-					v[1].uv = Vector2();
-
-					v[2].v = line->to + t;
-					v[2].c = line->color;
-					v[2].uv = Vector2();
-
-					v[3].v = line->to - t;
-					v[3].c = line->color;
-					v[3].uv = Vector2();
-
-					const int indices[p_index_count] = {
-						0, 1, 2,
-						2, 3, 0
-					};
-
-					memcpy(data.mem_index_buffer + data.mem_index_buffer_offset, indices, sizeof(indices));
-
-					_commit(p_vertex_count, p_index_count);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
 				}
 
+				_bind_canvas_texture(RID(), RID());
+
+				glDisableVertexAttribArray(VS::ARRAY_COLOR);
+				glVertexAttrib4fv(VS::ARRAY_COLOR, line->color.components);
+
+				state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
+
+				if (line->width <= 1) {
+					Vector2 verts[2] = {
+						Vector2(line->from.x, line->from.y),
+						Vector2(line->to.x, line->to.y)
+					};
+
+					_draw_gui_primitive(2, verts, NULL, NULL);
+				} else {
+					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
+
+					Vector2 verts[4] = {
+						line->from - t,
+						line->from + t,
+						line->to + t,
+						line->to - t
+					};
+
+					_draw_gui_primitive(4, verts, NULL, NULL);
+				}
 			} break;
 
 			case Item::Command::TYPE_RECT: {
-				const int p_vertex_count = 4;
-				const int p_index_count = 6;
-
-				_begin(GL_TRIANGLES);
-				_prepare(p_vertex_count, p_index_count);
 
 				Item::CommandRect *r = static_cast<Item::CommandRect *>(command);
 
-				_bind_shader(p_material);
+				glDisableVertexAttribArray(VS::ARRAY_COLOR);
+				glVertexAttrib4fv(VS::ARRAY_COLOR, r->modulate.components);
 
-				Rect2 src_rect;
-				Rect2 dst_rect;
+				_bind_quad_buffer();
+
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
 
 				RasterizerStorageGLES2::Texture *tex = _bind_canvas_texture(r->texture, r->normal_map);
 
 				if (!tex) {
-					dst_rect = Rect2(r->rect.position, r->rect.size);
+					Rect2 dst_rect = Rect2(r->rect.position, r->rect.size);
 
 					if (dst_rect.size.width < 0) {
 						dst_rect.position.x += dst_rect.size.width;
@@ -359,28 +411,24 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						dst_rect.size.height *= -1;
 					}
 
-					src_rect = Rect2(0, 0, 1, 1);
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(0, 0, 1, 1));
 
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				} else {
 
-					const bool tiled = r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT);
+					bool untile = false;
 
-					if (tiled != state.tiled) {
-						_flush();
-
-						if (tiled) {
-							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-							state.tiled = true;
-						} else {
-							_untile();
-						}
+					if (r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT)) {
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+						untile = true;
 					}
 
 					Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
+					Rect2 src_rect = (r->flags & CANVAS_RECT_REGION) ? Rect2(r->source.position * texpixel_size, r->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
 
-					src_rect = (r->flags & CANVAS_RECT_REGION) ? Rect2(r->source.position * texpixel_size, r->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
-					dst_rect = Rect2(r->rect.position, r->rect.size);
+					Rect2 dst_rect = Rect2(r->rect.position, r->rect.size);
 
 					if (dst_rect.size.width < 0) {
 						dst_rect.position.x += dst_rect.size.width;
@@ -393,61 +441,48 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					if (r->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
-						src_rect.position.x -= src_rect.size.width;
 					}
+
 					if (r->flags & CANVAS_RECT_FLIP_V) {
 						src_rect.size.y *= -1;
-						src_rect.position.y -= src_rect.size.height;
 					}
+
 					if (r->flags & CANVAS_RECT_TRANSPOSE) {
 						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
 					}
 
-					state.uniforms.texpixel_size = texpixel_size;
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
+
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
+
+					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+					if (untile) {
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					}
 				}
 
-				Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-				// 0,0
-				v[0].v = dst_rect.position;
-				v[0].c = r->modulate;
-				v[0].uv = src_rect.position;
-
-				// 0,1
-				v[1].v = Vector2(dst_rect.position.x, dst_rect.position.y + dst_rect.size.y);
-				v[1].c = r->modulate;
-				v[1].uv = Vector2(src_rect.position.x, src_rect.position.y + src_rect.size.y);
-
-				// 1,1
-				v[2].v = Vector2(dst_rect.position.x + dst_rect.size.x, dst_rect.position.y + dst_rect.size.y);
-				v[2].c = r->modulate;
-				v[2].uv = Vector2(src_rect.position.x + src_rect.size.x, src_rect.position.y + src_rect.size.y);
-
-				// 1,0
-				v[3].v = Vector2(dst_rect.position.x + dst_rect.size.x, dst_rect.position.y);
-				v[3].c = r->modulate;
-				v[3].uv = Vector2(src_rect.position.x + src_rect.size.x, src_rect.position.y);
-
-				const int indices[p_index_count] = {
-					0, 1, 2,
-					2, 3, 0
-				};
-
-				memcpy(data.mem_index_buffer + data.mem_index_buffer_offset, indices, sizeof(int) * p_index_count);
-
-				_commit(p_vertex_count, p_index_count);
 			} break;
 
 			case Item::Command::TYPE_NINEPATCH: {
-				const int p_vertex_count = 16;
-				const int p_index_count = 54;
-
-				_begin(GL_TRIANGLES);
-				_prepare(p_vertex_count, p_index_count);
 
 				Item::CommandNinePatch *np = static_cast<Item::CommandNinePatch *>(command);
 
-				_bind_shader(p_material);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
+
+				glDisableVertexAttribArray(VS::ARRAY_COLOR);
+				glVertexAttrib4fv(VS::ARRAY_COLOR, np->color.components);
+
 				RasterizerStorageGLES2::Texture *tex = _bind_canvas_texture(np->texture, np->normal_map);
 
 				if (!tex) {
@@ -457,7 +492,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				Size2 texpixel_size(1.0 / tex->width, 1.0 / tex->height);
 
-				state.uniforms.texpixel_size = texpixel_size;
+				// state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
+				state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 
 				Rect2 source = np->source;
 				if (source.size.x == 0 && source.size.y == 0) {
@@ -469,83 +505,148 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				// this buffer contains [ POS POS UV UV ] *
 
-				Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
+				float buffer[16 * 2 + 16 * 2];
 
-				v[0].v = np->rect.position;
-				v[0].c = np->color;
-				v[0].uv = source.position * texpixel_size;
+				{
 
-				v[1].v = np->rect.position + Vector2(np->margin[MARGIN_LEFT], 0);
-				v[1].c = np->color;
-				v[1].uv = (source.position + Vector2(np->margin[MARGIN_LEFT], 0)) * texpixel_size;
+					// first row
 
-				v[2].v = np->rect.position + Vector2(np->rect.size.x - np->margin[MARGIN_RIGHT], 0);
-				v[2].c = np->color;
-				v[2].uv = (source.position + Vector2(source.size.x - np->margin[MARGIN_RIGHT], 0)) * texpixel_size;
+					buffer[(0 * 4 * 4) + 0] = np->rect.position.x;
+					buffer[(0 * 4 * 4) + 1] = np->rect.position.y;
 
-				v[3].v = np->rect.position + Vector2(np->rect.size.x, 0);
-				v[3].c = np->color;
-				v[3].uv = (source.position + Vector2(source.size.x, 0)) * texpixel_size;
+					buffer[(0 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 3] = source.position.y * texpixel_size.y;
 
-				v[4].v = np->rect.position + Vector2(0, np->margin[MARGIN_TOP]);
-				v[4].c = np->color;
-				v[4].uv = (source.position + Vector2(0, np->margin[MARGIN_TOP])) * texpixel_size;
+					buffer[(0 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
+					buffer[(0 * 4 * 4) + 5] = np->rect.position.y;
 
-				v[5].v = np->rect.position + Vector2(np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
-				v[5].c = np->color;
-				v[5].uv = (source.position + Vector2(np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP])) * texpixel_size;
+					buffer[(0 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 7] = source.position.y * texpixel_size.y;
 
-				v[6].v = np->rect.position + Vector2(np->rect.size.x - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				v[6].c = np->color;
-				v[6].uv = (source.position + Vector2(source.size.x - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP])) * texpixel_size;
+					buffer[(0 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
+					buffer[(0 * 4 * 4) + 9] = np->rect.position.y;
 
-				v[7].v = np->rect.position + Vector2(np->rect.size.x, np->margin[MARGIN_TOP]);
-				v[7].c = np->color;
-				v[7].uv = (source.position + Vector2(source.size.x, np->margin[MARGIN_TOP])) * texpixel_size;
+					buffer[(0 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 11] = source.position.y * texpixel_size.y;
 
-				v[8].v = np->rect.position + Vector2(0, np->rect.size.y - np->margin[MARGIN_BOTTOM]);
-				v[8].c = np->color;
-				v[8].uv = (source.position + Vector2(0, source.size.y - np->margin[MARGIN_BOTTOM])) * texpixel_size;
+					buffer[(0 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
+					buffer[(0 * 4 * 4) + 13] = np->rect.position.y;
 
-				v[9].v = np->rect.position + Vector2(np->margin[MARGIN_LEFT], np->rect.size.y - np->margin[MARGIN_BOTTOM]);
-				v[9].c = np->color;
-				v[9].uv = (source.position + Vector2(np->margin[MARGIN_LEFT], source.size.y - np->margin[MARGIN_BOTTOM])) * texpixel_size;
+					buffer[(0 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(0 * 4 * 4) + 15] = source.position.y * texpixel_size.y;
 
-				v[10].v = np->rect.position + np->rect.size - Vector2(np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
-				v[10].c = np->color;
-				v[10].uv = (source.position + source.size - Vector2(np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM])) * texpixel_size;
+					// second row
 
-				v[11].v = np->rect.position + np->rect.size - Vector2(0, np->margin[MARGIN_BOTTOM]);
-				v[11].c = np->color;
-				v[11].uv = (source.position + source.size - Vector2(0, np->margin[MARGIN_BOTTOM])) * texpixel_size;
+					buffer[(1 * 4 * 4) + 0] = np->rect.position.x;
+					buffer[(1 * 4 * 4) + 1] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-				v[12].v = np->rect.position + Vector2(0, np->rect.size.y);
-				v[12].c = np->color;
-				v[12].uv = (source.position + Vector2(0, source.size.y)) * texpixel_size;
+					buffer[(1 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 3] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
-				v[13].v = np->rect.position + Vector2(np->margin[MARGIN_LEFT], np->rect.size.y);
-				v[13].c = np->color;
-				v[13].uv = (source.position + Vector2(np->margin[MARGIN_LEFT], source.size.y)) * texpixel_size;
+					buffer[(1 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
+					buffer[(1 * 4 * 4) + 5] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-				v[14].v = np->rect.position + np->rect.size - Vector2(np->margin[MARGIN_RIGHT], 0);
-				v[14].c = np->color;
-				v[14].uv = (source.position + source.size - Vector2(np->margin[MARGIN_RIGHT], 0)) * texpixel_size;
+					buffer[(1 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 7] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
-				v[15].v = np->rect.position + np->rect.size;
-				v[15].c = np->color;
-				v[15].uv = (source.position + source.size) * texpixel_size;
+					buffer[(1 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
+					buffer[(1 * 4 * 4) + 9] = np->rect.position.y + np->margin[MARGIN_TOP];
 
-				memcpy(data.mem_index_buffer + data.mem_index_buffer_offset, data.ninepatch_elements, sizeof(data.ninepatch_elements));
+					buffer[(1 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 11] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
-				_commit(p_vertex_count, p_index_count - (np->draw_center ? 0 : 6));
+					buffer[(1 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
+					buffer[(1 * 4 * 4) + 13] = np->rect.position.y + np->margin[MARGIN_TOP];
+
+					buffer[(1 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(1 * 4 * 4) + 15] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
+
+					// thrid row
+
+					buffer[(2 * 4 * 4) + 0] = np->rect.position.x;
+					buffer[(2 * 4 * 4) + 1] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
+
+					buffer[(2 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 3] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+
+					buffer[(2 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
+					buffer[(2 * 4 * 4) + 5] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
+
+					buffer[(2 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 7] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+
+					buffer[(2 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
+					buffer[(2 * 4 * 4) + 9] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
+
+					buffer[(2 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 11] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+
+					buffer[(2 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
+					buffer[(2 * 4 * 4) + 13] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
+
+					buffer[(2 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(2 * 4 * 4) + 15] = (source.position.y + source.size.y - np->margin[MARGIN_BOTTOM]) * texpixel_size.y;
+
+					// fourth row
+
+					buffer[(3 * 4 * 4) + 0] = np->rect.position.x;
+					buffer[(3 * 4 * 4) + 1] = np->rect.position.y + np->rect.size.y;
+
+					buffer[(3 * 4 * 4) + 2] = source.position.x * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 3] = (source.position.y + source.size.y) * texpixel_size.y;
+
+					buffer[(3 * 4 * 4) + 4] = np->rect.position.x + np->margin[MARGIN_LEFT];
+					buffer[(3 * 4 * 4) + 5] = np->rect.position.y + np->rect.size.y;
+
+					buffer[(3 * 4 * 4) + 6] = (source.position.x + np->margin[MARGIN_LEFT]) * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 7] = (source.position.y + source.size.y) * texpixel_size.y;
+
+					buffer[(3 * 4 * 4) + 8] = np->rect.position.x + np->rect.size.x - np->margin[MARGIN_RIGHT];
+					buffer[(3 * 4 * 4) + 9] = np->rect.position.y + np->rect.size.y;
+
+					buffer[(3 * 4 * 4) + 10] = (source.position.x + source.size.x - np->margin[MARGIN_RIGHT]) * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 11] = (source.position.y + source.size.y) * texpixel_size.y;
+
+					buffer[(3 * 4 * 4) + 12] = np->rect.position.x + np->rect.size.x;
+					buffer[(3 * 4 * 4) + 13] = np->rect.position.y + np->rect.size.y;
+
+					buffer[(3 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
+					buffer[(3 * 4 * 4) + 15] = (source.position.y + source.size.y) * texpixel_size.y;
+
+					// print_line(String::num((source.position.y + source.size.y) * texpixel_size.y));
+				}
+
+				glBindBuffer(GL_ARRAY_BUFFER, data.ninepatch_vertices);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * (16 + 16) * 2, buffer);
+
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.ninepatch_elements);
+
+				glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+				glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+
+				glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), NULL);
+				glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (uint8_t *)0 + (sizeof(float) * 2));
+
+				glDrawElements(GL_TRIANGLES, 18 * 3 - (np->draw_center ? 0 : 6), GL_UNSIGNED_BYTE, NULL);
+
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 			} break;
 
 			case Item::Command::TYPE_CIRCLE: {
+
 				Item::CommandCircle *circle = static_cast<Item::CommandCircle *>(command);
 
-				_bind_shader(p_material);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
-				const int num_points = 32;
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
+
+				static const int num_points = 32;
 
 				Vector2 points[num_points + 1];
 				points[num_points] = circle->pos;
@@ -565,238 +666,94 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 			} break;
 
 			case Item::Command::TYPE_POLYGON: {
+
 				Item::CommandPolygon *polygon = static_cast<Item::CommandPolygon *>(command);
 
-				const int *indices = polygon->indices.ptr();
-				if (!indices) // self-intersecting polygon
-					break;
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 
-				_bind_shader(p_material);
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
+
 				RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(polygon->texture, polygon->normal_map);
 
 				if (texture) {
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-					state.uniforms.texpixel_size = texpixel_size;
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 				}
 
-				_draw_polygon(indices, polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
 			} break;
 
 			case Item::Command::TYPE_POLYLINE: {
 				Item::CommandPolyLine *pline = static_cast<Item::CommandPolyLine *>(command);
 
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
+
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
+
+				_bind_canvas_texture(RID(), RID());
+
 				if (pline->triangles.size()) {
-					const int p_vertex_count = pline->triangles.size();
-					const int p_triangle_count = p_vertex_count - 2;
-					const int p_index_count = p_triangle_count * 3;
-
-					_begin(GL_TRIANGLES);
-					_prepare(p_vertex_count, p_index_count);
-
-					_bind_shader(p_material);
-					_bind_canvas_texture(RID(), RID());
-
-					const Vector2 *t = pline->triangles.ptr();
-					Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
-
-					const bool p_singlecolor = pline->triangle_colors.size() == 1;
-					const Color *p_colors = pline->triangle_colors.ptr();
-
-					bool single;
-					Color color;
-
-					if (pline->triangle_colors.size() == 1) {
-						single = true;
-						color = *p_colors;
-					} else if (!p_colors) {
-						single = true;
-						color = Color(1, 1, 1, 1);
-					} else {
-						single = false;
-					}
-
-					const bool use_single_color = single;
-					const Color single_color = color;
-
-					for (int i = 0; i < p_vertex_count; ++i) {
-						if (use_single_color)
-							v->c = single_color;
-						else
-							v->c = p_colors[i];
-
-						v->uv = Vector2();
-						v->v = t[i];
-
-						++v;
-					}
-
-					for (int i = 0; i < p_triangle_count; ++i) {
-						const int indices[3] = {
-							i, i + 1, i + 2
-						};
-
-						memcpy(data.mem_index_buffer + data.mem_index_buffer_offset + i * 3, indices, sizeof(indices));
-					}
-
-					_commit(p_vertex_count, p_index_count);
+					_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
 				} else {
-					_begin(GL_LINES);
-
-					_bind_shader(p_material);
-					_bind_canvas_texture(RID(), RID());
-
-					const Color *p_colors = pline->line_colors.ptr();
-
-					bool single;
-					Color color;
-
-					if (pline->line_colors.size() == 1) {
-						single = true;
-						color = *p_colors;
-					} else if (!p_colors) {
-						single = true;
-						color = Color(1, 1, 1, 1);
-					} else {
-						single = false;
-					}
-
-					const bool use_single_color = single;
-					const Color single_color = color;
-
-					const Vector2 *p_lines = pline->lines.ptr();
-
 					if (pline->multiline) {
-						const int p_lines_count = pline->lines.size() / 2;
+						int todo = pline->lines.size() / 2;
+						int max_per_call = data.polygon_buffer_size / (sizeof(real_t) * 4);
+						int offset = 0;
 
-						for (int i = 0; i < p_lines_count; ++i) {
-							const int p_vertex_count = 2;
-							const int p_index_count = 2;
-
-							_prepare(p_vertex_count, p_index_count);
-
-							Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
-
-							for (int j = 0; j < 2; ++j) {
-								if (use_single_color)
-									v->c = single_color;
-								else
-									v->c = p_colors[i];
-
-								v->uv = Vector2();
-								v->v = p_lines[i * 2 + j];
-
-								++v;
-							}
-
-							const int indices[p_index_count] = { 0, 1 };
-
-							memcpy(data.mem_index_buffer + data.mem_index_buffer_offset, indices, sizeof(indices));
-
-							_commit(p_vertex_count, p_index_count);
+						while (todo) {
+							int to_draw = MIN(max_per_call, todo);
+							_draw_generic(GL_LINES, to_draw * 2, &pline->lines.ptr()[offset], NULL, pline->line_colors.size() == 1 ? pline->line_colors.ptr() : &pline->line_colors.ptr()[offset], pline->line_colors.size() == 1);
+							todo -= to_draw;
+							offset += to_draw * 2;
 						}
 					} else {
-						const int p_vertex_count = pline->lines.size();
-						const int p_lines_count = p_vertex_count - 1;
-						const int p_index_count = p_lines_count * 2;
-
-						_prepare(p_vertex_count, p_index_count);
-
-						_bind_shader(p_material);
-						_bind_canvas_texture(RID(), RID());
-
-						Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
-
-						for (int i = 0; i < p_vertex_count; ++i) {
-							if (use_single_color)
-								v->c = single_color;
-							else
-								v->c = p_colors[i];
-
-							v->uv = Vector2();
-							v->v = p_lines[i];
-
-							++v;
-						}
-
-						for (int i = 0; i < p_lines_count; ++i) {
-							const int indices[2] = { i, i + 1 };
-
-							memcpy(data.mem_index_buffer + data.mem_index_buffer_offset + i * 2, indices, sizeof(indices));
-						}
-
-						_commit(p_vertex_count, p_index_count);
+						_draw_generic(GL_LINES, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
 					}
 				}
 			} break;
 
 			case Item::Command::TYPE_PRIMITIVE: {
-				Item::CommandPrimitive *primitive = static_cast<Item::CommandPrimitive *>(command);
 
-				const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
+				Item::CommandPrimitive *primitive = static_cast<Item::CommandPrimitive *>(command);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
+
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
 
 				ERR_CONTINUE(primitive->points.size() < 1);
 
-				_bind_shader(p_material);
 				RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(primitive->texture, primitive->normal_map);
 
 				if (texture) {
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-					state.uniforms.texpixel_size = texpixel_size;
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 				}
-
-				const int p_vertex_count = primitive->points.size();
-				const int p_index_count = p_vertex_count;
-
-				_begin(prim[p_vertex_count]);
-				_prepare(p_vertex_count, p_index_count);
-
-				Vertex *v = data.mem_vertex_buffer + data.mem_vertex_buffer_offset;
-				int *index = data.mem_index_buffer + data.mem_index_buffer_offset;
-
-				Color c;
-				bool p_single_color;
-
-				const Color *p_colors = primitive->colors.ptr();
-				const Vector2 *p_uvs = primitive->uvs.ptr();
-				const Vector2 *p_points = primitive->points.ptr();
 
 				if (primitive->colors.size() == 1 && primitive->points.size() > 1) {
-					p_single_color = true;
-					c = primitive->colors[0];
+					Color c = primitive->colors[0];
+					glVertexAttrib4f(VS::ARRAY_COLOR, c.r, c.g, c.b, c.a);
 				} else if (primitive->colors.empty()) {
-					p_single_color = true;
-					c = Color(1, 1, 1, 1);
-				} else {
-					p_single_color = false;
+					glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 				}
 
-				const bool use_single_color = p_single_color;
-				const Color single_color = c;
-
-				for (int i = 0; i < p_vertex_count; ++i) {
-					if (use_single_color)
-						v->c = single_color;
-					else
-						v->c = p_colors[i];
-
-					if (p_uvs)
-						v->uv = p_uvs[i];
-					else
-						v->uv = Vector2();
-
-					v->v = p_points[i];
-
-					index[i] = i;
-
-					++v;
-				}
-
-				_commit(p_vertex_count, p_index_count);
+				_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), primitive->colors.ptr(), primitive->uvs.ptr());
 			} break;
 
 			case Item::Command::TYPE_TRANSFORM: {
 				Item::CommandTransform *transform = static_cast<Item::CommandTransform *>(command);
 				state.uniforms.extra_matrix = transform->xform;
+				state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);
 			} break;
 
 			case Item::Command::TYPE_PARTICLES: {
@@ -859,7 +816,6 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
-	data.texture = storage->resources.white_tex;
 
 	int last_blend_mode = -1;
 
@@ -869,9 +825,8 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 		Item *ci = p_item_list;
 
-		Item *material_owner = ci->material_owner ? ci->material_owner : ci;
-
 		if (current_clip != ci->final_clip_owner) {
+
 			current_clip = ci->final_clip_owner;
 
 			if (current_clip) {
@@ -894,6 +849,8 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 				_copy_texscreen(ci->copy_back_buffer->rect);
 			}
 		}
+
+		Item *material_owner = ci->material_owner ? ci->material_owner : ci;
 
 		RID material = material_owner->material;
 		RasterizerStorageGLES2::Material *material_ptr = storage->material_owner.getornull(material);
@@ -1024,10 +981,8 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 		state.uniforms.extra_matrix = Transform2D();
 
 		_set_uniforms();
-		_canvas_item_render_commands(p_item_list, NULL, reclip, material_ptr);
 
-		// TODO: figure out when to _flush to get better batching results
-		_flush();
+		_canvas_item_render_commands(p_item_list, NULL, reclip, material_ptr);
 
 		rebind_shader = true; // hacked in for now.
 
@@ -1041,8 +996,6 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 		p_item_list = p_item_list->next;
 	}
-
-	_flush();
 
 	if (current_clip) {
 		glDisable(GL_SCISSOR_TEST);
@@ -1082,40 +1035,17 @@ void RasterizerCanvasGLES2::reset_canvas() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasGLES2::draw_generic_textured_rect(const Rect2 &dst_rect, const Rect2 &src_rect) {
+void RasterizerCanvasGLES2::_bind_quad_buffer() {
+	glBindBuffer(GL_ARRAY_BUFFER, data.canvas_quad_vertices);
+	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+}
+void RasterizerCanvasGLES2::draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src) {
 
-	const int p_index_count = 6;
-	const int p_vertex_count = 4;
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::DST_RECT, Color(p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y));
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
 
-	Vertex v[p_vertex_count];
-	Color c(1, 1, 1, 1);
-
-	// 0,0
-	v[0].v = dst_rect.position;
-	v[0].c = c;
-	v[0].uv = src_rect.position;
-
-	// 0,1
-	v[1].v = Vector2(dst_rect.position.x, dst_rect.position.y + dst_rect.size.y);
-	v[1].c = c;
-	v[1].uv = Vector2(src_rect.position.x, src_rect.position.y + src_rect.size.y);
-
-	// 1,1
-	v[2].v = Vector2(dst_rect.position.x + dst_rect.size.x, dst_rect.position.y + dst_rect.size.y);
-	v[2].c = c;
-	v[2].uv = Vector2(src_rect.position.x + src_rect.size.x, src_rect.position.y + src_rect.size.y);
-
-	// 1,0
-	v[3].v = Vector2(dst_rect.position.x + dst_rect.size.x, dst_rect.position.y);
-	v[3].c = c;
-	v[3].uv = Vector2(src_rect.position.x + src_rect.size.x, src_rect.position.y);
-
-	const int indices[p_index_count] = {
-		0, 1, 2,
-		2, 3, 0
-	};
-
-	_draw(GL_TRIANGLES, p_vertex_count, v, p_index_count, indices);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_image) {
@@ -1123,36 +1053,60 @@ void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_im
 
 void RasterizerCanvasGLES2::initialize() {
 
+	// quad buffer
+	{
+		glGenBuffers(1, &data.canvas_quad_vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, data.canvas_quad_vertices);
+
+		const float qv[8] = {
+			0, 0,
+			0, 1,
+			1, 1,
+			1, 0
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, qv, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
 	// polygon buffer
 	{
 		uint32_t poly_size = GLOBAL_DEF("rendering/limits/buffers/canvas_polygon_buffer_size_kb", 128);
 		poly_size *= 1024;
 		poly_size = MAX(poly_size, (2 + 2 + 4) * 4 * sizeof(float));
-		glGenBuffers(1, &data.vertex_buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, data.vertex_buffer);
+		glGenBuffers(1, &data.polygon_buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 		glBufferData(GL_ARRAY_BUFFER, poly_size, NULL, GL_DYNAMIC_DRAW);
 
-		data.vertex_buffer_size = poly_size;
+		data.polygon_buffer_size = poly_size;
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		uint32_t index_size = GLOBAL_DEF("rendering/limits/buffers/canvas_polygon_index_size_kb", 128);
 		index_size *= 1024; // kb
-		glGenBuffers(1, &data.index_buffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.index_buffer);
+		glGenBuffers(1, &data.polygon_index_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size, NULL, GL_DYNAMIC_DRAW);
-
-		data.index_buffer_size = index_size;
-
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	// ninepatch buffers
 	{
 		// array buffer
+		glGenBuffers(1, &data.ninepatch_vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, data.ninepatch_vertices);
+
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * (16 + 16) * 2, NULL, GL_DYNAMIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// element buffer
+		glGenBuffers(1, &data.ninepatch_elements);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.ninepatch_elements);
 
 #define _EIDX(y, x) (y * 4 + x)
-		const int elems[3 * 2 * 9] = {
+		uint8_t elems[3 * 2 * 9] = {
 
 			// first row
 
@@ -1196,24 +1150,14 @@ void RasterizerCanvasGLES2::initialize() {
 		;
 #undef _EIDX
 
-		memcpy(data.ninepatch_elements, elems, sizeof(elems));
-	}
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), elems, GL_STATIC_DRAW);
 
-	{
-		const uint32_t size = data.vertex_buffer_size / sizeof(Vertex);
-		data.mem_vertex_buffer = (Vertex *)memalloc(sizeof(Vertex) * size);
-		data.mem_vertex_buffer_offset = 0;
-		data.mem_vertex_buffer_size = size;
-	}
-
-	{
-		const uint32_t size = data.index_buffer_size / sizeof(int);
-		data.mem_index_buffer = (int *)memalloc(sizeof(int) * size);
-		data.mem_index_buffer_offset = 0;
-		data.mem_index_buffer_size = size;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	state.canvas_shader.init();
+
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
 
 	state.canvas_shader.bind();
 }
@@ -1222,93 +1166,4 @@ void RasterizerCanvasGLES2::finalize() {
 }
 
 RasterizerCanvasGLES2::RasterizerCanvasGLES2() {
-}
-
-void RasterizerCanvasGLES2::_begin(const GLuint p_primitive) {
-	if (data.primitive != p_primitive) {
-		_flush();
-		data.primitive = p_primitive;
-	}
-}
-
-void RasterizerCanvasGLES2::_prepare(const int p_vertex_count, const int p_index_count) {
-	if (data.mem_vertex_buffer_size - data.mem_vertex_buffer_offset < p_vertex_count ||
-			data.mem_index_buffer_size - data.mem_index_buffer_offset < p_index_count) {
-		_flush();
-	}
-}
-
-void RasterizerCanvasGLES2::_draw(const GLuint p_primitive, const int p_vertex_count, const Vertex *p_vertices, const int p_index_count, const int *p_indices) {
-	glBindBuffer(GL_ARRAY_BUFFER, data.vertex_buffer);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * p_vertex_count, p_vertices);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.index_buffer);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
-
-	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
-	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL);
-
-	glEnableVertexAttribArray(VS::ARRAY_COLOR);
-	glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), ((uint8_t *)0) + sizeof(Vector2));
-
-	glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
-	glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), ((uint8_t *)0) + sizeof(Vector2) + sizeof(Color));
-
-	glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void RasterizerCanvasGLES2::_flush() {
-	if (data.mem_vertex_buffer_offset) {
-		_draw(data.primitive, data.mem_vertex_buffer_offset, data.mem_vertex_buffer, data.mem_index_buffer_offset, data.mem_index_buffer);
-	}
-
-	data.mem_vertex_buffer_offset = 0;
-	data.mem_index_buffer_offset = 0;
-}
-
-void RasterizerCanvasGLES2::_commit(const int p_vertex_count, const int p_index_count) {
-	ERR_FAIL_COND(!p_vertex_count);
-	ERR_FAIL_COND(!p_index_count);
-
-	if (state.uniforms.extra_matrix != state.prev_uniforms.extra_matrix ||
-			state.uniforms.final_modulate != state.prev_uniforms.final_modulate ||
-			state.uniforms.modelview_matrix != state.prev_uniforms.modelview_matrix ||
-			state.uniforms.projection_matrix != state.prev_uniforms.projection_matrix ||
-			state.uniforms.texpixel_size != state.prev_uniforms.texpixel_size ||
-			state.uniforms.time != state.prev_uniforms.time) {
-
-		_set_uniforms();
-		state.prev_uniforms = state.uniforms;
-		_flush();
-	}
-
-	const int new_index_offset = data.mem_index_buffer_offset + p_index_count;
-
-	for (int i = data.mem_index_buffer_offset; i < new_index_offset; ++i)
-		data.mem_index_buffer[i] += data.mem_vertex_buffer_offset;
-
-	data.mem_vertex_buffer_offset += p_vertex_count;
-	data.mem_index_buffer_offset = new_index_offset;
-}
-
-void RasterizerCanvasGLES2::_untile() {
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	state.tiled = false;
-}
-
-void RasterizerCanvasGLES2::_bind_shader(RasterizerStorageGLES2::Material *p_material) {
-	if (!state.canvas_shader.is_dirty()) {
-		return;
-	}
-
-	_flush();
-
-	if (state.canvas_shader.bind()) {
-		state.canvas_shader.use_material((void *)p_material);
-	}
 }
