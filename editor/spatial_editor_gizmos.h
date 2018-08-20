@@ -49,6 +49,7 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room_instance.h"
+#include "scene/3d/spring_arm.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
@@ -196,6 +197,18 @@ public:
 	RayCastSpatialGizmoPlugin();
 };
 
+class SpringArmSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
+
+	GDCLASS(SpringArmSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
+
+public:
+	bool has_gizmo(Spatial *p_spatial);
+	String get_name() const;
+	void redraw(EditorSpatialGizmo *p_gizmo);
+
+	SpringArmSpatialGizmoPlugin();
+};
+
 class VehicleWheelSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(VehicleWheelSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
@@ -330,14 +343,12 @@ public:
 };
 
 class CollisionPolygonSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
-
 	GDCLASS(CollisionPolygonSpatialGizmoPlugin, EditorSpatialGizmoPlugin);
 
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
-
 	CollisionPolygonSpatialGizmoPlugin();
 };
 
