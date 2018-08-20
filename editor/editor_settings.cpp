@@ -357,6 +357,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
 
 	_initial_set("text_editor/theme/line_spacing", 4);
+	_initial_set("text_editor/theme/selection_color", Color::html("40808080"));
 
 	_load_default_text_editor_theme();
 
