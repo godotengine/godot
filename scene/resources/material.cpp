@@ -34,6 +34,8 @@
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
+	ERR_FAIL_COND(p_pass == this);
+
 	if (next_pass == p_pass)
 		return;
 
