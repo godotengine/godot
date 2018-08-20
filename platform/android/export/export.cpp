@@ -1333,12 +1333,28 @@ public:
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
+		String err;
 		r_missing_templates = find_export_template("android_debug.apk") == String() || find_export_template("android_release.apk") == String();
+
+		if (p_preset->get("custom_package/debug") != "") {
+			if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
+				r_missing_templates = false;
+			} else {
+				err += "Custom debug package not found.\n";
+			}
+		}
+
+		if (p_preset->get("custom_package/release") != "") {
+			if (FileAccess::exists(p_preset->get("custom_package/release"))) {
+				r_missing_templates = false;
+			} else {
+				err += "Custom release package not found.\n";
+			}
+		}
 
 		bool valid = !r_missing_templates;
 
 		String adb = EditorSettings::get_singleton()->get("export/android/adb");
-		String err;
 
 		if (!FileAccess::exists(adb)) {
 

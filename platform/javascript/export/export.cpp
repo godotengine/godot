@@ -140,14 +140,35 @@ Ref<Texture> EditorExportPlatformJavaScript::get_logo() const {
 
 bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	r_missing_templates = false;
+	bool valid = false;
+	String err;
 
-	if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE) == String())
-		r_missing_templates = true;
-	else if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG) == String())
-		r_missing_templates = true;
+	if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE) != "")
+		valid = true;
+	else if (find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG) != "")
+		valid = true;
 
-	return !r_missing_templates;
+	if (p_preset->get("custom_template/debug") != "") {
+		if (FileAccess::exists(p_preset->get("custom_template/debug"))) {
+			valid = true;
+		} else {
+			err += "Custom debug template not found.\n";
+		}
+	}
+
+	if (p_preset->get("custom_template/release") != "") {
+		if (FileAccess::exists(p_preset->get("custom_template/release"))) {
+			valid = true;
+		} else {
+			err += "Custom release template not found.\n";
+		}
+	}
+
+	if (!err.empty())
+		r_error = err;
+
+	r_missing_templates = !valid;
+	return valid;
 }
 
 String EditorExportPlatformJavaScript::get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
