@@ -288,7 +288,7 @@ void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
 
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
-	ClassDB::bind_method(D_METHOD("get_bone"), &Skeleton2D::get_bone);
+	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &Skeleton2D::get_skeleton);
 }
