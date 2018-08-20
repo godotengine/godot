@@ -72,6 +72,10 @@ void EditorPropertyText::update_property() {
 	updating = false;
 }
 
+void EditorPropertyText::set_placeholder(const String &p_string) {
+	text->set_placeholder(p_string);
+}
+
 void EditorPropertyText::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_text_changed", "txt"), &EditorPropertyText::_text_changed);
@@ -2783,6 +2787,9 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			} else {
 
 				EditorPropertyText *editor = memnew(EditorPropertyText);
+				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {
+					editor->set_placeholder(p_hint_text);
+				}
 				add_property_editor(p_path, editor);
 			}
 		} break;

@@ -1050,15 +1050,15 @@ public:
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/display_name"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/short_name"), "Godot"));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name"), "Godot.Engine"));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/description"), "Godot Engine"));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher"), "CN=GodotEngine"));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher_display_name"), "Godot Engine"));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/display_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/short_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game.Name"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/description"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher", PROPERTY_HINT_PLACEHOLDER_TEXT, "CN=CompanyName"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/publisher_display_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "identity/product_guid"), "00000000-0000-0000-0000-000000000000"));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "identity/publisher_guid"), "00000000-0000-0000-0000-000000000000"));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "identity/product_guid", PROPERTY_HINT_PLACEHOLDER_TEXT, "00000000-0000-0000-0000-000000000000"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "identity/publisher_guid", PROPERTY_HINT_PLACEHOLDER_TEXT, "00000000-0000-0000-0000-000000000000"), ""));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "signing/certificate", PROPERTY_HINT_GLOBAL_FILE, "*.pfx"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "signing/password"), ""));

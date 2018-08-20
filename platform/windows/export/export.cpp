@@ -137,14 +137,14 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_GLOBAL_FILE, "*.ico"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), String()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), String()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_GLOBAL_FILE, "*.ico"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_description"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/trademarks"), ""));
 }
 
 void register_windows_exporter() {
