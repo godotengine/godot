@@ -157,15 +157,18 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			//Consider revision for engine version 3.0
 			compression_code = file->get_16();
 			if (compression_code != 1 && compression_code != 3) {
-				ERR_PRINT("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
-				break;
+				file->close();
+				memdelete(file);
+				ERR_EXPLAIN("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 			format_channels = file->get_16();
 			if (format_channels != 1 && format_channels != 2) {
-
-				ERR_PRINT("Format not supported for WAVE file (not stereo or mono)");
-				break;
+				file->close();
+				memdelete(file);
+				ERR_EXPLAIN("Format not supported for WAVE file (not stereo or mono).");
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 			format_freq = file->get_32(); //sampling rate
@@ -174,10 +177,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			file->get_16(); // block align (unused)
 			format_bits = file->get_16(); // bits per sample
 
-			if (format_bits % 8) {
-
-				ERR_PRINT("Strange number of bits in sample (not 8,16,24,32)");
-				break;
+			if (format_bits % 8 || format_bits == 0) {
+				file->close();
+				memdelete(file);
+				ERR_EXPLAIN("Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 			/* Don't need anything else, continue */
@@ -185,7 +189,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 
 		if (chunkID[0] == 'd' && chunkID[1] == 'a' && chunkID[2] == 't' && chunkID[3] == 'a' && !data_found) {
-			/* IS FORMAT CHUNK */
+			/* IS DATA CHUNK */
 			data_found = true;
 
 			if (!format_found) {
