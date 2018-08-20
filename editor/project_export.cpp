@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "project_export.h"
+
 #include "compressed_translation.h"
 #include "editor_data.h"
 #include "editor_node.h"
@@ -389,7 +390,6 @@ void ProjectExportDialog::_patch_deleted() {
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
 
 	_edit_preset(presets->get_current());
-	parameters->update_tree();
 }
 
 void ProjectExportDialog::_runnable_pressed() {
@@ -842,12 +842,10 @@ ProjectExportDialog::ProjectExportDialog() {
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	parameters = memnew(PropertyEditor);
+	parameters = memnew(EditorInspector);
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
-	parameters->hide_top_label();
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
-
 	parameters->connect("property_edited", this, "_update_parameters");
 
 	VBoxContainer *resources_vb = memnew(VBoxContainer);
