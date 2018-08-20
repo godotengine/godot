@@ -345,6 +345,9 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
+	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
+
 	canvas->state.canvas_shader.set_custom_shader(0);
 	canvas->state.canvas_shader.bind();
 
@@ -356,7 +359,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 
 	// TODO normals
 
-	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 1, 1, -1));
+	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();

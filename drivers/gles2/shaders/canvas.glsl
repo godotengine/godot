@@ -20,6 +20,13 @@ varying vec4 color_interp;
 
 uniform highp vec2 color_texpixel_size;
 
+#ifdef USE_TEXTURE_RECT
+
+uniform vec4 dst_rect;
+uniform vec4 src_rect;
+
+#endif
+
 uniform highp float time;
 
 VERTEX_SHADER_GLOBALS
@@ -37,9 +44,35 @@ void main() {
 
 	vec4 color = color_attrib;
 
+#ifdef USE_TEXTURE_RECT
+
+	if (dst_rect.z < 0.0) { // Transpose is encoded as negative dst_rect.z
+		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex.yx;
+	} else {
+		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex;
+	}
+
+	vec4 outvec = vec4(0.0, 0.0, 0.0, 1.0);
+
+	// This is what is done in the GLES 3 bindings and should
+	// take care of flipped rects.
+	//
+	// But it doesn't.
+	// I don't know why, will need to investigate further.
+
+	outvec.xy = dst_rect.xy + abs(dst_rect.zw) * select(vertex, vec2(1.0, 1.0) - vertex, lessThan(src_rect.zw, vec2(0.0, 0.0)));
+
+	// outvec.xy = dst_rect.xy + abs(dst_rect.zw) * vertex;
+#else
 	vec4 outvec = vec4(vertex.xy, 0.0, 1.0);
 
+#ifdef USE_UV_ATTRIBUTE
 	uv_interp = uv_attrib;
+#else
+	uv_interp = vertex.xy;
+#endif
+
+#endif
 
 {
         vec2 src_vtx=outvec.xy;
