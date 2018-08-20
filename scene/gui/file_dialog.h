@@ -104,6 +104,7 @@ private:
 	void update_file_list();
 	void update_filters();
 
+	void _tree_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _tree_selected();
 
 	void _select_drive(int p_idx);
