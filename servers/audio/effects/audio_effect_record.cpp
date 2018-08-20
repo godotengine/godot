@@ -233,7 +233,7 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 			w[i * 2 + 1] = rr[i];
 		}
 	} else {
-		ERR_EXPLAIN("format not implemented");
+		ERR_PRINT("Format not implemented.");
 	}
 
 	Ref<AudioStreamSample> sample;
