@@ -54,6 +54,26 @@
 				Returns the amount of bitmap elements that are set to true.
 			</description>
 		</method>
+		<method name="grow_mask">
+			<return type="void">
+			</return>
+			<argument index="0" name="pixels" type="int">
+			</argument>
+			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="opaque_to_polygons" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<argument index="1" name="epsilon" type="float" default="2.0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_bit">
 			<return type="void">
 			</return>

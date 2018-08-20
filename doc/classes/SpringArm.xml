@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SpringArm" inherits="Spatial" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_excluded_object">
+			<return type="void">
+			</return>
+			<argument index="0" name="RID" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_excluded_objects">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_hit_length">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="remove_excluded_object">
+			<return type="bool">
+			</return>
+			<argument index="0" name="RID" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin">
+		</member>
+		<member name="shape" type="Shape" setter="set_shape" getter="get_shape">
+		</member>
+		<member name="spring_length" type="float" setter="set_length" getter="get_length">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

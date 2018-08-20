@@ -113,8 +113,6 @@
 	<members>
 		<member name="auto_triangles" type="bool" setter="set_auto_triangles" getter="get_auto_triangles">
 		</member>
-		<member name="blend_position" type="Vector2" setter="set_blend_position" getter="get_blend_position">
-		</member>
 		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space">
 		</member>
 		<member name="min_space" type="Vector2" setter="set_min_space" getter="get_min_space">

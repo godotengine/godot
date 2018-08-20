@@ -88,6 +88,8 @@
 		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position">
 			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accommodate it.
 		</member>
+		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled">
+		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code] the context menu will appear when right clicked.
 		</member>
@@ -172,6 +174,12 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="clear" type="Texture">
+		</theme_item>
+		<theme_item name="clear_button_color" type="Color">
+		</theme_item>
+		<theme_item name="clear_button_color_pressed" type="Color">
+		</theme_item>
 		<theme_item name="cursor_color" type="Color">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">

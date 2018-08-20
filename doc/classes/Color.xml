@@ -305,5 +305,295 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="gray" value="Color( 0.75, 0.75, 0.75, 1 )">
+		</constant>
+		<constant name="aliceblue" value="Color( 0.94, 0.97, 1, 1 )">
+		</constant>
+		<constant name="antiquewhite" value="Color( 0.98, 0.92, 0.84, 1 )">
+		</constant>
+		<constant name="aqua" value="Color( 0, 1, 1, 1 )">
+		</constant>
+		<constant name="aquamarine" value="Color( 0.5, 1, 0.83, 1 )">
+		</constant>
+		<constant name="azure" value="Color( 0.94, 1, 1, 1 )">
+		</constant>
+		<constant name="beige" value="Color( 0.96, 0.96, 0.86, 1 )">
+		</constant>
+		<constant name="bisque" value="Color( 1, 0.89, 0.77, 1 )">
+		</constant>
+		<constant name="black" value="Color( 0, 0, 0, 1 )">
+		</constant>
+		<constant name="blanchedalmond" value="Color( 1, 0.92, 0.8, 1 )">
+		</constant>
+		<constant name="blue" value="Color( 0, 0, 1, 1 )">
+		</constant>
+		<constant name="blueviolet" value="Color( 0.54, 0.17, 0.89, 1 )">
+		</constant>
+		<constant name="brown" value="Color( 0.65, 0.16, 0.16, 1 )">
+		</constant>
+		<constant name="burlywood" value="Color( 0.87, 0.72, 0.53, 1 )">
+		</constant>
+		<constant name="cadetblue" value="Color( 0.37, 0.62, 0.63, 1 )">
+		</constant>
+		<constant name="chartreuse" value="Color( 0.5, 1, 0, 1 )">
+		</constant>
+		<constant name="chocolate" value="Color( 0.82, 0.41, 0.12, 1 )">
+		</constant>
+		<constant name="coral" value="Color( 1, 0.5, 0.31, 1 )">
+		</constant>
+		<constant name="cornflower" value="Color( 0.39, 0.58, 0.93, 1 )">
+		</constant>
+		<constant name="cornsilk" value="Color( 1, 0.97, 0.86, 1 )">
+		</constant>
+		<constant name="crimson" value="Color( 0.86, 0.08, 0.24, 1 )">
+		</constant>
+		<constant name="cyan" value="Color( 0, 1, 1, 1 )">
+		</constant>
+		<constant name="darkblue" value="Color( 0, 0, 0.55, 1 )">
+		</constant>
+		<constant name="darkcyan" value="Color( 0, 0.55, 0.55, 1 )">
+		</constant>
+		<constant name="darkgoldenrod" value="Color( 0.72, 0.53, 0.04, 1 )">
+		</constant>
+		<constant name="darkgray" value="Color( 0.66, 0.66, 0.66, 1 )">
+		</constant>
+		<constant name="darkgreen" value="Color( 0, 0.39, 0, 1 )">
+		</constant>
+		<constant name="darkkhaki" value="Color( 0.74, 0.72, 0.42, 1 )">
+		</constant>
+		<constant name="darkmagenta" value="Color( 0.55, 0, 0.55, 1 )">
+		</constant>
+		<constant name="darkolivegreen" value="Color( 0.33, 0.42, 0.18, 1 )">
+		</constant>
+		<constant name="darkorange" value="Color( 1, 0.55, 0, 1 )">
+		</constant>
+		<constant name="darkorchid" value="Color( 0.6, 0.2, 0.8, 1 )">
+		</constant>
+		<constant name="darkred" value="Color( 0.55, 0, 0, 1 )">
+		</constant>
+		<constant name="darksalmon" value="Color( 0.91, 0.59, 0.48, 1 )">
+		</constant>
+		<constant name="darkseagreen" value="Color( 0.56, 0.74, 0.56, 1 )">
+		</constant>
+		<constant name="darkslateblue" value="Color( 0.28, 0.24, 0.55, 1 )">
+		</constant>
+		<constant name="darkslategray" value="Color( 0.18, 0.31, 0.31, 1 )">
+		</constant>
+		<constant name="darkturquoise" value="Color( 0, 0.81, 0.82, 1 )">
+		</constant>
+		<constant name="darkviolet" value="Color( 0.58, 0, 0.83, 1 )">
+		</constant>
+		<constant name="deeppink" value="Color( 1, 0.08, 0.58, 1 )">
+		</constant>
+		<constant name="deepskyblue" value="Color( 0, 0.75, 1, 1 )">
+		</constant>
+		<constant name="dimgray" value="Color( 0.41, 0.41, 0.41, 1 )">
+		</constant>
+		<constant name="dodgerblue" value="Color( 0.12, 0.56, 1, 1 )">
+		</constant>
+		<constant name="firebrick" value="Color( 0.7, 0.13, 0.13, 1 )">
+		</constant>
+		<constant name="floralwhite" value="Color( 1, 0.98, 0.94, 1 )">
+		</constant>
+		<constant name="forestgreen" value="Color( 0.13, 0.55, 0.13, 1 )">
+		</constant>
+		<constant name="fuchsia" value="Color( 1, 0, 1, 1 )">
+		</constant>
+		<constant name="gainsboro" value="Color( 0.86, 0.86, 0.86, 1 )">
+		</constant>
+		<constant name="ghostwhite" value="Color( 0.97, 0.97, 1, 1 )">
+		</constant>
+		<constant name="gold" value="Color( 1, 0.84, 0, 1 )">
+		</constant>
+		<constant name="goldenrod" value="Color( 0.85, 0.65, 0.13, 1 )">
+		</constant>
+		<constant name="green" value="Color( 0, 1, 0, 1 )">
+		</constant>
+		<constant name="greenyellow" value="Color( 0.68, 1, 0.18, 1 )">
+		</constant>
+		<constant name="honeydew" value="Color( 0.94, 1, 0.94, 1 )">
+		</constant>
+		<constant name="hotpink" value="Color( 1, 0.41, 0.71, 1 )">
+		</constant>
+		<constant name="indianred" value="Color( 0.8, 0.36, 0.36, 1 )">
+		</constant>
+		<constant name="indigo" value="Color( 0.29, 0, 0.51, 1 )">
+		</constant>
+		<constant name="ivory" value="Color( 1, 1, 0.94, 1 )">
+		</constant>
+		<constant name="khaki" value="Color( 0.94, 0.9, 0.55, 1 )">
+		</constant>
+		<constant name="lavender" value="Color( 0.9, 0.9, 0.98, 1 )">
+		</constant>
+		<constant name="lavenderblush" value="Color( 1, 0.94, 0.96, 1 )">
+		</constant>
+		<constant name="lawngreen" value="Color( 0.49, 0.99, 0, 1 )">
+		</constant>
+		<constant name="lemonchiffon" value="Color( 1, 0.98, 0.8, 1 )">
+		</constant>
+		<constant name="lightblue" value="Color( 0.68, 0.85, 0.9, 1 )">
+		</constant>
+		<constant name="lightcoral" value="Color( 0.94, 0.5, 0.5, 1 )">
+		</constant>
+		<constant name="lightcyan" value="Color( 0.88, 1, 1, 1 )">
+		</constant>
+		<constant name="lightgoldenrod" value="Color( 0.98, 0.98, 0.82, 1 )">
+		</constant>
+		<constant name="lightgray" value="Color( 0.83, 0.83, 0.83, 1 )">
+		</constant>
+		<constant name="lightgreen" value="Color( 0.56, 0.93, 0.56, 1 )">
+		</constant>
+		<constant name="lightpink" value="Color( 1, 0.71, 0.76, 1 )">
+		</constant>
+		<constant name="lightsalmon" value="Color( 1, 0.63, 0.48, 1 )">
+		</constant>
+		<constant name="lightseagreen" value="Color( 0.13, 0.7, 0.67, 1 )">
+		</constant>
+		<constant name="lightskyblue" value="Color( 0.53, 0.81, 0.98, 1 )">
+		</constant>
+		<constant name="lightslategray" value="Color( 0.47, 0.53, 0.6, 1 )">
+		</constant>
+		<constant name="lightsteelblue" value="Color( 0.69, 0.77, 0.87, 1 )">
+		</constant>
+		<constant name="lightyellow" value="Color( 1, 1, 0.88, 1 )">
+		</constant>
+		<constant name="lime" value="Color( 0, 1, 0, 1 )">
+		</constant>
+		<constant name="limegreen" value="Color( 0.2, 0.8, 0.2, 1 )">
+		</constant>
+		<constant name="linen" value="Color( 0.98, 0.94, 0.9, 1 )">
+		</constant>
+		<constant name="magenta" value="Color( 1, 0, 1, 1 )">
+		</constant>
+		<constant name="maroon" value="Color( 0.69, 0.19, 0.38, 1 )">
+		</constant>
+		<constant name="mediumaquamarine" value="Color( 0.4, 0.8, 0.67, 1 )">
+		</constant>
+		<constant name="mediumblue" value="Color( 0, 0, 0.8, 1 )">
+		</constant>
+		<constant name="mediumorchid" value="Color( 0.73, 0.33, 0.83, 1 )">
+		</constant>
+		<constant name="mediumpurple" value="Color( 0.58, 0.44, 0.86, 1 )">
+		</constant>
+		<constant name="mediumseagreen" value="Color( 0.24, 0.7, 0.44, 1 )">
+		</constant>
+		<constant name="mediumslateblue" value="Color( 0.48, 0.41, 0.93, 1 )">
+		</constant>
+		<constant name="mediumspringgreen" value="Color( 0, 0.98, 0.6, 1 )">
+		</constant>
+		<constant name="mediumturquoise" value="Color( 0.28, 0.82, 0.8, 1 )">
+		</constant>
+		<constant name="mediumvioletred" value="Color( 0.78, 0.08, 0.52, 1 )">
+		</constant>
+		<constant name="midnightblue" value="Color( 0.1, 0.1, 0.44, 1 )">
+		</constant>
+		<constant name="mintcream" value="Color( 0.96, 1, 0.98, 1 )">
+		</constant>
+		<constant name="mistyrose" value="Color( 1, 0.89, 0.88, 1 )">
+		</constant>
+		<constant name="moccasin" value="Color( 1, 0.89, 0.71, 1 )">
+		</constant>
+		<constant name="navajowhite" value="Color( 1, 0.87, 0.68, 1 )">
+		</constant>
+		<constant name="navyblue" value="Color( 0, 0, 0.5, 1 )">
+		</constant>
+		<constant name="oldlace" value="Color( 0.99, 0.96, 0.9, 1 )">
+		</constant>
+		<constant name="olive" value="Color( 0.5, 0.5, 0, 1 )">
+		</constant>
+		<constant name="olivedrab" value="Color( 0.42, 0.56, 0.14, 1 )">
+		</constant>
+		<constant name="orange" value="Color( 1, 0.65, 0, 1 )">
+		</constant>
+		<constant name="orangered" value="Color( 1, 0.27, 0, 1 )">
+		</constant>
+		<constant name="orchid" value="Color( 0.85, 0.44, 0.84, 1 )">
+		</constant>
+		<constant name="palegoldenrod" value="Color( 0.93, 0.91, 0.67, 1 )">
+		</constant>
+		<constant name="palegreen" value="Color( 0.6, 0.98, 0.6, 1 )">
+		</constant>
+		<constant name="paleturquoise" value="Color( 0.69, 0.93, 0.93, 1 )">
+		</constant>
+		<constant name="palevioletred" value="Color( 0.86, 0.44, 0.58, 1 )">
+		</constant>
+		<constant name="papayawhip" value="Color( 1, 0.94, 0.84, 1 )">
+		</constant>
+		<constant name="peachpuff" value="Color( 1, 0.85, 0.73, 1 )">
+		</constant>
+		<constant name="peru" value="Color( 0.8, 0.52, 0.25, 1 )">
+		</constant>
+		<constant name="pink" value="Color( 1, 0.75, 0.8, 1 )">
+		</constant>
+		<constant name="plum" value="Color( 0.87, 0.63, 0.87, 1 )">
+		</constant>
+		<constant name="powderblue" value="Color( 0.69, 0.88, 0.9, 1 )">
+		</constant>
+		<constant name="purple" value="Color( 0.63, 0.13, 0.94, 1 )">
+		</constant>
+		<constant name="rebeccapurple" value="Color( 0.4, 0.2, 0.6, 1 )">
+		</constant>
+		<constant name="red" value="Color( 1, 0, 0, 1 )">
+		</constant>
+		<constant name="rosybrown" value="Color( 0.74, 0.56, 0.56, 1 )">
+		</constant>
+		<constant name="royalblue" value="Color( 0.25, 0.41, 0.88, 1 )">
+		</constant>
+		<constant name="saddlebrown" value="Color( 0.55, 0.27, 0.07, 1 )">
+		</constant>
+		<constant name="salmon" value="Color( 0.98, 0.5, 0.45, 1 )">
+		</constant>
+		<constant name="sandybrown" value="Color( 0.96, 0.64, 0.38, 1 )">
+		</constant>
+		<constant name="seagreen" value="Color( 0.18, 0.55, 0.34, 1 )">
+		</constant>
+		<constant name="seashell" value="Color( 1, 0.96, 0.93, 1 )">
+		</constant>
+		<constant name="sienna" value="Color( 0.63, 0.32, 0.18, 1 )">
+		</constant>
+		<constant name="silver" value="Color( 0.75, 0.75, 0.75, 1 )">
+		</constant>
+		<constant name="skyblue" value="Color( 0.53, 0.81, 0.92, 1 )">
+		</constant>
+		<constant name="slateblue" value="Color( 0.42, 0.35, 0.8, 1 )">
+		</constant>
+		<constant name="slategray" value="Color( 0.44, 0.5, 0.56, 1 )">
+		</constant>
+		<constant name="snow" value="Color( 1, 0.98, 0.98, 1 )">
+		</constant>
+		<constant name="springgreen" value="Color( 0, 1, 0.5, 1 )">
+		</constant>
+		<constant name="steelblue" value="Color( 0.27, 0.51, 0.71, 1 )">
+		</constant>
+		<constant name="tan" value="Color( 0.82, 0.71, 0.55, 1 )">
+		</constant>
+		<constant name="teal" value="Color( 0, 0.5, 0.5, 1 )">
+		</constant>
+		<constant name="thistle" value="Color( 0.85, 0.75, 0.85, 1 )">
+		</constant>
+		<constant name="tomato" value="Color( 1, 0.39, 0.28, 1 )">
+		</constant>
+		<constant name="turquoise" value="Color( 0.25, 0.88, 0.82, 1 )">
+		</constant>
+		<constant name="violet" value="Color( 0.93, 0.51, 0.93, 1 )">
+		</constant>
+		<constant name="webgray" value="Color( 0.5, 0.5, 0.5, 1 )">
+		</constant>
+		<constant name="webgreen" value="Color( 0, 0.5, 0, 1 )">
+		</constant>
+		<constant name="webmaroon" value="Color( 0.5, 0, 0, 1 )">
+		</constant>
+		<constant name="webpurple" value="Color( 0.5, 0, 0.5, 1 )">
+		</constant>
+		<constant name="wheat" value="Color( 0.96, 0.87, 0.7, 1 )">
+		</constant>
+		<constant name="white" value="Color( 1, 1, 1, 1 )">
+		</constant>
+		<constant name="whitesmoke" value="Color( 0.96, 0.96, 0.96, 1 )">
+		</constant>
+		<constant name="yellow" value="Color( 1, 1, 0, 1 )">
+		</constant>
+		<constant name="yellowgreen" value="Color( 0.6, 0.8, 0.2, 1 )">
+		</constant>
 	</constants>
 </class>

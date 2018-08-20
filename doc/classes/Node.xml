@@ -38,6 +38,12 @@
 				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
 			</description>
 		</method>
+		<method name="_get_configuration_warning" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="_input" qualifiers="virtual">
 			<return type="void">
 			</return>

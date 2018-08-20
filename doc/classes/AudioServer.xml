@@ -34,6 +34,26 @@
 				Adds an [AudioEffect] effect to the bus [code]bus_idx[/code] at [code]at_position[/code].
 			</description>
 		</method>
+		<method name="capture_get_device">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="capture_get_device_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="capture_set_device">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="generate_bus_layout" qualifiers="const">
 			<return type="AudioBusLayout">
 			</return>
@@ -328,7 +348,7 @@
 		<method name="set_device">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="device" type="String">
 			</argument>
 			<description>
 			</description>

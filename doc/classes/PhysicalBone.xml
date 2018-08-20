@@ -9,6 +9,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_bone_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_simulate_physics">
 			<return type="bool">
 			</return>

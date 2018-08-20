@@ -156,15 +156,6 @@
 				Clear all the state and reset the object being edited to zero. This ensures your plugin does not keep editing a currently existing node, or a node from the wrong scene.
 			</description>
 		</method>
-		<method name="create_spatial_gizmo" qualifiers="virtual">
-			<return type="EditorSpatialGizmo">
-			</return>
-			<argument index="0" name="for_spatial" type="Spatial">
-			</argument>
-			<description>
-				This is used for plugins that create gizmos used by the spatial editor. Just check that the node passed in the "for_spatial" argument matches your plugin.
-			</description>
-		</method>
 		<method name="edit" qualifiers="virtual">
 			<return type="void">
 			</return>

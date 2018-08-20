@@ -128,7 +128,7 @@
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
 			Repeats texture with alternate sections mirrored.
 		</constant>
-		<constant name="FLAG_VIDEO_SURFACE" value="4096" enum="Flags">
+		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
 			Texture is a video surface.
 		</constant>
 	</constants>

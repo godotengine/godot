@@ -10,6 +10,16 @@
 	</demos>
 	<methods>
 	</methods>
+	<members>
+		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent">
+		</member>
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
+		</member>
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+		</member>
+		<member name="rough" type="bool" setter="set_rough" getter="is_rough">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

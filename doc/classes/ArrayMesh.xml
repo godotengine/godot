@@ -76,9 +76,9 @@
 		<method name="lightmap_unwrap">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="arg0" type="Transform">
+			<argument index="0" name="transform" type="Transform">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="texel_size" type="float">
 			</argument>
 			<description>
 				Will perform a UV unwrap on the [code]ArrayMesh[/code] to prepare the mesh for lightmapping.

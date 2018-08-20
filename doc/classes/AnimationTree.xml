@@ -23,6 +23,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="rename_parameter">
+			<return type="void">
+			</return>
+			<argument index="0" name="old_name" type="String">
+			</argument>
+			<argument index="1" name="new_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active">

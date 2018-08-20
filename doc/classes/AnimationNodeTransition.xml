@@ -11,8 +11,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="current" type="int" setter="set_current" getter="get_current">
-		</member>
 		<member name="input_0/auto_advance" type="bool" setter="set_input_as_auto_advance" getter="is_input_set_as_auto_advance">
 		</member>
 		<member name="input_0/name" type="String" setter="set_input_caption" getter="get_input_caption">

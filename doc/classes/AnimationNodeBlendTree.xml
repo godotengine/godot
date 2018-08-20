@@ -16,6 +16,8 @@
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -49,6 +51,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_node_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -71,6 +81,16 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<argument index="1" name="new_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_node_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
 			</description>

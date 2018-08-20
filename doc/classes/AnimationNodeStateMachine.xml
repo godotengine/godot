@@ -16,6 +16,8 @@
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -28,12 +30,6 @@
 			</argument>
 			<argument index="2" name="transition" type="AnimationNodeStateMachineTransition">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_current_node" qualifiers="const">
-			<return type="String">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -61,6 +57,14 @@
 			<return type="String">
 			</return>
 			<argument index="0" name="node" type="AnimationNode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -101,12 +105,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_travel_path" qualifiers="const">
-			<return type="PoolStringArray">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -115,21 +113,13 @@
 			<description>
 			</description>
 		</method>
-		<method name="has_transition">
-			<return type="void">
+		<method name="has_transition" qualifiers="const">
+			<return type="bool">
 			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
 			<argument index="1" name="to" type="String">
 			</argument>
-			<argument index="2" name="arg2" type="AnimationNodeStateMachineTransition">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool">
-			</return>
 			<description>
 			</description>
 		</method>
@@ -185,32 +175,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_start_node">
+		<method name="set_node_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="start">
-			<return type="void">
-			</return>
-			<argument index="0" name="node" type="String">
+			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="stop">
+		<method name="set_start_node">
 			<return type="void">
 			</return>
-			<description>
-			</description>
-		</method>
-		<method name="travel">
-			<return type="bool">
-			</return>
-			<argument index="0" name="to_node" type="String">
+			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
 			</description>

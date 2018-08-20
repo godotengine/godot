@@ -16,6 +16,14 @@
 				Returns the [AABB] (also known as the bounding box) for this VisualInstance.
 			</description>
 		</method>
+		<method name="get_layer_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_transformed_aabb" qualifiers="const">
 			<return type="AABB">
 			</return>
@@ -32,6 +40,16 @@
 			<description>
 				Sets the base of the VisualInstance, which changes how the engine handles the VisualInstance under the hood.
 				It is recommended to only use set_base if you know what you're doing.
+			</description>
+		</method>
+		<method name="set_layer_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

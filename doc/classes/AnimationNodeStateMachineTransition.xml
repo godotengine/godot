@@ -11,6 +11,8 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="advance_condition" type="String" setter="set_advance_condition" getter="get_advance_condition">
+		</member>
 		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance">
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
@@ -22,6 +24,12 @@
 		<member name="xfade_time" type="float" setter="set_xfade_time" getter="get_xfade_time">
 		</member>
 	</members>
+	<signals>
+		<signal name="advance_condition_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="SWITCH_MODE_IMMEDIATE" value="0" enum="SwitchMode">
 		</constant>

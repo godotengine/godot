@@ -224,6 +224,58 @@
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
 		</member>
+		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/function_conflicts_variable" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/function_may_yield" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/function_used_as_property" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/narrowing_conversion" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unassigned_variable" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unreachable_code" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unsafe_call_argument" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unsafe_cast" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unsafe_method_access" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unsafe_property_access" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unused_argument" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/unused_variable" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/variable_conflicts_function" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/void_assignment" type="bool" setter="" getter="">
+		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="">
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="">
@@ -315,31 +367,31 @@
 		<member name="gui/timers/text_edit_idle_detect_sec" type="int" setter="" getter="">
 			Timer for detecting idle in the editor.
 		</member>
-		<member name="input/ui_accept" type="Array" setter="" getter="">
+		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_cancel" type="Array" setter="" getter="">
+		<member name="input/ui_cancel" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_down" type="Array" setter="" getter="">
+		<member name="input/ui_down" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_end" type="Array" setter="" getter="">
+		<member name="input/ui_end" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_focus_next" type="Array" setter="" getter="">
+		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_focus_prev" type="Array" setter="" getter="">
+		<member name="input/ui_focus_prev" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_home" type="Array" setter="" getter="">
+		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_left" type="Array" setter="" getter="">
+		<member name="input/ui_left" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_page_down" type="Array" setter="" getter="">
+		<member name="input/ui_page_down" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_page_up" type="Array" setter="" getter="">
+		<member name="input/ui_page_up" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_right" type="Array" setter="" getter="">
+		<member name="input/ui_right" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_select" type="Array" setter="" getter="">
+		<member name="input/ui_select" type="Dictionary" setter="" getter="">
 		</member>
-		<member name="input/ui_up" type="Array" setter="" getter="">
+		<member name="input/ui_up" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="">
 		</member>

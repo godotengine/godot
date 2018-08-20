@@ -19,6 +19,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="_clips_input" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="_get_minimum_size" qualifiers="virtual">
 			<return type="Vector2">
 			</return>

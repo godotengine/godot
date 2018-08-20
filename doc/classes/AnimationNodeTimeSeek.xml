@@ -10,10 +10,6 @@
 	</demos>
 	<methods>
 	</methods>
-	<members>
-		<member name="seek_pos" type="float" setter="set_seek_pos" getter="get_seek_pos">
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

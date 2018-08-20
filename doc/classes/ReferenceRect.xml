@@ -12,10 +12,10 @@
 	</demos>
 	<methods>
 	</methods>
-	<constants>
-	</constants>
 	<members>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
 		</member>
 	</members>
+	<constants>
+	</constants>
 </class>

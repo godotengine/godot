@@ -57,9 +57,9 @@
 		<method name="action_set_deadzone">
 			<return type="void">
 			</return>
-			<argument index="0" name="deadzone" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="deadzone" type="float">
 			</argument>
 			<description>
 			</description>

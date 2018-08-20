@@ -93,6 +93,10 @@
 				Remitted if a resource is reimported.
 			</description>
 		</signal>
+		<signal name="script_classes_updated">
+			<description>
+			</description>
+		</signal>
 		<signal name="sources_changed">
 			<argument index="0" name="exist" type="bool">
 			</argument>

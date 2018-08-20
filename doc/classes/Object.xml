@@ -420,5 +420,7 @@
 		<constant name="CONNECT_ONESHOT" value="4" enum="ConnectFlags">
 			One shot connections disconnect themselves after emission.
 		</constant>
+		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
+		</constant>
 	</constants>
 </class>

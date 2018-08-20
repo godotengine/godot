@@ -11,8 +11,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="amount" type="float" setter="set_amount" getter="get_amount">
-		</member>
 		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync">
 		</member>
 	</members>

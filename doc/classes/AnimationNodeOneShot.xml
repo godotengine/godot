@@ -15,29 +15,11 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_active" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="set_mix_mode">
 			<return type="void">
 			</return>
 			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="start">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="stop">
-			<return type="void">
-			</return>
 			<description>
 			</description>
 		</method>

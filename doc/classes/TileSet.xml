@@ -496,7 +496,7 @@
 		</constant>
 		<constant name="AUTO_TILE" value="1" enum="TileMode">
 		</constant>
-		<constant name="ANIMATED_TILE" value="2" enum="TileMode">
+		<constant name="ATLAS_TILE" value="2" enum="TileMode">
 		</constant>
 	</constants>
 </class>

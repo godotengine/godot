@@ -73,8 +73,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="blend_pos" type="float" setter="set_blend_pos" getter="get_blend_pos">
-		</member>
 		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space">
 		</member>
 		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space">

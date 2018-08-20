@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectRecord" inherits="AudioEffect" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_recording" qualifiers="const">
+			<return type="AudioStreamSample">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_recording_active" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_recording_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="record" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
