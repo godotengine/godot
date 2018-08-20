@@ -1530,6 +1530,10 @@ bool Object::is_connected(const StringName &p_signal, Object *p_to_object, const
 
 void Object::disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) {
 
+	_disconnect(p_signal, p_to_object, p_to_method);
+}
+void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force) {
+
 	ERR_FAIL_NULL(p_to_object);
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1550,9 +1554,11 @@ void Object::disconnect(const StringName &p_signal, Object *p_to_object, const S
 
 	Signal::Slot *slot = &s->slot_map[target];
 
-	slot->reference_count--; // by default is zero, if it was not referenced it will go below it
-	if (slot->reference_count >= 0) {
-		return;
+	if (!p_force) {
+		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
+		if (slot->reference_count >= 0) {
+			return;
+		}
 	}
 
 	p_to_object->connections.erase(slot->cE);
@@ -1965,13 +1971,13 @@ Object::~Object() {
 		Connection &c = E->get();
 		ERR_CONTINUE(c.source != this); //bug?
 
-		this->disconnect(c.signal, c.target, c.method);
+		this->_disconnect(c.signal, c.target, c.method, true);
 	}
 
 	while (connections.size()) {
 
 		Connection c = connections.front()->get();
-		c.source->disconnect(c.signal, c.target, c.method);
+		c.source->_disconnect(c.signal, c.target, c.method, true);
 	}
 
 	ObjectDB::remove_instance(this);

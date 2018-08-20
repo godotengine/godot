@@ -151,7 +151,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Resource *r = (Resource *)ClassDB::instance(get_class());
+	Resource *r = Object::cast_to<Resource>(ClassDB::instance(get_class()));
 	ERR_FAIL_COND_V(!r, Ref<Resource>());
 
 	r->local_scene = p_for_scene;
@@ -182,7 +182,9 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 		r->set(E->get().name, p);
 	}
 
-	return Ref<Resource>(r);
+	RES res = Ref<Resource>(r);
+
+	return res;
 }
 
 void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {

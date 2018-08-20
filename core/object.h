@@ -551,6 +551,8 @@ protected:
 	friend class ClassDB;
 	virtual void _validate_property(PropertyInfo &property) const;
 
+	void _disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force = false);
+
 public: //should be protected, but bug in clang++
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb(){};

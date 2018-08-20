@@ -314,6 +314,11 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 
 	mix = MIX_MODE_BLEND;
 	sync = false;
+
+	active = "active";
+	prev_active = "prev_active";
+	time = "time";
+	remaining = "remaining";
 }
 
 ////////////////////////////////////////////////
