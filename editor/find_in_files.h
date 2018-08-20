@@ -131,7 +131,8 @@ private:
 };
 
 class Button;
-class ItemList;
+class Tree;
+class TreeItem;
 class ProgressBar;
 
 // Display search results
@@ -159,22 +160,37 @@ private:
 	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
 	void _on_finished();
 	void _on_cancel_button_clicked();
-	void _on_result_selected(int i);
+	void _on_result_selected();
+	void _on_item_edited();
 	void _on_replace_text_changed(String text);
 	void _on_replace_all_clicked();
 
-	void apply_replaces_in_file(String fpath, PoolIntArray locations, String text);
+	struct Result {
+		int line_number;
+		int begin;
+		int end;
+		float draw_begin;
+		float draw_width;
+	};
 
+	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);
 	void update_replace_buttons();
 	String get_replace_text();
+
+	void draw_result_text(Object *item_obj, Rect2 rect);
+
 	void set_progress_visible(bool visible);
+	void clear();
 
 	FindInFiles *_finder;
 	Label *_search_text_label;
-	ItemList *_results_display;
+	Tree *_results_display;
 	Label *_status_label;
 	Button *_cancel_button;
 	ProgressBar *_progress_bar;
+	Map<String, TreeItem *> _file_items;
+	Map<TreeItem *, Result> _result_items;
+	bool _with_replace;
 
 	HBoxContainer *_replace_container;
 	LineEdit *_replace_line_edit;

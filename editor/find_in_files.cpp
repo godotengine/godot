@@ -37,10 +37,10 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/tree.h"
 
 #define ROOT_PREFIX "res://"
 
@@ -58,6 +58,34 @@ static bool is_text_char(CharType c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
+static bool find_next(const String &line, String pattern, int from, bool match_case, bool whole_words, int &out_begin, int &out_end) {
+
+	int end = from;
+
+	while (true) {
+		int begin = match_case ? line.find(pattern, end) : line.findn(pattern, end);
+
+		if (begin == -1)
+			return false;
+
+		end = begin + pattern.length();
+		out_begin = begin;
+		out_end = end;
+
+		if (whole_words) {
+			if (begin > 0 && is_text_char(line[begin - 1])) {
+				continue;
+			}
+			if (end < line.size() && is_text_char(line[end])) {
+				continue;
+			}
+		}
+
+		return true;
+	}
+}
+
+//--------------------------------------------------------------------------------
 FindInFiles::FindInFiles() {
 	_root_prefix = ROOT_PREFIX;
 	_extension_filter.insert("gd");
@@ -246,24 +274,7 @@ void FindInFiles::_scan_file(String fpath) {
 
 		String line = f->get_line();
 
-		// Find all occurrences in the current line
-		while (true) {
-			begin = _match_case ? line.find(_pattern, end) : line.findn(_pattern, end);
-
-			if (begin == -1)
-				break;
-
-			end = begin + _pattern.length();
-
-			if (_whole_words) {
-				if (begin > 0 && is_text_char(line[begin - 1])) {
-					continue;
-				}
-				if (end < line.size() && is_text_char(line[end])) {
-					continue;
-				}
-			}
-
+		while (find_next(line, _pattern, end, _match_case, _whole_words, begin, end)) {
 			emit_signal(SIGNAL_RESULT_FOUND, fpath, line_number, begin, end, line);
 		}
 	}
@@ -567,13 +578,17 @@ FindInFilesPanel::FindInFilesPanel() {
 		vbc->add_child(hbc);
 	}
 
-	// In the future, this should be replaced by a more specific list container,
-	// which can highlight text regions and change opacity for enabled/disabled states
-	_results_display = memnew(ItemList);
+	_results_display = memnew(Tree);
 	_results_display->add_font_override("font", get_font("source", "EditorFonts"));
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", this, "_on_result_selected");
+	_results_display->connect("item_edited", this, "_on_item_edited");
+	_results_display->set_hide_root(true);
+	_results_display->set_select_mode(Tree::SELECT_ROW);
+	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
+
+	_with_replace = false;
 
 	{
 		_replace_container = memnew(HBoxContainer);
@@ -600,12 +615,33 @@ FindInFilesPanel::FindInFilesPanel() {
 
 void FindInFilesPanel::set_with_replace(bool with_replace) {
 
+	_with_replace = with_replace;
 	_replace_container->set_visible(with_replace);
+
+	if (with_replace) {
+		// Results show checkboxes on their left so they can be opted out
+		_results_display->set_columns(2);
+		_results_display->set_column_expand(0, false);
+		_results_display->set_column_min_width(0, 48 * EDSCALE);
+
+	} else {
+		// Results are single-cell items
+		_results_display->set_column_expand(0, true);
+		_results_display->set_columns(1);
+	}
+}
+
+void FindInFilesPanel::clear() {
+	_file_items.clear();
+	_result_items.clear();
+	_results_display->clear();
+	_results_display->create_item(); // Root
 }
 
 void FindInFilesPanel::start_search() {
 
-	_results_display->clear();
+	clear();
+
 	_status_label->set_text(TTR("Searching..."));
 	_search_text_label->set_text(_finder->get_search_text());
 
@@ -636,9 +672,90 @@ void FindInFilesPanel::_notification(int p_what) {
 
 void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin, int end, String text) {
 
-	int i = _results_display->get_item_count();
-	_results_display->add_item(fpath + ": " + String::num(line_number) + ":        " + text.replace("\t", "    "));
-	_results_display->set_item_metadata(i, varray(fpath, line_number, begin, end));
+	TreeItem *file_item;
+	Map<String, TreeItem *>::Element *E = _file_items.find(fpath);
+
+	if (E == NULL) {
+		file_item = _results_display->create_item();
+		file_item->set_text(0, fpath);
+		file_item->set_metadata(0, fpath);
+
+		// The width of this column is restrained to checkboxes, but that doesn't make sense for the parent items,
+		// so we override their width so they can expand to full width
+		file_item->set_expand_right(0, true);
+
+		_file_items[fpath] = file_item;
+
+	} else {
+		file_item = E->value();
+	}
+
+	int text_index = _with_replace ? 1 : 0;
+
+	TreeItem *item = _results_display->create_item(file_item);
+
+	// Do this first because it resets properties of the cell...
+	item->set_cell_mode(text_index, TreeItem::CELL_MODE_CUSTOM);
+
+	String item_text = String::num_int64(line_number) + ":    " + text.replace("\t", "    ");
+
+	item->set_text(text_index, item_text);
+	item->set_custom_draw(text_index, this, "_draw_result_text");
+
+	Ref<Font> font = _results_display->get_font("font");
+
+	float raw_text_width = font->get_string_size(text).x;
+	float item_text_width = font->get_string_size(item_text).x;
+
+	Result r;
+	r.line_number = line_number;
+	r.begin = begin;
+	r.end = end;
+	r.draw_begin = (item_text_width - raw_text_width) + font->get_string_size(text.left(r.begin)).x;
+	r.draw_width = font->get_string_size(text.substr(r.begin, r.end - r.begin + 1)).x;
+	_result_items[item] = r;
+
+	if (_with_replace) {
+		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		item->set_checked(0, true);
+		item->set_editable(0, true);
+	}
+}
+
+void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
+
+	TreeItem *item = Object::cast_to<TreeItem>(item_obj);
+	if (!item)
+		return;
+
+	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+	if (!E)
+		return;
+	Result r = E->value();
+
+	Rect2 match_rect = rect;
+	match_rect.position.x += r.draw_begin;
+	match_rect.size.x = r.draw_width;
+	match_rect.position.y += 1 * EDSCALE;
+	match_rect.size.y -= 2 * EDSCALE;
+
+	_results_display->draw_rect(match_rect, Color(0, 0, 0, 0.5));
+	// Text is drawn by Tree already
+}
+
+void FindInFilesPanel::_on_item_edited() {
+
+	TreeItem *item = _results_display->get_selected();
+
+	if (item->is_checked(0)) {
+		item->set_custom_color(1, _results_display->get_color("font_color"));
+
+	} else {
+		// Grey out
+		Color color = _results_display->get_color("font_color");
+		color.a /= 2.0;
+		item->set_custom_color(1, color);
+	}
 }
 
 void FindInFilesPanel::_on_finished() {
@@ -653,10 +770,19 @@ void FindInFilesPanel::_on_cancel_button_clicked() {
 	stop_search();
 }
 
-void FindInFilesPanel::_on_result_selected(int i) {
+void FindInFilesPanel::_on_result_selected() {
 
-	Array meta = _results_display->get_item_metadata(i);
-	emit_signal(SIGNAL_RESULT_SELECTED, meta[0], meta[1], meta[2], meta[3]);
+	TreeItem *item = _results_display->get_selected();
+	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+
+	if (E == NULL)
+		return;
+	Result r = E->value();
+
+	TreeItem *file_item = item->get_parent();
+	String fpath = file_item->get_metadata(0);
+
+	emit_signal(SIGNAL_RESULT_SELECTED, fpath, r.line_number, r.begin, r.end);
 }
 
 void FindInFilesPanel::_on_replace_text_changed(String text) {
@@ -668,39 +794,33 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 	String replace_text = get_replace_text();
 	ERR_FAIL_COND(replace_text.empty());
 
-	String last_fpath;
-	PoolIntArray locations;
 	PoolStringArray modified_files;
 
-	for (int i = 0; i < _results_display->get_item_count(); ++i) {
+	for (Map<String, TreeItem *>::Element *E = _file_items.front(); E; E = E->next()) {
 
-		Array meta = _results_display->get_item_metadata(i);
+		TreeItem *file_item = E->value();
+		String fpath = file_item->get_metadata(0);
 
-		String fpath = meta[0];
+		Vector<Result> locations;
+		for (TreeItem *item = file_item->get_children(); item; item = item->get_next()) {
 
-		// Results are sorted by file, so we can batch replaces
-		if (fpath != last_fpath) {
-			if (locations.size() != 0) {
-				apply_replaces_in_file(last_fpath, locations, replace_text);
-				modified_files.append(last_fpath);
-				locations.resize(0);
-			}
+			if (!item->is_checked(0))
+				continue;
+
+			Map<TreeItem *, Result>::Element *E = _result_items.find(item);
+			ERR_FAIL_COND(E == NULL);
+			locations.push_back(E->value());
 		}
 
-		locations.append(meta[1]); // line_number
-		locations.append(meta[2]); // begin
-		locations.append(meta[3]); // end
-
-		last_fpath = fpath;
-	}
-
-	if (locations.size() != 0) {
-		apply_replaces_in_file(last_fpath, locations, replace_text);
-		modified_files.append(last_fpath);
+		if (locations.size() != 0) {
+			// Results are sorted by file, so we can batch replaces
+			apply_replaces_in_file(fpath, locations, replace_text);
+			modified_files.append(fpath);
+		}
 	}
 
 	// Hide replace bar so we can't trigger the action twice without doing a new search
-	set_with_replace(false);
+	_replace_container->hide();
 
 	emit_signal(SIGNAL_FILES_MODIFIED, modified_files);
 }
@@ -740,11 +860,7 @@ private:
 	Vector<char> _line_buffer;
 };
 
-void FindInFilesPanel::apply_replaces_in_file(String fpath, PoolIntArray locations, String text) {
-
-	ERR_FAIL_COND(locations.size() % 3 != 0);
-
-	//print_line(String("Replacing {0} occurrences in {1}").format(varray(fpath, locations.size() / 3)));
+void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text) {
 
 	// If the file is already open, I assume the editor will reload it.
 	// If there are unsaved changes, the user will be asked on focus,
@@ -759,21 +875,34 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, PoolIntArray locatio
 	ConservativeGetLine conservative;
 
 	String line = conservative.get_line(f);
+	String search_text = _finder->get_search_text();
 
-	PoolIntArray::Read locations_read = locations.read();
-	for (int i = 0; i < locations.size(); i += 3) {
+	int offset = 0;
 
-		int repl_line_number = locations_read[i];
-		int repl_begin = locations_read[i + 1];
-		int repl_end = locations_read[i + 2];
+	for (int i = 0; i < locations.size(); ++i) {
+
+		int repl_line_number = locations[i].line_number;
 
 		while (current_line < repl_line_number) {
 			buffer += line;
 			line = conservative.get_line(f);
 			++current_line;
+			offset = 0;
 		}
 
-		line = line.left(repl_begin) + text + line.right(repl_end);
+		int repl_begin = locations[i].begin + offset;
+		int repl_end = locations[i].end + offset;
+
+		int _;
+		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
+			// Make sure the replace is still valid in case the file was tampered with.
+			print_line(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
+			continue;
+		}
+
+		line = line.left(repl_begin) + new_text + line.right(repl_end);
+		// keep an offset in case there are successive replaces in the same line
+		offset += new_text.length() - (repl_end - repl_begin);
 	}
 
 	buffer += line;
@@ -811,11 +940,13 @@ void FindInFilesPanel::set_progress_visible(bool visible) {
 void FindInFilesPanel::_bind_methods() {
 
 	ClassDB::bind_method("_on_result_found", &FindInFilesPanel::_on_result_found);
+	ClassDB::bind_method("_on_item_edited", &FindInFilesPanel::_on_item_edited);
 	ClassDB::bind_method("_on_finished", &FindInFilesPanel::_on_finished);
 	ClassDB::bind_method("_on_cancel_button_clicked", &FindInFilesPanel::_on_cancel_button_clicked);
 	ClassDB::bind_method("_on_result_selected", &FindInFilesPanel::_on_result_selected);
 	ClassDB::bind_method("_on_replace_text_changed", &FindInFilesPanel::_on_replace_text_changed);
 	ClassDB::bind_method("_on_replace_all_clicked", &FindInFilesPanel::_on_replace_all_clicked);
+	ClassDB::bind_method("_draw_result_text", &FindInFilesPanel::draw_result_text);
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RESULT_SELECTED,
 			PropertyInfo(Variant::STRING, "path"),
