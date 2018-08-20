@@ -5876,6 +5876,14 @@
               ["int", "p_idx"],
 	      ["godot_object *", "p_object"]
             ]
+          },
+          {
+            "name": "godot_nativescript_profiling_add_data",
+            "return_type": "void",
+            "arguments": [
+              ["const char *", "p_signature"],
+              ["uint64_t", "p_line"]
+            ]
           }
 	]
       },
