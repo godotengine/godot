@@ -1154,6 +1154,8 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 		if (collided) {
 
+			colliders.push_back(collision);
+
 			motion = collision.remainder;
 
 			if (p_floor_direction == Vector3()) {
@@ -1190,8 +1192,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					lv[i] = 0;
 				}
 			}
-
-			colliders.push_back(collision);
 
 		} else {
 			break;
