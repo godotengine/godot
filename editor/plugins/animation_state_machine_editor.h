@@ -3,6 +3,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/gui/button.h"
@@ -10,9 +11,9 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class AnimationNodeStateMachineEditor : public VBoxContainer {
+class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
-	GDCLASS(AnimationNodeStateMachineEditor, VBoxContainer);
+	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
@@ -28,9 +29,6 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 
 	OptionButton *transition_mode;
 	OptionButton *play_mode;
-
-	HBoxContainer *goto_parent_hbox;
-	ToolButton *goto_parent;
 
 	PanelContainer *panel;
 
@@ -79,8 +77,6 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
 
-	void _goto_parent();
-
 	void _removed_from_graph();
 
 	struct NodeRect {
@@ -99,6 +95,8 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 		Vector2 from;
 		Vector2 to;
 		AnimationNodeStateMachineTransition::SwitchMode mode;
+		StringName advance_condition_name;
+		bool advance_condition_state;
 		bool disabled;
 		bool auto_advance;
 		float width;
@@ -135,33 +133,25 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 	float error_time;
 	String error_text;
 
+	EditorFileDialog *open_file;
+	Ref<AnimationNode> file_loaded;
+	void _file_opened(const String &p_file);
+
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002
+	};
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeStateMachine *p_state_machine);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node);
+	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeStateMachineEditor();
-};
-
-class AnimationNodeStateMachineEditorPlugin : public EditorPlugin {
-
-	GDCLASS(AnimationNodeStateMachineEditorPlugin, EditorPlugin);
-
-	AnimationNodeStateMachineEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
-
-public:
-	virtual String get_name() const { return "StateMachine"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AnimationNodeStateMachineEditorPlugin(EditorNode *p_node);
-	~AnimationNodeStateMachineEditorPlugin();
 };
 
 #endif // ANIMATION_STATE_MACHINE_EDITOR_H

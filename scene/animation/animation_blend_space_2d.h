@@ -11,6 +11,7 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	};
 
 	struct BlendPoint {
+		StringName name;
 		Ref<AnimationRootNode> node;
 		Vector2 position;
 	};
@@ -24,7 +25,7 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 
 	Vector<BlendTriangle> triangles;
 
-	Vector2 blend_pos;
+	StringName blend_position;
 	Vector2 max_space;
 	Vector2 min_space;
 	Vector2 snap;
@@ -42,12 +43,19 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 
 	void _update_triangles();
 
+	void _tree_changed();
+
+
 protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 public:
-	virtual void set_tree(AnimationTree *p_player);
+
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, const Vector2 &p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, const Vector2 &p_position);
@@ -72,9 +80,6 @@ public:
 	void set_snap(const Vector2 &p_snap);
 	Vector2 get_snap() const;
 
-	void set_blend_position(const Vector2 &p_pos);
-	Vector2 get_blend_position() const;
-
 	void set_x_label(const String &p_label);
 	String get_x_label() const;
 
@@ -88,6 +93,8 @@ public:
 
 	void set_auto_triangles(bool p_enable);
 	bool get_auto_triangles() const;
+
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
 
 	AnimationNodeBlendSpace2D();
 	~AnimationNodeBlendSpace2D();

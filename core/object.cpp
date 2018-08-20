@@ -1476,8 +1476,13 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 
 	Signal::Target target(p_to_object->get_instance_id(), p_to_method);
 	if (s->slot_map.has(target)) {
-		ERR_EXPLAIN("Signal '" + p_signal + "' is already connected to given method '" + p_to_method + "' in that object.");
-		ERR_FAIL_COND_V(s->slot_map.has(target), ERR_INVALID_PARAMETER);
+		if (p_flags & CONNECT_REFERENCE_COUNTED) {
+			s->slot_map[target].reference_count++;
+			return OK;
+		} else {
+			ERR_EXPLAIN("Signal '" + p_signal + "' is already connected to given method '" + p_to_method + "' in that object.");
+			ERR_FAIL_COND_V(s->slot_map.has(target), ERR_INVALID_PARAMETER);
+		}
 	}
 
 	Signal::Slot slot;
@@ -1491,6 +1496,10 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 	conn.binds = p_binds;
 	slot.conn = conn;
 	slot.cE = p_to_object->connections.push_back(conn);
+	if (p_flags & CONNECT_REFERENCE_COUNTED) {
+		slot.reference_count = 1;
+	}
+
 	s->slot_map[target] = slot;
 
 	return OK;
@@ -1539,7 +1548,14 @@ void Object::disconnect(const StringName &p_signal, Object *p_to_object, const S
 		ERR_FAIL();
 	}
 
-	p_to_object->connections.erase(s->slot_map[target].cE);
+	Signal::Slot *slot = &s->slot_map[target];
+
+	slot->reference_count--; // by default is zero, if it was not referenced it will go below it
+	if (slot->reference_count >= 0) {
+		return;
+	}
+
+	p_to_object->connections.erase(slot->cE);
 	s->slot_map.erase(target);
 
 	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
@@ -1761,6 +1777,7 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_DEFERRED);
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONESHOT);
+	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
 }
 
 void Object::call_deferred(const StringName &p_method, VARIANT_ARG_DECLARE) {

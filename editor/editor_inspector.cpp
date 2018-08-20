@@ -1533,9 +1533,10 @@ void EditorInspector::update_tree() {
 
 					if (capitalize_paths)
 						path_name = path_name.capitalize();
+
 					Color c = sscolor;
 					c.a /= level;
-					section->setup(path_name, acc_path, object, c, use_folding);
+					section->setup(path_name, path_name, object, c, use_folding);
 
 					item_path[acc_path] = section->get_vbox();
 				}

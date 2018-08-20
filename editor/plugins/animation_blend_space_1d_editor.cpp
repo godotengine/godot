@@ -3,41 +3,11 @@
 #include "os/keyboard.h"
 #include "scene/animation/animation_blend_tree.h"
 
-void AnimationNodeBlendSpace1DEditorPlugin::edit(Object *p_object) {
-	anim_tree_editor->edit(Object::cast_to<AnimationNodeBlendSpace1D>(p_object));
+StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {
+	StringName path = AnimationTreeEditor::get_singleton()->get_base_path()+"blend_position";
+	return path;
 }
 
-bool AnimationNodeBlendSpace1DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AnimationNodeBlendSpace1D");
-}
-
-void AnimationNodeBlendSpace1DEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		button->show();
-		editor->make_bottom_panel_item_visible(anim_tree_editor);
-		anim_tree_editor->set_process(true);
-	} else {
-		if (anim_tree_editor->is_visible_in_tree()) {
-			editor->hide_bottom_panel();
-		}
-
-		button->hide();
-		anim_tree_editor->set_process(false);
-	}
-}
-
-AnimationNodeBlendSpace1DEditorPlugin::AnimationNodeBlendSpace1DEditorPlugin(EditorNode *p_node) {
-	editor = p_node;
-	anim_tree_editor = memnew(AnimationNodeBlendSpace1DEditor);
-	anim_tree_editor->set_custom_minimum_size(Size2(0, 150 * EDSCALE));
-
-	button = editor->add_bottom_panel_item(TTR("BlendSpace1D"), anim_tree_editor);
-	button->hide();
-}
-
-AnimationNodeBlendSpace1DEditorPlugin::~AnimationNodeBlendSpace1DEditorPlugin() {
-}
 
 void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
@@ -62,7 +32,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-		AnimationTree *gp = blend_space->get_tree();
+		AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_tree();
 		ERR_FAIL_COND(!gp);
 
 		if (gp->has_node(gp->get_animation_player())) {
@@ -85,9 +55,17 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				continue;
 
 			int idx = menu->get_item_count();
-			menu->add_item(vformat("Add %s", name));
+			menu->add_item(vformat("Add %s", name),idx);
 			menu->set_item_metadata(idx, E->get());
 		}
+
+		Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
+		if (clipb.is_valid()) {
+			menu->add_separator();
+			menu->add_item(TTR("Paste"), MENU_PASTE);
+		}
+		menu->add_separator();
+		menu->add_item(TTR("Load.."), MENU_LOAD_FILE);
 
 		menu->set_global_position(blend_space_draw->get_global_transform().xform(mb->get_position()));
 		menu->popup();
@@ -158,7 +136,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
-		blend_space->set_blend_pos(blend_pos);
+		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(),blend_pos);
 		blend_space_draw->update();
 	}
 
@@ -181,7 +159,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos *= blend_space->get_max_space() - blend_space->get_min_space();
 		blend_pos += blend_space->get_min_space();
 
-		blend_space->set_blend_pos(blend_pos);
+		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(),blend_pos);
+
 		blend_space_draw->update();
 	}
 }
@@ -277,7 +256,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			color.a *= 0.5;
 		}
 
-		float point = blend_space->get_blend_pos();
+		float point = AnimationTreeEditor::get_singleton()->get_tree()->get(get_blend_position_path());
+
+
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s.width;
 
@@ -298,12 +279,6 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 		return;
 
 	updating = true;
-
-	if (blend_space->get_parent().is_valid()) {
-		goto_parent_hb->show();
-	} else {
-		goto_parent_hb->hide();
-	}
 
 	max_value->set_value(blend_space->get_max_space());
 	min_value->set_value(blend_space->get_min_space());
@@ -355,15 +330,47 @@ void AnimationNodeBlendSpace1DEditor::_snap_toggled() {
 	blend_space_draw->update();
 }
 
+void AnimationNodeBlendSpace1DEditor::_file_opened(const String &p_file) {
+
+	file_loaded = ResourceLoader::load(p_file);
+	if (file_loaded.is_valid()) {
+		_add_menu_type(MENU_LOAD_FILE_CONFIRM);
+	}
+}
+
 void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
-	String type = menu->get_item_metadata(p_index);
+	Ref<AnimationRootNode> node;
+	if (p_index == MENU_LOAD_FILE) {
 
-	Object *obj = ClassDB::instance(type);
-	ERR_FAIL_COND(!obj);
-	AnimationNode *an = Object::cast_to<AnimationNode>(obj);
-	ERR_FAIL_COND(!an);
+		open_file->clear_filters();
+		List<String> filters;
+		ResourceLoader::get_recognized_extensions_for_type("AnimationRootNode", &filters);
+		for (List<String>::Element *E = filters.front(); E; E = E->next()) {
+			open_file->add_filter("*." + E->get());
+		}
+		open_file->popup_centered_ratio();
+		return;
+	} else if (p_index == MENU_LOAD_FILE_CONFIRM) {
+		node = file_loaded;
+		file_loaded.unref();
+	} else if (p_index == MENU_PASTE) {
 
-	Ref<AnimationNode> node(an);
+		node = EditorSettings::get_singleton()->get_resource_clipboard();
+	} else {
+		String type = menu->get_item_metadata(p_index);
+
+		Object *obj = ClassDB::instance(type);
+		ERR_FAIL_COND(!obj);
+		AnimationNode *an = Object::cast_to<AnimationNode>(obj);
+		ERR_FAIL_COND(!an);
+
+		node = Ref<AnimationNode>(an);
+	}
+
+	if (!node.is_valid()) {
+		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only root nodes are allowed."));
+		return;
+	}
 
 	updating = true;
 	undo_redo->create_action("Add Node Point");
@@ -438,7 +445,7 @@ void AnimationNodeBlendSpace1DEditor::_update_tool_erase() {
 	if (point_valid) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
 
-		if (EditorNode::get_singleton()->item_has_editor(an.ptr())) {
+		if (AnimationTreeEditor::get_singleton()->can_edit(an)) {
 			open_editor->show();
 		} else {
 			open_editor->hide();
@@ -490,17 +497,11 @@ void AnimationNodeBlendSpace1DEditor::_open_editor() {
 	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
 		ERR_FAIL_COND(an.is_null());
-		EditorNode::get_singleton()->edit_item(an.ptr());
+		AnimationTreeEditor::get_singleton()->enter_editor(itos(selected_point));
 	}
 }
 
-void AnimationNodeBlendSpace1DEditor::_goto_parent() {
-	EditorNode::get_singleton()->edit_item(blend_space->get_parent().ptr());
-}
 
-void AnimationNodeBlendSpace1DEditor::_removed_from_graph() {
-	EditorNode::get_singleton()->edit_item(NULL);
-}
 
 void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -513,18 +514,16 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 		tool_erase->set_icon(get_icon("Remove", "EditorIcons"));
 		snap->set_icon(get_icon("SnapGrid", "EditorIcons"));
 		open_editor->set_icon(get_icon("Edit", "EditorIcons"));
-		goto_parent->set_icon(get_icon("MoveUp", "EditorIcons"));
+
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
 		String error;
 
-		if (!blend_space->get_tree()) {
-			error = TTR("BlendSpace1D does not belong to an AnimationTree node.");
-		} else if (!blend_space->get_tree()->is_active()) {
+		if (!AnimationTreeEditor::get_singleton()->get_tree()->is_active()) {
 			error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
-		} else if (blend_space->get_tree()->is_state_invalid()) {
-			error = blend_space->get_tree()->get_invalid_state_reason();
+		} else if (AnimationTreeEditor::get_singleton()->get_tree()->is_state_invalid()) {
+			error = AnimationTreeEditor::get_singleton()->get_tree()->get_invalid_state_reason();
 		}
 
 		if (error != error_label->get_text()) {
@@ -535,6 +534,10 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 				error_panel->hide();
 			}
 		}
+	}
+
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+		set_process(is_visible_in_tree());
 	}
 }
 
@@ -556,28 +559,26 @@ void AnimationNodeBlendSpace1DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace1DEditor::_update_edited_point_pos);
 
 	ClassDB::bind_method("_open_editor", &AnimationNodeBlendSpace1DEditor::_open_editor);
-	ClassDB::bind_method("_goto_parent", &AnimationNodeBlendSpace1DEditor::_goto_parent);
 
-	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpace1DEditor::_removed_from_graph);
+	ClassDB::bind_method("_file_opened", &AnimationNodeBlendSpace1DEditor::_file_opened);
+
+
+
 }
 
-void AnimationNodeBlendSpace1DEditor::edit(AnimationNodeBlendSpace1D *p_blend_space) {
+bool AnimationNodeBlendSpace1DEditor::can_edit(const Ref<AnimationNode> &p_node) {
 
-	if (blend_space.is_valid()) {
-		blend_space->disconnect("removed_from_graph", this, "_removed_from_graph");
-	}
+	Ref<AnimationNodeBlendSpace1D> b1d=p_node;
+	return b1d.is_valid();
+}
 
-	if (p_blend_space) {
-		blend_space = Ref<AnimationNodeBlendSpace1D>(p_blend_space);
-	} else {
-		blend_space.unref();
-	}
+void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 
-	if (blend_space.is_null()) {
-		hide();
-	} else {
-		blend_space->connect("removed_from_graph", this, "_removed_from_graph");
 
+
+	blend_space=p_node;
+
+	if (!blend_space.is_null()) {
 		_update_space();
 	}
 }
@@ -594,14 +595,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	Ref<ButtonGroup> bg;
 	bg.instance();
 
-	goto_parent_hb = memnew(HBoxContainer);
-	top_hb->add_child(goto_parent_hb);
-
-	goto_parent = memnew(ToolButton);
-	goto_parent->connect("pressed", this, "_goto_parent", varray(), CONNECT_DEFERRED);
-	goto_parent_hb->add_child(goto_parent);
-	goto_parent_hb->add_child(memnew(VSeparator));
-	goto_parent_hb->hide();
 
 	tool_blend = memnew(ToolButton);
 	tool_blend->set_toggle_mode(true);
@@ -726,12 +719,19 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("index_pressed", this, "_add_menu_type");
+	menu->connect("id_pressed", this, "_add_menu_type");
 
 	animations_menu = memnew(PopupMenu);
 	menu->add_child(animations_menu);
 	animations_menu->set_name("animations");
 	animations_menu->connect("index_pressed", this, "_add_animation_type");
+
+	open_file = memnew(EditorFileDialog);
+	add_child(open_file);
+	open_file->set_title(TTR("Open Animation Node"));
+	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	open_file->connect("file_selected", this, "_file_opened");
+	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	selected_point = -1;
 	dragging_selected = false;

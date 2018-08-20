@@ -201,4 +201,6 @@ SceneStringNames::SceneStringNames() {
 	}
 
 	_mesh_changed = StaticCString::create("_mesh_changed");
+
+	parameters_base_path = "parameters/";
 }

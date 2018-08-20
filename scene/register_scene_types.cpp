@@ -412,6 +412,8 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationNodeBlendSpace1D>();
 	ClassDB::register_class<AnimationNodeBlendSpace2D>();
 	ClassDB::register_class<AnimationNodeStateMachine>();
+	ClassDB::register_class<AnimationNodeStateMachinePlayback>();
+
 	ClassDB::register_class<AnimationNodeStateMachineTransition>();
 	ClassDB::register_class<AnimationNodeOutput>();
 	ClassDB::register_class<AnimationNodeOneShot>();

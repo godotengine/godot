@@ -203,6 +203,8 @@ public:
 
 	StringName output;
 
+	StringName parameters_base_path;
+
 	enum {
 		MAX_MATERIALS = 32
 	};

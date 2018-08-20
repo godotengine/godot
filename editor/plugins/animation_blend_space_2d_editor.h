@@ -9,18 +9,17 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class AnimationNodeBlendSpace2DEditor : public VBoxContainer {
+class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 
-	GDCLASS(AnimationNodeBlendSpace2DEditor, VBoxContainer);
+	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace2D> blend_space;
 
-	HBoxContainer *goto_parent_hb;
-	ToolButton *goto_parent;
 
 	PanelContainer *panel;
 	ToolButton *tool_blend;
@@ -93,11 +92,21 @@ class AnimationNodeBlendSpace2DEditor : public VBoxContainer {
 	void _edit_point_pos(double);
 	void _open_editor();
 
-	void _goto_parent();
-
 	void _removed_from_graph();
 
 	void _auto_triangles_toggled();
+
+	StringName get_blend_position_path() const;
+
+	EditorFileDialog *open_file;
+	Ref<AnimationNode> file_loaded;
+	void _file_opened(const String &p_file);
+
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002
+	};
 
 protected:
 	void _notification(int p_what);
@@ -105,26 +114,10 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace2DEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeBlendSpace2D *p_blend_space);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node);
+	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeBlendSpace2DEditor();
 };
 
-class AnimationNodeBlendSpace2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS(AnimationNodeBlendSpace2DEditorPlugin, EditorPlugin);
-
-	AnimationNodeBlendSpace2DEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
-
-public:
-	virtual String get_name() const { return "BlendSpace2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AnimationNodeBlendSpace2DEditorPlugin(EditorNode *p_node);
-	~AnimationNodeBlendSpace2DEditorPlugin();
-};
 #endif // ANIMATION_BLEND_SPACE_2D_EDITOR_H
