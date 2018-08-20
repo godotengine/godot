@@ -1990,7 +1990,7 @@ void TextureLayered::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "depth", "format", "flags"), &TextureLayered::create, DEFVAL(FLAGS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("set_layer_data", "image", "layer"), &TextureLayered::set_layer_data);
-	ClassDB::bind_method(D_METHOD("get_layer_data", "layer"), &TextureLayered::set_layer_data);
+	ClassDB::bind_method(D_METHOD("get_layer_data", "layer"), &TextureLayered::get_layer_data);
 	ClassDB::bind_method(D_METHOD("set_data_partial", "image", "x_offset", "y_offset", "layer", "mipmap"), &TextureLayered::set_data_partial, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &TextureLayered::_set_data);
