@@ -193,7 +193,6 @@ private:
 		int line_number_w;
 		int breakpoint_gutter_width;
 		int fold_gutter_width;
-		Size2 size;
 	} cache;
 
 	Map<int, int> color_region_cache;

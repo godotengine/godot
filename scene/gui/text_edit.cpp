@@ -556,7 +556,6 @@ void TextEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_RESIZED: {
 
-			cache.size = get_size();
 			_update_scrollbars();
 			update_wrap_at();
 		} break;
@@ -593,6 +592,7 @@ void TextEdit::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
+			Size2 size = get_size();
 			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
 				draw_caret = false;
 			}
@@ -634,17 +634,17 @@ void TextEdit::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width;
-			int xmargin_end = cache.size.width - cache.style_normal->get_margin(MARGIN_RIGHT);
+			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT);
 			//let's do it easy for now:
-			cache.style_normal->draw(ci, Rect2(Point2(), cache.size));
+			cache.style_normal->draw(ci, Rect2(Point2(), size));
 			float readonly_alpha = 1.0; // used to set the input text color when in read-only mode
 			if (readonly) {
-				cache.style_readonly->draw(ci, Rect2(Point2(), cache.size));
+				cache.style_readonly->draw(ci, Rect2(Point2(), size));
 				readonly_alpha = .5;
 				draw_caret = false;
 			}
 			if (has_focus())
-				cache.style_focus->draw(ci, Rect2(Point2(), cache.size));
+				cache.style_focus->draw(ci, Rect2(Point2(), size));
 
 			int ascent = cache.font->get_ascent();
 
@@ -1261,7 +1261,7 @@ void TextEdit::_notification(int p_what) {
 			if (line_length_guideline) {
 				int x = xmargin_beg + cache.font->get_char_size('0').width * line_length_guideline_col - cursor.x_ofs;
 				if (x > xmargin_beg && x < xmargin_end) {
-					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x, 0), Point2(x, cache.size.height), cache.line_length_guideline_color);
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x, 0), Point2(x, size.height), cache.line_length_guideline_color);
 				}
 			}
 
@@ -3609,7 +3609,7 @@ Size2 TextEdit::get_minimum_size() const {
 
 int TextEdit::get_visible_rows() const {
 
-	int total = cache.size.height;
+	int total = get_size().height;
 	total -= cache.style_normal->get_minimum_size().height;
 	if (h_scroll->is_visible_in_tree())
 		total -= h_scroll->get_size().height;
@@ -3636,7 +3636,7 @@ int TextEdit::get_total_visible_rows() const {
 
 void TextEdit::update_wrap_at() {
 
-	wrap_at = cache.size.width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - wrap_right_offset;
+	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - wrap_right_offset;
 	update_cursor_wrap_offset();
 	text.clear_wrap_cache();
 
@@ -3670,7 +3670,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = cache.size.width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width;
 	if (v_scroll->is_visible_in_tree())
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	visible_width -= 20; // give it a little more space
@@ -3701,7 +3701,7 @@ void TextEdit::center_viewport_to_cursor() {
 		unfold_line(cursor.line);
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = cache.size.width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width;
 	if (v_scroll->is_visible_in_tree())
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	visible_width -= 20; // give it a little more space
@@ -5543,7 +5543,7 @@ int TextEdit::get_last_visible_line_wrap_index() const {
 
 double TextEdit::get_visible_rows_offset() const {
 
-	double total = cache.size.height;
+	double total = get_size().height;
 	total -= cache.style_normal->get_minimum_size().height;
 	if (h_scroll->is_visible_in_tree())
 		total -= h_scroll->get_size().height;
@@ -6227,7 +6227,6 @@ TextEdit::TextEdit() {
 	set_focus_mode(FOCUS_ALL);
 	syntax_highlighter = NULL;
 	_update_caches();
-	cache.size = Size2(1, 1);
 	cache.row_height = 1;
 	cache.line_spacing = 1;
 	cache.line_number_w = 1;
