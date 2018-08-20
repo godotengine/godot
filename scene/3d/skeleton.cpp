@@ -257,7 +257,11 @@ void Skeleton::_notification(int p_what) {
 				rest_global_inverse_dirty = false;
 			}
 
-			Transform global_transform = get_global_transform();
+			Transform global_transform;
+			// added in case the skeleton has exited the tree while an animation was still running
+			// and the message was still passed through. In other words, the skeleton may still have an
+			// animation running on a node while it is instanced but not within the tree.
+			if (is_inside_tree()) global_transform = get_global_transform();
 			Transform global_transform_inverse = global_transform.affine_inverse();
 
 			for (int i = 0; i < len; i++) {
