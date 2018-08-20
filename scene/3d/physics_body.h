@@ -285,6 +285,7 @@ public:
 		Vector3 normal;
 		Vector3 collider_vel;
 		ObjectID collider;
+		RID collider_rid;
 		int collider_shape;
 		Variant collider_metadata;
 		Vector3 remainder;
@@ -298,6 +299,7 @@ private:
 	float margin;
 
 	Vector3 floor_velocity;
+	RID on_floor_body;
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
@@ -307,15 +309,17 @@ private:
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
 
-	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true);
+	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collisionz);
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collisionz, bool p_test_only = false);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
+
+	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
 	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer::BodyAxis p_axis) const;
@@ -323,7 +327,8 @@ public:
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
-	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), float p_slope_stop_min_velocity = 0.05, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_infinite_inertia = true, bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;

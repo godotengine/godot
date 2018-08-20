@@ -894,6 +894,12 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 				// Skip no convex shape
 				continue;
 			}
+
+			if (p_body->get_bt_shape(shIndex)->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE) {
+				// Skip rayshape in order to implement custom separation process
+				continue;
+			}
+
 			btConvexShape *convex_shape_test(static_cast<btConvexShape *>(p_body->get_bt_shape(shIndex)));
 
 			btTransform shape_world_from = body_transform * p_body->get_kinematic_utilities()->shapes[shIndex].transform;
@@ -924,11 +930,11 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		btVector3 __rec(0, 0, 0);
 		RecoverResult r_recover_result;
 
-		has_penetration = recover_from_penetration(p_body, body_transform, 0, p_infinite_inertia, __rec, &r_recover_result);
+		has_penetration = recover_from_penetration(p_body, body_transform, 1, p_infinite_inertia, __rec, &r_recover_result);
 
 		// Parse results
 		if (r_result) {
-			B_TO_G(motion + initial_recover_motion, r_result->motion);
+			B_TO_G(motion + initial_recover_motion + __rec, r_result->motion);
 
 			if (has_penetration) {
 
@@ -962,6 +968,39 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	}
 
 	return has_penetration;
+}
+
+int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, float p_margin) {
+
+	btTransform body_transform;
+	G_TO_B(p_transform, body_transform);
+	UNSCALE_BT_BASIS(body_transform);
+
+	btVector3 recover_motion(0, 0, 0);
+
+	int rays_found;
+
+	for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
+		int last_ray_index = recover_from_penetration_ray(p_body, body_transform, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, p_result_max, recover_motion, r_results);
+
+		rays_found = MAX(last_ray_index, rays_found);
+		if (!rays_found) {
+			break;
+		} else {
+			body_transform.getOrigin() += recover_motion;
+		}
+	}
+
+	//optimize results (remove non colliding)
+	for (int i = 0; i < rays_found; i++) {
+		if (r_results[i].collision_depth >= 0) {
+			rays_found--;
+			SWAP(r_results[i], r_results[rays_found]);
+		}
+	}
+
+	B_TO_G(recover_motion, r_recover_motion);
+	return rays_found;
 }
 
 struct RecoverPenetrationBroadPhaseCallback : public btBroadphaseAabbCallback {
@@ -1017,6 +1056,11 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 
 		const RigidBodyBullet::KinematicShape &kin_shape(p_body->get_kinematic_utilities()->shapes[kinIndex]);
 		if (!kin_shape.is_active()) {
+			continue;
+		}
+
+		if (kin_shape.shape->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE) {
+			// Skip rayshape in order to implement custom separation process
 			continue;
 		}
 
@@ -1122,7 +1166,6 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 
 		if (contactPointResult.hasHit()) {
 			r_delta_recover_movement += contactPointResult.m_pointNormalWorld * (contactPointResult.m_penetration_distance * -1 * p_recover_movement_scale);
-
 			if (r_recover_result) {
 				if (contactPointResult.m_penetration_distance < r_recover_result->penetration_distance) {
 					r_recover_result->hasPenetration = true;
@@ -1137,4 +1180,80 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 		}
 	}
 	return false;
+}
+
+int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer::SeparationResult *r_results) {
+
+	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask());
+
+	btTransform body_shape_position;
+	btTransform body_shape_position_recovered;
+
+	// Broad phase support
+	btVector3 minAabb, maxAabb;
+
+	int ray_index = 0;
+
+	// For each shape
+	for (int kinIndex = p_body->get_kinematic_utilities()->shapes.size() - 1; 0 <= kinIndex; --kinIndex) {
+
+		recover_broad_result.reset();
+
+		if (ray_index >= p_result_max) {
+			break;
+		}
+
+		const RigidBodyBullet::KinematicShape &kin_shape(p_body->get_kinematic_utilities()->shapes[kinIndex]);
+		if (!kin_shape.is_active()) {
+			continue;
+		}
+
+		if (kin_shape.shape->getShapeType() != CUSTOM_CONVEX_SHAPE_TYPE) {
+			continue;
+		}
+
+		body_shape_position = p_body_position * kin_shape.transform;
+		body_shape_position_recovered = body_shape_position;
+		body_shape_position_recovered.getOrigin() += r_delta_recover_movement;
+
+		kin_shape.shape->getAabb(body_shape_position_recovered, minAabb, maxAabb);
+		dynamicsWorld->getBroadphase()->aabbTest(minAabb, maxAabb, recover_broad_result);
+
+		for (int i = recover_broad_result.result_collision_objects.size() - 1; 0 <= i; --i) {
+			btCollisionObject *otherObject = recover_broad_result.result_collision_objects[i];
+			if (p_infinite_inertia && !otherObject->isStaticOrKinematicObject()) {
+				otherObject->activate(); // Force activation of hitten rigid, soft body
+				continue;
+			} else if (!p_body->get_bt_collision_object()->checkCollideWith(otherObject) || !otherObject->checkCollideWith(p_body->get_bt_collision_object()))
+				continue;
+
+			if (otherObject->getCollisionShape()->isCompound()) {
+
+				// Each convex shape
+				btCompoundShape *cs = static_cast<btCompoundShape *>(otherObject->getCollisionShape());
+				for (int x = cs->getNumChildShapes() - 1; 0 <= x; --x) {
+
+					RecoverResult r_recover_result;
+					if (RFP_convex_world_test(kin_shape.shape, cs->getChildShape(x), p_body->get_bt_collision_object(), otherObject, kinIndex, x, body_shape_position, otherObject->getWorldTransform() * cs->getChildTransform(x), p_recover_movement_scale, r_delta_recover_movement, &r_recover_result)) {
+
+						const btRigidBody *btRigid = static_cast<const btRigidBody *>(otherObject);
+						CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(otherObject->getUserPointer());
+
+						r_results[ray_index].collision_depth = r_recover_result.penetration_distance;
+						B_TO_G(r_recover_result.pointWorld, r_results[ray_index].collision_point);
+						B_TO_G(r_recover_result.normal, r_results[ray_index].collision_normal);
+						B_TO_G(btRigid->getVelocityInLocalPoint(r_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_results[ray_index].collider_velocity);
+						r_results[ray_index].collision_local_shape = kinIndex;
+						r_results[ray_index].collider_id = collisionObject->get_instance_id();
+						r_results[ray_index].collider = collisionObject->get_self();
+						r_results[ray_index].collider_shape = r_recover_result.other_compound_shape_index;
+					}
+				}
+			}
+		}
+
+		++ray_index;
+	}
+
+	return ray_index;
 }

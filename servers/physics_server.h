@@ -484,6 +484,21 @@ public:
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL) = 0;
 
+	struct SeparationResult {
+
+		float collision_depth;
+		Vector3 collision_point;
+		Vector3 collision_normal;
+		Vector3 collider_velocity;
+		int collision_local_shape;
+		ObjectID collider_id;
+		RID collider;
+		int collider_shape;
+		Variant collider_metadata;
+	};
+
+	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001) = 0;
+
 	/* SOFT BODY */
 
 	virtual RID soft_body_create(bool p_init_sleeping = false) = 0;

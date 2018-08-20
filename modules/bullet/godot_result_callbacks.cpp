@@ -260,10 +260,19 @@ void GodotDeepPenetrationContactResultCallback::addContactPoint(const btVector3 
 
 	if (m_penetration_distance > depth) { // Has penetration?
 
-		bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
+		const bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
 		m_penetration_distance = depth;
 		m_other_compound_shape_index = isSwapped ? m_index0 : m_index1;
-		m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
 		m_pointWorld = isSwapped ? (pointInWorldOnB + (normalOnBInWorld * depth)) : pointInWorldOnB;
+
+		const btCollisionObjectWrapper *bw0 = m_body0Wrap;
+		if (isSwapped)
+			bw0 = m_body1Wrap;
+
+		if (bw0->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE) {
+			m_pointNormalWorld = bw0->m_worldTransform.getBasis().transpose() * btVector3(0, 0, 1);
+		} else {
+			m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
+		}
 	}
 }
