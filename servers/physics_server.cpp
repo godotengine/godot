@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "physics_server.h"
+
 #include "core/project_settings.h"
+#include "method_bind_ext.gen.inc"
 #include "print_string.h"
 
 PhysicsServer *PhysicsServer::singleton = NULL;
@@ -262,14 +264,14 @@ Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Tran
 }
 */
 
-Dictionary PhysicsDirectSpaceState::_intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude, uint32_t p_collision_mask) {
+Dictionary PhysicsDirectSpaceState::_intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	RayResult inters;
 	Set<RID> exclude;
 	for (int i = 0; i < p_exclude.size(); i++)
 		exclude.insert(p_exclude[i]);
 
-	bool res = intersect_ray(p_from, p_to, inters, exclude, p_collision_mask);
+	bool res = intersect_ray(p_from, p_to, inters, exclude, p_collision_mask, p_collide_with_bodies, p_collide_with_areas);
 
 	if (!res)
 		return Dictionary();
@@ -285,11 +287,11 @@ Dictionary PhysicsDirectSpaceState::_intersect_ray(const Vector3 &p_from, const 
 	return d;
 }
 
-Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, int p_max_results) {
+Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, bool p_collide_with_bodies, bool p_collide_with_areas, int p_max_results) {
 
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
-	int rc = intersect_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, sr.ptrw(), sr.size(), p_shape_query->exclude, p_shape_query->collision_mask);
+	int rc = intersect_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, sr.ptrw(), sr.size(), p_shape_query->exclude, p_shape_query->collision_mask, p_collide_with_bodies, p_collide_with_areas);
 	Array ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
@@ -305,10 +307,10 @@ Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParam
 	return ret;
 }
 
-Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameters> &p_shape_query, const Vector3 &p_motion) {
+Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameters> &p_shape_query, const Vector3 &p_motion, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	float closest_safe, closest_unsafe;
-	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask);
+	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_collide_with_bodies, p_collide_with_areas);
 	if (!res)
 		return Array();
 	Array ret;
@@ -317,12 +319,12 @@ Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameter
 	ret[1] = closest_unsafe;
 	return ret;
 }
-Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, int p_max_results) {
+Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, bool p_collide_with_bodies, bool p_collide_with_areas, int p_max_results) {
 
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
-	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask);
+	bool res = collide_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, ret.ptrw(), p_max_results, rc, p_shape_query->exclude, p_shape_query->collision_mask, p_collide_with_bodies, p_collide_with_areas);
 	if (!res)
 		return Array();
 	Array r;
@@ -331,11 +333,11 @@ Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParamet
 		r[i] = ret[i];
 	return r;
 }
-Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryParameters> &p_shape_query) {
+Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryParameters> &p_shape_query, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	ShapeRestInfo sri;
 
-	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask);
+	bool res = rest_info(p_shape_query->shape, p_shape_query->transform, p_shape_query->margin, &sri, p_shape_query->exclude, p_shape_query->collision_mask, p_collide_with_bodies, p_collide_with_areas);
 	Dictionary r;
 	if (!res)
 		return r;
@@ -358,11 +360,11 @@ void PhysicsDirectSpaceState::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("intersect_shape","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_layer"), &PhysicsDirectSpaceState::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF));
-	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState::_intersect_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("cast_motion", "shape", "motion"), &PhysicsDirectSpaceState::_cast_motion);
-	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState::_collide_shape, DEFVAL(32));
-	ClassDB::bind_method(D_METHOD("get_rest_info", "shape"), &PhysicsDirectSpaceState::_get_rest_info);
+	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "collide_with_bodies", "collide_with_areas", "max_results"), &PhysicsDirectSpaceState::_intersect_shape, DEFVAL(true), DEFVAL(false), DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("cast_motion", "shape", "motion", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState::_cast_motion, DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "collide_with_bodies", "collide_with_areas", "max_results"), &PhysicsDirectSpaceState::_collide_shape, DEFVAL(true), DEFVAL(false), DEFVAL(32));
+	ClassDB::bind_method(D_METHOD("get_rest_info", "shape", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState::_get_rest_info, DEFVAL(true), DEFVAL(false));
 }
 
 int PhysicsShapeQueryResult::get_result_count() const {

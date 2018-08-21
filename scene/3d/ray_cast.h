@@ -45,6 +45,8 @@ class RayCast : public Spatial {
 	Vector3 collision_normal;
 
 	Vector3 cast_to;
+	bool collide_with_bodies;
+	bool collide_with_areas;
 
 	Set<RID> exclude;
 
@@ -69,6 +71,12 @@ public:
 
 	void set_cast_to(const Vector3 &p_point);
 	Vector3 get_cast_to() const;
+
+	void set_collide_with_bodies(bool p_enable);
+	bool get_collide_with_bodies() const;
+
+	void set_collide_with_areas(bool p_enable);
+	bool get_collide_with_areas() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
