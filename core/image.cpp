@@ -2230,10 +2230,10 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 	switch (format) {
 		case FORMAT_L8: {
-			ptr[ofs] = uint8_t(CLAMP(p_color.gray() * 255.0, 0, 255));
+			ptr[ofs] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
 		} break;
 		case FORMAT_LA8: {
-			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.gray() * 255.0, 0, 255));
+			ptr[ofs * 2 + 0] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
 			ptr[ofs * 2 + 1] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
 		} break;
 		case FORMAT_R8: {
