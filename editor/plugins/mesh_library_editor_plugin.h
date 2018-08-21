@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  cube_grid_theme_editor_plugin.h                                      */
+/*  mesh_library_editor_plugin.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CUBE_GRID_THEME_EDITOR_PLUGIN_H
-#define CUBE_GRID_THEME_EDITOR_PLUGIN_H
+#ifndef MESH_LIBRARY_EDITOR_PLUGIN_H
+#define MESH_LIBRARY_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "scene/resources/mesh_library.h"
@@ -65,6 +65,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	MenuButton *get_menu_button() const { return menu; }
+
 	void edit(const Ref<MeshLibrary> &p_theme);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true);
 
@@ -88,4 +90,4 @@ public:
 	MeshLibraryEditorPlugin(EditorNode *p_node);
 };
 
-#endif // CUBE_GRID_THEME_EDITOR_PLUGIN_H
+#endif // MESH_LIBRARY_EDITOR_PLUGIN_H
