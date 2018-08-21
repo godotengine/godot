@@ -244,6 +244,8 @@ class EditorHelp : public VBoxContainer {
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
+	String _fix_constant(const String &p_constant) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

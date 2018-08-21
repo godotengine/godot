@@ -624,6 +624,22 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	class_desc->pop();
 }
 
+String EditorHelp::_fix_constant(const String &p_constant) const {
+
+	if (p_constant.strip_edges() == "4294967295") {
+		return "0xFFFFFFFF";
+	}
+
+	if (p_constant.strip_edges() == "2147483647") {
+		return "0x7FFFFFFF";
+	}
+	if (p_constant.strip_edges() == "1048575") {
+		return "0xfffff";
+	}
+
+	return p_constant;
+}
+
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
 
 	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
@@ -673,7 +689,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 			class_desc->push_color(symbol_color);
 			class_desc->add_text("=");
 			class_desc->pop();
-			_add_text(p_method.arguments[j].default_value);
+			_add_text(_fix_constant(p_method.arguments[j].default_value));
 		}
 
 		class_desc->pop();
