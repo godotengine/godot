@@ -38,6 +38,12 @@
 				Corresponds to the NOTIFICATION_EXIT_TREE notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited]
 			</description>
 		</method>
+		<method name="_get_configuration_warning" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="_input" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -223,8 +229,8 @@
 			</argument>
 			<description>
 				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, a [code]null instance[/code] is returned and attempts to access it will result in an "Attempt to call &lt;method&gt; on a null instance." error.
-				Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
-				[i]Example:[/i] Assume your current node is Character and the following tree:
+				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
+				[b]Example:[/b] Assume your current node is Character and the following tree:
 				[codeblock]
 				/root
 				/root/Character
@@ -731,6 +737,14 @@
 			</argument>
 			<description>
 				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes behaviour.
+			</description>
+		</method>
+		<method name="set_process_priority">
+			<return type="void">
+			</return>
+			<argument index="0" name="priority" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_process_unhandled_input">

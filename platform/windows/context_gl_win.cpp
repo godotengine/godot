@@ -106,9 +106,9 @@ Error ContextGL_Win::initialize() {
 				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 				PFD_DOUBLEBUFFER,
 		PFD_TYPE_RGBA,
-		24,
+		OS::get_singleton()->is_layered_allowed() ? 32 : 24,
 		0, 0, 0, 0, 0, 0, // Color Bits Ignored
-		0, // No Alpha Buffer
+		OS::get_singleton()->is_layered_allowed() ? 8 : 0, // Alpha Buffer
 		0, // Shift Bit Ignored
 		0, // No Accumulation Buffer
 		0, 0, 0, 0, // Accumulation Bits Ignored

@@ -274,6 +274,7 @@ ReflectionProbe::ReflectionProbe() {
 
 	probe = VisualServer::get_singleton()->reflection_probe_create();
 	VS::get_singleton()->instance_set_base(get_instance(), probe);
+	set_disable_scale(true);
 }
 
 ReflectionProbe::~ReflectionProbe() {

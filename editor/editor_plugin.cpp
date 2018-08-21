@@ -309,8 +309,14 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
-ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
+Ref<ConfigFile> EditorPlugin::get_config() {
+	Ref<ConfigFile> cf = memnew(ConfigFile);
+	cf->load(_dir_cache.plus_file("plugin.cfg"));
+	return cf;
+}
 
+ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
+	ERR_FAIL_NULL_V(p_control, NULL);
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
 }
 
@@ -333,6 +339,7 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 }
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
+	ERR_FAIL_NULL(p_control);
 
 	switch (p_location) {
 
@@ -382,6 +389,7 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 }
 
 void EditorPlugin::remove_control_from_container(CustomControlContainer p_location, Control *p_control) {
+	ERR_FAIL_NULL(p_control);
 
 	switch (p_location) {
 
@@ -475,15 +483,6 @@ void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
 
 void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 	emit_signal("resource_saved", p_resource);
-}
-
-Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
-	//??
-	if (get_script_instance() && get_script_instance()->has_method("create_spatial_gizmo")) {
-		return get_script_instance()->call("create_spatial_gizmo", p_spatial);
-	}
-
-	return Ref<SpatialEditorGizmo>();
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
@@ -717,6 +716,10 @@ EditorInterface *EditorPlugin::get_editor_interface() {
 	return EditorInterface::get_singleton();
 }
 
+ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
+	return EditorNode::get_singleton()->get_script_create_dialog();
+}
+
 void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
@@ -753,15 +756,12 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
+	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	MethodInfo gizmo = MethodInfo(Variant::OBJECT, "create_spatial_gizmo", PropertyInfo(Variant::OBJECT, "for_spatial", PROPERTY_HINT_RESOURCE_TYPE, "Spatial"));
-	gizmo.return_val.hint = PROPERTY_HINT_RESOURCE_TYPE;
-	gizmo.return_val.hint_string = "EditorSpatialGizmo";
-	ClassDB::add_virtual_method(get_class_static(), gizmo);
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "get_plugin_icon"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));

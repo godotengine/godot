@@ -2,22 +2,21 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Sam Vanguard <syafz119@gmail.com>, 2018.
 # Shaqir Rafiq <moshamoradev@gmail.com>, 2018.
-#
+# Syaz Amirin <amirin123z@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-05 19:27+0000\n"
-"Last-Translator: Shaqir Rafiq <moshamoradev@gmail.com>\n"
+"PO-Revision-Date: 2018-06-30 09:40+0000\n"
+"Last-Translator: Syaz Amirin <amirin123z@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2014,11 +2013,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Komuniti"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "Tentang"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -6244,7 +6243,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Am"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
@@ -7271,6 +7270,10 @@ msgstr ""
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
+msgstr ""
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+msgid "View log"
 msgstr ""
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp

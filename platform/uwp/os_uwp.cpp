@@ -30,6 +30,7 @@
 
 #include "os_uwp.h"
 
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
@@ -66,12 +67,7 @@ using namespace Windows::ApplicationModel::DataTransfer;
 using namespace concurrency;
 
 int OSUWP::get_video_driver_count() const {
-
-	return 1;
-}
-const char *OSUWP::get_video_driver_name(int p_driver) const {
-
-	return "GLES3";
+	return 2;
 }
 
 Size2 OSUWP::get_window_size() const {
@@ -79,6 +75,10 @@ Size2 OSUWP::get_window_size() const {
 	size.width = video_mode.width;
 	size.height = video_mode.height;
 	return size;
+}
+
+int OSUWP::get_current_video_driver() const {
+	return video_driver_index;
 }
 
 void OSUWP::set_window_size(const Size2 p_size) {
@@ -133,18 +133,6 @@ void OSUWP::set_keep_screen_on(bool p_enabled) {
 	OS::set_keep_screen_on(p_enabled);
 }
 
-int OSUWP::get_audio_driver_count() const {
-
-	return AudioDriverManager::get_driver_count();
-}
-
-const char *OSUWP::get_audio_driver_name(int p_driver) const {
-
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
 void OSUWP::initialize_core() {
 
 	last_button_state = 0;
@@ -185,10 +173,9 @@ bool OSUWP::can_draw() const {
 	return !minimized;
 };
 
-void OSUWP::set_gl_context(ContextEGL *p_context) {
-
-	gl_context = p_context;
-};
+void OSUWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
+	window = p_window;
+}
 
 void OSUWP::screen_size_changed() {
 
@@ -200,6 +187,11 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	main_loop = NULL;
 	outside = true;
 
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		gl_context = memnew(ContextEGL(window, ContextEGL::GLES_2_0));
+	} else {
+		gl_context = memnew(ContextEGL(window, ContextEGL::GLES_3_0));
+	}
 	gl_context->initialize();
 	VideoMode vm;
 	vm.width = gl_context->get_window_width();
@@ -240,9 +232,16 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	gl_context->make_current();
 
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		RasterizerGLES3::register_config();
+		RasterizerGLES3::make_current();
+	}
 	gl_context->set_use_vsync(vm.use_vsync);
+
+	video_driver_index = p_video_driver;
 
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering? Or remove?
@@ -297,7 +296,7 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	if (is_keep_screen_on())
 		display_request->RequestActive();
 
-	set_keep_screen_on(GLOBAL_DEF("display/window/keep_screen_on", true));
+	set_keep_screen_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
 
 	return OK;
 }
@@ -392,7 +391,6 @@ void OSUWP::ManagedType::update_clipboard() {
 	if (data->Contains(StandardDataFormats::Text)) {
 
 		create_task(data->GetTextAsync()).then([this](Platform::String ^ clipboard_content) {
-
 			this->clipboard = clipboard_content;
 		});
 	}

@@ -72,6 +72,12 @@ public:
 		TK_TYPE_SAMPLER2D,
 		TK_TYPE_ISAMPLER2D,
 		TK_TYPE_USAMPLER2D,
+		TK_TYPE_SAMPLER2DARRAY,
+		TK_TYPE_ISAMPLER2DARRAY,
+		TK_TYPE_USAMPLER2DARRAY,
+		TK_TYPE_SAMPLER3D,
+		TK_TYPE_ISAMPLER3D,
+		TK_TYPE_USAMPLER3D,
 		TK_TYPE_SAMPLERCUBE,
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_NO_PERSPECTIVE,
@@ -186,6 +192,12 @@ public:
 		TYPE_SAMPLER2D,
 		TYPE_ISAMPLER2D,
 		TYPE_USAMPLER2D,
+		TYPE_SAMPLER2DARRAY,
+		TYPE_ISAMPLER2DARRAY,
+		TYPE_USAMPLER2DARRAY,
+		TYPE_SAMPLER3D,
+		TYPE_ISAMPLER3D,
+		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
 	};
 
@@ -617,7 +629,7 @@ private:
 	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL);
 
 	bool _is_operator_assign(Operator p_op) const;
-	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types);
+	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
 
@@ -650,7 +662,7 @@ private:
 
 	Error _parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
-	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
+	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
@@ -658,8 +670,8 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
+	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

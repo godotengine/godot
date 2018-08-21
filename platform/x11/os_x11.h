@@ -38,6 +38,7 @@
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/alsamidi/alsa_midi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
@@ -168,6 +169,10 @@ class OS_X11 : public OS_Unix {
 	AudioDriverALSA driver_alsa;
 #endif
 
+#ifdef ALSAMIDI_ENABLED
+	MIDIDriverALSAMidi driver_alsamidi;
+#endif
+
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
@@ -180,6 +185,7 @@ class OS_X11 : public OS_Unix {
 
 	CrashHandler crash_handler;
 
+	int video_driver_index;
 	int audio_driver_index;
 	unsigned int capture_idle;
 	bool maximized;
@@ -195,6 +201,8 @@ class OS_X11 : public OS_Unix {
 	Bool xrandr_ext_ok;
 
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();

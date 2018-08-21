@@ -128,6 +128,8 @@ public:
 	void set_bake_resolution(int p_resolution);
 	real_t interpolate_baked(real_t offset);
 
+	void ensure_default_setup(float p_min, float p_max);
+
 protected:
 	static void _bind_methods();
 

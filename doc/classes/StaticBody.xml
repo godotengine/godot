@@ -27,6 +27,8 @@
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body friction, from 0 (frictionless) to 1 (full friction).
 		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+		</member>
 	</members>
 	<constants>
 	</constants>

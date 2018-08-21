@@ -134,6 +134,7 @@
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/cylinder_shape.h"
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/dynamic_font_stb.h"
@@ -154,13 +155,17 @@
 #include "scene/resources/sky_box.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/text_file.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
+#include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 
+#include "scene/3d/cpu_particles.h"
 #include "scene/3d/particles.h"
 #include "scene/3d/scenario_fx.h"
 #include "scene/3d/spatial.h"
@@ -194,10 +199,14 @@
 #include "scene/3d/remote_transform.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/skeleton.h"
+#include "scene/3d/soft_body.h"
+#include "scene/3d/spring_arm.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/visibility_notifier.h"
+#include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/physics_material.h"
 #endif
 
 static ResourceFormatLoaderTheme *resource_loader_theme = NULL;
@@ -208,6 +217,7 @@ static ResourceFormatLoaderText *resource_loader_text = NULL;
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font = NULL;
 
 static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture = NULL;
+static ResourceFormatLoaderTextureLayered *resource_loader_texture_layered = NULL;
 
 static ResourceFormatLoaderBMFont *resource_loader_bmfont = NULL;
 
@@ -227,6 +237,9 @@ void register_scene_types() {
 
 	resource_loader_stream_texture = memnew(ResourceFormatLoaderStreamTexture);
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+
+	resource_loader_texture_layered = memnew(ResourceFormatLoaderTextureLayered);
+	ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
 
 	resource_loader_theme = memnew(ResourceFormatLoaderTheme);
 	ResourceLoader::add_resource_format_loader(resource_loader_theme);
@@ -307,21 +320,19 @@ void register_scene_types() {
 	ClassDB::register_class<CenterContainer>();
 	ClassDB::register_class<ScrollContainer>();
 	ClassDB::register_class<PanelContainer>();
-	ClassDB::register_virtual_class<SplitContainer>();
-	ClassDB::register_class<HSplitContainer>();
-	ClassDB::register_class<VSplitContainer>();
-	ClassDB::register_class<GraphNode>();
-	ClassDB::register_class<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<TextureProgress>();
 	ClassDB::register_class<ItemList>();
 
+	ClassDB::register_class<LineEdit>();
+	ClassDB::register_class<VideoPlayer>();
+
 #ifndef ADVANCED_GUI_DISABLED
 
 	ClassDB::register_class<FileDialog>();
-	ClassDB::register_class<LineEdit>();
+
 	ClassDB::register_class<PopupMenu>();
 	ClassDB::register_class<Tree>();
 
@@ -338,9 +349,13 @@ void register_scene_types() {
 	ClassDB::register_class<WindowDialog>();
 	ClassDB::register_class<AcceptDialog>();
 	ClassDB::register_class<ConfirmationDialog>();
-	ClassDB::register_class<VideoPlayer>();
 	ClassDB::register_class<MarginContainer>();
 	ClassDB::register_class<ViewportContainer>();
+	ClassDB::register_virtual_class<SplitContainer>();
+	ClassDB::register_class<HSplitContainer>();
+	ClassDB::register_class<VSplitContainer>();
+	ClassDB::register_class<GraphNode>();
+	ClassDB::register_class<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -357,10 +372,10 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 #ifndef _3D_DISABLED
-	ClassDB::register_class<BoneAttachment>();
 	ClassDB::register_virtual_class<VisualInstance>();
 	ClassDB::register_virtual_class<GeometryInstance>();
 	ClassDB::register_class<Camera>();
+	ClassDB::register_class<ClippedCamera>();
 	ClassDB::register_class<Listener>();
 	ClassDB::register_class<ARVRCamera>();
 	ClassDB::register_class<ARVRController>();
@@ -383,6 +398,7 @@ void register_scene_types() {
 	ClassDB::register_class<BakedLightmapData>();
 	ClassDB::register_class<AnimationTreePlayer>();
 	ClassDB::register_class<Particles>();
+	ClassDB::register_class<CPUParticles>();
 	ClassDB::register_class<Position3D>();
 	ClassDB::register_class<NavigationMeshInstance>();
 	ClassDB::register_class<NavigationMesh>();
@@ -398,6 +414,8 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationNodeBlendSpace1D>();
 	ClassDB::register_class<AnimationNodeBlendSpace2D>();
 	ClassDB::register_class<AnimationNodeStateMachine>();
+	ClassDB::register_class<AnimationNodeStateMachinePlayback>();
+
 	ClassDB::register_class<AnimationNodeStateMachineTransition>();
 	ClassDB::register_class<AnimationNodeOutput>();
 	ClassDB::register_class<AnimationNodeOneShot>();
@@ -418,7 +436,13 @@ void register_scene_types() {
 	ClassDB::register_class<RigidBody>();
 	ClassDB::register_class<KinematicCollision>();
 	ClassDB::register_class<KinematicBody>();
+	ClassDB::register_class<SpringArm>();
+
 	ClassDB::register_class<PhysicalBone>();
+	ClassDB::register_class<SoftBody>();
+
+	ClassDB::register_class<SkeletonIK>();
+	ClassDB::register_class<BoneAttachment>();
 
 	ClassDB::register_class<VehicleBody>();
 	ClassDB::register_class<VehicleWheel>();
@@ -452,6 +476,39 @@ void register_scene_types() {
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(OS::get_singleton()->get_swap_ok_cancel())));
 
 	ClassDB::register_class<Shader>();
+	ClassDB::register_class<VisualShader>();
+	ClassDB::register_virtual_class<VisualShaderNode>();
+	ClassDB::register_class<VisualShaderNodeInput>();
+	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
+	ClassDB::register_class<VisualShaderNodeScalarConstant>();
+	ClassDB::register_class<VisualShaderNodeColorConstant>();
+	ClassDB::register_class<VisualShaderNodeVec3Constant>();
+	ClassDB::register_class<VisualShaderNodeTransformConstant>();
+	ClassDB::register_class<VisualShaderNodeScalarOp>();
+	ClassDB::register_class<VisualShaderNodeVectorOp>();
+	ClassDB::register_class<VisualShaderNodeColorOp>();
+	ClassDB::register_class<VisualShaderNodeTransformMult>();
+	ClassDB::register_class<VisualShaderNodeTransformVecMult>();
+	ClassDB::register_class<VisualShaderNodeScalarFunc>();
+	ClassDB::register_class<VisualShaderNodeVectorFunc>();
+	ClassDB::register_class<VisualShaderNodeDotProduct>();
+	ClassDB::register_class<VisualShaderNodeVectorLen>();
+	ClassDB::register_class<VisualShaderNodeScalarInterp>();
+	ClassDB::register_class<VisualShaderNodeVectorInterp>();
+	ClassDB::register_class<VisualShaderNodeVectorCompose>();
+	ClassDB::register_class<VisualShaderNodeTransformCompose>();
+	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
+	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
+	ClassDB::register_class<VisualShaderNodeTexture>();
+	ClassDB::register_class<VisualShaderNodeCubeMap>();
+	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
+	ClassDB::register_class<VisualShaderNodeScalarUniform>();
+	ClassDB::register_class<VisualShaderNodeColorUniform>();
+	ClassDB::register_class<VisualShaderNodeVec3Uniform>();
+	ClassDB::register_class<VisualShaderNodeTransformUniform>();
+	ClassDB::register_class<VisualShaderNodeTextureUniform>();
+	ClassDB::register_class<VisualShaderNodeCubeMapUniform>();
+
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
 	ClassDB::register_class<CanvasItemMaterial>();
@@ -538,6 +595,7 @@ void register_scene_types() {
 	ClassDB::register_class<SphereShape>();
 	ClassDB::register_class<BoxShape>();
 	ClassDB::register_class<CapsuleShape>();
+	ClassDB::register_class<CylinderShape>();
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
@@ -548,6 +606,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_class<SpatialVelocityTracker>();
+
+	ClassDB::register_class<PhysicsMaterial>();
 #endif
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
@@ -563,11 +623,17 @@ void register_scene_types() {
 	ClassDB::register_class<CurveTexture>();
 	ClassDB::register_class<GradientTexture>();
 	ClassDB::register_class<ProxyTexture>();
+	ClassDB::register_class<AnimatedTexture>();
 	ClassDB::register_class<CubeMap>();
+	ClassDB::register_virtual_class<TextureLayered>();
+	ClassDB::register_class<Texture3D>();
+	ClassDB::register_class<TextureArray>();
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
 	ClassDB::register_class<Curve>();
+
+	ClassDB::register_class<TextFile>();
 
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
@@ -675,6 +741,7 @@ void unregister_scene_types() {
 
 	memdelete(resource_loader_dynamic_font);
 	memdelete(resource_loader_stream_texture);
+	memdelete(resource_loader_texture_layered);
 	memdelete(resource_loader_theme);
 
 	DynamicFont::finish_dynamic_fonts();

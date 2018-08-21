@@ -1,7 +1,7 @@
 #ifndef DELAUNAY_H
 #define DELAUNAY_H
 
-#include "math_2d.h"
+#include "rect2.h"
 
 class Delaunay2D {
 public:
@@ -92,7 +92,7 @@ public:
 
 			for (int j = 0; j < triangles.size(); j++) {
 				if (circum_circle_contains(points, triangles[j], i)) {
-					triangles[j].bad = true;
+					triangles.write[j].bad = true;
 					polygon.push_back(Edge(triangles[j].points[0], triangles[j].points[1]));
 					polygon.push_back(Edge(triangles[j].points[1], triangles[j].points[2]));
 					polygon.push_back(Edge(triangles[j].points[2], triangles[j].points[0]));
@@ -109,8 +109,8 @@ public:
 			for (int j = 0; j < polygon.size(); j++) {
 				for (int k = j + 1; k < polygon.size(); k++) {
 					if (edge_compare(points, polygon[j], polygon[k])) {
-						polygon[j].bad = true;
-						polygon[k].bad = true;
+						polygon.write[j].bad = true;
+						polygon.write[k].bad = true;
 					}
 				}
 			}

@@ -294,6 +294,16 @@
 				Sets the transform matrix for an area.
 			</description>
 		</method>
+		<method name="body_add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_add_collision_exception">
 			<return type="void">
 			</return>
@@ -303,6 +313,18 @@
 			</argument>
 			<description>
 				Adds a body to the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="body_add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector3">
+			</argument>
+			<argument index="2" name="position" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_add_shape">
@@ -316,6 +338,26 @@
 			</argument>
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+			</description>
+		</method>
+		<method name="body_add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="torque" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="impulse" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_apply_impulse">
@@ -1413,16 +1455,19 @@
 		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape] is a [CapsuleShape].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5" enum="ShapeType">
+		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
+			The [Shape] is a [CylinderShape].
+		</constant>
+		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
 			The [Shape] is a [ConvexPolygonShape].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			The [Shape] is a [ConcavePolygonShape].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="7" enum="ShapeType">
+		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
 			The [Shape] is a [HeightMapShape].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">

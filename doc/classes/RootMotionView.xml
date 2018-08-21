@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RootMotionView" inherits="VisualInstance" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="animation_path" type="NodePath" setter="set_animation_path" getter="get_animation_path">
+		</member>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color">
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius">
+		</member>
+		<member name="zero_y" type="bool" setter="set_zero_y" getter="get_zero_y">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

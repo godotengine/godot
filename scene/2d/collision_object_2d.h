@@ -65,6 +65,8 @@ class CollisionObject2D : public Node2D {
 	int total_subshapes;
 
 	Map<uint32_t, ShapeData> shapes;
+	Transform2D last_transform;
+	bool only_update_transform_changes; //this is used for sync physics in KinematicBody
 
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
@@ -77,6 +79,8 @@ protected:
 	void _input_event(Node *p_viewport, const Ref<InputEvent> &p_input_event, int p_shape);
 	void _mouse_enter();
 	void _mouse_exit();
+
+	void set_only_update_transform_changes(bool p_enable);
 
 public:
 	uint32_t create_shape_owner(Object *p_owner);

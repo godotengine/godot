@@ -53,7 +53,7 @@ if len(env.android_flat_dirs) > 0:
 
     gradle_maven_flat_text = gradle_maven_flat_text[:-1]
     gradle_maven_flat_text += "\n\t}\n"
- 
+
 gradle_maven_repos_text = ""
 gradle_maven_repos_text += gradle_maven_flat_text
 
@@ -98,6 +98,9 @@ for x in env.android_jni_dirs:
     gradle_jni_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
 gradle_asset_dirs_text = ""
+
+for x in env.android_asset_dirs:
+    gradle_asset_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
 gradle_default_config_text = ""
 

@@ -658,7 +658,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		Vector<float> p;
 		p.resize(arr.size());
 		for (int i = 0; i < arr.size(); i++) {
-			p[i] = arr[i];
+			p.write[i] = arr[i];
 			if (i < perf_items.size()) {
 
 				float v = p[i];
@@ -693,7 +693,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				perf_items[i]->set_text(1, vs);
 				perf_items[i]->set_tooltip(1, tt);
 				if (p[i] > perf_max[i])
-					perf_max[i] = p[i];
+					perf_max.write[i] = p[i];
 			}
 		}
 		perf_history.push_front(p);
@@ -734,7 +734,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		error_list->set_item_metadata(error_list->get_item_count() - 1, stack);
 
-		error_count++;
+		if (warning)
+			warning_count++;
+		else
+			error_count++;
 
 	} else if (p_msg == "profile_sig") {
 		//cache a signature
@@ -807,7 +810,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				item.signature = "categ::" + name + "::" + item.name;
 				item.name = item.name.capitalize();
 				c.total_time += item.total;
-				c.items[i / 2] = item;
+				c.items.write[i / 2] = item;
 			}
 			metric.categories.push_back(c);
 		}
@@ -844,7 +847,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			item.calls = calls;
 			item.self = self;
 			item.total = total;
-			funcs.items[i] = item;
+			funcs.items.write[i] = item;
 		}
 
 		metric.categories.push_back(funcs);
@@ -1011,20 +1014,26 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 			}
 
-			if (error_count != last_error_count) {
+			if (error_count != last_error_count || warning_count != last_warning_count) {
 
-				if (error_count == 0) {
+				if (error_count == 0 && warning_count == 0) {
 					error_split->set_name(TTR("Errors"));
 					debugger_button->set_text(TTR("Debugger"));
 					debugger_button->set_icon(Ref<Texture>());
 					tabs->set_tab_icon(error_split->get_index(), Ref<Texture>());
 				} else {
-					error_split->set_name(TTR("Errors") + " (" + itos(error_count) + ")");
-					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count) + ")");
-					debugger_button->set_icon(get_icon("Error", "EditorIcons"));
-					tabs->set_tab_icon(error_split->get_index(), get_icon("Error", "EditorIcons"));
+					error_split->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
+					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+					if (error_count == 0) {
+						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
+						tabs->set_tab_icon(error_split->get_index(), get_icon("Warning", "EditorIcons"));
+					} else {
+						debugger_button->set_icon(get_icon("Error", "EditorIcons"));
+						tabs->set_tab_icon(error_split->get_index(), get_icon("Error", "EditorIcons"));
+					}
 				}
 				last_error_count = error_count;
+				last_warning_count = warning_count;
 			}
 
 			if (connection.is_null()) {
@@ -1054,6 +1063,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					error_list->clear();
 					error_stack->clear();
 					error_count = 0;
+					warning_count = 0;
 					profiler_signature.clear();
 					//live_edit_root->set_text("/root");
 
@@ -1193,12 +1203,12 @@ void ScriptEditorDebugger::start() {
 	perf_history.clear();
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 
-		perf_max[i] = 0;
+		perf_max.write[i] = 0;
 	}
 
 	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 	if (server->listen(remote_port) != OK) {
-		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), true);
+		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
 		return;
 	}
 
@@ -1230,6 +1240,9 @@ void ScriptEditorDebugger::stop() {
 	if (connection.is_valid()) {
 		EditorNode::get_log()->add_message("** Debug Process Stopped **");
 		connection.unref();
+
+		reason->set_text("");
+		reason->set_tooltip("");
 	}
 
 	pending_in_queue = 0;
@@ -1248,6 +1261,9 @@ void ScriptEditorDebugger::stop() {
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
+
+	Node *node = editor->get_scene_tree_dock()->get_tree_editor()->get_selected();
+	editor->push_item(node);
 
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
@@ -1747,6 +1763,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	error_list->clear();
 	error_count = 0;
+	warning_count = 0;
 	_notification(NOTIFICATION_PROCESS);
 }
 
@@ -2073,7 +2090,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 			it->set_selectable(1, false);
 			it->set_text(0, name.capitalize());
 			perf_items.push_back(it);
-			perf_max[i] = 0;
+			perf_max.write[i] = 0;
 		}
 	}
 
@@ -2159,9 +2176,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	live_debug = false;
 	last_path_id = false;
 	error_count = 0;
+	warning_count = 0;
 	hide_on_stop = true;
 	enable_external_editor = false;
 	last_error_count = 0;
+	last_warning_count = 0;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");
 }

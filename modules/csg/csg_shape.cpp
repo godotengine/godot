@@ -177,7 +177,7 @@ void CSGShape::_update_shape() {
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
 	for (int i = 0; i < face_count.size(); i++) {
-		face_count[i] = 0;
+		face_count.write[i] = 0;
 	}
 
 	for (int i = 0; i < n->faces.size(); i++) {
@@ -200,7 +200,7 @@ void CSGShape::_update_shape() {
 			}
 		}
 
-		face_count[idx]++;
+		face_count.write[idx]++;
 	}
 
 	Vector<ShapeUpdateSurface> surfaces;
@@ -210,18 +210,18 @@ void CSGShape::_update_shape() {
 	//create arrays
 	for (int i = 0; i < surfaces.size(); i++) {
 
-		surfaces[i].vertices.resize(face_count[i] * 3);
-		surfaces[i].normals.resize(face_count[i] * 3);
-		surfaces[i].uvs.resize(face_count[i] * 3);
-		surfaces[i].last_added = 0;
+		surfaces.write[i].vertices.resize(face_count[i] * 3);
+		surfaces.write[i].normals.resize(face_count[i] * 3);
+		surfaces.write[i].uvs.resize(face_count[i] * 3);
+		surfaces.write[i].last_added = 0;
 
 		if (i != surfaces.size() - 1) {
-			surfaces[i].material = n->materials[i];
+			surfaces.write[i].material = n->materials[i];
 		}
 
-		surfaces[i].verticesw = surfaces[i].vertices.write();
-		surfaces[i].normalsw = surfaces[i].normals.write();
-		surfaces[i].uvsw = surfaces[i].uvs.write();
+		surfaces.write[i].verticesw = surfaces.write[i].vertices.write();
+		surfaces.write[i].normalsw = surfaces.write[i].normals.write();
+		surfaces.write[i].uvsw = surfaces.write[i].uvs.write();
 	}
 
 	//fill arrays
@@ -281,7 +281,7 @@ void CSGShape::_update_shape() {
 				surfaces[idx].normalsw[last + order[j]] = normal;
 			}
 
-			surfaces[idx].last_added += 3;
+			surfaces.write[idx].last_added += 3;
 		}
 	}
 
@@ -290,9 +290,9 @@ void CSGShape::_update_shape() {
 
 	for (int i = 0; i < surfaces.size(); i++) {
 
-		surfaces[i].verticesw = PoolVector<Vector3>::Write();
-		surfaces[i].normalsw = PoolVector<Vector3>::Write();
-		surfaces[i].uvsw = PoolVector<Vector2>::Write();
+		surfaces.write[i].verticesw = PoolVector<Vector3>::Write();
+		surfaces.write[i].normalsw = PoolVector<Vector3>::Write();
+		surfaces.write[i].uvsw = PoolVector<Vector2>::Write();
 
 		if (surfaces[i].last_added == 0)
 			continue;
@@ -1585,7 +1585,11 @@ CSGBrush *CSGPolygon::_build_brush() {
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
 			int splits = MAX(2, Math::ceil(bl / path_interval));
-			face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
+			if (path_joined) {
+				face_count = splits * final_polygon.size() * 2;
+			} else {
+				face_count = triangles.size() * 2 / 3 + splits * final_polygon.size() * 2;
+			}
 		} break;
 	}
 
@@ -1793,8 +1797,14 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 				float bl = curve->get_baked_length();
 				int splits = MAX(2, Math::ceil(bl / path_interval));
+				float u1 = 0.0;
+				float u2 = path_continuous_u ? 0.0 : 1.0;
 
-				Transform path_to_this = get_global_transform().affine_inverse() * path->get_global_transform();
+				Transform path_to_this;
+				if (!path_local) {
+					// center on paths origin
+					path_to_this = get_global_transform().affine_inverse() * path->get_global_transform();
+				}
 
 				Transform prev_xf;
 
@@ -1812,6 +1822,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 				for (int i = 0; i <= splits; i++) {
 
 					float ofs = i * path_interval;
+					if (i == splits && path_joined) {
+						ofs = 0.0;
+					}
 
 					Transform xf;
 					xf.origin = curve->interpolate_baked(ofs);
@@ -1836,6 +1849,11 @@ CSGBrush *CSGPolygon::_build_brush() {
 					xf = path_to_this * xf;
 
 					if (i > 0) {
+						if (path_continuous_u) {
+							u1 = u2;
+							u2 += (prev_xf.origin - xf.origin).length();
+						};
+
 						//put triangles where they belong
 						//add triangles for depth
 						for (int j = 0; j < final_polygon.size(); j++) {
@@ -1850,10 +1868,10 @@ CSGBrush *CSGPolygon::_build_brush() {
 							};
 
 							Vector2 u[4] = {
-								Vector2(0, 0),
-								Vector2(0, 1),
-								Vector2(1, 1),
-								Vector2(1, 0)
+								Vector2(u1, 0),
+								Vector2(u1, 1),
+								Vector2(u2, 1),
+								Vector2(u2, 0)
 							};
 
 							// face 1
@@ -1888,7 +1906,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						}
 					}
 
-					if (i == 0) {
+					if (i == 0 && !path_joined) {
 
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
@@ -1905,7 +1923,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 						}
 					}
 
-					if (i == splits) {
+					if (i == splits && !path_joined) {
 
 						for (int j = 0; j < triangles.size(); j += 3) {
 							for (int k = 0; k < 3; k++) {
@@ -2003,6 +2021,15 @@ void CSGPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_rotation", "mode"), &CSGPolygon::set_path_rotation);
 	ClassDB::bind_method(D_METHOD("get_path_rotation"), &CSGPolygon::get_path_rotation);
 
+	ClassDB::bind_method(D_METHOD("set_path_local", "enable"), &CSGPolygon::set_path_local);
+	ClassDB::bind_method(D_METHOD("is_path_local"), &CSGPolygon::is_path_local);
+
+	ClassDB::bind_method(D_METHOD("set_path_continuous_u", "enable"), &CSGPolygon::set_path_continuous_u);
+	ClassDB::bind_method(D_METHOD("is_path_continuous_u"), &CSGPolygon::is_path_continuous_u);
+
+	ClassDB::bind_method(D_METHOD("set_path_joined", "enable"), &CSGPolygon::set_path_joined);
+	ClassDB::bind_method(D_METHOD("is_path_joined"), &CSGPolygon::is_path_joined);
+
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPolygon::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGPolygon::get_material);
 
@@ -2023,6 +2050,9 @@ void CSGPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "path_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Path"), "set_path_node", "get_path_node");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "path_interval", PROPERTY_HINT_EXP_RANGE, "0.001,1000.0,0.001,or_greater"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
 
@@ -2065,6 +2095,15 @@ void CSGPolygon::set_depth(const float p_depth) {
 
 float CSGPolygon::get_depth() const {
 	return depth;
+}
+
+void CSGPolygon::set_path_continuous_u(bool p_enable) {
+	path_continuous_u = p_enable;
+	_make_dirty();
+}
+
+bool CSGPolygon::is_path_continuous_u() const {
+	return path_continuous_u;
 }
 
 void CSGPolygon::set_spin_degrees(const float p_spin_degrees) {
@@ -2119,6 +2158,26 @@ CSGPolygon::PathRotation CSGPolygon::get_path_rotation() const {
 	return path_rotation;
 }
 
+void CSGPolygon::set_path_local(bool p_enable) {
+	path_local = p_enable;
+	_make_dirty();
+	update_gizmo();
+}
+
+bool CSGPolygon::is_path_local() const {
+	return path_local;
+}
+
+void CSGPolygon::set_path_joined(bool p_enable) {
+	path_joined = p_enable;
+	_make_dirty();
+	update_gizmo();
+}
+
+bool CSGPolygon::is_path_joined() const {
+	return path_joined;
+}
+
 void CSGPolygon::set_smooth_faces(const bool p_smooth_faces) {
 	smooth_faces = p_smooth_faces;
 	_make_dirty();
@@ -2160,5 +2219,8 @@ CSGPolygon::CSGPolygon() {
 	smooth_faces = false;
 	path_interval = 1;
 	path_rotation = PATH_ROTATION_PATH;
+	path_local = false;
+	path_continuous_u = false;
+	path_joined = false;
 	path_cache = NULL;
 }

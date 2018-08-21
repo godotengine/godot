@@ -151,7 +151,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
-	Resource *r = (Resource *)ClassDB::instance(get_class());
+	Resource *r = Object::cast_to<Resource>(ClassDB::instance(get_class()));
 	ERR_FAIL_COND_V(!r, Ref<Resource>());
 
 	r->local_scene = p_for_scene;
@@ -182,7 +182,9 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 		r->set(E->get().name, p);
 	}
 
-	return Ref<Resource>(r);
+	RES res = Ref<Resource>(r);
+
+	return res;
 }
 
 void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
@@ -225,15 +227,20 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
-		Variant p = get(E->get().name).duplicate(true);
-		if (p.get_type() == Variant::OBJECT && p_subresources) {
+		Variant p = get(E->get().name);
+
+		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
+			p = p.duplicate(p_subresources); //does not make a long of sense but should work?
+		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
 
 			RES sr = p;
-			if (sr.is_valid())
-				p = sr->duplicate(true);
-		}
+			if (sr.is_valid()) {
+				r->set(E->get().name, sr->duplicate(p_subresources));
+			}
+		} else {
 
-		r->set(E->get().name, p);
+			r->set(E->get().name, p);
+		}
 	}
 
 	return Ref<Resource>(r);

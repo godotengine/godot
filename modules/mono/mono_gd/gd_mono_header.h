@@ -45,7 +45,8 @@ struct ManagedType {
 	GDMonoClass *type_class;
 
 	ManagedType() {
-		type_class = 0;
+		type_encoding = 0;
+		type_class = NULL;
 	}
 };
 

@@ -80,7 +80,7 @@ void AreaBullet::dispatch_callbacks() {
 
 	// Reverse order because I've to remove EXIT objects
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		OverlappingObjectData &otherObj = overlappingObjects[i];
+		OverlappingObjectData &otherObj = overlappingObjects.write[i];
 
 		switch (otherObj.state) {
 			case OVERLAP_STATE_ENTER:
@@ -199,13 +199,13 @@ void AreaBullet::add_overlap(CollisionObjectBullet *p_otherObject) {
 
 void AreaBullet::put_overlap_as_exit(int p_index) {
 	scratch();
-	overlappingObjects[p_index].state = OVERLAP_STATE_EXIT;
+	overlappingObjects.write[p_index].state = OVERLAP_STATE_EXIT;
 }
 
 void AreaBullet::put_overlap_as_inside(int p_index) {
 	// This check is required to be sure this body was inside
 	if (OVERLAP_STATE_DIRTY == overlappingObjects[p_index].state) {
-		overlappingObjects[p_index].state = OVERLAP_STATE_INSIDE;
+		overlappingObjects.write[p_index].state = OVERLAP_STATE_INSIDE;
 	}
 }
 

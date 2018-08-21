@@ -49,6 +49,7 @@ class CollisionShape : public Spatial {
 	void resource_changed(RES res);
 	bool disabled;
 
+protected:
 	void _create_debug_shape();
 
 	void _update_in_shape_owner(bool p_xform_only = false);

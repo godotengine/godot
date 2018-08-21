@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CLANG_FORMAT=clang-format-5.0
+CLANG_FORMAT=clang-format-6.0
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Check the whole commit range against $TRAVIS_BRANCH, the base merge branch

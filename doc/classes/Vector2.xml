@@ -185,6 +185,15 @@
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
+		<method name="project">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<description>
+				Returns the vector projected onto the vector [code]b[/code].
+			</description>
+		</method>
 		<method name="reflect">
 			<return type="Vector2">
 			</return>
@@ -257,5 +266,17 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="ZERO" value="Vector2( 0, 0 )">
+		</constant>
+		<constant name="INF" value="Vector2( inf, inf )">
+		</constant>
+		<constant name="LEFT" value="Vector2( -1, 0 )">
+		</constant>
+		<constant name="RIGHT" value="Vector2( 1, 0 )">
+		</constant>
+		<constant name="UP" value="Vector2( 0, -1 )">
+		</constant>
+		<constant name="DOWN" value="Vector2( 0, 1 )">
+		</constant>
 	</constants>
 </class>

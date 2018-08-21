@@ -35,6 +35,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_select_with_rmb" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_tab_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -101,6 +107,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_select_with_rmb">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 			</description>

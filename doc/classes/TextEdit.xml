@@ -132,6 +132,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_breakpoints" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array containing the line number of each breakpoint.
+			</description>
+		</method>
 		<method name="get_keyword_color" qualifiers="const">
 			<return type="Color">
 			</return>
@@ -265,6 +272,13 @@
 				Perform redo operation.
 			</description>
 		</method>
+		<method name="remove_breakpoints">
+			<return type="void">
+			</return>
+			<description>
+				Removes all the breakpoints (without firing "breakpoint_toggled" signal).
+			</description>
+		</method>
 		<method name="search" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
@@ -344,6 +358,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled">
+			If [code]true[/code] the breakpoint gutter is visible.
+		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 			If [code]true[/code] the caret (visual cursor) blinks.
 		</member>
@@ -509,6 +526,8 @@
 		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
+		</theme_item>
+		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>

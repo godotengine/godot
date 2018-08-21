@@ -33,6 +33,7 @@
 
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "drivers/coremidi/core_midi.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
@@ -74,6 +75,7 @@ public:
 	IP_Unix *ip_unix;
 
 	AudioDriverCoreAudio audio_driver;
+	MIDIDriverCoreMidi midi_driver;
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;
@@ -136,6 +138,9 @@ public:
 	float _display_scale(id screen) const;
 
 	void _update_window();
+
+	int video_driver_index;
+	virtual int get_current_video_driver() const;
 
 protected:
 	virtual void initialize_core();

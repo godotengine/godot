@@ -62,6 +62,11 @@ void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library", "library"), &NativeScript::set_library);
 	ClassDB::bind_method(D_METHOD("get_library"), &NativeScript::get_library);
 
+	ClassDB::bind_method(D_METHOD("set_script_class_name", "class_name"), &NativeScript::set_script_class_name);
+	ClassDB::bind_method(D_METHOD("get_script_class_name"), &NativeScript::get_script_class_name);
+	ClassDB::bind_method(D_METHOD("set_script_class_icon_path", "icon_path"), &NativeScript::set_script_class_icon_path);
+	ClassDB::bind_method(D_METHOD("get_script_class_icon_path"), &NativeScript::get_script_class_icon_path);
+
 	ClassDB::bind_method(D_METHOD("get_class_documentation"), &NativeScript::get_class_documentation);
 	ClassDB::bind_method(D_METHOD("get_method_documentation", "method"), &NativeScript::get_method_documentation);
 	ClassDB::bind_method(D_METHOD("get_signal_documentation", "signal_name"), &NativeScript::get_signal_documentation);
@@ -69,6 +74,9 @@ void NativeScript::_bind_methods() {
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+	ADD_GROUP("Script Class", "script_class_");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
 }
@@ -131,6 +139,22 @@ Ref<GDNativeLibrary> NativeScript::get_library() const {
 	return library;
 }
 
+void NativeScript::set_script_class_name(String p_type) {
+	script_class_name = p_type;
+}
+
+String NativeScript::get_script_class_name() const {
+	return script_class_name;
+}
+
+void NativeScript::set_script_class_icon_path(String p_icon_path) {
+	script_class_icon_path = p_icon_path;
+}
+
+String NativeScript::get_script_class_icon_path() const {
+	return script_class_icon_path;
+}
+
 bool NativeScript::can_instance() const {
 
 	NativeScriptDesc *script_data = get_script_desc();
@@ -149,7 +173,10 @@ Ref<Script> NativeScript::get_base_script() const {
 	if (!script_data)
 		return Ref<Script>();
 
-	Ref<NativeScript> ns = Ref<NativeScript>(NSL->create_script());
+	NativeScript *script = (NativeScript *)NSL->create_script();
+	Ref<NativeScript> ns = Ref<NativeScript>(script);
+	ERR_FAIL_COND_V(!ns.is_valid(), Ref<Script>());
+
 	ns->set_class_name(script_data->base);
 	ns->set_library(get_library());
 	return ns;
@@ -553,12 +580,17 @@ bool NativeScriptInstance::set(const StringName &p_name, const Variant &p_value)
 			Variant name = p_name;
 			const Variant *args[2] = { &name, &p_value };
 
-			E->get().method.method((godot_object *)owner,
+			godot_variant result;
+			result = E->get().method.method((godot_object *)owner,
 					E->get().method.method_data,
 					userdata,
 					2,
 					(godot_variant **)args);
-			return true;
+			bool handled = *(Variant *)&result;
+			godot_variant_destroy(&result);
+			if (handled) {
+				return true;
+			}
 		}
 
 		script_data = script_data->base_data;
@@ -593,10 +625,9 @@ bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 					(godot_variant **)args);
 			r_ret = *(Variant *)&result;
 			godot_variant_destroy(&result);
-			if (r_ret.get_type() == Variant::NIL) {
-				return false;
+			if (r_ret.get_type() != Variant::NIL) {
+				return true;
 			}
-			return true;
 		}
 
 		script_data = script_data->base_data;
@@ -697,11 +728,21 @@ Variant NativeScriptInstance::call(const StringName &p_method, const Variant **p
 		Map<StringName, NativeScriptDesc::Method>::Element *E = script_data->methods.find(p_method);
 		if (E) {
 			godot_variant result;
+
+#ifdef DEBUG_ENABLED
+			current_method_call = p_method;
+#endif
+
 			result = E->get().method.method((godot_object *)owner,
 					E->get().method.method_data,
 					userdata,
 					p_argcount,
 					(godot_variant **)p_args);
+
+#ifdef DEBUG_ENABLED
+			current_method_call = "";
+#endif
+
 			Variant res = *(Variant *)&result;
 			godot_variant_destroy(&result);
 			r_error.error = Variant::CallError::CALL_OK;
@@ -716,6 +757,15 @@ Variant NativeScriptInstance::call(const StringName &p_method, const Variant **p
 }
 
 void NativeScriptInstance::notification(int p_notification) {
+#ifdef DEBUG_ENABLED
+	if (p_notification == MainLoop::NOTIFICATION_CRASH) {
+		if (current_method_call != StringName("")) {
+			ERR_PRINTS("NativeScriptInstance detected crash on method: " + current_method_call);
+			current_method_call = "";
+		}
+	}
+#endif
+
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 	call_multilevel("_notification", args, 1);
@@ -1034,7 +1084,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	s->set_class_name(p_class_name);
 	return Ref<NativeScript>(s);
 }
-bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
+bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	return true;
 }
 
@@ -1135,8 +1185,8 @@ int NativeScriptLanguage::register_binding_functions(godot_instance_binding_func
 	}
 
 	// set the functions
-	binding_functions[idx].first = true;
-	binding_functions[idx].second = p_binding_functions;
+	binding_functions.write[idx].first = true;
+	binding_functions.write[idx].second = p_binding_functions;
 
 	return idx;
 }
@@ -1151,7 +1201,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
 	}
 
-	binding_functions[p_idx].first = false;
+	binding_functions.write[p_idx].first = false;
 
 	if (binding_functions[p_idx].second.free_func)
 		binding_functions[p_idx].second.free_func(binding_functions[p_idx].second.data);
@@ -1177,7 +1227,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		binding_data->resize(p_idx + 1);
 
 		for (int i = old_size; i <= p_idx; i++) {
-			(*binding_data)[i] = NULL;
+			(*binding_data).write[i] = NULL;
 		}
 	}
 
@@ -1186,7 +1236,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
 
 		// no binding data yet, soooooo alloc new one \o/
-		(*binding_data)[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
+		(*binding_data).write[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
 	}
 
 	return (*binding_data)[p_idx];
@@ -1199,7 +1249,7 @@ void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
 	binding_data->resize(binding_functions.size());
 
 	for (int i = 0; i < binding_functions.size(); i++) {
-		(*binding_data)[i] = NULL;
+		(*binding_data).write[i] = NULL;
 	}
 
 	binding_instances.insert(binding_data);
@@ -1369,6 +1419,22 @@ void NativeScriptLanguage::thread_exit() {
 }
 
 #endif // NO_THREADS
+
+bool NativeScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "NativeScript";
+}
+
+String NativeScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
+	if (script.is_valid()) {
+		*r_base_type = script->get_instance_base_type();
+		*r_icon_path = script->get_script_class_icon_path();
+		return script->get_script_class_name();
+	}
+	*r_base_type = String();
+	*r_icon_path = String();
+	return String();
+}
 
 void NativeReloadNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_notification"), &NativeReloadNode::_notification);

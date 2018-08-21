@@ -9,10 +9,11 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 
-class AnimationNodeBlendSpace1DEditor : public VBoxContainer {
+class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 
-	GDCLASS(AnimationNodeBlendSpace1DEditor, VBoxContainer)
+	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin)
 
 	Ref<AnimationNodeBlendSpace1D> blend_space;
 
@@ -81,7 +82,17 @@ class AnimationNodeBlendSpace1DEditor : public VBoxContainer {
 
 	void _goto_parent();
 
-	void _removed_from_graph();
+	EditorFileDialog *open_file;
+	Ref<AnimationNode> file_loaded;
+	void _file_opened(const String &p_file);
+
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002
+	};
+
+	StringName get_blend_position_path() const;
 
 protected:
 	void _notification(int p_what);
@@ -89,29 +100,9 @@ protected:
 
 public:
 	static AnimationNodeBlendSpace1DEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeBlendSpace1D *p_blend_space);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node);
+	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeBlendSpace1DEditor();
-};
-
-class AnimationNodeBlendSpace1DEditorPlugin : public EditorPlugin {
-
-	GDCLASS(AnimationNodeBlendSpace1DEditorPlugin, EditorPlugin)
-
-	AnimationNodeBlendSpace1DEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
-
-public:
-	virtual String get_name() const { return "BlendSpace1D"; }
-
-	bool has_main_screen() const { return false; }
-
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AnimationNodeBlendSpace1DEditorPlugin(EditorNode *p_node);
-	~AnimationNodeBlendSpace1DEditorPlugin();
 };
 
 #endif // ANIMATION_BLEND_SPACE_1D_EDITOR_H

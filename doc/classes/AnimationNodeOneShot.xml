@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeOneShot" inherits="AnimationNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_mix_mode" qualifiers="const">
+			<return type="int" enum="AnimationNodeOneShot.MixMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_mix_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="AnimationNodeOneShot.MixMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="autorestart" type="bool" setter="set_autorestart" getter="has_autorestart">
+		</member>
+		<member name="autorestart_delay" type="float" setter="set_autorestart_delay" getter="get_autorestart_delay">
+		</member>
+		<member name="autorestart_random_delay" type="float" setter="set_autorestart_random_delay" getter="get_autorestart_random_delay">
+		</member>
+		<member name="fadein_time" type="float" setter="set_fadein_time" getter="get_fadein_time">
+		</member>
+		<member name="fadeout_time" type="float" setter="set_fadeout_time" getter="get_fadeout_time">
+		</member>
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync">
+		</member>
+	</members>
+	<constants>
+		<constant name="MIX_MODE_BLEND" value="0" enum="MixMode">
+		</constant>
+		<constant name="MIX_MODE_ADD" value="1" enum="MixMode">
+		</constant>
+	</constants>
+</class>

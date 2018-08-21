@@ -128,7 +128,7 @@ def configure(env):
             env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
         if get_platform(env["ndk_platform"]) < 21:
-            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than andorid-21; setting ndk_platform=android-21")
+            print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
             env["ndk_platform"] = "android-21"
         env['ARCH'] = 'arch-arm64'
         target_subpath = "aarch64-linux-android-4.9"
@@ -139,8 +139,13 @@ def configure(env):
     ## Build type
 
     if (env["target"].startswith("release")):
-        env.Append(LINKFLAGS=['-O2'])
-        env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Append(LINKFLAGS=['-O2'])
+            env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+        else: #optimize for size
+            env.Append(CPPFLAGS=['-Os', '-DNDEBUG'])
+            env.Append(LINKFLAGS=['-Os'])
+
         if (can_vectorize):
             env.Append(CPPFLAGS=['-ftree-vectorize'])
         if (env["target"] == "release_debug"):

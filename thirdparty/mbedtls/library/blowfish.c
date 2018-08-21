@@ -34,15 +34,11 @@
 #if defined(MBEDTLS_BLOWFISH_C)
 
 #include "mbedtls/blowfish.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
 #if !defined(MBEDTLS_BLOWFISH_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
-}
 
 /*
  * 32-bit integer manipulation macros (big endian)
@@ -165,7 +161,7 @@ void mbedtls_blowfish_free( mbedtls_blowfish_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_blowfish_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_blowfish_context ) );
 }
 
 /*

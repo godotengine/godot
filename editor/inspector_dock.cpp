@@ -36,6 +36,16 @@
 
 void InspectorDock::_menu_option(int p_option) {
 	switch (p_option) {
+		case RESOURCE_MAKE_BUILT_IN: {
+			_unref_resource();
+		} break;
+		case RESOURCE_COPY: {
+			_copy_resource();
+		} break;
+		case RESOURCE_EDIT_CLIPBOARD: {
+			_paste_resource();
+		} break;
+
 		case RESOURCE_SAVE: {
 			_save_resource(false);
 		} break;
@@ -140,8 +150,9 @@ void InspectorDock::_load_resource(const String &p_type) {
 
 void InspectorDock::_resource_file_selected(String p_file) {
 	RES res = ResourceLoader::load(p_file);
+
 	if (res.is_null()) {
-		warning_dialog->get_ok()->set_text("Ugh");
+		warning_dialog->get_ok()->set_text(TTR("OK"));
 		warning_dialog->set_text(TTR("Failed to load resource."));
 		return;
 	};
@@ -399,10 +410,11 @@ void InspectorDock::update(Object *p_object) {
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Params")), OBJECT_COPY_PARAMS);
 	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Params")), OBJECT_PASTE_PARAMS);
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTR("Paste Resource")), RESOURCE_PASTE);
+
+	p->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource Clipboard")), RESOURCE_EDIT_CLIPBOARD);
 	if (is_resource) {
 		p->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
-		p->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Built-In")), RESOURCE_UNREF);
+		p->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Built-In")), RESOURCE_MAKE_BUILT_IN);
 	}
 
 	if (is_resource || is_node) {
@@ -528,7 +540,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	search = memnew(LineEdit);
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTR("Filter properties"));
-	search->add_icon_override("right_icon", get_icon("Search", "EditorIcons"));
+	search->set_right_icon(get_icon("Search", "EditorIcons"));
+	search->set_clear_button_enabled(true);
 	add_child(search);
 
 	warning = memnew(Button);

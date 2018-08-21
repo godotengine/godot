@@ -118,6 +118,9 @@ class NativeScript : public Script {
 
 	String class_name;
 
+	String script_class_name;
+	String script_class_icon_path;
+
 #ifndef NO_THREADS
 	Mutex *owners_lock;
 #endif
@@ -134,6 +137,11 @@ public:
 
 	void set_library(Ref<GDNativeLibrary> p_library);
 	Ref<GDNativeLibrary> get_library() const;
+
+	void set_script_class_name(String p_type);
+	String get_script_class_name() const;
+	void set_script_class_icon_path(String p_icon_path);
+	String get_script_class_icon_path() const;
 
 	virtual bool can_instance() const;
 
@@ -181,6 +189,9 @@ class NativeScriptInstance : public ScriptInstance {
 
 	Object *owner;
 	Ref<NativeScript> script;
+#ifdef DEBUG_ENABLED
+	StringName current_method_call;
+#endif
 
 	void _ml_call_reversed(NativeScriptDesc *script_data, const StringName &p_method, const Variant **p_args, int p_argcount);
 
@@ -292,7 +303,7 @@ public:
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
@@ -329,6 +340,9 @@ public:
 
 	void set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag);
 	const void *get_global_type_tag(int p_idx, StringName p_class_name) const;
+
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const;
 };
 
 inline NativeScriptDesc *NativeScript::get_script_desc() const {

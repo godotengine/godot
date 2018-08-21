@@ -115,6 +115,7 @@ public:
 	int get_hframes() const;
 
 	Rect2 get_rect() const;
+	virtual Rect2 get_anchorable_rect() const;
 
 	Sprite();
 	~Sprite();

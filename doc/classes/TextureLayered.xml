@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureLayered" inherits="Resource" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="create">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<argument index="2" name="depth" type="int">
+			</argument>
+			<argument index="3" name="format" type="int" enum="Image.Format">
+			</argument>
+			<argument index="4" name="flags" type="int" default="4">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_depth" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_format" qualifiers="const">
+			<return type="int" enum="Image.Format">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_layer_data" qualifiers="const">
+			<return type="Image">
+			</return>
+			<argument index="0" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_data_partial">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<argument index="1" name="x_offset" type="int">
+			</argument>
+			<argument index="2" name="y_offset" type="int">
+			</argument>
+			<argument index="3" name="layer" type="int">
+			</argument>
+			<argument index="4" name="mipmap" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_layer_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<argument index="1" name="layer" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+		</member>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+		</member>
+	</members>
+	<constants>
+		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
+		</constant>
+		<constant name="FLAG_REPEAT" value="2" enum="Flags">
+		</constant>
+		<constant name="FLAG_FILTER" value="4" enum="Flags">
+		</constant>
+		<constant name="FLAGS_DEFAULT" value="4" enum="Flags">
+		</constant>
+	</constants>
+</class>

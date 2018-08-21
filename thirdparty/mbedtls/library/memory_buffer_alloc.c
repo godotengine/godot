@@ -31,6 +31,7 @@
 /* No need for the header guard as MBEDTLS_MEMORY_BUFFER_ALLOC_C
    is dependent upon MBEDTLS_PLATFORM_C */
 #include "mbedtls/platform.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -41,11 +42,6 @@
 #if defined(MBEDTLS_THREADING_C)
 #include "mbedtls/threading.h"
 #endif
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 #define MAGIC1       0xFF00AA55
 #define MAGIC2       0xEE119966
@@ -522,7 +518,9 @@ void mbedtls_memory_buffer_alloc_status( void )
                       heap.alloc_count, heap.free_count );
 
     if( heap.first->next == NULL )
+    {
         mbedtls_fprintf( stderr, "All memory de-allocated in stack buffer\n" );
+    }
     else
     {
         mbedtls_fprintf( stderr, "Memory currently allocated:\n" );
@@ -612,7 +610,7 @@ void mbedtls_memory_buffer_alloc_free( void )
 #if defined(MBEDTLS_THREADING_C)
     mbedtls_mutex_free( &heap.mutex );
 #endif
-    mbedtls_zeroize( &heap, sizeof(buffer_alloc_ctx) );
+    mbedtls_platform_zeroize( &heap, sizeof(buffer_alloc_ctx) );
 }
 
 #if defined(MBEDTLS_SELF_TEST)

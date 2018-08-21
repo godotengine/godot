@@ -11,6 +11,16 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="exists">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_dependencies">
 			<return type="PoolStringArray">
 			</return>
@@ -29,6 +39,14 @@
 			</description>
 		</method>
 		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_cached">
 			<return type="bool">
 			</return>
 			<argument index="0" name="path" type="String">

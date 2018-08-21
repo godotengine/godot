@@ -132,6 +132,12 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 		group_map.erase(E);
 }
 
+void SceneTree::make_group_changed(const StringName &p_group) {
+	Map<StringName, Group>::Element *E = group_map.find(p_group);
+	if (E)
+		E->get().changed = true;
+}
+
 void SceneTree::flush_transform_notifications() {
 
 	SelfList<Node> *n = xform_change_list.first();
@@ -165,18 +171,23 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = false;
 }
 
-void SceneTree::_update_group_order(Group &g) {
+void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 
 	if (!g.changed)
 		return;
 	if (g.nodes.empty())
 		return;
 
-	Node **nodes = &g.nodes[0];
+	Node **nodes = g.nodes.ptrw();
 	int node_count = g.nodes.size();
 
-	SortArray<Node *, Node::Comparator> node_sort;
-	node_sort.sort(nodes, node_count);
+	if (p_use_priority) {
+		SortArray<Node *, Node::ComparatorWithPriority> node_sort;
+		node_sort.sort(nodes, node_count);
+	} else {
+		SortArray<Node *, Node::Comparator> node_sort;
+		node_sort.sort(nodes, node_count);
+	}
 	g.changed = false;
 }
 
@@ -216,7 +227,7 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 	int node_count = nodes_copy.size();
 
 	call_lock++;
@@ -271,7 +282,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 	int node_count = nodes_copy.size();
 
 	call_lock++;
@@ -320,7 +331,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 	int node_count = nodes_copy.size();
 
 	call_lock++;
@@ -498,7 +509,8 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
-	Size2 win_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+
 	if (win_size != last_screen_size) {
 
 		last_screen_size = win_size;
@@ -654,6 +666,11 @@ void SceneTree::_notification(int p_notification) {
 #ifdef TOOLS_ENABLED
 			}
 #endif
+		} break;
+
+		case NOTIFICATION_CRASH: {
+
+			get_root()->propagate_notification(p_notification);
 		} break;
 
 		default:
@@ -878,7 +895,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 	Vector<Node *> nodes_copy = g.nodes;
 
 	int node_count = nodes_copy.size();
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 
 	Variant arg = p_input;
 	const Variant *v[1] = { &arg };
@@ -915,14 +932,14 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	if (g.nodes.empty())
 		return;
 
-	_update_group_order(g);
+	_update_group_order(g, p_notification == Node::NOTIFICATION_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PROCESS || p_notification == Node::NOTIFICATION_PHYSICS_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 
 	//copy, so copy on write happens in case something is removed from process while being called
 	//performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
 	int node_count = nodes_copy.size();
-	Node **nodes = &nodes_copy[0];
+	Node **nodes = nodes_copy.ptrw();
 
 	call_lock++;
 
@@ -933,6 +950,8 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 			continue;
 
 		if (!n->can_process())
+			continue;
+		if (!n->can_process_notification(p_notification))
 			continue;
 
 		n->notification(p_notification);
@@ -1112,7 +1131,7 @@ void SceneTree::_update_root_rect() {
 	}
 
 	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	Size2 desired_res = stretch_min;
 
 	Size2 viewport_size;
@@ -2004,7 +2023,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 	stretch_shrink = 1;
 
-	last_screen_size = Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {

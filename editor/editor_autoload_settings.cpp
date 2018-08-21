@@ -598,7 +598,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	int i = 0;
 
 	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		orders[i++] = E->get().order;
+		orders.write[i++] = E->get().order;
 	}
 
 	orders.sort();

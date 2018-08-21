@@ -33,9 +33,11 @@
 			</return>
 			<argument index="0" name="handles" type="PoolVector3Array">
 			</argument>
-			<argument index="1" name="billboard" type="bool" default="false">
+			<argument index="1" name="material" type="Material">
 			</argument>
-			<argument index="2" name="secondary" type="bool" default="false">
+			<argument index="2" name="billboard" type="bool" default="false">
+			</argument>
+			<argument index="3" name="secondary" type="bool" default="false">
 			</argument>
 			<description>
 				Add a list of handles (points) which can be used to deform the object being edited.
@@ -136,6 +138,14 @@
 			<description>
 				This function is used when the user drags a gizmo handle (previously added with [method add_handles]) in screen coordinates.
 				The [Camera] is also provided so screen coordinates can be converted to raycasts.
+			</description>
+		</method>
+		<method name="set_hidden">
+			<return type="void">
+			</return>
+			<argument index="0" name="hidden" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_spatial_node">

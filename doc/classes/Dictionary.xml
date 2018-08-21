@@ -33,6 +33,8 @@
 			</description>
 		</method>
 		<method name="erase">
+			<return type="bool">
+			</return>
 			<argument index="0" name="key" type="var">
 			</argument>
 			<description>

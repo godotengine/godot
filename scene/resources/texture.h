@@ -33,11 +33,12 @@
 
 #include "curve.h"
 #include "io/resource_loader.h"
-#include "math_2d.h"
+#include "os/mutex.h"
+#include "os/thread_safe.h"
+#include "rect2.h"
 #include "resource.h"
 #include "scene/resources/color_ramp.h"
 #include "servers/visual_server.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -124,7 +125,9 @@ public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
+#ifndef DISABLE_DEPRECATED
 	Error load(const String &p_path);
+#endif
 	void set_data(const Ref<Image> &p_image);
 	Ref<Image> get_data() const;
 
@@ -400,6 +403,88 @@ VARIANT_ENUM_CAST(CubeMap::Flags)
 VARIANT_ENUM_CAST(CubeMap::Side)
 VARIANT_ENUM_CAST(CubeMap::Storage)
 
+class TextureLayered : public Resource {
+
+	GDCLASS(TextureLayered, Resource)
+
+public:
+	enum Flags {
+		FLAG_MIPMAPS = VisualServer::TEXTURE_FLAG_MIPMAPS,
+		FLAG_REPEAT = VisualServer::TEXTURE_FLAG_REPEAT,
+		FLAG_FILTER = VisualServer::TEXTURE_FLAG_FILTER,
+		FLAG_CONVERT_TO_LINEAR = VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
+		FLAGS_DEFAULT = FLAG_FILTER,
+	};
+
+private:
+	bool is_3d;
+	RID texture;
+	Image::Format format;
+	uint32_t flags;
+
+	int width;
+	int height;
+	int depth;
+
+	void _set_data(const Dictionary &p_data);
+	Dictionary _get_data() const;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_flags(uint32_t p_flags);
+	uint32_t get_flags() const;
+
+	Image::Format get_format() const;
+	uint32_t get_width() const;
+	uint32_t get_height() const;
+	uint32_t get_depth() const;
+
+	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
+	void set_layer_data(const Ref<Image> &p_image, int p_layer);
+	Ref<Image> get_layer_data(int p_layer) const;
+	void set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap = 0);
+
+	virtual RID get_rid() const;
+	virtual void set_path(const String &p_path, bool p_take_over = false);
+
+	TextureLayered(bool p_3d = false);
+	~TextureLayered();
+};
+
+VARIANT_ENUM_CAST(TextureLayered::Flags)
+
+class Texture3D : public TextureLayered {
+
+	GDCLASS(Texture3D, TextureLayered)
+public:
+	Texture3D() :
+			TextureLayered(true) {}
+};
+
+class TextureArray : public TextureLayered {
+
+	GDCLASS(TextureArray, TextureLayered)
+public:
+	TextureArray() :
+			TextureLayered(false) {}
+};
+
+class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
+public:
+	enum Compression {
+		COMPRESSION_LOSSLESS,
+		COMPRESSION_VRAM,
+		COMPRESSION_UNCOMPRESSED
+	};
+
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+};
+
 class CurveTexture : public Texture {
 
 	GDCLASS(CurveTexture, Texture)
@@ -519,6 +604,72 @@ public:
 
 	ProxyTexture();
 	~ProxyTexture();
+};
+
+class AnimatedTexture : public Texture {
+	GDCLASS(AnimatedTexture, Texture)
+
+	_THREAD_SAFE_CLASS_
+
+private:
+	enum {
+		MAX_FRAMES = 256
+	};
+
+	RID proxy;
+
+	struct Frame {
+
+		Ref<Texture> texture;
+		float delay_sec;
+
+		Frame() {
+			delay_sec = 0;
+		}
+	};
+
+	Frame frames[MAX_FRAMES];
+	int frame_count;
+	int current_frame;
+
+	float fps;
+
+	float time;
+
+	uint64_t prev_ticks;
+
+	void _update_proxy();
+
+protected:
+	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
+
+public:
+	void set_frames(int p_frames);
+	int get_frames() const;
+
+	void set_frame_texture(int p_frame, const Ref<Texture> &p_texture);
+	Ref<Texture> get_frame_texture(int p_frame) const;
+
+	void set_frame_delay(int p_frame, float p_delay_sec);
+	float get_frame_delay(int p_frame) const;
+
+	void set_fps(float p_fps);
+	float get_fps() const;
+
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual RID get_rid() const;
+
+	virtual bool has_alpha() const;
+
+	virtual void set_flags(uint32_t p_flags);
+	virtual uint32_t get_flags() const;
+
+	virtual Ref<Image> get_data() const;
+
+	AnimatedTexture();
+	~AnimatedTexture();
 };
 
 #endif

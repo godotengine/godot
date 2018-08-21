@@ -165,6 +165,7 @@ struct _EVCSort {
 	Variant::Type type;
 	int order;
 	bool save;
+	bool restart_if_changed;
 
 	bool operator<(const _EVCSort &p_vcs) const { return order < p_vcs.order; }
 };
@@ -188,6 +189,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		vc.order = v->order;
 		vc.type = v->variant.get_type();
 		vc.save = v->save;
+		vc.restart_if_changed = v->restart_if_changed;
 
 		vclist.insert(vc);
 	}
@@ -209,6 +211,10 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.usage = pinfo;
 		if (hints.has(E->get().name))
 			pi = hints[E->get().name];
+
+		if (E->get().restart_if_changed) {
+			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
+		}
 
 		p_list->push_back(pi);
 	}
@@ -280,6 +286,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		}
 
 		_initial_set("interface/editor/editor_language", best);
+		set_restart_if_changed("interface/editor/editor_language", true);
 		hints["interface/editor/editor_language"] = PropertyInfo(Variant::STRING, "interface/editor/editor_language", PROPERTY_HINT_ENUM, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	}
 
@@ -291,17 +298,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/main_font_size", 14);
 	hints["interface/editor/main_font_size"] = PropertyInfo(Variant::INT, "interface/editor/main_font_size", PROPERTY_HINT_RANGE, "10,40,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/code_font_size", 14);
-	hints["interface/editor/code_font_size"] = PropertyInfo(Variant::INT, "interface/editor/code_font_size", PROPERTY_HINT_RANGE, "8,96,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/code_font_size"] = PropertyInfo(Variant::INT, "interface/editor/code_font_size", PROPERTY_HINT_RANGE, "8,96,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/main_font_hinting", 2);
-	hints["interface/editor/main_font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/main_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/main_font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/main_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/code_font_hinting", 2);
-	hints["interface/editor/code_font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/code_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/code_font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/code_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/main_font", "");
-	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/main_font"] = PropertyInfo(Variant::STRING, "interface/editor/main_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/main_font_bold", "");
-	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/main_font_bold"] = PropertyInfo(Variant::STRING, "interface/editor/main_font_bold", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/code_font", "");
-	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
 	_initial_set("interface/editor/dim_amount", 0.6f);
 	hints["interface/editor/dim_amount"] = PropertyInfo(Variant::REAL, "interface/editor/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
@@ -350,6 +357,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
 
 	_initial_set("text_editor/theme/line_spacing", 4);
+	_initial_set("text_editor/theme/selection_color", Color::html("40808080"));
 
 	_load_default_text_editor_theme();
 
@@ -357,6 +365,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
 	_initial_set("text_editor/highlighting/highlight_current_line", true);
+	_initial_set("text_editor/highlighting/highlight_type_safe_lines", true);
 	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
 
 	_initial_set("text_editor/indent/type", 0);
@@ -388,7 +397,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_initial_set("text_editor/cursor/block_caret", false);
 	_initial_set("text_editor/cursor/caret_blink", true);
-	_initial_set("text_editor/cursor/caret_blink_speed", 0.65);
+	_initial_set("text_editor/cursor/caret_blink_speed", 0.5);
 	hints["text_editor/cursor/caret_blink_speed"] = PropertyInfo(Variant::REAL, "text_editor/cursor/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
 	_initial_set("text_editor/cursor/right_click_moves_caret", true);
 
@@ -397,6 +406,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/completion/callhint_tooltip_offset", Vector2());
 	_initial_set("text_editor/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/completion/complete_file_paths", true);
+	_initial_set("text_editor/completion/add_type_hints", false);
 
 	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
 	_initial_set("docks/scene_tree/draw_relationship_lines", false);
@@ -464,6 +474,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/freelook/freelook_modifier_speed_factor"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_modifier_speed_factor", PROPERTY_HINT_RANGE, "0.0, 10.0, 0.1");
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
+	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07));
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8));
 	_initial_set("editors/2d/bone_width", 5);
 	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
@@ -502,6 +513,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
 
+	_initial_set("docks/filesystem/disable_split", false);
+	_initial_set("docks/filesystem/split_mode_minimum_height", 600);
 	_initial_set("docks/filesystem/display_mode", 0);
 	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
 	_initial_set("docks/filesystem/thumbnail_size", 64);
@@ -585,6 +598,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/completion_font_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/text_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/line_number_color", Color::html("66aaaaaa"));
+	_initial_set("text_editor/highlighting/safe_line_number_color", Color::html("99aac8aa"));
 	_initial_set("text_editor/highlighting/caret_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/caret_background_color", Color::html("000000"));
 	_initial_set("text_editor/highlighting/text_selected_color", Color::html("000000"));
@@ -745,7 +759,7 @@ void EditorSettings::create() {
 		}
 
 		if (dir->change_dir(data_dir) != OK) {
-			dir->make_dir(data_dir);
+			dir->make_dir_recursive(data_dir);
 			if (dir->change_dir(data_dir) != OK) {
 				ERR_PRINT("Cannot create data directory!");
 				memdelete(dir);
@@ -761,14 +775,8 @@ void EditorSettings::create() {
 
 		// Validate/create cache dir
 
-		if (dir->change_dir(cache_path) != OK) {
-			ERR_PRINT("Cannot find path for cache directory!");
-			memdelete(dir);
-			goto fail;
-		}
-
 		if (dir->change_dir(cache_dir) != OK) {
-			dir->make_dir(cache_dir);
+			dir->make_dir_recursive(cache_dir);
 			if (dir->change_dir(cache_dir) != OK) {
 				ERR_PRINT("Cannot create cache directory!");
 				memdelete(dir);
@@ -778,14 +786,8 @@ void EditorSettings::create() {
 
 		// Validate/create config dir and subdirectories
 
-		if (dir->change_dir(config_path) != OK) {
-			ERR_PRINT("Cannot find path for config directory!");
-			memdelete(dir);
-			goto fail;
-		}
-
 		if (dir->change_dir(config_dir) != OK) {
-			dir->make_dir(config_dir);
+			dir->make_dir_recursive(config_dir);
 			if (dir->change_dir(config_dir) != OK) {
 				ERR_PRINT("Cannot create config directory!");
 				memdelete(dir);
@@ -871,7 +873,7 @@ fail:
 		Vector<String> list = extra_config->get_value("init_projects", "list");
 		for (int i = 0; i < list.size(); i++) {
 
-			list[i] = exe_path + "/" + list[i];
+			list.write[i] = exe_path + "/" + list[i];
 		};
 		extra_config->set_value("init_projects", "list", list);
 	};
@@ -1017,6 +1019,14 @@ void EditorSettings::raise_order(const String &p_setting) {
 	props[p_setting].order = ++last_order;
 }
 
+void EditorSettings::set_restart_if_changed(const StringName &p_setting, bool p_restart) {
+	_THREAD_SAFE_METHOD_
+
+	if (!props.has(p_setting))
+		return;
+	props[p_setting].restart_if_changed = p_restart;
+}
+
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
 
 	_THREAD_SAFE_METHOD_
@@ -1030,16 +1040,19 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 	}
 }
 
-Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default) {
+Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
 
 	Variant ret = p_default;
-	if (EditorSettings::get_singleton()->has_setting(p_setting))
+	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);
-	else
+	} else {
 		EditorSettings::get_singleton()->set_manually(p_setting, p_default);
+		EditorSettings::get_singleton()->set_restart_if_changed(p_setting, p_restart_if_changed);
+	}
 
-	if (!EditorSettings::get_singleton()->has_default_value(p_setting))
+	if (!EditorSettings::get_singleton()->has_default_value(p_setting)) {
 		EditorSettings::get_singleton()->set_initial_value(p_setting, p_default);
+	}
 
 	return ret;
 }

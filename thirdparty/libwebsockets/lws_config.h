@@ -174,7 +174,7 @@
 #define LWS_HAVE_MALLOC_H
 #endif
 
-#if !defined(IPHONE_ENABLED) && !defined(OSX_ENABLED)
+#if !defined(IPHONE_ENABLED) && !defined(OSX_ENABLED) && !defined(__HAIKU__)
 #define LWS_HAVE_PIPE2
 #endif
 

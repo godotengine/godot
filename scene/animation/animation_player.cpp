@@ -233,7 +233,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
-		p_anim->node_cache[i] = NULL;
+		p_anim->node_cache.write[i] = NULL;
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
@@ -265,12 +265,12 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 		if (node_cache_map.has(key)) {
 
-			p_anim->node_cache[i] = &node_cache_map[key];
+			p_anim->node_cache.write[i] = &node_cache_map[key];
 		} else {
 
 			node_cache_map[key] = TrackNodeCache();
 
-			p_anim->node_cache[i] = &node_cache_map[key];
+			p_anim->node_cache.write[i] = &node_cache_map[key];
 			p_anim->node_cache[i]->path = a->track_get_path(i);
 			p_anim->node_cache[i]->node = child;
 			p_anim->node_cache[i]->resource = resource;
@@ -331,11 +331,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 
 				TrackNodeCache::BezierAnim ba;
-				String path = leftover_path[leftover_path.size() - 1];
-				Vector<String> index = path.split(".");
-				for (int j = 0; j < index.size(); j++) {
-					ba.bezier_property.push_back(index[j]);
-				}
+				ba.bezier_property = leftover_path;
 				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
 				ba.owner = p_anim->node_cache[i];
 
@@ -549,6 +545,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					int s = params.size();
 
 					ERR_CONTINUE(s > VARIANT_ARG_MAX);
+#ifdef DEBUG_ENABLED
+					if (!nc->node->has_method(method)) {
+						ERR_PRINTS("Invalid method call '" + method + "'. '" + a->get_name() + "' at node '" + get_path() + "'.");
+					}
+#endif
+
 					if (can_call) {
 						MessageQueue::get_singleton()->push_call(
 								nc->node,
@@ -1642,7 +1644,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_position", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_position");
 
 	ADD_GROUP("Playback Options", "playback_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_animation_process_mode", "get_animation_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", 0), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
@@ -1654,6 +1656,7 @@ void AnimationPlayer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
 }
 
 AnimationPlayer::AnimationPlayer() {

@@ -184,6 +184,15 @@
 				Returns the outer product with [code]b[/code].
 			</description>
 		</method>
+		<method name="project">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Returns the vector projected onto the vector [code]b[/code].
+			</description>
+		</method>
 		<method name="reflect">
 			<return type="Vector3">
 			</return>
@@ -269,6 +278,22 @@
 		</constant>
 		<constant name="AXIS_Z" value="2">
 			Enumerated value for the Z axis.
+		</constant>
+		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
+		</constant>
+		<constant name="INF" value="Vector3( inf, inf, inf )">
+		</constant>
+		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
+		</constant>
+		<constant name="RIGHT" value="Vector3( 1, 0, 0 )">
+		</constant>
+		<constant name="UP" value="Vector3( 0, 1, 0 )">
+		</constant>
+		<constant name="DOWN" value="Vector3( 0, -1, 0 )">
+		</constant>
+		<constant name="FORWARD" value="Vector3( 0, 0, -1 )">
+		</constant>
+		<constant name="BACK" value="Vector3( 0, 0, 1 )">
 		</constant>
 	</constants>
 </class>

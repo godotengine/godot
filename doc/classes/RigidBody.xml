@@ -24,6 +24,40 @@
 				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
+		<method name="add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="Vector3">
+			</argument>
+			<argument index="1" name="position" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="torque" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="impulse" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="apply_impulse">
 			<return type="void">
 			</return>
@@ -116,6 +150,8 @@
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody.Mode">
 			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
+		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
 			If [code]true[/code] RigidBody is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.

@@ -95,7 +95,7 @@ void FindReplaceBar::_notification(int p_what) {
 
 		set_process_unhandled_input(is_visible_in_tree());
 		if (is_visible_in_tree()) {
-			call_deferred("_update_size");
+			_update_size();
 		}
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
@@ -725,7 +725,7 @@ void CodeTextEditor::_complete_request() {
 	int i = 0;
 	for (List<String>::Element *E = entries.front(); E; E = E->next()) {
 
-		strs[i++] = E->get();
+		strs.write[i++] = E->get();
 	}
 
 	text_editor->code_complete(strs, forced);
@@ -745,7 +745,7 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 	if (font.is_valid()) {
 		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
 
-		zoom_nb->set_text(itos(100 * new_size / 14) + "%");
+		zoom_nb->set_text(itos(100 * new_size / (14 * EDSCALE)) + "%");
 
 		if (new_size != font->get_size()) {
 			EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
@@ -775,13 +775,352 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
-	text_editor->set_draw_breakpoint_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_breakpoint_gutter"));
+	text_editor->set_breakpoint_gutter_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_breakpoint_gutter"));
 	text_editor->set_hiding_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->set_wrap_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/word_wrap"));
 	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/open_scripts/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/open_scripts/v_scroll_speed"));
+}
+
+void CodeTextEditor::trim_trailing_whitespace() {
+	bool trimed_whitespace = false;
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
+		String line = text_editor->get_line(i);
+		if (line.ends_with(" ") || line.ends_with("\t")) {
+
+			if (!trimed_whitespace) {
+				text_editor->begin_complex_operation();
+				trimed_whitespace = true;
+			}
+
+			int end = 0;
+			for (int j = line.length() - 1; j > -1; j--) {
+				if (line[j] != ' ' && line[j] != '\t') {
+					end = j + 1;
+					break;
+				}
+			}
+			text_editor->set_line(i, line.substr(0, end));
+		}
+	}
+
+	if (trimed_whitespace) {
+		text_editor->end_complex_operation();
+		text_editor->update();
+	}
+}
+
+void CodeTextEditor::convert_indent_to_spaces() {
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	String indent = "";
+
+	for (int i = 0; i < indent_size; i++) {
+		indent += " ";
+	}
+
+	int cursor_line = text_editor->cursor_get_line();
+	int cursor_column = text_editor->cursor_get_column();
+
+	bool changed_indentation = false;
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
+		String line = text_editor->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] == '\t') {
+				if (!changed_indentation) {
+					text_editor->begin_complex_operation();
+					changed_indentation = true;
+				}
+				if (cursor_line == i && cursor_column > j) {
+					cursor_column += indent_size - 1;
+				}
+				line = line.left(j) + indent + line.right(j + 1);
+			}
+			j++;
+		}
+		if (changed_indentation) {
+			text_editor->set_line(i, line);
+		}
+	}
+	if (changed_indentation) {
+		text_editor->cursor_set_column(cursor_column);
+		text_editor->end_complex_operation();
+		text_editor->update();
+	}
+}
+
+void CodeTextEditor::convert_indent_to_tabs() {
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	indent_size -= 1;
+
+	int cursor_line = text_editor->cursor_get_line();
+	int cursor_column = text_editor->cursor_get_column();
+
+	bool changed_indentation = false;
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
+		String line = text_editor->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		int space_count = -1;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] != '\t') {
+				space_count++;
+
+				if (space_count == indent_size) {
+					if (!changed_indentation) {
+						text_editor->begin_complex_operation();
+						changed_indentation = true;
+					}
+					if (cursor_line == i && cursor_column > j) {
+						cursor_column -= indent_size;
+					}
+					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
+					j = 0;
+					space_count = -1;
+				}
+			} else {
+				space_count = -1;
+			}
+			j++;
+		}
+		if (changed_indentation) {
+			text_editor->set_line(i, line);
+		}
+	}
+	if (changed_indentation) {
+		text_editor->cursor_set_column(cursor_column);
+		text_editor->end_complex_operation();
+		text_editor->update();
+	}
+}
+
+void CodeTextEditor::convert_case(CaseStyle p_case) {
+	if (!text_editor->is_selection_active()) {
+		return;
+	}
+
+	text_editor->begin_complex_operation();
+
+	int begin = text_editor->get_selection_from_line();
+	int end = text_editor->get_selection_to_line();
+	int begin_col = text_editor->get_selection_from_column();
+	int end_col = text_editor->get_selection_to_column();
+
+	for (int i = begin; i <= end; i++) {
+		int len = text_editor->get_line(i).length();
+		if (i == end)
+			len -= len - end_col;
+		if (i == begin)
+			len -= begin_col;
+		String new_line = text_editor->get_line(i).substr(i == begin ? begin_col : 0, len);
+
+		switch (p_case) {
+			case UPPER: {
+				new_line = new_line.to_upper();
+			} break;
+			case LOWER: {
+				new_line = new_line.to_lower();
+			} break;
+			case CAPITALIZE: {
+				new_line = new_line.capitalize();
+			} break;
+		}
+
+		if (i == begin) {
+			new_line = text_editor->get_line(i).left(begin_col) + new_line;
+		}
+		if (i == end) {
+			new_line = new_line + text_editor->get_line(i).right(end_col);
+		}
+		text_editor->set_line(i, new_line);
+	}
+	text_editor->end_complex_operation();
+}
+
+void CodeTextEditor::move_lines_up() {
+	text_editor->begin_complex_operation();
+	if (text_editor->is_selection_active()) {
+		int from_line = text_editor->get_selection_from_line();
+		int from_col = text_editor->get_selection_from_column();
+		int to_line = text_editor->get_selection_to_line();
+		int to_column = text_editor->get_selection_to_column();
+
+		for (int i = from_line; i <= to_line; i++) {
+			int line_id = i;
+			int next_id = i - 1;
+
+			if (line_id == 0 || next_id < 0)
+				return;
+
+			text_editor->unfold_line(line_id);
+			text_editor->unfold_line(next_id);
+
+			text_editor->swap_lines(line_id, next_id);
+			text_editor->cursor_set_line(next_id);
+		}
+		int from_line_up = from_line > 0 ? from_line - 1 : from_line;
+		int to_line_up = to_line > 0 ? to_line - 1 : to_line;
+		text_editor->select(from_line_up, from_col, to_line_up, to_column);
+	} else {
+		int line_id = text_editor->cursor_get_line();
+		int next_id = line_id - 1;
+
+		if (line_id == 0 || next_id < 0)
+			return;
+
+		text_editor->unfold_line(line_id);
+		text_editor->unfold_line(next_id);
+
+		text_editor->swap_lines(line_id, next_id);
+		text_editor->cursor_set_line(next_id);
+	}
+	text_editor->end_complex_operation();
+	text_editor->update();
+}
+
+void CodeTextEditor::move_lines_down() {
+	text_editor->begin_complex_operation();
+	if (text_editor->is_selection_active()) {
+		int from_line = text_editor->get_selection_from_line();
+		int from_col = text_editor->get_selection_from_column();
+		int to_line = text_editor->get_selection_to_line();
+		int to_column = text_editor->get_selection_to_column();
+
+		for (int i = to_line; i >= from_line; i--) {
+			int line_id = i;
+			int next_id = i + 1;
+
+			if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count())
+				return;
+
+			text_editor->unfold_line(line_id);
+			text_editor->unfold_line(next_id);
+
+			text_editor->swap_lines(line_id, next_id);
+			text_editor->cursor_set_line(next_id);
+		}
+		int from_line_down = from_line < text_editor->get_line_count() ? from_line + 1 : from_line;
+		int to_line_down = to_line < text_editor->get_line_count() ? to_line + 1 : to_line;
+		text_editor->select(from_line_down, from_col, to_line_down, to_column);
+	} else {
+		int line_id = text_editor->cursor_get_line();
+		int next_id = line_id + 1;
+
+		if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count())
+			return;
+
+		text_editor->unfold_line(line_id);
+		text_editor->unfold_line(next_id);
+
+		text_editor->swap_lines(line_id, next_id);
+		text_editor->cursor_set_line(next_id);
+	}
+	text_editor->end_complex_operation();
+	text_editor->update();
+}
+
+void CodeTextEditor::delete_lines() {
+	text_editor->begin_complex_operation();
+	if (text_editor->is_selection_active()) {
+		int to_line = text_editor->get_selection_to_line();
+		int from_line = text_editor->get_selection_from_line();
+		int count = Math::abs(to_line - from_line) + 1;
+		while (count) {
+			text_editor->set_line(text_editor->cursor_get_line(), "");
+			text_editor->backspace_at_cursor();
+			count--;
+			if (count)
+				text_editor->unfold_line(from_line);
+		}
+		text_editor->cursor_set_line(from_line - 1);
+		text_editor->deselect();
+	} else {
+		int line = text_editor->cursor_get_line();
+		text_editor->set_line(text_editor->cursor_get_line(), "");
+		text_editor->backspace_at_cursor();
+		text_editor->unfold_line(line);
+		text_editor->cursor_set_line(line);
+	}
+	text_editor->end_complex_operation();
+}
+
+void CodeTextEditor::code_lines_down() {
+	int from_line = text_editor->cursor_get_line();
+	int to_line = text_editor->cursor_get_line();
+	int column = text_editor->cursor_get_column();
+
+	if (text_editor->is_selection_active()) {
+		from_line = text_editor->get_selection_from_line();
+		to_line = text_editor->get_selection_to_line();
+		column = text_editor->cursor_get_column();
+	}
+	int next_line = to_line + 1;
+
+	if (to_line >= text_editor->get_line_count() - 1) {
+		text_editor->set_line(to_line, text_editor->get_line(to_line) + "\n");
+	}
+
+	text_editor->begin_complex_operation();
+	for (int i = from_line; i <= to_line; i++) {
+
+		text_editor->unfold_line(i);
+		if (i >= text_editor->get_line_count() - 1) {
+			text_editor->set_line(i, text_editor->get_line(i) + "\n");
+		}
+		String line_clone = text_editor->get_line(i);
+		text_editor->insert_at(line_clone, next_line);
+		next_line++;
+	}
+
+	text_editor->cursor_set_column(column);
+	if (text_editor->is_selection_active()) {
+		text_editor->select(to_line + 1, text_editor->get_selection_from_column(), next_line - 1, text_editor->get_selection_to_column());
+	}
+
+	text_editor->end_complex_operation();
+	text_editor->update();
+}
+
+void CodeTextEditor::goto_line(int p_line) {
+	text_editor->deselect();
+	text_editor->unfold_line(p_line);
+	text_editor->call_deferred("cursor_set_line", p_line);
+}
+
+void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+	text_editor->unfold_line(p_line);
+	text_editor->call_deferred("cursor_set_line", p_line);
+	text_editor->call_deferred("cursor_set_column", p_begin);
+	text_editor->select(p_line, p_begin, p_line, p_end);
+}
+
+Variant CodeTextEditor::get_edit_state() {
+	Dictionary state;
+
+	state["scroll_position"] = text_editor->get_v_scroll();
+	state["column"] = text_editor->cursor_get_column();
+	state["row"] = text_editor->cursor_get_line();
+
+	return state;
+}
+
+void CodeTextEditor::set_edit_state(const Variant &p_state) {
+	Dictionary state = p_state;
+	text_editor->cursor_set_column(state["column"]);
+	text_editor->cursor_set_line(state["row"]);
+	text_editor->set_v_scroll(state["scroll_position"]);
+	text_editor->grab_focus();
 }
 
 void CodeTextEditor::set_error(const String &p_error) {
@@ -907,6 +1246,29 @@ CodeTextEditor::CodeTextEditor() {
 
 	status_bar->add_child(memnew(Label)); //to keep the height if the other labels are not visible
 
+	warning_label = memnew(Label);
+	status_bar->add_child(warning_label);
+	warning_label->set_align(Label::ALIGN_RIGHT);
+	warning_label->set_valign(Label::VALIGN_CENTER);
+	warning_label->set_v_size_flags(SIZE_FILL);
+	warning_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_label->set_mouse_filter(MOUSE_FILTER_STOP);
+	warning_label->set_text(TTR("Warnings:"));
+	warning_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+
+	warning_count_label = memnew(Label);
+	status_bar->add_child(warning_count_label);
+	warning_count_label->set_valign(Label::VALIGN_CENTER);
+	warning_count_label->set_v_size_flags(SIZE_FILL);
+	warning_count_label->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
+	warning_count_label->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
+	warning_count_label->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
+	warning_count_label->set_align(Label::ALIGN_RIGHT);
+	warning_count_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_count_label->set_mouse_filter(MOUSE_FILTER_STOP);
+	warning_count_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	warning_count_label->set_text("0");
+
 	Label *zoom_txt = memnew(Label);
 	status_bar->add_child(zoom_txt);
 	zoom_txt->set_align(Label::ALIGN_RIGHT);
@@ -979,7 +1341,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	font_resize_val = 0;
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
-	zoom_nb->set_text(itos(100 * font_size / 14) + "%");
+	zoom_nb->set_text(itos(100 * font_size / (14 * EDSCALE)) + "%");
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);

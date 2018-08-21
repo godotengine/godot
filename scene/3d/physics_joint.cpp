@@ -260,7 +260,7 @@ void HingeJoint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_lower_limit", "lower_limit"), &HingeJoint::_set_lower_limit);
 	ClassDB::bind_method(D_METHOD("_get_lower_limit"), &HingeJoint::_get_lower_limit);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/bias", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"), "set_param", "get_param", PARAM_BIAS);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/bias", PROPERTY_HINT_RANGE, "0.00,0.99,0.01"), "set_param", "get_param", PARAM_BIAS);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "angular_limit/enable"), "set_flag", "get_flag", FLAG_USE_LIMIT);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_limit/upper", PROPERTY_HINT_RANGE, "-180,180,0.1"), "_set_upper_limit", "_get_upper_limit");
@@ -270,7 +270,7 @@ void HingeJoint::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_limit/relaxation", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_param", "get_param", PARAM_LIMIT_RELAXATION);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "motor/enable"), "set_flag", "get_flag", FLAG_ENABLE_MOTOR);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "motor/target_velocity", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_param", "get_param", PARAM_MOTOR_TARGET_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "motor/target_velocity", PROPERTY_HINT_RANGE, "-200,200,0.01,or_greater,or_lesser"), "set_param", "get_param", PARAM_MOTOR_TARGET_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "motor/max_impulse", PROPERTY_HINT_RANGE, "0.01,1024,0.01"), "set_param", "get_param", PARAM_MOTOR_MAX_IMPULSE);
 
 	BIND_ENUM_CONSTANT(PARAM_BIAS);

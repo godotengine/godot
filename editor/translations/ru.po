@@ -17,12 +17,15 @@
 # Sergey <maligin.serega2010@yandex.ru>, 2018.
 # Sergey Agarkov <zorgsoft@gmail.com>, 2017.
 # teriva <spirin.cos@yandex.ru>, 2018.
+# Aleksey Terentyev <terentjew.alexey@ya.ru>, 2018.
+# Игорь Д <protorian.di@gmail.com>, 2018.
+# Егор Бураков <fend.q@mail.ru>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-06-18 19:42+0000\n"
-"Last-Translator: ijet <my-ijet@mail.ru>\n"
+"PO-Revision-Date: 2018-07-22 04:43+0000\n"
+"Last-Translator: Егор Бураков <fend.q@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -31,7 +34,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2347,7 +2350,7 @@ msgstr "Кадр %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr "Физический шаг %"
+msgstr "Кадр физики %"
 
 #: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
 msgid "Time:"
@@ -2359,7 +2362,7 @@ msgstr "Включительно"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr ""
+msgstr "Субъект"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -4029,7 +4032,7 @@ msgstr "Создать контур"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh"
-msgstr "Полисетка"
+msgstr "Массив"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -5561,7 +5564,7 @@ msgstr "Предпросмотр StyleBox:"
 
 #: editor/plugins/style_box_editor_plugin.cpp
 msgid "StyleBox"
-msgstr ""
+msgstr "StyleBox"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
@@ -5684,14 +5687,12 @@ msgid "Checked Item"
 msgstr "Отмеченный элемент"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Radio Item"
-msgstr "Добавить элемент"
+msgstr "Переключатель"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Checked Radio Item"
-msgstr "Отмеченный элемент"
+msgstr "Отмеченный переключатель"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -7233,7 +7234,7 @@ msgstr "Библиотеки: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr ""
+msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7449,6 +7450,11 @@ msgstr "Собрать проект"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr "Предупреждения"
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Просмотр Файлов"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

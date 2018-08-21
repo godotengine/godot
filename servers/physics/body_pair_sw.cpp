@@ -211,6 +211,14 @@ bool BodyPairSW::_test_ccd(real_t p_step, BodySW *p_A, int p_shape_A, const Tran
 	return true;
 }
 
+real_t combine_bounce(BodySW *A, BodySW *B) {
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+}
+
+real_t combine_friction(BodySW *A, BodySW *B) {
+	return ABS(MIN(A->get_friction(), B->get_friction()));
+}
+
 bool BodyPairSW::setup(real_t p_step) {
 
 	//cannot collide
@@ -331,7 +339,7 @@ bool BodyPairSW::setup(real_t p_step) {
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
 
-		c.bounce = MAX(A->get_bounce(), B->get_bounce());
+		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
 
 			Vector3 crA = A->get_angular_velocity().cross(c.rA);
@@ -421,7 +429,7 @@ void BodyPairSW::solve(real_t p_step) {
 
 		//friction impulse
 
-		real_t friction = A->get_friction() * B->get_friction();
+		real_t friction = combine_friction(A, B);
 
 		Vector3 lvA = A->get_linear_velocity() + A->get_angular_velocity().cross(c.rA);
 		Vector3 lvB = B->get_linear_velocity() + B->get_angular_velocity().cross(c.rB);

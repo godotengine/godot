@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeUniform" inherits="VisualShaderNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

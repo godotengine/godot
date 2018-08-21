@@ -653,7 +653,8 @@
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right.
+				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
 				If [code]maxsplit[/code] is specified, then it is number of splits to do, default is 0 which splits all the items.
 			</description>
 		</method>
@@ -698,7 +699,8 @@
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a divisor string and returns an array of the substrings. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				Splits the string by a divisor string and returns an array of the substrings.
+				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
 				If [code]maxsplit[/code] is given, at most maxsplit number of splits occur, and the remainder of the string is returned as the final element of the list (thus, the list will have at most maxsplit+1 elements)
 			</description>
 		</method>
@@ -710,7 +712,8 @@
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<description>
-				Splits the string in floats by using a divisor string and returns an array of the substrings. Example "1,2.5,3" will return [1,2.5,3] if split by ",".
+				Splits the string in floats by using a divisor string and returns an array of the substrings.
+				[b]Example:[/b] "1,2.5,3" will return [1,2.5,3] if split by ",".
 			</description>
 		</method>
 		<method name="strip_edges">

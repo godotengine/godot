@@ -72,7 +72,7 @@ void Array::_unref() const {
 
 Variant &Array::operator[](int p_idx) {
 
-	return _p->array[p_idx];
+	return _p->array.write[p_idx];
 }
 
 const Variant &Array::operator[](int p_idx) const {
@@ -259,7 +259,7 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 
 	ERR_FAIL_NULL_V(p_obj, *this);
 
-	SortArray<Variant, _ArrayVariantSortCustom> avs;
+	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
 	avs.compare.obj = p_obj;
 	avs.compare.func = p_function;
 	avs.sort(_p->array.ptrw(), _p->array.size());

@@ -139,6 +139,8 @@ public:
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11); }
 #define BIND12(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12) \
 	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12); }
+#define BIND13(m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6, m_type7, m_type8, m_type9, m_type10, m_type11, m_type12, m_type13) \
+	void m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6, m_type7 arg7, m_type8 arg8, m_type9 arg9, m_type10 arg10, m_type11 arg11, m_type12 arg12, m_type13 arg13) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13); }
 
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::storage
@@ -146,17 +148,19 @@ public:
 	/* TEXTURE API */
 
 	BIND0R(RID, texture_create)
-	BIND5(texture_allocate, RID, int, int, Image::Format, uint32_t)
-	BIND3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
-	BIND10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, CubeMapSide)
-	BIND2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
+	BIND7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
+	BIND3(texture_set_data, RID, const Ref<Image> &, int)
+	BIND10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, int)
+	BIND2RC(Ref<Image>, texture_get_data, RID, int)
 	BIND2(texture_set_flags, RID, uint32_t)
 	BIND1RC(uint32_t, texture_get_flags, RID)
 	BIND1RC(Image::Format, texture_get_format, RID)
+	BIND1RC(TextureType, texture_get_type, RID)
 	BIND1RC(uint32_t, texture_get_texid, RID)
 	BIND1RC(uint32_t, texture_get_width, RID)
 	BIND1RC(uint32_t, texture_get_height, RID)
-	BIND3(texture_set_size_override, RID, int, int)
+	BIND1RC(uint32_t, texture_get_depth, RID)
+	BIND4(texture_set_size_override, RID, int, int, int)
 
 	BIND3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	BIND3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
@@ -170,6 +174,8 @@ public:
 	BIND1(textures_keep_original, bool)
 
 	BIND2(texture_set_proxy, RID, RID)
+
+	BIND2(texture_set_force_redraw_if_visible, RID, bool)
 
 	/* SKY API */
 
@@ -244,13 +250,14 @@ public:
 
 	BIND0R(RID, multimesh_create)
 
-	BIND4(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat)
+	BIND5(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat, MultimeshCustomDataFormat)
 	BIND1RC(int, multimesh_get_instance_count, RID)
 
 	BIND2(multimesh_set_mesh, RID, RID)
 	BIND3(multimesh_instance_set_transform, RID, int, const Transform &)
 	BIND3(multimesh_instance_set_transform_2d, RID, int, const Transform2D &)
 	BIND3(multimesh_instance_set_color, RID, int, const Color &)
+	BIND3(multimesh_instance_set_custom_data, RID, int, const Color &)
 
 	BIND1RC(RID, multimesh_get_mesh, RID)
 	BIND1RC(AABB, multimesh_get_aabb, RID)
@@ -258,6 +265,9 @@ public:
 	BIND2RC(Transform, multimesh_instance_get_transform, RID, int)
 	BIND2RC(Transform2D, multimesh_instance_get_transform_2d, RID, int)
 	BIND2RC(Color, multimesh_instance_get_color, RID, int)
+	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
+
+	BIND2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)
@@ -489,7 +499,7 @@ public:
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
 	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
-	BIND12(environment_set_ssao, RID, bool, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
+	BIND13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
@@ -652,7 +662,7 @@ public:
 
 	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata);
 
-	virtual void draw(bool p_swap_buffers);
+	virtual void draw(bool p_swap_buffers, double frame_step);
 	virtual void sync();
 	virtual bool has_changed() const;
 	virtual void init();

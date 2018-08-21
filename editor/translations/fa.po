@@ -2,26 +2,25 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # alabd14313 <alabd14313@yahoo.com>, 2016.
 # Dante Marshal <Marshal.Devilhunter@gmail.com>, 2018.
 # hamed nasib <cghamed752@chmail.ir>, 2016.
 # Hasan Hejdari Nasab <hsn6@openmailbox.org>, 2017.
 # rezapouya <r.pouya@chmail.ir>, 2016.
 # sayyed hamed nasib <cghamed752@chmail.ir>, 2017.
-#
+# Behrooz Kashani <bkashani@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-29 05:39+0000\n"
-"Last-Translator: Dante Marshal <Marshal.Devilhunter@gmail.com>\n"
+"PO-Revision-Date: 2018-07-24 19:42+0000\n"
+"Last-Translator: Behrooz Kashani <bkashani@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -636,9 +635,8 @@ msgstr ""
 "آیا در هر صورت حذف شوند؟(بدون برگشت)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Cannot remove:"
-msgstr "ناتوانی در حذف :"
+msgstr "امکان حذف وجود ندارد :"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -743,9 +741,8 @@ msgid "Gold Sponsors"
 msgstr "اسپانسر‌های درجه ۲"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Mini Sponsors"
-msgstr "اسپانسر‌های دیگر"
+msgstr "اسپانسر‌های کوچک"
 
 #: editor/editor_about.cpp
 msgid "Gold Donors"
@@ -789,7 +786,7 @@ msgstr "اجزا"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr ""
+msgstr "گواهینامه"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in zip format."
@@ -7419,6 +7416,11 @@ msgstr "پروژه"
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
 msgstr ""
+
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "نمایش پرونده ها"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

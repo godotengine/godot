@@ -18,7 +18,6 @@ generous deed immortalized in the next stable release of Godot Engine.
 
     Gamblify <https://www.gamblify.com>
     GameDev.TV <https://www.gamedev.tv>
-    Skirmish <https://skirmish.io>
 
 ## Mini sponsors
 
@@ -26,17 +25,19 @@ generous deed immortalized in the next stable release of Godot Engine.
     Christian Uldall Pedersen
     Christopher Igoe
     Christoph Woinke
-    Claudiu Dumitru
     E Hewert
+    GameDev.net
     Hein-Pieter van Braam
-    Igors Vaitkus
     Jamal Alyafei
     Jay Sistar
+    Loreshaper Games
     Matthieu Huvé
     Mike King
     Nathan Warden
     Neal Gompa (Conan Kudo)
     Pascal Julien
+    Patrick Aarstad
+    rottis
     Ruslan Mustakov
     Sébastien Manin
     Slobodan Milnovic
@@ -61,8 +62,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Allen Schade
     Andreas Schüle
     Austen McRae
-    Bernhard Liebl
-    Catalin Moldovan
+    David Gehrig
     DeepSquid
     Fidget Sinner
     Florian Breisch
@@ -70,97 +70,104 @@ generous deed immortalized in the next stable release of Godot Engine.
     Johannes Wuensch
     Josep G. Camarasa
     Joshua Lesperance
+    Kyle Szklenski
     Libre-Dépanne
     Matthew Bennett
-    Olafur Gislason
     Paul LaMotte
     Ranoller
+    Sergey
     Svenne Krap
     Timothy Hagberg
 
     BanjoNode2D
     Beliar
     Chris Serino
+    Christian Padilla
     Conrad Curry
     Craig Smith
     Daniel Egger
     David Churchill
     Dean Harmon
-    Dexter Miguel
-    Guilherme Felipe de C. G. da Silva
     John
     Justo Delgado Baudí
     KTL
     Laurence Bannister
+    paul gruenbacher
     Rami
     Robert Willes
     Robin Arys
+    Rodrigo Loli
     Ronnie Ashlock
-    Rufus Xavier Sarsaparilla
     ScottMakesGames
     Thomas Bjarnelöf
-    William Connell
     Wojciech Chojnacki
-    Xavier Tan
+    Xavier PATRICELLI
     Zaq Poi
 
     Alessandra Pereyra
     Alexey Dyadchenko
     Amanda Haldy
+    Anthony Ryan
     Chris Brown
     Chris Petrich
     Chris Wilson
     Cody Parker
     Corey Auger
     D
-    Daniel Eliasinski
+    Deadly Lampshade
     E.G.
+    Eric
     Eric Monson
     flesk
+    floopf
     G Barnes
     GGGames.org
     Giovanni Solimeno
+    Guilherme Felipe de C. G. da Silva
     Hasen Judy
     Heath Hayes
+    Jan Čejka
     Jay Horton
     Jeppe Zapp
     joe513
-    Jordan M Lucas
     Juraj Móza
     Justin Arnold
+    Lars Wuethrich
     Leandro Voltolino
     Lisandro Lorea
     Markus Wiesner
     Marvin
     Mohammad Taleb
+    Neal Barry
     Nick Nikitin
     Pablo Cholaky
     Patrick Schnorbus
     Pete Goodwin
-    Phyronnaz
     Ruben Soares Luis
+    Rufus Xavier Sarsaparilla
+    Sindre Sømme
     Sofox
     Stoned Xander
-    Ted
     Tim Dalporto
     Trent McPheron
-    Vladimir
+    Wyatt Walker
 
 ## Silver donors
 
     1D_Inc
     Adam  Carr
     Adam Smeltzer
+    Adisibio
     Alder Stefano
     Alessandro Senese
-    Álvaro Domínguez López
+    Alexander Koppe
     Anders Jensen-Urstad
     Anthony Bongiovanni
     Arda Erol
     Arthur S. Muszynski
+    Artur Barichello
     Aubrey Falconer
     Avencherus
-    Bailey
     Bastian Böhm
     Benedikt
     Benjamin Beshara
@@ -168,6 +175,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Blair Allen
     Brandon
     Bryan Stevenson
+    Carl Winder
     Carwyn Edwards
     Casey Foote
     Chris Chapin
@@ -175,7 +183,6 @@ generous deed immortalized in the next stable release of Godot Engine.
     Christian Winter
     Christopher Schmitt
     Collin Shooltz
-    Daniel Delgado Corona
     Daniel Johnson
     Daniel Kaplan
     DanielMaximiano
@@ -183,9 +190,11 @@ generous deed immortalized in the next stable release of Godot Engine.
     David
     David Cravens
     David May
+    Disktra
     Dominik Wetzel
     Duy Kevin Nguyen
     Edward Herbert
+    Elias Nykrem
     Eric Martini
     Fabian Becker
     fengjiongmax
@@ -194,15 +203,17 @@ generous deed immortalized in the next stable release of Godot Engine.
     Gerrit Großkopf
     Gerrit Procee
     Gilberto K. Otubo
+    Greg Olson
+    Guillaume Laforte
     Guldoman
     Gumichan01
     Heribert Hirth
-    hubert jenkins
     Hunter Jones
     ialex32x
     Ivan Vodopiviz
     Jahn Johansen
     Jaime Ruiz-Borau Vizárraga
+    Jake Huxell
     Jed
     Jeff Hungerford
     Joel Fivat
@@ -212,7 +223,9 @@ generous deed immortalized in the next stable release of Godot Engine.
     Jonathan Martin
     Jonathan Nieto
     Jonathon
+    Jon Sully
     Josh 'Cheeseness' Bush
+    Juanfran
     Juan Negrier
     Judd
     Julian Murgia
@@ -222,16 +235,17 @@ generous deed immortalized in the next stable release of Godot Engine.
     Kevin Kamper Meejach Petersen
     Klavdij Voncina
     Krzysztof Jankowski
-    Lars pfeffer
     Linus Lind Lundgren
+    Luc Magitem
     Luis Moraes
     Macil
     magodev
+    Manolis Makris
     Martin Eigel
     Martins Odabi
-    Matthew Fitzpatrick
     Max R.R. Collada
     Maxwell
+    Mertcan Mermerkaya
     mhilbrunner
     Michael Dürwald
     Michael Gringauz
@@ -246,42 +260,42 @@ generous deed immortalized in the next stable release of Godot Engine.
     Niclas Eriksen
     Nicolas SAN AGUSTIN
     Niko Leopold
-    nivardus
     Noi Sek
-    Oleg Tyshchenko
-    Oleksandr Yemets
     Pablo Seibelt
     Pan Ip
+    Pascal Grüter
     Pat LaBine
     Patrick Nafarrete
-    Patric Vormstein
+    Paul E Hansen
     Paul Mason
     Paweł Kowal
     Pierre-Igor Berthet
     Pietro Vertechi
     Piotr Kaczmarski
-    Rea
     Rémi Verschelde
     Richman Stewart
     Roger Burgess
     Roger Smith
     Roman Tinkov
-    Ryan Whited
-    Samuel El-Borai
     Sasori Olkof
     Sootstone
     Stefan Butucea
+    The K-B
     Theo Cranmore
+    Thibaud Galloy
     Thibault Barbaroux
     Thomas Bell
+    Thomas Holmes
     Thomas Kurz
-    Tomasz Wacławek
+    tiansheng li
     Tom Larrow
+    Tristan Crawford
+    Trym Nilsen
     Tyler Stafos
     UltyX
     Victor
-    Victor Gonzalez Fernandez
     Viktor Ferenczi
+    waka nya
     werner mendizabal
     Wout Standaert
     Yu He

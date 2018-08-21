@@ -236,7 +236,8 @@ class StyleBoxLine : public StyleBox {
 	Color color;
 	int thickness;
 	bool vertical;
-	float grow;
+	float grow_begin;
+	float grow_end;
 
 protected:
 	virtual float get_style_margin(Margin p_margin) const;
@@ -252,8 +253,11 @@ public:
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
 
-	void set_grow(float p_grow);
-	float get_grow() const;
+	void set_grow_begin(float p_grow);
+	float get_grow_begin() const;
+
+	void set_grow_end(float p_grow);
+	float get_grow_end() const;
 
 	virtual Size2 get_center_size() const;
 

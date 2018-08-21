@@ -95,7 +95,7 @@ static void push_to_key_event_buffer(const OS_OSX::KeyEvent &p_event) {
 	if (OS_OSX::singleton->key_event_pos >= buffer.size()) {
 		buffer.resize(1 + OS_OSX::singleton->key_event_pos);
 	}
-	buffer[OS_OSX::singleton->key_event_pos++] = p_event;
+	buffer.write[OS_OSX::singleton->key_event_pos++] = p_event;
 }
 
 static int mouse_x = 0;
@@ -602,8 +602,8 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_position(pos);
 	mm->set_global_position(pos);
 	Vector2 relativeMotion = Vector2();
-	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	relativeMotion.x = [event deltaX] * OS_OSX::singleton -> _mouse_scale([[event window] backingScaleFactor]);
+	relativeMotion.y = [event deltaY] * OS_OSX::singleton -> _mouse_scale([[event window] backingScaleFactor]);
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
@@ -625,10 +625,18 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 
 - (void)otherMouseDown:(NSEvent *)event {
 
-	if ((int)[event buttonNumber] != 2)
-		return;
+	if ((int)[event buttonNumber] == 2) {
+		_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
 
-	_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, true);
+	} else if ((int)[event buttonNumber] == 3) {
+		_mouseDownEvent(event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, true);
+
+	} else if ((int)[event buttonNumber] == 4) {
+		_mouseDownEvent(event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, true);
+
+	} else {
+		return;
+	}
 }
 
 - (void)otherMouseDragged:(NSEvent *)event {
@@ -637,10 +645,18 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 
 - (void)otherMouseUp:(NSEvent *)event {
 
-	if ((int)[event buttonNumber] != 2)
-		return;
+	if ((int)[event buttonNumber] == 2) {
+		_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
 
-	_mouseDownEvent(event, BUTTON_MIDDLE, BUTTON_MASK_MIDDLE, false);
+	} else if ((int)[event buttonNumber] == 3) {
+		_mouseDownEvent(event, BUTTON_XBUTTON1, BUTTON_MASK_XBUTTON1, false);
+
+	} else if ((int)[event buttonNumber] == 4) {
+		_mouseDownEvent(event, BUTTON_XBUTTON2, BUTTON_MASK_XBUTTON2, false);
+
+	} else {
+		return;
+	}
 }
 
 - (void)mouseExited:(NSEvent *)event {
@@ -1160,6 +1176,10 @@ static void displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplay
 	displays_arrangement_dirty = true;
 }
 
+int OS_OSX::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
@@ -1256,6 +1276,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 	}
 
+	video_driver_index = p_video_driver;
+
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 
 	/*
@@ -1328,6 +1350,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	visual_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
+
+	midi_driver.open();
 
 	input = memnew(InputDefault);
 	joypad_osx = memnew(JoypadOSX);
@@ -2381,7 +2405,7 @@ void OS_OSX::process_key_events() {
 	Ref<InputEventKey> k;
 	for (int i = 0; i < key_event_pos; i++) {
 
-		KeyEvent &ke = key_event_buffer[i];
+		const KeyEvent &ke = key_event_buffer[i];
 
 		if ((i == 0 && ke.scancode == 0) || (i > 0 && key_event_buffer[i - 1].scancode == 0)) {
 			k.instance();

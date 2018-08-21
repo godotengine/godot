@@ -196,6 +196,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_bone_ignore_animation">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone" type="int">
+			</argument>
+			<argument index="1" name="ignore" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_bone_parent">
 			<return type="void">
 			</return>

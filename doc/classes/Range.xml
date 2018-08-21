@@ -17,30 +17,32 @@
 			<argument index="0" name="with" type="Node">
 			</argument>
 			<description>
-				Binds two Ranges together along with any Ranges previously grouped with either of them. When any of Range's member variables change, it will share the new value with all other Ranges in its group.
+				Binds two ranges together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
 			<return type="void">
 			</return>
 			<description>
-				Stop Range from sharing its member variables with any other Range.
+				Stop range from sharing its member variables with any other.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_greater" type="bool" setter="set_allow_greater" getter="is_greater_allowed">
+			If [code]true[/code] [member value] may be greater than [member max_value]. Default value: [code]false[/code].
 		</member>
 		<member name="allow_lesser" type="bool" setter="set_allow_lesser" getter="is_lesser_allowed">
+			If [code]true[/code] [member value] may be less than [member min_value]. Default value: [code]false[/code].
 		</member>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp">
 			If [code]true[/code] and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
 		</member>
 		<member name="max_value" type="float" setter="set_max" getter="get_max">
-			Maximum value. Range is clamped if [code]value[/code] is greater than [code]max_value[/code]. Default value: 100.
+			Maximum value. Range is clamped if [code]value[/code] is greater than [code]max_value[/code]. Default value: [code]100[/code].
 		</member>
 		<member name="min_value" type="float" setter="set_min" getter="get_min">
-			Minimum value. Range is clamped if [code]value[/code] is less than [code]min_value[/code]. Default value: 0.
+			Minimum value. Range is clamped if [code]value[/code] is less than [code]min_value[/code]. Default value: [code]0[/code].
 		</member>
 		<member name="page" type="float" setter="set_page" getter="get_page">
 			Page size. Used mainly for [ScrollBar]. ScrollBar's length is its size multiplied by [code]page[/code] over the difference between [code]min_value[/code] and [code]max_value[/code].
@@ -49,7 +51,7 @@
 			The value mapped between 0 and 1.
 		</member>
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values">
-			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer.
+			If [code]true[/code] [code]value[/code] will always be rounded to the nearest integer. Default value: [code]false[/code].
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step">
 			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.
@@ -61,14 +63,14 @@
 	<signals>
 		<signal name="changed">
 			<description>
-				This signal is emitted when min, max, range or step change.
+				Emitted when [member min_value], [member max_value], [member page], or [member step] change.
 			</description>
 		</signal>
 		<signal name="value_changed">
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				This signal is emitted when value changes.
+				Emitted when [member value] changes.
 			</description>
 		</signal>
 	</signals>

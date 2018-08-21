@@ -195,7 +195,7 @@ Vector<Pair<String, Ref<Texture> > > EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 	Vector<float> scores;
 	scores.resize(list.size());
 	for (int i = 0; i < list.size(); i++)
-		scores[i] = _path_cmp(search_text, list[i].first);
+		scores.write[i] = _path_cmp(search_text, list[i].first);
 
 	while (list.size() > 0) {
 
@@ -258,6 +258,9 @@ void EditorQuickOpen::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed", this, "_confirmed");
+
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+		search_box->set_clear_button_enabled(true);
 	}
 }
 

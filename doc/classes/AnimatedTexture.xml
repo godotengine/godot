@@ -1,0 +1,1045 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimatedTexture" inherits="Texture" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="fps" type="float" setter="set_fps" getter="get_fps">
+		</member>
+		<member name="frame_0/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_0/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_1/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_1/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_10/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_10/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_100/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_100/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_101/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_101/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_102/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_102/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_103/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_103/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_104/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_104/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_105/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_105/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_106/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_106/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_107/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_107/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_108/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_108/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_109/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_109/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_11/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_11/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_110/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_110/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_111/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_111/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_112/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_112/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_113/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_113/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_114/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_114/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_115/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_115/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_116/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_116/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_117/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_117/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_118/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_118/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_119/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_119/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_12/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_12/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_120/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_120/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_121/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_121/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_122/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_122/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_123/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_123/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_124/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_124/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_125/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_125/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_126/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_126/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_127/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_127/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_128/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_128/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_129/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_129/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_13/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_13/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_130/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_130/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_131/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_131/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_132/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_132/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_133/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_133/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_134/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_134/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_135/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_135/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_136/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_136/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_137/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_137/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_138/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_138/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_139/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_139/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_14/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_14/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_140/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_140/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_141/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_141/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_142/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_142/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_143/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_143/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_144/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_144/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_145/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_145/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_146/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_146/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_147/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_147/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_148/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_148/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_149/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_149/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_15/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_15/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_150/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_150/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_151/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_151/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_152/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_152/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_153/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_153/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_154/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_154/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_155/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_155/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_156/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_156/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_157/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_157/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_158/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_158/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_159/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_159/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_16/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_16/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_160/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_160/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_161/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_161/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_162/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_162/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_163/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_163/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_164/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_164/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_165/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_165/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_166/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_166/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_167/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_167/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_168/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_168/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_169/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_169/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_17/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_17/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_170/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_170/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_171/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_171/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_172/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_172/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_173/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_173/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_174/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_174/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_175/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_175/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_176/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_176/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_177/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_177/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_178/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_178/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_179/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_179/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_18/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_18/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_180/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_180/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_181/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_181/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_182/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_182/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_183/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_183/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_184/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_184/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_185/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_185/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_186/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_186/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_187/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_187/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_188/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_188/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_189/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_189/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_19/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_19/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_190/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_190/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_191/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_191/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_192/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_192/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_193/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_193/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_194/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_194/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_195/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_195/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_196/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_196/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_197/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_197/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_198/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_198/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_199/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_199/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_2/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_2/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_20/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_20/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_200/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_200/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_201/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_201/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_202/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_202/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_203/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_203/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_204/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_204/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_205/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_205/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_206/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_206/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_207/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_207/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_208/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_208/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_209/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_209/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_21/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_21/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_210/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_210/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_211/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_211/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_212/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_212/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_213/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_213/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_214/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_214/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_215/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_215/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_216/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_216/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_217/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_217/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_218/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_218/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_219/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_219/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_22/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_22/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_220/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_220/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_221/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_221/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_222/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_222/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_223/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_223/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_224/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_224/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_225/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_225/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_226/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_226/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_227/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_227/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_228/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_228/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_229/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_229/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_23/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_23/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_230/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_230/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_231/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_231/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_232/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_232/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_233/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_233/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_234/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_234/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_235/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_235/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_236/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_236/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_237/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_237/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_238/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_238/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_239/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_239/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_24/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_24/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_240/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_240/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_241/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_241/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_242/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_242/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_243/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_243/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_244/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_244/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_245/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_245/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_246/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_246/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_247/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_247/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_248/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_248/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_249/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_249/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_25/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_25/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_250/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_250/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_251/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_251/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_252/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_252/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_253/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_253/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_254/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_254/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_255/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_255/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_26/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_26/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_27/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_27/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_28/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_28/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_29/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_29/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_3/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_3/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_30/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_30/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_31/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_31/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_32/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_32/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_33/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_33/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_34/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_34/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_35/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_35/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_36/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_36/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_37/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_37/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_38/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_38/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_39/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_39/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_4/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_4/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_40/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_40/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_41/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_41/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_42/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_42/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_43/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_43/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_44/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_44/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_45/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_45/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_46/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_46/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_47/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_47/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_48/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_48/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_49/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_49/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_5/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_5/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_50/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_50/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_51/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_51/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_52/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_52/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_53/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_53/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_54/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_54/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_55/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_55/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_56/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_56/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_57/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_57/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_58/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_58/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_59/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_59/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_6/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_6/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_60/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_60/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_61/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_61/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_62/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_62/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_63/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_63/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_64/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_64/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_65/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_65/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_66/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_66/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_67/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_67/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_68/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_68/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_69/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_69/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_7/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_7/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_70/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_70/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_71/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_71/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_72/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_72/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_73/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_73/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_74/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_74/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_75/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_75/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_76/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_76/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_77/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_77/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_78/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_78/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_79/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_79/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_8/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_8/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_80/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_80/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_81/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_81/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_82/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_82/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_83/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_83/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_84/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_84/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_85/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_85/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_86/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_86/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_87/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_87/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_88/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_88/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_89/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_89/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_9/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_9/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_90/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_90/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_91/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_91/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_92/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_92/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_93/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_93/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_94/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_94/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_95/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_95/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_96/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_96/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_97/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_97/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_98/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_98/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frame_99/delay_sec" type="float" setter="set_frame_delay" getter="get_frame_delay">
+		</member>
+		<member name="frame_99/texture" type="Texture" setter="set_frame_texture" getter="get_frame_texture">
+		</member>
+		<member name="frames" type="int" setter="set_frames" getter="get_frames">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

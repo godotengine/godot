@@ -40,6 +40,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+				Removes all events from an action.
 			</description>
 		</method>
 		<method name="action_has_event">
@@ -50,15 +51,15 @@
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Returns [true] if an action has an [InputEvent] associated with it.
+				Returns [code]true[/code] if the action has the given [InputEvent] associated with it.
 			</description>
 		</method>
 		<method name="action_set_deadzone">
 			<return type="void">
 			</return>
-			<argument index="0" name="deadzone" type="String">
+			<argument index="0" name="action" type="String">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="deadzone" type="float">
 			</argument>
 			<description>
 			</description>
@@ -71,7 +72,7 @@
 			<argument index="1" name="deadzone" type="float" default="0.5">
 			</argument>
 			<description>
-				Adds an (empty) action to the [code]InputMap[/code], with a configurable [code]deadzone[/code].
+				Adds an empty action to the [code]InputMap[/code] with a configurable [code]deadzone[/code].
 				An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>

@@ -92,6 +92,8 @@ protected:
 
 	virtual bool _can_do_next_pass() const;
 
+	void _shader_changed();
+
 public:
 	void set_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader() const;
@@ -181,6 +183,7 @@ public:
 		FLAG_SRGB_VERTEX_COLOR,
 		FLAG_USE_POINT_SIZE,
 		FLAG_FIXED_SIZE,
+		FLAG_BILLBOARD_KEEP_SCALE,
 		FLAG_UV1_USE_TRIPLANAR,
 		FLAG_UV2_USE_TRIPLANAR,
 		FLAG_TRIPLANAR_USE_WORLD,
@@ -189,6 +192,8 @@ public:
 		FLAG_USE_ALPHA_SCISSOR,
 		FLAG_ALBEDO_TEXTURE_FORCE_SRGB,
 		FLAG_DONT_RECEIVE_SHADOWS,
+		FLAG_ENSURE_CORRECT_NORMALS,
+		FLAG_DISABLE_AMBIENT_LIGHT,
 		FLAG_MAX
 	};
 
@@ -237,7 +242,7 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 15;
+			uint64_t flags : 18;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;

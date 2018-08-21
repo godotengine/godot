@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_track_editor.cpp                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_track_editor.h"
 #include "animation_track_editor_plugins.h"
 #include "editor/animation_bezier_editor.h"
@@ -25,6 +55,7 @@ public:
 		ClassDB::bind_method("_update_obj", &AnimationTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
 		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
+		ClassDB::bind_method("get_root_path", &AnimationTrackKeyEdit::get_root_path);
 	}
 
 	//PopupDialog *ke_dialog;
@@ -200,10 +231,10 @@ public:
 							if (Variant::can_convert(args[idx].get_type(), t)) {
 								Variant old = args[idx];
 								Variant *ptrs[1] = { &old };
-								args[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
+								args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
 							} else {
 
-								args[idx] = Variant::construct(t, NULL, 0, err);
+								args.write[idx] = Variant::construct(t, NULL, 0, err);
 							}
 							change_notify_deserved = true;
 							d_new["args"] = args;
@@ -217,7 +248,7 @@ public:
 							_fix_node_path(value);
 						}
 
-						args[idx] = value;
+						args.write[idx] = value;
 						d_new["args"] = args;
 						mergeable = true;
 					}
@@ -612,6 +643,10 @@ public:
 		_change_notify();
 	}
 
+	Node *get_root_path() {
+		return root_path;
+	}
+
 	AnimationTrackKeyEdit() {
 		hidden = true;
 		key_ofs = 0;
@@ -714,6 +749,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		len_hb->set_position(Vector2(get_size().width - get_buttons_width(), 0));
 		len_hb->set_size(Size2(get_buttons_width(), get_size().height));
 	}
+
 	if (p_what == NOTIFICATION_DRAW) {
 
 		int key_range = get_size().width - get_buttons_width() - get_name_limit();
@@ -874,9 +910,11 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 	if (animation.is_valid()) {
 		len_hb->show();
 		add_track->show();
+		play_position->show();
 	} else {
 		len_hb->hide();
 		add_track->hide();
+		play_position->hide();
 	}
 	update();
 	update_values();
@@ -1663,7 +1701,7 @@ void AnimationTrackEdit::_path_entered(const String &p_text) {
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 	if (check_rect.has_point(p_pos)) {
-		return TTR("Toggle this track on/off");
+		return TTR("Toggle this track on/off.");
 	}
 
 	if (path_rect.has_point(p_pos)) {
@@ -1671,7 +1709,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	}
 
 	if (update_mode_rect.has_point(p_pos)) {
-		return TTR("Update Mode (How this property is set).");
+		return TTR("Update Mode (How this property is set)");
 	}
 
 	if (interp_mode_rect.has_point(p_pos)) {
@@ -1679,11 +1717,11 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	}
 
 	if (loop_mode_rect.has_point(p_pos)) {
-		return TTR("Loop Wrap Mode (Interpolate end with beginning on loop");
+		return TTR("Loop Wrap Mode (Interpolate end with beginning on loop)");
 	}
 
 	if (remove_rect.has_point(p_pos)) {
-		return TTR("Remove this track");
+		return TTR("Remove this track.");
 	}
 
 	if (p_pos.x >= timeline->get_name_limit() && p_pos.x <= (get_size().width - timeline->get_buttons_width())) {
@@ -2435,12 +2473,16 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 	if (animation.is_valid()) {
 		animation->connect("changed", this, "_animation_changed");
 
+		hscroll->show();
+		edit->set_disabled(false);
 		step->set_block_signals(true);
 		step->set_value(animation->get_step());
 		step->set_block_signals(false);
 		step->set_read_only(false);
 		snap->set_disabled(false);
 	} else {
+		hscroll->hide();
+		edit->set_disabled(true);
 		step->set_block_signals(true);
 		step->set_value(0);
 		step->set_block_signals(false);
@@ -2972,12 +3014,12 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	if (res.is_valid()) {
 		property_info_base = res;
 		if (r_current_val) {
-			*r_current_val = res->get(leftover_path[leftover_path.size() - 1]);
+			*r_current_val = res->get_indexed(leftover_path);
 		}
 	} else if (node) {
 		property_info_base = node;
 		if (r_current_val) {
-			*r_current_val = node->get(leftover_path[leftover_path.size() - 1]);
+			*r_current_val = node->get_indexed(leftover_path);
 		}
 	}
 
@@ -3011,31 +3053,31 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 			subindices.push_back("");
 		} break;
 		case Variant::VECTOR2: {
-			subindices.push_back(".x");
-			subindices.push_back(".y");
+			subindices.push_back(":x");
+			subindices.push_back(":y");
 		} break;
 		case Variant::VECTOR3: {
-			subindices.push_back(".x");
-			subindices.push_back(".y");
-			subindices.push_back(".z");
+			subindices.push_back(":x");
+			subindices.push_back(":y");
+			subindices.push_back(":z");
 		} break;
 		case Variant::QUAT: {
-			subindices.push_back(".x");
-			subindices.push_back(".y");
-			subindices.push_back(".z");
-			subindices.push_back(".w");
+			subindices.push_back(":x");
+			subindices.push_back(":y");
+			subindices.push_back(":z");
+			subindices.push_back(":w");
 		} break;
 		case Variant::COLOR: {
-			subindices.push_back(".r");
-			subindices.push_back(".g");
-			subindices.push_back(".b");
-			subindices.push_back(".a");
+			subindices.push_back(":r");
+			subindices.push_back(":g");
+			subindices.push_back(":b");
+			subindices.push_back(":a");
 		} break;
 		case Variant::PLANE: {
-			subindices.push_back(".x");
-			subindices.push_back(".y");
-			subindices.push_back(".z");
-			subindices.push_back(".d");
+			subindices.push_back(":x");
+			subindices.push_back(":y");
+			subindices.push_back(":z");
+			subindices.push_back(":d");
 		} break;
 		default: {
 			if (r_valid) {
@@ -3246,35 +3288,23 @@ void AnimationTrackEditor::_update_tracks() {
 
 			if (root && root->has_node_and_resource(path)) {
 				RES res;
+				NodePath base_path;
 				Vector<StringName> leftover_path;
 				Node *node = root->get_node_and_resource(path, res, leftover_path, true);
+				PropertyInfo pinfo = _find_hint_for_track(i, base_path);
 
 				Object *object = node;
 				if (res.is_valid()) {
 					object = res.ptr();
-				} else {
-					object = node;
 				}
 
 				if (object && !leftover_path.empty()) {
-					//not a property (value track?)
-					PropertyInfo pinfo;
-					pinfo.name = leftover_path[leftover_path.size() - 1];
-					//now let's see if we can get more info about it
-
-					List<PropertyInfo> plist;
-					object->get_property_list(&plist);
-
-					for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-
-						if (E->get().name == leftover_path[leftover_path.size() - 1]) {
-							pinfo = E->get();
-							break;
-						}
+					if (pinfo.name.empty()) {
+						pinfo.name = leftover_path[leftover_path.size() - 1];
 					}
 
 					for (int j = 0; j < track_edit_plugins.size(); j++) {
-						track_edit = track_edit_plugins[j]->create_value_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage);
+						track_edit = track_edit_plugins.write[j]->create_value_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage);
 						if (track_edit) {
 							break;
 						}
@@ -3285,7 +3315,7 @@ void AnimationTrackEditor::_update_tracks() {
 		if (animation->track_get_type(i) == Animation::TYPE_AUDIO) {
 
 			for (int j = 0; j < track_edit_plugins.size(); j++) {
-				track_edit = track_edit_plugins[j]->create_audio_track_edit();
+				track_edit = track_edit_plugins.write[j]->create_audio_track_edit();
 				if (track_edit) {
 					break;
 				}
@@ -3302,7 +3332,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 			if (node && Object::cast_to<AnimationPlayer>(node)) {
 				for (int j = 0; j < track_edit_plugins.size(); j++) {
-					track_edit = track_edit_plugins[j]->create_animation_track_edit(node);
+					track_edit = track_edit_plugins.write[j]->create_animation_track_edit(node);
 					if (track_edit) {
 						break;
 					}
@@ -3416,7 +3446,6 @@ MenuButton *AnimationTrackEditor::get_edit_menu() {
 
 void AnimationTrackEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-
 		zoom_icon->set_texture(get_icon("Zoom", "EditorIcons"));
 		snap->set_icon(get_icon("Snap", "EditorIcons"));
 		view_group->set_icon(get_icon(view_group->is_pressed() ? "AnimationTrackList" : "AnimationTrackGroup", "EditorIcons"));
@@ -3429,7 +3458,6 @@ void AnimationTrackEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		update_keying();
 		EditorNode::get_singleton()->update_keying();
 		emit_signal("keying_changed");
@@ -4808,9 +4836,10 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
 	hscroll = memnew(HScrollBar);
-	timeline_vbox->add_child(hscroll);
 	hscroll->share(timeline);
+	hscroll->hide();
 	hscroll->connect("value_changed", this, "_update_scroll");
+	timeline_vbox->add_child(hscroll);
 	timeline->set_hscroll(hscroll);
 
 	track_vbox = memnew(VBoxContainer);
@@ -4853,6 +4882,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_step(0.01);
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	step->set_tooltip(TTR("Animation step value."));
 	bottom_hb->add_child(step);
 	step->connect("value_changed", this, "_update_step");
 	step->set_read_only(true);
@@ -4875,6 +4905,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit = memnew(MenuButton);
 	edit->set_text(TTR("Edit"));
 	edit->set_flat(false);
+	edit->set_disabled(true);
+	edit->set_tooltip(TTR("Animation properties."));
 	edit->get_popup()->add_item(TTR("Copy Tracks"), EDIT_COPY_TRACKS);
 	edit->get_popup()->add_item(TTR("Paste Tracks"), EDIT_PASTE_TRACKS);
 	edit->get_popup()->add_separator();

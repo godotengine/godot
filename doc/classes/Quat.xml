@@ -188,5 +188,7 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="IDENTITY" value="Quat( 0, 0, 0, 1 )">
+		</constant>
 	</constants>
 </class>

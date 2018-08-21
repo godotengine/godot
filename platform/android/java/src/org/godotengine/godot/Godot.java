@@ -297,7 +297,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						view.setKeepScreenOn("True".equals(GodotLib.getGlobal("display/driver/keep_screen_on")));
+						view.setKeepScreenOn("True".equals(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")));
 					}
 				});
 			}

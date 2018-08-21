@@ -7372,6 +7372,11 @@ msgstr "构建项目"
 msgid "Warnings"
 msgstr "警告"
 
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "查看文件"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "内部异常堆栈追朔结束"

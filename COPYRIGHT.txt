@@ -185,7 +185,7 @@ Files: ./thirdparty/libpng/
 Comment: libpng
 Copyright: 1995-1996, Guy Eric Schalnat, Group 42, Inc.
  1996-1997, Andreas Dilger
- 1998-2016, Glenn Randers-Pehrson
+ 1998-2018, Glenn Randers-Pehrson
 License: Zlib
 
 Files: ./thirdparty/libsimplewebm/

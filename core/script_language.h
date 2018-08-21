@@ -54,6 +54,14 @@ class ScriptServer {
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
 
+	struct GlobalScriptClass {
+		StringName language;
+		String path;
+		String base;
+	};
+
+	static HashMap<StringName, GlobalScriptClass> global_classes;
+
 public:
 	static ScriptEditRequestFunction edit_request_func;
 
@@ -69,6 +77,16 @@ public:
 
 	static void thread_enter();
 	static void thread_exit();
+
+	static void global_classes_clear();
+	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path);
+	static void remove_global_class(const StringName &p_class);
+	static bool is_global_class(const StringName &p_class);
+	static StringName get_global_class_language(const StringName &p_class);
+	static String get_global_class_path(const String &p_class);
+	static StringName get_global_class_base(const String &p_class);
+	static void get_global_class_list(List<StringName> *r_global_classes);
+	static void save_global_classes();
 
 	static void init_languages();
 	static void finish_languages();
@@ -97,6 +115,7 @@ public:
 
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return NULL; }
 	virtual bool instance_has(const Object *p_this) const = 0;
 
 	virtual bool has_source_code() const = 0;
@@ -158,6 +177,9 @@ public:
 
 	virtual bool is_placeholder() const { return false; }
 
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
+
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const = 0;
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const = 0;
 
@@ -189,13 +211,20 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
+	struct Warning {
+		int line;
+		int code;
+		String string_code;
+		String message;
+	};
+
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const = 0;
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {}
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const = 0;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual Script *create_script() const = 0;
 	virtual bool has_named_classes() const = 0;
@@ -285,7 +314,10 @@ public:
 
 	virtual void frame();
 
-	virtual ~ScriptLanguage(){};
+	virtual bool handles_global_class_type(const String &p_type) const { return false; }
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const { return String(); }
+
+	virtual ~ScriptLanguage() {}
 };
 
 extern uint8_t script_encryption_key[32];
@@ -297,6 +329,8 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	Map<StringName, Variant> values;
 	ScriptLanguage *language;
 	Ref<Script> script;
+
+	bool build_failed;
 
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
@@ -323,7 +357,13 @@ public:
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
+	void set_build_failed(bool p_build_failed) { build_failed = p_build_failed; }
+	bool get_build_failed() const { return build_failed; }
+
 	virtual bool is_placeholder() const { return true; }
+
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }

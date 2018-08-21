@@ -22,35 +22,35 @@
 			<return type="World">
 			</return>
 			<description>
-				Return the 3D world of the viewport, or if no such present, the one of the parent viewport.
+				Returns the 3D world of the viewport, or if none the world of the parent viewport.
 			</description>
 		</method>
 		<method name="find_world_2d" qualifiers="const">
 			<return type="World2D">
 			</return>
 			<description>
-				Return the 2D world of the viewport.
+				Returns the 2D world of the viewport.
 			</description>
 		</method>
 		<method name="get_camera" qualifiers="const">
 			<return type="Camera">
 			</return>
 			<description>
-				Return the active 3D camera.
+				Returns the active 3D camera.
 			</description>
 		</method>
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Get the total transform of the viewport.
+				Returns the total transform of the viewport.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Get the mouse position, relative to the viewport.
+				Returns the mouse position relative to the viewport.
 			</description>
 		</method>
 		<method name="get_render_info">
@@ -59,35 +59,35 @@
 			<argument index="0" name="info" type="int" enum="Viewport.RenderInfo">
 			</argument>
 			<description>
-				Get the specific information about the viewport from rendering pipeline.
+				Returns information about the viewport from the rendering pipeline.
 			</description>
 		</method>
 		<method name="get_size_override" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Get the size override set with [method set_size_override].
+				Returns the size override set with [method set_size_override].
 			</description>
 		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture">
 			</return>
 			<description>
-				Get the viewport's texture, for use with various objects that you want to texture with the viewport.
+				Returns the viewport's texture.
 			</description>
 		</method>
 		<method name="get_viewport_rid" qualifiers="const">
 			<return type="RID">
 			</return>
 			<description>
-				Get the viewport RID from the [VisualServer].
+				Returns the viewport's RID from the [VisualServer].
 			</description>
 		</method>
 		<method name="get_visible_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
-				Return the final, visible rect in global screen coordinates.
+				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
@@ -101,7 +101,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether there are shown modals on-screen.
+				Returns [code]true[/code] if there are visible modals on-screen.
 			</description>
 		</method>
 		<method name="input">
@@ -116,14 +116,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Get the enabled status of the size override set with [method set_size_override].
+				Returns [code]true[/code] if the size override is enabled. See [method set_size_override].
 			</description>
 		</method>
 		<method name="is_size_override_stretch_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Get the enabled status of the size stretch override set with [method set_size_override_stretch].
+				Returns [code]true[/code] if the size stretch override is enabled. See [method set_size_override_stretch].
 			</description>
 		</method>
 		<method name="set_attach_to_screen_rect">
@@ -144,7 +144,7 @@
 			<argument index="2" name="margin" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Set the size override of the viewport. If the enable parameter is true, it would use the override, otherwise it would use the default size. If the size parameter is equal to [code](-1, -1)[/code], it won't update the size.
+				Sets the size override of the viewport. If the [code]enable[/code] parameter is [code]true[/code] the override is used, otherwise it uses the default size. If the size parameter is [code](-1, -1)[/code], it won't update the size.
 			</description>
 		</method>
 		<method name="set_size_override_stretch">
@@ -153,7 +153,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Set whether the size override affects stretch as well.
+				If [code]true[/code] the size override affects stretch as well.
 			</description>
 		</method>
 		<method name="unhandled_input">
@@ -168,7 +168,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Force update of the 2D and 3D worlds.
+				Forces update of the 2D and 3D worlds.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -177,7 +177,7 @@
 			<argument index="0" name="to_position" type="Vector2">
 			</argument>
 			<description>
-				Warp the mouse to a position, relative to the viewport.
+				Warps the mouse to a position relative to the viewport.
 			</description>
 		</method>
 	</methods>

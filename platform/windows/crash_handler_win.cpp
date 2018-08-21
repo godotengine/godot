@@ -124,6 +124,9 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 
 	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
 
+	if (OS::get_singleton()->get_main_loop())
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+
 	// Load the symbols:
 	if (!SymInitialize(process, NULL, false))
 		return EXCEPTION_CONTINUE_SEARCH;

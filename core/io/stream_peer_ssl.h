@@ -49,13 +49,19 @@ protected:
 	friend class Main;
 	static bool initialize_certs;
 
+	bool blocking_handshake;
+
 public:
 	enum Status {
 		STATUS_DISCONNECTED,
+		STATUS_HANDSHAKING,
 		STATUS_CONNECTED,
-		STATUS_ERROR_NO_CERTIFICATE,
+		STATUS_ERROR,
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
+
+	void set_blocking_handshake_enabled(bool p_enabled);
+	bool is_blocking_handshake_enabled() const;
 
 	virtual void poll() = 0;
 	virtual Error accept_stream(Ref<StreamPeer> p_base) = 0;

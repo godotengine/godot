@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="BackBufferCopy" inherits="Node2D" category="Core" version="3.1">
 	<brief_description>
-		Copies a region of the screen (or the whole screen) to a buffer so it can be accessed with the texscreen() shader instruction.
+		Copies a region of the screen (or the whole screen) to a buffer so it can be accessed with [code]SCREEN_TEXTURE[/code] in the [code]texture()[/code] function.
 	</brief_description>
 	<description>
-		Node for back-buffering the currently displayed screen. The region defined in the BackBufferCopy node is bufferized with the content of the screen it covers, or the entire screen according to the copy mode set. Accessing this buffer is done with the texscreen() shader instruction.
+		Node for back-buffering the currently displayed screen. The region defined in the BackBufferCopy node is bufferized with the content of the screen it covers, or the entire screen according to the copy mode set. Use [code]SCREEN_TEXTURE[/code] in the [code]texture()[/code] function to access the buffer.
 	</description>
 	<tutorials>
 	</tutorials>

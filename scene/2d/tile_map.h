@@ -191,7 +191,6 @@ private:
 	void _make_quadrant_dirty(Map<PosKey, Quadrant>::Element *Q, bool update = true);
 	void _recreate_quadrants();
 	void _clear_quadrants();
-	void _update_dirty_quadrants();
 	void _update_quadrant_space(const RID &p_space);
 	void _update_quadrant_transform();
 	void _recompute_rect_cache();
@@ -224,6 +223,8 @@ public:
 		INVALID_CELL = -1
 	};
 
+	virtual Rect2 _edit_get_rect() const;
+
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
 
@@ -245,14 +246,13 @@ public:
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
 
-	Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);
 	void update_bitmask_region(const Vector2 &p_start = Vector2(), const Vector2 &p_end = Vector2());
 	void update_cell_bitmask(int p_x, int p_y);
 	void update_dirty_bitmask();
+
+	void update_dirty_quadrants();
 
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;

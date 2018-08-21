@@ -105,6 +105,11 @@ void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_v
 	ERR_FAIL_COND(!props.has(p_name));
 	props[p_name].initial = p_value;
 }
+void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
+
+	ERR_FAIL_COND(!props.has(p_name));
+	props[p_name].restart_if_changed = p_restart;
+}
 
 String ProjectSettings::globalize_path(const String &p_path) const {
 
@@ -137,7 +142,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	else {
 
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
-			Vector<String> custom_feature_array = p_value;
+			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 
 				custom_features.insert(custom_feature_array[i]);
@@ -225,6 +230,9 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		else
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
 
+		if (v->restart_if_changed) {
+			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
+		}
 		vclist.insert(vc);
 	}
 
@@ -515,7 +523,11 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 				}
 			} else {
 				// config_version is checked and dropped
-				set(section + "/" + assign, value);
+				if (section == String()) {
+					set(assign, value);
+				} else {
+					set(section + "/" + assign, value);
+				}
 			}
 		} else if (next_tag.name != String()) {
 			section = next_tag.name;
@@ -615,7 +627,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		Vector<uint8_t> buff;
 		buff.resize(len);
 
-		err = encode_variant(p_custom_features, &buff[0], len);
+		err = encode_variant(p_custom_features, buff.ptrw(), len);
 		if (err != OK) {
 			memdelete(file);
 			ERR_FAIL_V(err);
@@ -652,7 +664,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 			Vector<uint8_t> buff;
 			buff.resize(len);
 
-			err = encode_variant(value, &buff[0], len);
+			err = encode_variant(value, buff.ptrw(), len);
 			if (err != OK)
 				memdelete(file);
 			ERR_FAIL_COND_V(err != OK, ERR_INVALID_DATA);
@@ -813,7 +825,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	return OK;
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
 
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
@@ -823,6 +835,7 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default) {
 
 	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
+	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
 	return ret;
 }
 
@@ -870,6 +883,10 @@ void ProjectSettings::set_custom_property_info(const String &p_prop, const Prope
 	custom_prop_info[p_prop].name = p_prop;
 }
 
+const Map<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
+	return custom_prop_info;
+}
+
 void ProjectSettings::set_disable_feature_overrides(bool p_disable) {
 
 	disable_feature_overrides = p_disable;
@@ -904,6 +921,10 @@ Variant ProjectSettings::get_setting(const String &p_setting) const {
 	return get(p_setting);
 }
 
+bool ProjectSettings::has_custom_feature(const String &p_feature) const {
+	return custom_features.has(p_feature);
+}
+
 void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
@@ -932,134 +953,175 @@ ProjectSettings::ProjectSettings() {
 	disable_feature_overrides = false;
 	registering_order = true;
 
-	Array va;
+	Array events;
+	Dictionary action;
 	Ref<InputEventKey> key;
 	Ref<InputEventJoypadButton> joyb;
 
 	GLOBAL_DEF("application/config/name", "");
 	GLOBAL_DEF("application/run/main_scene", "");
-	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "tscn,scn,res");
+	custom_prop_info["application/run/main_scene"] = PropertyInfo(Variant::STRING, "application/run/main_scene", PROPERTY_HINT_FILE, "*.tscn,*.scn,*.res");
 	GLOBAL_DEF("application/run/disable_stdout", false);
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_ENTER);
-	va.push_back(key);
+	events.push_back(key);
 	key.instance();
 	key->set_scancode(KEY_KP_ENTER);
-	va.push_back(key);
+	events.push_back(key);
 	key.instance();
 	key->set_scancode(KEY_SPACE);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_0);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_accept", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_accept", action);
 	input_presets.push_back("input/ui_accept");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_SPACE);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_3);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_select", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_select", action);
 	input_presets.push_back("input/ui_select");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_ESCAPE);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_1);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_cancel", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_cancel", action);
 	input_presets.push_back("input/ui_cancel");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_TAB);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_focus_next", va);
+	events.push_back(key);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_focus_next", action);
 	input_presets.push_back("input/ui_focus_next");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_TAB);
 	key->set_shift(true);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_focus_prev", va);
+	events.push_back(key);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_focus_prev", action);
 	input_presets.push_back("input/ui_focus_prev");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_LEFT);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_LEFT);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_left", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_left", action);
 	input_presets.push_back("input/ui_left");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_RIGHT);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_RIGHT);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_right", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_right", action);
 	input_presets.push_back("input/ui_right");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_UP);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_UP);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_up", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_up", action);
 	input_presets.push_back("input/ui_up");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_DOWN);
-	va.push_back(key);
+	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_DOWN);
-	va.push_back(joyb);
-	GLOBAL_DEF("input/ui_down", va);
+	events.push_back(joyb);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_down", action);
 	input_presets.push_back("input/ui_down");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_PAGEUP);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_page_up", va);
+	events.push_back(key);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_page_up", action);
 	input_presets.push_back("input/ui_page_up");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_PAGEDOWN);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_page_down", va);
+	events.push_back(key);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_page_down", action);
 	input_presets.push_back("input/ui_page_down");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_HOME);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_home", va);
+	events.push_back(key);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_home", action);
 	input_presets.push_back("input/ui_home");
 
-	va = Array();
+	action = Dictionary();
+	action["deadzone"] = Variant(0.5f);
+	events = Array();
 	key.instance();
 	key->set_scancode(KEY_END);
-	va.push_back(key);
-	GLOBAL_DEF("input/ui_end", va);
+	events.push_back(key);
+	action["events"] = events;
+	GLOBAL_DEF("input/ui_end", action);
 	input_presets.push_back("input/ui_end");
 
 	//GLOBAL_DEF("display/window/handheld/orientation", "landscape");
@@ -1068,7 +1130,6 @@ ProjectSettings::ProjectSettings() {
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["physics/2d/thread_model"] = PropertyInfo(Variant::INT, "physics/2d/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
 	custom_prop_info["rendering/quality/intended_usage/framebuffer_allocation"] = PropertyInfo(Variant::INT, "rendering/quality/intended_usage/framebuffer_allocation", PROPERTY_HINT_ENUM, "2D,2D Without Sampling,3D,3D Without Effects");
-	GLOBAL_DEF("rendering/quality/intended_usage/framebuffer_mode", 2);
 
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 

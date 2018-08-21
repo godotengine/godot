@@ -16,6 +16,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the scancode combined with modifier keys such as [code]Shift[/code] or [code]Alt[/code]. See also [InputEventWithModifiers].
 			</description>
 		</method>
 	</methods>
