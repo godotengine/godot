@@ -296,6 +296,11 @@ float AudioStreamPlayer2D::get_volume_db() const {
 }
 
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
+	if (p_pitch_scale < MIN_PITCH_SCALE) {
+		WARN_PRINT("Pitch scale has a minimum value of 0.02");
+		pitch_scale = MIN_PITCH_SCALE;
+		return;
+	}
 	pitch_scale = p_pitch_scale;
 }
 float AudioStreamPlayer2D::get_pitch_scale() const {
