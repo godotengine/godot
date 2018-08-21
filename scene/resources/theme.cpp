@@ -39,26 +39,6 @@ void Theme::_emit_theme_changed() {
 	emit_changed();
 }
 
-void Theme::_ref_font(Ref<Font> p_sc) {
-
-	if (!font_refcount.has(p_sc)) {
-		font_refcount[p_sc] = 1;
-		p_sc->connect("changed", this, "_emit_theme_changed");
-	} else {
-		font_refcount[p_sc] += 1;
-	}
-}
-
-void Theme::_unref_font(Ref<Font> p_sc) {
-
-	ERR_FAIL_COND(!font_refcount.has(p_sc));
-	font_refcount[p_sc]--;
-	if (font_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", this, "_emit_theme_changed");
-		font_refcount.erase(p_sc);
-	}
-}
-
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 
 	String sname = p_name;
@@ -216,14 +196,14 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 	if (default_theme_font == p_default_font)
 		return;
 
-	if (default_theme_font.is_valid()) {
-		_unref_font(default_theme_font);
+	if (default_theme_font.is_valid() && default_theme_font->is_connected("changed", this, "_emit_theme_changed")) {
+		default_theme_font->disconnect("changed", this, "_emit_theme_changed");
 	}
 
 	default_theme_font = p_default_font;
 
-	if (default_theme_font.is_valid()) {
-		_ref_font(default_theme_font);
+	if (default_theme_font.is_valid() && !default_theme_font->is_connected("changed", this, "_emit_theme_changed")) {
+		default_theme_font->connect("changed", this, "_emit_theme_changed");
 	}
 
 	_change_notify();
@@ -259,17 +239,17 @@ void Theme::set_default_font(const Ref<Font> &p_font) {
 
 void Theme::set_icon(const StringName &p_name, const StringName &p_type, const Ref<Texture> &p_icon) {
 
-	//ERR_FAIL_COND(p_icon.is_null());
-
 	bool new_value = !icon_map.has(p_type) || !icon_map[p_type].has(p_name);
+	bool has_changed = icon_map[p_type][p_name] != p_icon;
 
 	icon_map[p_type][p_name] = p_icon;
 
-	if (new_value) {
+	if (new_value)
 		_change_notify();
+	if (has_changed)
 		emit_changed();
-	}
 }
+
 Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_type) const {
 
 	if (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
@@ -309,11 +289,13 @@ void Theme::get_icon_list(StringName p_type, List<StringName> *p_list) const {
 }
 
 void Theme::set_shader(const StringName &p_name, const StringName &p_type, const Ref<Shader> &p_shader) {
+
 	bool new_value = !shader_map.has(p_type) || !shader_map[p_type].has(p_name);
+	bool has_changed = shader_map[p_type][p_name] != p_shader;
 
 	shader_map[p_type][p_name] = p_shader;
 
-	if (new_value) {
+	if (new_value || has_changed) {
 		_change_notify();
 		emit_changed();
 	}
@@ -354,15 +336,24 @@ void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) 
 
 void Theme::set_stylebox(const StringName &p_name, const StringName &p_type, const Ref<StyleBox> &p_style) {
 
-	//ERR_FAIL_COND(p_style.is_null());
-
 	bool new_value = !style_map.has(p_type) || !style_map[p_type].has(p_name);
+	bool has_changed = style_map[p_type][p_name] != p_style;
 
+	Ref<StyleBox> old_style = style_map[p_type][p_name];
 	style_map[p_type][p_name] = p_style;
+	Ref<StyleBox> new_style = style_map[p_type][p_name];
+	if (has_changed) {
+		if (old_style.is_valid() && old_style->is_connected("changed", this, "_emit_theme_changed")) {
+			old_style->disconnect("changed", this, "_emit_theme_changed");
+		}
+		if (new_style.is_valid() && !new_style->is_connected("changed", this, "_emit_theme_changed")) {
+			new_style->connect("changed", this, "_emit_theme_changed");
+		}
+		if (new_value)
+			_change_notify();
 
-	if (new_value)
-		_change_notify();
-	emit_changed();
+		emit_changed();
+	}
 }
 
 Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_type) const {
@@ -412,23 +403,21 @@ void Theme::get_stylebox_types(List<StringName> *p_list) const {
 
 void Theme::set_font(const StringName &p_name, const StringName &p_type, const Ref<Font> &p_font) {
 
-	//ERR_FAIL_COND(p_font.is_null());
-
 	bool new_value = !font_map.has(p_type) || !font_map[p_type].has(p_name);
+	bool has_changed = font_map[p_type][p_name] != p_font;
 
-	if (!new_value) {
-		if (font_map[p_type][p_name].is_valid()) {
-			_unref_font(font_map[p_type][p_name]);
-		}
-	}
+	Ref<Font> old_font = font_map[p_type][p_name];
 	font_map[p_type][p_name] = p_font;
-
-	if (p_font.is_valid()) {
-		_ref_font(p_font);
-	}
-
+	Ref<Font> new_font = font_map[p_type][p_name];
 	if (new_value) {
-		_change_notify();
+		if (old_font.is_valid() && old_font->is_connected("changed", this, "_emit_theme_changed")) {
+			old_font->disconnect("changed", this, "_emit_theme_changed");
+		}
+		if (new_font.is_valid() && !new_font->is_connected("changed", this, "_emit_theme_changed")) {
+			new_font->connect("changed", this, "_emit_theme_changed");
+		}
+		if (has_changed)
+			_change_notify();
 		emit_changed();
 	}
 }
@@ -452,8 +441,8 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_type) {
 	ERR_FAIL_COND(!font_map.has(p_type));
 	ERR_FAIL_COND(!font_map[p_type].has(p_name));
 
-	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid()) {
-		_unref_font(font_map[p_type][p_name]);
+	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid() && font_map[p_type][p_name]->is_connected("changed", this, "_emit_theme_changed")) {
+		font_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
 
 	font_map[p_type].erase(p_name);
@@ -479,11 +468,9 @@ void Theme::set_color(const StringName &p_name, const StringName &p_type, const 
 	bool new_value = !color_map.has(p_type) || !color_map[p_type].has(p_name);
 
 	color_map[p_type][p_name] = p_color;
-
-	if (new_value) {
+	if (new_value)
 		_change_notify();
-		emit_changed();
-	}
+	emit_changed(); // Checking color equal is too difficult?
 }
 
 Color Theme::get_color(const StringName &p_name, const StringName &p_type) const {
@@ -525,12 +512,14 @@ void Theme::get_color_list(StringName p_type, List<StringName> *p_list) const {
 void Theme::set_constant(const StringName &p_name, const StringName &p_type, int p_constant) {
 
 	bool new_value = !constant_map.has(p_type) || !constant_map[p_type].has(p_name);
+	bool has_changed = constant_map[p_type][p_name] != p_constant;
+
 	constant_map[p_type][p_name] = p_constant;
 
-	if (new_value) {
+	if (new_value)
 		_change_notify();
+	if (has_changed)
 		emit_changed();
-	}
 }
 
 int Theme::get_constant(const StringName &p_name, const StringName &p_type) const {
