@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  cube_grid_theme_editor_plugin.cpp                                    */
+/*  mesh_library_editor_plugin.cpp                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "cube_grid_theme_editor_plugin.h"
+#include "mesh_library_editor_plugin.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -38,6 +38,7 @@
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
+#include "spatial_editor_plugin.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_theme) {
 
@@ -241,21 +242,20 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	add_child(file);
 	file->connect("file_selected", this, "_import_scene_cbk");
 
-	Panel *panel = memnew(Panel);
-	panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	add_child(panel);
-	MenuButton *options = memnew(MenuButton);
-	panel->add_child(options);
-	options->set_position(Point2(1, 1));
-	options->set_text("Theme");
-	options->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
-	options->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Import from Scene"), MENU_OPTION_IMPORT_FROM_SCENE);
-	options->get_popup()->add_item(TTR("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
-	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
-	options->get_popup()->connect("id_pressed", this, "_menu_cbk");
-	menu = options;
+	menu = memnew(MenuButton);
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(menu);
+	menu->set_position(Point2(1, 1));
+	menu->set_text("Mesh Library");
+	menu->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshLibrary", "EditorIcons"));
+	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
+	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
+	menu->get_popup()->add_separator();
+	menu->get_popup()->add_item(TTR("Import from Scene"), MENU_OPTION_IMPORT_FROM_SCENE);
+	menu->get_popup()->add_item(TTR("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
+	menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
+	menu->get_popup()->connect("id_pressed", this, "_menu_cbk");
+	menu->hide();
+
 	editor = p_editor;
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);
@@ -278,10 +278,13 @@ bool MeshLibraryEditorPlugin::handles(Object *p_node) const {
 
 void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 
-	if (p_visible)
+	if (p_visible) {
 		theme_editor->show();
-	else
+		theme_editor->get_menu_button()->show();
+	} else {
 		theme_editor->hide();
+		theme_editor->get_menu_button()->hide();
+	}
 }
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
