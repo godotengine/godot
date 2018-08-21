@@ -183,12 +183,6 @@ def configure_msvc(env, manual_msvc_config):
         env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
         env.Append(LINKFLAGS=['/OPT:REF'])
 
-    elif (env["target"] == "debug_release"):
-        env.Append(CCFLAGS=['/Z7', '/Od'])
-        env.Append(LINKFLAGS=['/DEBUG'])
-        env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
-        env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
-
     elif (env["target"] == "debug"):
         env.AppendUnique(CCFLAGS=['/Z7', '/Od', '/EHsc'])
         env.AppendUnique(CPPDEFINES = ['DEBUG_ENABLED', 'DEBUG_MEMORY_ENABLED',
