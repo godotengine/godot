@@ -99,6 +99,9 @@ public:
 	virtual ShapeType shape_get_type(RID p_shape) const;
 	virtual Variant shape_get_data(RID p_shape) const;
 
+	virtual void shape_set_margin(RID p_shape, real_t p_margin);
+	virtual real_t shape_get_margin(RID p_shape) const;
+
 	/// Not supported
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias);
 	/// Not supported

@@ -163,6 +163,18 @@ Variant BulletPhysicsServer::shape_get_data(RID p_shape) const {
 	return shape->get_data();
 }
 
+void BulletPhysicsServer::shape_set_margin(RID p_shape, real_t p_margin) {
+	ShapeBullet *shape = shape_owner.get(p_shape);
+	ERR_FAIL_COND(!shape);
+	shape->set_margin(p_margin);
+}
+
+real_t BulletPhysicsServer::shape_get_margin(RID p_shape) const {
+	ShapeBullet *shape = shape_owner.get(p_shape);
+	ERR_FAIL_COND_V(!shape, 0.0);
+	return shape->get_margin();
+}
+
 real_t BulletPhysicsServer::shape_get_custom_solver_bias(RID p_shape) const {
 	//WARN_PRINT("Bias not supported by Bullet physics engine");
 	return 0.;

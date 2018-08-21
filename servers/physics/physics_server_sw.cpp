@@ -124,6 +124,13 @@ Variant PhysicsServerSW::shape_get_data(RID p_shape) const {
 	return shape->get_data();
 };
 
+void PhysicsServerSW::shape_set_margin(RID p_shape, real_t p_margin) {
+}
+
+real_t PhysicsServerSW::shape_get_margin(RID p_shape) const {
+	return 0.0;
+}
+
 real_t PhysicsServerSW::shape_get_custom_solver_bias(RID p_shape) const {
 
 	const ShapeSW *shape = shape_owner.get(p_shape);
@@ -292,6 +299,7 @@ void PhysicsServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
 
 	area->set_shape(p_shape_idx, shape);
 }
+
 void PhysicsServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform) {
 
 	AreaSW *area = area_owner.get(p_area);
