@@ -258,11 +258,6 @@ namespace Godot
             return res;
         }
 
-        public float Gray()
-        {
-            return (r + g + b) / 3.0f;
-        }
-
         public Color Inverted()
         {
             return new Color(
