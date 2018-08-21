@@ -2024,12 +2024,20 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 		// bind
 		case GDScriptTokenizer::TK_PR_VAR: {
 			tokenizer->advance();
+			if (!tokenizer->is_token_literal()) {
+				_set_error("Expected identifier for binding variable name.");
+				return NULL;
+			}
 			pattern->pt_type = GDScriptParser::PatternNode::PT_BIND;
 			pattern->bind = tokenizer->get_token_identifier();
-			// Check if binding is already used
-			if (current_block->variables.has(pattern->bind)) {
-				_set_error("Binding name of '" + pattern->bind.operator String() + "' was already used in the pattern.");
-				return NULL;
+			// Check if variable name is already used
+			BlockNode *bl = current_block;
+			while (bl) {
+				if (bl->variables.has(pattern->bind)) {
+					_set_error("Binding name of '" + pattern->bind.operator String() + "' is already declared in this scope.");
+					return NULL;
+				}
+				bl = bl->parent_block;
 			}
 			// Create local variable for proper identifier detection later
 			LocalVarNode *lv = alloc_node<LocalVarNode>();
