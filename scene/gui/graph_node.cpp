@@ -193,13 +193,15 @@ void GraphNode::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
+		Ref<StyleBox> sb_h;
 		Ref<StyleBox> sb;
 
 		if (comment) {
+			sb_h = get_stylebox(selected ? "commentfocus_header" : "comment_header");
 			sb = get_stylebox(selected ? "commentfocus" : "comment");
 
 		} else {
-
+			sb_h = get_stylebox(selected ? "selectedframe_header" : "frame_header");
 			sb = get_stylebox(selected ? "selectedframe" : "frame");
 		}
 
@@ -218,8 +220,10 @@ void GraphNode::_notification(int p_what) {
 		Point2i icofs = -port->get_size() * 0.5;
 		int edgeofs = get_constant("port_offset");
 		icofs.y += sb->get_margin(MARGIN_TOP);
+		float title_h_size = get_constant("title_h_size");
 
-		draw_style_box(sb, Rect2(Point2(), get_size()));
+		draw_style_box(sb_h, Rect2(Point2(), Point2(get_size().x, title_h_size)));
+		draw_style_box(sb, Rect2(Point2(0, title_h_size - 1), Point2(get_size().x, get_size().y - title_h_size)));
 
 		switch (overlay) {
 			case OVERLAY_DISABLED: {
