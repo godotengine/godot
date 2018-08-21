@@ -181,8 +181,8 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 void EditorRun::stop() {
 
 	if (status != STATUS_STOP && pid != 0) {
-
-		OS::get_singleton()->kill(pid);
+		const int max_wait_msec = GLOBAL_DEF("editor/stop_max_wait_msec", 10000);
+		OS::get_singleton()->kill(pid, max_wait_msec);
 	}
 
 	status = STATUS_STOP;
