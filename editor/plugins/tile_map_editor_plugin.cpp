@@ -79,9 +79,9 @@ void TileMapEditor::_notification(int p_what) {
 			PopupMenu *p = options->get_popup();
 			p->set_item_icon(p->get_item_index(OPTION_PAINTING), get_icon("Edit", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_PICK_TILE), get_icon("ColorPick", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_SELECT), get_icon("ToolSelect", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_MOVE), get_icon("ToolMove", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_DUPLICATE), get_icon("Duplicate", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_SELECT), get_icon("ActionCopy", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_CUT), get_icon("ActionCut", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(OPTION_COPY), get_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
 
 		} break;
@@ -119,12 +119,12 @@ void TileMapEditor::_menu_option(int p_option) {
 
 			canvas_item_editor->update();
 		} break;
-		case OPTION_DUPLICATE: {
+		case OPTION_COPY: {
 
 			_update_copydata();
 
 			if (selection_active) {
-				tool = TOOL_DUPLICATING;
+				tool = TOOL_PASTING;
 
 				canvas_item_editor->update();
 			}
@@ -135,12 +135,7 @@ void TileMapEditor::_menu_option(int p_option) {
 				return;
 
 			_start_undo(TTR("Erase Selection"));
-			for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
-				for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
-
-					_set_cell(Point2i(j, i), invalid_cell, false, false, false);
-				}
-			}
+			_erase_selection();
 			_finish_undo();
 
 			selection_active = false;
@@ -157,11 +152,19 @@ void TileMapEditor::_menu_option(int p_option) {
 			undo_redo->commit_action();
 
 		} break;
-		case OPTION_MOVE: {
+		case OPTION_CUT: {
 
 			if (selection_active) {
 				_update_copydata();
-				tool = TOOL_MOVING;
+
+				_start_undo(TTR("Cut Selection"));
+				_erase_selection();
+				_finish_undo();
+
+				selection_active = false;
+
+				tool = TOOL_PASTING;
+
 				canvas_item_editor->update();
 			}
 		} break;
@@ -669,6 +672,18 @@ void TileMapEditor::_select(const Point2i &p_from, const Point2i &p_to) {
 	canvas_item_editor->update();
 }
 
+void TileMapEditor::_erase_selection() {
+	if (!selection_active)
+		return;
+
+	for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
+		for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
+
+			_set_cell(Point2i(j, i), invalid_cell, false, false, false);
+		}
+	}
+}
+
 void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
 
 	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
@@ -980,12 +995,12 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 							canvas_item_editor->update();
 						}
-					} else if (tool == TOOL_DUPLICATING) {
+					} else if (tool == TOOL_PASTING) {
 
 						Point2 ofs = over_tile - rectangle.position;
 						Vector<int> ids;
 
-						_start_undo(TTR("Duplicate"));
+						_start_undo(TTR("Paste"));
 						ids.push_back(0);
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
 
@@ -994,34 +1009,9 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						}
 						_finish_undo();
 
-						copydata.clear();
-
-						canvas_item_editor->update();
-					} else if (tool == TOOL_MOVING) {
-
-						Point2 ofs = over_tile - rectangle.position;
-						Vector<int> ids;
-
-						_start_undo(TTR("Move"));
-						ids.push_back(TileMap::INVALID_CELL);
-						for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
-							for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
-
-								_set_cell(Point2i(j, i), ids, false, false, false);
-							}
-						}
-						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
-
-							ids.write[0] = E->get().cell;
-							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose);
-						}
-						_finish_undo();
-
-						copydata.clear();
-						selection_active = false;
-
 						canvas_item_editor->update();
 
+						return true; // We want to keep the Pasting tool
 					} else if (tool == TOOL_SELECTING) {
 
 						canvas_item_editor->update();
@@ -1068,17 +1058,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					return true;
 				}
 
-				if (tool == TOOL_DUPLICATING) {
-
-					tool = TOOL_NONE;
-					copydata.clear();
-
-					canvas_item_editor->update();
-
-					return true;
-				}
-
-				if (tool == TOOL_MOVING) {
+				if (tool == TOOL_PASTING) {
 
 					tool = TOOL_NONE;
 					copydata.clear();
@@ -1305,7 +1285,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (k->get_scancode() == KEY_ESCAPE) {
 
-			if (tool == TOOL_DUPLICATING || tool == TOOL_MOVING)
+			if (tool == TOOL_PASTING)
 				copydata.clear();
 			else if (tool == TOOL_SELECTING || selection_active)
 				selection_active = false;
@@ -1349,21 +1329,29 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-		if (ED_IS_SHORTCUT("tile_map_editor/duplicate_selection", p_event)) {
+		if (ED_IS_SHORTCUT("tile_map_editor/copy_selection", p_event)) {
 			_update_copydata();
 
 			if (selection_active) {
-				tool = TOOL_DUPLICATING;
+				tool = TOOL_PASTING;
 
 				canvas_item_editor->update();
 
 				return true;
 			}
 		}
-		if (ED_IS_SHORTCUT("tile_map_editor/move_selection", p_event)) {
+		if (ED_IS_SHORTCUT("tile_map_editor/cut_selection", p_event)) {
 			if (selection_active) {
 				_update_copydata();
-				tool = TOOL_MOVING;
+
+				_start_undo(TTR("Cut Selection"));
+				_erase_selection();
+				_finish_undo();
+
+				selection_active = false;
+
+				tool = TOOL_PASTING;
+
 				canvas_item_editor->update();
 				return true;
 			}
@@ -1564,7 +1552,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 					_draw_cell(ids[0], Point2i(j, i), flip_h, flip_v, transpose, xform);
 				}
 			}
-		} else if (tool == TOOL_DUPLICATING || tool == TOOL_MOVING) {
+		} else if (tool == TOOL_PASTING) {
 
 			if (copydata.empty())
 				return;
@@ -1844,8 +1832,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_item(TTR("Pick Tile"), OPTION_PICK_TILE, KEY_CONTROL);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_MASK_CMD + KEY_B), OPTION_SELECT);
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/move_selection", TTR("Move Selection"), KEY_MASK_CMD + KEY_M), OPTION_MOVE);
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD + KEY_D), OPTION_DUPLICATE);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/cut_selection", TTR("Cut Selection"), KEY_MASK_CMD + KEY_X), OPTION_CUT);
+	p->add_shortcut(ED_SHORTCUT("tile_map_editor/copy_selection", TTR("Copy Selection"), KEY_MASK_CMD + KEY_C), OPTION_COPY);
 	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 	p->add_separator();
 	p->add_item(TTR("Fix Invalid Tiles"), OPTION_FIX_INVALID);
@@ -1903,6 +1891,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 TileMapEditor::~TileMapEditor() {
 	_clear_bucket_cache();
+	copydata.clear();
 }
 
 ///////////////////////////////////////////////////////////////

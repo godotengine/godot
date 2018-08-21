@@ -61,8 +61,7 @@ class TileMapEditor : public VBoxContainer {
 		TOOL_SELECTING,
 		TOOL_BUCKET,
 		TOOL_PICKING,
-		TOOL_DUPLICATING,
-		TOOL_MOVING
+		TOOL_PASTING
 	};
 
 	enum Options {
@@ -70,11 +69,11 @@ class TileMapEditor : public VBoxContainer {
 		OPTION_BUCKET,
 		OPTION_PICK_TILE,
 		OPTION_SELECT,
-		OPTION_DUPLICATE,
+		OPTION_COPY,
 		OPTION_ERASE_SELECTION,
 		OPTION_PAINTING,
 		OPTION_FIX_INVALID,
-		OPTION_MOVE
+		OPTION_CUT
 	};
 
 	TileMap *node;
@@ -167,6 +166,7 @@ class TileMapEditor : public VBoxContainer {
 	void _erase_points(const PoolVector<Vector2> p_points);
 
 	void _select(const Point2i &p_from, const Point2i &p_to);
+	void _erase_selection();
 
 	void _draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
 	void _draw_fill_preview(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
