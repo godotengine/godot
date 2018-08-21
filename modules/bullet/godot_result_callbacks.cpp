@@ -30,6 +30,7 @@
 
 #include "godot_result_callbacks.h"
 
+#include "area_bullet.h"
 #include "bullet_types_converter.h"
 #include "collision_object_bullet.h"
 #include "rigid_body_bullet.h"
@@ -51,11 +52,23 @@ bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_pickRay && !gObj->is_ray_pickable()) {
 			return false;
-		} else if (m_exclude->has(gObj->get_self())) {
+		}
+
+		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
+
 		return true;
 	} else {
 		return false;
@@ -124,6 +137,15 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -144,6 +166,15 @@ bool GodotAllContactResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -189,6 +220,15 @@ bool GodotContactPairContactResultCallback::needsCollision(btBroadphaseProxy *pr
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -218,6 +258,15 @@ bool GodotRestInfoContactResultCallback::needsCollision(btBroadphaseProxy *proxy
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}

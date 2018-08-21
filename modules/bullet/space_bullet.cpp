@@ -61,7 +61,7 @@ BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_spac
 		PhysicsDirectSpaceState(),
 		space(p_space) {}
 
-int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	if (p_result_max <= 0)
 		return 0;
@@ -69,13 +69,13 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	btVector3 bt_point;
 	G_TO_B(p_point, bt_point);
 
-	btSphereShape sphere_point(0.f);
+	btSphereShape sphere_point(0.001f);
 	btCollisionObject collision_object_point;
 	collision_object_point.setCollisionShape(&sphere_point);
 	collision_object_point.setWorldTransform(btTransform(btQuaternion::getIdentity(), bt_point));
 
 	// Setup query
-	GodotAllContactResultCallback btResult(&collision_object_point, r_results, p_result_max, &p_exclude);
+	GodotAllContactResultCallback btResult(&collision_object_point, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
@@ -84,7 +84,7 @@ int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, Shape
 	return btResult.m_count;
 }
 
-bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_pick_ray) {
+bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
 
 	btVector3 btVec_from;
 	btVector3 btVec_to;
@@ -93,7 +93,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 	G_TO_B(p_to, btVec_to);
 
 	// setup query
-	GodotClosestRayResultCallback btResult(btVec_from, btVec_to, &p_exclude);
+	GodotClosestRayResultCallback btResult(btVec_from, btVec_to, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 	btResult.m_pickRay = p_pick_ray;
@@ -117,7 +117,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 	}
 }
 
-int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	if (p_result_max <= 0)
 		return 0;
 
@@ -139,7 +139,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	collision_object.setCollisionShape(btConvex);
 	collision_object.setWorldTransform(bt_xform);
 
-	GodotAllContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude);
+	GodotAllContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
@@ -150,7 +150,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	return btQuery.m_count;
 }
 
-bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, ShapeRestInfo *r_info) {
+bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &p_closest_safe, float &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);
@@ -171,7 +171,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btTransform bt_xform_to(bt_xform_from);
 	bt_xform_to.getOrigin() += bt_motion;
 
-	GodotClosestConvexResultCallback btResult(bt_xform_from.getOrigin(), bt_xform_to.getOrigin(), &p_exclude);
+	GodotClosestConvexResultCallback btResult(bt_xform_from.getOrigin(), bt_xform_to.getOrigin(), &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 
@@ -197,7 +197,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 }
 
 /// Returns the list of contacts pairs in this order: Local contact, other body contact
-bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	if (p_result_max <= 0)
 		return 0;
 
@@ -219,7 +219,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	collision_object.setCollisionShape(btConvex);
 	collision_object.setWorldTransform(bt_xform);
 
-	GodotContactPairContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude);
+	GodotContactPairContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
@@ -231,7 +231,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	return btQuery.m_count;
 }
 
-bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 
@@ -251,7 +251,7 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 	collision_object.setCollisionShape(btConvex);
 	collision_object.setWorldTransform(bt_xform);
 
-	GodotRestInfoContactResultCallback btQuery(&collision_object, r_info, &p_exclude);
+	GodotRestInfoContactResultCallback btQuery(&collision_object, r_info, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
 	btQuery.m_collisionFilterGroup = 0;
 	btQuery.m_collisionFilterMask = p_collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
