@@ -64,8 +64,8 @@ protected:
 	void _update();
 
 public:
-	RID get_canvas();
-	RID get_space();
+	RID get_canvas() const;
+	RID get_space() const;
 
 	Physics2DDirectSpaceState *get_direct_space_state();
 

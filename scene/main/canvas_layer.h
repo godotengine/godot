@@ -45,6 +45,7 @@ class CanvasLayer : public Node {
 	real_t rot;
 	int layer;
 	Transform2D transform;
+	Ref<World2D> own_world;
 	RID canvas;
 
 	ObjectID custom_viewport_id; // to check validity
@@ -57,6 +58,9 @@ class CanvasLayer : public Node {
 
 	void _update_xform();
 	void _update_locrotscale();
+
+	void _attach_to_viewport();
+	void _detach_from_viewport();
 
 protected:
 	void _notification(int p_what);
@@ -88,9 +92,13 @@ public:
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;
 
+	void set_use_own_world(bool p_enable);
+	bool is_using_own_world() const;
+
 	void reset_sort_index();
 	int get_sort_index();
 
+	Ref<World2D> get_world_2d() const;
 	RID get_canvas() const;
 
 	CanvasLayer();
