@@ -1315,9 +1315,24 @@ GridMapEditor::~GridMapEditor() {
 		VisualServer::get_singleton()->free(duplicate_instance);
 }
 
+void GridMapEditorPlugin::_notification(int p_what) {
+
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+			case 0: { // Left.
+				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
+			} break;
+			case 1: { // Right.
+				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
+			} break;
+		}
+	}
+}
+
 void GridMapEditorPlugin::edit(Object *p_object) {
 
-	gridmap_editor->edit(Object::cast_to<GridMap>(p_object));
+	grid_map_editor->edit(Object::cast_to<GridMap>(p_object));
 }
 
 bool GridMapEditorPlugin::handles(Object *p_object) const {
@@ -1328,29 +1343,35 @@ bool GridMapEditorPlugin::handles(Object *p_object) const {
 void GridMapEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		gridmap_editor->show();
-		gridmap_editor->spatial_editor_hb->show();
-		gridmap_editor->set_process(true);
+		grid_map_editor->show();
+		grid_map_editor->spatial_editor_hb->show();
+		grid_map_editor->set_process(true);
 	} else {
 
-		gridmap_editor->spatial_editor_hb->hide();
-		gridmap_editor->hide();
-		gridmap_editor->edit(NULL);
-		gridmap_editor->set_process(false);
+		grid_map_editor->spatial_editor_hb->hide();
+		grid_map_editor->hide();
+		grid_map_editor->edit(NULL);
+		grid_map_editor->set_process(false);
 	}
 }
 
 GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	gridmap_editor = memnew(GridMapEditor(editor));
 
-	SpatialEditor::get_singleton()->get_palette_split()->add_child(gridmap_editor);
-	// TODO: make this configurable, so the user can choose were to put this, it makes more sense
-	// on the right, but some people might find it strange.
-	SpatialEditor::get_singleton()->get_palette_split()->move_child(gridmap_editor, 1);
+	EDITOR_DEF("editors/grid_map/editor_side", 1);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
-	gridmap_editor->hide();
+	grid_map_editor = memnew(GridMapEditor(editor));
+	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+		case 0: { // Left.
+			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, grid_map_editor);
+		} break;
+		case 1: { // Right.
+			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, grid_map_editor);
+		} break;
+	}
+	grid_map_editor->hide();
 }
 
 GridMapEditorPlugin::~GridMapEditorPlugin() {
