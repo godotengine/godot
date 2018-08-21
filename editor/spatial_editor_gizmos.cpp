@@ -1337,6 +1337,48 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
+
+	ClippedCamera *clipcam = Object::cast_to<ClippedCamera>(camera);
+	if (clipcam) {
+		Spatial *parent = Object::cast_to<Spatial>(camera->get_parent());
+		if (!parent) {
+			return;
+		}
+		Vector3 cam_normal = -camera->get_global_transform().basis.get_axis(Vector3::AXIS_Z).normalized();
+		Vector3 cam_x = camera->get_global_transform().basis.get_axis(Vector3::AXIS_X).normalized();
+		Vector3 cam_y = camera->get_global_transform().basis.get_axis(Vector3::AXIS_Y).normalized();
+		Vector3 cam_pos = camera->get_global_transform().origin;
+		Vector3 parent_pos = parent->get_global_transform().origin;
+
+		Plane parent_plane(parent_pos, cam_normal);
+		Vector3 ray_from = parent_plane.project(cam_pos);
+
+		lines.clear();
+		lines.push_back(ray_from + cam_x * 0.5 + cam_y * 0.5);
+		lines.push_back(ray_from + cam_x * 0.5 + cam_y * -0.5);
+
+		lines.push_back(ray_from + cam_x * 0.5 + cam_y * -0.5);
+		lines.push_back(ray_from + cam_x * -0.5 + cam_y * -0.5);
+
+		lines.push_back(ray_from + cam_x * -0.5 + cam_y * -0.5);
+		lines.push_back(ray_from + cam_x * -0.5 + cam_y * 0.5);
+
+		lines.push_back(ray_from + cam_x * -0.5 + cam_y * 0.5);
+		lines.push_back(ray_from + cam_x * 0.5 + cam_y * 0.5);
+
+		if (parent_plane.distance_to(cam_pos) < 0) {
+			lines.push_back(ray_from);
+			lines.push_back(cam_pos);
+		}
+
+		Transform local = camera->get_global_transform().affine_inverse();
+		for (int i = 0; i < lines.size(); i++) {
+			lines.write[i] = local.xform(lines[i]);
+		}
+
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_collision_segments(lines);
+	}
 }
 
 //////
@@ -3613,7 +3655,7 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->add_collision_segments(lines);
 }
 
-//////
+	//////
 
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27

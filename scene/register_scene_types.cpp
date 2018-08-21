@@ -375,6 +375,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VisualInstance>();
 	ClassDB::register_virtual_class<GeometryInstance>();
 	ClassDB::register_class<Camera>();
+	ClassDB::register_class<ClippedCamera>();
 	ClassDB::register_class<Listener>();
 	ClassDB::register_class<ARVRCamera>();
 	ClassDB::register_class<ARVRController>();
