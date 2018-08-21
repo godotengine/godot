@@ -37,12 +37,10 @@ protected:
 	static void _bind_methods();
 
 public:
-
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
-
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, float p_position);

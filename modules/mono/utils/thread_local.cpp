@@ -69,7 +69,7 @@ struct ThreadLocalStorage::Impl {
 #define _CALLBACK_FUNC_
 #endif
 
-	Impl(void (_CALLBACK_FUNC_ *p_destr_callback_func)(void *)) {
+	Impl(void(_CALLBACK_FUNC_ *p_destr_callback_func)(void *)) {
 #ifdef WINDOWS_ENABLED
 		dwFlsIndex = FlsAlloc(p_destr_callback_func);
 		ERR_FAIL_COND(dwFlsIndex == FLS_OUT_OF_INDEXES);
@@ -95,7 +95,7 @@ void ThreadLocalStorage::set_value(void *p_value) const {
 	pimpl->set_value(p_value);
 }
 
-void ThreadLocalStorage::alloc(void (_CALLBACK_FUNC_ *p_destr_callback)(void *)) {
+void ThreadLocalStorage::alloc(void(_CALLBACK_FUNC_ *p_destr_callback)(void *)) {
 	pimpl = memnew(ThreadLocalStorage::Impl(p_destr_callback));
 }
 

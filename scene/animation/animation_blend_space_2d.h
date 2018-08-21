@@ -45,13 +45,11 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 
 	void _tree_changed();
 
-
 protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 public:
-
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
 

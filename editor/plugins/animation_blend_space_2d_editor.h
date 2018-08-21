@@ -3,13 +3,13 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_blend_space_2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-#include "editor/plugins/animation_tree_editor_plugin.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -19,7 +19,6 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendSpace2DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace2D> blend_space;
-
 
 	PanelContainer *panel;
 	ToolButton *tool_blend;
@@ -118,6 +117,5 @@ public:
 	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeBlendSpace2DEditor();
 };
-
 
 #endif // ANIMATION_BLEND_SPACE_2D_EDITOR_H

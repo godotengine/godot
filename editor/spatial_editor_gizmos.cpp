@@ -3655,7 +3655,7 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->add_collision_segments(lines);
 }
 
-	//////
+//////
 
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27

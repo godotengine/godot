@@ -13,7 +13,7 @@
 
 bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node) {
 
-	Ref<AnimationNodeBlendSpace2D> bs2d=p_node;
+	Ref<AnimationNodeBlendSpace2D> bs2d = p_node;
 	return bs2d.is_valid();
 }
 
@@ -27,7 +27,7 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 }
 
 StringName AnimationNodeBlendSpace2DEditor::get_blend_position_path() const {
-	StringName path = AnimationTreeEditor::get_singleton()->get_base_path()+"blend_position";
+	StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + "blend_position";
 	return path;
 }
 
@@ -73,7 +73,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			if (name == "Animation")
 				continue; // nope
 			int idx = menu->get_item_count();
-			menu->add_item(vformat("Add %s", name),idx);
+			menu->add_item(vformat("Add %s", name), idx);
 			menu->set_item_metadata(idx, E->get());
 		}
 
@@ -84,7 +84,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		}
 		menu->add_separator();
 		menu->add_item(TTR("Load.."), MENU_LOAD_FILE);
-
 
 		menu->set_global_position(blend_space_draw->get_global_transform().xform(mb->get_position()));
 		menu->popup();
@@ -211,7 +210,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		blend_pos += blend_space->get_min_space();
 
-		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(),blend_pos);
+		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(), blend_pos);
 
 		blend_space_draw->update();
 	}
@@ -246,7 +245,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
 		blend_pos += blend_space->get_min_space();
 
-		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(),blend_pos);
+		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(), blend_pos);
 
 		blend_space_draw->update();
 	}
@@ -750,11 +749,10 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		set_process(is_visible_in_tree());
 	}
 }
-
 
 void AnimationNodeBlendSpace2DEditor::_open_editor() {
 
@@ -804,7 +802,6 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_auto_triangles_toggled", &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled);
 
 	ClassDB::bind_method("_file_opened", &AnimationNodeBlendSpace2DEditor::_file_opened);
-
 }
 
 AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = NULL;
@@ -1019,4 +1016,3 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	dragging_selected = false;
 	dragging_selected_attempt = false;
 }
-

@@ -1,8 +1,7 @@
 #include "animation_blend_space_1d.h"
 
-
 void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::REAL,blend_position));
+	r_list->push_back(PropertyInfo(Variant::REAL, blend_position));
 }
 Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0;
@@ -64,10 +63,10 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 }
 
 void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	for(int i=0;i<blend_points_used;i++) {
+	for (int i = 0; i < blend_points_used; i++) {
 		ChildNode cn;
-		cn.name=itos(i);
-		cn.node=blend_points[i].node;
+		cn.name = itos(i);
+		cn.node = blend_points[i].node;
 		r_child_nodes->push_back(cn);
 	}
 }
@@ -89,12 +88,10 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].node = p_node;
 	blend_points[p_at_index].position = p_position;
 
-	blend_points[p_at_index].node->connect("tree_changed",this,"_tree_changed",varray(),CONNECT_REFERENCE_COUNTED);
+	blend_points[p_at_index].node->connect("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
 
 	blend_points_used++;
 	emit_signal("tree_changed");
-
-
 }
 
 void AnimationNodeBlendSpace1D::set_blend_point_position(int p_point, float p_position) {
@@ -108,14 +105,13 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 	ERR_FAIL_COND(p_node.is_null());
 
 	if (blend_points[p_point].node.is_valid()) {
-		blend_points[p_point].node->disconnect("tree_changed",this,"_tree_changed");
+		blend_points[p_point].node->disconnect("tree_changed", this, "_tree_changed");
 	}
 
 	blend_points[p_point].node = p_node;
-	blend_points[p_point].node->connect("tree_changed",this,"_tree_changed",varray(),CONNECT_REFERENCE_COUNTED);
+	blend_points[p_point].node->connect("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
 
 	emit_signal("tree_changed");
-
 }
 
 float AnimationNodeBlendSpace1D::get_blend_point_position(int p_point) const {
@@ -131,16 +127,14 @@ Ref<AnimationRootNode> AnimationNodeBlendSpace1D::get_blend_point_node(int p_poi
 void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
-	blend_points[p_point].node->disconnect("tree_changed",this,"_tree_changed");
+	blend_points[p_point].node->disconnect("tree_changed", this, "_tree_changed");
 
 	for (int i = p_point; i < blend_points_used - 1; i++) {
 		blend_points[i] = blend_points[i + 1];
 	}
 
-
 	blend_points_used--;
 	emit_signal("tree_changed");
-
 }
 
 int AnimationNodeBlendSpace1D::get_blend_point_count() const {
@@ -180,7 +174,6 @@ float AnimationNodeBlendSpace1D::get_snap() const {
 	return snap;
 }
 
-
 void AnimationNodeBlendSpace1D::set_value_label(const String &p_label) {
 	value_label = p_label;
 }
@@ -203,10 +196,9 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 		return 0.0;
 	}
 
-
 	if (blend_points_used == 1) {
 		// only one point available, just play that animation
-		return blend_node(blend_points[0].name,blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
+		return blend_node(blend_points[0].name, blend_points[0].node, p_time, p_seek, 1.0, FILTER_IGNORE, false);
 	}
 
 	float blend_pos = get_parameter(blend_position);
@@ -277,7 +269,7 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 	float max_time_remaining = 0.0;
 
 	for (int i = 0; i < blend_points_used; i++) {
-		float remaining = blend_node(blend_points[i].name,blend_points[i].node, p_time, p_seek, weights[i], FILTER_IGNORE, false);
+		float remaining = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, weights[i], FILTER_IGNORE, false);
 
 		max_time_remaining = MAX(max_time_remaining, remaining);
 	}
@@ -291,8 +283,8 @@ String AnimationNodeBlendSpace1D::get_caption() const {
 
 AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {
 
-	for(int i=0;i<MAX_BLEND_POINTS;i++) {
-		blend_points[i].name=itos(i);
+	for (int i = 0; i < MAX_BLEND_POINTS; i++) {
+		blend_points[i].name = itos(i);
 	}
 	blend_points_used = 0;
 	max_space = 1;
@@ -301,9 +293,8 @@ AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {
 	snap = 0.1;
 	value_label = "value";
 
-	blend_position="blend_position";
+	blend_position = "blend_position";
 }
 
 AnimationNodeBlendSpace1D::~AnimationNodeBlendSpace1D() {
-
 }

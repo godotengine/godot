@@ -76,7 +76,7 @@ struct ThreadLocalStorage {
 	void *get_value() const;
 	void set_value(void *p_value) const;
 
-	void alloc(void (_CALLBACK_FUNC_ *p_dest_callback)(void *));
+	void alloc(void(_CALLBACK_FUNC_ *p_dest_callback)(void *));
 	void free();
 
 private:
@@ -94,7 +94,6 @@ class ThreadLocal {
 	static void _CALLBACK_FUNC_ destr_callback(void *tls_data) {
 		memdelete(static_cast<T *>(tls_data));
 	}
-
 
 	T *_tls_get_value() const {
 		void *tls_data = storage.get_value();
