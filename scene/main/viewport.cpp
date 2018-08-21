@@ -444,7 +444,7 @@ void Viewport::_notification(int p_what) {
 
 						Vector2 point = get_canvas_transform().affine_inverse().xform(pos);
 						Physics2DDirectSpaceState::ShapeResult res[64];
-						int rc = ss2d->intersect_point(point, res, 64, Set<RID>(), 0xFFFFFFFF, true);
+						int rc = ss2d->intersect_point(point, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
 						for (int i = 0; i < rc; i++) {
 
 							if (res[i].collider_id && res[i].collider) {
@@ -527,7 +527,7 @@ void Viewport::_notification(int p_what) {
 							PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
 							if (space) {
 
-								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true);
+								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
 								ObjectID new_collider = 0;
 								if (col) {
 
@@ -563,7 +563,7 @@ void Viewport::_notification(int p_what) {
 					PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
 					if (space) {
 
-						bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true);
+						bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
 						ObjectID new_collider = 0;
 						if (col) {
 							CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);

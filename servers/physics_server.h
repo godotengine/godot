@@ -108,6 +108,9 @@ class PhysicsShapeQueryParameters : public Reference {
 	Set<RID> exclude;
 	uint32_t collision_mask;
 
+	bool collide_with_bodies;
+	bool collide_with_areas;
+
 protected:
 	static void _bind_methods();
 
@@ -128,6 +131,12 @@ public:
 	void set_exclude(const Vector<RID> &p_exclude);
 	Vector<RID> get_exclude() const;
 
+	void set_collide_with_bodies(bool p_enable);
+	bool is_collide_with_bodies_enabled() const;
+
+	void set_collide_with_areas(bool p_enable);
+	bool is_collide_with_areas_enabled() const;
+
 	PhysicsShapeQueryParameters();
 };
 
@@ -137,10 +146,10 @@ class PhysicsDirectSpaceState : public Object {
 
 private:
 	Dictionary _intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_collision_mask = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	Array _intersect_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, int p_max_results = 32);
-	Array _cast_motion(const Ref<PhysicsShapeQueryParameters> &p_shape_query, const Vector3 &p_motion, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
-	Array _collide_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, bool p_collide_with_bodies = true, bool p_collide_with_areas = false, int p_max_results = 32);
-	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters> &p_shape_query, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
+	Array _intersect_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, int p_max_results = 32);
+	Array _cast_motion(const Ref<PhysicsShapeQueryParameters> &p_shape_query, const Vector3 &p_motion);
+	Array _collide_shape(const Ref<PhysicsShapeQueryParameters> &p_shape_query, int p_max_results = 32);
+	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters> &p_shape_query);
 
 protected:
 	static void _bind_methods();

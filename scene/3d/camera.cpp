@@ -742,7 +742,7 @@ void ClippedCamera::_notification(int p_what) {
 		xf.orthonormalize();
 
 		float csafe, cunsafe;
-		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask)) {
+		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
 			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from).normalized() * csafe);
 		}
 
@@ -811,6 +811,27 @@ void ClippedCamera::clear_exceptions() {
 
 	exclude.clear();
 }
+
+void ClippedCamera::set_clip_to_areas(bool p_clip) {
+
+	clip_to_areas = p_clip;
+}
+
+bool ClippedCamera::is_clip_to_areas_enabled() const {
+
+	return clip_to_areas;
+}
+
+void ClippedCamera::set_clip_to_bodies(bool p_clip) {
+
+	clip_to_bodies = p_clip;
+}
+
+bool ClippedCamera::is_clip_to_bodies_enabled() const {
+
+	return clip_to_bodies;
+}
+
 void ClippedCamera::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &ClippedCamera::set_margin);
@@ -831,11 +852,21 @@ void ClippedCamera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_exception_rid", "rid"), &ClippedCamera::remove_exception_rid);
 	ClassDB::bind_method(D_METHOD("remove_exception", "node"), &ClippedCamera::remove_exception);
 
+	ClassDB::bind_method(D_METHOD("set_clip_to_areas", "enable"), &ClippedCamera::set_clip_to_areas);
+	ClassDB::bind_method(D_METHOD("is_clip_to_areas_enabled"), &ClippedCamera::is_clip_to_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_clip_to_bodies", "enable"), &ClippedCamera::set_clip_to_bodies);
+	ClassDB::bind_method(D_METHOD("is_clip_to_bodies_enabled"), &ClippedCamera::is_clip_to_bodies_enabled);
+
 	ClassDB::bind_method(D_METHOD("clear_exceptions"), &ClippedCamera::clear_exceptions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "margin", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Clip To", "clip_to");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_areas", "is_clip_to_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_bodies", "is_clip_to_bodies_enabled");
 }
 ClippedCamera::ClippedCamera() {
 	margin = 0;
@@ -846,6 +877,8 @@ ClippedCamera::ClippedCamera() {
 	set_notify_local_transform(Engine::get_singleton()->is_editor_hint());
 	points.resize(5);
 	pyramid_shape = PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON);
+	clip_to_areas = false;
+	clip_to_bodies = true;
 }
 ClippedCamera::~ClippedCamera() {
 	PhysicsServer::get_singleton()->free(pyramid_shape);

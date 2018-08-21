@@ -190,6 +190,8 @@ private:
 	float margin;
 	float clip_offset;
 	uint32_t collision_mask;
+	bool clip_to_areas;
+	bool clip_to_bodies;
 
 	Set<RID> exclude;
 
@@ -201,6 +203,12 @@ protected:
 	virtual Transform get_camera_transform() const;
 
 public:
+	void set_clip_to_areas(bool p_clip);
+	bool is_clip_to_areas_enabled() const;
+
+	void set_clip_to_bodies(bool p_clip);
+	bool is_clip_to_bodies_enabled() const;
+
 	void set_margin(float p_margin);
 	float get_margin() const;
 

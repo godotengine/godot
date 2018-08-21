@@ -34,9 +34,19 @@
 #include "physics_server_sw.h"
 #include "project_settings.h"
 
-_FORCE_INLINE_ static bool _can_collide_with(CollisionObjectSW *p_object, uint32_t p_collision_mask) {
+_FORCE_INLINE_ static bool _can_collide_with(CollisionObjectSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
-	return p_object->get_collision_layer() & p_collision_mask;
+	if (!(p_object->get_collision_layer() & p_collision_mask)) {
+		return false;
+	}
+
+	if (p_object->get_type() == CollisionObjectSW::TYPE_AREA && !p_collide_with_areas)
+		return false;
+
+	if (p_object->get_type() == CollisionObjectSW::TYPE_BODY && !p_collide_with_bodies)
+		return false;
+
+	return true;
 }
 
 int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
@@ -52,7 +62,7 @@ int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResu
 		if (cc >= p_result_max)
 			break;
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		//area can't be picked by ray (default)
@@ -105,7 +115,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		if (p_pick_ray && !(static_cast<CollisionObjectSW *>(space->intersection_query_results[i])->is_ray_pickable()))
@@ -182,7 +192,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 		if (cc >= p_result_max)
 			break;
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		//area can't be picked by ray (default)
@@ -242,7 +252,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
@@ -356,7 +366,7 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		const CollisionObjectSW *col_obj = space->intersection_query_results[i];
@@ -422,7 +432,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		const CollisionObjectSW *col_obj = space->intersection_query_results[i];

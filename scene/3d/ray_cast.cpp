@@ -49,26 +49,6 @@ Vector3 RayCast::get_cast_to() const {
 	return cast_to;
 }
 
-void RayCast::set_collide_with_bodies(bool p_enable) {
-
-	collide_with_bodies = p_enable;
-}
-
-bool RayCast::get_collide_with_bodies() const {
-
-	return collide_with_bodies;
-}
-
-void RayCast::set_collide_with_areas(bool p_enable) {
-
-	collide_with_areas = p_enable;
-}
-
-bool RayCast::get_collide_with_areas() const {
-
-	return collide_with_areas;
-}
-
 void RayCast::set_collision_mask(uint32_t p_mask) {
 
 	collision_mask = p_mask;
@@ -279,6 +259,26 @@ void RayCast::clear_exceptions() {
 	exclude.clear();
 }
 
+void RayCast::set_collide_with_areas(bool p_clip) {
+
+	collide_with_areas = p_clip;
+}
+
+bool RayCast::is_collide_with_areas_enabled() const {
+
+	return collide_with_areas;
+}
+
+void RayCast::set_collide_with_bodies(bool p_clip) {
+
+	collide_with_bodies = p_clip;
+}
+
+bool RayCast::is_collide_with_bodies_enabled() const {
+
+	return collide_with_bodies;
+}
+
 void RayCast::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast::set_enabled);
@@ -286,12 +286,6 @@ void RayCast::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cast_to", "local_point"), &RayCast::set_cast_to);
 	ClassDB::bind_method(D_METHOD("get_cast_to"), &RayCast::get_cast_to);
-
-	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &RayCast::set_collide_with_bodies);
-	ClassDB::bind_method(D_METHOD("get_collide_with_bodies"), &RayCast::get_collide_with_bodies);
-
-	ClassDB::bind_method(D_METHOD("set_collide_with_areas", "enable"), &RayCast::set_collide_with_areas);
-	ClassDB::bind_method(D_METHOD("get_collide_with_areas"), &RayCast::get_collide_with_areas);
 
 	ClassDB::bind_method(D_METHOD("is_colliding"), &RayCast::is_colliding);
 	ClassDB::bind_method(D_METHOD("force_raycast_update"), &RayCast::force_raycast_update);
@@ -318,12 +312,20 @@ void RayCast::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast::set_exclude_parent_body);
 	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast::get_exclude_parent_body);
 
+	ClassDB::bind_method(D_METHOD("set_collide_with_areas", "enable"), &RayCast::set_collide_with_areas);
+	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &RayCast::is_collide_with_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &RayCast::set_collide_with_bodies);
+	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &RayCast::is_collide_with_bodies_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cast_to"), "set_cast_to", "get_cast_to");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "get_collide_with_bodies");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "get_collide_with_areas");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Collide With", "collide_with");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 }
 
 void RayCast::_create_debug_shape() {
@@ -396,8 +398,8 @@ RayCast::RayCast() {
 	against_shape = 0;
 	collision_mask = 1;
 	cast_to = Vector3(0, -1, 0);
-	collide_with_bodies = true;
-	collide_with_areas = false;
 	debug_shape = NULL;
 	exclude_parent_body = true;
+	collide_with_areas = false;
+	collide_with_bodies = true;
 }
