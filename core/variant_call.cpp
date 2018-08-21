@@ -1920,9 +1920,9 @@ void register_variant_methods() {
 	transform_x.set(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
 	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Z", transform_z);
 
-	_VariantCall::add_variant_constant(Variant::PLANE, "X", Plane(Vector3(1, 0, 0), 0));
-	_VariantCall::add_variant_constant(Variant::PLANE, "Y", Plane(Vector3(0, 1, 0), 0));
-	_VariantCall::add_variant_constant(Variant::PLANE, "Z", Plane(Vector3(0, 0, 1), 0));
+	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_YZ", Plane(Vector3(1, 0, 0), 0));
+	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XZ", Plane(Vector3(0, 1, 0), 0));
+	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
 
 	_VariantCall::add_variant_constant(Variant::QUAT, "IDENTITY", Quat(0, 0, 0, 1));
 }
