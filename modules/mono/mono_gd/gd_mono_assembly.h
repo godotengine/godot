@@ -89,6 +89,7 @@ class GDMonoAssembly {
 #endif
 
 	static bool no_search;
+	static bool in_preload;
 	static Vector<String> search_dirs;
 
 	static void assembly_load_hook(MonoAssembly *assembly, void *user_data);
