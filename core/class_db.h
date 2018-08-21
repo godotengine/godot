@@ -39,6 +39,10 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+/**	To bind more then 6 parameters include this:
+ *  #include "method_bind_ext.gen.inc"
+ */
+
 #define DEFVAL(m_defval) (m_defval)
 
 //#define SIMPLE_METHODDEF
