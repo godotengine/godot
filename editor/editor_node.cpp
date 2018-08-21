@@ -4592,6 +4592,10 @@ EditorNode::EditorNode() {
 	VisualServer::get_singleton()->textures_keep_original(true);
 	VisualServer::get_singleton()->set_debug_generate_wireframes(true);
 
+	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
+	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
+	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
+
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
 	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
@@ -5680,10 +5684,6 @@ EditorNode::EditorNode() {
 
 	_edit_current();
 	current = NULL;
-
-	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
-	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
-	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
 	reference_resource_mem = true;
 	save_external_resources_mem = true;
