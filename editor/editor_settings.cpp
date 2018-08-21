@@ -146,7 +146,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	const VariantContainer *v = props.getptr(p_name);
 	if (!v) {
-		print_line("EditorSettings::_get - Warning, not found: " + String(p_name));
+		print_line("Hello world! This is a test :) EditorSettings::_get - Warning, not found: " + String(p_name));
 		return false;
 	}
 	r_ret = v->variant;

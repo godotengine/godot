@@ -184,6 +184,16 @@ namespace Godot
             return result;
         }
 
+        public Vector2 Project(Vector2 onNormal)
+        {
+            real_t lengthsq = onNormal.LengthSquared();
+            if (lengthsq < Mathf.Epsilon)
+            {
+                return Zero;
+            }
+            return onNormal * (Dot(onNormal) / lengthsq);
+        }
+
         public Vector2 Reflect(Vector2 n)
         {
             return 2.0f * n * Dot(n) - this;
