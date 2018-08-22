@@ -37,6 +37,7 @@
 #include "print_string.h"
 
 #include "io/resource_loader.h"
+#include "math_funcs.h"
 #include "thirdparty/misc/hq2x.h"
 #include <stdio.h>
 
@@ -525,7 +526,7 @@ static double _bicubic_interp_kernel(double x) {
 	return bc;
 }
 
-template <int CC>
+template <int CC, class T = uint8_t>
 static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	// get source image size
@@ -556,7 +557,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 			// initial pixel value
 
-			uint8_t *__restrict dst = p_dst + (y * p_dst_width + x) * CC;
+			T *__restrict dst = ((T *)p_dst) + (y * p_dst_width + x) * CC;
 
 			double color[CC];
 			for (int i = 0; i < CC; i++) {
@@ -584,23 +585,32 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 						ox2 = xmax;
 
 					// get pixel of original image
-					const uint8_t *__restrict p = p_src + (oy2 * p_src_width + ox2) * CC;
+					const T *__restrict p = ((T *)p_src) + (oy2 * p_src_width + ox2) * CC;
 
 					for (int i = 0; i < CC; i++) {
-
-						color[i] += p[i] * k2;
+						if (sizeof(T) == 2) { //half float
+							color[i] = Math::half_to_float(p[i]);
+						} else {
+							color[i] += p[i] * k2;
+						}
 					}
 				}
 			}
 
 			for (int i = 0; i < CC; i++) {
-				dst[i] = CLAMP(Math::fast_ftoi(color[i]), 0, 255);
+				if (sizeof(T) == 1) { //byte
+					dst[i] = CLAMP(Math::fast_ftoi(color[i]), 0, 255);
+				} else if (sizeof(T) == 2) { //half float
+					dst[i] = Math::make_half_float(color[i]);
+				} else {
+					dst[i] = color[i];
+				}
 			}
 		}
 	}
 }
 
-template <int CC>
+template <int CC, class T = uint8_t>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	enum {
@@ -640,22 +650,58 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 
 			for (uint32_t l = 0; l < CC; l++) {
 
-				uint32_t p00 = p_src[y_ofs_up + src_xofs_left + l] << FRAC_BITS;
-				uint32_t p10 = p_src[y_ofs_up + src_xofs_right + l] << FRAC_BITS;
-				uint32_t p01 = p_src[y_ofs_down + src_xofs_left + l] << FRAC_BITS;
-				uint32_t p11 = p_src[y_ofs_down + src_xofs_right + l] << FRAC_BITS;
+				if (sizeof(T) == 1) { //uint8
+					uint32_t p00 = p_src[y_ofs_up + src_xofs_left + l] << FRAC_BITS;
+					uint32_t p10 = p_src[y_ofs_up + src_xofs_right + l] << FRAC_BITS;
+					uint32_t p01 = p_src[y_ofs_down + src_xofs_left + l] << FRAC_BITS;
+					uint32_t p11 = p_src[y_ofs_down + src_xofs_right + l] << FRAC_BITS;
 
-				uint32_t interp_up = p00 + (((p10 - p00) * src_xofs_frac) >> FRAC_BITS);
-				uint32_t interp_down = p01 + (((p11 - p01) * src_xofs_frac) >> FRAC_BITS);
-				uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
-				interp >>= FRAC_BITS;
-				p_dst[i * p_dst_width * CC + j * CC + l] = interp;
+					uint32_t interp_up = p00 + (((p10 - p00) * src_xofs_frac) >> FRAC_BITS);
+					uint32_t interp_down = p01 + (((p11 - p01) * src_xofs_frac) >> FRAC_BITS);
+					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
+					interp >>= FRAC_BITS;
+					p_dst[i * p_dst_width * CC + j * CC + l] = interp;
+				} else if (sizeof(T) == 2) { //half float
+
+					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
+					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
+					const T *src = ((const T *)p_src);
+					T *dst = ((T *)p_dst);
+
+					float p00 = Math::half_to_float(src[y_ofs_up + src_xofs_left + l]);
+					float p10 = Math::half_to_float(src[y_ofs_up + src_xofs_right + l]);
+					float p01 = Math::half_to_float(src[y_ofs_down + src_xofs_left + l]);
+					float p11 = Math::half_to_float(src[y_ofs_down + src_xofs_right + l]);
+
+					float interp_up = p00 + (p10 - p00) * xofs_frac;
+					float interp_down = p01 + (p11 - p01) * xofs_frac;
+					float interp = interp_up + ((interp_down - interp_up) * yofs_frac);
+
+					dst[i * p_dst_width * CC + j * CC + l] = Math::make_half_float(interp);
+				} else if (sizeof(T) == 4) { //float
+
+					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
+					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
+					const T *src = ((const T *)p_src);
+					T *dst = ((T *)p_dst);
+
+					float p00 = src[y_ofs_up + src_xofs_left + l];
+					float p10 = src[y_ofs_up + src_xofs_right + l];
+					float p01 = src[y_ofs_down + src_xofs_left + l];
+					float p11 = src[y_ofs_down + src_xofs_right + l];
+
+					float interp_up = p00 + (p10 - p00) * xofs_frac;
+					float interp_down = p01 + (p11 - p01) * xofs_frac;
+					float interp = interp_up + ((interp_down - interp_up) * yofs_frac);
+
+					dst[i * p_dst_width * CC + j * CC + l] = interp;
+				}
 			}
 		}
 	}
 }
 
-template <int CC>
+template <int CC, class T = uint8_t>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
@@ -670,8 +716,11 @@ static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict 
 
 			for (uint32_t l = 0; l < CC; l++) {
 
-				uint32_t p = p_src[y_ofs + src_xofs + l];
-				p_dst[i * p_dst_width * CC + j * CC + l] = p;
+				const T *src = ((const T *)p_src);
+				T *dst = ((T *)p_dst);
+
+				T p = src[y_ofs + src_xofs + l];
+				dst[i * p_dst_width * CC + j * CC + l] = p;
 			}
 		}
 	}
@@ -766,12 +815,30 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 		case INTERPOLATE_NEAREST: {
 
-			switch (get_format_pixel_size(format)) {
-				case 1: _scale_nearest<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 2: _scale_nearest<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 3: _scale_nearest<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 4: _scale_nearest<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+				switch (get_format_pixel_size(format)) {
+					case 1: _scale_nearest<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2: _scale_nearest<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 3: _scale_nearest<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4: _scale_nearest<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+				}
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				switch (get_format_pixel_size(format)) {
+					case 4: _scale_nearest<1, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 8: _scale_nearest<2, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 12: _scale_nearest<3, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 16: _scale_nearest<4, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+				}
+
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+				switch (get_format_pixel_size(format)) {
+					case 2: _scale_nearest<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4: _scale_nearest<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 6: _scale_nearest<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 8: _scale_nearest<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+				}
 			}
+
 		} break;
 		case INTERPOLATE_BILINEAR:
 		case INTERPOLATE_TRILINEAR: {
@@ -812,11 +879,27 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 					}
 				}
 
-				switch (get_format_pixel_size(format)) {
-					case 1: _scale_bilinear<1>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-					case 2: _scale_bilinear<2>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-					case 3: _scale_bilinear<3>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-					case 4: _scale_bilinear<4>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+				if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+					switch (get_format_pixel_size(format)) {
+						case 1: _scale_bilinear<1>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 2: _scale_bilinear<2>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 3: _scale_bilinear<3>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 4: _scale_bilinear<4>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+					}
+				} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+					switch (get_format_pixel_size(format)) {
+						case 4: _scale_bilinear<1, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 8: _scale_bilinear<2, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 12: _scale_bilinear<3, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 16: _scale_bilinear<4, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+					}
+				} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+					switch (get_format_pixel_size(format)) {
+						case 2: _scale_bilinear<1, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 4: _scale_bilinear<2, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 6: _scale_bilinear<3, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 8: _scale_bilinear<4, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+					}
 				}
 			}
 
@@ -829,13 +912,28 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		} break;
 		case INTERPOLATE_CUBIC: {
 
-			switch (get_format_pixel_size(format)) {
-				case 1: _scale_cubic<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 2: _scale_cubic<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 3: _scale_cubic<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				case 4: _scale_cubic<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
+				switch (get_format_pixel_size(format)) {
+					case 1: _scale_cubic<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2: _scale_cubic<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 3: _scale_cubic<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4: _scale_cubic<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+				}
+			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
+				switch (get_format_pixel_size(format)) {
+					case 4: _scale_cubic<1, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 8: _scale_cubic<2, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 12: _scale_cubic<3, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 16: _scale_cubic<4, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+				}
+			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
+				switch (get_format_pixel_size(format)) {
+					case 2: _scale_cubic<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4: _scale_cubic<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 6: _scale_cubic<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 8: _scale_cubic<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+				}
 			}
-
 		} break;
 	}
 
