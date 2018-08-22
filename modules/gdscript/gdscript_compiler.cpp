@@ -1994,8 +1994,11 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 		p_script->_signals[name] = p_class->_signals[i].arguments;
 	}
 
-	if (!p_class->owner) {
+	if (p_class->owner) {
 		parsed_classes.insert(p_class->name);
+		if (parsing_classes.has(p_class->name)) {
+			parsing_classes.erase(p_class->name);
+		}
 	}
 
 	//parse sub-classes
@@ -2011,7 +2014,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 			Error err = _parse_class_level(subclass.ptr(), p_script, p_class->subclasses[i], p_keep_state);
 			if (err)
 				return err;
-			parsing_classes.erase(name);
 		}
 
 #ifdef TOOLS_ENABLED

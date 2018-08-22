@@ -606,9 +606,11 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 #if DEBUG_ENABLED
 	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
-		String msg = "Script warning: " + E->get().get_name() + " (" + path + ") line " + itos(E->get().line) + ": ";
-		msg += E->get().get_message();
-		WARN_PRINTS(msg);
+		const GDScriptWarning &warning = E->get();
+		if (ScriptDebugger::get_singleton()) {
+			Vector<ScriptLanguage::StackInfo> si;
+			ScriptDebugger::get_singleton()->send_error("", get_path(), warning.line, warning.get_name(), warning.get_message(), ERR_HANDLER_WARNING, si);
+		}
 	}
 #endif
 

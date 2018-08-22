@@ -2024,12 +2024,20 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 		// bind
 		case GDScriptTokenizer::TK_PR_VAR: {
 			tokenizer->advance();
+			if (!tokenizer->is_token_literal()) {
+				_set_error("Expected identifier for binding variable name.");
+				return NULL;
+			}
 			pattern->pt_type = GDScriptParser::PatternNode::PT_BIND;
 			pattern->bind = tokenizer->get_token_identifier();
-			// Check if binding is already used
-			if (current_block->variables.has(pattern->bind)) {
-				_set_error("Binding name of '" + pattern->bind.operator String() + "' was already used in the pattern.");
-				return NULL;
+			// Check if variable name is already used
+			BlockNode *bl = current_block;
+			while (bl) {
+				if (bl->variables.has(pattern->bind)) {
+					_set_error("Binding name of '" + pattern->bind.operator String() + "' is already declared in this scope.");
+					return NULL;
+				}
+				bl = bl->parent_block;
 			}
 			// Create local variable for proper identifier detection later
 			LocalVarNode *lv = alloc_node<LocalVarNode>();
@@ -7389,7 +7397,7 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 			}
 		}
 #ifdef DEBUG_ENABLED
-		if (p_function->arguments_usage[i] == 0) {
+		if (p_function->arguments_usage[i] == 0 && !p_function->arguments[i].operator String().begins_with("_")) {
 			_add_warning(GDScriptWarning::UNUSED_ARGUMENT, p_function->line, p_function->name, p_function->arguments[i].operator String());
 		}
 #endif // DEBUG_ENABLED
@@ -7847,10 +7855,12 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 	// Warnings check
 	for (Map<StringName, LocalVarNode *>::Element *E = p_block->variables.front(); E; E = E->next()) {
 		LocalVarNode *lv = E->get();
-		if (lv->usages == 0) {
-			_add_warning(GDScriptWarning::UNUSED_VARIABLE, lv->line, lv->name);
-		} else if (lv->assignments == 0) {
-			_add_warning(GDScriptWarning::UNASSIGNED_VARIABLE, lv->line, lv->name);
+		if (!lv->name.operator String().begins_with("_")) {
+			if (lv->usages == 0) {
+				_add_warning(GDScriptWarning::UNUSED_VARIABLE, lv->line, lv->name);
+			} else if (lv->assignments == 0) {
+				_add_warning(GDScriptWarning::UNASSIGNED_VARIABLE, lv->line, lv->name);
+			}
 		}
 	}
 #endif // DEBUG_ENABLED
