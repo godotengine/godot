@@ -40,6 +40,17 @@ File extracted from a recent Fedora install:
 as it's generated on the user's system.)
 
 
+## cvtt
+
+- Upstream: https://github.com/elasota/cvtt
+- Version: 1.0.0-beta4
+- License: MIT
+
+Files extracted from upstream source:
+
+- all .cpp, .h, and .txt files in ConvectionKernels/
+
+
 ## enet
 
 - Upstream: http://enet.bespin.org

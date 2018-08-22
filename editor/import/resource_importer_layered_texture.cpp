@@ -163,6 +163,7 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
 	int compress_mode = p_options["compress/mode"];
+	int no_bptc_if_rgb = p_options["compress/no_bptc_if_rgb"];
 	int repeat = p_options["flags/repeat"];
 	bool filter = p_options["flags/filter"];
 	bool mipmaps = p_options["flags/mipmaps"];
@@ -226,6 +227,26 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		//Android, GLES 2.x
 
 		bool ok_on_pc = false;
+		bool encode_bptc = false;
+
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
+
+			encode_bptc = true;
+
+			if (no_bptc_if_rgb) {
+				Image::DetectChannels channels = image->get_detected_channels();
+				if (channels != Image::DETECTED_LA && channels != Image::DETECTED_RGBA) {
+					encode_bptc = false;
+				}
+			}
+		}
+
+		if (encode_bptc) {
+
+			_save_tex(slices, p_save_path + ".bptc." + extension, compress_mode, Image::COMPRESS_BPTC, mipmaps, tex_flags);
+			r_platform_variants->push_back("bptc");
+			ok_on_pc = true;
+		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
 

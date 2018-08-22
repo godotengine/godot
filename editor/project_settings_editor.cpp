@@ -1007,6 +1007,7 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 
 	Set<String> presets;
 
+	presets.insert("bptc");
 	presets.insert("s3tc");
 	presets.insert("etc");
 	presets.insert("etc2");

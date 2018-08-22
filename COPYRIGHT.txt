@@ -135,6 +135,12 @@ Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
 
+Files: ./thirdparty/cvtt/
+Comment: Convection Texture Tools Stand-Alone Kernels
+Copyright: 2018, Eric Lasota
+  2018, Microsoft Corp.
+License: MIT
+
 Files: ./thirdparty/enet/
 Comment: ENet
 Copyright: 2002-2016, Lee Salzman

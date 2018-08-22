@@ -188,7 +188,8 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,Video RAM,Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 2 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_mode", PROPERTY_HINT_ENUM, "Compress,Force RGBE"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/no_bptc_if_rgb"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_mode", PROPERTY_HINT_ENUM, "LDR Fallback,Force RGBE,RGBE Fallback"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), p_preset == PRESET_3D ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), p_preset == PRESET_2D_PIXEL ? false : true));
@@ -347,6 +348,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
 	int compress_mode = p_options["compress/mode"];
+	int no_bptc_if_rgb = p_options["compress/no_bptc_if_rgb"];
 	float lossy = p_options["compress/lossy_quality"];
 	int repeat = p_options["flags/repeat"];
 	bool filter = p_options["flags/filter"];
@@ -359,6 +361,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
 	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
+	bool rgbe_fallback = int(p_options["compress/hdr_mode"]) == 2;
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 	int normal = p_options["compress/normal_map"];
 	float scale = p_options["svg/scale"];
@@ -434,29 +437,57 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		//Android, GLES 2.x
 
 		bool ok_on_pc = false;
+		bool encode_bptc = false;
+		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
+		bool no_ldr_compression = (is_hdr && rgbe_fallback);
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
+
+			encode_bptc = true;
+
+			if (no_bptc_if_rgb && !is_hdr) {
+				Image::DetectChannels channels = image->get_detected_channels();
+				if (channels != Image::DETECTED_LA && channels != Image::DETECTED_RGBA) {
+					encode_bptc = false;
+				}
+			}
+		}
+
+		if (encode_bptc) {
+
+			_save_stex(image, p_save_path + ".bptc.stex", compress_mode, lossy, Image::COMPRESS_BPTC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
+			r_platform_variants->push_back("bptc");
+			ok_on_pc = true;
+		}
+
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc") && !no_ldr_compression) {
 
 			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("s3tc");
 			ok_on_pc = true;
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2") && !no_ldr_compression) {
 
 			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("etc2");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc") && !no_ldr_compression) {
 			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("etc");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc") && !no_ldr_compression) {
 
 			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("pvrtc");
+		}
+
+		if (is_hdr && rgbe_fallback) {
+			_save_stex(image, p_save_path + ".fallback.stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags, stream, detect_3d, detect_srgb, true, detect_normal, force_normal);
+			r_platform_variants->push_back("fallback");
+			ok_on_pc = true;
 		}
 
 		if (!ok_on_pc) {

@@ -1454,6 +1454,9 @@ public:
 		r_features->push_back("UWP");
 	}
 
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
+
 	EditorExportUWP() {
 		Ref<Image> img = memnew(Image(_uwp_logo));
 		logo.instance();
