@@ -238,6 +238,8 @@ void GDAPI godot_nativescript_unregister_instance_binding_data_functions(int p_i
 
 void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object *p_object);
 
+void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64_t p_time);
+
 #ifdef __cplusplus
 }
 #endif

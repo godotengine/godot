@@ -254,6 +254,22 @@ private:
 
 	Map<int, HashMap<StringName, const void *> > global_type_tags;
 
+	struct ProfileData {
+		StringName signature;
+		uint64_t call_count;
+		uint64_t self_time;
+		uint64_t total_time;
+		uint64_t frame_call_count;
+		uint64_t frame_self_time;
+		uint64_t frame_total_time;
+		uint64_t last_frame_call_count;
+		uint64_t last_frame_self_time;
+		uint64_t last_frame_total_time;
+	};
+
+	Map<StringName, ProfileData> profile_data;
+	bool profiling;
+
 public:
 	// These two maps must only be touched on the main thread
 	Map<String, Map<StringName, NativeScriptDesc> > library_classes;
@@ -343,6 +359,8 @@ public:
 
 	virtual bool handles_global_class_type(const String &p_type) const;
 	virtual String get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const;
+
+	void profiling_add_data(StringName p_signature, uint64_t p_time);
 };
 
 inline NativeScriptDesc *NativeScript::get_script_desc() const {

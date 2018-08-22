@@ -365,6 +365,10 @@ void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object
 	return NativeScriptLanguage::get_singleton()->get_instance_binding_data(p_idx, (Object *)p_object);
 }
 
+void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64_t p_time) {
+	NativeScriptLanguage::get_singleton()->profiling_add_data(StringName(p_signature), p_time);
+}
+
 #ifdef __cplusplus
 }
 #endif

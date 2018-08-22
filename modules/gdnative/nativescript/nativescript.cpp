@@ -1010,6 +1010,10 @@ NativeScriptLanguage::NativeScriptLanguage() {
 	has_objects_to_register = false;
 	mutex = Mutex::create();
 #endif
+
+#ifdef DEBUG_ENABLED
+	profiling = false;
+#endif
 }
 
 NativeScriptLanguage::~NativeScriptLanguage() {
@@ -1152,17 +1156,105 @@ void NativeScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_
 }
 
 void NativeScriptLanguage::profiling_start() {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+
+	profile_data.clear();
+	profiling = true;
+#endif
 }
 
 void NativeScriptLanguage::profiling_stop() {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+
+	profiling = false;
+#endif
 }
 
 int NativeScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+	int current = 0;
+
+	for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+		if (current >= p_info_max)
+			break;
+
+		p_info_arr[current].call_count = d->get().call_count;
+		p_info_arr[current].self_time = d->get().self_time;
+		p_info_arr[current].total_time = d->get().total_time;
+		p_info_arr[current].signature = d->get().signature;
+		current++;
+	}
+
+	return current;
+#else
 	return 0;
+#endif
 }
 
 int NativeScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+	int current = 0;
+
+	for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+		if (current >= p_info_max)
+			break;
+
+		if (d->get().last_frame_call_count) {
+			p_info_arr[current].call_count = d->get().last_frame_call_count;
+			p_info_arr[current].self_time = d->get().last_frame_self_time;
+			p_info_arr[current].total_time = d->get().last_frame_total_time;
+			p_info_arr[current].signature = d->get().signature;
+			current++;
+		}
+	}
+
+	return current;
+#else
 	return 0;
+#endif
+}
+
+void NativeScriptLanguage::profiling_add_data(StringName p_signature, uint64_t p_time) {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+
+	Map<StringName, ProfileData>::Element *d = profile_data.find(p_signature);
+	if (d) {
+		d->get().call_count += 1;
+		d->get().total_time += p_time;
+		d->get().frame_call_count += 1;
+		d->get().frame_total_time += p_time;
+	} else {
+		ProfileData data;
+
+		data.signature = p_signature;
+		data.call_count = 1;
+		data.self_time = 0;
+		data.total_time = p_time;
+		data.frame_call_count = 1;
+		data.frame_self_time = 0;
+		data.frame_total_time = p_time;
+		data.last_frame_call_count = 0;
+		data.last_frame_self_time = 0;
+		data.last_frame_total_time = 0;
+
+		profile_data.insert(p_signature, data);
+	}
+#endif
 }
 
 int NativeScriptLanguage::register_binding_functions(godot_instance_binding_functions p_binding_functions) {
@@ -1405,6 +1497,24 @@ void NativeScriptLanguage::frame() {
 		has_objects_to_register = false;
 	}
 #endif
+
+#ifdef DEBUG_ENABLED
+	{
+#ifndef NO_THREADS
+		MutexLock lock(mutex);
+#endif
+
+		for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+			d->get().last_frame_call_count = d->get().frame_call_count;
+			d->get().last_frame_self_time = d->get().frame_self_time;
+			d->get().last_frame_total_time = d->get().frame_total_time;
+			d->get().frame_call_count = 0;
+			d->get().frame_self_time = 0;
+			d->get().frame_total_time = 0;
+		}
+	}
+#endif
+
 	call_libraries_cb(_frame_call_name);
 }
 
