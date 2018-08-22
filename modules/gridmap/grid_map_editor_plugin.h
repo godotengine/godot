@@ -97,7 +97,7 @@ class GridMapEditor : public VBoxContainer {
 	List<SetItem> set_items;
 
 	GridMap *node;
-	MeshLibrary *last_theme;
+	MeshLibrary *last_mesh_library;
 	ClipMode clip_mode;
 
 	bool lock_view;
@@ -141,7 +141,7 @@ class GridMapEditor : public VBoxContainer {
 	Vector3 last_mouseover;
 
 	int display_mode;
-	int selected_pallete;
+	int selected_palette;
 	int cursor_rot;
 
 	enum Menu {
@@ -185,9 +185,9 @@ class GridMapEditor : public VBoxContainer {
 	void update_grid();
 	void _configure();
 	void _menu_option(int);
-	void update_pallete();
+	void update_palette();
 	void _set_display_mode(int p_mode);
-	ItemList *theme_pallete;
+	ItemList *mesh_library_palette;
 	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
@@ -207,7 +207,6 @@ class GridMapEditor : public VBoxContainer {
 	bool do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click);
 
 	friend class GridMapEditorPlugin;
-	Panel *theme_panel;
 
 protected:
 	void _notification(int p_what);

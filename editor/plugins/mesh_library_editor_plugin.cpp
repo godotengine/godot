@@ -40,11 +40,11 @@
 #include "scene/resources/packed_scene.h"
 #include "spatial_editor_plugin.h"
 
-void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_theme) {
+void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 
-	theme = p_theme;
-	if (theme.is_valid())
-		menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), !theme->has_meta("_editor_source_scene"));
+	mesh_library = p_mesh_library;
+	if (mesh_library.is_valid())
+		menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), !mesh_library->has_meta("_editor_source_scene"));
 }
 
 void MeshLibraryEditor::_menu_confirm() {
@@ -53,10 +53,10 @@ void MeshLibraryEditor::_menu_confirm() {
 
 		case MENU_OPTION_REMOVE_ITEM: {
 
-			theme->remove_item(to_erase);
+			mesh_library->remove_item(to_erase);
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
-			String existing = theme->get_meta("_editor_source_scene");
+			String existing = mesh_library->get_meta("_editor_source_scene");
 			ERR_FAIL_COND(existing == "");
 			_import_scene_cbk(existing);
 
@@ -175,10 +175,10 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	ERR_FAIL_COND(ps.is_null());
 	Node *scene = ps->instance();
 
-	_import_scene(scene, theme, option == MENU_OPTION_UPDATE_FROM_SCENE);
+	_import_scene(scene, mesh_library, option == MENU_OPTION_UPDATE_FROM_SCENE);
 
 	memdelete(scene);
-	theme->set_meta("_editor_source_scene", p_str);
+	mesh_library->set_meta("_editor_source_scene", p_str);
 	menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), false);
 }
 
@@ -195,7 +195,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 
 		case MENU_OPTION_ADD_ITEM: {
 
-			theme->create_item(theme->get_last_unused_item_id());
+			mesh_library->create_item(mesh_library->get_last_unused_item_id());
 		} break;
 		case MENU_OPTION_REMOVE_ITEM: {
 
@@ -213,7 +213,7 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 		} break;
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
 
-			cd->set_text("Update from existing scene?:\n" + String(theme->get_meta("_editor_source_scene")));
+			cd->set_text("Update from existing scene?:\n" + String(mesh_library->get_meta("_editor_source_scene")));
 			cd->popup_centered(Size2(500, 60));
 		} break;
 	}
@@ -265,10 +265,10 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 void MeshLibraryEditorPlugin::edit(Object *p_node) {
 
 	if (Object::cast_to<MeshLibrary>(p_node)) {
-		theme_editor->edit(Object::cast_to<MeshLibrary>(p_node));
-		theme_editor->show();
+		mesh_library_editor->edit(Object::cast_to<MeshLibrary>(p_node));
+		mesh_library_editor->show();
 	} else
-		theme_editor->hide();
+		mesh_library_editor->hide();
 }
 
 bool MeshLibraryEditorPlugin::handles(Object *p_node) const {
@@ -279,21 +279,21 @@ bool MeshLibraryEditorPlugin::handles(Object *p_node) const {
 void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		theme_editor->show();
-		theme_editor->get_menu_button()->show();
+		mesh_library_editor->show();
+		mesh_library_editor->get_menu_button()->show();
 	} else {
-		theme_editor->hide();
-		theme_editor->get_menu_button()->hide();
+		mesh_library_editor->hide();
+		mesh_library_editor->get_menu_button()->hide();
 	}
 }
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
-	theme_editor = memnew(MeshLibraryEditor(p_node));
+	mesh_library_editor = memnew(MeshLibraryEditor(p_node));
 
-	p_node->get_viewport()->add_child(theme_editor);
-	theme_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
-	theme_editor->set_end(Point2(0, 22));
-	theme_editor->hide();
+	p_node->get_viewport()->add_child(mesh_library_editor);
+	mesh_library_editor->set_anchors_and_margins_preset(Control::PRESET_TOP_WIDE);
+	mesh_library_editor->set_end(Point2(0, 22));
+	mesh_library_editor->hide();
 }
