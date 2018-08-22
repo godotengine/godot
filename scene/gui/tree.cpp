@@ -506,6 +506,11 @@ void TreeItem::deselect(int p_column) {
 	_cell_deselected(p_column);
 }
 
+void TreeItem::deselect_all() {
+
+	tree->deselect_row(this);
+}
+
 void TreeItem::add_button(int p_column, const Ref<Texture> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -750,6 +755,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_selected", "column"), &TreeItem::is_selected);
 	ClassDB::bind_method(D_METHOD("select", "column"), &TreeItem::select);
 	ClassDB::bind_method(D_METHOD("deselect", "column"), &TreeItem::deselect);
+	ClassDB::bind_method(D_METHOD("deselect_all"), &TreeItem::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("set_editable", "column", "enabled"), &TreeItem::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable", "column"), &TreeItem::is_editable);
@@ -3075,6 +3081,7 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		p_item->cells.write[p_column].selected = true;
 		//emit_signal("multi_selected",p_item,p_column,true); - NO this is for TreeItem::select
 
+		selected_item = p_item;
 		selected_col = p_column;
 	} else {
 
@@ -3085,8 +3092,19 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 
 void Tree::item_deselected(int p_column, TreeItem *p_item) {
 
-	if (select_mode == SELECT_MULTI || select_mode == SELECT_SINGLE) {
-		p_item->cells.write[p_column].selected = false;
+	p_item->cells.write[p_column].selected = false;
+	update();
+}
+
+void Tree::deselect_row(TreeItem *p_item) {
+
+	for (int i = 0; i < p_item->cells.size(); i++) {
+		p_item->cells.write[i].selected = false;
+	}
+
+	if (p_item == selected_item) {
+		selected_item = NULL;
+		selected_col = -1;
 	}
 	update();
 }
@@ -3105,10 +3123,10 @@ void Tree::deselect_all() {
 
 	TreeItem *item = get_next_selected(get_root());
 	while (item) {
-		item->deselect(selected_col);
-		TreeItem *prev_item = item;
+		for (int i = 0; i < item->cells.size(); i++) {
+			item->cells.write[i].selected = false;
+		}
 		item = get_next_selected(get_root());
-		ERR_FAIL_COND(item == prev_item);
 	}
 
 	selected_item = NULL;
@@ -3772,6 +3790,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_value_editor_changed"), &Tree::value_editor_changed);
 	ClassDB::bind_method(D_METHOD("_scroll_moved"), &Tree::_scroll_moved);
 
+	ClassDB::bind_method(D_METHOD("deselect_all"), &Tree::deselect_all);
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
 	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::_create_item, DEFVAL(Variant()), DEFVAL(-1));
 
