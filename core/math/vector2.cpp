@@ -122,7 +122,7 @@ Vector2 Vector2::rotated(real_t p_by) const {
 }
 
 Vector2 Vector2::project(const Vector2 &p_b) const {
-	return p_b * (dot(p_b) / p_b.dot(p_b));
+	return p_b * (dot(p_b) / p_b.length_squared());
 }
 
 Vector2 Vector2::snapped(const Vector2 &p_by) const {
