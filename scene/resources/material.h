@@ -233,6 +233,13 @@ public:
 		EMISSION_OP_MULTIPLY
 	};
 
+	enum DistanceFadeMode {
+		DISTANCE_FADE_DISABLED,
+		DISTANCE_FADE_PIXEL_ALPHA,
+		DISTANCE_FADE_PIXEL_DITHER,
+		DISTANCE_FADE_OBJECT_DITHER,
+	};
+
 private:
 	union MaterialKey {
 
@@ -251,7 +258,7 @@ private:
 			uint64_t billboard_mode : 2;
 			uint64_t grow : 1;
 			uint64_t proximity_fade : 1;
-			uint64_t distance_fade : 1;
+			uint64_t distance_fade : 2;
 			uint64_t emission_op : 1;
 		};
 
@@ -296,7 +303,7 @@ private:
 		mk.deep_parallax = deep_parallax ? 1 : 0;
 		mk.grow = grow_enabled;
 		mk.proximity_fade = proximity_fade_enabled;
-		mk.distance_fade = distance_fade_enabled;
+		mk.distance_fade = distance_fade;
 		mk.emission_op = emission_op;
 
 		return mk;
@@ -402,7 +409,7 @@ private:
 	bool proximity_fade_enabled;
 	float proximity_fade_distance;
 
-	bool distance_fade_enabled;
+	DistanceFadeMode distance_fade;
 	float distance_fade_max_distance;
 	float distance_fade_min_distance;
 
@@ -583,8 +590,8 @@ public:
 	void set_proximity_fade_distance(float p_distance);
 	float get_proximity_fade_distance() const;
 
-	void set_distance_fade(bool p_enable);
-	bool is_distance_fade_enabled() const;
+	void set_distance_fade(DistanceFadeMode p_mode);
+	DistanceFadeMode get_distance_fade() const;
 
 	void set_distance_fade_max_distance(float p_distance);
 	float get_distance_fade_max_distance() const;
@@ -630,6 +637,7 @@ VARIANT_ENUM_CAST(SpatialMaterial::SpecularMode)
 VARIANT_ENUM_CAST(SpatialMaterial::BillboardMode)
 VARIANT_ENUM_CAST(SpatialMaterial::TextureChannel)
 VARIANT_ENUM_CAST(SpatialMaterial::EmissionOperator)
+VARIANT_ENUM_CAST(SpatialMaterial::DistanceFadeMode)
 
 //////////////////////
 
