@@ -177,7 +177,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 	}
 
 void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str) {
-
+	r_error.error = Variant::CallError::CALL_OK;
 	switch (p_func) {
 		case MATH_SIN: {
 
@@ -1916,7 +1916,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			bool valid;
 			r_ret = base.get_named(index->name, &valid);
 			if (!valid) {
-				r_error_str = vformat(RTR("Invalid named index '%s' for base type "), String(index->name), Variant::get_type_name(base.get_type()));
+				r_error_str = vformat(RTR("Invalid named index '%s' for base type %s"), String(index->name), Variant::get_type_name(base.get_type()));
 				return true;
 			}
 
