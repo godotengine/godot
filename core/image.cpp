@@ -1685,7 +1685,7 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_loss
 		case COMPRESS_S3TC: {
 
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
-			_image_compress_bc_func(this, p_source);
+			_image_compress_bc_func(this, p_lossy_quality, p_source);
 		} break;
 		case COMPRESS_PVRTC2: {
 
@@ -2048,7 +2048,7 @@ ImageMemLoadFunc Image::_png_mem_loader_func = NULL;
 ImageMemLoadFunc Image::_jpg_mem_loader_func = NULL;
 ImageMemLoadFunc Image::_webp_mem_loader_func = NULL;
 
-void (*Image::_image_compress_bc_func)(Image *, Image::CompressSource) = NULL;
+void (*Image::_image_compress_bc_func)(Image *, float, Image::CompressSource) = NULL;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::CompressSource) = NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *) = NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *) = NULL;
@@ -2569,7 +2569,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_NORMAL);
 }
 
-void Image::set_compress_bc_func(void (*p_compress_func)(Image *, CompressSource)) {
+void Image::set_compress_bc_func(void (*p_compress_func)(Image *, float, CompressSource)) {
 
 	_image_compress_bc_func = p_compress_func;
 }
