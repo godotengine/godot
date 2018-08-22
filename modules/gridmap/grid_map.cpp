@@ -208,21 +208,35 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 	return get_collision_layer() & (1 << p_bit);
 }
 
+#ifndef DISABLE_DEPRECATED
 void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
 
-	if (!theme.is_null())
-		theme->unregister_owner(this);
-	theme = p_theme;
-	if (!theme.is_null())
-		theme->register_owner(this);
-
-	_recreate_octant_data();
-	_change_notify("theme");
+	WARN_PRINTS("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
+	set_mesh_library(p_theme);
 }
 
 Ref<MeshLibrary> GridMap::get_theme() const {
 
-	return theme;
+	WARN_PRINTS("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
+	return get_mesh_library();
+}
+#endif // DISABLE_DEPRECATED
+
+void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
+
+	if (!mesh_library.is_null())
+		mesh_library->unregister_owner(this);
+	mesh_library = p_mesh_library;
+	if (!mesh_library.is_null())
+		mesh_library->register_owner(this);
+
+	_recreate_octant_data();
+	_change_notify("mesh_library");
+}
+
+Ref<MeshLibrary> GridMap::get_mesh_library() const {
+
+	return mesh_library;
 }
 
 void GridMap::set_cell_size(const Vector3 &p_size) {
@@ -469,7 +483,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		ERR_CONTINUE(!cell_map.has(E->get()));
 		const Cell &c = cell_map[E->get()];
 
-		if (!theme.is_valid() || !theme->has_item(c.item))
+		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item))
 			continue;
 
 		//print_line("OCTANT, CELLS: "+itos(ii.cells.size()));
@@ -488,7 +502,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		xform.set_origin(cellpos * cell_size + ofs);
 		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
 		if (baked_meshes.size() == 0) {
-			if (theme->get_item_mesh(c.item).is_valid()) {
+			if (mesh_library->get_item_mesh(c.item).is_valid()) {
 				if (!multimesh_items.has(c.item)) {
 					multimesh_items[c.item] = List<Pair<Transform, IndexKey> >();
 				}
@@ -500,7 +514,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			}
 		}
 
-		Vector<MeshLibrary::ShapeData> shapes = theme->get_item_shapes(c.item);
+		Vector<MeshLibrary::ShapeData> shapes = mesh_library->get_item_shapes(c.item);
 		// add the item's shape at given xform to octant's static_body
 		for (int i = 0; i < shapes.size(); i++) {
 			// add the item's shape
@@ -515,7 +529,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 
 		// add the item's navmesh at given xform to GridMap's Navigation ancestor
-		Ref<NavigationMesh> navmesh = theme->get_item_navmesh(c.item);
+		Ref<NavigationMesh> navmesh = mesh_library->get_item_navmesh(c.item);
 		if (navmesh.is_valid()) {
 			Octant::NavMesh nm;
 			nm.xform = xform;
@@ -537,7 +551,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 			RID mm = VS::get_singleton()->multimesh_create();
 			VS::get_singleton()->multimesh_allocate(mm, E->get().size(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_NONE);
-			VS::get_singleton()->multimesh_set_mesh(mm, theme->get_item_mesh(E->key())->get_rid());
+			VS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E->key())->get_rid());
 
 			int idx = 0;
 			for (List<Pair<Transform, IndexKey> >::Element *F = E->get().front(); F; F = F->next()) {
@@ -612,11 +626,11 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 		VS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 
-	if (navigation && theme.is_valid()) {
+	if (navigation && mesh_library.is_valid()) {
 		for (Map<IndexKey, Octant::NavMesh>::Element *F = g.navmesh_ids.front(); F; F = F->next()) {
 
 			if (cell_map.has(F->key()) && F->get().id < 0) {
-				Ref<NavigationMesh> nm = theme->get_item_navmesh(cell_map[F->key()].item);
+				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[F->key()].item);
 				if (nm.is_valid()) {
 					F->get().id = navigation->navmesh_add(nm, F->get().xform, this);
 				}
@@ -846,8 +860,13 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &GridMap::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &GridMap::get_collision_layer_bit);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &GridMap::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &GridMap::get_theme);
+#endif // DISABLE_DEPRECATED
+
+	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
+	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
 
 	ClassDB::bind_method(D_METHOD("set_cell_size", "size"), &GridMap::set_cell_size);
 	ClassDB::bind_method(D_METHOD("get_cell_size"), &GridMap::get_cell_size);
@@ -865,7 +884,6 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("world_to_map", "pos"), &GridMap::world_to_map);
 	ClassDB::bind_method(D_METHOD("map_to_world", "x", "y", "z"), &GridMap::map_to_world);
 
-	//ClassDB::bind_method(D_METHOD("_recreate_octants"),&GridMap::_recreate_octants);
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);
 
@@ -889,7 +907,11 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_theme", "get_theme");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary", PROPERTY_USAGE_NOEDITOR), "set_theme", "get_theme");
+#endif // DISABLE_DEPRECATED
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
 	ADD_GROUP("Cell", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_octant_size", PROPERTY_HINT_RANGE, "1,1024,1"), "set_octant_size", "get_octant_size");
@@ -952,7 +974,7 @@ Array GridMap::get_used_cells() const {
 
 Array GridMap::get_meshes() {
 
-	if (theme.is_null())
+	if (mesh_library.is_null())
 		return Array();
 
 	Vector3 ofs = _get_offset();
@@ -961,9 +983,9 @@ Array GridMap::get_meshes() {
 	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {
 
 		int id = E->get().item;
-		if (!theme->has_item(id))
+		if (!mesh_library->has_item(id))
 			continue;
-		Ref<Mesh> mesh = theme->get_item_mesh(id);
+		Ref<Mesh> mesh = mesh_library->get_item_mesh(id);
 		if (mesh.is_null())
 			continue;
 
@@ -1004,7 +1026,7 @@ void GridMap::clear_baked_meshes() {
 
 void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texel_size) {
 
-	if (!theme.is_valid())
+	if (!mesh_library.is_valid())
 		return;
 
 	//generate
@@ -1015,10 +1037,10 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		IndexKey key = E->key();
 
 		int item = E->get().item;
-		if (!theme->has_item(item))
+		if (!mesh_library->has_item(item))
 			continue;
 
-		Ref<Mesh> mesh = theme->get_item_mesh(item);
+		Ref<Mesh> mesh = mesh_library->get_item_mesh(item);
 		if (!mesh.is_valid())
 			continue;
 
@@ -1137,8 +1159,8 @@ GridMap::GridMap() {
 
 GridMap::~GridMap() {
 
-	if (!theme.is_null())
-		theme->unregister_owner(this);
+	if (!mesh_library.is_null())
+		mesh_library->unregister_owner(this);
 
 	clear();
 }

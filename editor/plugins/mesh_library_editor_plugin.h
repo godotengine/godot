@@ -38,7 +38,7 @@ class MeshLibraryEditor : public Control {
 
 	GDCLASS(MeshLibraryEditor, Control);
 
-	Ref<MeshLibrary> theme;
+	Ref<MeshLibrary> mesh_library;
 
 	EditorNode *editor;
 	MenuButton *menu;
@@ -67,7 +67,7 @@ protected:
 public:
 	MenuButton *get_menu_button() const { return menu; }
 
-	void edit(const Ref<MeshLibrary> &p_theme);
+	void edit(const Ref<MeshLibrary> &p_mesh_library);
 	static Error update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge = true);
 
 	MeshLibraryEditor(EditorNode *p_editor);
@@ -77,7 +77,7 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 
 	GDCLASS(MeshLibraryEditorPlugin, EditorPlugin);
 
-	MeshLibraryEditor *theme_editor;
+	MeshLibraryEditor *mesh_library_editor;
 	EditorNode *editor;
 
 public:
