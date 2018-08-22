@@ -901,11 +901,11 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 					c = COLOR_ATLAS;
 				c.a = tile_names_opacity;
 				Ref<Font> font = get_font("font", "Label");
-				region.set_size(font->get_string_size(tileset->tile_get_name(t_id)));
+				region.set_size(font->get_string_size(String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id)));
 				workspace_overlay->draw_rect(region, c);
 				region.position.y += region.size.y - 2;
 				c = Color(0.1, 0.1, 0.1, tile_names_opacity);
-				workspace_overlay->draw_string(font, region.position, tileset->tile_get_name(t_id), c);
+				workspace_overlay->draw_string(font, region.position, String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id), c);
 			}
 		}
 	}
