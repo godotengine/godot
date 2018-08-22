@@ -169,7 +169,8 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->preview = maxmin;
 	preview->preview->length = len_s;
 
-	preview->thread = Thread::create(_preview_thread, preview);
+	if (preview->playback.is_valid())
+		preview->thread = Thread::create(_preview_thread, preview);
 
 	return preview->preview;
 }
