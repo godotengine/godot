@@ -526,7 +526,7 @@ static double _bicubic_interp_kernel(double x) {
 	return bc;
 }
 
-template <int CC, class T = uint8_t>
+template <int CC, class T>
 static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	// get source image size
@@ -610,7 +610,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 	}
 }
 
-template <int CC, class T = uint8_t>
+template <int CC, class T>
 static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	enum {
@@ -701,7 +701,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	}
 }
 
-template <int CC, class T = uint8_t>
+template <int CC, class T>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
 	for (uint32_t i = 0; i < p_dst_height; i++) {
@@ -817,10 +817,10 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
-					case 1: _scale_nearest<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 2: _scale_nearest<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 3: _scale_nearest<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_nearest<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 1: _scale_nearest<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2: _scale_nearest<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 3: _scale_nearest<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4: _scale_nearest<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 				}
 			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 				switch (get_format_pixel_size(format)) {
@@ -881,10 +881,10 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 				if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 					switch (get_format_pixel_size(format)) {
-						case 1: _scale_bilinear<1>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 2: _scale_bilinear<2>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 3: _scale_bilinear<3>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 4: _scale_bilinear<4>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 1: _scale_bilinear<1, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 2: _scale_bilinear<2, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 3: _scale_bilinear<3, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 4: _scale_bilinear<4, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
 					}
 				} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 					switch (get_format_pixel_size(format)) {
@@ -914,10 +914,10 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
-					case 1: _scale_cubic<1>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 2: _scale_cubic<2>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 3: _scale_cubic<3>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_cubic<4>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 1: _scale_cubic<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2: _scale_cubic<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 3: _scale_cubic<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4: _scale_cubic<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
 				}
 			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 				switch (get_format_pixel_size(format)) {
