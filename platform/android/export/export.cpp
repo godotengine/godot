@@ -1860,6 +1860,9 @@ public:
 		r_features->push_back("Android");
 	}
 
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
+
 	EditorExportAndroid() {
 
 		Ref<Image> img = memnew(Image(_android_logo));

@@ -86,6 +86,9 @@ public:
 		r_features->push_back("OSX");
 	}
 
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
+
 	EditorExportPlatformOSX();
 	~EditorExportPlatformOSX();
 };

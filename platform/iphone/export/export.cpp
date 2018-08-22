@@ -119,6 +119,9 @@ public:
 		r_features->push_back("iOS");
 	}
 
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
+
 	EditorExportPlatformIOS();
 	~EditorExportPlatformIOS();
 };
