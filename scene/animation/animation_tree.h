@@ -55,7 +55,7 @@ public:
 
 	Vector<float> blends;
 	State *state;
-	String path;
+
 	float _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections);
 	void _pre_update_animations(HashMap<NodePath, int> *track_map);
 
@@ -256,6 +256,14 @@ private:
 	HashMap<StringName, HashMap<StringName, StringName> > property_parent_map;
 	HashMap<StringName, Variant> property_map;
 
+	struct Activity {
+		uint64_t last_pass;
+		float activity;
+	};
+
+	HashMap<StringName, Vector<Activity> > input_activity_map;
+	HashMap<StringName, Vector<Activity> *> input_activity_map_get;
+
 	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);
 
 protected:
@@ -289,6 +297,7 @@ public:
 
 	Transform get_root_motion_transform() const;
 
+	float get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(float p_time);
 
 	void rename_parameter(const String &p_base, const String &p_new_base);

@@ -349,7 +349,6 @@ public:
 
 	void connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node);
 	void disconnect_node(const StringName &p_node, int p_input_index);
-	float get_connection_activity(const StringName &p_input_node, int p_input_index) const;
 
 	struct NodeConnection {
 		StringName input_node;

@@ -987,17 +987,6 @@ void AnimationNodeBlendTree::disconnect_node(const StringName &p_node, int p_inp
 	nodes[p_node].connections.write[p_input_index] = StringName();
 }
 
-float AnimationNodeBlendTree::get_connection_activity(const StringName &p_input_node, int p_input_index) const {
-
-	ERR_FAIL_COND_V(!nodes.has(p_input_node), 0);
-
-	Ref<AnimationNode> input = nodes[p_input_node].node;
-	ERR_FAIL_INDEX_V(p_input_index, nodes[p_input_node].connections.size(), 0);
-
-	//return input->get_input_activity(p_input_index);
-	return 0;
-}
-
 AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) const {
 
 	if (!nodes.has(p_output_node) || p_output_node == SceneStringNames::get_singleton()->output) {
