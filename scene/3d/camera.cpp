@@ -867,6 +867,9 @@ void ClippedCamera::_bind_methods() {
 	ADD_GROUP("Clip To", "clip_to");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_areas", "is_clip_to_areas_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_bodies", "is_clip_to_bodies_enabled");
+
+	BIND_ENUM_CONSTANT(CLIP_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(CLIP_PROCESS_IDLE);
 }
 ClippedCamera::ClippedCamera() {
 	margin = 0;
