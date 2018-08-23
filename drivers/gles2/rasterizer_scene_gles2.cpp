@@ -837,7 +837,7 @@ static const GLenum gl_primitive[] = {
 	GL_TRIANGLE_FAN
 };
 
-void RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, Size2i p_skeleton_tex_size) {
+void RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size) {
 
 	// material parameters
 
@@ -849,6 +849,20 @@ void RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		glDisable(GL_DEPTH_TEST);
 	} else {
 		glEnable(GL_DEPTH_TEST);
+	}
+
+	switch (p_material->shader->spatial.depth_draw_mode) {
+		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS:
+		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_OPAQUE: {
+
+			glDepthMask(!p_alpha_pass);
+		} break;
+		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALWAYS: {
+			glDepthMask(GL_TRUE);
+		} break;
+		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_NEVER: {
+			glDepthMask(GL_FALSE);
+		} break;
 	}
 
 	// TODO whyyyyy????
@@ -1432,7 +1446,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		_setup_geometry(e, skeleton);
 
-		_setup_material(material, p_reverse_cull, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
+		_setup_material(material, p_reverse_cull, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
 
 		if (use_radiance_map) {
 			state.scene_shader.set_uniform(SceneShaderGLES2::RADIANCE_INVERSE_XFORM, p_view_transform);
@@ -1568,7 +1582,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			{
 				_setup_geometry(e, skeleton);
 
-				_setup_material(material, p_reverse_cull, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
+				_setup_material(material, p_reverse_cull, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
 				if (shadow_atlas != NULL) {
 					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 					glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
@@ -1757,7 +1771,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			RasterizerStorageGLES2::Skeleton *skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
 
 			{
-				_setup_material(material, p_reverse_cull, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
+				_setup_material(material, p_reverse_cull, false, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
 
 				if (directional_shadow.depth) {
 					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4); // TODO move into base pass
