@@ -164,6 +164,11 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_option, cons
 		if (compress_mode != COMPRESS_LOSSY && compress_mode != COMPRESS_VIDEO_RAM) {
 			return false;
 		}
+	} else if (p_option == "compress/no_bptc_if_rgb" || p_option == "compress/hdr_mode") {
+		int compress_mode = int(p_options["compress/mode"]);
+		if (compress_mode != COMPRESS_VIDEO_RAM) {
+			return false;
+		}
 	}
 
 	return true;
