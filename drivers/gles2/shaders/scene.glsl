@@ -168,7 +168,7 @@ void main() {
 
 #ifdef USE_SKELETON
 
-	highp mat4 bone_transform = mat4(1.0);
+	highp mat4 bone_transform = mat4(0.0);
 
 #ifdef USE_SKELETON_SOFTWARE
 	// passing the transform as attributes
@@ -189,7 +189,7 @@ void main() {
 			              texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
 			              texel2DFetch(bone_transforms, skeleton_texture_size, tex_ofs + ivec2(2, 0)),
 			              vec4(0.0, 0.0, 0.0, 1.0));
-
+			
 			bone_transform += transpose(b) * bone_weights[i];
 		}
 	}
