@@ -32,6 +32,7 @@
 
 #include "hashfuncs.h"
 #include "object.h"
+#include "reduce.h"
 #include "variant.h"
 #include "vector.h"
 
@@ -353,6 +354,18 @@ Variant Array::pop_front() {
 		return ret;
 	}
 	return Variant();
+}
+
+Variant Array::min() {
+	return reduce_variants<Min>(*this, size());
+}
+
+Variant Array::max() {
+	return reduce_variants<Max>(*this, size());
+}
+
+Variant Array::sum() {
+	return reduce_variants<Sum>(*this, size());
 }
 
 Array::Array(const Array &p_from) {
