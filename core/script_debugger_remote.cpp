@@ -188,6 +188,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 		_get_output();
 
+		if (!tcp_client->is_connected_to_host())
+			break;
+
 		if (packet_peer_stream->get_available_packet_count() > 0) {
 
 			Variant var;

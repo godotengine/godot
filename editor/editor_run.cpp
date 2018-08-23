@@ -32,6 +32,9 @@
 
 #include "editor_settings.h"
 #include "project_settings.h"
+#include "script_editor_debugger.h"
+
+#include "plugins/script_editor_plugin.h"
 
 EditorRun::Status EditorRun::get_status() const {
 
@@ -196,7 +199,9 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 void EditorRun::stop() {
 
 	if (status != STATUS_STOP && pid != 0) {
-		const int max_wait_msec = GLOBAL_DEF("editor/stop_max_wait_msec", 10000);
+		ScriptEditor::get_singleton()->get_debugger()->stop();
+
+		const int max_wait_msec = GLOBAL_DEF("editor/stop_max_wait_msec", -1);
 		OS::get_singleton()->kill(pid, max_wait_msec);
 	}
 
