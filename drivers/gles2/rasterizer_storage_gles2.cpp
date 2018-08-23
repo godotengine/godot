@@ -640,6 +640,8 @@ void RasterizerStorageGLES2::texture_set_flags(RID p_texture, uint32_t p_flags) 
 
 	bool had_mipmaps = texture->flags & VS::TEXTURE_FLAG_MIPMAPS;
 
+	texture->flags = p_flags;
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
