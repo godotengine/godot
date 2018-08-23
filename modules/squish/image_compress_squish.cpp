@@ -75,7 +75,7 @@ void image_decompress_squish(Image *p_image) {
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
-void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
+void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
 		return; //do not compress, already compressed
@@ -86,6 +86,12 @@ void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
 	if (p_image->get_format() <= Image::FORMAT_RGBA8) {
 
 		int squish_comp = squish::kColourRangeFit;
+
+		if (p_lossy_quality > 0.85)
+			squish_comp = squish::kColourIterativeClusterFit;
+		else if (p_lossy_quality > 0.75)
+			squish_comp = squish::kColourClusterFit;
+
 		Image::Format target_format = Image::FORMAT_RGBA8;
 
 		Image::DetectChannels dc = p_image->get_detected_channels();

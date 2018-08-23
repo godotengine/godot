@@ -126,7 +126,7 @@ public:
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
 
-	static void (*_image_compress_bc_func)(Image *, CompressSource p_source);
+	static void (*_image_compress_bc_func)(Image *, float, CompressSource p_source);
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, CompressSource p_source);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
@@ -316,7 +316,7 @@ public:
 	Rect2 get_used_rect() const;
 	Ref<Image> get_rect(const Rect2 &p_area) const;
 
-	static void set_compress_bc_func(void (*p_compress_func)(Image *, CompressSource));
+	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, CompressSource));
 	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, CompressSource));
 	static String get_format_name(Format p_format);
 
