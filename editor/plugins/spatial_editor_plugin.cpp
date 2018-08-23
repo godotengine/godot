@@ -5664,7 +5664,7 @@ SpatialEditorPlugin::~SpatialEditorPlugin() {
 
 void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
 
-	Color instanced_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
+	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.5));
 
 	Vector<Ref<SpatialMaterial> > mats;
 
@@ -5706,7 +5706,7 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 
 void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top, const Color &p_albedo) {
 
-	Color instanced_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/instanced");
+	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.5));
 
 	Vector<Ref<SpatialMaterial> > icons;
 
