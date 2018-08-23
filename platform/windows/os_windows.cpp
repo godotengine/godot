@@ -449,12 +449,36 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				input->set_mouse_position(c);
 				mm->set_speed(Vector2(0, 0));
 
-				if (raw->data.mouse.usFlags == 0) {
+				if (raw->data.mouse.usFlags ==MOUSE_MOVE_RELATIVE) {
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
 
-				} else if (raw->data.mouse.usFlags == 1) {
-					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY) - last_absolute_position);
-					last_absolute_position = Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+				} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
+
+					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+					int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+					int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+					int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+					Vector2 abs_pos(
+					 (double(raw->data.mouse.lLastX) -  65536.0 / (nScreenWidth) ) * nScreenWidth / 65536.0 + nScreenLeft,
+					 (double(raw->data.mouse.lLastY) -  65536.0 / (nScreenHeight) ) * nScreenHeight / 65536.0 + nScreenTop
+					);
+
+					POINT coords; //client coords
+					coords.x = abs_pos.x;
+					coords.y = abs_pos.y;
+
+					ScreenToClient(hWnd, &coords);
+
+
+					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y ));
+					old_x = coords.x;
+					old_y = coords.y;
+
+					/*Input.mi.dx = (int)((((double)(pos.x)-nScreenLeft) * 65536) / nScreenWidth + 65536 / (nScreenWidth));
+					Input.mi.dy = (int)((((double)(pos.y)-nScreenTop) * 65536) / nScreenHeight + 65536 / (nScreenHeight));
+					*/
+
 				}
 
 				if (window_has_focus && main_loop)
