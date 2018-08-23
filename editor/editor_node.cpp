@@ -152,7 +152,7 @@ void EditorNode::_update_scene_tabs() {
 
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
-		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
+		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*) " : " "), icon);
 
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_right_button(i, script_icon);
