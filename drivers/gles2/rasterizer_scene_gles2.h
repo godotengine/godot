@@ -563,7 +563,7 @@ public:
 
 	void _draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy);
 
-	void _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, Size2i p_skeleton_tex_size = Size2i(0, 0));
+	void _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
 	void _setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton);
 	void _render_geometry(RenderList::Element *p_element);
 
