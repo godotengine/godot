@@ -24,12 +24,13 @@
 # Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
 # Mauricio Luan Carneiro deSouza <newmailmlcs@gmail.com>, 2018.
+# Emerson Guerra <guerraemerson@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-07-26 09:14+0000\n"
-"Last-Translator: Mauricio Luan Carneiro deSouza <newmailmlcs@gmail.com>\n"
+"PO-Revision-Date: 2018-07-31 19:35+0000\n"
+"Last-Translator: Emerson Guerra <guerraemerson@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.1.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -7465,9 +7466,8 @@ msgid "Warnings"
 msgstr "Avisos"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "View log"
-msgstr "Ver Arquivos"
+msgstr "Ver registro"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

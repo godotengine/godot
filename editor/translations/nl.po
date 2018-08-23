@@ -27,15 +27,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-30 15:36+0000\n"
-"Last-Translator: Tahar Meijs <tntmeijs@gmail.com>\n"
+"PO-Revision-Date: 2018-08-07 22:36+0000\n"
+"Last-Translator: Willem <studiebolmail@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -5602,7 +5602,7 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
+msgstr "Snap Modus:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "<None>"
@@ -5610,11 +5610,11 @@ msgstr "<Geen>"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr ""
+msgstr "Pixel Snap"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr ""
+msgstr "Rooster Snap"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -5979,7 +5979,7 @@ msgstr "Kenmerken"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
-msgstr ""
+msgstr "Aangepast (kommagescheiden):"
 
 #: editor/project_export.cpp
 msgid "Feature List:"
@@ -5999,7 +5999,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
-msgstr ""
+msgstr "Exporteer Met Debug"
 
 #: editor/project_manager.cpp
 msgid "The path does not exist."
@@ -6032,11 +6032,11 @@ msgstr "Er is al een map in dit pad met dezelfde naam."
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
-msgstr ""
+msgstr "Het zou een goed idee zijn om uw project een naam te geven."
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr ""
+msgstr "Ongeldig projectpad (iets veranderd?)."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6046,11 +6046,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Couldn't edit project.godot in project path."
-msgstr ""
+msgstr "Kan project.godot niet bewerken in projectpad."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
-msgstr ""
+msgstr "Kan project.godot niet in projectpad maken."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6063,11 +6063,11 @@ msgstr "Hernoem Functie"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
-msgstr ""
+msgstr "Nieuw spelproject"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr ""
+msgstr "Importeer bestaand project"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6085,7 +6085,7 @@ msgstr "Creëer Node"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
-msgstr ""
+msgstr "Installeer project:"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6094,7 +6094,7 @@ msgstr "Installeer"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
-msgstr ""
+msgstr "Projectnaam:"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6103,15 +6103,15 @@ msgstr "Map Maken"
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
-msgstr ""
+msgstr "Projectpad:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
-msgstr ""
+msgstr "Bladeren"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
-msgstr ""
+msgstr "Naamloos Project"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6120,7 +6120,7 @@ msgstr "Verbind..."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
-msgstr ""
+msgstr "Weet je zeker dat je meer dan één project wilt openen?"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6128,6 +6128,9 @@ msgid ""
 "Please edit the project and set the main scene in \"Project Settings\" under "
 "the \"Application\" category."
 msgstr ""
+"Kan project niet uitvoeren: geen hoofdscène gedefinieerd.\n"
+"Bewerk het project en stel de hoofdscène in bij \"Projectinstellingen\" "
+"onder de categorie \"Toepassing\"."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6137,17 +6140,20 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Are you sure to run more than one project?"
-msgstr ""
+msgstr "Weet je zeker dat je meerdere projecten wilt uitvoeren?"
 
 #: editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr ""
+"Project uit de lijst verwijderen? (Inhoud van map wordt niet gewijzigd)"
 
 #: editor/project_manager.cpp
 msgid ""
 "Language changed.\n"
 "The UI will update next time the editor or project manager starts."
 msgstr ""
+"Taal veranderd. De gebruikersinterface wordt bijgewerkt de volgende keer dat "
+"de editor of projectmanager wordt gestart."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6161,15 +6167,15 @@ msgstr "Project Manager"
 
 #: editor/project_manager.cpp
 msgid "Project List"
-msgstr ""
+msgstr "Projectlijst"
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr ""
+msgstr "Scannen"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
-msgstr ""
+msgstr "Selecteer een map om te scannen"
 
 #: editor/project_manager.cpp
 msgid "New Project"
@@ -6186,7 +6192,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
-msgstr ""
+msgstr "Herstart Nu"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6366,7 +6372,7 @@ msgstr "Verwijder"
 
 #: editor/project_settings_editor.cpp
 msgid "Already existing"
-msgstr ""
+msgstr "Bestaat al"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action"
@@ -6386,11 +6392,11 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Add Translation"
-msgstr ""
+msgstr "Voeg vertaling toe"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Translation"
-msgstr ""
+msgstr "Verwijder vertaling"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Remapped Path"
@@ -6422,7 +6428,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
-msgstr ""
+msgstr "Projectinstellingen (project.godot)"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6458,11 +6464,11 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Translations"
-msgstr ""
+msgstr "Vertalingen"
 
 #: editor/project_settings_editor.cpp
 msgid "Translations:"
-msgstr ""
+msgstr "Vertalingen:"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps"
@@ -6531,7 +6537,7 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "File..."
-msgstr ""
+msgstr "Bestand..."
 
 #: editor/property_editor.cpp
 msgid "Dir..."
@@ -6556,7 +6562,7 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Make Unique"
-msgstr ""
+msgstr "Maak Uniek"
 
 #: editor/property_editor.cpp
 msgid "Show in File System"
@@ -6591,7 +6597,7 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "[Empty]"
-msgstr ""
+msgstr "[Leeg]"
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
@@ -6599,11 +6605,11 @@ msgstr "Zet"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
-msgstr ""
+msgstr "Eigenschappen:"
 
 #: editor/property_selector.cpp
 msgid "Select Property"
-msgstr ""
+msgstr "Selecteer Eigenschap"
 
 #: editor/property_selector.cpp
 msgid "Select Virtual Method"
@@ -6647,7 +6653,7 @@ msgstr ""
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene"
-msgstr ""
+msgstr "Hoofdscène"
 
 #: editor/run_settings_dialog.cpp
 msgid "Main Scene Arguments:"
@@ -6668,7 +6674,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr ""
+msgstr "Fout bij het laden van scène uit %s"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -6710,7 +6716,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
-msgstr ""
+msgstr "Nieuwe Scène Opslaan Als..."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -6726,7 +6732,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Makes Sense!"
-msgstr ""
+msgstr "Klinkt logisch!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"

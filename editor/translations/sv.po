@@ -8,18 +8,19 @@
 # . <grenoscar@gmail.com>, 2018.
 # Kristoffer Grundström <kristoffer.grundstrom1983@gmail.com>, 2018.
 # Magnus Helander <helander@fastmail.net>, 2018.
+# Daniel K <danielkimblad@hotmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-24 12:44+0000\n"
-"Last-Translator: Magnus Helander <helander@fastmail.net>\n"
+"PO-Revision-Date: 2018-08-06 18:43+0000\n"
+"Last-Translator: Daniel K <danielkimblad@hotmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.1.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -2324,9 +2325,8 @@ msgid "Issue Tracker"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Community"
-msgstr "Gemenskap"
+msgstr "Community"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -6785,7 +6785,6 @@ msgid "Project Settings (project.godot)"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "General"
 msgstr "Allmänt"
 

@@ -15,18 +15,19 @@
 # Tohru Ike (rokujyouhitoma) <rokujyouhitomajp@gmail.com>, 2017-2018.
 # yu tang <0011solo@gmail.com>, 2018.
 # zukkun <zukkun@gmail.com>, 2018.
+# sugusan <sugusan.development@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-15 22:40+0000\n"
-"Last-Translator: yu tang <0011solo@gmail.com>\n"
+"PO-Revision-Date: 2018-08-16 08:38+0000\n"
+"Last-Translator: sugusan <sugusan.development@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1839,9 +1840,8 @@ msgid "Save changes to '%s' before closing?"
 msgstr "終了する前に、'%s' への変更を保存しますか？"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save Scene As..."
-msgstr "～の名前でシーンを保存する"
+msgstr "名前を付けてシーンを保存"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -8878,7 +8878,7 @@ msgstr "ARVROriginはARVRCamera子ノードが必要です"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
