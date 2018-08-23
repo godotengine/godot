@@ -353,7 +353,11 @@ void ParticlesEditor::_generate_aabb() {
 		node->set_emitting(false);
 	}
 
-	node->set_visibility_aabb(rect);
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Generate Visibility AABB"));
+	ur->add_do_method(node, "set_visibility_aabb", rect);
+	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());
+	ur->commit_action();
 }
 
 void ParticlesEditor::edit(Particles *p_particles) {
