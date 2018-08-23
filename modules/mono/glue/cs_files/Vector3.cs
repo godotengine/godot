@@ -210,6 +210,11 @@ namespace Godot
             );
         }
 
+        public Vector3 Project(Vector3 onNormal)
+        {
+            return onNormal * (Dot(onNormal) / onNormal.LengthSquared());
+        }
+
         public Vector3 Reflect(Vector3 n)
         {
 #if DEBUG
