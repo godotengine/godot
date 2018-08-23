@@ -124,7 +124,6 @@ void AnimationNodeStateMachinePlayback::start(const StringName &p_state) {
 	start_request_travel = false;
 	start_request = p_state;
 	stop_request = false;
-	print_line("wants start");
 }
 void AnimationNodeStateMachinePlayback::stop() {
 
