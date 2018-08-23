@@ -107,13 +107,16 @@ class EditorPropertyPath : public EditorProperty {
 	bool folder;
 	bool global;
 	EditorFileDialog *dialog;
-	Button *path;
+	LineEdit *path;
+	Button *path_edit;
 
 	void _path_selected(const String &p_path);
 	void _path_pressed();
+	void _path_focus_exited();
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global);
