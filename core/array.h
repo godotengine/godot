@@ -90,6 +90,9 @@ public:
 
 	Array duplicate(bool p_deep = false) const;
 
+	Variant min() const;
+	Variant max() const;
+
 	Array(const Array &p_from);
 	Array();
 	~Array();

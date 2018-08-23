@@ -516,6 +516,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM4R(Array, bsearch_custom);
 	VCALL_LOCALMEM1R(Array, duplicate);
 	VCALL_LOCALMEM0(Array, invert);
+	VCALL_LOCALMEM0R(Array, max);
+	VCALL_LOCALMEM0R(Array, min);
 
 	static void _call_PoolByteArray_get_string_from_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
@@ -1705,6 +1707,8 @@ void register_variant_methods() {
 	ADDFUNC4R(ARRAY, INT, Array, bsearch_custom, NIL, "value", OBJECT, "obj", STRING, "func", BOOL, "before", varray(true));
 	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
 	ADDFUNC1R(ARRAY, ARRAY, Array, duplicate, BOOL, "deep", varray(false));
+	ADDFUNC0R(ARRAY, NIL, Array, max, varray());
+	ADDFUNC0R(ARRAY, NIL, Array, min, varray());
 
 	ADDFUNC0R(POOL_BYTE_ARRAY, INT, PoolByteArray, size, varray());
 	ADDFUNC2(POOL_BYTE_ARRAY, NIL, PoolByteArray, set, INT, "idx", INT, "byte", varray());
