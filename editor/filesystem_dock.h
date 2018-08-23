@@ -87,18 +87,9 @@ private:
 		FILE_NEW_SCRIPT,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH,
-		FILE_NEW_RESOURCE
-	};
-
-	enum FolderMenu {
+		FILE_NEW_RESOURCE,
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
-		FOLDER_MOVE,
-		FOLDER_RENAME,
-		FOLDER_REMOVE,
-		FOLDER_NEW_FOLDER,
-		FOLDER_SHOW_IN_EXPLORER,
-		FOLDER_COPY_PATH
 	};
 
 	VBoxContainer *scanning_vb;
@@ -125,8 +116,8 @@ private:
 	DisplayMode display_mode;
 	bool file_list_view;
 
-	PopupMenu *file_options;
-	PopupMenu *folder_options;
+	PopupMenu *file_list_popup;
+	PopupMenu *tree_popup;
 
 	DependencyEditor *deps_editor;
 	DependencyEditorOwners *owners_editor;
@@ -142,6 +133,10 @@ private:
 	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog_text;
 	CreateDialog *new_resource_dialog;
+
+	bool display_files_in_tree;
+
+	bool always_show_folders;
 
 	class FileOrFolder {
 	public:
@@ -173,10 +168,12 @@ private:
 	ItemList *files;
 	bool import_dock_needs_update;
 
+	Ref<Texture> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
 	void _update_tree(bool keep_collapse_state, bool p_uncollapse_root = false);
 
-	void _files_gui_input(Ref<InputEvent> p_event);
+	void _file_list_gui_input(Ref<InputEvent> p_event);
+	void _tree_gui_input(Ref<InputEvent> p_event);
 
 	void _update_files(bool p_keep_selection);
 	void _update_file_list_display_mode_button();
@@ -186,12 +183,13 @@ private:
 	void _go_to_tree();
 	void _go_to_file_list();
 
-	void _select_file(int p_idx);
+	void _select_file(const String p_path);
+	void _tree_activate_file();
+	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
-	void _update_import_dock();
+	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
-	void _file_selected();
-	void _dir_selected();
+	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
 	void _find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const;
@@ -210,8 +208,9 @@ private:
 	bool _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool overwrite = false);
 
-	void _file_option(int p_option);
-	void _folder_option(int p_option);
+	void _tree_rmb_option(int p_option);
+	void _file_list_rmb_option(int p_option);
+	void _file_option(int p_option, const Vector<String> p_selected);
 
 	void _fw_history();
 	void _bw_history();
@@ -225,9 +224,10 @@ private:
 	void _show_current_scene_file();
 	void _search_changed(const String &p_text);
 
-	void _dir_rmb_pressed(const Vector2 &p_pos);
-	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
-	void _rmb_pressed(const Vector2 &p_pos);
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths);
+	void _tree_rmb_select(const Vector2 &p_pos);
+	void _file_list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _file_list_rmb_pressed(const Vector2 &p_pos);
 
 	struct FileInfo {
 		String name;
@@ -238,7 +238,7 @@ private:
 		bool import_broken;
 
 		bool operator<(const FileInfo &fi) const {
-			return name < fi.name;
+			return NaturalNoCaseComparator()(name, fi.name);
 		}
 	};
 
@@ -253,6 +253,8 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
 
 	void _update_display_mode();
+
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
 
 protected:
 	void _notification(int p_what);
