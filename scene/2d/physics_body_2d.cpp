@@ -35,6 +35,19 @@
 #include "engine.h"
 #include "math_funcs.h"
 #include "scene/scene_string_names.h"
+void PhysicsBody2D::_notification(int p_what) {
+
+	/*
+	switch(p_what) {
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+
+			Physics2DServer::get_singleton()->body_set_state(get_rid(),Physics2DServer::BODY_STATE_TRANSFORM,get_global_transform());
+
+		} break;
+	}
+	*/
+}
 
 void PhysicsBody2D::_set_layers(uint32_t p_mask) {
 
@@ -423,7 +436,7 @@ bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia,
 	Physics2DServer::MotionResult *r = NULL;
 	if (p_result.is_valid())
 		r = p_result->get_result_ptr();
-	return Physics2DServer::get_singleton()->body_test_motion(get_rid(), get_global_transform_with_canvas(), p_motion, p_infinite_inertia, p_margin, r);
+	return Physics2DServer::get_singleton()->body_test_motion(get_rid(), get_global_transform(), p_motion, p_infinite_inertia, p_margin, r);
 }
 
 void RigidBody2D::_direct_state_changed(Object *p_state) {
@@ -436,7 +449,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
 	if (mode != MODE_KINEMATIC)
-		set_global_transform(get_canvas_transform().affine_inverse() * state->get_transform());
+		set_global_transform(state->get_transform());
 	linear_velocity = state->get_linear_velocity();
 	angular_velocity = state->get_angular_velocity();
 	if (sleeping != state->is_sleeping()) {
@@ -1131,7 +1144,7 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 
 	Physics2DServer::SeparationResult sep_res[8]; //max 8 rays
 
-	Transform2D gt = get_global_transform_with_canvas();
+	Transform2D gt = get_global_transform();
 
 	Vector2 recover;
 	int hits = Physics2DServer::get_singleton()->body_test_ray_separation(get_rid(), gt, p_infinite_inertia, recover, sep_res, 8, margin);
@@ -1145,7 +1158,7 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 	}
 
 	gt.elements[2] += recover;
-	set_global_transform(get_canvas_transform().affine_inverse() * gt);
+	set_global_transform(gt);
 
 	if (deepest != -1) {
 		r_collision.collider = sep_res[deepest].collider_id;
@@ -1166,7 +1179,7 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 
 bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
 
-	Transform2D gt = get_global_transform_with_canvas();
+	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
 	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &result, p_exclude_raycast_shapes);
 
@@ -1185,7 +1198,7 @@ bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_
 
 	if (!p_test_only) {
 		gt.elements[2] += result.motion;
-		set_global_transform(get_canvas_transform().affine_inverse() * gt);
+		set_global_transform(gt);
 	}
 
 	return colliding;
@@ -1259,9 +1272,9 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 
 						if (p_stop_on_slope) {
 							if (Vector2() == lv_n + p_floor_direction) {
-								Transform2D gt = get_global_transform_with_canvas();
+								Transform2D gt = get_global_transform();
 								gt.elements[2] -= collision.travel;
-								set_global_transform(get_canvas_transform().affine_inverse() * gt);
+								set_global_transform(gt);
 								return Vector2();
 							}
 						}
@@ -1310,7 +1323,7 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 	}
 
 	Collision col;
-	Transform2D gt = get_global_transform_with_canvas();
+	Transform2D gt = get_global_transform();
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
 		gt.elements[2] += col.travel;
@@ -1319,7 +1332,7 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 			on_floor_body = col.collider_rid;
 			floor_velocity = col.collider_vel;
 		}
-		set_global_transform(get_canvas_transform().affine_inverse() * gt);
+		set_global_transform(gt);
 	}
 
 	return ret;
@@ -1416,22 +1429,22 @@ void KinematicBody2D::_direct_state_changed(Object *p_state) {
 
 	last_valid_transform = state->get_transform();
 	set_notify_local_transform(false);
-	set_global_transform(get_canvas_transform().affine_inverse() * last_valid_transform);
+	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
 }
 
 void KinematicBody2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		last_valid_transform = get_global_transform_with_canvas();
+		last_valid_transform = get_global_transform();
 	}
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		//used by sync to physics, send the new transform to the physics
-		Transform2D new_transform = get_global_transform_with_canvas();
+		Transform2D new_transform = get_global_transform();
 		Physics2DServer::get_singleton()->body_set_state(get_rid(), Physics2DServer::BODY_STATE_TRANSFORM, new_transform);
 		//but then revert changes
 		set_notify_local_transform(false);
-		set_global_transform(get_canvas_transform().affine_inverse() * last_valid_transform);
+		set_global_transform(last_valid_transform);
 		set_notify_local_transform(true);
 	}
 }

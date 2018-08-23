@@ -49,6 +49,7 @@ class PhysicsBody2D : public CollisionObject2D {
 	uint32_t _get_layers() const;
 
 protected:
+	void _notification(int p_what);
 	PhysicsBody2D(Physics2DServer::BodyMode p_mode);
 
 	static void _bind_methods();

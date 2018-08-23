@@ -56,7 +56,6 @@ class CanvasLayer : public Node {
 	int sort_index;
 
 	void _update_xform();
-	void _notify_xform(Node *p_node);
 	void _update_locrotscale();
 
 protected:

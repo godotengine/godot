@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "canvas_layer.h"
-#include "scene/2d/canvas_item.h"
 #include "viewport.h"
 
 void CanvasLayer::set_layer(int p_xform) {
@@ -63,24 +62,6 @@ void CanvasLayer::_update_xform() {
 	transform.set_origin(ofs);
 	if (viewport.is_valid())
 		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
-
-	if (!is_inside_tree())
-		return;
-
-	_notify_xform(this);
-}
-
-void CanvasLayer::_notify_xform(Node *p_node) {
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-
-		CanvasItem *ci = Object::cast_to<CanvasItem>(p_node->get_child(i));
-		if (ci) {
-			ci->_notify_transform(ci);
-		} else {
-			_notify_xform(p_node->get_child(i));
-		}
-	}
 }
 
 void CanvasLayer::_update_locrotscale() {

@@ -38,7 +38,7 @@ void CollisionObject2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
-			Transform2D global_transform = get_global_transform_with_canvas();
+			Transform2D global_transform = get_global_transform();
 
 			if (area)
 				Physics2DServer::get_singleton()->area_set_transform(rid, global_transform);
@@ -64,7 +64,7 @@ void CollisionObject2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			Transform2D global_transform = get_global_transform_with_canvas();
+			Transform2D global_transform = get_global_transform();
 
 			if (only_update_transform_changes && global_transform == last_transform) {
 				return;
