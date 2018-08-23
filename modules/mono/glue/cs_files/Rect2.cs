@@ -29,6 +29,7 @@ namespace Godot
         public Vector2 End
         {
             get { return _position + _size; }
+            set { _size = value - _position; }
         }
 
         public real_t Area
