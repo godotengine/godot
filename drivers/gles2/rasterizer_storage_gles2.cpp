@@ -1307,6 +1307,10 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 				pi.hint_string = "CubeMap";
 			} break;
+
+			default: {
+
+			} break;
 		}
 
 		p_param_list->push_back(pi);
