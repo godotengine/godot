@@ -16,11 +16,13 @@
 # Rached Noureddine <rached.noureddine@gmail.com>, 2018.
 # Rex_sa <asd1234567890m@gmail.com>, 2017, 2018.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
+# Omar Aglan <omar.aglan91@yahoo.com>, 2018.
+# Codes Otaku <ilyas.gamerz@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-15 19:34+0000\n"
-"Last-Translator: Rached Noureddine <rached.noureddine@gmail.com>\n"
+"PO-Revision-Date: 2018-08-13 14:34+0000\n"
+"Last-Translator: Codes Otaku <ilyas.gamerz@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -28,7 +30,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -518,7 +520,7 @@ msgstr "قطع الاتصال"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "الإشارات"
+msgstr "إشارات"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -598,7 +600,7 @@ msgstr "مورد"
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Path"
-msgstr "مسار"
+msgstr "المسار"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
@@ -766,7 +768,7 @@ msgstr "مانحين"
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr "الترخيص"
+msgstr "الرخصة"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
@@ -811,7 +813,7 @@ msgstr "الحزمة تم تثبيتها بنجاح!"
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr "تم بنجاح!"
+msgstr "تم بشكل ناجح!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -901,7 +903,7 @@ msgstr "إمسح التأثير"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr "صوت"
+msgstr "الصوت"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -1846,7 +1848,7 @@ msgstr "تمكين/إيقاف الوضع الخالي من الإلهاء."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr "أضف مشهد جديد"
+msgstr "إضافة مشهد جديد"
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -1956,11 +1958,11 @@ msgstr "غادر الي قائمه المشاريع"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Debug"
-msgstr "تصحيح"
+msgstr "تصحيح الأخطاء"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr "نشر مع التصحيح البعيد"
+msgstr "نشر مع تصحيح الأخطاء عن بعد"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1968,7 +1970,7 @@ msgid ""
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
 "حينما يتم التصدير أو النشر، ملف التشغيل الناتج سوف يحاول الإتصال إلي عنوان "
-"الأي بي الخاص بهذا الكمبيوتر من أجل التصحيح."
+"الأي بي الخاص بهذا الكمبيوتر من أجل تصحيح الأخطاء."
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
@@ -1991,7 +1993,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr "أشكال الإصطدام الظاهرة"
+msgstr "أشكال إصطدام ظاهرة"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2013,7 +2015,7 @@ msgstr "ميشات التنقل والبوليجين سوف يكونون ظاه�
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "مزامنة تغيير المشهد"
+msgstr "مزامنة تغييرات المشهد"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3409,8 +3411,9 @@ msgid "Official"
 msgstr "رسمياً"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Testing"
-msgstr "تجربة"
+msgstr "تجريب"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -4001,8 +4004,9 @@ msgid "Create Outline"
 msgstr "أنشئ الحد"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
 msgid "Mesh"
-msgstr "الميش"
+msgstr "شبكة"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"

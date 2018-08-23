@@ -6,11 +6,12 @@
 # Filip <filipanton@tutanota.com>, 2018.
 # Nitroretro <nitroretro@protonmail.com>, 2018.
 # TigerxWood <TigerxWood@gmail.com>, 2018.
+# Grigore Antoniuc <grisa181@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-20 20:43+0000\n"
-"Last-Translator: Calin Sopterean <csopterean@gmail.com>\n"
+"PO-Revision-Date: 2018-08-05 00:52+0000\n"
+"Last-Translator: Grigore Antoniuc <grisa181@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.1.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -156,7 +157,7 @@ msgstr "Linear"
 
 #: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr "Constant"
+msgstr "Permanent"
 
 #: editor/animation_editor.cpp
 msgid "In"
@@ -288,7 +289,7 @@ msgstr "Activați editarea de chei individuale prin clic."
 
 #: editor/animation_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Anim. Optimizator"
+msgstr "Optimizator de animație"
 
 #: editor/animation_editor.cpp
 msgid "Max. Linear Error:"
@@ -465,7 +466,7 @@ msgstr "Amânat(ă)"
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr "Oneshot"
+msgstr "Tragere unică"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp
@@ -1057,7 +1058,7 @@ msgstr "Nume"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr "Singleton"
+msgstr "Singleton (Unicat)"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
@@ -3108,7 +3109,7 @@ msgstr "Forțează Modulare Albă"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr "Include Gizmos (3D)"
+msgstr "Include Gizmo-uri (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -3169,7 +3170,7 @@ msgstr "Amestec"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Mix"
-msgstr "Mix"
+msgstr "Amestecare"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 msgid "Auto Restart:"
@@ -4145,15 +4146,15 @@ msgstr "Axa-Z"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh Up Axis:"
-msgstr ""
+msgstr "Axă plasă sus:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Rotation:"
-msgstr ""
+msgstr "Rotație aleatorie:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Tilt:"
-msgstr ""
+msgstr "Înclinare aleatorie:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Random Scale:"
@@ -4161,11 +4162,11 @@ msgstr "Dimensiune Aleatorie:"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Populate"
-msgstr ""
+msgstr "Populare"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake!"
-msgstr ""
+msgstr "Coacere!"
 
 #: editor/plugins/navigation_mesh_editor_plugin.cpp
 msgid "Bake the navigation mesh."
@@ -4177,39 +4178,39 @@ msgstr "Curăță mesh-ul de navigare."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Setting up Configuration..."
-msgstr ""
+msgstr "Inițializarea configurației..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Calculating grid size..."
-msgstr ""
+msgstr "Calcularea mărimii grilei..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
-msgstr ""
+msgstr "Crearea câmpului de înălțare..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
-msgstr ""
+msgstr "Marcarea triunghiurilor traversabile..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
-msgstr ""
+msgstr "Construcție câmp de înălțare compact..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
-msgstr ""
+msgstr "Reducerea zonei traversabile..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Partitioning..."
-msgstr ""
+msgstr "Partiționare..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating contours..."
-msgstr ""
+msgstr "Crearea conturilor..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Creating polymesh..."
-msgstr ""
+msgstr "Crearea plasei de contur..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Converting to native navigation mesh..."
@@ -4221,40 +4222,42 @@ msgstr "Setup Generare Mesh de Navigare:"
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Parsing Geometry..."
-msgstr ""
+msgstr "Analiza geometriei..."
 
 #: editor/plugins/navigation_mesh_generator.cpp
 msgid "Done!"
-msgstr ""
+msgstr "Efectuat!"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
-msgstr ""
+msgstr "Creare Poligon de Navigare"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
-msgstr ""
+msgstr "Generare AABB"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
+"Definirea unui punct este posibilă doar într-un material de proces "
+"ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr ""
+msgstr "Eroare la încărcarea imaginii:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr ""
+msgstr "Nici un pixel cu transparența > 128 în imagine..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
-msgstr ""
+msgstr "Generare Dreptunghi de Vizibilitate"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr ""
+msgstr "Încărcare Mască de Emisie"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
@@ -4263,52 +4266,52 @@ msgstr "Curăță Masca de Emisie"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Particles"
-msgstr ""
+msgstr "Particule"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
-msgstr ""
+msgstr "Număr de Puncte Generate:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
-msgstr ""
+msgstr "Timp de Generare (sec):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr ""
+msgstr "Mască de Emisie"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
-msgstr ""
+msgstr "Capturare din Pixel"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr ""
+msgstr "Culori de Emisie"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
-msgstr ""
+msgstr "Nodul nu conține geometrie."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
-msgstr ""
+msgstr "Nodul nu conține geometrie (fețe)."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr ""
+msgstr "Este necesar un material procesor de tip 'ParticlesMaterial'."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
-msgstr ""
+msgstr "Unele fețe nu conțin zonă!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "No faces!"
-msgstr ""
+msgstr "Nici o zonă!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate AABB"
-msgstr ""
+msgstr "Generare AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Mesh"
@@ -4316,164 +4319,164 @@ msgstr "Creează Puncte de Emisie Din Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emission Points From Node"
-msgstr ""
+msgstr "Creare Puncte de Emisie din Nod"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
-msgstr ""
+msgstr "Creare Emițător"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Points:"
-msgstr ""
+msgstr "Puncte de Emisie:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points"
-msgstr ""
+msgstr "Puncte de suprafață"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points+Normal (Directed)"
-msgstr ""
+msgstr "Puncte de suprafață+Normală (Dirijat)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
-msgstr ""
+msgstr "Volum"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
-msgstr ""
+msgstr "Sursă de Emisie: "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
-msgstr ""
+msgstr "Generare Vizibilitate AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
-msgstr ""
+msgstr "Ștergere Punt din Curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Out-Control from Curve"
-msgstr ""
+msgstr "Eliminare Out-Control de pe Curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove In-Control from Curve"
-msgstr ""
+msgstr "Eliminare In-Control de pe Curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point to Curve"
-msgstr ""
+msgstr "Adăugare punct pe curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
-msgstr ""
+msgstr "Deplasare punct pe curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
-msgstr ""
+msgstr "Deplasare In-Control pe curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Out-Control in Curve"
-msgstr ""
+msgstr "Deplasare Out-Control pe curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Select Points"
-msgstr ""
+msgstr "Selectare puncte"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Shift+Drag: Select Control Points"
-msgstr ""
+msgstr "Shift+Trage: Selectare puncte de control"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Click: Add Point"
-msgstr ""
+msgstr "Click: Adăugare punct"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
-msgstr ""
+msgstr "Click Drept: Ștergere punct"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
-msgstr ""
+msgstr "Selectare puncte de control (Shift+Tragere)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
-msgstr ""
+msgstr "Adăugare punct (într-un spațiu gol)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Segment (in curve)"
-msgstr ""
+msgstr "Divizare segment (pe curbă)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Delete Point"
-msgstr ""
+msgstr "Stergere punct"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Close Curve"
-msgstr ""
+msgstr "Închidere curbă"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
-msgstr ""
+msgstr "Punct de curbă #"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Point Position"
-msgstr ""
+msgstr "Setare poziție punct de curbă"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve In Position"
-msgstr ""
+msgstr "Setare poziție de intrare a curbei"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Set Curve Out Position"
-msgstr ""
+msgstr "Setare poziție de ieșire a curbei"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Path"
-msgstr ""
+msgstr "Divizare cale"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove Path Point"
-msgstr ""
+msgstr "Ștergere punct cale"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove Out-Control Point"
-msgstr ""
+msgstr "Ștergere punct de Control-Ieșire"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Remove In-Control Point"
-msgstr ""
+msgstr "Ștergere punct de Control-Intrare"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
-msgstr ""
+msgstr "Creare hartă UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
-msgstr ""
+msgstr "Transformare hartă UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr ""
+msgstr "Editor UV de poligoane 2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Point"
-msgstr ""
+msgstr "Deplasare punct"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
-msgstr ""
+msgstr "Ctrl: Rotație"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
-msgstr ""
+msgstr "Shift: Deplasați tot"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -4481,11 +4484,11 @@ msgstr "Shift+Ctrl: Dimensiune"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Polygon"
-msgstr ""
+msgstr "Deplasare poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Rotate Polygon"
-msgstr ""
+msgstr "Rotație poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Scale Polygon"
@@ -4497,63 +4500,63 @@ msgstr "Redimensionează Poligon"
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Modificare"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
-msgstr ""
+msgstr "Poligon->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV->Polygon"
-msgstr ""
+msgstr "UV->Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
-msgstr "Curăță UV"
+msgstr "Ștergere UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
-msgstr "Snap"
+msgstr "Aliniere"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr "Activează Snap"
+msgstr "Activează aliniere"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
-msgstr ""
+msgstr "Grilă"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr ""
+msgstr "EROARE: Resursă imposibil de încărcat !"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
-msgstr ""
+msgstr "Adăugare resursă"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Rename Resource"
-msgstr ""
+msgstr "Re-numire resursă"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Resource"
-msgstr ""
+msgstr "Ștergere resursă"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Resource clipboard is empty!"
-msgstr ""
+msgstr "Clip-board de resurse gol !"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr ""
+msgstr "Deschidere în Editor"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr ""
+msgstr "Instanță :"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
@@ -5230,7 +5233,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Doppler Enable"
-msgstr ""
+msgstr "Activare mod Doppler"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -5562,7 +5565,7 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr "Pixel Snap"
+msgstr "Conectare prin pixeli"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
@@ -7234,7 +7237,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
-msgstr ""
+msgstr "Planul următor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Previous Plane"
@@ -7401,9 +7404,8 @@ msgid "Warnings"
 msgstr ""
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "View log"
-msgstr "Vizualizează Fișierele"
+msgstr "Vizualizează fișiere log"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

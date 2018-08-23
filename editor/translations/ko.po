@@ -10,12 +10,13 @@
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
 # 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
 # 송태섭 <xotjq237@gmail.com>, 2018.
+# JY <yimjisoo@mailfence.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-07-21 04:38+0000\n"
-"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
+"PO-Revision-Date: 2018-08-21 00:40+0000\n"
+"Last-Translator: JY <yimjisoo@mailfence.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -7413,9 +7414,8 @@ msgid "Warnings"
 msgstr "경고"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "View log"
-msgstr "파일 보기"
+msgstr "기록 보기"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

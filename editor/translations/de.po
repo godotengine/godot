@@ -30,12 +30,13 @@
 # Arndt Heuvel <codeforpb@schatzkarten.net>, 2018.
 # Gordon <gkone@gmx.net>, 2018.
 # chillhelm <wilhelm@neubert.online>, 2018.
+# Mathias Schmalisch <mathias.schmalisch@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-07-05 12:38+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2018-08-14 08:38+0000\n"
+"Last-Translator: Mathias Schmalisch <mathias.schmalisch@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -4049,7 +4050,7 @@ msgstr "Mesh hat keine Oberfläche von der Umrisse erzeugt werden könnten!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
-msgstr "Der Mesh-Grundtyp ist nicht ist nicht PRIMITIVE_TRIANGLES!"
+msgstr "Der Mesh-Grundtyp ist nicht PRIMITIVE_TRIANGLES!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -6743,11 +6744,11 @@ msgstr "Verstehe!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr "Kann nicht an Nodes von fremden Szenen arbeiten!"
+msgstr "Bearbeiten von Nodes einer fremden Szene ist nicht möglich!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
-msgstr "Kann nicht an Nodes von denen die aktuelle Szene erbt arbeiten!"
+msgstr "Kann Nodes, von denen die aktuelle Szene erbt, nicht bearbeiten!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -7493,9 +7494,8 @@ msgid "Warnings"
 msgstr "Warnungen"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "View log"
-msgstr "Dateien anzeigen"
+msgstr "Log anschauen"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"

@@ -5,18 +5,19 @@
 # Sam Vanguard <syafz119@gmail.com>, 2018.
 # Shaqir Rafiq <moshamoradev@gmail.com>, 2018.
 # Syaz Amirin <amirin123z@gmail.com>, 2018.
+# Nafis Ibrahim <thepreciousnafis@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-30 09:40+0000\n"
-"Last-Translator: Syaz Amirin <amirin123z@gmail.com>\n"
+"PO-Revision-Date: 2018-07-29 03:39+0000\n"
+"Last-Translator: Nafis Ibrahim <thepreciousnafis@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.1.1\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -747,7 +748,7 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "License"
-msgstr ""
+msgstr "Lesen"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
