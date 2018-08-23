@@ -172,8 +172,8 @@ static const LoadingScreenInfo loading_screen_infos[] = {
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
 
@@ -193,18 +193,18 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPhone/iPod Touch with retina display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_76x76", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPad
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "png"), "")); // App Store
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_76x76", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "*.png"), "")); // App Store
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPhone with retina HD display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_152x152", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPad with retina display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_167x167", PROPERTY_HINT_FILE, "png"), "")); // Home screen on iPad Pro
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "png"), "")); // Spotlight
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "png"), "")); // Spotlight on devices with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with retina HD display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_152x152", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_167x167", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad Pro
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
 
 	for (int i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "png"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
 	}
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), false));

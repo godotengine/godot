@@ -1088,8 +1088,8 @@ public:
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "apk"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
@@ -1104,10 +1104,10 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
 
 		for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icons[i].option_id, PROPERTY_HINT_FILE, "png"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icons[i].option_id, PROPERTY_HINT_FILE, "*.png"), ""));
 		}
 
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release", PROPERTY_HINT_GLOBAL_FILE, "keystore"), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release", PROPERTY_HINT_GLOBAL_FILE, "*.keystore"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_user"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "keystore/release_password"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "apk_expansion/enable"), false));
@@ -1899,7 +1899,7 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/jarsigner", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/jarsigner", PROPERTY_HINT_GLOBAL_FILE, exe_ext));
 	EDITOR_DEF("export/android/debug_keystore", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "keystore"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore", PROPERTY_HINT_GLOBAL_FILE, "*.keystore"));
 	EDITOR_DEF("export/android/debug_keystore_user", "androiddebugkey");
 	EDITOR_DEF("export/android/debug_keystore_pass", "android");
 	EDITOR_DEF("export/android/force_system_user", false);
