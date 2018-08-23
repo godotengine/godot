@@ -2382,11 +2382,9 @@ TileSetEditorPlugin::TileSetEditorPlugin(EditorNode *p_node) {
 	editor = p_node;
 	tileset_editor = memnew(TileSetEditor(p_node));
 
-	tileset_editor_button =
-			p_node->add_bottom_panel_item(TTR("Tile Set"), tileset_editor);
-	tileset_editor_button->set_tooltip(TTR("Tile Set Editor"));
-
 	tileset_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	tileset_editor->hide();
+
+	tileset_editor_button = p_node->add_bottom_panel_item(TTR("Tile Set"), tileset_editor);
 	tileset_editor_button->hide();
 }

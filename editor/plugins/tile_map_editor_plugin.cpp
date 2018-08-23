@@ -1909,6 +1909,21 @@ TileMapEditor::~TileMapEditor() {
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
+void TileMapEditorPlugin::_notification(int p_what) {
+
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		switch ((int)EditorSettings::get_singleton()->get("editors/tile_map/editor_side")) {
+			case 0: { // Left.
+				CanvasItemEditor::get_singleton()->get_palette_split()->move_child(tile_map_editor, 0);
+			} break;
+			case 1: { // Right.
+				CanvasItemEditor::get_singleton()->get_palette_split()->move_child(tile_map_editor, 1);
+			} break;
+		}
+	}
+}
+
 void TileMapEditorPlugin::edit(Object *p_object) {
 
 	tile_map_editor->edit(Object::cast_to<Node>(p_object));
@@ -1942,11 +1957,19 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true);
 	EDITOR_DEF("editors/tile_map/bucket_fill_preview", true);
 	EDITOR_DEF("editors/tile_map/show_tile_info_on_hover", true);
+	EDITOR_DEF("editors/tile_map/editor_side", 1);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/tile_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
 	tile_map_editor = memnew(TileMapEditor(p_node));
-	add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE, tile_map_editor);
+	switch ((int)EditorSettings::get_singleton()->get("editors/tile_map/editor_side")) {
+		case 0: { // Left.
+			add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_LEFT, tile_map_editor);
+		} break;
+		case 1: { // Right.
+			add_control_to_container(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT, tile_map_editor);
+		} break;
+	}
 	tile_map_editor->hide();
-	tile_map_editor->set_process(true);
 }
 
 TileMapEditorPlugin::~TileMapEditorPlugin() {

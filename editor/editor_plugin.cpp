@@ -353,10 +353,16 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_SPATIAL_EDITOR_SIDE: {
+		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
 
 			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
+
+		} break;
+		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
+
+			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
@@ -369,10 +375,16 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			CanvasItemEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_CANVAS_EDITOR_SIDE: {
+		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
 
 			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
+
+		} break;
+		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
+
+			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
@@ -403,7 +415,8 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			SpatialEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_SPATIAL_EDITOR_SIDE: {
+		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT:
+		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
 
 			SpatialEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
@@ -418,7 +431,8 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			CanvasItemEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_CANVAS_EDITOR_SIDE: {
+		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT:
+		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
 
 			CanvasItemEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
@@ -785,10 +799,12 @@ void EditorPlugin::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_MENU);
-	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_SIDE);
+	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT);
+	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_MENU);
-	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE);
+	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_LEFT);
+	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_PROPERTY_EDITOR_BOTTOM);
 

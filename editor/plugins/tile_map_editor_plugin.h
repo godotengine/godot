@@ -220,6 +220,9 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 	TileMapEditor *tile_map_editor;
 
+protected:
+	void _notification(int p_what);
+
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }
 	virtual void forward_draw_over_viewport(Control *p_overlay) { tile_map_editor->forward_draw_over_viewport(p_overlay); }
