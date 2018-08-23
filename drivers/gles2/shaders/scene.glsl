@@ -262,7 +262,12 @@ VERTEX_SHADER_CODE
 }
 
 [fragment]
-#extension GL_ARB_shader_texture_lod : require
+#extension GL_ARB_shader_texture_lod : enable
+
+#ifndef GL_ARB_shader_texture_lod
+#define texture2DLod(img, coord, lod) texture2D(img, coord)
+#define textureCubeLod(img, coord, lod) textureCube(img, coord)
+#endif
 
 #ifdef USE_GLES_OVER_GL
 #define mediump
