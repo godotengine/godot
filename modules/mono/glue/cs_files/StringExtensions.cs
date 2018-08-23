@@ -1,5 +1,3 @@
-//using System;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -583,7 +581,7 @@ namespace Godot
         // </summary>
         public static byte[] Md5Buffer(this string instance)
         {
-			return NativeCalls.godot_icall_String_md5_buffer(instance);
+            return NativeCalls.godot_icall_String_md5_buffer(instance);
         }
 
         // <summary>
@@ -591,7 +589,7 @@ namespace Godot
         // </summary>
         public static string Md5Text(this string instance)
         {
-			return NativeCalls.godot_icall_String_md5_text(instance);
+            return NativeCalls.godot_icall_String_md5_text(instance);
         }
 
         // <summary>
@@ -750,7 +748,7 @@ namespace Godot
         // </summary>
         public static int Rfind(this string instance, string what, int from = -1)
         {
-			return NativeCalls.godot_icall_String_rfind(instance, what, from);
+            return NativeCalls.godot_icall_String_rfind(instance, what, from);
         }
 
         // <summary>
@@ -758,7 +756,7 @@ namespace Godot
         // </summary>
         public static int Rfindn(this string instance, string what, int from = -1)
         {
-			return NativeCalls.godot_icall_String_rfindn(instance, what, from);
+            return NativeCalls.godot_icall_String_rfindn(instance, what, from);
         }
 
         // <summary>
@@ -777,7 +775,7 @@ namespace Godot
 
         public static byte[] Sha256Buffer(this string instance)
         {
-			return NativeCalls.godot_icall_String_sha256_buffer(instance);
+            return NativeCalls.godot_icall_String_sha256_buffer(instance);
         }
 
         // <summary>
@@ -785,7 +783,7 @@ namespace Godot
         // </summary>
         public static string Sha256Text(this string instance)
         {
-			return NativeCalls.godot_icall_String_sha256_text(instance);
+            return NativeCalls.godot_icall_String_sha256_text(instance);
         }
 
         // <summary>
