@@ -54,6 +54,8 @@ msgstr ""
 
 def process_file(f, fname):
 
+    global main_po, unique_str, unique_loc
+
     l = f.readline()
     lc = 1
     while (l):
