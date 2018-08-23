@@ -1666,7 +1666,7 @@ ProxyTexture::~ProxyTexture() {
 
 void AnimatedTexture::_update_proxy() {
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	float delta;
 	if (prev_ticks == 0) {
@@ -1712,7 +1712,7 @@ void AnimatedTexture::_update_proxy() {
 void AnimatedTexture::set_frames(int p_frames) {
 	ERR_FAIL_COND(p_frames < 1 || p_frames > MAX_FRAMES);
 
-	_THREAD_SAFE_METHOD_
+	RWLockWrite r(rw_lock);
 
 	frame_count = p_frames;
 }
@@ -1723,14 +1723,14 @@ int AnimatedTexture::get_frames() const {
 void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture> &p_texture) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	_THREAD_SAFE_METHOD_
+	RWLockWrite w(rw_lock);
 
 	frames[p_frame].texture = p_texture;
 }
 Ref<Texture> AnimatedTexture::get_frame_texture(int p_frame) const {
 	ERR_FAIL_INDEX_V(p_frame, MAX_FRAMES, Ref<Texture>());
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	return frames[p_frame].texture;
 }
@@ -1738,14 +1738,14 @@ Ref<Texture> AnimatedTexture::get_frame_texture(int p_frame) const {
 void AnimatedTexture::set_frame_delay(int p_frame, float p_delay_sec) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	frames[p_frame].delay_sec = p_delay_sec;
 }
 float AnimatedTexture::get_frame_delay(int p_frame) const {
 	ERR_FAIL_INDEX_V(p_frame, MAX_FRAMES, 0);
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	return frames[p_frame].delay_sec;
 }
@@ -1760,8 +1760,7 @@ float AnimatedTexture::get_fps() const {
 }
 
 int AnimatedTexture::get_width() const {
-
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
 		return 1;
@@ -1770,8 +1769,7 @@ int AnimatedTexture::get_width() const {
 	return frames[current_frame].texture->get_width();
 }
 int AnimatedTexture::get_height() const {
-
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
 		return 1;
@@ -1785,7 +1783,7 @@ RID AnimatedTexture::get_rid() const {
 
 bool AnimatedTexture::has_alpha() const {
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
 		return false;
@@ -1796,7 +1794,7 @@ bool AnimatedTexture::has_alpha() const {
 
 Ref<Image> AnimatedTexture::get_data() const {
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
 		return Ref<Image>();
@@ -1809,7 +1807,7 @@ void AnimatedTexture::set_flags(uint32_t p_flags) {
 }
 uint32_t AnimatedTexture::get_flags() const {
 
-	_THREAD_SAFE_METHOD_
+	RWLockRead r(rw_lock);
 
 	if (!frames[current_frame].texture.is_valid()) {
 		return 0;
@@ -1862,10 +1860,19 @@ AnimatedTexture::AnimatedTexture() {
 	prev_ticks = 0;
 	current_frame = 0;
 	VisualServer::get_singleton()->connect("frame_pre_draw", this, "_update_proxy");
+
+#ifndef NO_THREADS
+	rw_lock = RWLock::create();
+#else
+	rw_lock = NULL;
+#endif
 }
 
 AnimatedTexture::~AnimatedTexture() {
 	VS::get_singleton()->free(proxy);
+	if (rw_lock) {
+		memdelete(rw_lock);
+	}
 }
 ///////////////////////////////
 

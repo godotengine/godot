@@ -34,6 +34,7 @@
 #include "curve.h"
 #include "io/resource_loader.h"
 #include "os/mutex.h"
+#include "os/rw_lock.h"
 #include "os/thread_safe.h"
 #include "rect2.h"
 #include "resource.h"
@@ -609,7 +610,8 @@ public:
 class AnimatedTexture : public Texture {
 	GDCLASS(AnimatedTexture, Texture)
 
-	_THREAD_SAFE_CLASS_
+	//use readers writers lock for this, since its far more times read than written to
+	RWLock *rw_lock;
 
 private:
 	enum {
