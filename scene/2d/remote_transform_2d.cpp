@@ -131,8 +131,10 @@ void RemoteTransform2D::_notification(int p_what) {
 void RemoteTransform2D::set_remote_node(const NodePath &p_remote_node) {
 
 	remote_node = p_remote_node;
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_update_cache();
+		_update_remote();
+	}
 
 	update_configuration_warning();
 }
@@ -144,6 +146,7 @@ NodePath RemoteTransform2D::get_remote_node() const {
 
 void RemoteTransform2D::set_use_global_coordinates(const bool p_enable) {
 	use_global_coordinates = p_enable;
+	_update_remote();
 }
 
 bool RemoteTransform2D::get_use_global_coordinates() const {
