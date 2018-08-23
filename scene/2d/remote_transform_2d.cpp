@@ -67,7 +67,7 @@ void RemoteTransform2D::_update_remote() {
 		} else {
 			Transform2D n_trans = n->get_global_transform();
 			Transform2D our_trans = get_global_transform();
-			Vector2 n_scale = n->get_global_scale();
+			Vector2 n_scale = n->get_scale();
 
 			if (!update_remote_position)
 				our_trans.set_origin(n_trans.get_origin());
