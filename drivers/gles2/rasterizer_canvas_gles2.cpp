@@ -152,7 +152,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 			state.current_tex = RID();
 			state.current_tex_ptr = NULL;
 
-			glActiveTexture(GL_TEXTURE0);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 			glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 		} else {
@@ -167,7 +167,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 				texture->render_target->used_in_frame = true;
 			}
 
-			glActiveTexture(GL_TEXTURE0);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 			glBindTexture(GL_TEXTURE_2D, texture->tex_id);
 
 			state.current_tex = p_texture;
@@ -179,7 +179,7 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 		state.current_tex = RID();
 		state.current_tex_ptr = NULL;
 
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 		glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 	}
 
@@ -889,7 +889,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 				for (int i = 0; i < tc; i++) {
 
-					glActiveTexture(GL_TEXTURE2 + i);
+					glActiveTexture(GL_TEXTURE0 + i);
 
 					RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(textures[i].second);
 
@@ -1027,8 +1027,8 @@ void RasterizerCanvasGLES2::reset_canvas() {
 	// keeping this for now as there's nothing else that uses texture unit 2
 	// TODO ^
 	if (storage->frame.current_rt) {
-		glActiveTexture(GL_TEXTURE0 + 2);
-		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->copy_screen_effect.color);
+		// glActiveTexture(GL_TEXTURE0 + 2);
+		// glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->copy_screen_effect.color);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -967,19 +967,7 @@ void ShaderGLES2::use_material(void *p_material) {
 					value.second.write[15].real = 1;
 				} break;
 
-				case ShaderLanguage::TYPE_SAMPLER2D: {
-
-				} break;
-
-				case ShaderLanguage::TYPE_ISAMPLER2D: {
-
-				} break;
-
-				case ShaderLanguage::TYPE_USAMPLER2D: {
-
-				} break;
-
-				case ShaderLanguage::TYPE_SAMPLERCUBE: {
+				default: {
 
 				} break;
 			}

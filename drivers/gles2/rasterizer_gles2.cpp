@@ -327,7 +327,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 
 	RasterizerStorageGLES2::Texture *t = storage->texture_owner.get(texture);
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	canvas->draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -354,7 +354,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	canvas->canvas_begin();
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
 
 	// TODO normals

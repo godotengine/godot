@@ -96,9 +96,9 @@ precision mediump float;
 precision mediump int;
 #endif
 
-uniform sampler2D color_texture; // texunit:0
+uniform sampler2D color_texture; // texunit:-1
 uniform highp vec2 color_texpixel_size;
-uniform mediump sampler2D normal_texture; // texunit:1
+uniform mediump sampler2D normal_texture; // texunit:-2
 
 varying mediump vec2 uv_interp;
 varying mediump vec4 color_interp;
@@ -109,7 +109,7 @@ uniform vec4 final_modulate;
 
 #ifdef SCREEN_TEXTURE_USED
 
-uniform sampler2D screen_texture; // texunit:2
+uniform sampler2D screen_texture; // texunit:-3
 
 #endif
 
