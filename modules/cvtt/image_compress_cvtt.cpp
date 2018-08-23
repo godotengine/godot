@@ -30,9 +30,111 @@
 
 #include "image_compress_cvtt.h"
 
+#include "os/os.h"
+#include "os/thread.h"
 #include "print_string.h"
 
 #include <ConvectionKernels.h>
+
+struct CVTTCompressionJobParams {
+	bool is_hdr;
+	bool is_signed;
+	int bytes_per_pixel;
+
+	cvtt::Options options;
+};
+
+struct CVTTCompressionRowTask {
+	const uint8_t *in_mm_bytes;
+	uint8_t *out_mm_bytes;
+	int y_start;
+	int width;
+	int height;
+};
+
+struct CVTTCompressionJobQueue {
+	CVTTCompressionJobParams job_params;
+	const CVTTCompressionRowTask *job_tasks;
+	uint32_t num_tasks;
+	uint32_t current_task;
+};
+
+static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const CVTTCompressionRowTask &p_row_task) {
+	const uint8_t *in_bytes = p_row_task.in_mm_bytes;
+	uint8_t *out_bytes = p_row_task.out_mm_bytes;
+	int w = p_row_task.width;
+	int h = p_row_task.height;
+
+	int y_start = p_row_task.y_start;
+	int y_end = y_start + 4;
+
+	int bytes_per_pixel = p_job_params.bytes_per_pixel;
+	bool is_hdr = p_job_params.is_hdr;
+	bool is_signed = p_job_params.is_signed;
+
+	cvtt::PixelBlockU8 input_blocks_ldr[cvtt::NumParallelBlocks];
+	cvtt::PixelBlockF16 input_blocks_hdr[cvtt::NumParallelBlocks];
+
+	for (int x_start = 0; x_start < w; x_start += 4 * cvtt::NumParallelBlocks) {
+		int x_end = x_start + 4 * cvtt::NumParallelBlocks;
+
+		for (int y = y_start; y < y_end; y++) {
+			int first_input_element = (y - y_start) * 4;
+			const uint8_t *row_start;
+			if (y >= h) {
+				row_start = in_bytes + (h - 1) * (w * bytes_per_pixel);
+			} else {
+				row_start = in_bytes + y * (w * bytes_per_pixel);
+			}
+
+			for (int x = x_start; x < x_end; x++) {
+				const uint8_t *pixel_start;
+				if (x >= w) {
+					pixel_start = row_start + (w - 1) * bytes_per_pixel;
+				} else {
+					pixel_start = row_start + x * bytes_per_pixel;
+				}
+
+				int block_index = (x - x_start) / 4;
+				int block_element = (x - x_start) % 4 + first_input_element;
+				if (is_hdr) {
+					memcpy(input_blocks_hdr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
+					input_blocks_hdr[block_index].m_pixels[block_element][3] = 0x3c00; // 1.0 (unused)
+				} else {
+					memcpy(input_blocks_ldr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
+				}
+			}
+		}
+
+		uint8_t output_blocks[16 * cvtt::NumParallelBlocks];
+
+		if (is_hdr) {
+			if (is_signed) {
+				cvtt::Kernels::EncodeBC6HS(output_blocks, input_blocks_hdr, p_job_params.options);
+			} else {
+				cvtt::Kernels::EncodeBC6HU(output_blocks, input_blocks_hdr, p_job_params.options);
+			}
+		} else {
+			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options);
+		}
+
+		int num_real_blocks = ((w - x_start) + 3) / 4;
+		if (num_real_blocks > cvtt::NumParallelBlocks) {
+			num_real_blocks = cvtt::NumParallelBlocks;
+		}
+
+		memcpy(out_bytes, output_blocks, 16 * num_real_blocks);
+		out_bytes += 16 * num_real_blocks;
+	}
+}
+
+static void _digest_job_queue(void *p_job_queue) {
+	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
+
+	for (int next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
+		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
+	}
+}
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
 
@@ -101,6 +203,20 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 
 	int dst_ofs = 0;
 
+	CVTTCompressionJobQueue job_queue;
+	job_queue.job_params.is_hdr = is_hdr;
+	job_queue.job_params.is_signed = is_signed;
+	job_queue.job_params.options = options;
+	job_queue.job_params.bytes_per_pixel = is_hdr ? 6 : 4;
+
+#ifdef NO_THREADS
+	int num_job_threads = 0;
+#else
+	int num_job_threads = OS::get_singleton()->can_use_threads() ? (OS::get_singleton()->get_processor_count() - 1) : 0;
+#endif
+
+	PoolVector<CVTTCompressionRowTask> tasks;
+
 	for (int i = 0; i <= mm_count; i++) {
 
 		int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
@@ -111,65 +227,23 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		const uint8_t *in_bytes = &rb[src_ofs];
 		uint8_t *out_bytes = &wb[dst_ofs];
 
-		cvtt::PixelBlockU8 input_blocks_ldr[cvtt::NumParallelBlocks];
-		cvtt::PixelBlockF16 input_blocks_hdr[cvtt::NumParallelBlocks];
-
-		int bytes_per_pixel = is_hdr ? 6 : 4;
-
 		for (int y_start = 0; y_start < h; y_start += 4) {
 			int y_end = y_start + 4;
 
-			for (int x_start = 0; x_start < w; x_start += 4 * cvtt::NumParallelBlocks) {
-				int x_end = x_start + 4 * cvtt::NumParallelBlocks;
+			CVTTCompressionRowTask row_task;
+			row_task.width = w;
+			row_task.height = h;
+			row_task.y_start = y_start;
+			row_task.in_mm_bytes = in_bytes;
+			row_task.out_mm_bytes = out_bytes;
 
-				for (int y = y_start; y < y_end; y++) {
-					int first_input_element = (y - y_start) * 4;
-					const uint8_t *row_start;
-					if (y >= h) {
-						row_start = in_bytes + (h - 1) * (w * bytes_per_pixel);
-					} else {
-						row_start = in_bytes + y * (w * bytes_per_pixel);
-					}
-
-					for (int x = x_start; x < x_end; x++) {
-						const uint8_t *pixel_start;
-						if (x >= w) {
-							pixel_start = row_start + (w - 1) * bytes_per_pixel;
-						} else {
-							pixel_start = row_start + x * bytes_per_pixel;
-						}
-
-						int block_index = (x - x_start) / 4;
-						int block_element = (x - x_start) % 4 + first_input_element;
-						if (is_hdr) {
-							memcpy(input_blocks_hdr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
-							input_blocks_hdr[block_index].m_pixels[block_element][3] = 0x3c00; // 1.0 (unused)
-						} else {
-							memcpy(input_blocks_ldr[block_index].m_pixels[block_element], pixel_start, bytes_per_pixel);
-						}
-					}
-				}
-
-				uint8_t output_blocks[16 * cvtt::NumParallelBlocks];
-
-				if (is_hdr) {
-					if (is_signed) {
-						cvtt::Kernels::EncodeBC6HS(output_blocks, input_blocks_hdr, options);
-					} else {
-						cvtt::Kernels::EncodeBC6HU(output_blocks, input_blocks_hdr, options);
-					}
-				} else {
-					cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, options);
-				}
-
-				int num_real_blocks = ((w - x_start) + 3) / 4;
-				if (num_real_blocks > cvtt::NumParallelBlocks) {
-					num_real_blocks = cvtt::NumParallelBlocks;
-				}
-
-				memcpy(out_bytes, output_blocks, 16 * num_real_blocks);
-				out_bytes += 16 * num_real_blocks;
+			if (num_job_threads > 0) {
+				tasks.push_back(row_task);
+			} else {
+				_digest_row_task(job_queue.job_params, row_task);
 			}
+
+			out_bytes += 16 * (bw / 4);
 		}
 
 		dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
@@ -177,8 +251,28 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		h >>= 1;
 	}
 
-	rb = PoolVector<uint8_t>::Read();
-	wb = PoolVector<uint8_t>::Write();
+	if (num_job_threads > 0) {
+		PoolVector<Thread *> threads;
+		threads.resize(num_job_threads);
+
+		PoolVector<Thread *>::Write threads_wb = threads.write();
+
+		PoolVector<CVTTCompressionRowTask>::Read tasks_rb = tasks.read();
+
+		job_queue.job_tasks = &tasks_rb[0];
+		job_queue.current_task = 0;
+		job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
+
+		for (int i = 0; i < num_job_threads; i++) {
+			threads_wb[i] = Thread::create(_digest_job_queue, &job_queue);
+		}
+		_digest_job_queue(&job_queue);
+
+		for (int i = 0; i < num_job_threads; i++) {
+			Thread::wait_to_finish(threads_wb[i]);
+			memdelete(threads_wb[i]);
+		}
+	}
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
