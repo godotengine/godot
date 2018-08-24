@@ -866,15 +866,14 @@ void LineEdit::_notification(int p_what) {
 
 void LineEdit::copy_text() {
 
-	if (selection.enabled) {
-
+	if (selection.enabled && !pass) {
 		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
 	}
 }
 
 void LineEdit::cut_text() {
 
-	if (selection.enabled) {
+	if (selection.enabled && !pass) {
 		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
 		selection_delete();
 	}
