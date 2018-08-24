@@ -126,7 +126,15 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 }
 
 void SkeletonEditor::edit(Skeleton *p_node) {
+
 	skeleton = p_node;
+
+}
+
+void SkeletonEditor::_notification(int p_what) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		get_tree()->connect("node_removed", this, "_node_removed");
+	}
 }
 
 void SkeletonEditor::_node_removed(Node *p_node) {
@@ -139,6 +147,7 @@ void SkeletonEditor::_node_removed(Node *p_node) {
 
 void SkeletonEditor::_bind_methods() {
 	ClassDB::bind_method("_on_click_option", &SkeletonEditor::_on_click_option);
+	ClassDB::bind_method("_node_removed", &SkeletonEditor::_node_removed);
 }
 
 SkeletonEditor::SkeletonEditor() {

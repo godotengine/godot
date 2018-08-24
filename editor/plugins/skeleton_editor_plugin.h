@@ -61,6 +61,7 @@ class SkeletonEditor : public Node {
 	friend class SkeletonEditorPlugin;
 
 protected:
+	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
