@@ -5749,6 +5749,20 @@ bool RasterizerStorageGLES3::particles_get_emitting(RID p_particles) {
 	return particles->emitting;
 }
 
+void RasterizerStorageGLES3::particles_set_pause(RID p_particles, bool p_pause) {
+
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->pause = p_pause;
+}
+
+bool RasterizerStorageGLES3::particles_get_pause(RID p_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, false);
+
+	return particles->pause;
+}
+
 void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
@@ -6116,6 +6130,11 @@ void RasterizerStorageGLES3::update_particles() {
 		//use transform feedback to process particles
 
 		Particles *particles = particle_update_list.first()->self();
+
+		if (particles->pause) {
+			particle_update_list.remove(particle_update_list.first());
+			continue;
+		}
 
 		if (particles->restart_request) {
 			particles->emitting = true; //restart from zero

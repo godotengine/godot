@@ -78,6 +78,7 @@ protected:
 
 public:
 	void set_emitting(bool p_emitting);
+	void set_pause(bool p_pause);
 	void set_amount(int p_amount);
 	void set_lifetime(float p_lifetime);
 	void set_one_shot(bool p_enable);
@@ -90,6 +91,7 @@ public:
 	void set_speed_scale(float p_scale);
 
 	bool is_emitting() const;
+	bool is_paused() const;
 	int get_amount() const;
 	float get_lifetime() const;
 	bool get_one_shot() const;

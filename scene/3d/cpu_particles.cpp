@@ -34,6 +34,25 @@ void CPUParticles::set_emitting(bool p_emitting) {
 	}
 }
 
+void CPUParticles::set_pause(bool p_pause) {
+
+	pause = p_pause;
+	if (!is_processing_internal()) {
+		set_process_internal(true);
+		if (is_inside_tree()) {
+#ifndef NO_THREADS
+			update_mutex->lock();
+#endif
+			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
+			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+
+#ifndef NO_THREADS
+			update_mutex->unlock();
+#endif
+		}
+	}
+}
+
 void CPUParticles::set_amount(int p_amount) {
 
 	ERR_FAIL_COND(p_amount < 1);
@@ -87,6 +106,10 @@ void CPUParticles::set_speed_scale(float p_scale) {
 bool CPUParticles::is_emitting() const {
 
 	return emitting;
+}
+bool CPUParticles::is_paused() const {
+
+	return pause;
 }
 int CPUParticles::get_amount() const {
 
@@ -1010,6 +1033,9 @@ void CPUParticles::_notification(int p_what) {
 		if (particles.size() == 0)
 			return;
 
+		if (pause)
+			return;
+
 		float delta = get_process_delta_time();
 		if (emitting) {
 
@@ -1085,6 +1111,7 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 	ERR_FAIL_COND(!particles);
 
 	set_emitting(particles->is_emitting());
+	set_pause(particles->is_paused());
 	set_amount(particles->get_amount());
 	set_lifetime(particles->get_lifetime());
 	set_one_shot(particles->get_one_shot());
@@ -1150,6 +1177,7 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 void CPUParticles::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &CPUParticles::set_emitting);
+	ClassDB::bind_method(D_METHOD("set_pause", "pause"), &CPUParticles::set_pause);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &CPUParticles::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &CPUParticles::set_lifetime);
 	ClassDB::bind_method(D_METHOD("set_one_shot", "enable"), &CPUParticles::set_one_shot);
@@ -1162,6 +1190,7 @@ void CPUParticles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &CPUParticles::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles::is_emitting);
+	ClassDB::bind_method(D_METHOD("is_paused"), &CPUParticles::is_paused);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &CPUParticles::get_lifetime);
 	ClassDB::bind_method(D_METHOD("get_one_shot"), &CPUParticles::get_one_shot);
@@ -1183,6 +1212,7 @@ void CPUParticles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_EXP_RANGE, "0.01,600.0,0.01"), "set_lifetime", "get_lifetime");
@@ -1359,6 +1389,7 @@ CPUParticles::CPUParticles() {
 	set_base(multimesh);
 
 	set_emitting(true);
+	set_pause(false);
 	set_one_shot(false);
 	set_amount(8);
 	set_lifetime(1);
