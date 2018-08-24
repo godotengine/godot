@@ -5640,6 +5640,10 @@ void TextEdit::_confirm_completion() {
 	end_complex_operation();
 
 	_cancel_completion();
+
+	if (last_completion_char == '(') {
+		query_code_comple();
+	}
 }
 
 void TextEdit::_cancel_code_hint() {
@@ -5751,43 +5755,23 @@ void TextEdit::_update_completion_candidates() {
 			completion_strings.write[i] = completion_strings[i].unquote().quote("'");
 		}
 
-		if (s == completion_strings[i]) {
-			// A perfect match, stop completion
-			_cancel_completion();
-			return;
+		if (completion_strings[i].begins_with(s)) {
+			completion_options.push_back(completion_strings[i]);
 		}
+	}
 
-		if (s.is_subsequence_ofi(completion_strings[i])) {
-			// don't remove duplicates if no input is provided
-			if (s != "" && completion_options.find(completion_strings[i]) != -1) {
-				continue;
-			}
-			// Calculate the similarity to keep completions in good order
-			float similarity;
-			if (completion_strings[i].begins_with(s)) {
-				// Substrings (same case) are the best candidates
-				similarity = 1.2;
-			} else if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
-				// then any substrings
-				similarity = 1.1;
-			} else {
-				// Otherwise compute the similarity
-				similarity = s.to_lower().similarity(completion_strings[i].to_lower());
-			}
-
-			int comp_size = completion_options.size();
-			if (comp_size == 0) {
+	if (completion_options.size() == 0) {
+		for (int i = 0; i < completion_strings.size(); i++) {
+			if (s.is_subsequence_of(completion_strings[i])) {
 				completion_options.push_back(completion_strings[i]);
-				sim_cache.push_back(similarity);
-			} else {
-				float comp_sim;
-				int pos = 0;
-				do {
-					comp_sim = sim_cache[pos++];
-				} while (pos < comp_size && similarity < comp_sim);
-				pos = similarity > comp_sim ? pos - 1 : pos; // Pos will be off by one
-				completion_options.insert(pos, completion_strings[i]);
-				sim_cache.insert(pos, similarity);
+			}
+		}
+	}
+
+	if (completion_options.size() == 0) {
+		for (int i = 0; i < completion_strings.size(); i++) {
+			if (s.is_subsequence_ofi(completion_strings[i])) {
+				completion_options.push_back(completion_strings[i]);
 			}
 		}
 	}
@@ -5795,7 +5779,12 @@ void TextEdit::_update_completion_candidates() {
 	if (completion_options.size() == 0) {
 		//no options to complete, cancel
 		_cancel_completion();
+		return;
+	}
 
+	if (completion_options.size() == 1 && s == completion_options[0]) {
+		// A perfect match, stop completion
+		_cancel_completion();
 		return;
 	}
 
