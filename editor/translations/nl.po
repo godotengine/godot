@@ -5865,135 +5865,6 @@ msgstr "Contextuele Hulp"
 msgid "Shader"
 msgstr "Shader"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Verander Shalar Constante"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Verander Vec Constante"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "Verander RGB Constante"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Verander Scalar Operator"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Verander Vec Operator"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Verander Vec Scalar Operator"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "Verander RGB Operator"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Aan/Uit Alleen Rot"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Verander Scalar Functie"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Verander Vec Functie"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Verander Scalar Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Verander Vec Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "Verander RGB Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Verander Standaardwaarde"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "Verander XForm Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "Verander Textuur Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Verander Cubemap Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "Verander Commentaar"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "Voeg Toe/Verwijder van Kleur Helling"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Modify Color Ramp"
-msgstr "Wijzig Kleuren Helling"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Voeg Toe/Verwijder van Curve Map"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Wijzig Curve Map"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "Verander Input Naam"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "Verbind Graaf Knooppunten"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "Ontkoppel Graaf Knooppunten"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Verwijder Shader Graaf Knooppunten"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Verplaats Shader Graaf Knooppunten"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "Dupliceer Graaf Knooppunt(en)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Verwijder Shader Graaf Knooppunt(en)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "Fout: Cyclische Connectie Link"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "Fout: Ontbrekende Input Connecties"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Voeg Shader Graaf Knooppunt Toe"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9628,6 +9499,103 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Verander Shalar Constante"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Verander Vec Constante"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "Verander RGB Constante"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Verander Scalar Operator"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Verander Vec Operator"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Verander Vec Scalar Operator"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "Verander RGB Operator"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Aan/Uit Alleen Rot"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Verander Scalar Functie"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Verander Vec Functie"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Verander Scalar Uniform"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Verander Vec Uniform"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Verander RGB Uniform"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Verander Standaardwaarde"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "Verander XForm Uniform"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "Verander Textuur Uniform"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Verander Cubemap Uniform"
+
+#~ msgid "Change Comment"
+#~ msgstr "Verander Commentaar"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "Voeg Toe/Verwijder van Kleur Helling"
+
+#, fuzzy
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Wijzig Kleuren Helling"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Voeg Toe/Verwijder van Curve Map"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Wijzig Curve Map"
+
+#~ msgid "Change Input Name"
+#~ msgstr "Verander Input Naam"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "Verbind Graaf Knooppunten"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "Ontkoppel Graaf Knooppunten"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Verwijder Shader Graaf Knooppunten"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Verplaats Shader Graaf Knooppunten"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "Dupliceer Graaf Knooppunt(en)"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Verwijder Shader Graaf Knooppunt(en)"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "Fout: Cyclische Connectie Link"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "Fout: Ontbrekende Input Connecties"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Voeg Shader Graaf Knooppunt Toe"
 
 #~ msgid "Disabled"
 #~ msgstr "Uitgeschakeld"

@@ -6024,134 +6024,6 @@ msgstr "প্রাসঙ্গিক সাহায্য"
 msgid "Shader"
 msgstr "শেডার"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "স্কেলার ধ্রুবক পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "ভেক্টর ধ্রুবক পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "RGB ধ্রুবক পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "স্কেলার অপারেটর পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "ভেক্টর অপারেটর পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "ভেক্টর স্কেলার অপারেটর পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "RGB অপারেটর পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "শুধুমাত্র ঘূর্ণন টগল করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "স্কেলার ফাংশন পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "ভেক্টর ফাংশন পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "স্কেলার ইউনিফর্ম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "ভেক্টর ইউনিফর্ম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "RGB ইউনিফর্ম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "প্রাথমিক মান পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "XForm ইউনিফর্ম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "টেক্সার ইউনিফর্ম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Cubemap ইউনিফর্ম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "কমেন্ট পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "রঙ্গের র‍্যাম্পে সংযোজন/বিয়োজন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "রঙ্গের র‍্যাম্প পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Curve Map-এ সংযোজন/বিয়োজন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Curve Map পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "ইনপুট নাম পরিবর্তন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "গ্রাফের নোডসমূহ সংযুক্ত করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "গ্রাফের নোডসমূহ বিচ্ছিন্ন করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Shader Graph Node অপসারণ করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Shader Graph Node সরান"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "গ্রাফ নোড(সমূহ) প্রতিলিপি করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Shader Graph Node(s) অপসারণ করুন"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "সমস্যা: আবর্তনশীল সংযোগ লিঙ্ক"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "সমস্যা: ইনপুট সংযোগ নেই"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Shader Graph Node যোগ করুন"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9906,6 +9778,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "স্কেলার ধ্রুবক পরিবর্তন করুন"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "ভেক্টর ধ্রুবক পরিবর্তন করুন"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "RGB ধ্রুবক পরিবর্তন করুন"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "স্কেলার অপারেটর পরিবর্তন করুন"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "ভেক্টর অপারেটর পরিবর্তন করুন"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "ভেক্টর স্কেলার অপারেটর পরিবর্তন করুন"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "RGB অপারেটর পরিবর্তন করুন"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "শুধুমাত্র ঘূর্ণন টগল করুন"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "স্কেলার ফাংশন পরিবর্তন করুন"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "ভেক্টর ফাংশন পরিবর্তন করুন"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "স্কেলার ইউনিফর্ম পরিবর্তন করুন"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "ভেক্টর ইউনিফর্ম পরিবর্তন করুন"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "RGB ইউনিফর্ম পরিবর্তন করুন"
+
+#~ msgid "Change Default Value"
+#~ msgstr "প্রাথমিক মান পরিবর্তন করুন"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "XForm ইউনিফর্ম পরিবর্তন করুন"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "টেক্সার ইউনিফর্ম পরিবর্তন করুন"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Cubemap ইউনিফর্ম পরিবর্তন করুন"
+
+#~ msgid "Change Comment"
+#~ msgstr "কমেন্ট পরিবর্তন করুন"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "রঙ্গের র‍্যাম্পে সংযোজন/বিয়োজন করুন"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "রঙ্গের র‍্যাম্প পরিবর্তন করুন"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Curve Map-এ সংযোজন/বিয়োজন করুন"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Curve Map পরিবর্তন করুন"
+
+#~ msgid "Change Input Name"
+#~ msgstr "ইনপুট নাম পরিবর্তন করুন"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "গ্রাফের নোডসমূহ সংযুক্ত করুন"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "গ্রাফের নোডসমূহ বিচ্ছিন্ন করুন"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Shader Graph Node অপসারণ করুন"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Shader Graph Node সরান"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "গ্রাফ নোড(সমূহ) প্রতিলিপি করুন"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Shader Graph Node(s) অপসারণ করুন"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "সমস্যা: আবর্তনশীল সংযোগ লিঙ্ক"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "সমস্যা: ইনপুট সংযোগ নেই"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Shader Graph Node যোগ করুন"
 
 #~ msgid "Disabled"
 #~ msgstr "অসমর্থ"

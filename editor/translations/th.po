@@ -5771,134 +5771,6 @@ msgstr "ค้นหาคำที่เลือกในคู่มือ"
 msgid "Shader"
 msgstr "Shader"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "แก้ไขค่าคงที่สเกลาร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "แก้ไขค่าคงที่เวกเตอร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "แก้ไขค่าคงที่สี"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "แก้ไขเครื่องหมายสเกลาร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "แก้ไขเครื่องหมายเวกเตอร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "แก้ไขเครื่องหมายเวกเตอร์สเกลาร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "แก้ไขเครื่องหมาย RGB"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "สลับเฉพาะการหมุน"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "แก้ไขฟังก์ชันสเกลาร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "แก้ไขฟังก์ชันเวกเตอร์"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "แก้ไขสเกลาร์ Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "แก้ไขเวกเตอร์ Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "แก้ไข RGB Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "แก้ไขค่าปริยาย"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "แก้ไข XForm Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "แก้ไข Texture Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "แก้ไข Cubemap Uniform"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "เปลี่ยนข้อคิดเห็น"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "เพิ่ม/ลบในการไล่สี"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "แก้ไขการไล่สี"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "เพิ่ม/ลบในเส้นโค้ง"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "แก้ไขเส้นโค้ง"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "เปลี่ยนชื่ออินพุต"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "เชื่อมต่อโหนด"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "ตัดการเชื่อมต่อโหนด"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "ลบโหนด"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "ย้ายโหนด"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "ทำซ้ำโหนด"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "ลบโหนด"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "ผิดพลาด: เชื่อมต่อเป็นวง"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "ผิดพลาด: ไม่มีขาเข้า"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "เพิ่มโหนด"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9460,6 +9332,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "แก้ไขค่าคงที่สเกลาร์"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "แก้ไขค่าคงที่เวกเตอร์"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "แก้ไขค่าคงที่สี"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "แก้ไขเครื่องหมายสเกลาร์"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "แก้ไขเครื่องหมายเวกเตอร์"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "แก้ไขเครื่องหมายเวกเตอร์สเกลาร์"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "แก้ไขเครื่องหมาย RGB"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "สลับเฉพาะการหมุน"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "แก้ไขฟังก์ชันสเกลาร์"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "แก้ไขฟังก์ชันเวกเตอร์"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "แก้ไขสเกลาร์ Uniform"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "แก้ไขเวกเตอร์ Uniform"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "แก้ไข RGB Uniform"
+
+#~ msgid "Change Default Value"
+#~ msgstr "แก้ไขค่าปริยาย"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "แก้ไข XForm Uniform"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "แก้ไข Texture Uniform"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "แก้ไข Cubemap Uniform"
+
+#~ msgid "Change Comment"
+#~ msgstr "เปลี่ยนข้อคิดเห็น"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "เพิ่ม/ลบในการไล่สี"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "แก้ไขการไล่สี"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "เพิ่ม/ลบในเส้นโค้ง"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "แก้ไขเส้นโค้ง"
+
+#~ msgid "Change Input Name"
+#~ msgstr "เปลี่ยนชื่ออินพุต"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "เชื่อมต่อโหนด"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "ตัดการเชื่อมต่อโหนด"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "ลบโหนด"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "ย้ายโหนด"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "ทำซ้ำโหนด"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "ลบโหนด"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "ผิดพลาด: เชื่อมต่อเป็นวง"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "ผิดพลาด: ไม่มีขาเข้า"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "เพิ่มโหนด"
 
 #~ msgid "Disabled"
 #~ msgstr "ปิดใช้งาน"

@@ -5847,134 +5847,6 @@ msgstr "Βοήθεια ανάλογα με τα συμφραζόμενα"
 msgid "Shader"
 msgstr "Πρόγραμμα σκίασης"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Αλλαγή μονόμετρης σταθεράς"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Αλλαγή διανυσματικής σταθεράς"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "Αλλαγή χρωματικής σταθεράς"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Αλλαγή μονόμετρου τελεστή"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Αλλαγή διανυσματικού τελεστή"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Αλλαγή διανυσματικού - μονόμετρου τελεστή"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "Αλλαγή χρωματικού τελεστή"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Εναλλαγή μόνο περιστροφή"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Αλλαγή μονόμετρης συνάρτησης"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Αλλαγή διανυσματικής συνάρτησης"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Αλλαγή μονόμετρης ομοιόμορφης μεταβλητής"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Αλλαγή διανυσματικής ομοιόμορφης μεταβλητής"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "Αλλαγή χρωματικής ομοιόμορφης μεταβλητής"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Αλλαγή προεπιλλεγμένης τιμής"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "Αλλαγή ομοιόμορφης μεταβλητής XForm"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "Αλλαγή ομοιόμορφης μεταβλητής υφής"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Αλλαγή ομοιόμορφης μεταβλητής χάρτη κύβου"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "Αλλαγή σχολίου"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "Προσθήκη/Αφαίρεση σε διαβάθμηση χρώματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Επεξεργασία διαβάθμισης χρωμάτων"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Προσθήκη/Αφαίρεση σε χάρτη καμπύλης"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Τροποποίηση χάρτη καμπύλης"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "Αλλαγή ονόματος εισόδου"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "Σύνδεση κόμβων γραφήματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "Αποσύνδεση κόμβων γραφήματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Αφαίρεση κόμβου γραφήματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Μετακίνηση κόμβου γραφήματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "Διπλασιασμός κόμβων γραφήματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Διαγραφή κόμβων γραφήματος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "Σφάλμα: Κυκλικός σύνδεσμος"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "Σφάλμα: Οι συνδέσεις εισόδου λείπουν"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Προσθήκη κόμβου γραφήματος"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9642,6 +9514,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Αλλαγή μονόμετρης σταθεράς"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Αλλαγή διανυσματικής σταθεράς"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "Αλλαγή χρωματικής σταθεράς"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Αλλαγή μονόμετρου τελεστή"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Αλλαγή διανυσματικού τελεστή"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Αλλαγή διανυσματικού - μονόμετρου τελεστή"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "Αλλαγή χρωματικού τελεστή"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Εναλλαγή μόνο περιστροφή"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Αλλαγή μονόμετρης συνάρτησης"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Αλλαγή διανυσματικής συνάρτησης"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Αλλαγή μονόμετρης ομοιόμορφης μεταβλητής"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Αλλαγή διανυσματικής ομοιόμορφης μεταβλητής"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Αλλαγή χρωματικής ομοιόμορφης μεταβλητής"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Αλλαγή προεπιλλεγμένης τιμής"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "Αλλαγή ομοιόμορφης μεταβλητής XForm"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "Αλλαγή ομοιόμορφης μεταβλητής υφής"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Αλλαγή ομοιόμορφης μεταβλητής χάρτη κύβου"
+
+#~ msgid "Change Comment"
+#~ msgstr "Αλλαγή σχολίου"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "Προσθήκη/Αφαίρεση σε διαβάθμηση χρώματος"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Επεξεργασία διαβάθμισης χρωμάτων"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Προσθήκη/Αφαίρεση σε χάρτη καμπύλης"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Τροποποίηση χάρτη καμπύλης"
+
+#~ msgid "Change Input Name"
+#~ msgstr "Αλλαγή ονόματος εισόδου"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "Σύνδεση κόμβων γραφήματος"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "Αποσύνδεση κόμβων γραφήματος"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Αφαίρεση κόμβου γραφήματος"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Μετακίνηση κόμβου γραφήματος"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "Διπλασιασμός κόμβων γραφήματος"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Διαγραφή κόμβων γραφήματος"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "Σφάλμα: Κυκλικός σύνδεσμος"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "Σφάλμα: Οι συνδέσεις εισόδου λείπουν"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Προσθήκη κόμβου γραφήματος"
 
 #~ msgid "Disabled"
 #~ msgstr "Απενεργοποιημένο"

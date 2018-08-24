@@ -5881,134 +5881,6 @@ msgstr "Aiuto Contestuale"
 msgid "Shader"
 msgstr "Shader"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Cambia Costante Scalare"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Cambia Costante Vett."
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "Cambia Costante RGB"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Cambia Operatore Scalare"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Cambia Operatore Vett."
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Cambia Operatore Scalare Vett."
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "Cambia Operatore RGB"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Abilita Solo Rot"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Cambia Funzione Scalare"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Cambia Funzione Vett."
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Cambia Uniforme Scalare"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Cambia Uniforme Vett."
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "Cambia Uniforme RGB"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Cambia Valore di Default"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "Cambia Uniforme XForm"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "Cambia Uniforme Texture"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Cambia Uniforme Cubemap"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "Cambia Commento"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "Aggiungi/Rimuovi alla Rampa Colori"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Modifica Rampa Colori"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Aggiung/Rimuovi alla Mappa Curve"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Modifica la Mappa Curve"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "Cambia Nome Input"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "Connetti Nodi Grafico"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "Disconnetti Nodi Grafico"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Rimuovi Nodo Grafico di Shader"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Sposta Nodo Grafico di Shader"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "Duplica Nodo(i) Grafico"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Elimina Nodo(i) Grafico di Shader"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "Errore: Giunzione ciclica"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "Errore: Connessioni Input MAncanti"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Aggiungi Nodo Grafico Shader"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9748,6 +9620,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Cambia Costante Scalare"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Cambia Costante Vett."
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "Cambia Costante RGB"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Cambia Operatore Scalare"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Cambia Operatore Vett."
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Cambia Operatore Scalare Vett."
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "Cambia Operatore RGB"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Abilita Solo Rot"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Cambia Funzione Scalare"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Cambia Funzione Vett."
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Cambia Uniforme Scalare"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Cambia Uniforme Vett."
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Cambia Uniforme RGB"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Cambia Valore di Default"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "Cambia Uniforme XForm"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "Cambia Uniforme Texture"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Cambia Uniforme Cubemap"
+
+#~ msgid "Change Comment"
+#~ msgstr "Cambia Commento"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "Aggiungi/Rimuovi alla Rampa Colori"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Modifica Rampa Colori"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Aggiung/Rimuovi alla Mappa Curve"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Modifica la Mappa Curve"
+
+#~ msgid "Change Input Name"
+#~ msgstr "Cambia Nome Input"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "Connetti Nodi Grafico"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "Disconnetti Nodi Grafico"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Rimuovi Nodo Grafico di Shader"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Sposta Nodo Grafico di Shader"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "Duplica Nodo(i) Grafico"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Elimina Nodo(i) Grafico di Shader"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "Errore: Giunzione ciclica"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "Errore: Connessioni Input MAncanti"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Aggiungi Nodo Grafico Shader"
 
 #~ msgid "Disabled"
 #~ msgstr "Disabilitato"

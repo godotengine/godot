@@ -150,7 +150,6 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/scene_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
-#include "scene/resources/shader_graph.h"
 #include "scene/resources/shape_line_2d.h"
 #include "scene/resources/sky_box.h"
 #include "scene/resources/sphere_shape.h"
