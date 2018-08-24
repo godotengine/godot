@@ -77,7 +77,7 @@
 			Emission randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
-			Speed scaling ratio. Default value: [code]1[/code].
+			Speed scaling ratio. Default value: [code]1[/code]. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb">
 			The [AABB] that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
