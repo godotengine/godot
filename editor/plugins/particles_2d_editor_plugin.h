@@ -66,7 +66,7 @@ class Particles2DEditorPlugin : public EditorPlugin {
 
 	SpinBox *epoints;
 
-	ConfirmationDialog *generate_aabb;
+	ConfirmationDialog *generate_visibility_rect;
 	SpinBox *generate_seconds;
 
 	ConfirmationDialog *emission_mask;

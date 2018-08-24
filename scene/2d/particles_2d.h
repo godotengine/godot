@@ -84,7 +84,7 @@ public:
 	void set_pre_process_time(float p_time);
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
-	void set_visibility_rect(const Rect2 &p_aabb);
+	void set_visibility_rect(const Rect2 &p_visibility_rect);
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
