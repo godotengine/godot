@@ -1092,7 +1092,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		boot_logo_path = boot_logo_path.strip_edges();
 
-		if (boot_logo_path != String() /*&& FileAccess::exists(boot_logo_path)*/) {
+		if (boot_logo_path != String()) {
 			print_line("Boot splash path: " + boot_logo_path);
 			boot_logo.instance();
 			Error err = boot_logo->load(boot_logo_path);
@@ -1164,10 +1164,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (String(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image")) != String()) {
 
-		//print_line("use custom cursor");
 		Ref<Texture> cursor = ResourceLoader::load(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
-			//print_line("loaded ok");
 			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}

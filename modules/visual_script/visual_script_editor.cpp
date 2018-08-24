@@ -882,7 +882,6 @@ void VisualScriptEditor::_member_selected() {
 	ERR_FAIL_COND(!ti);
 
 	selected = ti->get_metadata(0);
-	//print_line("selected: "+String(selected));
 
 	if (ti->get_parent() == members->get_root()->get_children()) {
 

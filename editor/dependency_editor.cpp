@@ -336,12 +336,9 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 
 		Vector<String> deps = efsd->get_file_deps(i);
-		//print_line(":::"+efsd->get_file_path(i));
 		bool found = false;
 		for (int j = 0; j < deps.size(); j++) {
-			//print_line("\t"+deps[j]+" vs "+editing);
 			if (deps[j] == editing) {
-				//print_line("found");
 				found = true;
 				break;
 			}
@@ -510,7 +507,7 @@ void DependencyRemoveDialog::ok_pressed() {
 			res->set_path("");
 		}
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
-		print_line("Moving to trash: " + path);
+		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
@@ -525,7 +522,7 @@ void DependencyRemoveDialog::ok_pressed() {
 
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
-			print_line("Moving to trash: " + path);
+			print_verbose("Moving to trash: " + path);
 			Error err = OS::get_singleton()->move_to_trash(path);
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + dirs_to_delete[i] + "\n");
@@ -673,7 +670,6 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 		if (!p_parent) {
 			Vector<String> deps = efsd->get_file_deps(i);
-			//print_line(":::"+efsd->get_file_path(i));
 			for (int j = 0; j < deps.size(); j++) {
 
 				if (!refs.has(deps[j])) {

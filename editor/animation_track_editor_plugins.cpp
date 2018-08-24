@@ -974,8 +974,6 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 				ofs += 0.001;
 			}
 
-			print_line("inserting");
-
 			*get_block_animation_update_ptr() = true;
 			get_undo_redo()->create_action("Add Audio Track Clip");
 			get_undo_redo()->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), ofs, stream);
@@ -1124,7 +1122,6 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 	}
 
 	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
-	print_line("anim " + anim + " has " + itos(ap->has_animation(anim)));
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
 

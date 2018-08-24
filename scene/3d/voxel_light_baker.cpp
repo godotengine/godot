@@ -491,8 +491,6 @@ Vector<Color> VoxelLightBaker::_get_bake_texture(Ref<Image> p_image, const Color
 	p_image = p_image->duplicate();
 
 	if (p_image->is_compressed()) {
-		print_line("DECOMPRESSING!!!!");
-
 		p_image->decompress();
 	}
 	p_image->convert(Image::FORMAT_RGBA8);
@@ -859,7 +857,6 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 	int idx = first_leaf;
 	while (idx >= 0) {
 
-		//print_line("plot idx " + itos(idx));
 		Light *light = &light_data[idx];
 
 		Vector3 to(light->x + 0.5, light->y + 0.5, light->z + 0.5);
@@ -949,7 +946,6 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 	int idx = first_leaf;
 	while (idx >= 0) {
 
-		//print_line("plot idx " + itos(idx));
 		Light *light = &light_data[idx];
 
 		Vector3 to(light->x + 0.5, light->y + 0.5, light->z + 0.5);
@@ -1079,7 +1075,6 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 	int idx = first_leaf;
 	while (idx >= 0) {
 
-		//print_line("plot idx " + itos(idx));
 		Light *light = &light_data[idx];
 
 		Vector3 to(light->x + 0.5, light->y + 0.5, light->z + 0.5);
@@ -1498,12 +1493,8 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 				for (int i = 0; i < 6; i++) {
 					//anisotropic read light
 					float amount = p_direction.dot(aniso_normal[i]);
-					//if (c == 0) {
-					//	print_line("\t" + itos(n) + " aniso " + itos(i) + " " + rtos(light[cell].accum[i][0]) + " VEC: " + aniso_normal[i]);
-					//}
 					if (amount < 0)
 						amount = 0;
-					//amount = 1;
 					color[c][n].x += light[cell].accum[i][0] * amount;
 					color[c][n].y += light[cell].accum[i][1] * amount;
 					color[c][n].z += light[cell].accum[i][2] * amount;
@@ -1513,8 +1504,6 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 				color[c][n].y += cells[cell].emission[1];
 				color[c][n].z += cells[cell].emission[2];
 			}
-
-			//print_line("\tlev " + itos(c) + " - " + itos(n) + " alpha: " + rtos(cells[test_cell].alpha) + " col: " + color[c][n]);
 		}
 	}
 
@@ -1559,8 +1548,6 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
-
-	//	print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 Vector3 VoxelLightBaker::_voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture) {
@@ -1577,8 +1564,6 @@ Vector3 VoxelLightBaker::_voxel_cone_trace(const Vector3 &p_pos, const Vector3 &
 
 	while (dist < max_distance && alpha < 0.95) {
 		float diameter = MAX(1.0, 2.0 * p_aperture * dist);
-		//print_line("VCT: pos " + (p_pos + dist * p_normal) + " dist " + rtos(dist) + " mipmap " + rtos(log2(diameter)) + " alpha " + rtos(alpha));
-		//Plane scolor = textureLod(probe, (pos + dist * direction) * cell_size, log2(diameter) );
 		_sample_baked_octree_filtered_and_anisotropic(p_pos + dist * p_normal, p_normal, log2(diameter), scolor, salpha);
 		float a = (1.0 - alpha);
 		color += scolor * a;
@@ -1601,7 +1586,6 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	Vector3 bitangent = tangent.cross(p_normal).normalized();
 	Basis normal_xform = Basis(tangent, bitangent, p_normal).transposed();
 
-	//	print_line("normal xform: " + normal_xform);
 	const Vector3 *cone_dirs;
 	const float *cone_weights;
 	int cone_dir_count;
@@ -1667,10 +1651,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	Vector3 accum;
 
 	for (int i = 0; i < cone_dir_count; i++) {
-		//	if (i > 0)
-		//		continue;
 		Vector3 dir = normal_xform.xform(cone_dirs[i]).normalized(); //normal may not completely correct when transformed to cell
-		//print_line("direction: " + dir);
 		accum += _voxel_cone_trace(p_pos, dir, cone_aperture) * cone_weights[i];
 	}
 
@@ -1802,7 +1783,6 @@ void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 	LightMap *pixel = &p_line[p_x];
 	if (pixel->pos == Vector3())
 		return;
-	//print_line("pos: " + pixel->pos + " normal " + pixel->normal);
 	switch (bake_mode) {
 		case BAKE_MODE_CONE_TRACE: {
 			pixel->light = _compute_pixel_light_at_pos(pixel->pos, pixel->normal) * energy;
@@ -1810,8 +1790,6 @@ void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 		case BAKE_MODE_RAY_TRACE: {
 			pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal) * energy;
 		} break;
-			//	pixel->light = Vector3(1, 1, 1);
-			//}
 	}
 }
 
@@ -1895,7 +1873,6 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 
 		if (bake_mode == BAKE_MODE_RAY_TRACE) {
 			//blur
-			print_line("bluring, use pos for separatable copy");
 			//gauss kernel, 7 step sigma 2
 			static const float gauss_kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
 			//horizontal pass
@@ -1960,8 +1937,6 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 #pragma omp parallel
 #endif
 			for (int i = 0; i < height; i++) {
-
-				//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1)
 #endif
@@ -2304,7 +2279,6 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 
 	mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	mm->set_color_format(MultiMesh::COLOR_8BIT);
-	print_line("leaf voxels: " + itos(leaf_voxel_count));
 	mm->set_instance_count(leaf_voxel_count);
 
 	Ref<ArrayMesh> mesh;

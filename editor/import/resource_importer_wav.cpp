@@ -205,7 +205,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			/*print_line("chunksize: "+itos(chunksize));
 			print_line("channels: "+itos(format_channels));
 			print_line("bits: "+itos(format_bits));
-*/
+			*/
 
 			int len = frames;
 			if (format_channels == 2)
@@ -293,6 +293,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	bool is16 = format_bits != 8;
 	int rate = format_freq;
 
+	/*
 	print_line("Input Sample: ");
 	print_line("\tframes: " + itos(frames));
 	print_line("\tformat_channels: " + itos(format_channels));
@@ -301,17 +302,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	print_line("\tloop: " + itos(loop));
 	print_line("\tloop begin: " + itos(loop_begin));
 	print_line("\tloop end: " + itos(loop_end));
+	*/
 
 	//apply frequency limit
 
 	bool limit_rate = p_options["force/max_rate"];
 	int limit_rate_hz = p_options["force/max_rate_hz"];
 	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
-		//resampleeee!!!
+		// resample!
 		int new_data_frames = (int)(frames * (float)limit_rate_hz / (float)rate);
-
-		print_line("\tresampling ratio: " + rtos((float)limit_rate_hz / (float)rate));
-		print_line("\tnew frames: " + itos(new_data_frames));
 
 		Vector<float> new_data;
 		new_data.resize(new_data_frames * format_channels);
@@ -491,8 +490,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				w[i * 2 + 1] = rr[i];
 			}
 		}
-
-		//print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 

@@ -172,7 +172,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			parent = root;
 		} else {
 			String ppath = path.substr(0, pp);
-			print_line("PPATH IS: " + ppath);
 			ERR_CONTINUE(!dir_map.has(ppath));
 			parent = dir_map[ppath];
 		}

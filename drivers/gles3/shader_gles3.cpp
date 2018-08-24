@@ -240,8 +240,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	CharString code_globals;
 	CharString material_string;
 
-	//print_line("code version? "+itos(conditional_version.code_version));
-
 	CustomCode *cc = NULL;
 
 	if (conditional_version.code_version > 0) {
@@ -742,13 +740,6 @@ void ShaderGLES3::set_custom_shader(uint32_t p_code_id) {
 }
 
 void ShaderGLES3::free_custom_shader(uint32_t p_code_id) {
-
-	/*  if (! custom_code_map.has( p_code_id )) {
-        print_line("no code id "+itos(p_code_id));
-    } else {
-        print_line("freed code id "+itos(p_code_id));
-
-    }*/
 
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	if (conditional_version.code_version == p_code_id)

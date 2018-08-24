@@ -387,7 +387,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	thread_sem->post();
 #endif
 
-	//print_line("play "+rtos(p_delta));
 	time += p_delta;
 
 	if (videobuf_time > get_time()) {
@@ -442,15 +441,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 				int tr = vorbis_synthesis_read(&vd, ret - to_read);
 
-				if (vd.granulepos >= 0) {
-					//print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
-				}
-
-				//print_line("mix audio!");
-
 				audio_frames_wrote += ret - to_read;
-
-				//print_line("AGP: "+itos(vd.granulepos)+" added "+itos(ret-to_read));
 
 			} else {
 
@@ -460,7 +451,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 						vorbis_synthesis_blockin(&vd, &vb);
 					}
 				} else { /* we need more data; break out to suck in another page */
-					//printf("need moar data\n");
 					break;
 				};
 			}

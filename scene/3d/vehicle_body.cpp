@@ -366,21 +366,13 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 	const Vector3 &right = wheel.m_raycastInfo.m_wheelAxleWS;
 	Vector3 fwd = up.cross(right);
 	fwd = fwd.normalized();
-	//up = right.cross(fwd);
-	//up.normalize();
 
 	//rotate around steering over de wheelAxleWS
 	real_t steering = wheel.steers ? m_steeringValue : 0.0;
-	//print_line(itos(p_idx)+": "+rtos(steering));
 
 	Basis steeringMat(up, steering);
 
 	Basis rotatingMat(right, wheel.m_rotation);
-
-	/*
-	if (p_idx==1)
-		print_line("steeringMat " +steeringMat);
-	*/
 
 	Basis basis2(
 			right[0], up[0], fwd[0],
@@ -420,8 +412,6 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 	wheel.m_raycastInfo.m_groundObject = 0;
 
 	if (col) {
-		//print_line("WHEEL "+itos(p_idx)+" FROM "+source+" TO: "+target);
-		//print_line("WHEEL "+itos(p_idx)+" COLLIDE? "+itos(col));
 		param = source.distance_to(rr.position) / source.distance_to(target);
 		depth = raylen * param;
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;

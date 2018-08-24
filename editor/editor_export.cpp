@@ -1486,8 +1486,6 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 		return;
 	}
 
-	print_line("exporting " + p_path);
-
 	bool convert = GLOBAL_GET("editor/convert_text_resources_to_binary_on_export");
 	if (!convert)
 		return;

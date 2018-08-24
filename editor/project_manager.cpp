@@ -1390,7 +1390,7 @@ void ProjectManager::_open_project_confirm() {
 			return;
 		}
 
-		print_line("OPENING: " + path + " (" + selected + ")");
+		print_line("Editing project: " + path + " (" + selected + ")");
 
 		List<String> args;
 
@@ -1447,7 +1447,7 @@ void ProjectManager::_run_project_confirm() {
 			return;
 		}
 
-		print_line("OPENING: " + path + " (" + selected + ")");
+		print_line("Running project: " + path + " (" + selected + ")");
 
 		List<String> args;
 
@@ -1513,13 +1513,13 @@ void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<Strin
 
 void ProjectManager::_scan_begin(const String &p_base) {
 
-	print_line("SCAN PROJECTS AT: " + p_base);
+	print_line("Scanning projects at: " + p_base);
 	List<String> projects;
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->change_dir(p_base);
 	_scan_dir(da, 0, 1, &projects);
 	memdelete(da);
-	print_line("found: " + itos(projects.size()) + " projects.");
+	print_line("Found " + itos(projects.size()) + " projects.");
 
 	for (List<String>::Element *E = projects.front(); E; E = E->next()) {
 		String proj = E->get().replace("/", "::");

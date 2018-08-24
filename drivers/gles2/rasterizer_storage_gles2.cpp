@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer_storage_gles2.h"
+
 #include "project_settings.h"
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
@@ -600,8 +601,6 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	glBindTexture(texture->target, texture->tex_id);
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-	//print_line("GET FORMAT: " + Image::get_format_name(texture->format) + " mipmaps: " + itos(texture->mipmaps));
 
 	for (int i = 0; i < texture->mipmaps; i++) {
 

@@ -482,10 +482,8 @@ void EditorAudioBus::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
-	print_line("drag fw");
 	TreeItem *item = effects->get_item_at_position(p_point);
 	if (!item) {
-		print_line("no item");
 		return Variant();
 	}
 

@@ -234,11 +234,6 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transfor
 	aabb = aabb.merge(Rect2(aabb.position + p_motion, aabb.size)); //motion
 	aabb = aabb.grow(p_margin);
 
-	/*
-	if (p_motion!=Vector2())
-		print_line(p_motion);
-	*/
-
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, Space2DSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	real_t best_safe = 1;
@@ -254,15 +249,6 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transfor
 
 		const CollisionObject2DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
-
-		/*if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
-
-			const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
-			if (body->get_one_way_collision_direction()!=Vector2() && p_motion.dot(body->get_one_way_collision_direction())<=CMP_EPSILON) {
-				print_line("failed in motion dir");
-				continue;
-			}
-		}*/
 
 		Transform2D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?

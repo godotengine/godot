@@ -98,22 +98,18 @@ static Error _erase_recursive(DirAccess *da) {
 
 			err = _erase_recursive(da);
 			if (err) {
-				print_line("err recurso " + E->get());
 				da->change_dir("..");
 				return err;
 			}
 			err = da->change_dir("..");
 			if (err) {
-				print_line("no go back " + E->get());
 				return err;
 			}
 			err = da->remove(da->get_current_dir().plus_file(E->get()));
 			if (err) {
-				print_line("no remove dir" + E->get());
 				return err;
 			}
 		} else {
-			print_line("no change to " + E->get());
 			return err;
 		}
 	}
@@ -122,8 +118,6 @@ static Error _erase_recursive(DirAccess *da) {
 
 		Error err = da->remove(da->get_current_dir().plus_file(E->get()));
 		if (err) {
-
-			print_line("no remove file" + E->get());
 			return err;
 		}
 	}

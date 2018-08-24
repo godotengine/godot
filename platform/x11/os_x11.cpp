@@ -1532,7 +1532,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// know Mod1 was ALT and Mod4 was META (applekey/winkey)
 	// just tried Mods until i found them.
 
-	//print_line("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
+	//print_verbose("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
 
 	Ref<InputEventKey> k;
 	k.instance();

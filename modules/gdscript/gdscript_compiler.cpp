@@ -1009,8 +1009,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							return prev_pos;
 						int retval = prev_pos;
 
-						//print_line("retval: "+itos(retval));
-
 						if (retval & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
 							slevel++;
 							codegen.alloc_stack(slevel);
@@ -2073,8 +2071,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 	//validate instances if keeping state
 
 	if (p_keep_state) {
-
-		print_line("RELOAD KEEP " + p_script->path);
 		for (Set<Object *>::Element *E = p_script->instances.front(); E;) {
 
 			Set<Object *>::Element *N = E->next();

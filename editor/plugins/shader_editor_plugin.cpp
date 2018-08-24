@@ -167,7 +167,6 @@ void ShaderTextEditor::_check_shader_mode() {
 
 	String type = ShaderLanguage::get_shader_type(get_text_edit()->get_text());
 
-	print_line("type is: " + type);
 	Shader::Mode mode;
 
 	if (type == "canvas_item") {

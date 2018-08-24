@@ -237,7 +237,6 @@ void PropertySelector::_update_search() {
 
 				Ref<Texture> icon;
 				script_methods = false;
-				print_line("name: " + E->get().name);
 				String rep = E->get().name.replace("*", "");
 				if (E->get().name == "*Script Methods") {
 					icon = get_icon("Script", "EditorIcons");

@@ -337,8 +337,6 @@ void OS_Android::process_event(Ref<InputEvent> p_event) {
 
 void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points) {
 
-	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
-
 	switch (p_what) {
 		case 0: { //gesture begin
 

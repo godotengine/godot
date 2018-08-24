@@ -349,7 +349,6 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 			points.push_back(blend_space->get_blend_point_position(i));
 		}
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(points);
-		print_line("triangleS: " + itos(tr.size()));
 		for (int i = 0; i < tr.size(); i++) {
 			blend_space->add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 		}

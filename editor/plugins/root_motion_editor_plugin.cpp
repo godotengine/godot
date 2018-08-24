@@ -276,7 +276,6 @@ void EditorInspectorRootMotionPlugin::parse_begin(Object *p_object) {
 bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
 
 	if (p_path == "root_motion_track" && p_object->is_class("AnimationTree") && p_type == Variant::NODE_PATH) {
-		print_line("use custom!");
 		EditorPropertyRootMotion *editor = memnew(EditorPropertyRootMotion);
 		if (p_hint == PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && p_hint_text != String()) {
 			editor->setup(p_hint_text);

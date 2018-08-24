@@ -937,7 +937,6 @@ void GDScriptTokenizerText::_advance() {
 						_make_constant(val);
 					} else if (period_found || exponent_found) {
 						double val = str.to_double();
-						//print_line("*%*%*%*% to convert: "+str+" result: "+rtos(val));
 						_make_constant(val);
 					} else {
 						int64_t val = str.to_int64();

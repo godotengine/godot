@@ -374,9 +374,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			capture_subdiv--;
 			css *= 2.0;
 		}
-
-		print_line("bake subdiv: " + itos(bake_subdiv));
-		print_line("capture subdiv: " + itos(capture_subdiv));
 	}
 
 	baker.begin_bake(bake_subdiv, bake_bounds);

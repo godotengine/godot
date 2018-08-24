@@ -1506,12 +1506,6 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	if (Object::cast_to<Viewport>(p_node))
 		return NULL;
 
-	Control *c = Object::cast_to<Control>(p_node);
-
-	if (c) {
-		//print_line("at "+String(c->get_path())+" POS "+c->get_position()+" bt "+p_xform);
-	}
-
 	//subwindows first!!
 
 	if (!p_node->is_visible()) {
@@ -1523,6 +1517,8 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	// matrix.basis_determinant() == 0.0f implies that node does not exist on scene
 	if (matrix.basis_determinant() == 0.0f)
 		return NULL;
+
+	Control *c = Object::cast_to<Control>(p_node);
 
 	if (!c || !c->clips_input() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 
@@ -1654,7 +1650,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				*/
 
 				gui.mouse_focus = _gui_find_control(pos);
-				//print_line("has mf "+itos(gui.mouse_focus!=NULL));
 				gui.mouse_focus_button = mb->get_button_index();
 
 				if (!gui.mouse_focus) {
@@ -1683,11 +1678,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				arr.push_back(gui.mouse_focus->get_class());
 				ScriptDebugger::get_singleton()->send_message("click_ctrl", arr);
 			}
-
-/*if (bool(GLOBAL_DEF("debug/print_clicked_control",false))) {
-
-					print_line(String(gui.mouse_focus->get_path())+" - "+pos);
-				}*/
 #endif
 
 			if (mb->get_button_index() == BUTTON_LEFT) { //assign focus

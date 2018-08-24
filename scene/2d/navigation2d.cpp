@@ -121,7 +121,6 @@ void Navigation2D::_navpoly_link(int p_id) {
 					pending.edge = j;
 					p.edges.write[j].P = C->get().pending.push_back(pending);
 					continue;
-					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
 
 				C->get().B = &p;
@@ -143,8 +142,6 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm = navpoly_map[p_id];
 	ERR_FAIL_COND(!nm.linked);
-
-	//print_line("UNLINK");
 
 	for (List<Polygon>::Element *E = nm.polygons.front(); E; E = E->next()) {
 
@@ -341,7 +338,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 		path.resize(2);
 		path.write[0] = begin_point;
 		path.write[1] = end_point;
-		//print_line("Direct Path");
 		return path;
 	}
 
@@ -379,7 +375,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	while (!found_route) {
 
 		if (open_list.size() == 0) {
-			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list
@@ -526,7 +521,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 					if (portal_left.distance_squared_to(apex_point) < CMP_EPSILON || CLOCK_TANGENT(apex_point, left, portal_right) > 0) {
 						left_poly = p;
 						portal_left = left;
-						//print_line("***ADVANCE LEFT");
 					} else {
 
 						apex_point = portal_right;
@@ -537,8 +531,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						if (!path.size() || path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
 							path.push_back(apex_point);
 						skip = true;
-						//print_line("addpoint left");
-						//print_line("***CLIP LEFT");
 					}
 				}
 
@@ -547,7 +539,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 					if (portal_right.distance_squared_to(apex_point) < CMP_EPSILON || CLOCK_TANGENT(apex_point, right, portal_left) < 0) {
 						right_poly = p;
 						portal_right = right;
-						//print_line("***ADVANCE RIGHT");
 					} else {
 
 						apex_point = portal_left;
@@ -557,8 +548,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						portal_left = apex_point;
 						if (!path.size() || path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
 							path.push_back(apex_point);
-						//print_line("addpoint right");
-						//print_line("***CLIP RIGHT");
 					}
 				}
 

@@ -58,8 +58,6 @@ void Particles2DEditorPlugin::make_visible(bool p_visible) {
 
 void Particles2DEditorPlugin::_file_selected(const String &p_file) {
 
-	print_line("file: " + p_file);
-
 	source_emission_file = p_file;
 	emission_mask->popup_centered_minsize();
 }

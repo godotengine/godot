@@ -928,7 +928,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv *e
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
 
-		print_line("FAILED GETTING METHOD ID " + mname);
+		print_line("RegisterMethod: Failed getting method ID: " + mname);
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));

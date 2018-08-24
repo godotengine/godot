@@ -89,7 +89,6 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 	}
 
 	if (resources.empty()) {
-		//print_line("added frames!");
 		return;
 	}
 
@@ -108,7 +107,6 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 	undo_redo->add_undo_method(this, "_update_library");
 
 	undo_redo->commit_action();
-	//print_line("added frames!");
 }
 
 void SpriteFramesEditor::_load_pressed() {

@@ -257,7 +257,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	TriangulatorPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		print_line("convex partition failed!");
+		ERR_PRINTS("NavigationPolygon: Convex partition failed!");
 		return;
 	}
 

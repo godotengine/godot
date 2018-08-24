@@ -228,7 +228,6 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 		profile_begtime = profile_endtime;
 	}
 
-	//print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
 	/* SETUP CONSTRAINT ISLANDS */
 
 	{

@@ -68,8 +68,6 @@ void LinkButton::_notification(int p_what) {
 			Color color;
 			bool do_underline = false;
 
-			//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(get_draw_mode()));
-
 			switch (get_draw_mode()) {
 
 				case DRAW_NORMAL: {

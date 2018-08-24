@@ -224,17 +224,11 @@ bool HingeJointSW::setup(real_t p_step) {
 	// Compute limit information
 	real_t hingeAngle = get_hinge_angle();
 
-	//print_line("angle: "+rtos(hingeAngle));
 	//set bias, sign, clear accumulator
 	m_correction = real_t(0.);
 	m_limitSign = real_t(0.);
 	m_solveLimit = false;
 	m_accLimitImpulse = real_t(0.);
-
-	/*if (m_useLimit) {
-		print_line("low: "+rtos(m_lowerLimit));
-		print_line("hi: "+rtos(m_upperLimit));
-	}*/
 
 	//if (m_lowerLimit < m_upperLimit)
 	if (m_useLimit && m_lowerLimit <= m_upperLimit) {

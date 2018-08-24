@@ -231,7 +231,6 @@ static String _fix_error_code_line(const String &p_error, int p_code_start, int 
 			continue;
 
 		String numstr = error.substr(last_find_pos + 1, (end_pos - last_find_pos) - 1);
-		print_line("numstr: " + numstr);
 		String begin = error.substr(0, last_find_pos + 1);
 		String end = error.substr(end_pos, error.length());
 		int num = numstr.to_int() + p_code_start - p_offset;

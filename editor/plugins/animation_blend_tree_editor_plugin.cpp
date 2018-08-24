@@ -38,7 +38,6 @@ void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_scrip
 
 void AnimationNodeBlendTreeEditor::_update_options_menu() {
 
-	print_line("update options");
 	add_node->get_popup()->clear();
 	for (int i = 0; i < add_options.size(); i++) {
 		add_node->get_popup()->add_item(add_options[i].name, i);

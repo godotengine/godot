@@ -294,11 +294,6 @@ bool GDScript::get_property_default_value(const StringName &p_property, Variant 
 
 #ifdef TOOLS_ENABLED
 
-	/*
-	for (const Map<StringName,Variant>::Element *I=member_default_values.front();I;I=I->next()) {
-		print_line("\t"+String(String(I->key())+":"+String(I->get())));
-	}
-	*/
 	const Map<StringName, Variant>::Element *E = member_default_values_cache.find(p_property);
 	if (E) {
 		r_value = E->get();
@@ -335,17 +330,8 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 
 PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this) {
 #ifdef TOOLS_ENABLED
-
-	//instance a fake script for editing the values
-	//plist.invert();
-
-	/*print_line("CREATING PLACEHOLDER");
-		for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
-			print_line(E->get().name);
-		}*/
 	PlaceHolderScriptInstance *si = memnew(PlaceHolderScriptInstance(GDScriptLanguage::get_singleton(), Ref<Script>(this), p_this));
 	placeholders.insert(si);
-	//_update_placeholder(si);
 	_update_exports();
 	return si;
 #else
@@ -409,7 +395,6 @@ bool GDScript::_update_exports() {
 	bool changed = false;
 
 	if (source_changed_cache) {
-		//print_line("updating source for "+get_path());
 		source_changed_cache = false;
 		changed = true;
 
@@ -456,11 +441,8 @@ bool GDScript::_update_exports() {
 
 					if (bf.is_valid()) {
 
-						//print_line("parent is: "+bf->get_path());
 						base_cache = bf;
 						bf->inheriters_cache.insert(get_instance_id());
-
-						//bf->_update_exports(p_instances,true,false);
 					}
 				} else {
 					ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
@@ -475,7 +457,6 @@ bool GDScript::_update_exports() {
 					continue;
 
 				members_cache.push_back(c->variables[i]._export);
-				//print_line("found "+c->variables[i]._export.name);
 				member_default_values_cache[c->variables[i].identifier] = c->variables[i].default_value;
 			}
 
@@ -490,7 +471,6 @@ bool GDScript::_update_exports() {
 			}
 		}
 	} else {
-		//print_line("unchanged is "+get_path());
 	}
 
 	if (base_cache.is_valid()) {
@@ -499,11 +479,9 @@ bool GDScript::_update_exports() {
 		}
 	}
 
-	if (/*changed &&*/ placeholders.size()) { //hm :(
+	if (placeholders.size()) { //hm :(
 
-		//print_line("updating placeholders for "+get_path());
-
-		//update placeholders if any
+		// update placeholders if any
 		Map<StringName, Variant> values;
 		List<PropertyInfo> propnames;
 		_update_exports_values(values, propnames);
@@ -529,7 +507,6 @@ void GDScript::update_exports() {
 
 	Set<ObjectID> copy = inheriters_cache; //might get modified
 
-	//print_line("update exports for "+get_path()+" ic: "+itos(copy.size()));
 	for (Set<ObjectID>::Element *E = copy.front(); E; E = E->next()) {
 		Object *id = ObjectDB::get_instance(E->get());
 		GDScript *s = Object::cast_to<GDScript>(id);
@@ -825,7 +802,6 @@ Error GDScript::load_source_code(const String &p_path) {
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
 #endif
-	//print_line("LSC :"+get_path());
 	path = p_path;
 	return OK;
 }
@@ -1507,7 +1483,6 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 			p_info_arr[current].self_time = elem->self()->profile.last_frame_self_time;
 			p_info_arr[current].total_time = elem->self()->profile.last_frame_total_time;
 			p_info_arr[current].signature = elem->self()->profile.signature;
-			//print_line(String(elem->self()->profile.signature)+": "+itos(elem->self()->profile.last_frame_call_count));
 			current++;
 		}
 		elem = elem->next();
@@ -1546,7 +1521,7 @@ struct GDScriptDepSort {
 void GDScriptLanguage::reload_all_scripts() {
 
 #ifdef DEBUG_ENABLED
-	print_line("RELOAD ALL SCRIPTS");
+	print_verbose("GDScript: Reloading all scripts");
 	if (lock) {
 		lock->lock();
 	}
@@ -1556,7 +1531,7 @@ void GDScriptLanguage::reload_all_scripts() {
 	SelfList<GDScript> *elem = script_list.first();
 	while (elem) {
 		if (elem->self()->get_path().is_resource_file()) {
-			print_line("FOUND: " + elem->self()->get_path());
+			print_verbose("GDScript: Found: " + elem->self()->get_path());
 			scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
 		}
 		elem = elem->next();
@@ -1572,7 +1547,7 @@ void GDScriptLanguage::reload_all_scripts() {
 
 	for (List<Ref<GDScript> >::Element *E = scripts.front(); E; E = E->next()) {
 
-		print_line("RELOADING: " + E->get()->get_path());
+		print_verbose("GDScript: Reloading: " + E->get()->get_path());
 		E->get()->load_source_code(E->get()->get_path());
 		E->get()->reload(true);
 	}
@@ -1703,7 +1678,6 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 void GDScriptLanguage::frame() {
 
-	//print_line("calls: "+itos(calls));
 	calls = 0;
 
 #ifdef DEBUG_ENABLED

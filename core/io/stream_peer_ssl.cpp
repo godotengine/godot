@@ -81,7 +81,7 @@ PoolByteArray StreamPeerSSL::get_project_cert_array() {
 			memdelete(f);
 
 #ifdef DEBUG_ENABLED
-			print_line("Loaded certs from '" + certs_path);
+			print_verbose(vformat("Loaded certs from '%s'.", certs_path));
 #endif
 		}
 	}

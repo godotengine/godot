@@ -435,8 +435,6 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 		break;
 	}
 
-	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
-
 	if (ret.index == -1) {
 		//could not find texture to fit, create one
 		ret.x = 0;

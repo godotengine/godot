@@ -1241,7 +1241,7 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		surfaces_tools.push_back(st); //stay there
 	}
 
-	print_line("gen indices: " + itos(gen_index_count));
+	print_verbose("Mesh: Gen indices: " + itos(gen_index_count));
 	//go through all indices
 	for (int i = 0; i < gen_index_count; i += 3) {
 

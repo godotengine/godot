@@ -123,12 +123,12 @@ void FindInFiles::_notification(int p_notification) {
 
 void FindInFiles::start() {
 	if (_pattern == "") {
-		print_line("Nothing to search, pattern is empty");
+		print_verbose("Nothing to search, pattern is empty");
 		emit_signal(SIGNAL_FINISHED);
 		return;
 	}
 	if (_extension_filter.size() == 0) {
-		print_line("Nothing to search, filter matches no files");
+		print_verbose("Nothing to search, filter matches no files");
 		emit_signal(SIGNAL_FINISHED);
 		return;
 	}
@@ -207,7 +207,7 @@ void FindInFiles::_iterate() {
 		_scan_file(fpath);
 
 	} else {
-		print_line("Search complete");
+		print_verbose("Search complete");
 		set_process(false);
 		_current_dir = "";
 		_searching = false;
@@ -226,7 +226,7 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
 	DirAccess *dir = DirAccess::open(path);
 	if (dir == NULL) {
-		print_line("Cannot open directory! " + path);
+		print_verbose("Cannot open directory! " + path);
 		return;
 	}
 
@@ -258,7 +258,7 @@ void FindInFiles::_scan_file(String fpath) {
 
 	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
 	if (f == NULL) {
-		print_line(String("Cannot open file ") + fpath);
+		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
 
@@ -896,7 +896,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 		int _;
 		if (!find_next(line, search_text, repl_begin, _finder->is_match_case(), _finder->is_whole_words(), _, _)) {
 			// Make sure the replace is still valid in case the file was tampered with.
-			print_line(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
+			print_verbose(String("Occurrence no longer matches, replace will be ignored in {0}: line {1}, col {2}").format(varray(fpath, repl_line_number, repl_begin)));
 			continue;
 		}
 

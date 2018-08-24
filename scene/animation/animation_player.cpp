@@ -960,8 +960,6 @@ Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animati
 
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
 
-	//print_line("Add anim: "+String(p_name)+" name: "+p_animation->get_name());
-
 	if (animation_set.has(p_name)) {
 
 		_unref_anim(animation_set[p_name].animation);

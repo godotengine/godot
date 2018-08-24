@@ -921,8 +921,6 @@ void CPUParticles::_update_particle_data_buffer() {
 				t = un_transform * t;
 			}
 
-			//			print_line(" particle " + itos(i) + ": " + String(r[idx].active ? "[x]" : "[ ]") + "\n\txform " + r[idx].transform + "\n\t" + r[idx].velocity + "\n\tcolor: " + r[idx].color);
-
 			if (r[idx].active) {
 				ptr[0] = t.basis.elements[0][0];
 				ptr[1] = t.basis.elements[0][1];

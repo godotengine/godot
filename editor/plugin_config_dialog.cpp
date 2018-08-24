@@ -112,7 +112,6 @@ void PluginConfigDialog::_notification(int p_what) {
 void PluginConfigDialog::config(const String &p_config_path) {
 	if (p_config_path.length()) {
 		Ref<ConfigFile> cf = memnew(ConfigFile);
-		print_line(p_config_path);
 		cf->load(p_config_path);
 
 		name_edit->set_text(cf->get_value("plugin", "name", ""));

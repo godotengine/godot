@@ -1512,7 +1512,6 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	}
 
 	editor_data->get_undo_redo().commit_action();
-	print_line("test: " + String(Variant(selected.front()->get()->get_meta("_editor_icon"))));
 
 	editor->push_item(p_script.operator->());
 }
