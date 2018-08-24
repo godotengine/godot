@@ -48,18 +48,14 @@ void Joint::_update_joint(bool p_only_free) {
 	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
 	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
 
-	if (!node_a || !node_b)
-		return;
-
 	PhysicsBody *body_a = Object::cast_to<PhysicsBody>(node_a);
 	PhysicsBody *body_b = Object::cast_to<PhysicsBody>(node_b);
 
-	if (!body_a || !body_b)
-		return;
-
-	if (!body_a) {
+	if (!body_a && body_b)
 		SWAP(body_a, body_b);
-	}
+
+	if (!body_a)
+		return;
 
 	joint = _configure_joint(body_a, body_b);
 
@@ -69,7 +65,8 @@ void Joint::_update_joint(bool p_only_free) {
 	PhysicsServer::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
 	ba = body_a->get_rid();
-	bb = body_b->get_rid();
+	if (body_b)
+		bb = body_b->get_rid();
 
 	PhysicsServer::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
 }

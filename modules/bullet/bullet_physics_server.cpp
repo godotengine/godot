@@ -1441,7 +1441,7 @@ RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform
 
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
-	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B, true));
+	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
