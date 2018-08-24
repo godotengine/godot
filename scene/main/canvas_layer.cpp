@@ -81,6 +81,8 @@ void CanvasLayer::_attach_to_viewport() {
 		vp = Node::get_viewport();
 	}
 	ERR_FAIL_COND(!vp);
+
+	vp->_canvas_layer_add(this);
 	viewport = vp->get_viewport_rid();
 
 	VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
@@ -89,6 +91,15 @@ void CanvasLayer::_attach_to_viewport() {
 }
 
 void CanvasLayer::_detach_from_viewport() {
+
+	if (custom_viewport && ObjectDB::get_instance(custom_viewport_id)) {
+		vp = custom_viewport;
+	} else {
+		vp = Node::get_viewport();
+	}
+	ERR_FAIL_COND(!vp);
+
+	vp->_canvas_layer_remove(this);
 
 	VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 	viewport = RID();
