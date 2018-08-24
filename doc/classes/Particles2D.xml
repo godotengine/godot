@@ -66,7 +66,7 @@
 			Emission lifetime randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
-			Particle system's running speed scaling ratio. Default value: [code]1[/code].
+			Particle system's running speed scaling ratio. Default value: [code]1[/code]. A value of [code]0[/code] can be used to pause the particles.
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code] particles will be squares.
