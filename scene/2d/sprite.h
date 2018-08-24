@@ -75,6 +75,8 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
+	bool is_pixel_opaque(const Point2 &p_point) const;
+
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
 

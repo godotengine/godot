@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "texture.h"
+#include "bit_mask.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "core_string_names.h"
@@ -39,6 +40,9 @@ Size2 Texture::get_size() const {
 	return Size2(get_width(), get_height());
 }
 
+bool Texture::is_pixel_opaque(int p_x, int p_y) const {
+	return true;
+}
 void Texture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
@@ -234,6 +238,7 @@ void ImageTexture::set_data(const Ref<Image> &p_image) {
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 
 	_change_notify();
+	alpha_cache.unref();
 }
 
 void ImageTexture::_resource_path_changed() {
@@ -286,6 +291,41 @@ void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		return;
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
+}
+
+bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
+
+	if (!alpha_cache.is_valid()) {
+		Ref<Image> img = get_data();
+		if (img.is_valid()) {
+			if (img->is_compressed()) { //must decompress, if compressed
+				Ref<Image> decom = img->duplicate();
+				decom->decompress();
+				img = decom;
+			}
+			alpha_cache.instance();
+			alpha_cache->create_from_image_alpha(img);
+		}
+	}
+
+	if (alpha_cache.is_valid()) {
+
+		int aw = int(alpha_cache->get_size().width);
+		int ah = int(alpha_cache->get_size().height);
+		if (aw == 0 || ah == 0) {
+			return true;
+		}
+
+		int x = p_x * aw / w;
+		int y = p_y * ah / h;
+
+		x = CLAMP(x, 0, aw);
+		y = CLAMP(y, 0, aw);
+
+		return alpha_cache->get_bit(Point2(x, y));
+	}
+
+	return true;
 }
 
 void ImageTexture::set_size_override(const Size2 &p_size) {
@@ -420,6 +460,8 @@ Image::Format StreamTexture::get_format() const {
 }
 
 Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> &image, int p_size_limit) {
+
+	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
@@ -709,6 +751,40 @@ Ref<Image> StreamTexture::get_data() const {
 	return VS::get_singleton()->texture_get_data(texture);
 }
 
+bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
+
+	if (!alpha_cache.is_valid()) {
+		Ref<Image> img = get_data();
+		if (img.is_valid()) {
+			if (img->is_compressed()) { //must decompress, if compressed
+				Ref<Image> decom = img->duplicate();
+				decom->decompress();
+				img = decom;
+			}
+			alpha_cache.instance();
+			alpha_cache->create_from_image_alpha(img);
+		}
+	}
+
+	if (alpha_cache.is_valid()) {
+
+		int aw = int(alpha_cache->get_size().width);
+		int ah = int(alpha_cache->get_size().height);
+		if (aw == 0 || ah == 0) {
+			return true;
+		}
+
+		int x = p_x * aw / w;
+		int y = p_y * ah / h;
+
+		x = CLAMP(x, 0, aw);
+		y = CLAMP(y, 0, aw);
+
+		return alpha_cache->get_bit(Point2(x, y));
+	}
+
+	return true;
+}
 void StreamTexture::set_flags(uint32_t p_flags) {
 	flags = p_flags;
 	VS::get_singleton()->texture_set_flags(texture, flags);
@@ -1007,6 +1083,15 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	return true;
 }
 
+bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
+
+	if (atlas.is_valid()) {
+		return atlas->is_pixel_opaque(p_x + region.position.x + margin.position.x, p_x + region.position.y + margin.position.y);
+	}
+
+	return true;
+}
+
 AtlasTexture::AtlasTexture() {
 	filter_clip = false;
 }
@@ -1182,6 +1267,23 @@ void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 		local.position -= rect.position;
 		pieces[i].texture->draw_rect_region(p_canvas_item, target, local, p_modulate, p_transpose, p_normal_map, false);
 	}
+}
+
+bool LargeTexture::is_pixel_opaque(int p_x, int p_y) const {
+
+	for (int i = 0; i < pieces.size(); i++) {
+
+		// TODO
+		if (!pieces[i].texture.is_valid())
+			continue;
+
+		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
+		if (rect.has_point(Point2(p_x, p_y))) {
+			return pieces[i].texture->is_pixel_opaque(p_x - rect.position.x, p_y - rect.position.y);
+		}
+	}
+
+	return true;
 }
 
 LargeTexture::LargeTexture() {
@@ -1801,6 +1903,16 @@ Ref<Image> AnimatedTexture::get_data() const {
 	}
 
 	return frames[current_frame].texture->get_data();
+}
+
+bool AnimatedTexture::is_pixel_opaque(int p_x, int p_y) const {
+
+	RWLockRead r(rw_lock);
+
+	if (frames[current_frame].texture.is_valid()) {
+		return frames[current_frame].texture->is_pixel_opaque(p_x, p_y);
+	}
+	return true;
 }
 
 void AnimatedTexture::set_flags(uint32_t p_flags) {
