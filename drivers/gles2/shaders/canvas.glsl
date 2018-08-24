@@ -75,7 +75,7 @@ void main() {
 #endif
 
 {
-        vec2 src_vtx=outvec.xy;
+	vec2 src_vtx = outvec.xy;
 VERTEX_SHADER_CODE
 
 }
@@ -83,7 +83,6 @@ VERTEX_SHADER_CODE
 	color_interp = color;
 
 	gl_Position = projection_matrix * modelview_matrix * outvec;
-
 }
 
 [fragment]
@@ -121,7 +120,6 @@ uniform vec2 screen_pixel_size;
 
 FRAGMENT_SHADER_GLOBALS
 
-
 void main() {
 
 	vec4 color = color_interp;
@@ -135,11 +133,9 @@ void main() {
 
 FRAGMENT_SHADER_CODE
 
-
 }
 
 	color *= final_modulate;
 
 	gl_FragColor = color;
-
 }
