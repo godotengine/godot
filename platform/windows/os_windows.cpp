@@ -449,7 +449,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				input->set_mouse_position(c);
 				mm->set_speed(Vector2(0, 0));
 
-				if (raw->data.mouse.usFlags ==MOUSE_MOVE_RELATIVE) {
+				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
 
 				} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
@@ -460,9 +460,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
 					Vector2 abs_pos(
-					 (double(raw->data.mouse.lLastX) -  65536.0 / (nScreenWidth) ) * nScreenWidth / 65536.0 + nScreenLeft,
-					 (double(raw->data.mouse.lLastY) -  65536.0 / (nScreenHeight) ) * nScreenHeight / 65536.0 + nScreenTop
-					);
+							(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
+							(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
 
 					POINT coords; //client coords
 					coords.x = abs_pos.x;
@@ -470,15 +469,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					ScreenToClient(hWnd, &coords);
 
-
-					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y ));
+					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y));
 					old_x = coords.x;
 					old_y = coords.y;
 
 					/*Input.mi.dx = (int)((((double)(pos.x)-nScreenLeft) * 65536) / nScreenWidth + 65536 / (nScreenWidth));
 					Input.mi.dy = (int)((((double)(pos.y)-nScreenTop) * 65536) / nScreenHeight + 65536 / (nScreenHeight));
 					*/
-
 				}
 
 				if (window_has_focus && main_loop)
@@ -856,14 +853,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (ke.uMsg == WM_SYSKEYUP)
 				ke.uMsg = WM_KEYUP;
 
-			/*if (ke.uMsg==WM_KEYDOWN && alt_mem && uMsg!=WM_SYSKEYDOWN) {
-				//altgr hack for intl keyboards, not sure how good it is
-				//windows is weeeeird
-				ke.mod_state.alt=false;
-				ke.mod_state.control=false;
-				print_line("")
-			}*/
-
 			ke.wParam = wParam;
 			ke.lParam = lParam;
 			key_event_buffer[key_event_pos++] = ke;
@@ -871,7 +860,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 		case WM_INPUTLANGCHANGEREQUEST: {
 
-			print_line("input lang change");
+			// FIXME: Do something?
 		} break;
 
 		case WM_TOUCH: {
@@ -1126,7 +1115,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	WNDCLASSEXW wc;
 
 	if (is_hidpi_allowed()) {
-		print_line("hidpi aware?");
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
 
 		if (Shcore != NULL) {
@@ -1200,8 +1188,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 		WindowRect.right = data.size.width;
 		WindowRect.bottom = data.size.height;
-
-		print_line("wr right " + itos(WindowRect.right) + ", " + itos(WindowRect.bottom));
 
 		/*  DEVMODE dmScreenSettings;
 		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
@@ -1490,12 +1476,6 @@ void OS_Windows::finalize() {
 	if (user_proc) {
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
-
-	/*
-	if (debugger_connection_console) {
-		memdelete(debugger_connection_console);
-	}
-	*/
 }
 
 void OS_Windows::finalize_core() {
@@ -1759,9 +1739,6 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 
 		if (pre_fs_valid) {
 			GetWindowRect(hWnd, &pre_fs_rect);
-			//print_line("A: "+itos(pre_fs_rect.left)+","+itos(pre_fs_rect.top)+","+itos(pre_fs_rect.right-pre_fs_rect.left)+","+itos(pre_fs_rect.bottom-pre_fs_rect.top));
-			//MapWindowPoints(hWnd, GetParent(hWnd), (LPPOINT) &pre_fs_rect, 2);
-			//print_line("B: "+itos(pre_fs_rect.left)+","+itos(pre_fs_rect.top)+","+itos(pre_fs_rect.right-pre_fs_rect.left)+","+itos(pre_fs_rect.bottom-pre_fs_rect.top));
 		}
 
 		int cs = get_current_screen();

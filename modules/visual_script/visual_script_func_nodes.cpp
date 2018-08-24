@@ -394,7 +394,6 @@ void VisualScriptFunctionCall::_update_method_cache() {
 		}
 	}
 
-	//print_line("BASE: "+String(type)+" FUNC: "+String(function));
 	MethodBind *mb = ClassDB::get_method(type, function);
 	if (mb) {
 		use_default_args = mb->get_default_argument_count();

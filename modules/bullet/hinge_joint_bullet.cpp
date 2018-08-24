@@ -97,7 +97,7 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 	switch (p_param) {
 		case PhysicsServer::HINGE_JOINT_BIAS:
 			if (0 < p_value) {
-				print_line("The Bullet Hinge Joint doesn't support bias, So it's always 0");
+				WARN_PRINTS("HingeJoint doesn't support bias in the Bullet backend, so it's always 0.");
 			}
 			break;
 		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER:
@@ -122,7 +122,7 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 			hingeConstraint->setMaxMotorImpulse(p_value);
 			break;
 		default:
-			WARN_PRINTS("The Bullet Hinge Joint doesn't support this parameter: " + itos(p_param) + ", value: " + itos(p_value));
+			WARN_PRINTS("HingeJoint doesn't support this parameter in the Bullet backend: " + itos(p_param) + ", value: " + itos(p_value));
 	}
 }
 
@@ -146,7 +146,7 @@ real_t HingeJointBullet::get_param(PhysicsServer::HingeJointParam p_param) const
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			return hingeConstraint->getMaxMotorImpulse();
 		default:
-			WARN_PRINTS("The Bullet Hinge Joint doesn't support this parameter: " + itos(p_param));
+			WARN_PRINTS("HingeJoint doesn't support this parameter in the Bullet backend: " + itos(p_param));
 			return 0;
 	}
 }

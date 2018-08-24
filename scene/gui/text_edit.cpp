@@ -5692,15 +5692,12 @@ void TextEdit::_update_completion_candidates() {
 	bool pre_keyword = false;
 	bool cancel = false;
 
-	//print_line("inquote: "+itos(inquote)+"first quote "+itos(first_quote)+" cofs-1 "+itos(cofs-1));
 	if (!inquote && first_quote == cofs - 1) {
 		//no completion here
-		//print_line("cancel!");
 		cancel = true;
 	} else if (inquote && first_quote != -1) {
 
 		s = l.substr(first_quote, cofs - first_quote);
-		//print_line("s: 1"+s);
 	} else if (cofs > 0 && l[cofs - 1] == ' ') {
 		int kofs = cofs - 1;
 		String kw;
@@ -5713,7 +5710,6 @@ void TextEdit::_update_completion_candidates() {
 		}
 
 		pre_keyword = keywords.has(kw);
-		//print_line("KW "+kw+"? "+itos(pre_keyword));
 
 	} else {
 

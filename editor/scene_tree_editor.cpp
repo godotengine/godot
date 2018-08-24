@@ -968,7 +968,6 @@ void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 
 	//should use a timer
 	update_timer->start();
-	//print_line("WARNING CHANGED "+String(p_for_node->get_name()));
 }
 
 void SceneTreeEditor::_editor_settings_changed() {

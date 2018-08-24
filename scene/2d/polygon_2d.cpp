@@ -253,7 +253,6 @@ void Polygon2D::_notification(int p_what) {
 					//normalize
 					for (int j = 0; j < 4; j++) {
 						weightsw[i * 4 + j] /= tw;
-						//						print_line("point " + itos(i) + " idx " + itos(j) + " index: " + itos(bonesw[i * 4 + j]) + " weight: " + rtos(weightsw[i * 4 + j]));
 					}
 				}
 			}
@@ -344,8 +343,6 @@ void Polygon2D::_notification(int p_what) {
 						indices.write[from + j] = loop[sub_indices[j]];
 					}
 				}
-
-				//print_line("loops: " + itos(loops.size()) + " indices: " + itos(indices.size()));
 
 				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
 			}

@@ -1001,11 +1001,13 @@ void BulletPhysicsServer::soft_body_get_collision_exceptions(RID p_body, List<RI
 }
 
 void BulletPhysicsServer::soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
-	print_line("TODO MUST BE IMPLEMENTED");
+	// FIXME: Must be implemented.
+	WARN_PRINT("soft_body_state is not implemented yet in Bullet backend.");
 }
 
 Variant BulletPhysicsServer::soft_body_get_state(RID p_body, BodyState p_state) const {
-	print_line("TODO MUST BE IMPLEMENTED");
+	// FIXME: Must be implemented.
+	WARN_PRINT("soft_body_state is not implemented yet in Bullet backend.");
 	return Variant();
 }
 

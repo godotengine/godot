@@ -436,8 +436,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					continue;
 				}
 
-				print_line("u - "+String(E->key())+" offset: "+itos(r_gen_code.uniform_offsets[E->get().order]));
-
 			}
 
 */

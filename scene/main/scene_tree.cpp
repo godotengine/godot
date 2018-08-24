@@ -1195,8 +1195,6 @@ void SceneTree::_update_root_rect() {
 		VisualServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
 	}
 
-	//print_line("VP SIZE: "+viewport_size+" OFFSET: "+offset+" = "+(offset*2+viewport_size));
-	//print_line("SS: "+video_mode);
 	switch (stretch_mode) {
 		case STRETCH_MODE_2D: {
 

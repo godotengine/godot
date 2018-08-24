@@ -192,7 +192,6 @@ int GDScriptLanguage::find_function(const String &p_function, const String &p_co
 		if (tokenizer.get_token() == GDScriptTokenizer::TK_NEWLINE) {
 			indent = tokenizer.get_token_line_indent();
 		}
-		//print_line("TOKEN: "+String(GDScriptTokenizer::get_token_name(tokenizer.get_token())));
 		if (indent == 0 && tokenizer.get_token() == GDScriptTokenizer::TK_PR_FUNCTION && tokenizer.get_token(1) == GDScriptTokenizer::TK_IDENTIFIER) {
 
 			String identifier = tokenizer.get_token_identifier(1);
@@ -201,7 +200,6 @@ int GDScriptLanguage::find_function(const String &p_function, const String &p_co
 			}
 		}
 		tokenizer.advance();
-		//print_line("NEXT: "+String(GDScriptTokenizer::get_token_name(tokenizer.get_token())));
 	}
 	return -1;
 }
@@ -2930,7 +2928,6 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 			break;
 		}
 
-		//print_line(itos(indent_stack.size())+","+itos(tc)+": "+l);
 		lines.write[i] = l;
 	}
 

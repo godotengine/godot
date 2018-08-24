@@ -739,7 +739,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	String library_to_use = "libgodot.iphone." + String(p_debug ? "debug" : "release") + ".fat.a";
 
-	print_line("static library: " + library_to_use);
+	print_line("Static library: " + library_to_use);
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
@@ -809,7 +809,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		file = file.replace_first("iphone/", "");
 
 		if (files_to_parse.has(file)) {
-			print_line(String("parse ") + file);
 			_fix_config_file(p_preset, data, config_data, p_debug);
 		} else if (file.begins_with("libgodot.iphone")) {
 			if (file != library_to_use) {

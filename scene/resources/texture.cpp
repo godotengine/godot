@@ -480,7 +480,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 	flags = f->get_32(); //texture flags!
 	uint32_t df = f->get_32(); //data format
 
-/*
+	/*
 	print_line("width: " + itos(tw));
 	print_line("height: " + itos(th));
 	print_line("flags: " + itos(flags));

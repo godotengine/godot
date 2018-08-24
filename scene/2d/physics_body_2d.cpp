@@ -365,13 +365,6 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 	ERR_FAIL_COND(!contact_monitor);
 	Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(objid);
 
-	/*if (obj) {
-		if (body_in)
-			print_line("in: "+String(obj->call("get_name")));
-		else
-			print_line("out: "+String(obj->call("get_name")));
-	}*/
-
 	ERR_FAIL_COND(!body_in && !E);
 
 	if (body_in) {

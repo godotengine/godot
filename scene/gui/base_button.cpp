@@ -31,7 +31,6 @@
 #include "base_button.h"
 
 #include "os/keyboard.h"
-#include "print_string.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
@@ -361,7 +360,6 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		return DRAW_DISABLED;
 	};
 
-	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
 	if (status.press_attempt == false && status.hovering && !status.pressed) {
 
 		return DRAW_HOVER;

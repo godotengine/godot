@@ -68,20 +68,6 @@ void ContextGL_Win::swap_buffers() {
 	SwapBuffers(hDC);
 }
 
-/*
-static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
-
-	print_line(String()+"getting proc of: "+p_function);
-	GLWrapperFuncPtr func=(GLWrapperFuncPtr)get_gl_proc_address(p_function);
-	if (!func) {
-		print_line("Couldn't find function: "+String(p_function));
-		print_line("error: "+itos(GetLastError()));
-	}
-	return func;
-
-}
-*/
-
 void ContextGL_Win::set_use_vsync(bool p_use) {
 
 	if (wglSwapIntervalEXT) {

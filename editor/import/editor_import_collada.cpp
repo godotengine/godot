@@ -119,7 +119,6 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_n
 
 	Collada::NodeJoint *joint = static_cast<Collada::NodeJoint *>(p_node);
 
-	print_line("populating joint " + joint->name);
 	p_skeleton->add_bone(p_node->name);
 	if (p_parent >= 0)
 		p_skeleton->set_bone_parent(r_bone, p_parent);
@@ -137,8 +136,7 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_n
 		p_skeleton->set_bone_rest(r_bone, collada.fix_transform(collada.state.bone_rest_map[joint->sid]));
 		//should map this bone to something for animation?
 	} else {
-		print_line("no rest: " + joint->sid);
-		WARN_PRINT("Joint has no rest...");
+		WARN_PRINT("Collada: Joint has no rest.");
 	}
 
 	int id = r_bone++;
@@ -585,9 +583,6 @@ static void _generate_tangents_and_binormals(const PoolVector<int> &p_indices, c
 		binormals.write[index_arrayr[idx * 3 + 1]] += binormal;
 		tangents.write[index_arrayr[idx * 3 + 2]] += tangent;
 		binormals.write[index_arrayr[idx * 3 + 2]] += binormal;
-
-		//print_line(itos(idx)+" tangent: "+tangent);
-		//print_line(itos(idx)+" binormal: "+binormal);
 	}
 
 	r_tangents.resize(vlen * 4);
@@ -1028,7 +1023,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 						material = material_cache[target];
 
 				} else if (p.material != "") {
-					print_line("Warning, unreferenced material in geometry instance: " + p.material);
+					WARN_PRINTS("Collada: Unreferenced material in geometry instance: " + p.material);
 				}
 			}
 
@@ -1352,7 +1347,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh_cache[meshid] = mesh;
 				} else {
 
-					print_line("Warning, will not import geometry: " + meshid);
+					WARN_PRINTS("Collada: Will not import geometry: " + meshid);
 				}
 			}
 
@@ -1379,7 +1374,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 							mi->set_surface_material(i, material);
 						} else if (matname != "") {
-							print_line("Warning, unreferenced material in geometry instance: " + matname);
+							WARN_PRINTS("Collada: Unreferenced material in geometry instance: " + matname);
 						}
 					}
 				}
@@ -1541,7 +1536,6 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 	for (int i = 0; i < collada.state.animation_tracks.size(); i++) {
 
 		const Collada::AnimationTrack &at = collada.state.animation_tracks[i];
-		//print_line("CHANNEL: "+at.target+" PARAM: "+at.param);
 
 		String node;
 
@@ -1551,7 +1545,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 				node = node_name_map[at.target];
 			} else {
-				print_line("Couldn't find node: " + at.target);
+				WARN_PRINTS("Collada: Couldn't find node: " + at.target);
 				continue;
 			}
 		} else {
@@ -1570,7 +1564,6 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 	}
 
 	create_animation(-1, p_make_tracks_in_all_bones, p_import_value_tracks);
-	//print_line("clipcount: "+itos(collada.state.animation_clips.size()));
 	for (int i = 0; i < collada.state.animation_clips.size(); i++)
 		create_animation(i, p_make_tracks_in_all_bones, p_import_value_tracks);
 }
@@ -1580,11 +1573,8 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	Ref<Animation> animation = Ref<Animation>(memnew(Animation));
 
 	if (p_clip == -1) {
-
-		//print_line("default");
 		animation->set_name("default");
 	} else {
-		//print_line("clip name: "+collada.state.animation_clips[p_clip].name);
 		animation->set_name(collada.state.animation_clips[p_clip].name);
 	}
 
@@ -1658,7 +1648,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		}
 	}
 
-	//print_line("anim len: "+rtos(anim_length));
 	animation->set_length(anim_length);
 
 	bool tracks_found = false;
@@ -1736,7 +1725,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				if (xform_idx == -1) {
-					print_line("couldn't find matching node " + at.target + " xform for track " + at.param);
+					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param);
 					continue;
 				}
 
@@ -1758,14 +1747,9 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					ERR_CONTINUE(data.size() > 1);
 					xf.data.write[cn] = data[0];
 				} else if (data.size() == xf.data.size()) {
-
 					xf.data = data;
 				} else {
-
-					if (data.size() != xf.data.size()) {
-						print_line("component " + at.component + " datasize " + itos(data.size()) + " xfdatasize " + itos(xf.data.size()));
-					}
-
+					ERR_EXPLAIN("Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()));
 					ERR_CONTINUE(data.size() != xf.data.size());
 				}
 			}
@@ -1781,7 +1765,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
 				} else {
 
-					ERR_PRINT("INVALID SKELETON!!!!");
+					ERR_PRINT("Collada: Invalid skeleton");
 				}
 			}
 
@@ -1812,8 +1796,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			if (E->get())
 				continue;
 
-			//print_line("BONE LACKS ANIM: "+E->key());
-
 			NodeMap &nm = node_map[E->key()];
 			String path = scene->get_path_to(nm.node);
 			ERR_CONTINUE(nm.bone < 0);
@@ -1823,7 +1805,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			Collada::Node *cn = collada.state.scene_map[E->key()];
 			if (cn->ignore_anim) {
-				print_line("warning, ignoring animation on node: " + path);
+				WARN_PRINTS("Collada: Ignoring animation on node: " + path);
 				continue;
 			}
 
@@ -1889,10 +1871,9 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 				} else if (data.size() == 16) {
 					//matrix
-					print_line("value keys for matrices not supported");
+					WARN_PRINT("Collada: Value keys for matrices not supported.");
 				} else {
-
-					print_line("don't know what to do with this amount of value keys: " + itos(data.size()));
+					WARN_PRINTS("Collada: Unexpected amount of value keys: " + itos(data.size()));
 				}
 
 				animation->track_insert_key(track, time, value);
@@ -1994,7 +1975,6 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	if (state.animations.size() == 0)
 		return Ref<Animation>();
 	Ref<Animation> anim = state.animations[0];
-	print_line("Anim Load OK");
 	String base = p_path.get_basename().to_lower();
 	if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {
 

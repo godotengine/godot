@@ -257,7 +257,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 					if (dpos == -1)
 						continue;
 					d = d.substr(0, dpos).strip_edges();
-					//print_line("found device: "+d);
 					ldevices.push_back(d);
 				}
 
@@ -345,8 +344,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 							}
 
 							d.name = vendor + " " + device;
-							//print_line("name: "+d.name);
-							//print_line("description: "+d.description);
 						}
 
 						ndevices.push_back(d);
@@ -671,18 +668,13 @@ class EditorExportAndroid : public EditorExportPlatform {
 							ucstring.write[len] = 0;
 							string_table.write[i] = ucstring.ptr();
 						}
-
-						//print_line("String "+itos(i)+": "+string_table[i]);
 					}
 
 					for (uint32_t i = string_end; i < (ofs + size); i++) {
 						stable_extra.push_back(p_manifest[i]);
 					}
 
-					//printf("stable extra: %i\n",int(stable_extra.size()));
 					string_table_ends = ofs + size;
-
-					//print_line("STABLE SIZE: "+itos(size)+" ACTUAL: "+itos(string_table_ends));
 
 				} break;
 				case CHUNK_XML_START_TAG: {
@@ -714,33 +706,23 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 						//replace project information
 						if (tname == "manifest" && attrname == "package") {
-
-							print_line("FOUND package");
 							string_table.write[attr_value] = get_package_name(package_name);
 						}
 
-						if (tname == "manifest" && /*nspace=="android" &&*/ attrname == "versionCode") {
-
-							print_line("FOUND versionCode");
+						if (tname == "manifest" && attrname == "versionCode") {
 							encode_uint32(version_code, &p_manifest.write[iofs + 16]);
 						}
 
-						if (tname == "manifest" && /*nspace=="android" &&*/ attrname == "versionName") {
-
-							print_line("FOUND versionName");
+						if (tname == "manifest" && attrname == "versionName") {
 							if (attr_value == 0xFFFFFFFF) {
 								WARN_PRINT("Version name in a resource, should be plaintext")
 							} else
 								string_table.write[attr_value] = version_name;
 						}
 
-						if (tname == "activity" && /*nspace=="android" &&*/ attrname == "screenOrientation") {
+						if (tname == "activity" && attrname == "screenOrientation") {
 
 							encode_uint32(orientation == 0 ? 0 : 1, &p_manifest.write[iofs + 16]);
-						}
-
-						if (tname == "uses-feature" && /*nspace=="android" &&*/ attrname == "glEsVersion") {
-							print_line("version number: " + itos(decode_uint32(&p_manifest[iofs + 16])));
 						}
 
 						if (tname == "supports-screens") {
@@ -773,7 +755,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 					String tname = string_table[name];
 
 					if (tname == "manifest") {
-						print_line("Found manifest end");
 
 						// save manifest ending so we can restore it
 						Vector<uint8_t> manifest_end;
@@ -913,8 +894,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 		encode_uint32(string_table.size(), &ret.write[16]); //update new number of strings
 		encode_uint32(string_data_offset - 8, &ret.write[28]); //update new string data offset
 
-		//print_line("file size: "+itos(ret.size()));
-
 		p_manifest = ret;
 	}
 
@@ -956,7 +935,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest) {
 
 		const int UTF8_FLAG = 0x00000100;
-		print_line("*******************GORRRGLE***********************");
 
 		uint32_t string_block_len = decode_uint32(&p_manifest[16]);
 		uint32_t string_count = decode_uint32(&p_manifest[20]);
@@ -1234,8 +1212,8 @@ public:
 			err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 		}
 
-		print_line("Installing into device (please wait..): " + devices[p_device].name);
-		ep.step("Installing to Device (please wait..)..", 2);
+		print_line("Installing to device (please wait...): " + devices[p_device].name);
+		ep.step("Installing to device (please wait...)", 2);
 
 		args.clear();
 		args.push_back("-s");

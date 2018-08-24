@@ -82,17 +82,16 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
-			print_line("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
+			ERR_PRINTS("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
 		};
 	};
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 
-		print_line("Remote Debugger: Unable to connect");
+		ERR_PRINTS("Remote Debugger: Unable to connect.");
 		return FAILED;
 	};
 
-	//    print_line("Remote Debugger: Connection OK!");
 	packet_peer_stream->set_stream_peer(tcp_client);
 
 	return OK;

@@ -152,8 +152,6 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem &p_item, c
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
 			f->store_line(FileAccess::get_md5(p_item.path));
 			memdelete(f);
-		} else {
-			//print_line("was not generated");
 		}
 	}
 

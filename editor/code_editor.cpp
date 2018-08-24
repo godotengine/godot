@@ -717,7 +717,6 @@ void CodeTextEditor::_complete_request() {
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
-	// print_line("COMPLETE: "+p_request);
 	if (entries.size() == 0)
 		return;
 	Vector<String> strs;

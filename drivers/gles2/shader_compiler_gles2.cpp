@@ -596,6 +596,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 								default: {
 									SL::DataType type = op_node->arguments[3]->get_datatype();
+									// FIXME: Proper error print or graceful handling
 									print_line(String("uhhhh invalid mix with type: ") + itos(type));
 								} break;
 							}

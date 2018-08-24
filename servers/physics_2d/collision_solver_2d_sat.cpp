@@ -300,7 +300,6 @@ public:
 			}
 		}
 
-//print_line("test axis: "+p_axis+" depth: "+rtos(best_depth));
 #ifdef DEBUG_ENABLED
 		best_axis_count++;
 #endif

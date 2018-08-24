@@ -431,7 +431,6 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	global_code += "\n\n";
 	String final_code = global_code;
 	final_code += code;
-	//print_line(final_code);
 	return final_code;
 }
 
@@ -914,7 +913,6 @@ void VisualShader::_update_shader() const {
 	String final_code = global_code;
 	final_code += code;
 	const_cast<VisualShader *>(this)->set_code(final_code);
-	//print_line(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
 		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
 	}

@@ -486,8 +486,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item))
 			continue;
 
-		//print_line("OCTANT, CELLS: "+itos(ii.cells.size()));
-
 		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
 		Vector3 ofs = _get_offset();
 
@@ -524,8 +522,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			if (g.collision_debug.is_valid()) {
 				shapes.write[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
 			}
-
-			//print_line("PHIS x: "+xform);
 		}
 
 		// add the item's navmesh at given xform to GridMap's Navigation ancestor
@@ -614,7 +610,6 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	Octant &g = *octant_map[p_key];
 	PhysicsServer::get_singleton()->body_set_state(g.static_body, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 	PhysicsServer::get_singleton()->body_set_space(g.static_body, get_world()->get_space());
-	//print_line("BODYPOS: "+get_global_transform());
 
 	if (g.collision_debug_instance.is_valid()) {
 		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world()->get_scenario());
@@ -1086,7 +1081,6 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool> > >::Element *E = surface_map.front(); E; E = E->next()) {
 
-		print_line("generating mesh " + itos(ofs++) + "/" + itos(surface_map.size()));
 		Ref<ArrayMesh> mesh;
 		mesh.instance();
 		for (Map<Ref<Material>, Ref<SurfaceTool> >::Element *F = E->get().front(); F; F = F->next()) {

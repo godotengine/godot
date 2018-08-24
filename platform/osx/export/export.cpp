@@ -380,7 +380,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String file = fname;
 
-		print_line("READ: " + file);
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
@@ -394,7 +393,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		file = file.replace_first("osx_template.app/", "");
 
 		if (file == "Contents/Info.plist") {
-			print_line("parse plist");
 			_fix_plist(p_preset, data, pkg_name);
 		}
 
@@ -415,13 +413,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = p_preset->get("application/icon");
 			else
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
-			print_line("icon? " + iconpath);
+
 			if (iconpath != "") {
 				Ref<Image> icon;
 				icon.instance();
 				icon->load(iconpath);
 				if (!icon->empty()) {
-					print_line("loaded?");
 					_make_icon(icon, data);
 				}
 			}
@@ -475,9 +472,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
-				print_line("OPEN ERR: " + itos(zerr));
 				zerr = zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
-				print_line("WRITE ERR: " + itos(zerr));
 				zipCloseFileInZip(dst_pkg_zip);
 			}
 		}

@@ -622,15 +622,12 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 		case TEXT_PRINTERR: {
 
 			String str = *p_inputs[0];
-
-			//str+="\n";
 			print_error(str);
 
 		} break;
 		case TEXT_PRINTRAW: {
-			String str = *p_inputs[0];
 
-			//str+="\n";
+			String str = *p_inputs[0];
 			OS::get_singleton()->print("%s", str.utf8().get_data());
 
 		} break;

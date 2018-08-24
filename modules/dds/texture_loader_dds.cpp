@@ -217,8 +217,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	if (!(flags & DDSD_MIPMAPCOUNT))
 		mipmaps = 1;
 
-	//print_line("found format: "+String(dds_format_info[dds_format].name));
-
 	PoolVector<uint8_t> src_data;
 
 	const DDSFormatInfo &info = dds_format_info[dds_format];

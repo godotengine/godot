@@ -486,7 +486,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				RasterizerStorageGLES2::Texture *tex = _bind_canvas_texture(np->texture, np->normal_map);
 
 				if (!tex) {
-					print_line("TODO: ninepatch without texture");
+					// FIXME: Handle textureless ninepatch gracefully
+					WARN_PRINT("NinePatch without texture not supported yet in GLES2 backend, skipping.");
 					continue;
 				}
 
@@ -612,8 +613,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					buffer[(3 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
 					buffer[(3 * 4 * 4) + 15] = (source.position.y + source.size.y) * texpixel_size.y;
-
-					// print_line(String::num((source.position.y + source.size.y) * texpixel_size.y));
 				}
 
 				glBindBuffer(GL_ARRAY_BUFFER, data.ninepatch_vertices);
@@ -789,7 +788,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 			} break;
 
 			default: {
-				print_line("other");
+				// FIXME: Proper error handling if relevant
+				//print_line("other");
 			} break;
 		}
 	}

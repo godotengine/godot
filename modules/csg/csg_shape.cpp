@@ -161,8 +161,6 @@ CSGBrush *CSGShape::_get_brush() {
 
 void CSGShape::_update_shape() {
 
-	//print_line("updating shape for " + String(get_path()));
-
 	if (parent)
 		return;
 
@@ -372,7 +370,6 @@ void CSGShape::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 
-		//print_line("local xform changed");
 		if (parent) {
 			parent->_make_dirty();
 		}
@@ -641,7 +638,6 @@ CSGBrush *CSGMesh::_build_brush() {
 		}
 	}
 
-	//print_line("total vertices? " + itos(vertices.size()));
 	if (vertices.size() == 0)
 		return NULL;
 

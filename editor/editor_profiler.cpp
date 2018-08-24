@@ -344,7 +344,6 @@ void EditorProfiler::_update_plot() {
 		}
 
 		time = OS::get_singleton()->get_ticks_usec() - time;
-		//print_line("Taken: "+rtos(USEC_TO_SEC(time)));
 	}
 
 	wr = PoolVector<uint8_t>::Write();

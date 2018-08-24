@@ -65,19 +65,6 @@ void ContextGL_X11::swap_buffers() {
 	glXSwapBuffers(x11_display, x11_window);
 }
 
-/*
-static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
-
-	//print_line(String()+"getting proc of: "+p_function);
-	GLWrapperFuncPtr func=(GLWrapperFuncPtr)glXGetProcAddress( (const GLubyte*) p_function);
-	if (!func) {
-		print_line("Couldn't find function: "+String(p_function));
-	}
-
-	return func;
-
-}*/
-
 static bool ctxErrorOccurred = false;
 static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
 	ctxErrorOccurred = true;

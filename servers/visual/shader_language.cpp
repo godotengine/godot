@@ -2533,7 +2533,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			expr = constant;
 
 		} else if (tk.type == TK_TRUE) {
-			//print_line("found true");
 
 			//handle true constant
 			ConstantNode *constant = alloc_node<ConstantNode>();

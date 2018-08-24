@@ -238,7 +238,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 
 	clock_t end_time = clock();
 #else
-	print_line("Sorry no icons for you");
+	print_line("SVG support disabled, editor icons won't be rendered.");
 #endif
 }
 

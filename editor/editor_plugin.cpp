@@ -104,14 +104,12 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 			continue;
 		}
 		AABB aabb = mesh->get_aabb();
-		print_line("aabb: " + aabb);
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
 		aabb.position -= ofs;
 		Transform xform;
 		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.25);
 		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.25) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
-		print_line("rot_aabb: " + rot_aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
 			textures.push_back(Ref<Texture>());
@@ -119,7 +117,6 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		}
 		m = 1.0 / m;
 		m *= 0.5;
-		print_line("scale: " + rtos(m));
 		xform.basis.scale(Vector3(m, m, m));
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
 		xform.origin.z -= rot_aabb.size.z * 2;
@@ -133,7 +130,6 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		Ref<ImageTexture> it(memnew(ImageTexture));
 		it->create_from_image(img);
 
-		//print_line("loaded image, size: "+rtos(m)+" dist: "+rtos(dist)+" empty?"+itos(img.empty())+" w: "+itos(it->get_width())+" h: "+itos(it->get_height()));
 		VS::get_singleton()->free(inst);
 
 		textures.push_back(it);

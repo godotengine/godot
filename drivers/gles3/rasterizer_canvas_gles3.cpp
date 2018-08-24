@@ -1557,17 +1557,12 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_s
 	int ofs = h;
 	glDisable(GL_BLEND);
 
-	//print_line(" debug lights ");
 	while (light) {
-
-		//print_line("debug light");
 		if (light->shadow_buffer.is_valid()) {
 
-			//print_line("sb is valid");
 			RasterizerStorageGLES3::CanvasLightShadow *sb = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
 			if (sb) {
 				glBindTexture(GL_TEXTURE_2D, sb->distance);
-				//glBindTexture(GL_TEXTURE_2D,storage->resources.white_tex);
 				draw_generic_textured_rect(Rect2(h, ofs, w - h * 2, h), Rect2(0, 0, 1, 1));
 				ofs += h * 2;
 			}
@@ -1677,19 +1672,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 					} break;
 				}
 			}
-			/*
-			if (i==0) {
-				for(int i=0;i<cc->lines.size();i++) {
-					Vector2 p = instance->xform_cache.xform(cc->lines.get(i));
-					Plane pp(Vector3(p.x,p.y,0),1);
-					pp.normal = light.xform(pp.normal);
-					pp = projection.xform4(pp);
-					print_line(itos(i)+": "+pp.normal/pp.d);
-					//pp=light_mat.xform4(pp);
-					//print_line(itos(i)+": "+pp.normal/pp.d);
-				}
-			}
-*/
+
 			glBindVertexArray(cc->array_id);
 			glDrawElements(GL_TRIANGLES, cc->len * 3, GL_UNSIGNED_SHORT, 0);
 

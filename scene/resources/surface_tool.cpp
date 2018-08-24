@@ -755,15 +755,11 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	for (List<int>::Element *E = nindices.front(); E; E = E->next()) {
 
 		int dst_index = E->get() + vfrom;
-		/*
-		if (dst_index <0 || dst_index>=vertex_array.size()) {
-			print_line("invalid index!");
-		}
-		*/
 		index_array.push_back(dst_index);
 	}
-	if (index_array.size() % 3)
-		print_line("IA not div of 3?");
+	if (index_array.size() % 3) {
+		WARN_PRINT("SurfaceTool: Index array not a multiple of 3.");
+	}
 }
 
 //mikktspace callbacks

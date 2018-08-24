@@ -1907,8 +1907,6 @@ void EditorHelpBit::_go_to_help(String p_what) {
 
 void EditorHelpBit::_meta_clicked(String p_select) {
 
-	print_line("got meta " + p_select);
-
 	if (p_select.begins_with("$")) { //enum
 
 		String select = p_select.substr(1, p_select.length());

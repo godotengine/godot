@@ -265,9 +265,6 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && !k->is_echo() && k->get_scancode() != 0) {
-
-		//print_line(p_event);
-
 		if (k->is_pressed())
 			keys_pressed.insert(k->get_scancode());
 		else

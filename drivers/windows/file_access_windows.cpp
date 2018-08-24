@@ -31,11 +31,13 @@
 #ifdef WINDOWS_ENABLED
 
 #include "file_access_windows.h"
-#include "os/os.h"
-#include "shlwapi.h"
+
+#include "core/os/os.h"
+#include "core/print_string.h"
+
+#include <shlwapi.h>
 #include <windows.h>
 
-#include "print_string.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
@@ -132,11 +134,6 @@ void FileAccessWindows::close() {
 	f = NULL;
 
 	if (save_path != "") {
-
-		//unlink(save_path.utf8().get_data());
-		//print_line("renaming...");
-		//_wunlink(save_path.c_str()); //unlink if exists
-		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
 
 		bool rename_error = true;
 		int attempts = 4;
@@ -305,11 +302,10 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 
 		return st.st_mtime;
 	} else {
-		print_line("no access to " + file);
+		ERR_EXPLAIN("Failed to get modified time for: " + file);
+		ERR_FAIL_V(0);
 	}
-
-	ERR_FAIL_V(0);
-};
+}
 
 FileAccessWindows::FileAccessWindows() {
 

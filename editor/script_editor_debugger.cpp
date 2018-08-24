@@ -1133,7 +1133,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						}
 
 						message_type = cmd;
-						//print_line("GOT: "+message_type);
 
 						ret = ppeer->get_var(cmd);
 						if (ret != OK) {
@@ -1285,15 +1284,13 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
 		max_funcs = CLAMP(max_funcs, 16, 512);
 		msg.push_back(max_funcs);
 		ppeer->put_var(msg);
-
-		print_line("BEGIN PROFILING!");
+		print_verbose("Starting profiling.");
 
 	} else {
 		Array msg;
 		msg.push_back("stop_profiling");
 		ppeer->put_var(msg);
-
-		print_line("END PROFILING!");
+		print_verbose("Ending profiling.");
 	}
 }
 
@@ -1430,8 +1427,6 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 		return;
 	}
-
-	//print_line("method");
 }
 
 void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p_property, const Variant &p_value) {
@@ -1500,8 +1495,6 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 		return;
 	}
-
-	//print_line("prop");
 }
 
 void ScriptEditorDebugger::_method_changeds(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {

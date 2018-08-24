@@ -93,8 +93,6 @@ void FileAccessNetworkClient::_thread_func() {
 		DEBUG_TIME("sem_unlock");
 		//DEBUG_PRINT("semwait returned "+itos(werr));
 		DEBUG_PRINT("MUTEX LOCK " + itos(lockcount));
-		DEBUG_PRINT("POPO");
-		DEBUG_PRINT("PEPE");
 		lock_mutex();
 		DEBUG_PRINT("MUTEX PASS");
 

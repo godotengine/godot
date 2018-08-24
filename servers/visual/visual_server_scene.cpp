@@ -1180,7 +1180,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
 
-	//	print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
+	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 _FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
@@ -1799,11 +1799,12 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 	//light_samplers_culled=0;
 
-	/*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
+	/*
+	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
 	print_line("OTO: "+itos(p_scenario->octree.get_octant_count()));
-	//print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
+	print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
 	print_line("OTP: "+itos(p_scenario->octree.get_pair_count()));
-*/
+	*/
 
 	/* STEP 3 - PROCESS PORTALS, VALIDATE ROOMS */
 	//removed, will replace with culling
@@ -2302,7 +2303,6 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	int size_divisor = 1;
 
 	if (probe->dynamic.compression == RasterizerStorage::GI_PROBE_S3TC) {
-		print_line("S3TC");
 		size_limit = 4;
 		size_divisor = 4;
 	}
@@ -2391,7 +2391,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		probe->dynamic.mipmaps_s3tc.resize(mipmap_count);
 
 		for (int i = 0; i < mipmap_count; i++) {
-			print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
+			//print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
 			probe->dynamic.mipmaps_s3tc.write[i].resize(comp_blocks[i].size());
 			PoolVector<InstanceGIProbeData::CompBlockS3TC>::Write w = probe->dynamic.mipmaps_s3tc.write[i].write();
 			int block_idx = 0;
@@ -2759,7 +2759,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 		} break;
 	}
 }
@@ -3180,7 +3180,7 @@ void VisualServerScene::render_probes() {
 				} break;
 				case GI_UPDATE_STAGE_UPLOADING: {
 
-					// uint64_t us = OS::get_singleton()->get_ticks_usec();
+					//uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 					for (int i = 0; i < (int)probe->dynamic.mipmaps_3d.size(); i++) {
 
@@ -3190,7 +3190,7 @@ void VisualServerScene::render_probes() {
 
 					probe->dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 
-					// print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+					//print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 				} break;
 			}
 		}

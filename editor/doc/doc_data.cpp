@@ -792,7 +792,6 @@ Error DocData::_load(Ref<XMLParser> parser) {
 		class_list[name] = ClassDoc();
 		ClassDoc &c = class_list[name];
 
-		//print_line("class: "+name);
 		c.name = name;
 		if (parser->has_attribute("inherits"))
 			c.inherits = parser->get_attribute_value("inherits");

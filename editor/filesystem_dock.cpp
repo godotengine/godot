@@ -809,7 +809,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	}
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	print_line("Moving " + old_path + " -> " + new_path);
+	print_verbose("Moving " + old_path + " -> " + new_path);
 	Error err = da->rename(old_path, new_path);
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
@@ -837,7 +837,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		//Only treat as a changed dependency if it was successfully moved
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
-			print_line("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
+			print_verbose("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
 		}
 		for (int i = 0; i < folder_changed_paths.size(); ++i) {
 			p_folder_renames[folder_changed_paths[i]] = folder_changed_paths[i].replace_first(old_path, new_path);
@@ -865,7 +865,7 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	}
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	print_line("Duplicating " + old_path + " -> " + new_path);
+	print_verbose("Duplicating " + old_path + " -> " + new_path);
 	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
@@ -942,7 +942,7 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 	for (int i = 0; i < remaps.size(); ++i) {
 		//Because we haven't called a rescan yet the found remap might still be an old path itself.
 		String file = p_renames.has(remaps[i]) ? p_renames[remaps[i]] : remaps[i];
-		print_line("Remapping dependencies for: " + file);
+		print_verbose("Remapping dependencies for: " + file);
 		Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
 			if (ResourceLoader::get_resource_type(file) == "PackedScene")
@@ -998,7 +998,7 @@ void FileSystemDock::_make_dir_confirm() {
 		return;
 	}
 
-	print_line("Making folder " + dir_name + " in " + path);
+	print_verbose("Making folder " + dir_name + " in " + path);
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	Error err = da->change_dir(path);
 	if (err == OK) {
@@ -1007,7 +1007,7 @@ void FileSystemDock::_make_dir_confirm() {
 	memdelete(da);
 
 	if (err == OK) {
-		print_line("call rescan!");
+		print_verbose("FileSystem: calling rescan.");
 		_rescan();
 	} else {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
@@ -1054,7 +1054,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_update_favorite_dirs_list_after_move(folder_renames);
 
 	//Rescan everything
-	print_line("call rescan!");
+	print_verbose("FileSystem: calling rescan.");
 	_rescan();
 }
 
@@ -1089,7 +1089,7 @@ void FileSystemDock::_duplicate_operation_confirm() {
 	_try_duplicate_item(to_duplicate, new_path);
 
 	//Rescan everything
-	print_line("call rescan!");
+	print_verbose("FileSystem: calling rescan.");
 	_rescan();
 }
 
@@ -1146,7 +1146,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 		_update_project_settings_after_move(file_renames);
 		_update_favorite_dirs_list_after_move(folder_renames);
 
-		print_line("call rescan!");
+		print_verbose("FileSystem: calling rescan.");
 		_rescan();
 	}
 }

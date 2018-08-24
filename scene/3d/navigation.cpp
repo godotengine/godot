@@ -120,9 +120,7 @@ void Navigation::_navmesh_link(int p_id) {
 					pending.edge = j;
 					p.edges.write[j].P = C->get().pending.push_back(pending);
 					continue;
-					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
-				//ERR_CONTINUE(C->get().B!=NULL); //wut
 
 				C->get().B = &p;
 				C->get().B_edge = j;
@@ -312,7 +310,6 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 
 	if (!begin_poly || !end_poly) {
 
-		//print_line("No Path Path");
 		return Vector<Vector3>(); //no path
 	}
 
@@ -322,7 +319,6 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 		path.resize(2);
 		path.write[0] = begin_point;
 		path.write[1] = end_point;
-		//print_line("Direct Path");
 		return path;
 	}
 
@@ -347,7 +343,6 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 	while (!found_route) {
 
 		if (open_list.size() == 0) {
-			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list
@@ -579,10 +574,6 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 				}
 			}
 		}
-	}
-
-	if (closest_navmesh && closest_navmesh->owner) {
-		//print_line("navmesh is: "+Object::cast_to<Node>(closest_navmesh->owner)->get_name());
 	}
 
 	return closest_point;

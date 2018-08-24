@@ -137,7 +137,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				}
 			}
 
-			//print_line("lights: "+itos(light_count));
 			canvas_map[Viewport::CanvasKey(E->key(), E->get().layer)] = &E->get();
 		}
 
@@ -194,8 +193,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas *>(E->get()->canvas);
 
-			//print_line("canvas "+itos(i)+" size: "+itos(I->get()->canvas->child_items.size()));
-			//print_line("GT "+p_viewport->global_transform+". CT: "+E->get()->transform);
 			Transform2D xform = p_viewport->global_transform * E->get()->transform;
 
 			RasterizerCanvas::Light *canvas_lights = NULL;

@@ -2906,8 +2906,6 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 				//able to optimize more
 				erase = false;
 			} else {
-
-				//print_line(itos(i)+"because of interp");
 			}
 		}
 	}

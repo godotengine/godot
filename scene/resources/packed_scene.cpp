@@ -106,7 +106,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		if (i == 0 && base_scene_idx >= 0) {
 			//scene inheritance on root node
-			//print_line("scene inherit");
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), NULL);
 			node = sdata->instance(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
@@ -117,7 +116,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		} else if (n.instance >= 0) {
 			//instance a scene into this node
-			//print_line("instance");
 			if (n.instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
 
 				String path = props[n.instance & FLAG_MASK];
@@ -141,7 +139,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 		} else if (n.type == TYPE_INSTANCED) {
-			//print_line("instanced");
 			//get the node from somewhere, it likely already exists from another instance
 			if (parent) {
 				node = parent->_get_child_by_name(snames[n.name]);
@@ -152,7 +149,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 #endif
 			}
 		} else if (ClassDB::is_class_enabled(snames[n.type])) {
-			//print_line("created");
 			//node belongs to this scene and must be created
 			Object *obj = ClassDB::instance(snames[n.type]);
 			if (!Object::cast_to<Node>(obj)) {
@@ -491,15 +487,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
 			isdefault = true; //is script default value
 		}
-		/*
-		if (nd.instance<0 && ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one())) {
-			continue;
-		}
-		*/
-
-		//print_line("PASSED!");
-		//print_line("at: "+String(p_node->get_name())+"::"+name+": -  nz: "+itos(E->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO)+" no: "+itos(E->get().usage&PROPERTY_USAGE_STORE_IF_NONONE));
-		//print_line("value: "+String(value)+" is zero: "+itos(value.is_zero())+" is one" +itos(value.is_one()));
 
 		if (pack_state_stack.size()) {
 			// we are on part of an instanced subscene
