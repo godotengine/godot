@@ -174,6 +174,8 @@ String find_msbuild_tools_path() {
 
 	List<String> vswhere_args;
 	vswhere_args.push_back("-latest");
+	vswhere_args.push_back("-products");
+	vswhere_args.push_back("*");
 	vswhere_args.push_back("-requires");
 	vswhere_args.push_back("Microsoft.Component.MSBuild");
 

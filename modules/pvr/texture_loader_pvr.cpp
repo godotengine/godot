@@ -240,11 +240,11 @@ ResourceFormatPVR::ResourceFormatPVR() {
 	Image::_image_compress_pvrtc2_func = _compress_pvrtc4;
 }
 
-	/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 
-	//PVRTC decompressor, Based on PVRTC decompressor by IMGTEC.
+//PVRTC decompressor, Based on PVRTC decompressor by IMGTEC.
 
-	/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 
 #define PT_INDEX 2
 #define BLK_Y_SIZE 4
@@ -536,8 +536,8 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 	int p_x, p_y;
 
-	int p_modulation[8][16];
-	int p_modulation_modes[8][16];
+	int p_modulation[8][16] = { { 0 } };
+	int p_modulation_modes[8][16] = { { 0 } };
 
 	int Mod, DoPT;
 

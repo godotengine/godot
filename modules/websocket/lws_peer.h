@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,13 +57,14 @@ public:
 	struct PeerData {
 		uint32_t peer_id;
 		bool force_close;
-		RingBuffer<uint8_t> rbw;
-		RingBuffer<uint8_t> rbr;
-		mutable uint8_t input_buffer[PACKET_BUFFER_SIZE];
-		uint32_t in_size;
-		int in_count;
-		int out_count;
 	};
+
+	RingBuffer<uint8_t> rbw;
+	RingBuffer<uint8_t> rbr;
+	uint8_t input_buffer[PACKET_BUFFER_SIZE];
+	uint32_t in_size;
+	int in_count;
+	int out_count;
 
 	virtual int get_available_packet_count() const;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);

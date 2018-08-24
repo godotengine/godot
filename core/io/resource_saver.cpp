@@ -56,7 +56,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 
 		for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 
-			if (E->get().nocasecmp_to(extension.get_extension()) == 0)
+			if (E->get().nocasecmp_to(extension) == 0)
 				recognized = true;
 		}
 

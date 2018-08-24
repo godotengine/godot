@@ -21,7 +21,6 @@ allprojects {
 }
 
 dependencies {
-	compile 'com.android.support:support-v4:27.+'  // can be removed if minSdkVersion 16 and modify DownloadNotification.java & V14CustomNotification.java
 	$$GRADLE_DEPENDENCIES$$
 }
 

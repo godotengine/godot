@@ -2,6 +2,8 @@
 
 import shutil
 from compat import open_utf8
+from distutils.version import LooseVersion
+from detect import get_ndk_version
 
 Import('env')
 
@@ -41,10 +43,8 @@ prog = None
 abspath = env.Dir(".").abspath
 
 
-gradle_basein = open_utf8(abspath + "/build.gradle.template", "r")
-gradle_baseout = open_utf8(abspath + "/java/build.gradle", "w")
-
-gradle_text = gradle_basein.read()
+with open_utf8(abspath + "/build.gradle.template", "r") as gradle_basein:
+	gradle_text = gradle_basein.read()
 
 gradle_maven_flat_text = ""
 if len(env.android_flat_dirs) > 0:
@@ -55,7 +55,7 @@ if len(env.android_flat_dirs) > 0:
 
     gradle_maven_flat_text = gradle_maven_flat_text[:-1]
     gradle_maven_flat_text += "\n\t}\n"
- 
+
 gradle_maven_repos_text = ""
 gradle_maven_repos_text += gradle_maven_flat_text
 
@@ -101,6 +101,9 @@ for x in env.android_jni_dirs:
 
 gradle_asset_dirs_text = ""
 
+for x in env.android_asset_dirs:
+    gradle_asset_dirs_text += ",'" + x.replace("\\", "/") + "'"
+
 gradle_default_config_text = ""
 
 minSdk = 18
@@ -131,17 +134,19 @@ gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$", gradle_default_co
 gradle_text = gradle_text.replace("$$GRADLE_PLUGINS$$", gradle_plugins)
 gradle_text = gradle_text.replace("$$GRADLE_CLASSPATH$$", gradle_classpath)
 
-gradle_baseout.write(gradle_text)
-gradle_baseout.close()
+with open_utf8(abspath + "/java/build.gradle", "w") as gradle_baseout:
+	gradle_baseout.write(gradle_text)
 
 
-pp_basein = open_utf8(abspath + "/AndroidManifest.xml.template", "r")
-pp_baseout = open_utf8(abspath + "/java/AndroidManifest.xml", "w")
-manifest = pp_basein.read()
+with open_utf8(abspath + "/AndroidManifest.xml.template", "r") as pp_basein:
+	manifest = pp_basein.read()
+
 manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$", env.android_manifest_chunk)
 manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$", env.android_permission_chunk)
 manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$", env.android_appattributes_chunk)
-pp_baseout.write(manifest)
+
+with open_utf8(abspath + "/java/AndroidManifest.xml", "w") as pp_baseout:
+	pp_baseout.write(manifest)
 
 
 lib = env_android.add_shared_library("#bin/libgodot", [android_objects], SHLIBSUFFIX=env["SHLIBSUFFIX"])
@@ -166,3 +171,7 @@ if lib_arch_dir != '':
 
     out_dir = '#platform/android/java/libs/' + lib_type_dir + '/' + lib_arch_dir
     env_android.Command(out_dir + '/libgodot_android.so', '#bin/libgodot' + env['SHLIBSUFFIX'], Move("$TARGET", "$SOURCE"))
+    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
+    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
+        stl_lib_path = str(env['ANDROID_NDK_ROOT']) + '/sources/cxx-stl/llvm-libc++/libs/' + lib_arch_dir + '/libc++_shared.so'
+        env_android.Command(out_dir + '/libc++_shared.so', stl_lib_path, Copy("$TARGET", "$SOURCE"))

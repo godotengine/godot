@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolColorArray" category="Built-In Types" version="3.0-stable">
+<class name="PoolColorArray" category="Built-In Types" version="3.1">
 	<brief_description>
 		Array of Colors
 	</brief_description>
 	<description>
-		Array of Color, Contains colors. Optimized for memory usage, can't fragment the memory.
+		Array of Color, Contains colors. Optimized for memory usage, can't fragment the memory. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>

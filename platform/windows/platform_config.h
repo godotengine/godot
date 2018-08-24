@@ -33,3 +33,4 @@
 //#include <alloca.h>
 //#endif
 #define GLES3_INCLUDE_H "glad/glad.h"
+#define GLES2_INCLUDE_H "glad/glad.h"

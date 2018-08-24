@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SurfaceTool" inherits="Reference" category="Core" version="3.0-stable">
+<class name="SurfaceTool" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
 		Helper tool to create geometry.
 	</brief_description>
@@ -170,7 +170,7 @@
 			</return>
 			<argument index="0" name="existing" type="ArrayMesh" default="null">
 			</argument>
-			<argument index="1" name="flags" type="int" default="97792">
+			<argument index="1" name="flags" type="int" default="97280">
 			</argument>
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
@@ -196,8 +196,11 @@
 		<method name="generate_normals">
 			<return type="void">
 			</return>
+			<argument index="0" name="flip" type="bool" default="false">
+			</argument>
 			<description>
 				Generates normals from Vertices so you do not have to do it manually.
+				Setting "flip" [code]true[/code] inverts resulting normals.
 			</description>
 		</method>
 		<method name="generate_tangents">

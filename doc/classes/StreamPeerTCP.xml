@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.0-stable">
+<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.1">
 	<brief_description>
 		TCP Stream peer.
 	</brief_description>
@@ -29,16 +29,6 @@
 				Disconnect from host.
 			</description>
 		</method>
-		<method name="set_no_delay">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				Disable Nagle algorithm to improve latency for small packets.
-				Note that for applications that send large packets, or need to transfer a lot of data, this can reduce total bandwidth.
-			</description>
-		</method>
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String">
 			</return>
@@ -64,6 +54,16 @@
 			<return type="bool">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="set_no_delay">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Disable Nagle algorithm to improve latency for small packets.
+				Note that for applications that send large packets, or need to transfer a lot of data, this can reduce total bandwidth.
 			</description>
 		</method>
 	</methods>

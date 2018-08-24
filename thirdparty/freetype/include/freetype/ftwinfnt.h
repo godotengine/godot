@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing Windows fnt-specific data.                */
 /*                                                                         */
-/*  Copyright 2003-2017 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -78,7 +78,7 @@ FT_BEGIN_HEADER
    *     Mac Roman encoding.
    *
    *   FT_WinFNT_ID_OEM ::
-   *     From Michael Pöttgen <michael@poettgen.de>:
+   *     From Michael Poettgen <michael@poettgen.de>:
    *
    *       The `Windows Font Mapping' article says that FT_WinFNT_ID_OEM
    *       is used for the charset of vector fonts, like `modern.fon',

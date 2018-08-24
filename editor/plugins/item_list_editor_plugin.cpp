@@ -42,9 +42,18 @@ bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 		set_item_text(idx, p_value);
 	else if (what == "icon")
 		set_item_icon(idx, p_value);
-	else if (what == "checkable")
-		set_item_checkable(idx, p_value);
-	else if (what == "checked")
+	else if (what == "checkable") {
+		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
+		switch ((int)p_value) {
+			case 0:
+			case 1:
+				set_item_checkable(idx, p_value);
+				break;
+			case 2:
+				set_item_radio_checkable(idx, true);
+				break;
+		}
+	} else if (what == "checked")
 		set_item_checked(idx, p_value);
 	else if (what == "id")
 		set_item_id(idx, p_value);
@@ -68,9 +77,14 @@ bool ItemListPlugin::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_text(idx);
 	else if (what == "icon")
 		r_ret = get_item_icon(idx);
-	else if (what == "checkable")
-		r_ret = is_item_checkable(idx);
-	else if (what == "checked")
+	else if (what == "checkable") {
+		// This keeps compatibility to/from versions where this property was a boolean, before radio buttons
+		if (!is_item_checkable(idx)) {
+			r_ret = 0;
+		} else {
+			r_ret = is_item_radio_checkable(idx) ? 2 : 1;
+		}
+	} else if (what == "checked")
 		r_ret = is_item_checked(idx);
 	else if (what == "id")
 		r_ret = get_item_id(idx);
@@ -95,7 +109,7 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 		int flags = get_flags();
 
 		if (flags & FLAG_CHECKABLE) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checkable"));
+			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
 		}
 
@@ -247,7 +261,7 @@ void ItemListEditor::_node_removed(Node *p_node) {
 
 void ItemListEditor::_notification(int p_notification) {
 
-	if (p_notification == NOTIFICATION_ENTER_TREE) {
+	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
 
 		add_button->set_icon(get_icon("Add", "EditorIcons"));
 		del_button->set_icon(get_icon("Remove", "EditorIcons"));
@@ -374,7 +388,7 @@ ItemListEditor::ItemListEditor() {
 	vbc->add_child(property_editor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	tree = property_editor->get_scene_tree();
+	tree = property_editor->get_property_tree();
 }
 
 ItemListEditor::~ItemListEditor() {

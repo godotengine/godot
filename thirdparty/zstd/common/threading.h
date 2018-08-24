@@ -45,15 +45,15 @@ extern "C" {
 
 /* mutex */
 #define ZSTD_pthread_mutex_t           CRITICAL_SECTION
-#define ZSTD_pthread_mutex_init(a, b)  (InitializeCriticalSection((a)), 0)
+#define ZSTD_pthread_mutex_init(a, b)  ((void)(b), InitializeCriticalSection((a)), 0)
 #define ZSTD_pthread_mutex_destroy(a)  DeleteCriticalSection((a))
 #define ZSTD_pthread_mutex_lock(a)     EnterCriticalSection((a))
 #define ZSTD_pthread_mutex_unlock(a)   LeaveCriticalSection((a))
 
 /* condition variable */
 #define ZSTD_pthread_cond_t             CONDITION_VARIABLE
-#define ZSTD_pthread_cond_init(a, b)    (InitializeConditionVariable((a)), 0)
-#define ZSTD_pthread_cond_destroy(a)    /* No delete */
+#define ZSTD_pthread_cond_init(a, b)    ((void)(b), InitializeConditionVariable((a)), 0)
+#define ZSTD_pthread_cond_destroy(a)    ((void)(a))
 #define ZSTD_pthread_cond_wait(a, b)    SleepConditionVariableCS((a), (b), INFINITE)
 #define ZSTD_pthread_cond_signal(a)     WakeConditionVariable((a))
 #define ZSTD_pthread_cond_broadcast(a)  WakeAllConditionVariable((a))
@@ -100,17 +100,17 @@ int ZSTD_pthread_join(ZSTD_pthread_t thread, void** value_ptr);
 /* No multithreading support */
 
 typedef int ZSTD_pthread_mutex_t;
-#define ZSTD_pthread_mutex_init(a, b)   ((void)a, 0)
-#define ZSTD_pthread_mutex_destroy(a)
-#define ZSTD_pthread_mutex_lock(a)
-#define ZSTD_pthread_mutex_unlock(a)
+#define ZSTD_pthread_mutex_init(a, b)   ((void)(a), (void)(b), 0)
+#define ZSTD_pthread_mutex_destroy(a)   ((void)(a))
+#define ZSTD_pthread_mutex_lock(a)      ((void)(a))
+#define ZSTD_pthread_mutex_unlock(a)    ((void)(a))
 
 typedef int ZSTD_pthread_cond_t;
-#define ZSTD_pthread_cond_init(a, b)    ((void)a, 0)
-#define ZSTD_pthread_cond_destroy(a)
-#define ZSTD_pthread_cond_wait(a, b)
-#define ZSTD_pthread_cond_signal(a)
-#define ZSTD_pthread_cond_broadcast(a)
+#define ZSTD_pthread_cond_init(a, b)    ((void)(a), (void)(b), 0)
+#define ZSTD_pthread_cond_destroy(a)    ((void)(a))
+#define ZSTD_pthread_cond_wait(a, b)    ((void)(a), (void)(b))
+#define ZSTD_pthread_cond_signal(a)     ((void)(a))
+#define ZSTD_pthread_cond_broadcast(a)  ((void)(a))
 
 /* do not use ZSTD_pthread_t */
 

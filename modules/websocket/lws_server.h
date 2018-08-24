@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,6 +52,9 @@ public:
 	bool is_listening() const;
 	bool has_peer(int p_id) const;
 	Ref<WebSocketPeer> get_peer(int p_id) const;
+	IP_Address get_peer_address(int p_peer_id) const;
+	int get_peer_port(int p_peer_id) const;
+	void disconnect_peer(int p_peer_id);
 	virtual void poll() { _lws_poll(); }
 
 	LWSServer();

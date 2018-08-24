@@ -96,11 +96,11 @@ void AStar::remove_point(int p_id) {
 
 	Point *p = points[p_id];
 
-	for (int i = 0; i < p->neighbours.size(); i++) {
+	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
-		Segment s(p_id, p->neighbours[i]->id);
+		Segment s(p_id, E->get()->id);
 		segments.erase(s);
-		p->neighbours[i]->neighbours.erase(p);
+		E->get()->neighbours.erase(p);
 	}
 
 	memdelete(p);
@@ -115,10 +115,10 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	Point *a = points[p_id];
 	Point *b = points[p_with_id];
-	a->neighbours.push_back(b);
+	a->neighbours.insert(b);
 
 	if (bidirectional)
-		b->neighbours.push_back(a);
+		b->neighbours.insert(a);
 
 	Segment s(p_id, p_with_id);
 	if (s.from == p_id) {
@@ -168,8 +168,8 @@ PoolVector<int> AStar::get_point_connections(int p_id) {
 
 	Point *p = points[p_id];
 
-	for (int i = 0; i < p->neighbours.size(); i++) {
-		point_list.push_back(p->neighbours[i]->id);
+	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
+		point_list.push_back(E->get()->id);
 	}
 
 	return point_list;
@@ -242,9 +242,9 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 	bool found_route = false;
 
-	for (int i = 0; i < begin_point->neighbours.size(); i++) {
+	for (Set<Point *>::Element *E = begin_point->neighbours.front(); E; E = E->next()) {
 
-		Point *n = begin_point->neighbours[i];
+		Point *n = E->get();
 		n->prev_point = begin_point;
 		n->distance = _compute_cost(begin_point->id, n->id) * n->weight_scale;
 		n->last_pass = pass;
@@ -283,12 +283,10 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		}
 
 		Point *p = least_cost_point->self();
-		// Open the neighbours for search
-		int es = p->neighbours.size();
 
-		for (int i = 0; i < es; i++) {
+		for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
-			Point *e = p->neighbours[i];
+			Point *e = E->get();
 
 			real_t distance = _compute_cost(p->id, e->id) * e->weight_scale + p->distance;
 

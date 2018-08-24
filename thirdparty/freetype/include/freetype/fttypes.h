@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType simple types definitions (specification only).              */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -425,7 +425,7 @@ FT_BEGIN_HEADER
   /*    The address of the FreeType object that is under finalization.     */
   /*    Its client data is accessed through its `generic' field.           */
   /*                                                                       */
-  typedef void  (*FT_Generic_Finalizer)(void*  object);
+  typedef void  (*FT_Generic_Finalizer)( void*  object );
 
 
   /*************************************************************************/

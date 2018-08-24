@@ -31,7 +31,7 @@
 #ifndef OSUWP_H
 #define OSUWP_H
 
-#include "core/math/math_2d.h"
+#include "core/math/transform_2d.h"
 #include "core/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "gl_context_egl.h"
@@ -96,8 +96,10 @@ private:
 	int pressrc;
 
 	ContextEGL *gl_context;
+	Windows::UI::Core::CoreWindow ^ window;
 
 	VideoMode video_mode;
+	int video_driver_index;
 
 	MainLoop *main_loop;
 
@@ -153,10 +155,7 @@ private:
 	// functions used by main to initialize/deintialize the OS
 protected:
 	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
-
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
+	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
@@ -231,7 +230,7 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
-	void set_gl_context(ContextEGL *p_context);
+	void set_window(Windows::UI::Core::CoreWindow ^ p_window);
 	void screen_size_changed();
 
 	virtual void release_rendering_thread();

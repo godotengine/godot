@@ -31,9 +31,9 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
-#include "math_2d.h"
 #include "os/copymem.h"
 #include "resource.h"
+#include "transform_2d.h"
 #include "typedefs.h"
 #include "ustring.h"
 /**
@@ -53,10 +53,13 @@ enum ButtonList {
 	BUTTON_WHEEL_DOWN = 5,
 	BUTTON_WHEEL_LEFT = 6,
 	BUTTON_WHEEL_RIGHT = 7,
+	BUTTON_XBUTTON1 = 8,
+	BUTTON_XBUTTON2 = 9,
 	BUTTON_MASK_LEFT = (1 << (BUTTON_LEFT - 1)),
 	BUTTON_MASK_RIGHT = (1 << (BUTTON_RIGHT - 1)),
 	BUTTON_MASK_MIDDLE = (1 << (BUTTON_MIDDLE - 1)),
-
+	BUTTON_MASK_XBUTTON1 = (1 << (BUTTON_XBUTTON1 - 1)),
+	BUTTON_MASK_XBUTTON2 = (1 << (BUTTON_XBUTTON2 - 1))
 };
 
 enum JoystickList {
@@ -137,6 +140,16 @@ enum JoystickList {
 	JOY_ANALOG_R2 = JOY_AXIS_7,
 };
 
+enum MidiMessageList {
+	MIDI_MESSAGE_NOTE_OFF = 0x8,
+	MIDI_MESSAGE_NOTE_ON = 0x9,
+	MIDI_MESSAGE_AFTERTOUCH = 0xA,
+	MIDI_MESSAGE_CONTROL_CHANGE = 0xB,
+	MIDI_MESSAGE_PROGRAM_CHANGE = 0xC,
+	MIDI_MESSAGE_CHANNEL_PRESSURE = 0xD,
+	MIDI_MESSAGE_PITCH_BEND = 0xE,
+};
+
 /**
  * Input Modifier Status
  * for keyboard/mouse events.
@@ -154,16 +167,21 @@ public:
 	void set_device(int p_device);
 	int get_device() const;
 
+	bool is_action(const StringName &p_action) const;
+	bool is_action_pressed(const StringName &p_action) const;
+	bool is_action_released(const StringName &p_action) const;
+	float get_action_strength(const StringName &p_action) const;
+
+	// To be removed someday, since they do not make sense for all events
 	virtual bool is_pressed() const;
-	virtual bool is_action(const StringName &p_action) const;
-	virtual bool is_action_pressed(const StringName &p_action) const;
-	virtual bool is_action_released(const StringName &p_action) const;
 	virtual bool is_echo() const;
+	// ...-.
+
 	virtual String as_text() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 	virtual bool is_action_type() const;
 
@@ -244,7 +262,7 @@ public:
 
 	uint32_t get_scancode_with_modifiers() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 
 	virtual bool is_action_type() const { return true; }
@@ -305,7 +323,7 @@ public:
 	bool is_doubleclick() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -352,7 +370,8 @@ public:
 	float get_axis_value() const;
 
 	virtual bool is_pressed() const;
-	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -379,7 +398,7 @@ public:
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
@@ -461,6 +480,7 @@ public:
 
 	virtual bool is_action(const StringName &p_action) const;
 
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
@@ -494,6 +514,7 @@ public:
 	real_t get_factor() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventMagnifyGesture();
 };
@@ -511,7 +532,54 @@ public:
 	Vector2 get_delta() const;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
+	virtual String as_text() const;
 
 	InputEventPanGesture();
 };
+
+class InputEventMIDI : public InputEvent {
+	GDCLASS(InputEventMIDI, InputEvent)
+
+	int channel;
+	int message;
+	int pitch;
+	int velocity;
+	int instrument;
+	int pressure;
+	int controller_number;
+	int controller_value;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_channel(const int p_channel);
+	int get_channel() const;
+
+	void set_message(const int p_message);
+	int get_message() const;
+
+	void set_pitch(const int p_pitch);
+	int get_pitch() const;
+
+	void set_velocity(const int p_velocity);
+	int get_velocity() const;
+
+	void set_instrument(const int p_instrument);
+	int get_instrument() const;
+
+	void set_pressure(const int p_pressure);
+	int get_pressure() const;
+
+	void set_controller_number(const int p_controller_number);
+	int get_controller_number() const;
+
+	void set_controller_value(const int p_controller_value);
+	int get_controller_value() const;
+
+	virtual String as_text() const;
+
+	InputEventMIDI();
+};
+
 #endif

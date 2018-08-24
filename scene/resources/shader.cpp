@@ -54,15 +54,19 @@ void Shader::set_code(const String &p_code) {
 
 	VisualServer::get_singleton()->shader_set_code(shader, p_code);
 	params_cache_dirty = true;
-	emit_signal(SceneStringNames::get_singleton()->changed);
+
+	emit_changed();
 }
 
 String Shader::get_code() const {
 
+	_update_shader();
 	return VisualServer::get_singleton()->shader_get_code(shader);
 }
 
 void Shader::get_param_list(List<PropertyInfo> *p_params) const {
+
+	_update_shader();
 
 	List<PropertyInfo> local;
 	VisualServer::get_singleton()->shader_get_param_list(shader, &local);
@@ -72,6 +76,9 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 	for (List<PropertyInfo>::Element *E = local.front(); E; E = E->next()) {
 
 		PropertyInfo pi = E->get();
+		if (default_textures.has(pi.name)) { //do not show default textures
+			continue;
+		}
 		pi.name = "shader_param/" + pi.name;
 		params_cache[pi.name] = E->get().name;
 		if (p_params) {
@@ -86,6 +93,8 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 
 RID Shader::get_rid() const {
 
+	_update_shader();
+
 	return shader;
 }
 
@@ -98,6 +107,8 @@ void Shader::set_default_texture_param(const StringName &p_param, const Ref<Text
 		default_textures.erase(p_param);
 		VS::get_singleton()->shader_set_default_texture_param(shader, p_param, RID());
 	}
+
+	emit_changed();
 }
 
 Ref<Texture> Shader::get_default_texture_param(const StringName &p_param) const {
@@ -118,6 +129,9 @@ void Shader::get_default_texture_param_list(List<StringName> *r_textures) const 
 bool Shader::has_param(const StringName &p_param) const {
 
 	return params_cache.has(p_param);
+}
+
+void Shader::_update_shader() const {
 }
 
 void Shader::_bind_methods() {
@@ -227,5 +241,5 @@ void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource,
 }
 bool ResourceFormatSaverShader::recognize(const RES &p_resource) const {
 
-	return Object::cast_to<Shader>(*p_resource) != NULL;
+	return p_resource->get_class_name() == "Shader"; //only shader, not inherited
 }

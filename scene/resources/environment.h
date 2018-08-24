@@ -127,6 +127,7 @@ private:
 	float ssao_intensity2;
 	float ssao_bias;
 	float ssao_direct_light_affect;
+	float ssao_ao_channel_affect;
 	Color ssao_color;
 	SSAOBlur ssao_blur;
 	float ssao_edge_sharpness;
@@ -273,6 +274,9 @@ public:
 
 	void set_ssao_direct_light_affect(float p_direct_light_affect);
 	float get_ssao_direct_light_affect() const;
+
+	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
+	float get_ssao_ao_channel_affect() const;
 
 	void set_ssao_color(const Color &p_color);
 	Color get_ssao_color() const;

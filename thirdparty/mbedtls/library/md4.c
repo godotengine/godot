@@ -34,6 +34,7 @@
 #if defined(MBEDTLS_MD4_C)
 
 #include "mbedtls/md4.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -47,11 +48,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_MD4_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 /*
  * 32-bit integer manipulation macros (little endian)
@@ -86,7 +82,7 @@ void mbedtls_md4_free( mbedtls_md4_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_md4_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_md4_context ) );
 }
 
 void mbedtls_md4_clone( mbedtls_md4_context *dst,
@@ -110,6 +106,13 @@ int mbedtls_md4_starts_ret( mbedtls_md4_context *ctx )
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md4_starts( mbedtls_md4_context *ctx )
+{
+    mbedtls_md4_starts_ret( ctx );
+}
+#endif
 
 #if !defined(MBEDTLS_MD4_PROCESS_ALT)
 int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
@@ -217,6 +220,14 @@ int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md4_process( mbedtls_md4_context *ctx,
+                          const unsigned char data[64] )
+{
+    mbedtls_internal_md4_process( ctx, data );
+}
+#endif
 #endif /* !MBEDTLS_MD4_PROCESS_ALT */
 
 /*
@@ -273,6 +284,15 @@ int mbedtls_md4_update_ret( mbedtls_md4_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md4_update( mbedtls_md4_context *ctx,
+                         const unsigned char *input,
+                         size_t ilen )
+{
+    mbedtls_md4_update_ret( ctx, input, ilen );
+}
+#endif
+
 static const unsigned char md4_padding[64] =
 {
  0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -318,6 +338,14 @@ int mbedtls_md4_finish_ret( mbedtls_md4_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md4_finish( mbedtls_md4_context *ctx,
+                         unsigned char output[16] )
+{
+    mbedtls_md4_finish_ret( ctx, output );
+}
+#endif
+
 #endif /* !MBEDTLS_MD4_ALT */
 
 /*
@@ -346,6 +374,15 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md4( const unsigned char *input,
+                  size_t ilen,
+                  unsigned char output[16] )
+{
+    mbedtls_md4_ret( input, ilen, output );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 

@@ -37,6 +37,7 @@
 #include "os/os.h"
 #include "project_settings.h"
 #include "scene/main/node.h"
+#include "scene/resources/packed_scene.h"
 
 void ScriptDebuggerRemote::_send_video_memory() {
 
@@ -148,6 +149,16 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	}
 }
 
+void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
+
+	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+	ERR_FAIL_COND(!node);
+
+	Ref<PackedScene> ps = memnew(PackedScene);
+	ps->pack(node);
+	ResourceSaver::save(p_path, ps);
+}
+
 void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) {
 
 	//this function is called when there is a debugger break (bug on script)
@@ -156,6 +167,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 	if (!tcp_client->is_connected_to_host()) {
 		ERR_EXPLAIN("Script Debugger failed to connect, but being used anyway.");
 		ERR_FAIL();
+	}
+
+	if (allow_focus_steal_pid) {
+		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
 	packet_peer_stream->put_var("debug_enter");
@@ -322,6 +337,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				else
 					remove_breakpoint(cmd[2], cmd[1]);
 
+			} else if (command == "save_node") {
+				_save_node(cmd[1], cmd[2]);
 			} else {
 				_parse_live_edit(cmd);
 			}
@@ -554,22 +571,46 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 	if (ScriptInstance *si = obj->get_script_instance()) {
 		if (!si->get_script().is_null()) {
 
-			Set<StringName> members;
-			si->get_script()->get_members(&members);
-			for (Set<StringName>::Element *E = members.front(); E; E = E->next()) {
+			typedef Map<const Script *, Set<StringName> > ScriptMemberMap;
+			typedef Map<const Script *, Map<StringName, Variant> > ScriptConstantsMap;
 
-				Variant m;
-				if (si->get(E->get(), m)) {
-					PropertyInfo pi(m.get_type(), String("Members/") + E->get());
-					properties.push_back(PropertyDesc(pi, m));
+			ScriptMemberMap members;
+			members[si->get_script().ptr()] = Set<StringName>();
+			si->get_script()->get_members(&(members[si->get_script().ptr()]));
+
+			ScriptConstantsMap constants;
+			constants[si->get_script().ptr()] = Map<StringName, Variant>();
+			si->get_script()->get_constants(&(constants[si->get_script().ptr()]));
+
+			Ref<Script> base = si->get_script()->get_base_script();
+			while (base.is_valid()) {
+
+				members[base.ptr()] = Set<StringName>();
+				base->get_members(&(members[base.ptr()]));
+
+				constants[base.ptr()] = Map<StringName, Variant>();
+				base->get_constants(&(constants[base.ptr()]));
+
+				base = base->get_base_script();
+			}
+
+			for (ScriptMemberMap::Element *sm = members.front(); sm; sm = sm->next()) {
+				for (Set<StringName>::Element *E = sm->get().front(); E; E = E->next()) {
+					Variant m;
+					if (si->get(E->get(), m)) {
+						String script_path = sm->key() == si->get_script().ptr() ? "" : sm->key()->get_path().get_file() + "/";
+						PropertyInfo pi(m.get_type(), "Members/" + script_path + E->get());
+						properties.push_back(PropertyDesc(pi, m));
+					}
 				}
 			}
 
-			Map<StringName, Variant> constants;
-			si->get_script()->get_constants(&constants);
-			for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
-				PropertyInfo pi(E->value().get_type(), (String("Constants/") + E->key()));
-				properties.push_back(PropertyDesc(pi, E->value()));
+			for (ScriptConstantsMap::Element *sc = constants.front(); sc; sc = sc->next()) {
+				for (Map<StringName, Variant>::Element *E = sc->get().front(); E; E = E->next()) {
+					String script_path = sc->key() == si->get_script().ptr() ? "" : sc->key()->get_path().get_file() + "/";
+					PropertyInfo pi(E->value().get_type(), "Constants/" + script_path + E->key());
+					properties.push_back(PropertyDesc(pi, E->value()));
+				}
 			}
 		}
 	}
@@ -645,8 +686,10 @@ void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_p
 		return;
 
 	String prop_name = p_property;
-	if (p_property.begins_with("Members/"))
-		prop_name = p_property.substr(8, p_property.length());
+	if (p_property.begins_with("Members/")) {
+		Vector<String> ss = p_property.split("/");
+		prop_name = ss[ss.size() - 1];
+	}
 
 	obj->set(prop_name, p_value);
 }
@@ -740,13 +783,13 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		if (p_for_frame)
-			ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info[ofs], profile_info.size() - ofs);
+			ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info.write[ofs], profile_info.size() - ofs);
 		else
-			ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info[ofs], profile_info.size() - ofs);
+			ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info.write[ofs], profile_info.size() - ofs);
 	}
 
 	for (int i = 0; i < ofs; i++) {
-		profile_info_ptrs[i] = &profile_info[i];
+		profile_info_ptrs.write[i] = &profile_info.write[i];
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;
@@ -1011,16 +1054,16 @@ void ScriptDebuggerRemote::add_profiling_frame_data(const StringName &p_name, co
 	if (idx == -1) {
 		profile_frame_data.push_back(fd);
 	} else {
-		profile_frame_data[idx] = fd;
+		profile_frame_data.write[idx] = fd;
 	}
 }
 
 void ScriptDebuggerRemote::profiling_start() {
-	//ignores this, uses it via connnection
+	//ignores this, uses it via connection
 }
 
 void ScriptDebuggerRemote::profiling_end() {
-	//ignores this, uses it via connnection
+	//ignores this, uses it via connection
 }
 
 void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
@@ -1029,6 +1072,10 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	idle_time = p_idle_time;
 	physics_time = p_physics_time;
 	physics_frame_time = p_physics_frame_time;
+}
+
+void ScriptDebuggerRemote::set_allow_focus_steal_pid(OS::ProcessID p_pid) {
+	allow_focus_steal_pid = p_pid;
 }
 
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
@@ -1052,6 +1099,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		n_errors_dropped(0),
 		last_msec(0),
 		msec_count(0),
+		allow_focus_steal_pid(0),
 		locking(false),
 		poll_every(0),
 		request_scene_tree(NULL),

@@ -666,12 +666,14 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 	return PropertyInfo(t, "");
 }
 
+/*
 String VisualScriptBuiltinFunc::get_caption() const {
 
 	return "BuiltinFunc";
 }
+*/
 
-String VisualScriptBuiltinFunc::get_text() const {
+String VisualScriptBuiltinFunc::get_caption() const {
 
 	return func_name[func];
 }

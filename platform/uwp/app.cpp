@@ -85,8 +85,7 @@ App::App() :
 		mWindowHeight(0),
 		mEglDisplay(EGL_NO_DISPLAY),
 		mEglContext(EGL_NO_CONTEXT),
-		mEglSurface(EGL_NO_SURFACE),
-		number_of_contacts(0) {
+		mEglSurface(EGL_NO_SURFACE) {
 }
 
 // The first method called when the IFrameworkView is being created.
@@ -144,14 +143,13 @@ void App::SetWindow(CoreWindow ^ p_window) {
 	window->KeyUp +=
 			ref new TypedEventHandler<CoreWindow ^, KeyEventArgs ^>(this, &App::OnKeyUp);
 
+	os->set_window(window);
+
 	unsigned int argc;
 	char **argv = get_command_line(&argc);
 
 	Main::setup("uwp", argc, argv, false);
 
-	// The CoreWindow has been created, so EGL can be initialized.
-	ContextEGL *context = memnew(ContextEGL(window));
-	os->set_gl_context(context);
 	UpdateWindowSize(Size(window->Bounds.Width, window->Bounds.Height));
 
 	Main::setup2();
@@ -271,48 +269,44 @@ void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Cor
 		last_touch_y[screen_touch->get_index()] = pos.Y;
 
 		os->input_event(screen_touch);
-		if (number_of_contacts > 1)
-			return;
+	} else {
 
-	}; // fallthrought of sorts
+		Ref<InputEventMouseButton> mouse_button;
+		mouse_button.instance();
+		mouse_button->set_device(0);
+		mouse_button->set_pressed(p_pressed);
+		mouse_button->set_button_index(but);
+		mouse_button->set_position(Vector2(pos.X, pos.Y));
+		mouse_button->set_global_position(Vector2(pos.X, pos.Y));
 
-	Ref<InputEventMouseButton> mouse_button;
-	mouse_button.instance();
-	mouse_button->set_device(0);
-	mouse_button->set_pressed(p_pressed);
-	mouse_button->set_button_index(but);
-	mouse_button->set_position(Vector2(pos.X, pos.Y));
-	mouse_button->set_global_position(Vector2(pos.X, pos.Y));
-
-	if (p_is_wheel) {
-		if (point->Properties->MouseWheelDelta > 0) {
-			mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP);
-		} else if (point->Properties->MouseWheelDelta < 0) {
-			mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN);
+		if (p_is_wheel) {
+			if (point->Properties->MouseWheelDelta > 0) {
+				mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_UP);
+			} else if (point->Properties->MouseWheelDelta < 0) {
+				mouse_button->set_button_index(point->Properties->IsHorizontalMouseWheel ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_DOWN);
+			}
 		}
-	}
 
-	last_touch_x[31] = pos.X;
-	last_touch_y[31] = pos.Y;
+		last_touch_x[31] = pos.X;
+		last_touch_y[31] = pos.Y;
 
-	os->input_event(mouse_button);
-
-	if (p_is_wheel) {
-		// Send release for mouse wheel
-		mouse_button->set_pressed(false);
 		os->input_event(mouse_button);
+
+		if (p_is_wheel) {
+			// Send release for mouse wheel
+			mouse_button->set_pressed(false);
+			os->input_event(mouse_button);
+		}
 	}
 };
 
 void App::OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 
-	number_of_contacts++;
 	pointer_event(sender, args, true);
 };
 
 void App::OnPointerReleased(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 
-	number_of_contacts--;
 	pointer_event(sender, args, false);
 };
 
@@ -351,7 +345,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
 
-	if (point->IsInContact && _is_touch(point)) {
+	if (_is_touch(point)) {
 
 		Ref<InputEventScreenDrag> screen_drag;
 		screen_drag.instance();
@@ -361,25 +355,23 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 		screen_drag->set_relative(Vector2(screen_drag->get_position().x - last_touch_x[screen_drag->get_index()], screen_drag->get_position().y - last_touch_y[screen_drag->get_index()]));
 
 		os->input_event(screen_drag);
-		if (number_of_contacts > 1)
+	} else {
+
+		// In case the mouse grabbed, MouseMoved will handle this
+		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
 			return;
 
-	}; // fallthrought of sorts
+		Ref<InputEventMouseMotion> mouse_motion;
+		mouse_motion.instance();
+		mouse_motion->set_device(0);
+		mouse_motion->set_position(Vector2(pos.X, pos.Y));
+		mouse_motion->set_global_position(Vector2(pos.X, pos.Y));
+		mouse_motion->set_relative(Vector2(pos.X - last_touch_x[31], pos.Y - last_touch_y[31]));
 
-	// In case the mouse grabbed, MouseMoved will handle this
-	if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
-		return;
+		last_mouse_pos = pos;
 
-	Ref<InputEventMouseMotion> mouse_motion;
-	mouse_motion.instance();
-	mouse_motion->set_device(0);
-	mouse_motion->set_position(Vector2(pos.X, pos.Y));
-	mouse_motion->set_global_position(Vector2(pos.X, pos.Y));
-	mouse_motion->set_relative(Vector2(pos.X - last_touch_x[31], pos.Y - last_touch_y[31]));
-
-	last_mouse_pos = pos;
-
-	os->input_event(mouse_motion);
+		os->input_event(mouse_motion);
+	}
 }
 
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
@@ -520,7 +512,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 	if (f == NULL) {
 
-		wprintf(L"Couldn't open command line file.");
+		wprintf(L"Couldn't open command line file.\n");
 		return fail_cl;
 	}
 
@@ -534,7 +526,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 	if (r < 4) {
 		fclose(f);
-		wprintf(L"Wrong cmdline length.");
+		wprintf(L"Wrong cmdline length.\n");
 		return (fail_cl);
 	}
 
@@ -546,7 +538,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 		if (r < 4) {
 			fclose(f);
-			wprintf(L"Wrong cmdline param length.");
+			wprintf(L"Wrong cmdline param length.\n");
 			return (fail_cl);
 		}
 
@@ -554,7 +546,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 		if (strlen > CMD_MAX_LEN) {
 			fclose(f);
-			wprintf(L"Wrong command length.");
+			wprintf(L"Wrong command length.\n");
 			return (fail_cl);
 		}
 
@@ -575,7 +567,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 			delete[] arg;
 			fclose(f);
-			wprintf(L"Error reading command.");
+			wprintf(L"Error reading command.\n");
 			return (fail_cl);
 		}
 	}

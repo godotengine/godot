@@ -7,7 +7,7 @@
 /*                                                                         */
 /*    This is _not_ used to retrieve glyph names!                          */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -25,6 +25,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_PARAMETER_TAGS_H
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -189,6 +190,9 @@ FT_BEGIN_HEADER
   /*    Please refer to the TrueType or OpenType specification for more    */
   /*    details.                                                           */
   /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.8                                                                */
+  /*                                                                       */
   typedef struct  FT_SfntLangTag_
   {
     FT_Byte*  string;      /* this string is *not* null-terminated! */
@@ -229,52 +233,14 @@ FT_BEGIN_HEADER
   /*    invalid format~1 language ID values, FT_Err_Invalid_Argument is    */
   /*    returned.                                                          */
   /*                                                                       */
+  /* <Since>                                                               */
+  /*    2.8                                                                */
+  /*                                                                       */
   FT_EXPORT( FT_Error )
   FT_Get_Sfnt_LangTag( FT_Face          face,
                        FT_UInt          langID,
                        FT_SfntLangTag  *alangTag );
 
-
-  /***************************************************************************
-   *
-   * @constant:
-   *   FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY
-   *
-   * @description:
-   *   A tag for @FT_Parameter to make @FT_Open_Face ignore typographic
-   *   family names in the `name' table (introduced in OpenType version
-   *   1.4).  Use this for backward compatibility with legacy systems that
-   *   have a four-faces-per-family restriction.
-   *
-   */
-#define FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY \
-          FT_MAKE_TAG( 'i', 'g', 'p', 'f' )
-
-
-  /* this constant is deprecated */
-#define FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY \
-          FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_FAMILY
-
-
-  /***************************************************************************
-   *
-   * @constant:
-   *   FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY
-   *
-   * @description:
-   *   A tag for @FT_Parameter to make @FT_Open_Face ignore typographic
-   *   subfamily names in the `name' table (introduced in OpenType version
-   *   1.4).  Use this for backward compatibility with legacy systems that
-   *   have a four-faces-per-family restriction.
-   *
-   */
-#define FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY \
-          FT_MAKE_TAG( 'i', 'g', 'p', 's' )
-
-
-  /* this constant is deprecated */
-#define FT_PARAM_TAG_IGNORE_PREFERRED_SUBFAMILY \
-          FT_PARAM_TAG_IGNORE_TYPOGRAPHIC_SUBFAMILY
 
   /* */
 

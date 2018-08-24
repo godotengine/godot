@@ -71,6 +71,9 @@
 #endif /* MBEDTLS_SSL_PROTO_TLS1   */
 #endif /* MBEDTLS_SSL_PROTO_SSL3   */
 
+#define MBEDTLS_SSL_MIN_VALID_MINOR_VERSION MBEDTLS_SSL_MINOR_VERSION_1
+#define MBEDTLS_SSL_MIN_VALID_MAJOR_VERSION MBEDTLS_SSL_MAJOR_VERSION_3
+
 /* Determine maximum supported version */
 #define MBEDTLS_SSL_MAX_MAJOR_VERSION           MBEDTLS_SSL_MAJOR_VERSION_3
 
@@ -140,32 +143,73 @@
 #define MBEDTLS_SSL_PADDING_ADD              0
 #endif
 
-#define MBEDTLS_SSL_PAYLOAD_LEN ( MBEDTLS_SSL_MAX_CONTENT_LEN    \
-                        + MBEDTLS_SSL_COMPRESSION_ADD            \
-                        + MBEDTLS_MAX_IV_LENGTH                  \
-                        + MBEDTLS_SSL_MAC_ADD                    \
-                        + MBEDTLS_SSL_PADDING_ADD                \
-                        )
+#define MBEDTLS_SSL_PAYLOAD_OVERHEAD ( MBEDTLS_SSL_COMPRESSION_ADD +    \
+                                       MBEDTLS_MAX_IV_LENGTH +          \
+                                       MBEDTLS_SSL_MAC_ADD +            \
+                                       MBEDTLS_SSL_PADDING_ADD          \
+                                       )
+
+#define MBEDTLS_SSL_IN_PAYLOAD_LEN ( MBEDTLS_SSL_PAYLOAD_OVERHEAD + \
+                                     ( MBEDTLS_SSL_IN_CONTENT_LEN ) )
+
+#define MBEDTLS_SSL_OUT_PAYLOAD_LEN ( MBEDTLS_SSL_PAYLOAD_OVERHEAD + \
+                                      ( MBEDTLS_SSL_OUT_CONTENT_LEN ) )
+
+/* Maximum length we can advertise as our max content length for
+   RFC 6066 max_fragment_length extension negotiation purposes
+   (the lesser of both sizes, if they are unequal.)
+ */
+#define MBEDTLS_TLS_EXT_ADV_CONTENT_LEN (                            \
+        (MBEDTLS_SSL_IN_CONTENT_LEN > MBEDTLS_SSL_OUT_CONTENT_LEN)   \
+        ? ( MBEDTLS_SSL_OUT_CONTENT_LEN )                            \
+        : ( MBEDTLS_SSL_IN_CONTENT_LEN )                             \
+        )
 
 /*
  * Check that we obey the standard's message size bounds
  */
 
 #if MBEDTLS_SSL_MAX_CONTENT_LEN > 16384
-#error Bad configuration - record content too large.
+#error "Bad configuration - record content too large."
 #endif
 
-#if MBEDTLS_SSL_PAYLOAD_LEN > 16384 + 2048
-#error Bad configuration - protected record payload too large.
+#if MBEDTLS_SSL_IN_CONTENT_LEN > MBEDTLS_SSL_MAX_CONTENT_LEN
+#error "Bad configuration - incoming record content should not be larger than MBEDTLS_SSL_MAX_CONTENT_LEN."
 #endif
+
+#if MBEDTLS_SSL_OUT_CONTENT_LEN > MBEDTLS_SSL_MAX_CONTENT_LEN
+#error "Bad configuration - outgoing record content should not be larger than MBEDTLS_SSL_MAX_CONTENT_LEN."
+#endif
+
+#if MBEDTLS_SSL_IN_PAYLOAD_LEN > MBEDTLS_SSL_MAX_CONTENT_LEN + 2048
+#error "Bad configuration - incoming protected record payload too large."
+#endif
+
+#if MBEDTLS_SSL_OUT_PAYLOAD_LEN > MBEDTLS_SSL_MAX_CONTENT_LEN + 2048
+#error "Bad configuration - outgoing protected record payload too large."
+#endif
+
+/* Calculate buffer sizes */
 
 /* Note: Even though the TLS record header is only 5 bytes
    long, we're internally using 8 bytes to store the
    implicit sequence number. */
 #define MBEDTLS_SSL_HEADER_LEN 13
 
-#define MBEDTLS_SSL_BUFFER_LEN  \
-    ( ( MBEDTLS_SSL_HEADER_LEN ) + ( MBEDTLS_SSL_PAYLOAD_LEN ) )
+#define MBEDTLS_SSL_IN_BUFFER_LEN  \
+    ( ( MBEDTLS_SSL_HEADER_LEN ) + ( MBEDTLS_SSL_IN_PAYLOAD_LEN ) )
+
+#define MBEDTLS_SSL_OUT_BUFFER_LEN  \
+    ( ( MBEDTLS_SSL_HEADER_LEN ) + ( MBEDTLS_SSL_OUT_PAYLOAD_LEN ) )
+
+#ifdef MBEDTLS_ZLIB_SUPPORT
+/* Compression buffer holds both IN and OUT buffers, so should be size of the larger */
+#define MBEDTLS_SSL_COMPRESS_BUFFER_LEN (                               \
+        ( MBEDTLS_SSL_IN_BUFFER_LEN > MBEDTLS_SSL_OUT_BUFFER_LEN )      \
+        ? MBEDTLS_SSL_IN_BUFFER_LEN                                     \
+        : MBEDTLS_SSL_OUT_BUFFER_LEN                                    \
+        )
+#endif
 
 /*
  * TLS extension flags (for extensions with outgoing ServerHello content
@@ -240,6 +284,7 @@ struct mbedtls_ssl_handshake_params
     mbedtls_x509_crl *sni_ca_crl;       /*!< trusted CAs CRLs from SNI      */
 #endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
+
 #if defined(MBEDTLS_SSL_PROTO_DTLS)
     unsigned int out_msg_seq;           /*!<  Outgoing handshake sequence number */
     unsigned int in_msg_seq;            /*!<  Incoming handshake sequence number */
@@ -304,6 +349,19 @@ struct mbedtls_ssl_handshake_params
 #if defined(MBEDTLS_SSL_EXTENDED_MASTER_SECRET)
     int extended_ms;                    /*!< use Extended Master Secret? */
 #endif
+
+#if defined(MBEDTLS_SSL_ASYNC_PRIVATE)
+    unsigned int async_in_progress : 1; /*!< an asynchronous operation is in progress */
+#endif /* MBEDTLS_SSL_ASYNC_PRIVATE */
+
+#if defined(MBEDTLS_SSL_ASYNC_PRIVATE)
+    /** Asynchronous operation context. This field is meant for use by the
+     * asynchronous operation callbacks (mbedtls_ssl_config::f_async_sign_start,
+     * mbedtls_ssl_config::f_async_decrypt_start,
+     * mbedtls_ssl_config::f_async_resume, mbedtls_ssl_config::f_async_cancel).
+     * The library does not use it internally. */
+    void *user_async_ctx;
+#endif /* MBEDTLS_SSL_ASYNC_PRIVATE */
 };
 
 /*
@@ -407,9 +465,9 @@ void mbedtls_ssl_transform_free( mbedtls_ssl_transform *transform );
  * \brief           Free referenced items in an SSL handshake context and clear
  *                  memory
  *
- * \param handshake SSL handshake context
+ * \param ssl       SSL context
  */
-void mbedtls_ssl_handshake_free( mbedtls_ssl_handshake_params *handshake );
+void mbedtls_ssl_handshake_free( mbedtls_ssl_context *ssl );
 
 int mbedtls_ssl_handshake_client_step( mbedtls_ssl_context *ssl );
 int mbedtls_ssl_handshake_server_step( mbedtls_ssl_context *ssl );
@@ -627,7 +685,13 @@ static inline int mbedtls_ssl_safer_memcmp( const void *a, const void *b, size_t
     volatile unsigned char diff = 0;
 
     for( i = 0; i < n; i++ )
-        diff |= A[i] ^ B[i];
+    {
+        /* Read volatile data in order before computing diff.
+         * This avoids IAR compiler warning:
+         * 'the order of volatile accesses is undefined ..' */
+        unsigned char x = A[i], y = B[i];
+        diff |= x ^ y;
+    }
 
     return( diff );
 }
@@ -643,9 +707,9 @@ int mbedtls_ssl_get_key_exchange_md_ssl_tls( mbedtls_ssl_context *ssl,
 #if defined(MBEDTLS_SSL_PROTO_TLS1) || defined(MBEDTLS_SSL_PROTO_TLS1_1) || \
     defined(MBEDTLS_SSL_PROTO_TLS1_2)
 int mbedtls_ssl_get_key_exchange_md_tls1_2( mbedtls_ssl_context *ssl,
-                                        unsigned char *output,
-                                        unsigned char *data, size_t data_len,
-                                        mbedtls_md_type_t md_alg );
+                                            unsigned char *hash, size_t *hashlen,
+                                            unsigned char *data, size_t data_len,
+                                            mbedtls_md_type_t md_alg );
 #endif /* MBEDTLS_SSL_PROTO_TLS1 || MBEDTLS_SSL_PROTO_TLS1_1 || \
           MBEDTLS_SSL_PROTO_TLS1_2 */
 

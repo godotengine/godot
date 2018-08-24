@@ -50,9 +50,6 @@ class CanvasItemEditorSelectedItem : public Object {
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
 
 public:
-	Variant undo_state;
-	Vector2 undo_pivot;
-
 	Transform2D prev_xform;
 	float prev_rot;
 	Rect2 prev_rect;
@@ -61,6 +58,11 @@ public:
 
 	Transform2D pre_drag_xform;
 	Rect2 pre_drag_rect;
+
+	List<float> pre_drag_bones_length;
+	List<Dictionary> pre_drag_bones_undo_state;
+
+	Dictionary undo_state;
 
 	CanvasItemEditorSelectedItem() { prev_rot = 0; }
 };
@@ -86,6 +88,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SNAP_USE_NODE_PARENT,
 		SNAP_USE_NODE_ANCHORS,
 		SNAP_USE_NODE_SIDES,
+		SNAP_USE_NODE_CENTER,
 		SNAP_USE_OTHER_NODES,
 		SNAP_USE_GRID,
 		SNAP_USE_GUIDES,
@@ -97,6 +100,8 @@ class CanvasItemEditor : public VBoxContainer {
 		SHOW_HELPERS,
 		SHOW_RULERS,
 		SHOW_GUIDES,
+		SHOW_ORIGIN,
+		SHOW_VIEWPORT,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -169,6 +174,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	enum DragType {
 		DRAG_NONE,
+		DRAG_BOX_SELECTION,
 		DRAG_LEFT,
 		DRAG_TOP_LEFT,
 		DRAG_TOP,
@@ -185,28 +191,19 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_ALL,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
-		DRAG_NODE_2D,
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-	};
-
-	enum KeyMoveMODE {
-		MOVE_VIEW_BASE,
-		MOVE_LOCAL_BASE,
-		MOVE_LOCAL_WITH_ROT
+		DRAG_KEY_MOVE,
+		DRAG_PAN
 	};
 
 	EditorSelection *editor_selection;
-	bool additive_selection;
+	bool selection_menu_additive_selection;
 
 	Tool tool;
-	bool first_update;
 	Control *viewport;
-	Control *viewport_base;
 	Control *viewport_scrollable;
-
-	bool can_move_pivot;
 
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
@@ -220,8 +217,12 @@ class CanvasItemEditor : public VBoxContainer {
 	bool show_grid;
 	bool show_rulers;
 	bool show_guides;
+	bool show_origin;
+	bool show_viewport;
 	bool show_helpers;
 	float zoom;
+	Point2 view_offset;
+	Point2 previous_update_view_offset;
 
 	Point2 grid_offset;
 	Point2 grid_step;
@@ -233,6 +234,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_node_parent;
 	bool snap_node_anchors;
 	bool snap_node_sides;
+	bool snap_node_center;
 	bool snap_other_nodes;
 	bool snap_grid;
 	bool snap_guides;
@@ -240,13 +242,9 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_relative;
 	bool snap_pixel;
 	bool skeleton_show_bones;
-	bool box_selecting;
-	Point2 box_selecting_to;
 	bool key_pos;
 	bool key_rot;
 	bool key_scale;
-
-	void _tool_select(int p_index);
 
 	MenuOption last_option;
 
@@ -259,41 +257,44 @@ class CanvasItemEditor : public VBoxContainer {
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
 	};
-
 	Vector<_SelectResult> selection_results;
+
+	struct _HoverResult {
+
+		Point2 position;
+		Ref<Texture> icon;
+		String name;
+	};
+	Vector<_HoverResult> hovering_results;
 
 	struct BoneList {
 
 		Transform2D xform;
-		Vector2 from;
-		Vector2 to;
-		ObjectID bone;
+		float length;
 		uint64_t last_pass;
 	};
 
 	uint64_t bone_last_frame;
-	Map<ObjectID, BoneList> bone_list;
 
-	Transform2D bone_orig_xform;
-
-	struct BoneIK {
-
-		Variant orig_state;
-		Vector2 pos;
-		float len;
-		Node2D *node;
+	struct BoneKey {
+		ObjectID from;
+		ObjectID to;
+		_FORCE_INLINE_ bool operator<(const BoneKey &p_key) const {
+			if (from == p_key.from)
+				return to < p_key.to;
+			else
+				return from < p_key.from;
+		}
 	};
 
-	List<BoneIK> bone_ik_list;
+	Map<BoneKey, BoneList> bone_list;
 
 	struct PoseClipboard {
-
 		Vector2 pos;
 		Vector2 scale;
 		float rot;
 		ObjectID id;
 	};
-
 	List<PoseClipboard> pose_clipboard;
 
 	ToolButton *select_button;
@@ -333,16 +334,17 @@ class CanvasItemEditor : public VBoxContainer {
 	Control *top_ruler;
 	Control *left_ruler;
 
-	//PopupMenu *popup;
-	DragType drag;
+	DragType drag_type;
 	Point2 drag_from;
-	Point2 drag_point_from;
-	bool updating_value_dialog;
-	Point2 display_rotate_from;
-	Point2 display_rotate_to;
+	Point2 drag_to;
+	Point2 drag_rotation_center;
+	List<CanvasItem *> drag_selection;
+	int dragged_guide_index;
+	Point2 dragged_guide_pos;
 
-	int edited_guide_index;
-	Point2 edited_guide_pos;
+	bool updating_value_dialog;
+
+	Point2 box_selecting_to;
 
 	Ref<StyleBoxTexture> select_sb;
 	Ref<Texture> select_handle;
@@ -353,28 +355,22 @@ class CanvasItemEditor : public VBoxContainer {
 	Ref<ShortCut> multiply_grid_step_shortcut;
 	Ref<ShortCut> divide_grid_step_shortcut;
 
-	int handle_len;
-	bool _is_part_of_subscene(CanvasItem *p_item);
-	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, Vector<_SelectResult> &r_items, int limit = 0);
-	void _find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_node, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform, List<CanvasItem *> *r_items);
+	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, int p_limit = 0, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, int p_limit = 0);
+	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
-	void _select_click_on_empty_area(Point2 p_click_pos, bool p_append, bool p_box_selection);
-	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag);
+	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
 
 	ConfirmationDialog *snap_dialog;
 
 	CanvasItem *ref_item;
 
-	void _edit_set_pivot(const Vector2 &mouse_pos);
 	void _add_canvas_item(CanvasItem *p_canvas_item);
-	void _remove_canvas_item(CanvasItem *p_canvas_item);
-	void _clear_canvas_items();
-	void _key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE p_move_mode);
-	void _list_select(const Ref<InputEventMouseButton> &b);
 
-	DragType _get_resize_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
-	void _prepare_drag(const Point2 &p_click_pos);
-	DragType _get_anchor_handle_drag_type(const Point2 &p_click, Vector2 &r_point);
+	void _save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones = false);
+	void _restore_canvas_item_state(List<CanvasItem *> p_canvas_items, bool restore_bones = false);
+	void _commit_canvas_item_state(List<CanvasItem *> p_canvas_items, String action_name, bool commit_bones = false);
 
 	Vector2 _anchor_to_position(const Control *p_control, Vector2 anchor);
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
@@ -383,27 +379,22 @@ class CanvasItemEditor : public VBoxContainer {
 	bool updating_scroll;
 	void _update_scroll(float);
 	void _update_scrollbars();
-	void _update_cursor();
-	void incbeg(float &beg, float &end, float inc, float minsize, bool p_symmetric);
-	void incend(float &beg, float &end, float inc, float minsize, bool p_symmetric);
-
 	void _append_canvas_item(CanvasItem *p_item);
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 
 	UndoRedo *undo_redo;
+	bool _build_bones_list(Node *p_node);
+	bool _get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *outline_shape, Map<BoneKey, BoneList>::Element *bone);
 
-	Point2 _find_topleftmost_point();
-
-	void _build_bones_list(Node *p_node);
-
-	void _get_encompassing_rect(Node *p_node, Rect2 &r_rect, const Transform2D &p_xform);
+	List<CanvasItem *> _get_edited_canvas_items(bool retreive_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
+	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
+	void _expand_encompassing_rect_using_children(Rect2 &p_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
+	Rect2 _get_encompassing_rect(const Node *p_node);
 
 	Object *_get_editor_data(Object *p_what);
 
-	CanvasItem *_get_single_item();
-	int get_item_count();
 	void _keying_changed();
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
@@ -411,6 +402,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_text_at_position(Point2 p_position, String p_string, Margin p_side);
 	void _draw_margin_at_position(int p_value, Point2 p_position, Margin p_side);
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
+	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
 
 	void _draw_rulers();
 	void _draw_guides();
@@ -419,15 +411,28 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_selection();
 	void _draw_axis();
 	void _draw_bones();
-	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_xform);
+	void _draw_invisible_nodes_positions(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _draw_locks_and_groups(Node *p_node, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _draw_hover();
 
 	void _draw_viewport();
-	void _draw_viewport_base();
+
+	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
+	bool _gui_input_move(const Ref<InputEvent> &p_event);
+	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
+	bool _gui_input_pivot(const Ref<InputEvent> &p_event);
+	bool _gui_input_resize(const Ref<InputEvent> &p_event);
+	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
+	bool _gui_input_select(const Ref<InputEvent> &p_event);
+	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event);
+	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
+	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
-	void _gui_input_viewport_base(const Ref<InputEvent> &p_event);
 
 	void _focus_selection(int p_op);
+
+	void _solve_IK(Node2D *leaf_node, Point2 target_position);
 
 	void _snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius = 10.0);
 	void _snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
@@ -437,15 +442,21 @@ class CanvasItemEditor : public VBoxContainer {
 	void _set_margins_preset(Control::LayoutPreset p_preset);
 	void _set_anchors_and_margins_preset(Control::LayoutPreset p_preset);
 
+	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
-	void _zoom_minus();
-	void _zoom_reset();
-	void _zoom_plus();
-
-	void _toggle_snap(bool p_status);
+	void _button_zoom_minus();
+	void _button_zoom_reset();
+	void _button_zoom_plus();
+	void _button_toggle_snap(bool p_status);
+	void _button_tool_select(int p_index);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
+
+	bool bone_list_dirty;
+	void _queue_update_bone_list();
+	void _update_bone_list();
+	void _tree_changed(Node *);
 
 	friend class CanvasItemEditorPlugin;
 
@@ -494,9 +505,10 @@ public:
 		SNAP_NODE_PARENT = 1 << 3,
 		SNAP_NODE_ANCHORS = 1 << 4,
 		SNAP_NODE_SIDES = 1 << 5,
-		SNAP_OTHER_NODES = 1 << 6,
+		SNAP_NODE_CENTER = 1 << 6,
+		SNAP_OTHER_NODES = 1 << 7,
 
-		SNAP_DEFAULT = 0x07,
+		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
 	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL, unsigned int p_forced_modes = 0);

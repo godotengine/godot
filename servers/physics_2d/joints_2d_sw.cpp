@@ -146,14 +146,19 @@ bool PinJoint2DSW::setup(real_t p_step) {
 	return true;
 }
 
+inline Vector2 custom_cross(const Vector2 &p_vec, real_t p_other) {
+
+	return Vector2(p_other * p_vec.y, -p_other * p_vec.x);
+}
+
 void PinJoint2DSW::solve(real_t p_step) {
 
 	// compute relative velocity
-	Vector2 vA = A->get_linear_velocity() - rA.cross(A->get_angular_velocity());
+	Vector2 vA = A->get_linear_velocity() - custom_cross(rA, A->get_angular_velocity());
 
 	Vector2 rel_vel;
 	if (B)
-		rel_vel = B->get_linear_velocity() - rB.cross(B->get_angular_velocity()) - vA;
+		rel_vel = B->get_linear_velocity() - custom_cross(rB, B->get_angular_velocity()) - vA;
 	else
 		rel_vel = -vA;
 
@@ -316,7 +321,7 @@ void GrooveJoint2DSW::solve(real_t p_step) {
 	Vector2 jOld = jn_acc;
 	j += jOld;
 
-	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : xf_normal.project(j)).clamped(jn_max);
+	jn_acc = (((clamp * j.cross(xf_normal)) > 0) ? j : j.project(xf_normal)).clamped(jn_max);
 
 	j = jn_acc - jOld;
 

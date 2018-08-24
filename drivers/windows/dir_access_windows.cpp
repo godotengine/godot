@@ -261,13 +261,30 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 
 	p_new_path = fix_path(p_new_path);
 
-	if (file_exists(p_new_path)) {
-		if (remove(p_new_path) != OK) {
-			return FAILED;
-		};
-	};
+	// If we're only changing file name case we need to do a little juggling
+	if (p_path.to_lower() == p_new_path.to_lower()) {
+		WCHAR tmpfile[MAX_PATH];
 
-	return ::_wrename(p_path.c_str(), p_new_path.c_str()) == 0 ? OK : FAILED;
+		if (!GetTempFileNameW(fix_path(get_current_dir()).c_str(), NULL, 0, tmpfile)) {
+			return FAILED;
+		}
+
+		if (!::ReplaceFileW(tmpfile, p_path.c_str(), NULL, 0, NULL, NULL)) {
+			DeleteFileW(tmpfile);
+			return FAILED;
+		}
+
+		return ::_wrename(tmpfile, p_new_path.c_str()) == 0 ? OK : FAILED;
+
+	} else {
+		if (file_exists(p_new_path)) {
+			if (remove(p_new_path) != OK) {
+				return FAILED;
+			}
+		}
+
+		return ::_wrename(p_path.c_str(), p_new_path.c_str()) == 0 ? OK : FAILED;
+	}
 }
 
 Error DirAccessWindows::remove(String p_path) {

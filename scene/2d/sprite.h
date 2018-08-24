@@ -64,12 +64,21 @@ protected:
 
 	virtual void _validate_property(PropertyInfo &property) const;
 
+	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+
 public:
+	virtual Dictionary _edit_get_state() const;
+	virtual void _edit_set_state(const Dictionary &p_state);
+
 	virtual void _edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
+	bool is_pixel_opaque(const Point2 &p_point) const;
+
 	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
@@ -107,7 +116,11 @@ public:
 	void set_hframes(int p_amount);
 	int get_hframes() const;
 
+	Rect2 get_rect() const;
+	virtual Rect2 get_anchorable_rect() const;
+
 	Sprite();
+	~Sprite();
 };
 
 #endif // SPRITE_H

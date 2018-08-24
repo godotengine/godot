@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType auxiliary PostScript driver component (body only).          */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -25,6 +25,17 @@
 #include "psobjs.c"
 #include "t1cmap.c"
 #include "t1decode.c"
+#include "cffdecode.c"
+
+#include "psarrst.c"
+#include "psblues.c"
+#include "pserror.c"
+#include "psfont.c"
+#include "psft.c"
+#include "pshints.c"
+#include "psintrp.c"
+#include "psread.c"
+#include "psstack.c"
 
 
 /* END */

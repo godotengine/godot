@@ -185,6 +185,10 @@ public:
 		popup->add_item("Popup");
 		popup->add_check_item("Check Popup");
 		popup->set_item_checked(4, true);
+		popup->add_separator();
+		popup->add_radio_check_item("Option A");
+		popup->set_item_checked(6, true);
+		popup->add_radio_check_item("Option B");
 
 		OptionButton *options = memnew(OptionButton);
 

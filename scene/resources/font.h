@@ -56,12 +56,53 @@ public:
 
 	virtual bool is_distance_field_hint() const = 0;
 
-	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1) const;
-	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1)) const;
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const = 0;
+	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, const Color &p_outline_modulate = Color(1, 1, 1)) const;
+	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
+
+	virtual bool has_outline() const { return false; }
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
 
 	void update_changes();
 	Font();
+};
+
+// Helper class to that draws outlines immediately and draws characters in its destructor.
+class FontDrawer {
+	const Ref<Font> &font;
+	Color outline_color;
+	bool has_outline;
+
+	struct PendingDraw {
+		RID canvas_item;
+		Point2 pos;
+		CharType chr;
+		CharType next;
+		Color modulate;
+	};
+
+	Vector<PendingDraw> pending_draws;
+
+public:
+	FontDrawer(const Ref<Font> &p_font, const Color &p_outline_color) :
+			font(p_font),
+			outline_color(p_outline_color) {
+		has_outline = p_font->has_outline();
+	}
+
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
+		if (has_outline) {
+			PendingDraw draw = { p_canvas_item, p_pos, p_char, p_next, p_modulate };
+			pending_draws.push_back(draw);
+		}
+		return font->draw_char(p_canvas_item, p_pos, p_char, p_next, has_outline ? outline_color : p_modulate, has_outline);
+	}
+
+	~FontDrawer() {
+		for (int i = 0; i < pending_draws.size(); ++i) {
+			const PendingDraw &draw = pending_draws[i];
+			font->draw_char(draw.canvas_item, draw.pos, draw.chr, draw.next, draw.modulate, false);
+		}
+	}
 };
 
 class BitmapFont : public Font {
@@ -153,7 +194,7 @@ public:
 	void set_distance_field_hint(bool p_distance_field);
 	bool is_distance_field_hint() const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	BitmapFont();
 	~BitmapFont();

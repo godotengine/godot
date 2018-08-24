@@ -101,11 +101,13 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 
 	GDMonoUtils::SignalAwaiter_SignalCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback);
 
-	MonoObject *ex = NULL;
-	thunk(get_target(), signal_args, &ex);
+	MonoException *exc = NULL;
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	thunk(get_target(), signal_args, (MonoObject **)&exc);
+	GD_MONO_END_RUNTIME_INVOKE;
 
-	if (ex) {
-		mono_print_unhandled_exception(ex);
+	if (exc) {
+		GDMonoUtils::set_pending_exception(exc);
 		ERR_FAIL_V(Variant());
 	}
 
@@ -133,11 +135,13 @@ SignalAwaiterHandle::~SignalAwaiterHandle() {
 		MonoObject *awaiter = get_target();
 
 		if (awaiter) {
-			MonoObject *ex = NULL;
-			thunk(awaiter, &ex);
+			MonoException *exc = NULL;
+			GD_MONO_BEGIN_RUNTIME_INVOKE;
+			thunk(awaiter, (MonoObject **)&exc);
+			GD_MONO_END_RUNTIME_INVOKE;
 
-			if (ex) {
-				mono_print_unhandled_exception(ex);
+			if (exc) {
+				GDMonoUtils::set_pending_exception(exc);
 				ERR_FAIL_V();
 			}
 		}

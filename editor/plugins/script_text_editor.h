@@ -39,6 +39,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
 	CodeTextEditor *code_editor;
+	RichTextLabel *warnings_panel;
 
 	Ref<Script> script;
 
@@ -50,6 +51,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	PopupMenu *highlighter_menu;
 	PopupMenu *context_menu;
 
 	GotoLineDialog *goto_line_dialog;
@@ -105,11 +107,13 @@ class ScriptTextEditor : public ScriptEditorBase {
 		SEARCH_REPLACE,
 		SEARCH_LOCATE_FUNCTION,
 		SEARCH_GOTO_LINE,
+		SEARCH_IN_FILES,
 		DEBUG_TOGGLE_BREAKPOINT,
 		DEBUG_REMOVE_ALL_BREAKPOINTS,
 		DEBUG_GOTO_NEXT_BREAKPOINT,
 		DEBUG_GOTO_PREV_BREAKPOINT,
 		HELP_CONTEXTUAL,
+		LOOKUP_SYMBOL,
 	};
 
 protected:
@@ -121,39 +125,41 @@ protected:
 	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
 	void _load_theme_settings();
 	void _set_theme_for_script();
+	void _toggle_warning_pannel(const Ref<InputEvent> &p_event);
+	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	Map<String, SyntaxHighlighter *> highlighters;
+	void _change_syntax_highlighter(int p_idx);
+
 	void _edit_option(int p_op);
-	void _make_context_menu(bool p_selection, bool p_color, bool p_can_fold, bool p_is_folded);
+	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 
-	enum CaseStyle {
-		UPPER,
-		LOWER,
-		CAPITALIZE,
-	};
-	void _convert_case(CaseStyle p_case);
+	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
+	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
+	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
+
 	virtual void apply_code();
-	virtual Ref<Script> get_edited_script() const;
+	virtual RES get_edited_resource() const;
+	virtual void set_edited_resource(const RES &p_res);
 	virtual Vector<String> get_functions();
-	virtual void set_edited_script(const Ref<Script> &p_script);
 	virtual void reload_text();
 	virtual String get_name();
 	virtual Ref<Texture> get_icon();
 	virtual bool is_unsaved();
-
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void ensure_focus();
@@ -163,6 +169,7 @@ public:
 	virtual void tag_saved_version();
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
+	void goto_line_selection(int p_line, int p_begin, int p_end);
 
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);

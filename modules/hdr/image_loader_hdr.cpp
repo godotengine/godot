@@ -42,14 +42,18 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	ERR_FAIL_COND_V(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED);
 
 	while (true) {
-		String format = f->get_token();
+		String line = f->get_line();
 		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
-		if (format.begins_with("FORMAT=") && format != "FORMAT=32-bit_rle_rgbe") {
-			ERR_EXPLAIN("Only 32-bit_rle_rgbe is supported for .hdr files.");
-			return ERR_FILE_UNRECOGNIZED;
-		}
-		if (format == "FORMAT=32-bit_rle_rgbe")
+		if (line == "") // empty line indicates end of header
 			break;
+		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
+			if (line != "FORMAT=32-bit_rle_rgbe") {
+				ERR_EXPLAIN("Only 32-bit_rle_rgbe is supported for HDR files.");
+				return ERR_FILE_UNRECOGNIZED;
+			}
+		} else if (!line.begins_with("#")) { // not comment
+			WARN_PRINTS("Ignoring unsupported header information in HDR : " + line);
+		}
 	}
 
 	String token = f->get_token();

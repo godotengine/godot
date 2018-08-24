@@ -40,7 +40,6 @@
 #include "viewport.h"
 
 VARIANT_ENUM_CAST(Node::PauseMode);
-VARIANT_ENUM_CAST(Node::RPCMode);
 
 void Node::_notification(int p_notification) {
 
@@ -136,7 +135,6 @@ void Node::_notification(int p_notification) {
 
 				get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_ready, NULL, 0);
 			}
-			//emit_signal(SceneStringNames::get_singleton()->enter_tree);
 
 		} break;
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -177,9 +175,13 @@ void Node::_propagate_ready() {
 		data.children[i]->_propagate_ready();
 	}
 	data.blocked--;
+
+	notification(NOTIFICATION_POST_ENTER_TREE);
+
 	if (data.ready_first) {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
+		emit_signal(SceneStringNames::get_singleton()->ready);
 	}
 }
 
@@ -238,7 +240,7 @@ void Node::_propagate_enter_tree() {
 
 void Node::_propagate_exit_tree() {
 
-//block while removing children
+	//block while removing children
 
 #ifdef DEBUG_ENABLED
 
@@ -477,23 +479,23 @@ bool Node::is_network_master() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return get_tree()->get_network_unique_id() == data.network_master;
+	return get_multiplayer()->get_network_unique_id() == data.network_master;
 }
 
 /***** RPC CONFIG ********/
 
-void Node::rpc_config(const StringName &p_method, RPCMode p_mode) {
+void Node::rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode) {
 
-	if (p_mode == RPC_MODE_DISABLED) {
+	if (p_mode == MultiplayerAPI::RPC_MODE_DISABLED) {
 		data.rpc_methods.erase(p_method);
 	} else {
 		data.rpc_methods[p_method] = p_mode;
 	};
 }
 
-void Node::rset_config(const StringName &p_property, RPCMode p_mode) {
+void Node::rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode) {
 
-	if (p_mode == RPC_MODE_DISABLED) {
+	if (p_mode == MultiplayerAPI::RPC_MODE_DISABLED) {
 		data.rpc_properties.erase(p_property);
 	} else {
 		data.rpc_properties[p_property] = p_mode;
@@ -667,200 +669,16 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Va
 }
 
 void Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
-
 	ERR_FAIL_COND(!is_inside_tree());
+	get_multiplayer()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
+}
 
-	bool skip_rpc = false;
-	bool call_local_native = false;
-	bool call_local_script = false;
-
-	if (p_peer_id == 0 || p_peer_id == get_tree()->get_network_unique_id() || (p_peer_id < 0 && p_peer_id != -get_tree()->get_network_unique_id())) {
-		//check that send mode can use local call
-
-		Map<StringName, RPCMode>::Element *E = data.rpc_methods.find(p_method);
-		if (E) {
-
-			switch (E->get()) {
-
-				case RPC_MODE_DISABLED: {
-					//do nothing
-				} break;
-				case RPC_MODE_REMOTE: {
-					//do nothing also, no need to call local
-				} break;
-				case RPC_MODE_SYNC: {
-					//call it, sync always results in call
-					call_local_native = true;
-				} break;
-				case RPC_MODE_MASTER: {
-					call_local_native = is_network_master();
-					if (call_local_native) {
-						skip_rpc = true; //no other master so..
-					}
-				} break;
-				case RPC_MODE_SLAVE: {
-					call_local_native = !is_network_master();
-				} break;
-			}
-		}
-
-		if (call_local_native) {
-			// done below
-		} else if (get_script_instance()) {
-			//attempt with script
-			ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rpc_mode(p_method);
-
-			switch (rpc_mode) {
-
-				case ScriptInstance::RPC_MODE_DISABLED: {
-					//do nothing
-				} break;
-				case ScriptInstance::RPC_MODE_REMOTE: {
-					//do nothing also, no need to call local
-				} break;
-				case ScriptInstance::RPC_MODE_SYNC: {
-					//call it, sync always results in call
-					call_local_script = true;
-				} break;
-				case ScriptInstance::RPC_MODE_MASTER: {
-					call_local_script = is_network_master();
-					if (call_local_script) {
-						skip_rpc = true; //no other master so..
-					}
-				} break;
-				case ScriptInstance::RPC_MODE_SLAVE: {
-					call_local_script = !is_network_master();
-				} break;
-			}
-		}
-	}
-
-	if (!skip_rpc) {
-		get_tree()->_rpc(this, p_peer_id, p_unreliable, false, p_method, p_arg, p_argcount);
-	}
-
-	if (call_local_native) {
-		Variant::CallError ce;
-		call(p_method, p_arg, p_argcount, ce);
-		if (ce.error != Variant::CallError::CALL_OK) {
-			String error = Variant::get_call_error_text(this, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in local call:  - " + error;
-			ERR_PRINTS(error);
-			return;
-		}
-	}
-
-	if (call_local_script) {
-		Variant::CallError ce;
-		ce.error = Variant::CallError::CALL_OK;
-		get_script_instance()->call(p_method, p_arg, p_argcount, ce);
-		if (ce.error != Variant::CallError::CALL_OK) {
-			String error = Variant::get_call_error_text(this, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in script local call:  - " + error;
-			ERR_PRINTS(error);
-			return;
-		}
-	}
+void Node::rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
+	ERR_FAIL_COND(!is_inside_tree());
+	get_multiplayer()->rsetp(this, p_peer_id, p_unreliable, p_property, p_value);
 }
 
 /******** RSET *********/
-
-void Node::rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
-
-	ERR_FAIL_COND(!is_inside_tree());
-
-	bool skip_rset = false;
-
-	if (p_peer_id == 0 || p_peer_id == get_tree()->get_network_unique_id() || (p_peer_id < 0 && p_peer_id != -get_tree()->get_network_unique_id())) {
-		//check that send mode can use local call
-
-		bool set_local = false;
-
-		Map<StringName, RPCMode>::Element *E = data.rpc_properties.find(p_property);
-		if (E) {
-
-			switch (E->get()) {
-
-				case RPC_MODE_DISABLED: {
-					//do nothing
-				} break;
-				case RPC_MODE_REMOTE: {
-					//do nothing also, no need to call local
-				} break;
-				case RPC_MODE_SYNC: {
-					//call it, sync always results in call
-					set_local = true;
-				} break;
-				case RPC_MODE_MASTER: {
-					set_local = is_network_master();
-					if (set_local) {
-						skip_rset = true;
-					}
-
-				} break;
-				case RPC_MODE_SLAVE: {
-					set_local = !is_network_master();
-				} break;
-			}
-		}
-
-		if (set_local) {
-			bool valid;
-			set(p_property, p_value, &valid);
-
-			if (!valid) {
-				String error = "rset() aborted in local set, property not found:  - " + String(p_property);
-				ERR_PRINTS(error);
-				return;
-			}
-		} else if (get_script_instance()) {
-			//attempt with script
-			ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rset_mode(p_property);
-
-			switch (rpc_mode) {
-
-				case ScriptInstance::RPC_MODE_DISABLED: {
-					//do nothing
-				} break;
-				case ScriptInstance::RPC_MODE_REMOTE: {
-					//do nothing also, no need to call local
-				} break;
-				case ScriptInstance::RPC_MODE_SYNC: {
-					//call it, sync always results in call
-					set_local = true;
-				} break;
-				case ScriptInstance::RPC_MODE_MASTER: {
-					set_local = is_network_master();
-					if (set_local) {
-						skip_rset = true;
-					}
-				} break;
-				case ScriptInstance::RPC_MODE_SLAVE: {
-					set_local = !is_network_master();
-				} break;
-			}
-
-			if (set_local) {
-
-				bool valid = get_script_instance()->set(p_property, p_value);
-
-				if (!valid) {
-					String error = "rset() aborted in local script set, property not found:  - " + String(p_property);
-					ERR_PRINTS(error);
-					return;
-				}
-			}
-		}
-	}
-
-	if (skip_rset)
-		return;
-
-	const Variant *vptr = &p_value;
-
-	get_tree()->_rpc(this, p_peer_id, p_unreliable, true, p_property, &vptr, 1);
-}
-
 void Node::rset(const StringName &p_property, const Variant &p_value) {
 
 	rsetp(0, false, p_property, p_value);
@@ -882,112 +700,40 @@ void Node::rset_unreliable_id(int p_peer_id, const StringName &p_property, const
 }
 
 //////////// end of rpc
-
-bool Node::can_call_rpc(const StringName &p_method, int p_from) const {
-
-	const Map<StringName, RPCMode>::Element *E = data.rpc_methods.find(p_method);
-	if (E) {
-
-		switch (E->get()) {
-
-			case RPC_MODE_DISABLED: {
-				return false;
-			} break;
-			case RPC_MODE_REMOTE: {
-				return true;
-			} break;
-			case RPC_MODE_SYNC: {
-				return true;
-			} break;
-			case RPC_MODE_MASTER: {
-				return is_network_master();
-			} break;
-			case RPC_MODE_SLAVE: {
-				return !is_network_master() && p_from == get_network_master();
-			} break;
-		}
-	}
-
-	if (get_script_instance()) {
-		//attempt with script
-		ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rpc_mode(p_method);
-
-		switch (rpc_mode) {
-
-			case ScriptInstance::RPC_MODE_DISABLED: {
-				return false;
-			} break;
-			case ScriptInstance::RPC_MODE_REMOTE: {
-				return true;
-			} break;
-			case ScriptInstance::RPC_MODE_SYNC: {
-				return true;
-			} break;
-			case ScriptInstance::RPC_MODE_MASTER: {
-				return is_network_master();
-			} break;
-			case ScriptInstance::RPC_MODE_SLAVE: {
-				return !is_network_master() && p_from == get_network_master();
-			} break;
-		}
-	}
-
-	ERR_PRINTS("RPC from " + itos(p_from) + " on unauthorized method attempted: " + String(p_method) + " on base: " + String(Variant(this)));
-	return false;
+Ref<MultiplayerAPI> Node::get_multiplayer() const {
+	if (multiplayer.is_valid())
+		return multiplayer;
+	if (!is_inside_tree())
+		return Ref<MultiplayerAPI>();
+	return get_tree()->get_multiplayer();
 }
 
-bool Node::can_call_rset(const StringName &p_property, int p_from) const {
+Ref<MultiplayerAPI> Node::get_custom_multiplayer() const {
+	return multiplayer;
+}
 
-	const Map<StringName, RPCMode>::Element *E = data.rpc_properties.find(p_property);
-	if (E) {
+void Node::set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 
-		switch (E->get()) {
+	multiplayer = p_multiplayer;
+}
 
-			case RPC_MODE_DISABLED: {
-				return false;
-			} break;
-			case RPC_MODE_REMOTE: {
-				return true;
-			} break;
-			case RPC_MODE_SYNC: {
-				return true;
-			} break;
-			case RPC_MODE_MASTER: {
-				return is_network_master();
-			} break;
-			case RPC_MODE_SLAVE: {
-				return !is_network_master() && p_from == get_network_master();
-			} break;
-		}
+const Map<StringName, MultiplayerAPI::RPCMode>::Element *Node::get_node_rpc_mode(const StringName &p_method) {
+	return data.rpc_methods.find(p_method);
+}
+
+const Map<StringName, MultiplayerAPI::RPCMode>::Element *Node::get_node_rset_mode(const StringName &p_property) {
+	return data.rpc_properties.find(p_property);
+}
+
+bool Node::can_process_notification(int p_what) const {
+	switch (p_what) {
+		case NOTIFICATION_PHYSICS_PROCESS: return data.physics_process;
+		case NOTIFICATION_PROCESS: return data.idle_process;
+		case NOTIFICATION_INTERNAL_PROCESS: return data.idle_process_internal;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: return data.physics_process_internal;
 	}
 
-	if (get_script_instance()) {
-		//attempt with script
-		ScriptInstance::RPCMode rpc_mode = get_script_instance()->get_rset_mode(p_property);
-
-		switch (rpc_mode) {
-
-			case ScriptInstance::RPC_MODE_DISABLED: {
-				return false;
-			} break;
-			case ScriptInstance::RPC_MODE_REMOTE: {
-				return true;
-			} break;
-			case ScriptInstance::RPC_MODE_SYNC: {
-				return true;
-			} break;
-			case ScriptInstance::RPC_MODE_MASTER: {
-				return is_network_master();
-			} break;
-			case ScriptInstance::RPC_MODE_SLAVE: {
-				return !is_network_master() && p_from == get_network_master();
-			} break;
-		}
-	}
-
-	ERR_PRINTS("RSET from " + itos(p_from) + " on unauthorized property attempted: " + String(p_property) + " on base: " + String(Variant(this)));
-
-	return false;
+	return true;
 }
 
 bool Node::can_process() const {
@@ -1074,6 +820,22 @@ bool Node::is_processing_internal() const {
 	return data.idle_process_internal;
 }
 
+void Node::set_process_priority(int p_priority) {
+	data.process_priority = p_priority;
+
+	if (is_processing())
+		data.tree->make_group_changed("idle_process");
+
+	if (is_processing_internal())
+		data.tree->make_group_changed("idle_process_internal");
+
+	if (is_physics_processing())
+		data.tree->make_group_changed("physics_process");
+
+	if (is_physics_processing_internal())
+		data.tree->make_group_changed("physics_process_internal");
+}
+
 void Node::set_process_input(bool p_enable) {
 
 	if (p_enable == data.input)
@@ -1139,9 +901,23 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
+String Node::invalid_character = ". : @ / \"";
+
+bool Node::_validate_node_name(String &p_name) {
+	String name = p_name;
+	Vector<String> chars = Node::invalid_character.split(" ");
+	for (int i = 0; i < chars.size(); i++) {
+		name = name.replace(chars[i], "");
+	}
+	bool is_valid = name == p_name;
+	p_name = name;
+	return is_valid;
+}
+
 void Node::set_name(const String &p_name) {
 
-	String name = p_name.replace(":", "").replace("/", "").replace("@", "");
+	String name = p_name;
+	_validate_node_name(name);
 
 	ERR_FAIL_COND(name == "");
 	data.name = name;
@@ -1346,6 +1122,10 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 }
 
 void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL(p_child);
+
 	add_child(p_child, p_legible_unique_name);
 
 	if (is_a_parent_of(p_node)) {
@@ -1868,16 +1648,29 @@ bool Node::has_persistent_groups() const {
 
 	return false;
 }
-void Node::_print_tree(const Node *p_node) {
+void Node::_print_tree_pretty(const String prefix, const bool last) {
 
-	print_line(String(p_node->get_path_to(this)));
-	for (int i = 0; i < data.children.size(); i++)
-		data.children[i]->_print_tree(p_node);
+	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
+	print_line(prefix + new_prefix + String(get_name()));
+	for (int i = 0; i < data.children.size(); i++) {
+		new_prefix = last ? String::utf8("   ") : String::utf8(" ┃ ");
+		data.children[i]->_print_tree_pretty(prefix + new_prefix, i == data.children.size() - 1);
+	}
+}
+
+void Node::print_tree_pretty() {
+	_print_tree_pretty("", true);
 }
 
 void Node::print_tree() {
 
 	_print_tree(this);
+}
+
+void Node::_print_tree(const Node *p_node) {
+	print_line(String(p_node->get_path_to(this)));
+	for (int i = 0; i < data.children.size(); i++)
+		data.children[i]->_print_tree(p_node);
 }
 
 void Node::_propagate_reverse_notification(int p_notification) {
@@ -2010,7 +1803,7 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	if (!p_editable) {
 		data.editable_instances.erase(p);
 		// Avoid this flag being needlessly saved;
-		// also give more visual feedback if editable children is reenabled
+		// also give more visual feedback if editable children is re-enabled
 		set_display_folded(false);
 	} else {
 		data.editable_instances[p] = true;
@@ -2129,7 +1922,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
 				// but remember non-instanced nodes that are hidden below instanced ones
 				if (descendant->data.owner != this) {
-					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this)
+					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this && descendant->data.owner != descendant->get_parent())
 						hidden_roots.push_back(descendant);
 					continue;
 				}
@@ -2163,19 +1956,14 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			if (name == script_property_name)
 				continue;
 
-			Variant value = N->get()->get(name);
-			// Duplicate dictionaries and arrays, mainly needed for __meta__
-			if (value.get_type() == Variant::DICTIONARY) {
-				value = Dictionary(value).duplicate();
-			} else if (value.get_type() == Variant::ARRAY) {
-				value = Array(value).duplicate();
-			}
+			Variant value = N->get()->get(name).duplicate(true);
 
 			if (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
 
 				Resource *res = Object::cast_to<Resource>(value);
-				if (res) // Duplicate only if it's a resource
+				if (res) { // Duplicate only if it's a resource
 					current_node->set(name, res->duplicate());
+				}
 
 			} else {
 
@@ -2313,13 +2101,7 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 			continue;
 		String name = E->get().name;
 
-		Variant value = get(name);
-		// Duplicate dictionaries and arrays, mainly needed for __meta__
-		if (value.get_type() == Variant::DICTIONARY) {
-			value = Dictionary(value).duplicate();
-		} else if (value.get_type() == Variant::ARRAY) {
-			value = Array(value).duplicate();
-		}
+		Variant value = get(name).duplicate(true);
 
 		node->set(name, value);
 	}
@@ -2502,7 +2284,10 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 
 		Node *child = get_child(0);
 		remove_child(child);
-		p_node->add_child(child);
+		if (!child->is_owned_by_parent()) {
+			// add the custom children to the p_node
+			p_node->add_child(child);
+		}
 	}
 
 	p_node->set_owner(owner);
@@ -2723,18 +2508,21 @@ Array Node::_get_children() const {
 	return arr;
 }
 
-#ifdef TOOLS_ENABLED
 void Node::set_import_path(const NodePath &p_import_path) {
 
+#ifdef TOOLS_ENABLED
 	data.import_path = p_import_path;
+#endif
 }
 
 NodePath Node::get_import_path() const {
 
+#ifdef TOOLS_ENABLED
 	return data.import_path;
-}
-
+#else
+	return NodePath();
 #endif
+}
 
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 
@@ -2767,6 +2555,9 @@ void Node::clear_internal_tree_resource_paths() {
 
 String Node::get_configuration_warning() const {
 
+	if (get_script_instance() && get_script_instance()->has_method("_get_configuration_warning")) {
+		return get_script_instance()->call("_get_configuration_warning");
+	}
 	return String();
 }
 
@@ -2837,6 +2628,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
 	ClassDB::bind_method(D_METHOD("get_index"), &Node::get_index);
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
+	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
 	ClassDB::bind_method(D_METHOD("get_filename"), &Node::get_filename);
 	ClassDB::bind_method(D_METHOD("propagate_notification", "what"), &Node::propagate_notification);
@@ -2846,6 +2638,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
+	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
 	ClassDB::bind_method(D_METHOD("is_processing"), &Node::is_processing);
 	ClassDB::bind_method(D_METHOD("set_process_input", "enable"), &Node::set_process_input);
 	ClassDB::bind_method(D_METHOD("is_processing_input"), &Node::is_processing_input);
@@ -2886,15 +2679,15 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_network_master"), &Node::is_network_master);
 
+	ClassDB::bind_method(D_METHOD("get_multiplayer"), &Node::get_multiplayer);
+	ClassDB::bind_method(D_METHOD("get_custom_multiplayer"), &Node::get_custom_multiplayer);
+	ClassDB::bind_method(D_METHOD("set_custom_multiplayer", "api"), &Node::set_custom_multiplayer);
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
 
-#ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
-
-#endif
 
 	{
 		MethodInfo mi;
@@ -2937,12 +2730,6 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 
-	BIND_ENUM_CONSTANT(RPC_MODE_DISABLED);
-	BIND_ENUM_CONSTANT(RPC_MODE_REMOTE);
-	BIND_ENUM_CONSTANT(RPC_MODE_SYNC);
-	BIND_ENUM_CONSTANT(RPC_MODE_MASTER);
-	BIND_ENUM_CONSTANT(RPC_MODE_SLAVE);
-
 	BIND_ENUM_CONSTANT(PAUSE_MODE_INHERIT);
 	BIND_ENUM_CONSTANT(PAUSE_MODE_STOP);
 	BIND_ENUM_CONSTANT(PAUSE_MODE_PROCESS);
@@ -2952,6 +2739,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
 	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANCING);
 
+	ADD_SIGNAL(MethodInfo("ready"));
 	ADD_SIGNAL(MethodInfo("renamed"));
 	ADD_SIGNAL(MethodInfo("tree_entered"));
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
@@ -2967,6 +2755,8 @@ void Node::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));
@@ -2976,6 +2766,7 @@ void Node::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_configuration_warning"));
 
 	//ClassDB::bind_method(D_METHOD("get_child",&Node::get_child,PH("index")));
 	//ClassDB::bind_method(D_METHOD("get_node",&Node::get_node,PH("path")));
@@ -3000,6 +2791,7 @@ Node::Node() {
 	data.tree = NULL;
 	data.physics_process = false;
 	data.idle_process = false;
+	data.process_priority = 0;
 	data.physics_process_internal = false;
 	data.idle_process_internal = false;
 	data.inside_tree = false;

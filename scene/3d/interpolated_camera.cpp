@@ -38,10 +38,10 @@ void InterpolatedCamera::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (Engine::get_singleton()->is_editor_hint() && enabled)
-				set_physics_process(false);
+				set_process_internal(false);
 
 		} break;
-		case NOTIFICATION_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			if (!enabled)
 				break;
@@ -111,9 +111,9 @@ void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
 	if (p_enable) {
 		if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
 			return;
-		set_process(true);
+		set_process_internal(true);
 	} else
-		set_process(false);
+		set_process_internal(false);
 }
 
 bool InterpolatedCamera::is_interpolation_enabled() const {

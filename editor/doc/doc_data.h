@@ -85,7 +85,7 @@ public:
 		String category;
 		String brief_description;
 		String description;
-		String tutorials;
+		Vector<String> tutorials;
 		String demos;
 		Vector<MethodDoc> methods;
 		Vector<MethodDoc> signals;

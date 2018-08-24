@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" category="Core" version="3.0-stable">
+<class name="@GDScript" category="Core" version="3.1">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		This contains the list of built-in gdscript functions. Mostly math functions and other utilities. Everything else is expanded by objects.
+		List of core built-in GDScript functions. Math functions and other utilities. Everything else is provided by objects. (Keywords: builtin, built in, global functions.)
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,7 +20,7 @@
 			</argument>
 			<argument index="2" name="b8" type="int">
 			</argument>
-			<argument index="3" name="a8" type="int">
+			<argument index="3" name="a8" type="int" default="255">
 			</argument>
 			<description>
 				Returns a 32 bit color with red, green, blue and alpha channels. Each channel has 8 bits of information ranging from 0 to 255.
@@ -38,7 +38,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="alpha" type="float">
+			<argument index="1" name="alpha" type="float" default="1.0">
 			</argument>
 			<description>
 				Returns a color according to the standardised [code]name[/code] with [code]alpha[/code] ranging from 0 to 1.
@@ -202,7 +202,7 @@
 			</description>
 		</method>
 		<method name="convert">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="what" type="Variant">
 			</argument>
@@ -326,7 +326,8 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Raises the Euler's constant [b]e[/b] to the power of [code]s[/code] and returns it. [b]e[/b] has an approximate value of 2.71828.
+				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]s[/code] and returns it.
+				[b]e[/b] has an approximate value of 2.71828.
 				[codeblock]
 				a = exp(2) # approximately 7.39
 				[/codeblock]
@@ -393,7 +394,7 @@
 			</description>
 		</method>
 		<method name="funcref">
-			<return type="Object">
+			<return type="FuncRef">
 			</return>
 			<argument index="0" name="instance" type="Object">
 			</argument>
@@ -408,6 +409,12 @@
 				a = funcref(self, "foo")
 				print(a.call_func()) # prints bar
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_stack">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="hash">
@@ -484,6 +491,14 @@
 				Returns True/False whether [code]s[/code] is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
+		<method name="is_instance_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_nan">
 			<return type="bool">
 			</return>
@@ -499,7 +514,8 @@
 			<argument index="0" name="var" type="Variant">
 			</argument>
 			<description>
-				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc. Note: Generates a fatal error if Variant can not provide a length.
+				Returns length of Variant [code]var[/code]. Length is the character count of String, element count of Array, size of Dictionary, etc.
+				[b]Note:[/b] Generates a fatal error if Variant can not provide a length.
 				[codeblock]
 				a = [1, 2, 3, 4]
 				len(a) # returns 4
@@ -509,9 +525,9 @@
 		<method name="lerp">
 			<return type="float">
 			</return>
-			<argument index="0" name="from" type="float">
+			<argument index="0" name="from" type="Variant">
 			</argument>
-			<argument index="1" name="to" type="float">
+			<argument index="1" name="to" type="Variant">
 			</argument>
 			<argument index="2" name="weight" type="float">
 			</argument>
@@ -532,12 +548,13 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="Object">
+			<return type="Resource">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads a resource from the filesystem located at [code]path[/code]. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				Loads a resource from the filesystem located at [code]path[/code].
+				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = load("res://main.tscn")
@@ -550,7 +567,8 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Natural logarithm. The amount of time needed to reach a certain level of continuous growth. Note: This is not the same as the log function on your calculator which is a base 10 logarithm.
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
+				[b]Note:[/b] This is not the same as the log function on your calculator which is a base 10 logarithm.
 				[codeblock]
 				log(10) # returns 2.302585
 				[/codeblock]
@@ -649,7 +667,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Returns a resource from the filesystem that is loaded during script parsing. Note: resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
+				Returns a resource from the filesystem that is loaded during script parsing.
+				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path".
 				[codeblock]
 				# load a scene called main located in the root of the project directory
 				var main = preload("res://main.tscn")
@@ -665,6 +684,12 @@
 				a = [1,2,3]
 				print("a","b",a) # prints ab[1, 2, 3]
 				[/codeblock]
+			</description>
+		</method>
+		<method name="print_debug" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="print_stack">
@@ -1067,7 +1092,7 @@
 			</description>
 		</method>
 		<method name="weakref">
-			<return type="Object">
+			<return type="WeakRef">
 			</return>
 			<argument index="0" name="obj" type="Object">
 			</argument>
@@ -1131,13 +1156,14 @@
 		<method name="yield">
 			<return type="GDScriptFunctionState">
 			</return>
-			<argument index="0" name="object" type="Object">
+			<argument index="0" name="object" type="Object" default="null">
 			</argument>
-			<argument index="1" name="signal" type="String">
+			<argument index="1" name="signal" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Stops the function execution and returns the current state. Call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state.
-				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emitted.
+				Stops the function execution and returns the current suspended state to the calling function.
+				From the caller, call [method GDScriptFunctionState.resume] on the state to resume execution. This invalidates the state. Within the resumed function, [code]yield()[/code] returns whatever was passed to the [code]resume()[/code] function call.
+				If passed an object and a signal, the execution is resumed when the object emits the given signal. In this case, [code]yield()[/code] returns the argument passed to [code]emit_signal()[/code] if the signal takes only one argument, or an array containing all the arguments passed to [code]emit_signal()[/code] if the signal takes multiple arguments.
 			</description>
 		</method>
 	</methods>

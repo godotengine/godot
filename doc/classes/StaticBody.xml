@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StaticBody" inherits="PhysicsBody" category="Core" version="3.0-stable">
+<class name="StaticBody" inherits="PhysicsBody" category="Core" version="3.1">
 	<brief_description>
 		Static body for 3D Physics.
 	</brief_description>
@@ -26,6 +26,8 @@
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body friction, from 0 (frictionless) to 1 (full friction).
+		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 	</members>
 	<constants>

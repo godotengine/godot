@@ -101,23 +101,27 @@ StyleBox::StyleBox() {
 	}
 }
 
-void StyleBoxTexture::set_texture(RES p_texture) {
+void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
 
 	if (texture == p_texture)
 		return;
 	texture = p_texture;
-	region_rect = Rect2(Point2(), texture->get_size());
+	if (p_texture.is_null()) {
+		region_rect = Rect2(0, 0, 0, 0);
+	} else {
+		region_rect = Rect2(Point2(), texture->get_size());
+	}
 	emit_signal("texture_changed");
 	emit_changed();
 	_change_notify("texture");
 }
 
-RES StyleBoxTexture::get_texture() const {
+Ref<Texture> StyleBoxTexture::get_texture() const {
 
 	return texture;
 }
 
-void StyleBoxTexture::set_normal_map(RES p_normal_map) {
+void StyleBoxTexture::set_normal_map(Ref<Texture> p_normal_map) {
 
 	if (normal_map == p_normal_map)
 		return;
@@ -125,15 +129,24 @@ void StyleBoxTexture::set_normal_map(RES p_normal_map) {
 	emit_changed();
 }
 
-RES StyleBoxTexture::get_normal_map() const {
+Ref<Texture> StyleBoxTexture::get_normal_map() const {
 
 	return normal_map;
 }
 
 void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 
+	ERR_FAIL_INDEX(p_margin, 4);
+
 	margin[p_margin] = p_size;
 	emit_changed();
+	static const char *margin_prop[4] = {
+		"content_margin_left",
+		"content_margin_top",
+		"content_margin_right",
+		"content_margin_bottom",
+	};
+	_change_notify(margin_prop[p_margin]);
 }
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
 
@@ -182,7 +195,7 @@ Size2 StyleBoxTexture::get_center_size() const {
 	if (texture.is_null())
 		return Size2();
 
-	return texture->get_size() - get_minimum_size();
+	return region_rect.size - get_minimum_size();
 }
 
 void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_size) {
@@ -650,14 +663,14 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		style_rect = style_rect.grow(-((aa_size + 1) / 2));
 	}
 
-	//adapt borders (prevent weired overlapping/glitchy drawings)
+	//adapt borders (prevent weird overlapping/glitchy drawings)
 	int width = MAX(style_rect.size.width, 0);
 	int height = MAX(style_rect.size.height, 0);
 	int adapted_border[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 	adapt_values(MARGIN_TOP, MARGIN_BOTTOM, adapted_border, border_width, height, height, height);
 	adapt_values(MARGIN_LEFT, MARGIN_RIGHT, adapted_border, border_width, width, width, width);
 
-	//adapt corners (prevent weired overlapping/glitchy drawings)
+	//adapt corners (prevent weird overlapping/glitchy drawings)
 	int adapted_corner[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 	adapt_values(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius, height, height - adapted_border[MARGIN_BOTTOM], height - adapted_border[MARGIN_TOP]);
 	adapt_values(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, adapted_corner, corner_radius, height, height - adapted_border[MARGIN_BOTTOM], height - adapted_border[MARGIN_TOP]);
@@ -892,12 +905,20 @@ bool StyleBoxLine::is_vertical() const {
 	return vertical;
 }
 
-void StyleBoxLine::set_grow(float p_grow) {
-	grow = p_grow;
+void StyleBoxLine::set_grow_end(float p_grow_end) {
+	grow_end = p_grow_end;
 	emit_changed();
 }
-float StyleBoxLine::get_grow() const {
-	return grow;
+float StyleBoxLine::get_grow_end() const {
+	return grow_end;
+}
+
+void StyleBoxLine::set_grow_begin(float p_grow_begin) {
+	grow_begin = p_grow_begin;
+	emit_changed();
+}
+float StyleBoxLine::get_grow_begin() const {
+	return grow_begin;
 }
 
 void StyleBoxLine::_bind_methods() {
@@ -906,13 +927,16 @@ void StyleBoxLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color"), &StyleBoxLine::get_color);
 	ClassDB::bind_method(D_METHOD("set_thickness", "thickness"), &StyleBoxLine::set_thickness);
 	ClassDB::bind_method(D_METHOD("get_thickness"), &StyleBoxLine::get_thickness);
-	ClassDB::bind_method(D_METHOD("set_grow", "grow"), &StyleBoxLine::set_grow);
-	ClassDB::bind_method(D_METHOD("get_grow"), &StyleBoxLine::get_grow);
+	ClassDB::bind_method(D_METHOD("set_grow_begin", "offset"), &StyleBoxLine::set_grow_begin);
+	ClassDB::bind_method(D_METHOD("get_grow_begin"), &StyleBoxLine::get_grow_begin);
+	ClassDB::bind_method(D_METHOD("set_grow_end", "offset"), &StyleBoxLine::set_grow_end);
+	ClassDB::bind_method(D_METHOD("get_grow_end"), &StyleBoxLine::get_grow_end);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &StyleBoxLine::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &StyleBoxLine::is_vertical);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow", PROPERTY_HINT_RANGE, "-300,300,1"), "set_grow", "get_grow");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow_begin", PROPERTY_HINT_RANGE, "-300,300,1"), "set_grow_begin", "get_grow_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow_end", PROPERTY_HINT_RANGE, "-300,300,1"), "set_grow_end", "get_grow_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "thickness", PROPERTY_HINT_RANGE, "0,10"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
@@ -928,12 +952,12 @@ void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Rect2i r = p_rect;
 
 	if (vertical) {
-		r.position.y -= grow;
-		r.size.y += grow * 2;
+		r.position.y -= grow_begin;
+		r.size.y += (grow_begin + grow_end);
 		r.size.x = thickness;
 	} else {
-		r.position.x -= grow;
-		r.size.x += grow * 2;
+		r.position.x -= grow_begin;
+		r.size.x += (grow_begin + grow_end);
 		r.size.y = thickness;
 	}
 
@@ -941,7 +965,8 @@ void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 }
 
 StyleBoxLine::StyleBoxLine() {
-	grow = 1.0;
+	grow_begin = 1.0;
+	grow_end = 1.0;
 	thickness = 1;
 	color = Color(0.0, 0.0, 0.0);
 	vertical = false;

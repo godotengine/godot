@@ -107,12 +107,12 @@ OccluderPolygon2D::~OccluderPolygon2D() {
 	VS::get_singleton()->free(occ_polygon);
 }
 
-#ifdef DEBUG_ENABLED
 void LightOccluder2D::_poly_changed() {
 
+#ifdef DEBUG_ENABLED
 	update();
-}
 #endif
+}
 
 void LightOccluder2D::_notification(int p_what) {
 
@@ -221,9 +221,7 @@ void LightOccluder2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_occluder_light_mask", "mask"), &LightOccluder2D::set_occluder_light_mask);
 	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"), &LightOccluder2D::get_occluder_light_mask);
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method("_poly_changed", &LightOccluder2D::_poly_changed);
-#endif
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "OccluderPolygon2D"), "set_occluder_polygon", "get_occluder_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");

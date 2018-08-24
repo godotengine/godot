@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    AFM parser (specification).                                          */
 /*                                                                         */
-/*  Copyright 2006-2017 by                                                 */
+/*  Copyright 2006-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -148,12 +148,14 @@ void EMWSPeer::close() {
 
 IP_Address EMWSPeer::get_connected_host() const {
 
-	return IP_Address();
+	ERR_EXPLAIN("Not supported in HTML5 export");
+	ERR_FAIL_V(IP_Address());
 };
 
 uint16_t EMWSPeer::get_connected_port() const {
 
-	return 1025;
+	ERR_EXPLAIN("Not supported in HTML5 export");
+	ERR_FAIL_V(0);
 };
 
 EMWSPeer::EMWSPeer() {

@@ -37,7 +37,8 @@
 #include "shape_sw.h"
 
 #ifdef DEBUG_ENABLED
-#define MAX_OBJECT_DISTANCE 10000000.0
+#define MAX_OBJECT_DISTANCE 3.1622776601683791e+18
+
 #define MAX_OBJECT_DISTANCE_X2 (MAX_OBJECT_DISTANCE * MAX_OBJECT_DISTANCE)
 #endif
 
@@ -134,7 +135,7 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
-	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_enable) { shapes[p_idx].disabled = p_enable; }
+	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_enable) { shapes.write[p_idx].disabled = p_enable; }
 	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const { return shapes[p_idx].disabled; }
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }

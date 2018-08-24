@@ -119,7 +119,7 @@ void CollisionShape2D::_notification(int p_what) {
 
 			Color draw_col = get_tree()->get_debug_collisions_color();
 			if (disabled) {
-				float g = draw_col.gray();
+				float g = draw_col.get_v();
 				draw_col.r = g;
 				draw_col.g = g;
 				draw_col.b = g;
@@ -171,11 +171,6 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 Ref<Shape2D> CollisionShape2D::get_shape() const {
 
 	return shape;
-}
-
-Rect2 CollisionShape2D::_edit_get_rect() const {
-
-	return rect;
 }
 
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {

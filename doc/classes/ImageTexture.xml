@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture" category="Core" version="3.0-stable">
+<class name="ImageTexture" inherits="Texture" category="Core" version="3.1">
 	<brief_description>
 		A [Texture] based on an [Image].
 	</brief_description>
@@ -47,12 +47,12 @@
 			</description>
 		</method>
 		<method name="load">
-			<return type="void">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [code]ImageTexture[/code].
+				Load an [code]ImageTexture[/code] from a file path.
 			</description>
 		</method>
 		<method name="set_data">

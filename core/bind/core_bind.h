@@ -55,7 +55,11 @@ public:
 	PoolVector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PoolStringArray get_dependencies(const String &p_path);
+#ifndef DISABLE_DEPRECATED
 	bool has(const String &p_path);
+#endif // DISABLE_DEPRECATED
+	bool has_cached(const String &p_path);
+	bool exists(const String &p_path, const String &p_type_hint = "");
 
 	_ResourceLoader();
 };
@@ -146,6 +150,14 @@ public:
 	bool is_video_mode_resizable(int p_screen = 0) const;
 	Array get_fullscreen_mode_list(int p_screen = 0) const;
 
+	virtual int get_video_driver_count() const;
+	virtual String get_video_driver_name(int p_driver) const;
+
+	virtual int get_audio_driver_count() const;
+	virtual String get_audio_driver_name(int p_driver) const;
+
+	virtual PoolStringArray get_connected_midi_inputs();
+
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
@@ -156,6 +168,7 @@ public:
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+	virtual Rect2 get_window_safe_area() const;
 	virtual void set_window_size(const Size2 &p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -173,6 +186,10 @@ public:
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window() const;
 
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
@@ -253,8 +270,8 @@ public:
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
-	Dictionary get_datetime_from_unix_time(uint64_t unix_time_val) const;
-	uint64_t get_unix_time_from_datetime(Dictionary datetime) const;
+	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
+	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 	uint64_t get_system_time_secs() const;
@@ -266,6 +283,7 @@ public:
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_usec() const;
 	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;
@@ -351,6 +369,7 @@ public:
 	PoolVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	PoolVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	Variant segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
+	Variant line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b);
 	PoolVector<Vector2> get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2);
 	PoolVector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
 	Vector2 get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
@@ -408,6 +427,9 @@ public:
 	Error open(const String &p_path, int p_mode_flags); ///< open a file
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open
+
+	String get_path() const; /// returns the path for the current open file
+	String get_path_absolute() const; /// returns the absolute path for the current open file
 
 	void seek(int64_t p_position); ///< seek to a given position
 	void seek_end(int64_t p_position = 0); ///< seek from the end of file
@@ -659,6 +681,9 @@ public:
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
+	void set_physics_jitter_fix(float p_threshold);
+	float get_physics_jitter_fix() const;
+
 	void set_target_fps(int p_fps);
 	int get_target_fps() const;
 
@@ -672,6 +697,11 @@ public:
 	MainLoop *get_main_loop() const;
 
 	Dictionary get_version_info() const;
+	Dictionary get_author_info() const;
+	Array get_copyright_info() const;
+	Dictionary get_donor_info() const;
+	Dictionary get_license_info() const;
+	String get_license_text() const;
 
 	bool is_in_physics_frame() const;
 

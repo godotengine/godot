@@ -66,7 +66,13 @@ public:
 	GDNativeLibrary();
 	~GDNativeLibrary();
 
+	virtual bool _set(const StringName &p_name, const Variant &p_property);
+	virtual bool _get(const StringName &p_name, Variant &r_property) const;
+	virtual void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	_FORCE_INLINE_ Ref<ConfigFile> get_config_file() { return config_file; }
+
+	void set_config_file(Ref<ConfigFile> p_config_file);
 
 	// things that change per-platform
 	// so there are no setters for this
@@ -142,16 +148,16 @@ public:
 	static void _bind_methods();
 
 	void set_library(Ref<GDNativeLibrary> p_library);
-	Ref<GDNativeLibrary> get_library();
+	Ref<GDNativeLibrary> get_library() const;
 
-	bool is_initialized();
+	bool is_initialized() const;
 
 	bool initialize();
 	bool terminate();
 
 	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
 
-	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true);
+	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true) const;
 };
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {

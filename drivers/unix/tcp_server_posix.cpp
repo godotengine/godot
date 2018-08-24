@@ -91,10 +91,14 @@ Error TCPServerPosix::listen(uint16_t p_port, const IP_Address &p_bind_address) 
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
 
 #ifndef NO_FCNTL
-	fcntl(sockfd, F_SETFL, O_NONBLOCK);
+	if (fcntl(sockfd, F_SETFL, O_NONBLOCK) < 0) {
+		WARN_PRINT("Error setting socket as non blocking");
+	}
 #else
 	int bval = 1;
-	ioctl(sockfd, FIONBIO, &bval);
+	if (ioctl(sockfd, FIONBIO, &bval) < 0) {
+		WARN_PRINT("Error setting socket as non blocking");
+	}
 #endif
 
 	int reuse = 1;
@@ -113,6 +117,7 @@ Error TCPServerPosix::listen(uint16_t p_port, const IP_Address &p_bind_address) 
 			ERR_FAIL_V(FAILED);
 		};
 	} else {
+		close(sockfd);
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -157,10 +162,14 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	int fd = accept(listen_sockfd, (struct sockaddr *)&their_addr, &size);
 	ERR_FAIL_COND_V(fd == -1, Ref<StreamPeerTCP>());
 #ifndef NO_FCNTL
-	fcntl(fd, F_SETFL, O_NONBLOCK);
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+		WARN_PRINT("Error setting socket as non blocking");
+	}
 #else
 	int bval = 1;
-	ioctl(fd, FIONBIO, &bval);
+	if (ioctl(fd, FIONBIO, &bval) < 0) {
+		WARN_PRINT("Error setting socket as non blocking");
+	}
 #endif
 
 	Ref<StreamPeerTCPPosix> conn = memnew(StreamPeerTCPPosix);

@@ -46,6 +46,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/packed_scene.h"
 #include "ustring.h"
 
 class ScriptEditorDebuggerVariables : public Object {
@@ -284,6 +285,30 @@ void ScriptEditorDebugger::_scene_tree_selected() {
 	msg.push_back("inspect_object");
 	msg.push_back(inspected_object_id);
 	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
+
+	TreeItem *item = inspect_scene_tree->get_item_at_position(p_position);
+	if (!item)
+		return;
+
+	item->select(0);
+
+	item_menu->clear();
+	item_menu->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->set_global_position(get_global_mouse_position());
+	item_menu->popup();
+}
+
+void ScriptEditorDebugger::_file_selected(const String &p_file) {
+	if (file_dialog->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+		Array msg;
+		msg.push_back("save_node");
+		msg.push_back(inspected_object_id);
+		msg.push_back(p_file);
+		ppeer->put_var(msg);
+	}
 }
 
 void ScriptEditorDebugger::_scene_tree_property_value_edited(const String &p_prop, const Variant &p_value) {
@@ -633,7 +658,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		Vector<float> p;
 		p.resize(arr.size());
 		for (int i = 0; i < arr.size(); i++) {
-			p[i] = arr[i];
+			p.write[i] = arr[i];
 			if (i < perf_items.size()) {
 
 				float v = p[i];
@@ -668,7 +693,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				perf_items[i]->set_text(1, vs);
 				perf_items[i]->set_tooltip(1, tt);
 				if (p[i] > perf_max[i])
-					perf_max[i] = p[i];
+					perf_max.write[i] = p[i];
 			}
 		}
 		perf_history.push_front(p);
@@ -709,26 +734,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		error_list->set_item_metadata(error_list->get_item_count() - 1, stack);
 
-		error_count++;
-		/*
-		int count = p_data[1];
-
-		Array cstack;
-
-		OutputError oe = errors.front()->get();
-
-		packet_peer_stream->put_var(oe.hr);
-		packet_peer_stream->put_var(oe.min);
-		packet_peer_stream->put_var(oe.sec);
-		packet_peer_stream->put_var(oe.msec);
-		packet_peer_stream->put_var(oe.source_func);
-		packet_peer_stream->put_var(oe.source_file);
-		packet_peer_stream->put_var(oe.source_line);
-		packet_peer_stream->put_var(oe.error);
-		packet_peer_stream->put_var(oe.error_descr);
-		packet_peer_stream->put_var(oe.warning);
-		packet_peer_stream->put_var(oe.callstack);
-		*/
+		if (warning)
+			warning_count++;
+		else
+			error_count++;
 
 	} else if (p_msg == "profile_sig") {
 		//cache a signature
@@ -755,6 +764,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			EditorProfiler::Metric::Category::Item item;
 			item.calls = 1;
 			item.line = 0;
+
 			item.name = "Physics Time";
 			item.total = metric.physics_time;
 			item.self = item.total;
@@ -792,14 +802,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			for (int i = 0; i < values.size(); i += 2) {
 
 				EditorProfiler::Metric::Category::Item item;
-				item.name = values[i];
 				item.calls = 1;
+				item.line = 0;
+				item.name = values[i];
 				item.self = values[i + 1];
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
 				item.name = item.name.capitalize();
 				c.total_time += item.total;
-				c.items[i / 2] = item;
+				c.items.write[i / 2] = item;
 			}
 			metric.categories.push_back(c);
 		}
@@ -836,7 +847,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			item.calls = calls;
 			item.self = self;
 			item.total = total;
-			funcs.items[i] = item;
+			funcs.items.write[i] = item;
 		}
 
 		metric.categories.push_back(funcs);
@@ -864,7 +875,7 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 			reason->add_color_override("font_color", get_color("success_color", "Editor"));
 	}
 	reason->set_text(p_reason);
-	reason->set_tooltip(p_reason);
+	reason->set_tooltip(p_reason.word_wrap(80));
 }
 
 void ScriptEditorDebugger::_performance_select() {
@@ -948,7 +959,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			inspector->edit(variables);
 
-			copy->set_icon(get_icon("Duplicate", "EditorIcons"));
+			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
 
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));
 			next->set_icon(get_icon("DebugNext", "EditorIcons"));
@@ -965,6 +976,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 			reason->add_color_override("font_color", get_color("error_color", "Editor"));
 
+			bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+			Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+
+			if (enable_rl) {
+				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
+				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
+			} else
+				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
 		} break;
 		case NOTIFICATION_PROCESS: {
 
@@ -995,20 +1014,26 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 			}
 
-			if (error_count != last_error_count) {
+			if (error_count != last_error_count || warning_count != last_warning_count) {
 
-				if (error_count == 0) {
+				if (error_count == 0 && warning_count == 0) {
 					error_split->set_name(TTR("Errors"));
 					debugger_button->set_text(TTR("Debugger"));
 					debugger_button->set_icon(Ref<Texture>());
 					tabs->set_tab_icon(error_split->get_index(), Ref<Texture>());
 				} else {
-					error_split->set_name(TTR("Errors") + " (" + itos(error_count) + ")");
-					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count) + ")");
-					debugger_button->set_icon(get_icon("Error", "EditorIcons"));
-					tabs->set_tab_icon(error_split->get_index(), get_icon("Error", "EditorIcons"));
+					error_split->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
+					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+					if (error_count == 0) {
+						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
+						tabs->set_tab_icon(error_split->get_index(), get_icon("Warning", "EditorIcons"));
+					} else {
+						debugger_button->set_icon(get_icon("Error", "EditorIcons"));
+						tabs->set_tab_icon(error_split->get_index(), get_icon("Error", "EditorIcons"));
+					}
 				}
 				last_error_count = error_count;
+				last_warning_count = warning_count;
 			}
 
 			if (connection.is_null()) {
@@ -1038,6 +1063,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					error_list->clear();
 					error_stack->clear();
 					error_count = 0;
+					warning_count = 0;
 					profiler_signature.clear();
 					//live_edit_root->set_text("/root");
 
@@ -1152,6 +1178,16 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
 			} else
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
+
+			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			step->set_icon(get_icon("DebugStep", "EditorIcons"));
+			next->set_icon(get_icon("DebugNext", "EditorIcons"));
+			back->set_icon(get_icon("Back", "EditorIcons"));
+			forward->set_icon(get_icon("Forward", "EditorIcons"));
+			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
+			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
+			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
+
 		} break;
 	}
 }
@@ -1167,12 +1203,12 @@ void ScriptEditorDebugger::start() {
 	perf_history.clear();
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
 
-		perf_max[i] = 0;
+		perf_max.write[i] = 0;
 	}
 
 	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
 	if (server->listen(remote_port) != OK) {
-		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), true);
+		EditorNode::get_log()->add_message(String("Error listening on port ") + itos(remote_port), EditorLog::MSG_TYPE_ERROR);
 		return;
 	}
 
@@ -1204,6 +1240,9 @@ void ScriptEditorDebugger::stop() {
 	if (connection.is_valid()) {
 		EditorNode::get_log()->add_message("** Debug Process Stopped **");
 		connection.unref();
+
+		reason->set_text("");
+		reason->set_tooltip("");
 	}
 
 	pending_in_queue = 0;
@@ -1222,6 +1261,9 @@ void ScriptEditorDebugger::stop() {
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
+
+	Node *node = editor->get_scene_tree_dock()->get_tree_editor()->get_selected();
+	editor->push_item(node);
 
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
@@ -1277,14 +1319,14 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	emit_signal("goto_script_line", stack_script, int(d["line"]) - 1);
 	stack_script.unref();
 
-	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected_to_host());
-	///
-
-	Array msg;
-	msg.push_back("get_stack_frame_vars");
-	msg.push_back(d["frame"]);
-	ppeer->put_var(msg);
+	if (connection.is_valid() && connection->is_connected_to_host()) {
+		Array msg;
+		msg.push_back("get_stack_frame_vars");
+		msg.push_back(d["frame"]);
+		ppeer->put_var(msg);
+	} else {
+		inspector->edit(NULL);
+	}
 }
 
 void ScriptEditorDebugger::_output_clear() {
@@ -1638,12 +1680,20 @@ void ScriptEditorDebugger::_error_selected(int p_idx) {
 		md.push_back(st[i + 1]);
 		md.push_back(st[i + 2]);
 
-		String str = func + " in " + script.get_file() + ":line " + itos(line);
+		String str = func;
+		String tooltip_str = TTR("Function:") + " " + func;
+		if (script.length() > 0) {
+			str += " in " + script.get_file();
+			tooltip_str = TTR("File:") + " " + script + "\n" + tooltip_str;
+			if (line > 0) {
+				str += ":line " + itos(line);
+				tooltip_str += "\n" + TTR("Line:") + " " + itos(line);
+			}
+		}
 
 		error_stack->add_item(str);
 		error_stack->set_item_metadata(error_stack->get_item_count() - 1, md);
-		error_stack->set_item_tooltip(error_stack->get_item_count() - 1,
-				TTR("File:") + " " + script + "\n" + TTR("Function:") + " " + func + "\n" + TTR("Line:") + " " + itos(line));
+		error_stack->set_item_tooltip(error_stack->get_item_count() - 1, tooltip_str);
 	}
 }
 
@@ -1713,6 +1763,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	error_list->clear();
 	error_count = 0;
+	warning_count = 0;
 	_notification(NOTIFICATION_PROCESS);
 }
 
@@ -1726,7 +1777,7 @@ void ScriptEditorDebugger::_error_list_item_rmb_selected(int p_item, const Vecto
 	bool single_item_selected = error_list->get_selected_items().size() == 1;
 
 	if (single_item_selected) {
-		item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Error"), ITEM_MENU_COPY_ERROR);
+		item_menu->add_icon_item(get_icon("ActionCopy", "EditorIcons"), TTR("Copy Error"), ITEM_MENU_COPY_ERROR);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1744,6 +1795,21 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			String desc = error_list->get_item_tooltip(error_list->get_current());
 
 			OS::get_singleton()->set_clipboard(title + "\n----------\n" + desc);
+		} break;
+		case ITEM_MENU_SAVE_REMOTE_NODE: {
+
+			file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
+			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+
+			List<String> extensions;
+			Ref<PackedScene> sd = memnew(PackedScene);
+			ResourceSaver::get_recognized_extensions(sd, &extensions);
+			file_dialog->clear_filters();
+			for (int i = 0; i < extensions.size(); i++) {
+				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
+			}
+
+			file_dialog->popup_centered_ratio();
 		} break;
 	}
 }
@@ -1779,6 +1845,8 @@ void ScriptEditorDebugger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_scene_tree_selected"), &ScriptEditorDebugger::_scene_tree_selected);
 	ClassDB::bind_method(D_METHOD("_scene_tree_folded"), &ScriptEditorDebugger::_scene_tree_folded);
+	ClassDB::bind_method(D_METHOD("_scene_tree_rmb_selected"), &ScriptEditorDebugger::_scene_tree_rmb_selected);
+	ClassDB::bind_method(D_METHOD("_file_selected"), &ScriptEditorDebugger::_file_selected);
 
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
 	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
@@ -1800,7 +1868,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	ppeer = Ref<PacketPeerStream>(memnew(PacketPeerStream));
 	ppeer->set_input_buffer_max_size(1024 * 1024 * 8); //8mb should be enough
 	editor = p_editor;
-	editor->get_property_editor()->connect("object_id_selected", this, "_scene_tree_property_select_object");
+	editor->get_inspector()->connect("object_id_selected", this, "_scene_tree_property_select_object");
 
 	tabs = memnew(TabContainer);
 	tabs->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -1826,6 +1894,9 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		reason->set_text("");
 		hbc->add_child(reason);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
+		reason->set_autowrap(true);
+		reason->set_max_lines_visible(3);
+		reason->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
 		hbc->add_child(memnew(VSeparator));
 
@@ -1873,6 +1944,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 		stack_dump = memnew(Tree);
+		stack_dump->set_allow_reselect(true);
 		stack_dump->set_columns(1);
 		stack_dump->set_column_titles_visible(true);
 		stack_dump->set_column_title(0, TTR("Stack Frames"));
@@ -1884,7 +1956,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector = memnew(PropertyEditor);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->hide_top_label();
-		inspector->get_scene_tree()->set_column_title(0, TTR("Variable"));
+		inspector->get_property_tree()->set_column_title(0, TTR("Variable"));
 		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
@@ -1950,12 +2022,19 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspect_scene_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		inspect_scene_tree->connect("cell_selected", this, "_scene_tree_selected");
 		inspect_scene_tree->connect("item_collapsed", this, "_scene_tree_folded");
-
+		inspect_scene_tree->set_allow_rmb_select(true);
+		inspect_scene_tree->connect("item_rmb_selected", this, "_scene_tree_rmb_selected");
 		auto_switch_remote_scene_tree = EDITOR_DEF("debugger/auto_switch_to_remote_scene_tree", false);
 		inspect_scene_tree_timeout = EDITOR_DEF("debugger/remote_scene_tree_refresh_interval", 1.0);
 		inspect_edited_object_timeout = EDITOR_DEF("debugger/remote_inspect_refresh_interval", 0.2);
 		inspected_object_id = 0;
 		updating_scene_tree = false;
+	}
+
+	{ // File dialog
+		file_dialog = memnew(EditorFileDialog);
+		file_dialog->connect("file_selected", this, "_file_selected");
+		add_child(file_dialog);
 	}
 
 	{ //profiler
@@ -2011,7 +2090,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 			it->set_selectable(1, false);
 			it->set_text(0, name.capitalize());
 			perf_items.push_back(it);
-			perf_max[i] = 0;
+			perf_max.write[i] = 0;
 		}
 	}
 
@@ -2097,9 +2176,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	live_debug = false;
 	last_path_id = false;
 	error_count = 0;
+	warning_count = 0;
 	hide_on_stop = true;
 	enable_external_editor = false;
 	last_error_count = 0;
+	last_warning_count = 0;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");
 }

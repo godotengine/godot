@@ -5,7 +5,7 @@
 /*    PostScript hinter global hinting management (body).                  */
 /*    Inspired by the new auto-hinter module.                              */
 /*                                                                         */
-/*  Copyright 2001-2017 by                                                 */
+/*  Copyright 2001-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used        */
@@ -227,8 +227,8 @@
   }
 
 
-  /* Re-read blue zones from the original fonts and store them into out */
-  /* private structure.  This function re-orders, sanitizes and         */
+  /* Re-read blue zones from the original fonts and store them into our */
+  /* private structure.  This function re-orders, sanitizes, and        */
   /* fuzz-expands the zones as well.                                    */
   static void
   psh_blues_set_zones( PSH_Blues  target,

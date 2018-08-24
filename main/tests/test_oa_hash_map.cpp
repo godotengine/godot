@@ -49,7 +49,7 @@ MainLoop *test() {
 		map.set(42, 11880);
 
 		int value;
-		map.lookup(42, &value);
+		map.lookup(42, value);
 
 		OS::get_singleton()->print("capacity  %d\n", map.get_capacity());
 		OS::get_singleton()->print("elements  %d\n", map.get_num_elements());
@@ -72,7 +72,7 @@ MainLoop *test() {
 		uint32_t num_elems = 0;
 		for (int i = 0; i < 500; i++) {
 			int tmp;
-			if (map.lookup(i, &tmp))
+			if (map.lookup(i, tmp) && tmp == i * 2)
 				num_elems++;
 		}
 
@@ -88,7 +88,7 @@ MainLoop *test() {
 		map.set("Godot rocks", 42);
 
 		for (OAHashMap<String, int>::Iterator it = map.iter(); it.valid; it = map.next_iter(it)) {
-			OS::get_singleton()->print("map[\"%s\"] = %d\n", it.key->utf8().get_data(), *it.data);
+			OS::get_singleton()->print("map[\"%s\"] = %d\n", it.key->utf8().get_data(), *it.value);
 		}
 	}
 

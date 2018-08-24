@@ -121,6 +121,26 @@ void EditorAudioBus::_notification(int p_what) {
 
 		set_process(is_visible_in_tree());
 	}
+
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+
+		for (int i = 0; i < cc; i++) {
+			channel[i].vu_l->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
+			channel[i].vu_l->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
+			channel[i].vu_r->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
+			channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
+			channel[i].prev_active = true;
+		}
+		scale->set_texture(get_icon("BusVuDb", "EditorIcons"));
+
+		disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
+
+		solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
+		mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
+		bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
+
+		bus_options->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+	}
 }
 
 void EditorAudioBus::update_send() {
@@ -707,6 +727,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_r->set_min(-80);
 		channel[i].vu_r->set_max(24);
 		channel[i].vu_r->set_step(0.1);
+
+		channel[i].peak_l = 0.0f;
+		channel[i].peak_r = 0.0f;
 	}
 
 	scale = memnew(TextureRect);
@@ -716,6 +739,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_hide_root(true);
 	effects->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	effects->set_hide_folding(true);
+	effects->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(effects);
 	effects->connect("item_edited", this, "_effect_edited");
 	effects->connect("cell_selected", this, "_effect_selected");
@@ -997,7 +1021,7 @@ void EditorAudioBuses::_select_layout() {
 void EditorAudioBuses::_save_as_layout() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	file_dialog->set_title(TTR("Save Audio Bus Layout As.."));
+	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
 	new_layout = false;
@@ -1006,7 +1030,7 @@ void EditorAudioBuses::_save_as_layout() {
 void EditorAudioBuses::_new_layout() {
 
 	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-	file_dialog->set_title(TTR("Location for New Layout.."));
+	file_dialog->set_title(TTR("Location for New Layout..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
 	new_layout = true;
@@ -1148,6 +1172,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	bus_scroll->set_enable_v_scroll(false);
 	add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
+	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
 	bus_scroll->add_child(bus_hb);
 
 	save_timer = memnew(Timer);

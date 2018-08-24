@@ -147,7 +147,7 @@ Variant::operator bool() const {
 	return booleanize();
 }
 
-// We consider all unitialized or empty types to be false based on the type's
+// We consider all uninitialized or empty types to be false based on the type's
 // zeroiness.
 bool Variant::booleanize() const {
 	return !is_zero();
@@ -177,7 +177,7 @@ bool Variant::booleanize() const {
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                  \
 		if (p_b.type == INT) _RETURN(p_a._data.m_type m_op p_b._data._int);   \
 		if (p_b.type == REAL) _RETURN(p_a._data.m_type m_op p_b._data._real); \
-		if (p_b.type == NIL) _RETURN(!p_b.type m_op NIL);                     \
+		if (p_b.type == NIL) _RETURN(!(p_b.type m_op NIL));                   \
                                                                               \
 		_RETURN_FAIL                                                          \
 	};
@@ -252,7 +252,7 @@ bool Variant::booleanize() const {
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                                            \
 		if (p_b.type == STRING) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));      \
 		if (p_b.type == NODE_PATH) _RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
-		if (p_b.type == NIL) _RETURN(!p_b.type m_op NIL);                                                                                               \
+		if (p_b.type == NIL) _RETURN(!(p_b.type m_op NIL));                                                                                             \
                                                                                                                                                         \
 		_RETURN_FAIL                                                                                                                                    \
 	};
@@ -278,7 +278,7 @@ bool Variant::booleanize() const {
 		if (p_b.type == m_name)                                                                                                \
 			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
 		if (p_b.type == NIL)                                                                                                   \
-			_RETURN(!p_b.type m_op NIL);                                                                                       \
+			_RETURN(!(p_b.type m_op NIL));                                                                                     \
                                                                                                                                \
 		_RETURN_FAIL                                                                                                           \
 	};
@@ -323,7 +323,7 @@ bool Variant::booleanize() const {
 		if (p_b.type == m_name)                                          \
 			_RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub);             \
 		if (p_b.type == NIL)                                             \
-			_RETURN(!p_b.type m_op NIL);                                 \
+			_RETURN(!(p_b.type m_op NIL));                               \
                                                                          \
 		_RETURN_FAIL                                                     \
 	}
@@ -1459,13 +1459,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->a = p_value._data._int / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._int, v->get_s(), v->get_v());
+					v->set_hsv(p_value._data._int, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._int, v->get_v());
+					v->set_hsv(v->get_h(), p_value._data._int, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int);
+					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int, v->a);
 					valid = true;
 				}
 			} else if (p_value.type == Variant::REAL) {
@@ -1495,13 +1495,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->a = p_value._data._real / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._real, v->get_s(), v->get_v());
+					v->set_hsv(p_value._data._real, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._real, v->get_v());
+					v->set_hsv(v->get_h(), p_value._data._real, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_v(), p_value._data._real);
+					v->set_hsv(v->get_h(), v->get_s(), p_value._data._real, v->a);
 					valid = true;
 				}
 			}
@@ -2117,15 +2117,15 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				} else if (*str == "h") {
 					valid = true;
-					v->set_hsv(p_value, v->get_s(), v->get_v());
+					v->set_hsv(p_value, v->get_s(), v->get_v(), v->a);
 					return;
 				} else if (*str == "s") {
 					valid = true;
-					v->set_hsv(v->get_h(), p_value, v->get_v());
+					v->set_hsv(v->get_h(), p_value, v->get_v(), v->a);
 					return;
 				} else if (*str == "v") {
 					valid = true;
-					v->set_hsv(v->get_h(), v->get_s(), p_value);
+					v->set_hsv(v->get_h(), v->get_s(), p_value, v->a);
 					return;
 				} else if (*str == "r8") {
 					valid = true;
@@ -3415,6 +3415,28 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
+Variant Variant::duplicate(bool deep) const {
+	switch (type) {
+		case OBJECT: {
+			/*  breaks stuff :(
+			if (deep && !_get_obj().ref.is_null()) {
+				Ref<Resource> resource = _get_obj().ref;
+				if (resource.is_valid()) {
+					return resource->duplicate(true);
+				}
+			}
+			*/
+			return *this;
+		} break;
+		case DICTIONARY:
+			return operator Dictionary().duplicate(deep);
+		case ARRAY:
+			return operator Array().duplicate(deep);
+		default:
+			return *this;
+	}
+}
+
 void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst) {
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {
@@ -3715,8 +3737,9 @@ static const char *_op_names[Variant::OP_MAX] = {
 	"*",
 	"/",
 	"- (negation)",
+	"+ (positive)",
 	"%",
-	"..",
+	"+ (concatenation)",
 	"<<",
 	">>",
 	"&",

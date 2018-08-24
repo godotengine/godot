@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 
 Import('env')
 
@@ -21,6 +22,10 @@ ios_lib = env_ios.add_library('iphone', iphone_lib)
 
 def combine_libs(target=None, source=None, env=None):
     lib_path = target[0].srcnode().abspath
-    env.Execute('$IPHONEPATH/usr/bin/libtool -static -o "' + lib_path + '" ' + ' '.join([('"' + lib.srcnode().abspath + '"') for lib in source]))
+    if ("OSXCROSS_IOS" in os.environ):
+        libtool = '$IPHONEPATH/usr/bin/${ios_triple}libtool'
+    else:
+        libtool = "$IPHONEPATH/usr/bin/libtool"
+    env.Execute(libtool + ' -static -o "' + lib_path + '" ' + ' '.join([('"' + lib.srcnode().abspath + '"') for lib in source]))
 
 combine_command = env_ios.Command('#bin/libgodot' + env_ios['LIBSUFFIX'], [ios_lib] + env_ios['LIBS'], combine_libs)

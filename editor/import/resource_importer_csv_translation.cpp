@@ -50,7 +50,7 @@ void ResourceImporterCSVTranslation::get_recognized_extensions(List<String> *p_e
 }
 
 String ResourceImporterCSVTranslation::get_save_extension() const {
-	return ""; //does not save a single resoure
+	return ""; //does not save a single resource
 }
 
 String ResourceImporterCSVTranslation::get_resource_type() const {
@@ -119,7 +119,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		if (key != "") {
 
 			for (int i = 1; i < line.size(); i++) {
-				translations[i - 1]->add_message(key, line[i]);
+				translations.write[i - 1]->add_message(key, line[i]);
 			}
 		}
 

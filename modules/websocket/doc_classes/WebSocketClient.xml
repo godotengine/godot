@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebSocketClient" inherits="WebSocketMultiplayerPeer" category="Core" version="3.1">
+	<brief_description>
+		A WebSocket client implementation
+	</brief_description>
+	<description>
+		This class implements a WebSocket client compatible with any RFC 6455 complaint WebSocket server.
+		This client can be optionally used as a network peer for the [MultiplayerAPI].
+		After starting the client ([method connect_to_url]), you will need to [method NetworkedMultiplayerPeer.poll] it at regular intervals (e.g. inside [method Node._process]).
+		You will received appropriate signals when connecting, disconnecting, or when new data is available.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="connect_to_url">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="url" type="String">
+			</argument>
+			<argument index="1" name="protocols" type="PoolStringArray" default="PoolStringArray(  )">
+			</argument>
+			<argument index="2" name="gd_mp_api" type="bool" default="false">
+			</argument>
+			<description>
+				Connect to the given URL requesting one of the given [code]protocols[/code] as sub-protocol.
+				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI]. Note: connnections to non Godot servers will not work, and [signal data_received] will not be emitted when this option is true.
+			</description>
+		</method>
+		<method name="disconnect_from_host">
+			<return type="void">
+			</return>
+			<description>
+				Disconnect from the server if currently connected.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
+			Enable or disable SSL certificate verification. Note: You must specify the certificates to be used in the project settings for it to work when exported.
+		</member>
+	</members>
+	<signals>
+		<signal name="connection_closed">
+			<description>
+				Emitted when the connection to the server is closed.
+			</description>
+		</signal>
+		<signal name="connection_error">
+			<description>
+				Emitted when the connection to the server fails.
+			</description>
+		</signal>
+		<signal name="connection_established">
+			<argument index="0" name="protocol" type="String">
+			</argument>
+			<description>
+				Emitted when a connection with the server is established, [code]protocol[/code] will contain the sub-protocol agreed with the server.
+			</description>
+		</signal>
+		<signal name="data_received">
+			<description>
+				Emitted when a WebSocket message is received. Note: This signal is NOT emitted when used as high level multiplayer peer.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

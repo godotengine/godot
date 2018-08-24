@@ -49,6 +49,7 @@
 #if defined(MBEDTLS_CMAC_C)
 
 #include "mbedtls/cmac.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -66,11 +67,6 @@
 #endif /* MBEDTLS_PLATFORM_C */
 
 #if !defined(MBEDTLS_CMAC_ALT) || defined(MBEDTLS_SELF_TEST)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
-}
 
 /*
  * Multiplication by u in the Galois field of GF(2^n)
@@ -144,7 +140,7 @@ static int cmac_generate_subkeys( mbedtls_cipher_context_t *ctx,
     unsigned char L[MBEDTLS_CIPHER_BLKSIZE_MAX];
     size_t olen, block_size;
 
-    mbedtls_zeroize( L, sizeof( L ) );
+    mbedtls_platform_zeroize( L, sizeof( L ) );
 
     block_size = ctx->cipher_info->block_size;
 
@@ -162,7 +158,7 @@ static int cmac_generate_subkeys( mbedtls_cipher_context_t *ctx,
         goto exit;
 
 exit:
-    mbedtls_zeroize( L, sizeof( L ) );
+    mbedtls_platform_zeroize( L, sizeof( L ) );
 
     return( ret );
 }
@@ -238,7 +234,7 @@ int mbedtls_cipher_cmac_starts( mbedtls_cipher_context_t *ctx,
 
     ctx->cmac_ctx = cmac_ctx;
 
-    mbedtls_zeroize( cmac_ctx->state, sizeof( cmac_ctx->state ) );
+    mbedtls_platform_zeroize( cmac_ctx->state, sizeof( cmac_ctx->state ) );
 
     return 0;
 }
@@ -330,8 +326,8 @@ int mbedtls_cipher_cmac_finish( mbedtls_cipher_context_t *ctx,
     block_size = ctx->cipher_info->block_size;
     state = cmac_ctx->state;
 
-    mbedtls_zeroize( K1, sizeof( K1 ) );
-    mbedtls_zeroize( K2, sizeof( K2 ) );
+    mbedtls_platform_zeroize( K1, sizeof( K1 ) );
+    mbedtls_platform_zeroize( K2, sizeof( K2 ) );
     cmac_generate_subkeys( ctx, K1, K2 );
 
     last_block = cmac_ctx->unprocessed_block;
@@ -361,14 +357,14 @@ int mbedtls_cipher_cmac_finish( mbedtls_cipher_context_t *ctx,
 exit:
     /* Wipe the generated keys on the stack, and any other transients to avoid
      * side channel leakage */
-    mbedtls_zeroize( K1, sizeof( K1 ) );
-    mbedtls_zeroize( K2, sizeof( K2 ) );
+    mbedtls_platform_zeroize( K1, sizeof( K1 ) );
+    mbedtls_platform_zeroize( K2, sizeof( K2 ) );
 
     cmac_ctx->unprocessed_len = 0;
-    mbedtls_zeroize( cmac_ctx->unprocessed_block,
-                     sizeof( cmac_ctx->unprocessed_block ) );
+    mbedtls_platform_zeroize( cmac_ctx->unprocessed_block,
+                              sizeof( cmac_ctx->unprocessed_block ) );
 
-    mbedtls_zeroize( state, MBEDTLS_CIPHER_BLKSIZE_MAX );
+    mbedtls_platform_zeroize( state, MBEDTLS_CIPHER_BLKSIZE_MAX );
     return( ret );
 }
 
@@ -383,10 +379,10 @@ int mbedtls_cipher_cmac_reset( mbedtls_cipher_context_t *ctx )
 
     /* Reset the internal state */
     cmac_ctx->unprocessed_len = 0;
-    mbedtls_zeroize( cmac_ctx->unprocessed_block,
-                     sizeof( cmac_ctx->unprocessed_block ) );
-    mbedtls_zeroize( cmac_ctx->state,
-                     sizeof( cmac_ctx->state ) );
+    mbedtls_platform_zeroize( cmac_ctx->unprocessed_block,
+                              sizeof( cmac_ctx->unprocessed_block ) );
+    mbedtls_platform_zeroize( cmac_ctx->state,
+                              sizeof( cmac_ctx->state ) );
 
     return( 0 );
 }
@@ -466,7 +462,7 @@ int mbedtls_aes_cmac_prf_128( const unsigned char *key, size_t key_length,
                                output );
 
 exit:
-    mbedtls_zeroize( int_key, sizeof( int_key ) );
+    mbedtls_platform_zeroize( int_key, sizeof( int_key ) );
 
     return( ret );
 }
@@ -771,7 +767,7 @@ static int cmac_test_subkeys( int verbose,
                               int block_size,
                               int num_tests )
 {
-    int i, ret;
+    int i, ret = 0;
     mbedtls_cipher_context_t ctx;
     const mbedtls_cipher_info_t *cipher_info;
     unsigned char K1[MBEDTLS_CIPHER_BLKSIZE_MAX];
@@ -832,6 +828,7 @@ static int cmac_test_subkeys( int verbose,
         mbedtls_cipher_free( &ctx );
     }
 
+    ret = 0;
     goto exit;
 
 cleanup:
@@ -853,7 +850,7 @@ static int cmac_test_wth_cipher( int verbose,
                                  int num_tests )
 {
     const mbedtls_cipher_info_t *cipher_info;
-    int i, ret;
+    int i, ret = 0;
     unsigned char output[MBEDTLS_CIPHER_BLKSIZE_MAX];
 
     cipher_info = mbedtls_cipher_info_from_type( cipher_type );
@@ -887,6 +884,7 @@ static int cmac_test_wth_cipher( int verbose,
         if( verbose != 0 )
             mbedtls_printf( "passed\n" );
     }
+    ret = 0;
 
 exit:
     return( ret );

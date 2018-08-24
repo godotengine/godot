@@ -298,6 +298,11 @@ Metrowerks:
 #  define POSH_OS_STRING "Linux"
 #endif
 
+#if defined __HAIKU__
+#  define POSH_OS_HAIKU 1
+#  define POSH_OS_STRING "Haiku"
+#endif
+
 #if defined __FreeBSD__
 #  define POSH_OS_FREEBSD 1 
 #  define POSH_OS_STRING "FreeBSD"
@@ -496,6 +501,11 @@ Metrowerks:
 #if defined ARM || defined __arm__ || defined _ARM
 #  define POSH_CPU_STRONGARM 1
 #  define POSH_CPU_STRING "ARM"
+#endif
+
+#if defined AARCH64 || defined __aarch64__ || defined _AARCH64
+#  define POSH_CPU_STRONGARM 1
+#  define POSH_CPU_STRING "AARCH64"
 #endif
 
 #if defined mips || defined __mips__ || defined __MIPS__ || defined _MIPS

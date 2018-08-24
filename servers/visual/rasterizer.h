@@ -66,7 +66,7 @@ public:
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
 
 	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
 
@@ -104,10 +104,12 @@ public:
 
 		VS::ShadowCastingSetting cast_shadows;
 
+		//fit in 32 bits
 		bool mirror : 8;
 		bool receive_shadows : 8;
 		bool visible : 8;
-		bool baked_light : 8; //this flag is only to know if it actually did use baked light
+		bool baked_light : 4; //this flag is only to know if it actually did use baked light
+		bool redraw_if_visible : 4;
 
 		float depth; //used for sorting
 
@@ -131,6 +133,7 @@ public:
 			depth_layer = 0;
 			layer_mask = 1;
 			baked_light = false;
+			redraw_if_visible = false;
 			lightmap_capture = NULL;
 		}
 	};
@@ -173,16 +176,34 @@ public:
 	/* TEXTURE API */
 
 	virtual RID texture_create() = 0;
-	virtual void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) = 0;
-	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) = 0;
-	virtual Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const = 0;
+	virtual void texture_allocate(RID p_texture,
+			int p_width,
+			int p_height,
+			int p_depth_3d,
+			Image::Format p_format,
+			VS::TextureType p_type,
+			uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) = 0;
+
+	virtual void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_level = 0) = 0;
+
+	virtual void texture_set_data_partial(RID p_texture,
+			const Ref<Image> &p_image,
+			int src_x, int src_y,
+			int src_w, int src_h,
+			int dst_x, int dst_y,
+			int p_dst_mip,
+			int p_level = 0) = 0;
+
+	virtual Ref<Image> texture_get_data(RID p_texture, int p_level = 0) const = 0;
 	virtual void texture_set_flags(RID p_texture, uint32_t p_flags) = 0;
 	virtual uint32_t texture_get_flags(RID p_texture) const = 0;
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
+	virtual VS::TextureType texture_get_type(RID p_texture) const = 0;
 	virtual uint32_t texture_get_texid(RID p_texture) const = 0;
 	virtual uint32_t texture_get_width(RID p_texture) const = 0;
 	virtual uint32_t texture_get_height(RID p_texture) const = 0;
-	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
+	virtual uint32_t texture_get_depth(RID p_texture) const = 0;
+	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) = 0;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -200,6 +221,7 @@ public:
 	virtual void textures_keep_original(bool p_enable) = 0;
 
 	virtual void texture_set_proxy(RID p_proxy, RID p_base) = 0;
+	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
 	/* SKY API */
 
@@ -275,25 +297,30 @@ public:
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
 
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const = 0;
+
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	/* MULTIMESH API */
 
 	virtual RID multimesh_create() = 0;
 
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format) = 0;
+	virtual void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
 	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) = 0;
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) = 0;
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
+	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
+
+	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -325,6 +352,7 @@ public:
 	virtual Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
+	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 
 	/* Light API */
 
@@ -513,6 +541,7 @@ public:
 		RENDER_TARGET_NO_3D,
 		RENDER_TARGET_NO_SAMPLING,
 		RENDER_TARGET_HDR,
+		RENDER_TARGET_KEEP_3D_LINEAR,
 		RENDER_TARGET_FLAG_MAX
 	};
 
@@ -735,6 +764,8 @@ public:
 			Vector<Point2> points;
 			Vector<Point2> uvs;
 			Vector<Color> colors;
+			Vector<int> bones;
+			Vector<float> weights;
 			RID texture;
 			RID normal_map;
 			int count;
@@ -749,14 +780,16 @@ public:
 		struct CommandMesh : public Command {
 
 			RID mesh;
-			RID skeleton;
+			RID texture;
+			RID normal_map;
 			CommandMesh() { type = TYPE_MESH; }
 		};
 
 		struct CommandMultiMesh : public Command {
 
 			RID multimesh;
-			RID skeleton;
+			RID texture;
+			RID normal_map;
 			CommandMultiMesh() { type = TYPE_MULTIMESH; }
 		};
 
@@ -810,6 +843,8 @@ public:
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		RID material;
+		RID skeleton;
+
 		Item *next;
 
 		struct CopyBackBuffer {
@@ -920,7 +955,7 @@ public:
 					case Item::Command::TYPE_MESH: {
 
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
-						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, mesh->skeleton);
+						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
 
 						r = Rect2(aabb.position.x, aabb.position.y, aabb.size.x, aabb.size.y);
 
@@ -1012,7 +1047,7 @@ public:
 	virtual void canvas_begin() = 0;
 	virtual void canvas_end() = 0;
 
-	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light) = 0;
+	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance : public RID_Data {
@@ -1060,7 +1095,7 @@ public:
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) = 0;
 
 	virtual void initialize() = 0;
-	virtual void begin_frame() = 0;
+	virtual void begin_frame(double frame_step) = 0;
 	virtual void set_current_render_target(RID p_render_target) = 0;
 	virtual void restore_render_target() = 0;
 	virtual void clear_render_target(const Color &p_color) = 0;

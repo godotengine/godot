@@ -278,7 +278,7 @@ void MessageQueue::flush() {
 
 	while (read_pos < buffer_end) {
 
-		//lock on each interation, so a call can re-add itself to the message queue
+		//lock on each iteration, so a call can re-add itself to the message queue
 
 		Message *message = (Message *)&buffer[read_pos];
 
@@ -342,7 +342,7 @@ MessageQueue::MessageQueue() {
 
 	buffer_end = 0;
 	buffer_max_used = 0;
-	buffer_size = GLOBAL_DEF("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
+	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
 	buffer_size *= 1024;
 	buffer = memnew_arr(uint8_t, buffer_size);
 }

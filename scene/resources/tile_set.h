@@ -56,6 +56,7 @@ public:
 
 	enum BitmaskMode {
 		BITMASK_2X2,
+		BITMASK_3X3_MINIMAL,
 		BITMASK_3X3
 	};
 
@@ -71,6 +72,12 @@ public:
 		BIND_BOTTOMRIGHT = 256
 	};
 
+	enum TileMode {
+		SINGLE_TILE,
+		AUTO_TILE,
+		ATLAS_TILE
+	};
+
 	struct AutotileData {
 		BitmaskMode bitmask_mode;
 		int spacing;
@@ -84,6 +91,7 @@ public:
 		// Default size to prevent invalid value
 		explicit AutotileData() :
 				size(64, 64),
+				spacing(0),
 				icon_coord(0, 0) {
 			bitmask_mode = BITMASK_2X2;
 		}
@@ -104,13 +112,15 @@ private:
 		Ref<NavigationPolygon> navigation_polygon;
 		Ref<ShaderMaterial> material;
 		Color modulate;
-		bool is_autotile;
+		TileMode tile_mode;
 		AutotileData autotile_data;
+		int z_index;
 
 		// Default modulate for back-compat
 		explicit TileData() :
+				tile_mode(SINGLE_TILE),
 				modulate(1, 1, 1),
-				is_autotile(false) {}
+				z_index(0) {}
 	};
 
 	Map<int, TileData> tile_map;
@@ -146,8 +156,8 @@ public:
 	void tile_set_region(int p_id, const Rect2 &p_region);
 	Rect2 tile_get_region(int p_id) const;
 
-	void tile_set_is_autotile(int p_id, bool p_is_autotile);
-	bool tile_get_is_autotile(int p_id) const;
+	void tile_set_tile_mode(int p_id, TileMode p_tile_mode);
+	TileMode tile_get_tile_mode(int p_id) const;
 
 	void autotile_set_icon_coordinate(int p_id, Vector2 coord);
 	Vector2 autotile_get_icon_coordinate(int p_id) const;
@@ -213,6 +223,9 @@ public:
 	Ref<NavigationPolygon> autotile_get_navigation_polygon(int p_id, const Vector2 &p_coord) const;
 	const Map<Vector2, Ref<NavigationPolygon> > &autotile_get_navigation_map(int p_id) const;
 
+	void tile_set_z_index(int p_id, int p_z_index);
+	int tile_get_z_index(int p_id) const;
+
 	void remove_tile(int p_id);
 
 	bool has_tile(int p_id) const;
@@ -231,5 +244,6 @@ public:
 
 VARIANT_ENUM_CAST(TileSet::AutotileBindings);
 VARIANT_ENUM_CAST(TileSet::BitmaskMode);
+VARIANT_ENUM_CAST(TileSet::TileMode);
 
 #endif // TILE_SET_H

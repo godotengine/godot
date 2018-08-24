@@ -50,6 +50,7 @@ class EditorHistory {
 		REF ref;
 		ObjectID object;
 		String property;
+		bool inspector_only;
 	};
 
 	struct History {
@@ -70,7 +71,7 @@ class EditorHistory {
 		Variant value;
 	};
 
-	void _add_object(ObjectID p_object, const String &p_property, int p_level_change);
+	void _add_object(ObjectID p_object, const String &p_property, int p_level_change, bool p_inspector_only = false);
 
 public:
 	void cleanup_history();
@@ -78,6 +79,7 @@ public:
 	bool is_at_beginning() const;
 	bool is_at_end() const;
 
+	void add_object_inspector_only(ObjectID p_object);
 	void add_object(ObjectID p_object);
 	void add_object(ObjectID p_object, const String &p_subprop);
 	void add_object(ObjectID p_object, int p_relevel);
@@ -85,10 +87,12 @@ public:
 	int get_history_len();
 	int get_history_pos();
 	ObjectID get_history_obj(int p_obj) const;
+	bool is_history_obj_inspector_only(int p_obj) const;
 
 	bool next();
 	bool previous();
 	ObjectID get_current();
+	bool is_current_inspector_only() const;
 
 	int get_path_size() const;
 	ObjectID get_path_object(int p_index) const;
@@ -142,6 +146,8 @@ private:
 
 	bool _find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths);
 
+	HashMap<StringName, String> _script_class_icon_paths;
+
 public:
 	EditorPlugin *get_editor(Object *p_object);
 	EditorPlugin *get_subeditor(Object *p_object);
@@ -171,6 +177,7 @@ public:
 	void restore_editor_global_states();
 
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
+	Object *instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
 	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
 
@@ -196,6 +203,7 @@ public:
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
 	void move_edited_scene_to_index(int p_idx);
+	bool call_build();
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
 	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
@@ -203,6 +211,16 @@ public:
 	void save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary &p_custom);
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
 	void notify_edited_scene_changed();
+	void notify_resource_saved(const Ref<Resource> &p_resource);
+
+	bool script_class_is_parent(const String &p_class, const String &p_inherits);
+	StringName script_class_get_base(const String &p_class);
+	Object *script_class_instance(const String &p_class);
+	String script_class_get_icon_path(const String &p_class) const { return _script_class_icon_paths.has(p_class) ? _script_class_icon_paths[p_class] : String(); }
+	void script_class_set_icon_path(const String &p_class, const String &p_icon_path) { _script_class_icon_paths[p_class] = p_icon_path; }
+	void script_class_clear_icon_paths() { _script_class_icon_paths.clear(); }
+	void script_class_save_icon_paths();
+	void script_class_load_icon_paths();
 
 	EditorData();
 };
@@ -224,7 +242,6 @@ private:
 	List<Node *> selected_node_list;
 
 	void _update_nl();
-	Array _get_selected_nodes();
 	Array _get_transformable_selected_nodes();
 	void _emit_change();
 
@@ -232,6 +249,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	Array get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;

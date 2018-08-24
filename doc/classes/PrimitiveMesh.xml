@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PrimitiveMesh" inherits="Mesh" category="Core" version="3.0-stable">
+<class name="PrimitiveMesh" inherits="Mesh" category="Core" version="3.1">
 	<brief_description>
 		Base class for all primitive meshes. Handles applying a [Material] to a primitive mesh.
 	</brief_description>
@@ -19,6 +19,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb">
+		</member>
+		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces">
+		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The current [Material] of the primitive mesh.
 		</member>

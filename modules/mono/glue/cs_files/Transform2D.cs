@@ -1,33 +1,26 @@
 using System;
 using System.Runtime.InteropServices;
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
 
 namespace Godot
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform2D : IEquatable<Transform2D>
     {
-        private static readonly Transform2D identity = new Transform2D
-        (
-            new Vector2(1f, 0f),
-            new Vector2(0f, 1f),
-            new Vector2(0f, 0f)
-        );
-
         public Vector2 x;
         public Vector2 y;
         public Vector2 o;
-
-        public static Transform2D Identity
-        {
-            get { return identity; }
-        }
 
         public Vector2 Origin
         {
             get { return o; }
         }
 
-        public float Rotation
+        public real_t Rotation
         {
             get { return Mathf.Atan2(y.x, o.y); }
         }
@@ -73,7 +66,7 @@ namespace Godot
         }
 
 
-        public float this[int index, int axis]
+        public real_t this[int index, int axis]
         {
             get
             {
@@ -105,9 +98,9 @@ namespace Godot
 
         public Transform2D AffineInverse()
         {
-            Transform2D inv = this;
+            var inv = this;
 
-            float det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
+            real_t det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
 
             if (det == 0)
             {
@@ -119,9 +112,9 @@ namespace Godot
                 );
             }
 
-            float idet = 1.0f / det;
+            real_t idet = 1.0f / det;
 
-            float temp = this[0, 0];
+            real_t temp = this[0, 0];
             this[0, 0] = this[1, 1];
             this[1, 1] = temp;
 
@@ -143,24 +136,24 @@ namespace Godot
             return new Vector2(x.Dot(v), y.Dot(v));
         }
 
-        public Transform2D InterpolateWith(Transform2D m, float c)
+        public Transform2D InterpolateWith(Transform2D m, real_t c)
         {
-            float r1 = Rotation;
-            float r2 = m.Rotation;
+            real_t r1 = Rotation;
+            real_t r2 = m.Rotation;
 
             Vector2 s1 = Scale;
             Vector2 s2 = m.Scale;
 
             // Slerp rotation
-            Vector2 v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
-            Vector2 v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
+            var v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
+            var v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
 
-            float dot = v1.Dot(v2);
+            real_t dot = v1.Dot(v2);
 
             // Clamp dot to [-1, 1]
-            dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
+            dot = dot < -1.0f ? -1.0f : (dot > 1.0f ? 1.0f : dot);
 
-            Vector2 v = new Vector2();
+            Vector2 v;
 
             if (dot > 0.9995f)
             {
@@ -169,7 +162,7 @@ namespace Godot
             }
             else
             {
-                float angle = c * Mathf.Acos(dot);
+                real_t angle = c * Mathf.Acos(dot);
                 Vector2 v3 = (v2 - v1 * dot).Normalized();
                 v = v1 * Mathf.Cos(angle) + v3 * Mathf.Sin(angle);
             }
@@ -179,7 +172,7 @@ namespace Godot
             Vector2 p2 = m.Origin;
 
             // Construct matrix
-            Transform2D res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
+            var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
             Vector2 scale = s1.LinearInterpolate(s2, c);
             res.x *= scale;
             res.y *= scale;
@@ -189,10 +182,10 @@ namespace Godot
 
         public Transform2D Inverse()
         {
-            Transform2D inv = this;
+            var inv = this;
 
             // Swap
-            float temp = inv.x.y;
+            real_t temp = inv.x.y;
             inv.x.y = inv.y.x;
             inv.y.x = temp;
 
@@ -203,13 +196,13 @@ namespace Godot
 
         public Transform2D Orthonormalized()
         {
-            Transform2D on = this;
+            var on = this;
 
             Vector2 onX = on.x;
             Vector2 onY = on.y;
 
             onX.Normalize();
-            onY = onY - onX * (onX.Dot(onY));
+            onY = onY - onX * onX.Dot(onY);
             onY.Normalize();
 
             on.x = onX;
@@ -218,33 +211,33 @@ namespace Godot
             return on;
         }
 
-        public Transform2D Rotated(float phi)
+        public Transform2D Rotated(real_t phi)
         {
             return this * new Transform2D(phi, new Vector2());
         }
 
         public Transform2D Scaled(Vector2 scale)
         {
-            Transform2D copy = this;
+            var copy = this;
             copy.x *= scale;
             copy.y *= scale;
             copy.o *= scale;
             return copy;
         }
 
-        private float Tdotx(Vector2 with)
+        private real_t Tdotx(Vector2 with)
         {
             return this[0, 0] * with[0] + this[1, 0] * with[1];
         }
 
-        private float Tdoty(Vector2 with)
+        private real_t Tdoty(Vector2 with)
         {
             return this[0, 1] * with[0] + this[1, 1] * with[1];
         }
 
         public Transform2D Translated(Vector2 offset)
         {
-            Transform2D copy = this;
+            var copy = this;
             copy.o += copy.BasisXform(offset);
             return copy;
         }
@@ -260,23 +253,34 @@ namespace Godot
             return new Vector2(x.Dot(vInv), y.Dot(vInv));
         }
 
+        // Constants
+        private static readonly Transform2D _identity = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
+        private static readonly Transform2D _flipX = new Transform2D(new Vector2(-1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
+        private static readonly Transform2D _flipY = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, -1f), Vector2.Zero);
+
+        public static Transform2D Identity { get { return _identity; } }
+        public static Transform2D FlipX { get { return _flipX; } }
+        public static Transform2D FlipY { get { return _flipY; } }
+        
+        // Constructors 
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
         {
-            this.x = xAxis;
-            this.y = yAxis;
-            this.o = origin;
+            x = xAxis;
+            y = yAxis;
+            o = origin;
         }
-        public Transform2D(float xx, float xy, float yx, float yy, float ox, float oy)
+        
+        public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
-            this.x = new Vector2(xx, xy);
-            this.y = new Vector2(yx, yy);
-            this.o = new Vector2(ox, oy);
+            x = new Vector2(xx, xy);
+            y = new Vector2(yx, yy);
+            o = new Vector2(ox, oy);
         }
 
-        public Transform2D(float rot, Vector2 pos)
+        public Transform2D(real_t rot, Vector2 pos)
         {
-            float cr = Mathf.Cos(rot);
-            float sr = Mathf.Sin(rot);
+            real_t cr = Mathf.Cos(rot);
+            real_t sr = Mathf.Sin(rot);
             x.x = cr;
             y.y = cr;
             x.y = -sr;
@@ -288,7 +292,7 @@ namespace Godot
         {
             left.o = left.Xform(right.o);
 
-            float x0, x1, y0, y1;
+            real_t x0, x1, y0, y1;
 
             x0 = left.Tdotx(right.x);
             x1 = left.Tdoty(right.x);
@@ -337,9 +341,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this.x.ToString(),
-                this.y.ToString(),
-                this.o.ToString()
+                x.ToString(),
+                y.ToString(),
+                o.ToString()
             });
         }
 
@@ -347,9 +351,9 @@ namespace Godot
         {
             return String.Format("({0}, {1}, {2})", new object[]
             {
-                this.x.ToString(format),
-                this.y.ToString(format),
-                this.o.ToString(format)
+                x.ToString(format),
+                y.ToString(format),
+                o.ToString(format)
             });
         }
     }

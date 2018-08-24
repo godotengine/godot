@@ -39,13 +39,6 @@
 #include <float.h>
 #include <math.h>
 
-#define Math_PI 3.14159265358979323846
-#define Math_TAU 6.28318530717958647692
-#define Math_SQRT12 0.7071067811865475244008443621048490
-#define Math_LN2 0.693147180559945309417
-#define Math_INF INFINITY
-#define Math_NAN NAN
-
 class Math {
 
 	static pcg32_random_t default_pcg;
@@ -182,8 +175,22 @@ public:
 	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
 	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
 
-	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) { return (p_x >= 0) ? Math::fmod(p_x, p_y) : p_y - Math::fmod(-p_x, p_y); }
-	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) { return (p_x >= 0) ? Math::fmod(p_x, p_y) : p_y - Math::fmod(-p_x, p_y); }
+	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
+		double value = Math::fmod(p_x, p_y);
+		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
+	static _ALWAYS_INLINE_ float fposmod(float p_x, float p_y) {
+		float value = Math::fmod(p_x, p_y);
+		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+			value += p_y;
+		}
+		value += 0.0;
+		return value;
+	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * Math_PI / 180.0; }
 	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * Math_PI / 180.0; }
@@ -209,8 +216,18 @@ public:
 	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 
-	static int wrapi(int value, int min, int max);
-	static float wrapf(float value, float min, float max);
+	static _ALWAYS_INLINE_ int wrapi(int value, int min, int max) {
+		int rng = max - min;
+		return min + ((((value - min) % rng) + rng) % rng);
+	}
+	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
+		double rng = max - min;
+		return value - (rng * Math::floor((value - min) / rng));
+	}
+	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
+		float rng = max - min;
+		return value - (rng * Math::floor((value - min) / rng));
+	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);

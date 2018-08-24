@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InstancePlaceholder" inherits="Node" category="Core" version="3.0-stable">
+<class name="InstancePlaceholder" inherits="Node" category="Core" version="3.1">
 	<brief_description>
 		Placeholder for the root [Node] of a [PackedScene].
 	</brief_description>
 	<description>
-		Turning on the option [b]Load As Placeholder[/b] for an instanced scene in the editor causes it to be replaced by an InstacePlaceholder when running the game. This makes it possible to delay actually loading the scene until calling [method replace_by_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
+		Turning on the option [b]Load As Placeholder[/b] for an instanced scene in the editor causes it to be replaced by an InstancePlaceholder when running the game. This makes it possible to delay actually loading the scene until calling [method replace_by_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
 		The InstancePlaceholder does not have a transform. This causes any child nodes to be positioned relatively to the Viewport from point (0,0), rather than their parent as displayed in the editor. Replacing the placeholder with a scene with a transform will transform children relatively to their parent again.
 	</description>
 	<tutorials>
@@ -12,6 +12,16 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="create_instance">
+			<return type="Node">
+			</return>
+			<argument index="0" name="replace" type="bool" default="false">
+			</argument>
+			<argument index="1" name="custom_scene" type="PackedScene" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_instance_path" qualifiers="const">
 			<return type="String">
 			</return>

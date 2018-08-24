@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,8 @@
 GDCINULL(WebSocketClient);
 
 WebSocketClient::WebSocketClient() {
+
+	verify_ssl = true;
 }
 
 WebSocketClient::~WebSocketClient() {
@@ -70,6 +72,16 @@ Error WebSocketClient::connect_to_url(String p_url, PoolVector<String> p_protoco
 	}
 
 	return connect_to_host(host, path, port, ssl, p_protocols);
+}
+
+void WebSocketClient::set_verify_ssl_enabled(bool p_verify_ssl) {
+
+	verify_ssl = p_verify_ssl;
+}
+
+bool WebSocketClient::is_verify_ssl_enabled() const {
+
+	return verify_ssl;
 }
 
 bool WebSocketClient::is_server() const {
@@ -116,6 +128,10 @@ void WebSocketClient::_on_error() {
 void WebSocketClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api"), &WebSocketClient::connect_to_url, DEFVAL(PoolVector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("disconnect_from_host"), &WebSocketClient::disconnect_from_host);
+	ClassDB::bind_method(D_METHOD("set_verify_ssl_enabled", "enabled"), &WebSocketClient::set_verify_ssl_enabled);
+	ClassDB::bind_method(D_METHOD("is_verify_ssl_enabled"), &WebSocketClient::is_verify_ssl_enabled);
+
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "verify_ssl", PROPERTY_HINT_NONE, "", 0), "set_verify_ssl_enabled", "is_verify_ssl_enabled");
 
 	ADD_SIGNAL(MethodInfo("data_received"));
 	ADD_SIGNAL(MethodInfo("connection_established", PropertyInfo(Variant::STRING, "protocol")));

@@ -301,8 +301,8 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 	FileAccess *fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
 
 	if (err) {
-
-		ERR_FAIL_COND_V(err, err);
+		ERR_PRINTS("Failed to open " + p_from);
+		return err;
 	}
 
 	FileAccess *fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
@@ -310,7 +310,8 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
 		fsrc->close();
 		memdelete(fsrc);
-		ERR_FAIL_COND_V(err, err);
+		ERR_PRINTS("Failed to open " + p_to);
+		return err;
 	}
 
 	fsrc->seek_end(0);

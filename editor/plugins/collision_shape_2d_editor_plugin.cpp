@@ -446,8 +446,8 @@ void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 			float radius = shape->get_radius();
 			float height = shape->get_height() / 2;
 
-			handles[0] = Point2(radius, -height);
-			handles[1] = Point2(0, -(height + radius));
+			handles.write[0] = Point2(radius, -height);
+			handles.write[1] = Point2(0, -(height + radius));
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -458,7 +458,7 @@ void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 			Ref<CircleShape2D> shape = node->get_shape();
 
 			handles.resize(1);
-			handles[0] = Point2(shape->get_radius(), 0);
+			handles.write[0] = Point2(shape->get_radius(), 0);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 
@@ -476,8 +476,8 @@ void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 			Ref<LineShape2D> shape = node->get_shape();
 
 			handles.resize(2);
-			handles[0] = shape->get_normal() * shape->get_d();
-			handles[1] = shape->get_normal() * (shape->get_d() + 30.0);
+			handles.write[0] = shape->get_normal() * shape->get_d();
+			handles.write[1] = shape->get_normal() * (shape->get_d() + 30.0);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -488,7 +488,7 @@ void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 			Ref<RayShape2D> shape = node->get_shape();
 
 			handles.resize(1);
-			handles[0] = Point2(0, shape->get_length());
+			handles.write[0] = Point2(0, shape->get_length());
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 
@@ -499,8 +499,8 @@ void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 
 			handles.resize(2);
 			Vector2 ext = shape->get_extents();
-			handles[0] = Point2(ext.x, 0);
-			handles[1] = Point2(0, -ext.y);
+			handles.write[0] = Point2(ext.x, 0);
+			handles.write[1] = Point2(0, -ext.y);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -511,8 +511,8 @@ void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
 			Ref<SegmentShape2D> shape = node->get_shape();
 
 			handles.resize(2);
-			handles[0] = shape->get_a();
-			handles[1] = shape->get_b();
+			handles.write[0] = shape->get_a();
+			handles.write[1] = shape->get_b();
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);

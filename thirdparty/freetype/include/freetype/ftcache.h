@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType Cache subsystem (specification).                            */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -540,13 +540,6 @@ FT_BEGIN_HEADER
                             FTC_FaceID   face_id );
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Section>                                                             */
-  /*    cache_subsystem                                                    */
-  /*                                                                       */
-  /*************************************************************************/
-
   /*************************************************************************
    *
    * @type:
@@ -621,14 +614,6 @@ FT_BEGIN_HEADER
                         FTC_FaceID     face_id,
                         FT_Int         cmap_index,
                         FT_UInt32      char_code );
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Section>                                                             */
-  /*    cache_subsystem                                                    */
-  /*                                                                       */
-  /*************************************************************************/
 
 
   /*************************************************************************/

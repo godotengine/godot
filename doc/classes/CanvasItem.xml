@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" category="Core" version="3.0-stable">
+<class name="CanvasItem" inherits="Node" category="Core" version="3.1">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -11,8 +11,8 @@
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html
-	http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -90,6 +90,18 @@
 				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased.
 			</description>
 		</method>
+		<method name="draw_mesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="Mesh">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<argument index="2" name="normal_map" type="Texture" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="draw_multiline">
 			<return type="void">
 			</return>
@@ -118,6 +130,18 @@
 			</argument>
 			<description>
 				Draws multiple, parallel lines with a uniform [code]width[/code], segment-by-segment coloring, and optional antialiasing. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].
+			</description>
+		</method>
+		<method name="draw_multimesh">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="Mesh">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<argument index="2" name="normal_map" type="Texture" default="null">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="draw_polygon">
@@ -541,6 +565,9 @@
 		</constant>
 		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
+		</constant>
+		<constant name="BLEND_MODE_DISABLED" value="5" enum="BlendMode">
+			Disable blending mode. Colors including alpha are written as is. Only applicable for render targets with a transparent background. No lighting will be applied.
 		</constant>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Canvas item transform has changed. Only received if requested.

@@ -49,7 +49,14 @@
 /* armcc5 --gnu defines __GNUC__ but doesn't support GNU's extended asm */
 #if defined(__GNUC__) && \
     ( !defined(__ARMCC_VERSION) || __ARMCC_VERSION >= 6000000 )
-#if defined(__i386__)
+
+/*
+ * Disable use of the i386 assembly code below if option -O0, to disable all
+ * compiler optimisations, is passed, detected with __OPTIMIZE__
+ * This is done as the number of registers used in the assembly code doesn't
+ * work with the -O0 option.
+ */
+#if defined(__i386__) && defined(__OPTIMIZE__)
 
 #define MULADDC_INIT                        \
     asm(                                    \
@@ -142,7 +149,7 @@
         "movl   %%esi, %3       \n\t"   \
         : "=m" (t), "=m" (c), "=m" (d), "=m" (s)        \
         : "m" (t), "m" (s), "m" (d), "m" (c), "m" (b)   \
-        : "eax", "ecx", "edx", "esi", "edi"             \
+        : "eax", "ebx", "ecx", "edx", "esi", "edi"      \
     );
 
 #else
@@ -154,7 +161,7 @@
         "movl   %%esi, %3       \n\t"   \
         : "=m" (t), "=m" (c), "=m" (d), "=m" (s)        \
         : "m" (t), "m" (s), "m" (d), "m" (c), "m" (b)   \
-        : "eax", "ecx", "edx", "esi", "edi"             \
+        : "eax", "ebx", "ecx", "edx", "esi", "edi"      \
     );
 #endif /* SSE2 */
 #endif /* i386 */
@@ -521,7 +528,7 @@
         "swi   r3,   %2         \n\t"   \
         : "=m" (c), "=m" (d), "=m" (s)              \
         : "m" (s), "m" (d), "m" (c), "m" (b)        \
-        : "r3", "r4"  "r5", "r6", "r7", "r8",       \
+        : "r3", "r4", "r5", "r6", "r7", "r8",       \
           "r9", "r10", "r11", "r12", "r13"          \
     );
 

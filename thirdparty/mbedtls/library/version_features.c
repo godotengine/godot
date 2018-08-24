@@ -39,6 +39,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_NO_UDBL_DIVISION)
     "MBEDTLS_NO_UDBL_DIVISION",
 #endif /* MBEDTLS_NO_UDBL_DIVISION */
+#if defined(MBEDTLS_NO_64BIT_MULTIPLICATION)
+    "MBEDTLS_NO_64BIT_MULTIPLICATION",
+#endif /* MBEDTLS_NO_64BIT_MULTIPLICATION */
 #if defined(MBEDTLS_HAVE_SSE2)
     "MBEDTLS_HAVE_SSE2",
 #endif /* MBEDTLS_HAVE_SSE2 */
@@ -90,6 +93,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_ARC4_ALT)
     "MBEDTLS_ARC4_ALT",
 #endif /* MBEDTLS_ARC4_ALT */
+#if defined(MBEDTLS_ARIA_ALT)
+    "MBEDTLS_ARIA_ALT",
+#endif /* MBEDTLS_ARIA_ALT */
 #if defined(MBEDTLS_BLOWFISH_ALT)
     "MBEDTLS_BLOWFISH_ALT",
 #endif /* MBEDTLS_BLOWFISH_ALT */
@@ -99,6 +105,12 @@ static const char *features[] = {
 #if defined(MBEDTLS_CCM_ALT)
     "MBEDTLS_CCM_ALT",
 #endif /* MBEDTLS_CCM_ALT */
+#if defined(MBEDTLS_CHACHA20_ALT)
+    "MBEDTLS_CHACHA20_ALT",
+#endif /* MBEDTLS_CHACHA20_ALT */
+#if defined(MBEDTLS_CHACHAPOLY_ALT)
+    "MBEDTLS_CHACHAPOLY_ALT",
+#endif /* MBEDTLS_CHACHAPOLY_ALT */
 #if defined(MBEDTLS_CMAC_ALT)
     "MBEDTLS_CMAC_ALT",
 #endif /* MBEDTLS_CMAC_ALT */
@@ -114,6 +126,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_GCM_ALT)
     "MBEDTLS_GCM_ALT",
 #endif /* MBEDTLS_GCM_ALT */
+#if defined(MBEDTLS_NIST_KW_ALT)
+    "MBEDTLS_NIST_KW_ALT",
+#endif /* MBEDTLS_NIST_KW_ALT */
 #if defined(MBEDTLS_MD2_ALT)
     "MBEDTLS_MD2_ALT",
 #endif /* MBEDTLS_MD2_ALT */
@@ -123,6 +138,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_MD5_ALT)
     "MBEDTLS_MD5_ALT",
 #endif /* MBEDTLS_MD5_ALT */
+#if defined(MBEDTLS_POLY1305_ALT)
+    "MBEDTLS_POLY1305_ALT",
+#endif /* MBEDTLS_POLY1305_ALT */
 #if defined(MBEDTLS_RIPEMD160_ALT)
     "MBEDTLS_RIPEMD160_ALT",
 #endif /* MBEDTLS_RIPEMD160_ALT */
@@ -237,6 +255,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_AES_ROM_TABLES)
     "MBEDTLS_AES_ROM_TABLES",
 #endif /* MBEDTLS_AES_ROM_TABLES */
+#if defined(MBEDTLS_AES_FEWER_TABLES)
+    "MBEDTLS_AES_FEWER_TABLES",
+#endif /* MBEDTLS_AES_FEWER_TABLES */
 #if defined(MBEDTLS_CAMELLIA_SMALL_MEMORY)
     "MBEDTLS_CAMELLIA_SMALL_MEMORY",
 #endif /* MBEDTLS_CAMELLIA_SMALL_MEMORY */
@@ -249,6 +270,12 @@ static const char *features[] = {
 #if defined(MBEDTLS_CIPHER_MODE_CTR)
     "MBEDTLS_CIPHER_MODE_CTR",
 #endif /* MBEDTLS_CIPHER_MODE_CTR */
+#if defined(MBEDTLS_CIPHER_MODE_OFB)
+    "MBEDTLS_CIPHER_MODE_OFB",
+#endif /* MBEDTLS_CIPHER_MODE_OFB */
+#if defined(MBEDTLS_CIPHER_MODE_XTS)
+    "MBEDTLS_CIPHER_MODE_XTS",
+#endif /* MBEDTLS_CIPHER_MODE_XTS */
 #if defined(MBEDTLS_CIPHER_NULL_CIPHER)
     "MBEDTLS_CIPHER_NULL_CIPHER",
 #endif /* MBEDTLS_CIPHER_NULL_CIPHER */
@@ -306,6 +333,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
     "MBEDTLS_ECP_DP_CURVE25519_ENABLED",
 #endif /* MBEDTLS_ECP_DP_CURVE25519_ENABLED */
+#if defined(MBEDTLS_ECP_DP_CURVE448_ENABLED)
+    "MBEDTLS_ECP_DP_CURVE448_ENABLED",
+#endif /* MBEDTLS_ECP_DP_CURVE448_ENABLED */
 #if defined(MBEDTLS_ECP_NIST_OPTIM)
     "MBEDTLS_ECP_NIST_OPTIM",
 #endif /* MBEDTLS_ECP_NIST_OPTIM */
@@ -396,6 +426,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_SSL_ALL_ALERT_MESSAGES)
     "MBEDTLS_SSL_ALL_ALERT_MESSAGES",
 #endif /* MBEDTLS_SSL_ALL_ALERT_MESSAGES */
+#if defined(MBEDTLS_SSL_ASYNC_PRIVATE)
+    "MBEDTLS_SSL_ASYNC_PRIVATE",
+#endif /* MBEDTLS_SSL_ASYNC_PRIVATE */
 #if defined(MBEDTLS_SSL_DEBUG_ALL)
     "MBEDTLS_SSL_DEBUG_ALL",
 #endif /* MBEDTLS_SSL_DEBUG_ALL */
@@ -468,6 +501,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_SSL_TRUNCATED_HMAC)
     "MBEDTLS_SSL_TRUNCATED_HMAC",
 #endif /* MBEDTLS_SSL_TRUNCATED_HMAC */
+#if defined(MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT)
+    "MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT",
+#endif /* MBEDTLS_SSL_TRUNCATED_HMAC_COMPAT */
 #if defined(MBEDTLS_THREADING_ALT)
     "MBEDTLS_THREADING_ALT",
 #endif /* MBEDTLS_THREADING_ALT */
@@ -522,12 +558,21 @@ static const char *features[] = {
 #if defined(MBEDTLS_CAMELLIA_C)
     "MBEDTLS_CAMELLIA_C",
 #endif /* MBEDTLS_CAMELLIA_C */
+#if defined(MBEDTLS_ARIA_C)
+    "MBEDTLS_ARIA_C",
+#endif /* MBEDTLS_ARIA_C */
 #if defined(MBEDTLS_CCM_C)
     "MBEDTLS_CCM_C",
 #endif /* MBEDTLS_CCM_C */
 #if defined(MBEDTLS_CERTS_C)
     "MBEDTLS_CERTS_C",
 #endif /* MBEDTLS_CERTS_C */
+#if defined(MBEDTLS_CHACHA20_C)
+    "MBEDTLS_CHACHA20_C",
+#endif /* MBEDTLS_CHACHA20_C */
+#if defined(MBEDTLS_CHACHAPOLY_C)
+    "MBEDTLS_CHACHAPOLY_C",
+#endif /* MBEDTLS_CHACHAPOLY_C */
 #if defined(MBEDTLS_CIPHER_C)
     "MBEDTLS_CIPHER_C",
 #endif /* MBEDTLS_CIPHER_C */
@@ -570,9 +615,15 @@ static const char *features[] = {
 #if defined(MBEDTLS_HAVEGE_C)
     "MBEDTLS_HAVEGE_C",
 #endif /* MBEDTLS_HAVEGE_C */
+#if defined(MBEDTLS_HKDF_C)
+    "MBEDTLS_HKDF_C",
+#endif /* MBEDTLS_HKDF_C */
 #if defined(MBEDTLS_HMAC_DRBG_C)
     "MBEDTLS_HMAC_DRBG_C",
 #endif /* MBEDTLS_HMAC_DRBG_C */
+#if defined(MBEDTLS_NIST_KW_C)
+    "MBEDTLS_NIST_KW_C",
+#endif /* MBEDTLS_NIST_KW_C */
 #if defined(MBEDTLS_MD_C)
     "MBEDTLS_MD_C",
 #endif /* MBEDTLS_MD_C */
@@ -624,6 +675,9 @@ static const char *features[] = {
 #if defined(MBEDTLS_PLATFORM_C)
     "MBEDTLS_PLATFORM_C",
 #endif /* MBEDTLS_PLATFORM_C */
+#if defined(MBEDTLS_POLY1305_C)
+    "MBEDTLS_POLY1305_C",
+#endif /* MBEDTLS_POLY1305_C */
 #if defined(MBEDTLS_RIPEMD160_C)
     "MBEDTLS_RIPEMD160_C",
 #endif /* MBEDTLS_RIPEMD160_C */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.0-stable">
+<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.1">
 	<brief_description>
 		Plays audio.
 	</brief_description>
@@ -11,8 +11,19 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="save_to_wav">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
+			Contains the audio data in bytes.
+		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format">
 			Audio format. See FORMAT_* constants for values.
 		</member>

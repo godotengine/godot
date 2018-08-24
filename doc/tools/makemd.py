@@ -2,12 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os.path as path
+import os
 import xml.etree.ElementTree as ET
 
 input_list = []
 
 for arg in sys.argv[1:]:
-    input_list.append(arg)
+    if not path.exists(arg):
+        exit("path {} doesn't exist".format(arg))
+    elif path.isdir(arg):
+        input_list += filter(path.isfile, [path.join(arg, f) for f in os.listdir(arg)])
+    else: # assuming is a file
+        input_list.append(arg)
 
 if len(input_list) < 1:
     print 'usage: makemd.py <classes.xml>'
@@ -29,7 +36,6 @@ def make_class_list(class_list, columns):
     f = open('class_list.md', 'wb')
     prev = 0
     col_max = len(class_list) / columns + 1
-    print ('col max is ', col_max)
     col_count = 0
     row_count = 0
     last_initial = ''
@@ -86,6 +92,8 @@ def make_class_list(class_list, columns):
 
         s += '\n'
         f.write(s)
+
+    f.close()
 
 
 def dokuize_text(txt):
@@ -324,6 +332,8 @@ def make_doku_class(node):
             f.write('\n')
             f.write(dokuize_text(d.text.strip()))
             f.write('\n')
+   
+    f.close()
 
 
 for file in input_list:
@@ -335,12 +345,11 @@ for file in input_list:
         sys.exit(255)
 
     version = doc.attrib['version']
-
-    for c in list(doc):
-        if c.attrib['name'] in class_names:
-            continue
-        class_names.append(c.attrib['name'])
-        classes[c.attrib['name']] = c
+    class_name = doc.attrib['name']
+    if class_name in class_names:
+        continue
+    class_names.append(class_name)
+    classes[class_name] = doc
 
 class_names.sort()
 

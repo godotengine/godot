@@ -91,8 +91,8 @@ Transform2D Camera2D::get_camera_transform() {
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 
 			if (h_drag_enabled && !Engine::get_singleton()->is_editor_hint()) {
-				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_LEFT]));
-				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT]));
+				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom.x * drag_margin[MARGIN_LEFT]));
+				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom.x * drag_margin[MARGIN_RIGHT]));
 			} else {
 
 				if (h_ofs < 0) {
@@ -104,8 +104,8 @@ Transform2D Camera2D::get_camera_transform() {
 
 			if (v_drag_enabled && !Engine::get_singleton()->is_editor_hint()) {
 
-				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_TOP]));
-				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM]));
+				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom.y * drag_margin[MARGIN_TOP]));
+				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom.y * drag_margin[MARGIN_BOTTOM]));
 
 			} else {
 

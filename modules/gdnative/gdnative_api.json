@@ -5756,8 +5756,9 @@
       }
     ]
   },
-  "extensions": {
-    "nativescript": {
+  "extensions": [
+    {
+      "name": "nativescript",
       "type": "NATIVESCRIPT",
       "version": {
         "major": 1,
@@ -5822,6 +5823,23 @@
             ]
           },
           {
+            "name": "godot_nativescript_set_global_type_tag",
+            "return_type": "void",
+            "arguments": [
+              ["int", "p_idx"],
+              ["const char *", "p_name"],
+              ["const void *", "p_type_tag"]
+            ]
+          },
+          {
+            "name": "godot_nativescript_get_global_type_tag",
+            "return_type": "const void *",
+            "arguments": [
+              ["int", "p_idx"],
+              ["const char *", "p_name"]
+            ]
+          },
+          {
             "name": "godot_nativescript_set_type_tag",
             "return_type": "void",
             "arguments": [
@@ -5857,6 +5875,14 @@
             "arguments": [
               ["int", "p_idx"],
 	      ["godot_object *", "p_object"]
+            ]
+          },
+          {
+            "name": "godot_nativescript_profiling_add_data",
+            "return_type": "void",
+            "arguments": [
+              ["const char *", "p_signature"],
+              ["uint64_t", "p_line"]
             ]
           }
 	]
@@ -5925,7 +5951,8 @@
         }
       ]
     },
-    "pluginscript": {
+    {
+      "name": "pluginscript",
       "type": "PLUGINSCRIPT",
       "version": {
         "major": 1,
@@ -5942,11 +5969,35 @@
         }
       ]
     },
-    "arvr": {
-      "type": "ARVR",
+    {
+      "name": "android",
+      "type": "ANDROID",
       "version": {
         "major": 1,
         "minor": 0
+      },
+      "next": null,
+      "api": [
+        {
+          "name": "godot_android_get_env",
+          "return_type": "JNIEnv*",
+          "arguments": [
+          ]
+        },
+        {
+          "name": "godot_android_get_activity",
+          "return_type": "jobject",
+          "arguments": [
+          ]
+        }
+      ]
+    },
+    {
+      "name": "arvr",
+      "type": "ARVR",
+      "version": {
+        "major": 1,
+        "minor": 1
       },
       "next": null,
       "api": [
@@ -6038,5 +6089,5 @@
         }
       ]
     }
-  }
+  ]
 }

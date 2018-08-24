@@ -38,6 +38,8 @@
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
 #define WGL_CONTEXT_FLAGS_ARB 0x2094
 #define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x00000002
+#define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
 
@@ -104,9 +106,9 @@ Error ContextGL_Win::initialize() {
 				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 				PFD_DOUBLEBUFFER,
 		PFD_TYPE_RGBA,
-		24,
+		OS::get_singleton()->is_layered_allowed() ? 32 : 24,
 		0, 0, 0, 0, 0, 0, // Color Bits Ignored
-		0, // No Alpha Buffer
+		OS::get_singleton()->is_layered_allowed() ? 8 : 0, // Alpha Buffer
 		0, // Shift Bit Ignored
 		0, // No Accumulation Buffer
 		0, 0, 0, 0, // Accumulation Bits Ignored
@@ -153,6 +155,7 @@ Error ContextGL_Win::initialize() {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 3, //we want a 3.3 context
 			WGL_CONTEXT_MINOR_VERSION_ARB, 3,
 			//and it shall be forward compatible so that we can only use up to date functionality
+			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*| _WGL_CONTEXT_DEBUG_BIT_ARB*/,
 			0
 		}; //zero indicates the end of the array

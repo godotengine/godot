@@ -415,6 +415,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("font_color", "Label", Color(1, 1, 1));
 	theme->set_color("font_color_shadow", "Label", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_modulate", "Label", Color(1, 1, 1));
 
 	theme->set_constant("shadow_offset_x", "Label", 1 * scale);
 	theme->set_constant("shadow_offset_y", "Label", 1 * scale);
@@ -433,8 +434,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_selected", "LineEdit", Color(0, 0, 0));
 	theme->set_color("cursor_color", "LineEdit", control_font_color_hover);
 	theme->set_color("selection_color", "LineEdit", font_color_selection);
+	theme->set_color("clear_button_color", "LineEdit", control_font_color);
+	theme->set_color("clear_button_color_pressed", "LineEdit", control_font_color_pressed);
 
 	theme->set_constant("minimum_spaces", "LineEdit", 12 * scale);
+
+	theme->set_icon("clear", "LineEdit", make_icon(line_edit_clear_png));
 
 	// ProgressBar
 
@@ -475,6 +480,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("symbol_color", "TextEdit", control_font_color_hover);
 	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
 	theme->set_color("line_number_color", "TextEdit", Color::html("66aaaaaa"));
+	theme->set_color("safe_line_number_color", "TextEdit", Color::html("99aac8aa"));
 	theme->set_color("function_color", "TextEdit", Color::html("66a2ce"));
 	theme->set_color("member_variable_color", "TextEdit", Color::html("e64e59"));
 	theme->set_color("number_color", "TextEdit", Color::html("EB9532"));
@@ -543,6 +549,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("updown", "SpinBox", make_icon(spinbox_updown_png));
 
+	//scroll container
+	Ref<StyleBoxEmpty> empty;
+	empty.instance();
+	theme->set_stylebox("bg", "ScrollContainer", empty);
+
 	// WindowDialog
 
 	theme->set_stylebox("panel", "WindowDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
@@ -579,9 +590,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel_disabled", "PopupMenu", make_stylebox(popup_bg_disabled_png, 4, 4, 4, 4));
 	theme->set_stylebox("hover", "PopupMenu", selected);
 	theme->set_stylebox("separator", "PopupMenu", make_stylebox(vseparator_png, 3, 3, 3, 3));
+	theme->set_stylebox("labeled_separator_left", "PopupMenu", make_stylebox(vseparator_png, 0, 0, 0, 0));
+	theme->set_stylebox("labeled_separator_right", "PopupMenu", make_stylebox(vseparator_png, 0, 0, 0, 0));
 
 	theme->set_icon("checked", "PopupMenu", make_icon(checked_png));
 	theme->set_icon("unchecked", "PopupMenu", make_icon(unchecked_png));
+	theme->set_icon("radio_checked", "PopupMenu", make_icon(radio_checked_png));
+	theme->set_icon("radio_unchecked", "PopupMenu", make_icon(radio_unchecked_png));
 	theme->set_icon("submenu", "PopupMenu", make_icon(submenu_png));
 
 	theme->set_font("font", "PopupMenu", default_font);
@@ -816,6 +831,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
+	theme->set_color("font_color_shadow", "RichTextLabel", Color(0, 0, 0, 0));
+
+	theme->set_constant("shadow_offset_x", "RichTextLabel", 1 * scale);
+	theme->set_constant("shadow_offset_y", "RichTextLabel", 1 * scale);
+	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * scale);
+
 	theme->set_constant("line_separation", "RichTextLabel", 1 * scale);
 	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);
@@ -830,7 +851,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("separation", "HBoxContainer", 4 * scale);
 	theme->set_constant("separation", "VBoxContainer", 4 * scale);
-	theme->set_constant("margin_left", "MarginContainer", 8 * scale);
+	theme->set_constant("margin_left", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_top", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_right", "MarginContainer", 0 * scale);
 	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
@@ -846,7 +867,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
 	ttnc->set_draw_center(false);
 
-	theme->set_stylebox("border", "ReferenceRect", make_stylebox(reference_border_png, 4, 4, 4, 4));
 	theme->set_stylebox("panelnc", "Panel", ttnc);
 	theme->set_stylebox("panelf", "Panel", tc_sb);
 
@@ -860,10 +880,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("bg", "GraphEdit", make_stylebox(tree_bg_png, 4, 4, 4, 5));
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
+	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
 
 	theme->set_icon("logo", "Icons", make_icon(logo_png));
+
+	// Visual Node Ports
+	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);
+	theme->set_constant("port_grab_distance_vertical", "GraphEdit", 6 * scale);
 
 	// Theme
 

@@ -34,6 +34,7 @@
 #if defined(MBEDTLS_MD2_C)
 
 #include "mbedtls/md2.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -47,11 +48,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_MD2_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 static const unsigned char PI_SUBST[256] =
 {
@@ -93,7 +89,7 @@ void mbedtls_md2_free( mbedtls_md2_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_md2_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_md2_context ) );
 }
 
 void mbedtls_md2_clone( mbedtls_md2_context *dst,
@@ -114,6 +110,13 @@ int mbedtls_md2_starts_ret( mbedtls_md2_context *ctx )
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_starts( mbedtls_md2_context *ctx )
+{
+    mbedtls_md2_starts_ret( ctx );
+}
+#endif
 
 #if !defined(MBEDTLS_MD2_PROCESS_ALT)
 int mbedtls_internal_md2_process( mbedtls_md2_context *ctx )
@@ -151,6 +154,13 @@ int mbedtls_internal_md2_process( mbedtls_md2_context *ctx )
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_process( mbedtls_md2_context *ctx )
+{
+    mbedtls_internal_md2_process( ctx );
+}
+#endif
 #endif /* !MBEDTLS_MD2_PROCESS_ALT */
 
 /*
@@ -187,6 +197,15 @@ int mbedtls_md2_update_ret( mbedtls_md2_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_update( mbedtls_md2_context *ctx,
+                         const unsigned char *input,
+                         size_t ilen )
+{
+    mbedtls_md2_update_ret( ctx, input, ilen );
+}
+#endif
+
 /*
  * MD2 final digest
  */
@@ -213,6 +232,14 @@ int mbedtls_md2_finish_ret( mbedtls_md2_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2_finish( mbedtls_md2_context *ctx,
+                         unsigned char output[16] )
+{
+    mbedtls_md2_finish_ret( ctx, output );
+}
+#endif
 
 #endif /* !MBEDTLS_MD2_ALT */
 
@@ -242,6 +269,15 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_md2( const unsigned char *input,
+                  size_t ilen,
+                  unsigned char output[16] )
+{
+    mbedtls_md2_ret( input, ilen, output );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 

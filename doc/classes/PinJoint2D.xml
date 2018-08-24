@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PinJoint2D" inherits="Joint2D" category="Core" version="3.0-stable">
+<class name="PinJoint2D" inherits="Joint2D" category="Core" version="3.1">
 	<brief_description>
 		Pin Joint for 2D Shapes.
 	</brief_description>
 	<description>
-		Pin Joint for 2D Rigid Bodies. It pins 2 bodies (rigid or static) together, or a single body to a fixed position in space.
+		Pin Joint for 2D Rigid Bodies. It pins two bodies (rigid or static) together.
 	</description>
 	<tutorials>
 	</tutorials>

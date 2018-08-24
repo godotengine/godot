@@ -25,8 +25,11 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import BoolVariable
 
     return [
+        ('msvc_version', 'MSVC version to use (ignored if the VCINSTALLDIR environment variable is set)', None),
+        BoolVariable('use_mingw', 'Use the MinGW compiler even if MSVC is installed (only used on Windows)', False),
     ]
 
 
@@ -39,6 +42,8 @@ def get_flags():
 
 
 def configure(env):
+
+    env.msvc = True
 
     if (env["bits"] != "default"):
         print("Error: bits argument is disabled for MSVC")
@@ -107,7 +112,7 @@ def configure(env):
             env["bits"] = "32"
             print("Compiled program architecture will be a x86 executable. (forcing bits=32).")
         else:
-            print("Failed to detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup.")
+            print("Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup.")
             env["bits"] = "32"
 
         if (env["bits"] == "32"):
@@ -160,6 +165,7 @@ def configure(env):
         'libANGLE',
         'libEGL',
         'libGLESv2',
+        'bcrypt',
     ]
     env.Append(LINKFLAGS=[p + ".lib" for p in LIBS])
 

@@ -255,7 +255,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (!valid)
 			return;
 
-		points[grabbed].offset = newofs;
+		points.write[grabbed].offset = newofs;
 
 		points.sort();
 		for (int i = 0; i < points.size(); i++) {
@@ -367,6 +367,13 @@ void GradientEdit::_notification(int p_what) {
 			draw_line(Vector2(-1, -1), Vector2(-1, h + 1), Color(1, 1, 1, 0.6));
 		}
 	}
+
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (!is_visible()) {
+			grabbing = false;
+		}
+	}
 }
 
 void GradientEdit::_draw_checker(int x, int y, int w, int h) {
@@ -399,7 +406,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 
 	if (grabbed == -1)
 		return;
-	points[grabbed].color = p_color;
+	points.write[grabbed].color = p_color;
 	update();
 	emit_signal("ramp_changed");
 }

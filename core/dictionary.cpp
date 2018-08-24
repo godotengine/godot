@@ -50,6 +50,32 @@ void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	}
 }
 
+Variant Dictionary::get_key_at_index(int p_index) const {
+
+	int index = 0;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (index == p_index) {
+			return E.key();
+		}
+		index++;
+	}
+
+	return Variant();
+}
+
+Variant Dictionary::get_value_at_index(int p_index) const {
+
+	int index = 0;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (index == p_index) {
+			return E.value();
+		}
+		index++;
+	}
+
+	return Variant();
+}
+
 Variant &Dictionary::operator[](const Variant &p_key) {
 
 	return _p->variant_map[p_key];
@@ -109,9 +135,9 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
-void Dictionary::erase(const Variant &p_key) {
+bool Dictionary::erase(const Variant &p_key) {
 
-	_p->variant_map.erase(p_key);
+	return _p->variant_map.erase(p_key);
 }
 
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
@@ -211,7 +237,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	return NULL;
 }
 
-Dictionary Dictionary::duplicate() const {
+Dictionary Dictionary::duplicate(bool p_deep) const {
 
 	Dictionary n;
 
@@ -219,7 +245,7 @@ Dictionary Dictionary::duplicate() const {
 	get_key_list(&keys);
 
 	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		n[E->get()] = operator[](E->get());
+		n[E->get()] = p_deep ? operator[](E->get()).duplicate(p_deep) : operator[](E->get());
 	}
 
 	return n;

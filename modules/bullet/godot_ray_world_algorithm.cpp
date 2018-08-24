@@ -100,14 +100,16 @@ void GodotRayWorldAlgorithm::processCollision(const btCollisionObjectWrapper *bo
 
 	if (btResult.hasHit()) {
 
-		btVector3 ray_normal(ray_transform.getOrigin() - to.getOrigin());
-		ray_normal.normalize();
 		btScalar depth(ray_shape->getScaledLength() * (btResult.m_closestHitFraction - 1));
 
 		if (depth >= -RAY_STABILITY_MARGIN)
 			depth = 0;
 
-		resultOut->addContactPoint(ray_normal, btResult.m_hitPointWorld, depth);
+		if (ray_shape->getSlipsOnSlope())
+			resultOut->addContactPoint(btResult.m_hitNormalWorld, btResult.m_hitPointWorld, depth);
+		else {
+			resultOut->addContactPoint((ray_transform.getOrigin() - to.getOrigin()).normalize(), btResult.m_hitPointWorld, depth);
+		}
 	}
 }
 

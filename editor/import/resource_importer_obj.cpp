@@ -188,7 +188,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 	return OK;
 }
 
-static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p_single_mesh, bool p_generate_tangents, List<String> *r_missing_deps) {
+static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 
@@ -198,7 +198,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 	mesh.instance();
 
 	bool generate_tangents = p_generate_tangents;
+	Vector3 scale_mesh = p_scale_mesh;
 	bool flip_faces = false;
+	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+
 	//bool flip_faces = p_options["force/flip_faces"];
 	//bool force_smooth = p_options["force/smooth_shading"];
 	//bool weld_vertices = p_options["force/weld_vertices"];
@@ -221,15 +224,22 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 	while (true) {
 
 		String l = f->get_line().strip_edges();
+		while (l.length() && l[l.length() - 1] == '\\') {
+			String add = f->get_line().strip_edges();
+			l += add;
+			if (add == String()) {
+				break;
+			}
+		}
 
 		if (l.begins_with("v ")) {
 			//vertex
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_FILE_CORRUPT);
 			Vector3 vtx;
-			vtx.x = v[1].to_float();
-			vtx.y = v[2].to_float();
-			vtx.z = v[3].to_float();
+			vtx.x = v[1].to_float() * scale_mesh.x;
+			vtx.y = v[2].to_float() * scale_mesh.y;
+			vtx.z = v[3].to_float() * scale_mesh.z;
 			vertices.push_back(vtx);
 		} else if (l.begins_with("vt ")) {
 			//uv
@@ -261,10 +271,12 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 			face[0] = v[1].split("/");
 			face[1] = v[2].split("/");
 			ERR_FAIL_COND_V(face[0].size() == 0, ERR_FILE_CORRUPT);
+
 			ERR_FAIL_COND_V(face[0].size() != face[1].size(), ERR_FILE_CORRUPT);
 			for (int i = 2; i < v.size() - 1; i++) {
 
 				face[2] = v[i + 1].split("/");
+
 				ERR_FAIL_COND_V(face[0].size() != face[2].size(), ERR_FILE_CORRUPT);
 				for (int j = 0; j < 3; j++) {
 
@@ -330,7 +342,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 					surf_tool->set_material(material_map[current_material_library][current_material]);
 				}
 
-				mesh = surf_tool->commit(mesh);
+				mesh = surf_tool->commit(mesh, mesh_flags);
 
 				if (current_material != String()) {
 					mesh->surface_set_name(mesh->get_surface_count() - 1, current_material.get_basename());
@@ -401,7 +413,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	List<Ref<Mesh> > meshes;
 
-	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, r_missing_deps);
+	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & IMPORT_USE_COMPRESSION, Vector3(1, 1, 1), r_missing_deps);
 
 	if (err != OK) {
 		if (r_err) {
@@ -468,6 +480,8 @@ String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 void ResourceImporterOBJ::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_tangents"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
 }
 bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 
@@ -478,7 +492,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 	List<Ref<Mesh> > meshes;
 
-	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], NULL);
+	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], NULL);
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);

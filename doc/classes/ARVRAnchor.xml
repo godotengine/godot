@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRAnchor" inherits="Spatial" category="Core" version="3.0-stable">
+<class name="ARVRAnchor" inherits="Spatial" category="Core" version="3.1">
 	<brief_description>
-		Anchor point in AR Space
+		Anchor point in AR Space.
 	</brief_description>
 	<description>
 		The ARVR Anchor point is a spatial node that maps a real world location identified by the AR platform to a position within the game world. For example, as long as plane detection in ARKit is on, ARKit will identify and update the position of planes (tables, floors, etc) and create anchors for them.

@@ -32,7 +32,7 @@
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
-
+#include "scene/gui/scroll_container.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -45,23 +45,32 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		MODE_EDIT_UV = MODE_CONT,
 		UVEDIT_POLYGON_TO_UV,
 		UVEDIT_UV_TO_POLYGON,
-		UVEDIT_UV_CLEAR
+		UVEDIT_UV_CLEAR,
+		UVEDIT_GRID_SETTINGS
 
 	};
 
 	enum UVMode {
+		UV_MODE_CREATE,
 		UV_MODE_EDIT_POINT,
 		UV_MODE_MOVE,
 		UV_MODE_ROTATE,
 		UV_MODE_SCALE,
+		UV_MODE_ADD_SPLIT,
+		UV_MODE_REMOVE_SPLIT,
+		UV_MODE_PAINT_WEIGHT,
+		UV_MODE_CLEAR_WEIGHT,
 		UV_MODE_MAX
 	};
+
+	ToolButton *uv_edit_mode[4];
+	Ref<ButtonGroup> uv_edit_group;
 
 	Polygon2D *node;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
-	ToolButton *uv_button[4];
+	ToolButton *uv_button[UV_MODE_MAX];
 	ToolButton *b_snap_enable;
 	ToolButton *b_snap_grid;
 	Control *uv_edit_draw;
@@ -72,11 +81,35 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	MenuButton *uv_menu;
 	TextureRect *uv_icon_zoom;
 
+	VBoxContainer *bone_scroll_main_vb;
+	ScrollContainer *bone_scroll;
+	VBoxContainer *bone_scroll_vb;
+	Button *sync_bones;
+	HSlider *bone_paint_strength;
+	SpinBox *bone_paint_radius;
+	Label *bone_paint_radius_label;
+	bool bone_painting;
+	int bone_painting_bone;
+	PoolVector<float> prev_weights;
+	Vector2 bone_paint_pos;
+	AcceptDialog *grid_settings;
+
+	void _sync_bones();
+	void _update_bone_list();
+
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;
-	PoolVector<Vector2> uv_prev;
-	int uv_drag_index;
+	PoolVector<Vector2> points_prev;
+	PoolVector<Vector2> uv_create_uv_prev;
+	PoolVector<Vector2> uv_create_poly_prev;
+	Array uv_create_bones_prev;
+	PoolVector<int> splits_prev;
+
+	Vector2 uv_create_to;
+	int point_drag_index;
 	bool uv_drag;
+	bool uv_create;
+	bool split_create;
 	UVMode uv_move_current;
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
@@ -103,6 +136,9 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_off_y(float p_val);
 	void _set_snap_step_x(float p_val);
 	void _set_snap_step_y(float p_val);
+
+	void _uv_edit_mode_select(int p_mode);
+	void _bone_paint_selected(int p_index);
 
 protected:
 	virtual Node2D *_get_node() const;

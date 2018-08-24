@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LinkButton" inherits="BaseButton" category="Core" version="3.0-stable">
+<class name="LinkButton" inherits="BaseButton" category="Core" version="3.1">
 	<brief_description>
-		Simple button used to represent a link to some resource
+		Simple button used to represent a link to some resource.
 	</brief_description>
 	<description>
 		This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).

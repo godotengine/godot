@@ -421,6 +421,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 	Array a = commit_to_arrays();
 
 	mesh->add_surface_from_arrays(primitive, a, Array(), p_flags);
+
 	if (material.is_valid())
 		mesh->surface_set_material(surface, material);
 
@@ -465,7 +466,7 @@ void SurfaceTool::deindex() {
 	int idx = 0;
 	for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next()) {
 
-		varr[idx++] = E->get();
+		varr.write[idx++] = E->get();
 	}
 	vertex_array.clear();
 	for (List<int>::Element *E = index_array.front(); E; E = E->next()) {
@@ -569,19 +570,19 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 		if (lformat & VS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
 			b.resize(4);
-			b[0] = barr[i * 4 + 0];
-			b[1] = barr[i * 4 + 1];
-			b[2] = barr[i * 4 + 2];
-			b[3] = barr[i * 4 + 3];
+			b.write[0] = barr[i * 4 + 0];
+			b.write[1] = barr[i * 4 + 1];
+			b.write[2] = barr[i * 4 + 2];
+			b.write[3] = barr[i * 4 + 3];
 			v.bones = b;
 		}
 		if (lformat & VS::ARRAY_FORMAT_WEIGHTS) {
 			Vector<float> w;
 			w.resize(4);
-			w[0] = warr[i * 4 + 0];
-			w[1] = warr[i * 4 + 1];
-			w[2] = warr[i * 4 + 2];
-			w[3] = warr[i * 4 + 3];
+			w.write[0] = warr[i * 4 + 0];
+			w.write[1] = warr[i * 4 + 1];
+			w.write[2] = warr[i * 4 + 2];
+			w.write[3] = warr[i * 4 + 3];
 			v.weights = w;
 		}
 
@@ -674,19 +675,19 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 		if (lformat & VS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
 			b.resize(4);
-			b[0] = barr[i * 4 + 0];
-			b[1] = barr[i * 4 + 1];
-			b[2] = barr[i * 4 + 2];
-			b[3] = barr[i * 4 + 3];
+			b.write[0] = barr[i * 4 + 0];
+			b.write[1] = barr[i * 4 + 1];
+			b.write[2] = barr[i * 4 + 2];
+			b.write[3] = barr[i * 4 + 3];
 			v.bones = b;
 		}
 		if (lformat & VS::ARRAY_FORMAT_WEIGHTS) {
 			Vector<float> w;
 			w.resize(4);
-			w[0] = warr[i * 4 + 0];
-			w[1] = warr[i * 4 + 1];
-			w[2] = warr[i * 4 + 2];
-			w[3] = warr[i * 4 + 3];
+			w.write[0] = warr[i * 4 + 0];
+			w.write[1] = warr[i * 4 + 1];
+			w.write[2] = warr[i * 4 + 2];
+			w.write[3] = warr[i * 4 + 3];
 			v.weights = w;
 		}
 
@@ -845,7 +846,7 @@ void SurfaceTool::generate_tangents() {
 	vtx.resize(vertex_array.size());
 	int idx = 0;
 	for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next()) {
-		vtx[idx++] = E;
+		vtx.write[idx++] = E;
 		E->get().binormal = Vector3();
 		E->get().tangent = Vector3();
 	}
@@ -861,7 +862,7 @@ void SurfaceTool::generate_tangents() {
 	}
 }
 
-void SurfaceTool::generate_normals() {
+void SurfaceTool::generate_normals(bool p_flip) {
 
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 
@@ -887,7 +888,11 @@ void SurfaceTool::generate_normals() {
 		ERR_FAIL_COND(!v[2]);
 		E = v[2]->next();
 
-		Vector3 normal = Plane(v[0]->get().vertex, v[1]->get().vertex, v[2]->get().vertex).normal;
+		Vector3 normal;
+		if (!p_flip)
+			normal = Plane(v[0]->get().vertex, v[1]->get().vertex, v[2]->get().vertex).normal;
+		else
+			normal = Plane(v[2]->get().vertex, v[1]->get().vertex, v[0]->get().vertex).normal;
 
 		if (smooth) {
 
@@ -980,7 +985,7 @@ void SurfaceTool::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("index"), &SurfaceTool::index);
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
-	ClassDB::bind_method(D_METHOD("generate_normals"), &SurfaceTool::generate_normals);
+	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
 
 	ClassDB::bind_method(D_METHOD("add_to_format", "flags"), &SurfaceTool::add_to_format);

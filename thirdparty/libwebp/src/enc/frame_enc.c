@@ -198,7 +198,7 @@ static void SetSegmentProbas(VP8Encoder* const enc) {
 
   for (n = 0; n < enc->mb_w_ * enc->mb_h_; ++n) {
     const VP8MBInfo* const mb = &enc->mb_info_[n];
-    p[mb->segment_]++;
+    ++p[mb->segment_];
   }
 #if !defined(WEBP_DISABLE_STATS)
   if (enc->pic_->stats != NULL) {
@@ -520,6 +520,14 @@ static void StoreSideInfo(const VP8EncIterator* const it) {
 #endif
 }
 
+static void ResetSideInfo(const VP8EncIterator* const it) {
+  VP8Encoder* const enc = it->enc_;
+  WebPPicture* const pic = enc->pic_;
+  if (pic->stats != NULL) {
+    memset(enc->block_count_, 0, sizeof(enc->block_count_));
+  }
+  ResetSSE(enc);
+}
 #else  // defined(WEBP_DISABLE_STATS)
 static void ResetSSE(VP8Encoder* const enc) {
   (void)enc;
@@ -528,9 +536,15 @@ static void StoreSideInfo(const VP8EncIterator* const it) {
   VP8Encoder* const enc = it->enc_;
   WebPPicture* const pic = enc->pic_;
   if (pic->extra_info != NULL) {
-    memset(pic->extra_info, 0,
-           enc->mb_w_ * enc->mb_h_ * sizeof(*pic->extra_info));
+    if (it->x_ == 0 && it->y_ == 0) {   // only do it once, at start
+      memset(pic->extra_info, 0,
+             enc->mb_w_ * enc->mb_h_ * sizeof(*pic->extra_info));
+    }
   }
+}
+
+static void ResetSideInfo(const VP8EncIterator* const it) {
+  (void)it;
 }
 #endif  // !defined(WEBP_DISABLE_STATS)
 
@@ -570,7 +584,7 @@ static uint64_t OneStatPass(VP8Encoder* const enc, VP8RDLevel rd_opt,
     VP8IteratorImport(&it, NULL);
     if (VP8Decimate(&it, &info, rd_opt)) {
       // Just record the number of skips and act like skip_proba is not used.
-      enc->proba_.nb_skip_++;
+      ++enc->proba_.nb_skip_;
     }
     RecordResiduals(&it, &info);
     size += info.R + info.H;
@@ -841,6 +855,9 @@ int VP8EncTokenLoop(VP8Encoder* const enc) {
     if (enc->max_i4_header_bits_ > 0 && size_p0 > PARTITION0_SIZE_LIMIT) {
       ++num_pass_left;
       enc->max_i4_header_bits_ >>= 1;  // strengthen header bit limitation...
+      if (is_last_pass) {
+        ResetSideInfo(&it);
+      }
       continue;                        // ...and start over
     }
     if (is_last_pass) {
@@ -871,4 +888,3 @@ int VP8EncTokenLoop(VP8Encoder* const enc) {
 #endif    // DISABLE_TOKEN_BUFFER
 
 //------------------------------------------------------------------------------
-

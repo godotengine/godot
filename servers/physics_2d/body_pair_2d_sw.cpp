@@ -62,6 +62,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	contact.local_B = local_B;
 	contact.reused = true;
 	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.mass_normal = 0; // will be computed in setup()
 
 	// attempt to determine if the contact will be reused
 
@@ -216,6 +217,14 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 		_contact_added_callback(contact_A, contact_B);
 
 	return true;
+}
+
+real_t combine_bounce(Body2DSW *A, Body2DSW *B) {
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+}
+
+real_t combine_friction(Body2DSW *A, Body2DSW *B) {
+	return ABS(MIN(A->get_friction(), B->get_friction()));
 }
 
 bool BodyPair2DSW::setup(real_t p_step) {
@@ -431,7 +440,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 
 #endif
 
-		c.bounce = MAX(A->get_bounce(), B->get_bounce());
+		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
 
 			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
@@ -487,7 +496,7 @@ void BodyPair2DSW::solve(real_t p_step) {
 		real_t jnOld = c.acc_normal_impulse;
 		c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
 
-		real_t friction = A->get_friction() * B->get_friction();
+		real_t friction = combine_friction(A, B);
 
 		real_t jtMax = friction * c.acc_normal_impulse;
 		real_t jt = -vt * c.mass_tangent;

@@ -37,7 +37,15 @@
 extern "C" {
 #endif
 
+// For future versions of the API we should only add new functions at the end of the structure and use the
+// version info to detect whether a call is available
+
+// Use these to populate version in your plugin
+#define GODOTVR_API_MAJOR 1
+#define GODOTVR_API_MINOR 0
+
 typedef struct {
+	godot_gdnative_api_version version; /* version of our API */
 	void *(*constructor)(godot_object *);
 	void (*destructor)(void *);
 	godot_string (*get_name)(const void *);

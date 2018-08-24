@@ -62,6 +62,10 @@ Rect2 Line2D::_edit_get_rect() const {
 	return aabb;
 }
 
+bool Line2D::_edit_use_rect() const {
+	return true;
+}
+
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
 	const real_t d = _width / 2 + p_tolerance;
@@ -235,7 +239,7 @@ void Line2D::_draw() {
 	{
 		PoolVector<Vector2>::Read points_read = _points.read();
 		for (int i = 0; i < len; ++i) {
-			points[i] = points_read[i];
+			points.write[i] = points_read[i];
 		}
 	}
 
@@ -252,18 +256,22 @@ void Line2D::_draw() {
 	lb.sharp_limit = _sharp_limit;
 	lb.width = _width;
 
-	lb.build();
-
 	RID texture_rid;
-	if (_texture.is_valid())
+	if (_texture.is_valid()) {
 		texture_rid = (**_texture).get_rid();
+
+		lb.tile_aspect = _texture->get_size().aspect();
+	}
+
+	lb.build();
 
 	VS::get_singleton()->canvas_item_add_triangle_array(
 			get_canvas_item(),
 			lb.indices,
 			lb.vertices,
 			lb.colors,
-			lb.uvs,
+			lb.uvs, Vector<int>(), Vector<float>(),
+
 			texture_rid);
 
 	// DEBUG
@@ -341,7 +349,7 @@ void Line2D::_bind_methods() {
 	ADD_GROUP("Fill", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile"), "set_texture_mode", "get_texture_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile,Stretch"), "set_texture_mode", "get_texture_mode");
 	ADD_GROUP("Capping", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round"), "set_joint_mode", "get_joint_mode");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "begin_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round"), "set_begin_cap_mode", "get_begin_cap_mode");
@@ -360,6 +368,7 @@ void Line2D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_NONE);
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_TILE);
+	BIND_ENUM_CONSTANT(LINE_TEXTURE_STRETCH);
 
 	ClassDB::bind_method(D_METHOD("_gradient_changed"), &Line2D::_gradient_changed);
 }

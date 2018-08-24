@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NativeScript" inherits="Script" category="Core" version="3.1-dev">
+<class name="NativeScript" inherits="Script" category="Core" version="3.1">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -56,6 +56,10 @@
 		<member name="class_name" type="String" setter="set_class_name" getter="get_class_name">
 		</member>
 		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
+		</member>
+		<member name="script_class_icon_path" type="String" setter="set_script_class_icon_path" getter="get_script_class_icon_path">
+		</member>
+		<member name="script_class_name" type="String" setter="set_script_class_name" getter="get_script_class_name">
 		</member>
 	</members>
 	<constants>

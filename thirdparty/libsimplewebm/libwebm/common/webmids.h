@@ -124,6 +124,14 @@ enum MkvId {
   kMkvLuminanceMin = 0x55DA,
   // end mastering metadata
   // end colour
+  // projection
+  kMkvProjection = 0x7670,
+  kMkvProjectionType = 0x7671,
+  kMkvProjectionPrivate = 0x7672,
+  kMkvProjectionPoseYaw = 0x7673,
+  kMkvProjectionPosePitch = 0x7674,
+  kMkvProjectionPoseRoll = 0x7675,
+  // end projection
   // audio
   kMkvAudio = 0xE1,
   kMkvSamplingFrequency = 0xB5,

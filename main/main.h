@@ -44,7 +44,6 @@ class Main {
 	static void print_help(const char *p_binary);
 	static uint64_t last_ticks;
 	static uint64_t target_ticks;
-	static float time_accum;
 	static uint32_t frames;
 	static uint32_t frame;
 	static bool force_redraw_requested;
@@ -56,6 +55,7 @@ public:
 	static bool iteration();
 	static void cleanup();
 	static void force_redraw();
+	static bool is_project_manager();
 };
 
 #endif

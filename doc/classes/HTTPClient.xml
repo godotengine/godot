@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPClient" inherits="Reference" category="Core" version="3.0-stable">
+<class name="HTTPClient" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
 		Hyper-text transfer protocol client.
 	</brief_description>
@@ -10,8 +10,8 @@
 		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/networking/http_client_class.html
-	http://docs.godotengine.org/en/3.0/tutorials/networking/ssl_certificates.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/http_client_class.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -110,6 +110,12 @@
 				var fields = {"username": "user", "password": "pass"}
 				String queryString = httpClient.query_string_from_dict(fields)
 				returns:= "username=user&amp;password=pass"
+				[/codeblock]
+				Furthermore, if a key has a null value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
+				[codeblock]
+				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
+				String queryString = httpClient.query_string_from_dict(fields)
+				returns:= "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/codeblock]
 			</description>
 		</method>
@@ -384,7 +390,7 @@
 			HTTP status code [code]429 Too Many Requests[/code]. The user has sent too many requests in a given amount of time (see "rate limiting"). Back off and increase time between requests or try again later.
 		</constant>
 		<constant name="RESPONSE_REQUEST_HEADER_FIELDS_TOO_LARGE" value="431" enum="ResponseCode">
-			HTTP status code [code]431 Rquest Header Fields Too Large[/code]. The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
+			HTTP status code [code]431 Request Header Fields Too Large[/code]. The server is unwilling to process the request because its header fields are too large. The request MAY be resubmitted after reducing the size of the request header fields.
 		</constant>
 		<constant name="RESPONSE_UNAVAILABLE_FOR_LEGAL_REASONS" value="451" enum="ResponseCode">
 			HTTP status code [code]451 Response Unavailable For Legal Reasons[/code]. The server is denying access to the resource as a consequence of a legal demand.

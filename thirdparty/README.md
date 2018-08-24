@@ -11,6 +11,10 @@ The files were adapted to Godot by removing the dependency on b2Math (replacing
 it by b2Glue.h) and commenting out some verbose printf calls.
 Upstream code has not changed in 10 years, no need to keep track of changes.
 
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
+
 
 ## bullet
 
@@ -26,9 +30,25 @@ Files extracted from upstream source:
 
 ## certs
 
-- Upstream: Mozilla, via https://packages.ubuntu.com/xenial-updates/ca-certificates
-- Version: 2016-ish
+- Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
+- Version: 2018.2.22
 - License: MPL 2.0
+
+File extracted from a recent Fedora install:
+/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+(It can't be extracted directly from the package,
+as it's generated on the user's system.)
+
+
+## cvtt
+
+- Upstream: https://github.com/elasota/cvtt
+- Version: 1.0.0-beta4
+- License: MIT
+
+Files extracted from upstream source:
+
+- all .cpp, .h, and .txt files in ConvectionKernels/
 
 
 ## enet
@@ -64,6 +84,10 @@ Files extracted from upstream source:
 - all .cpp and .h files in EtcLib/
 - README.md, LICENSE, AUTHORS
 
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
+
 
 ## fonts
 
@@ -78,7 +102,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ### Hack Regular
 
 - Upstream: https://github.com/source-foundry/Hack
-- Version: 3.000
+- Version: 3.003
 - License: MIT + Bitstream Vera License
 
 ### DroidSans*.ttf
@@ -91,7 +115,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.8.1
+- Version: 2.9.1
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -104,7 +128,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.16a0
+- Version: 0.1.25
 - License: MIT
 
 The files we package are automatically generated.
@@ -139,7 +163,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.34
+- Version: 1.6.35
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -148,6 +172,7 @@ Files extracted from upstream source:
   `example.c` and `pngtest.c`
 - the arm/ folder
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
+- `LICENSE`
 
 
 ## libsimplewebm
@@ -159,6 +184,10 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 TODO.
+
+Important: Some files have Godot-made changes.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments.
 
 
 ## libtheora
@@ -177,7 +206,7 @@ Files extracted from upstream source:
 ## libvorbis
 
 - Upstream: https://www.xiph.org/vorbis
-- Version: 1.3.5
+- Version: 1.3.6
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -204,7 +233,7 @@ Godot-made change marked with `// -- GODOT --` comments.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 0.6.1
+- Version: 1.0.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -220,36 +249,53 @@ changes are marked with `// -- GODOT --` comments.
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
-- Version: 2.4.1
+- Version: 3.0.0
 - License: LGPLv2.1 + static linking exception
 
 File extracted from upstream source:
-- Everything in `lib/` except `http2/`, `event-libs/`.
-  - From `misc/` exclude `lws-genhash.c`, `lws-ring.c`, `romfs.{c,h}`, `smtp.c`.
-  - From `plat/` exclude `lws-plat-{esp*,optee}.c`.
-  - From `server/` exclude `access-log.c`, `cgi.c`, `daemonize.c`, `lws-spa.c`, 
-`peer-limits.c`, `rewrite.c`
-- Also copy `win32helpers/` from `win32port/`
-- `mbedtls_wrapper/include/platform/ssl_port.h` has a small change to check for OSX (missing `malloc.h`).
-  The bug is fixed in upstream master via `LWS_HAVE_MALLOC_H`, but not in the 2.4.1 branch (as the file structure has changed).
+- From `lib/` into `thirdparty/libwebsockets`:
+  - Everything from `core`
+  - From `event-libs` only the `poll` subfolder
+  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c`
+  - From `plat` only `lws-plat-unix.c` and `lws-plat-win.c`
+  - From `roles` only `private.h`, `h1`, `http`, `listen`, `pipe`, `raw`, `ws`
+    - From `roles/http` exclude `minilex.c`
+    - From `roles/http/server` exclude `access-log.c`, `lws-spa.c`, `ranges.c`, and `rewrite.c`
+    - From `roles/ws` exclude `ext` folder.
+  - From `tls` exclude `openssl` folder.
+- Also copy `win32helpers/` from `win32port/` inside `thirdparty/libwebsockets`
+- A small fix has been added in `libwebsockets/libwebsockets.h` to `#include <sys/socket.h>` for the BSD family.
+  This change has been PRed upstream, and should be merged before the next update. Remember to check and remove this line.
 
-Important: `lws_config.h` and `lws_config_private.h` contains custom 
+Important: `lws_config.h` and `lws_config_private.h` contains custom
 Godot build configurations, check them out when updating.
 
-## mbedTLS
+
+## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.7.0
+- Version: 2.12.0
 - License: Apache 2.0
 
-File extracted from upstream release tarball `mbedtls-2.7.0-apache.tgz`:
-- All `*.h` from `include/mbedtls/` to `thirdparty/include/mbedtls/`
-- All `*.c` from `library/` to `thirdparty/library/`
+File extracted from upstream release tarball `mbedtls-2.12.0-apache.tgz`:
+- All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
+- All `*.c` from `library/` to `thirdparty/mbedtls/library/`
+- Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453). Soon to be merged upstream. Check it out at next update.
+
+
+## miniupnpc
+
+- Upstream: https://github.com/miniupnp/miniupnp/tree/master/miniupnpc
+- Version: 2.1 (git 25615e0, 2018-05-08) with modifications
+- License: BSD-3-Clause
+
+The only modified file is miniupnpcstrings.h, which was created for Godot (is usually autogenerated by cmake).
+
 
 ## minizip
 
 - Upstream: http://www.zlib.net
-- Version: 1.2.4 (zlib contrib)
+- Version: 1.2.11 (zlib contrib)
 - License: zlib
 
 Files extracted from the upstream source:
@@ -275,6 +321,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://episec.com/people/edelkind/c.html
   * Version: latest, as of April 2017
   * License: Public Domain
+ - `clipper.{cpp,hpp}`
+  * Upstream: https://sourceforge.net/projects/polyclipping
+  * Version: 6.4.2
+  * License: BSL-1.0
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
   * Version: git (f121734, 2007)
@@ -324,11 +374,11 @@ Collection of single-file libraries used in Godot components.
   * License: zlib
 - `stb_truetype.h`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.17
+  * Version: 1.19
   * License: Public Domain (Unlicense) or MIT
 - `stb_vorbis.c`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.11
+  * Version: 1.14
   * License: Public Domain (Unlicense) or MIT
 
 
@@ -342,6 +392,7 @@ Files extracted from the upstream source:
 
 - All .h files in `src/`
 - LICENSE.txt
+
 
 ## opus
 
@@ -361,15 +412,18 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org/
-- Version: 10.23
+- Version: 10.31
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- Files listed in NON-AUTOTOOLS-BUILD steps 1-4
+- Files listed in the file NON-AUTOTOOLS-BUILD steps 1-4
 - All .h files in src/
-- src/pcre2_jit_*.c and src/sljit/*
-- AUTHORS and COPYING
+- src/pcre2_jit_match.c
+- src/pcre2_jit_misc.c
+- src/pcre2_jit_maketables.c
+- src/sljit/*
+- AUTHORS and LICENCE
 
 
 ## pvrtccompressor
@@ -462,7 +516,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.3
+- Version: 1.3.4
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

@@ -41,7 +41,7 @@ void DictionaryPropertyEdit::_notif_changev(const String &p_v) {
 
 void DictionaryPropertyEdit::_set_key(const Variant &p_old_key, const Variant &p_new_key) {
 
-	// TODO: Set key of a dictionary is not allowd yet
+	// TODO: Set key of a dictionary is not allowed yet
 	return;
 }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RayShape" inherits="Shape" category="Core" version="3.0-stable">
+<class name="RayShape" inherits="Shape" category="Core" version="3.1">
 	<brief_description>
 		Ray shape for 3D collisions.
 	</brief_description>
@@ -15,6 +15,9 @@
 	<members>
 		<member name="length" type="float" setter="set_length" getter="get_length">
 			The ray's length.
+		</member>
+		<member name="slips_on_slope" type="bool" setter="set_slips_on_slope" getter="get_slips_on_slope">
+			If [code]true[/code] allow the shape to return the correct normal. Default value: [code]false[/code].
 		</member>
 	</members>
 	<constants>

@@ -228,11 +228,11 @@ protected:
 
 		for (int i = 0; i < p_width; i++) {
 
-			grid[i].resize(p_height);
+			grid.write[i].resize(p_height);
 
 			for (int j = 0; j < p_height; j++) {
 
-				grid[i][j] = 1.0 + Math::random(-p_cellheight, p_cellheight);
+				grid.write[i].write[j] = 1.0 + Math::random(-p_cellheight, p_cellheight);
 			}
 		}
 

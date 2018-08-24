@@ -39,4 +39,7 @@
 #define EDITOR_API_ASSEMBLY_NAME "GodotSharpEditor"
 #define EDITOR_TOOLS_ASSEMBLY_NAME "GodotSharpTools"
 
+#define BINDINGS_CLASS_NATIVECALLS "NativeCalls"
+#define BINDINGS_CLASS_NATIVECALLS_EDITOR "EditorNativeCalls"
+
 #endif // GODOTSHARP_DEFS_H

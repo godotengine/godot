@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebSocketPeer" inherits="PacketPeer" category="Core" version="3.1">
+	<brief_description>
+		A class representing a specific WebSocket connection.
+	</brief_description>
+	<description>
+		This class represent a specific WebSocket connection, you can do lower level operations with it.
+		You can choose to write to the socket in binary or text mode, and you can recognize the mode used for writing by the other peer.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="close">
+			<return type="void">
+			</return>
+			<description>
+				Close this WebSocket connection, actively disconnecting the peer.
+			</description>
+		</method>
+		<method name="get_connected_host" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the IP Address of the connected peer. (Not available in HTML5 export)
+			</description>
+		</method>
+		<method name="get_connected_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the remote port of the connected peer. (Not available in HTML5 export)
+			</description>
+		</method>
+		<method name="get_write_mode" qualifiers="const">
+			<return type="int" enum="WebSocketPeer.WriteMode">
+			</return>
+			<description>
+				Get the current selected write mode. See [enum WriteMode].
+			</description>
+		</method>
+		<method name="is_connected_to_host" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this peer is currently connected.
+			</description>
+		</method>
+		<method name="set_write_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="WebSocketPeer.WriteMode">
+			</argument>
+			<description>
+				Sets the socket to use the given [enum WriteMode].
+			</description>
+		</method>
+		<method name="was_string_packet" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the last received packet was sent as a text payload. See [enum WriteMode]
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
+			Specify that WebSockets messages should be transferred as text payload (only valid UTF-8 is allowed).
+		</constant>
+		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
+			Specify that WebSockets messages should be transferred as binary payload (any byte combination is allowed).
+		</constant>
+	</constants>
+</class>

@@ -18,6 +18,10 @@ thirdparty_libsimplewebm_sources = [thirdparty_libsimplewebm_dir + file for file
 env_webm.add_source_files(env.modules_sources, thirdparty_libsimplewebm_sources)
 env_webm.Append(CPPPATH=[thirdparty_libsimplewebm_dir, thirdparty_libsimplewebm_dir + "libwebm/"])
 
+# upstream uses c++11
+if (not env_webm.msvc):
+	env_webm.Append(CCFLAGS="-std=c++11")
+
 # also requires libogg, libvorbis and libopus
 if env['builtin_libogg']:
     env_webm.Append(CPPPATH=["#thirdparty/libogg"])

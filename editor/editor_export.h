@@ -243,7 +243,10 @@ public:
 
 	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
+	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual void get_platform_features(List<String> *r_features) = 0;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) = 0;
 
 	EditorExportPlatform();
 };
@@ -373,7 +376,6 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 
 	Set<String> extra_features;
 
-	bool use64;
 	int chmod_flags;
 
 public:
@@ -402,6 +404,7 @@ public:
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features);
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features);
 
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);

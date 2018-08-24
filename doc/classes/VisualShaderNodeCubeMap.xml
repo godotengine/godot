@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeCubeMap" inherits="VisualShaderNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="cube_map" type="CubeMap" setter="set_cube_map" getter="get_cube_map">
+		</member>
+		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeCubeMap.TextureType">
+		</member>
+	</members>
+	<constants>
+		<constant name="TYPE_DATA" value="0" enum="TextureType">
+		</constant>
+		<constant name="TYPE_COLOR" value="1" enum="TextureType">
+		</constant>
+		<constant name="TYPE_NORMALMAP" value="2" enum="TextureType">
+		</constant>
+	</constants>
+</class>

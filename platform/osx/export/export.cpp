@@ -86,6 +86,9 @@ public:
 		r_features->push_back("OSX");
 	}
 
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	}
+
 	EditorExportPlatformOSX();
 	~EditorExportPlatformOSX();
 };
@@ -101,31 +104,22 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 		r_features->push_back("etc2");
 	}
 
-	int bits = p_preset->get("application/bits_mode");
-
-	if (bits == 0 || bits == 1) {
-		r_features->push_back("64");
-	}
-
-	if (bits == 0 || bits == 2) {
-		r_features->push_back("32");
-	}
+	r_features->push_back("64");
 }
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/identifier"), "org.godotengine.macgame"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), "godotmacgame"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/bits_mode", PROPERTY_HINT_ENUM, "Fat (32 & 64 bits),64 bits,32 bits"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 
 #ifdef OSX_ENABLED
@@ -146,10 +140,10 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 	Vector<uint8_t> data;
 
 	data.resize(8);
-	data[0] = 'i';
-	data[1] = 'c';
-	data[2] = 'n';
-	data[3] = 's';
+	data.write[0] = 'i';
+	data.write[1] = 'c';
+	data.write[2] = 'n';
+	data.write[3] = 's';
 
 	const char *name[] = { "ic09", "ic08", "ic07", "icp6", "icp5", "icp4" };
 	int index = 0;
@@ -169,19 +163,19 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 		int ofs = data.size();
 		uint32_t len = f->get_len();
 		data.resize(data.size() + len + 8);
-		f->get_buffer(&data[ofs + 8], len);
+		f->get_buffer(&data.write[ofs + 8], len);
 		memdelete(f);
 		len += 8;
 		len = BSWAP32(len);
-		copymem(&data[ofs], name[index], 4);
-		encode_uint32(len, &data[ofs + 4]);
+		copymem(&data.write[ofs], name[index], 4);
+		encode_uint32(len, &data.write[ofs + 4]);
 		index++;
 		size /= 2;
 	}
 
 	uint32_t total_len = data.size();
 	total_len = BSWAP32(total_len);
-	encode_uint32(total_len, &data[4]);
+	encode_uint32(total_len, &data.write[4]);
 
 	p_data = data;
 }
@@ -219,7 +213,7 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 	CharString cs = strnew.utf8();
 	plist.resize(cs.size() - 1);
 	for (int i = 0; i < cs.size() - 1; i++) {
-		plist[i] = cs[i];
+		plist.write[i] = cs[i];
 	}
 }
 
@@ -323,11 +317,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
-	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
-	int bits_mode = p_preset->get("application/bits_mode");
-	binary_to_use += String(bits_mode == 0 ? "fat" : bits_mode == 1 ? "64" : "32");
+	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
-	print_line("binary: " + binary_to_use);
 	String pkg_name;
 	if (p_preset->get("application/name") != "")
 		pkg_name = p_preset->get("application/name"); // app_name
@@ -508,7 +499,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (use_dmg()) {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 			Vector<SharedObject> shared_objects;
-			Error err = save_pack(p_preset, pack_path, &shared_objects);
+			err = save_pack(p_preset, pack_path, &shared_objects);
 
 			// see if we can code sign our new package
 			String identity = p_preset->get("codesign/identity");
@@ -516,7 +507,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (err == OK) {
 				DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				for (int i = 0; i < shared_objects.size(); i++) {
-					da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
+					err = da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 					if (err == OK && identity != "") {
 						err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 					}
@@ -561,7 +552,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			String pack_path = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".pck");
 
 			Vector<SharedObject> shared_objects;
-			Error err = save_pack(p_preset, pack_path, &shared_objects);
+			err = save_pack(p_preset, pack_path, &shared_objects);
 
 			if (err == OK) {
 				zipOpenNewFileInZip(dst_pkg_zip,
@@ -593,7 +584,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				} else {
 					err = ERR_CANT_OPEN;
 				}
+			}
 
+			if (err == OK) {
 				//add shared objects
 				for (int i = 0; i < shared_objects.size(); i++) {
 					Vector<uint8_t> file = FileAccess::get_file_as_array(shared_objects[i].path);
@@ -621,26 +614,32 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		zipClose(dst_pkg_zip, NULL);
 	}
 
-	return OK;
+	return err;
 }
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = true;
+	bool valid = false;
 	String err;
 
-	if (!exists_export_template("osx.zip", &err)) {
-		valid = false;
+	if (exists_export_template("osx.zip", &err)) {
+		valid = true;
 	}
 
-	if (p_preset->get("custom_package/debug") != "" && !FileAccess::exists(p_preset->get("custom_package/debug"))) {
-		valid = false;
-		err += "Custom debug package not found.\n";
+	if (p_preset->get("custom_package/debug") != "") {
+		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
+			valid = true;
+		} else {
+			err += "Custom debug package not found.\n";
+		}
 	}
 
-	if (p_preset->get("custom_package/release") != "" && !FileAccess::exists(p_preset->get("custom_package/release"))) {
-		valid = false;
-		err += "Custom release package not found.\n";
+	if (p_preset->get("custom_package/release") != "") {
+		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
+			valid = true;
+		} else {
+			err += "Custom release package not found.\n";
+		}
 	}
 
 	if (!err.empty())

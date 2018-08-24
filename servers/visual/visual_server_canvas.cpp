@@ -46,7 +46,7 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 	for (int i = 0; i < z_range; i++) {
 		if (!z_list[i])
 			continue;
-		VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_modulate, p_lights);
+		VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_modulate, p_lights, p_transform);
 	}
 }
 
@@ -214,13 +214,13 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 				_light_mask_canvas_items(VS::CANVAS_ITEM_Z_MIN + i, z_list[i], p_masked_lights);
 			}
 
-			VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_canvas->modulate, p_lights);
+			VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_canvas->modulate, p_lights, p_transform);
 		}
 	} else {
 
 		for (int i = 0; i < l; i++) {
 
-			Canvas::ChildItem &ci = p_canvas->child_items[i];
+			const Canvas::ChildItem &ci = p_canvas->child_items[i];
 			_render_canvas_item_tree(ci.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
@@ -263,7 +263,7 @@ void VisualServerCanvas::canvas_set_item_mirroring(RID p_canvas, RID p_item, con
 
 	int idx = canvas->find_item(canvas_item);
 	ERR_FAIL_COND(idx == -1);
-	canvas->child_items[idx].mirror = p_mirroring;
+	canvas->child_items.write[idx].mirror = p_mirroring;
 }
 void VisualServerCanvas::canvas_set_modulate(RID p_canvas, const Color &p_color) {
 
@@ -440,13 +440,17 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 			if (p_antialiased) {
 				pline->line_colors.push_back(Color(1, 1, 1, 1));
 			}
-		}
-		if (p_colors.size() == 1) {
+		} else if (p_colors.size() == 1) {
 			pline->triangle_colors = p_colors;
 			pline->line_colors = p_colors;
 		} else {
-			pline->triangle_colors.resize(pline->triangles.size());
-			pline->line_colors.resize(pline->lines.size());
+			if (p_colors.size() != p_points.size()) {
+				pline->triangle_colors.push_back(p_colors[0]);
+				pline->line_colors.push_back(p_colors[0]);
+			} else {
+				pline->triangle_colors.resize(pline->triangles.size());
+				pline->line_colors.resize(pline->lines.size());
+			}
 		}
 
 		for (int i = 0; i < p_points.size(); i++) {
@@ -464,21 +468,21 @@ void VisualServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point
 			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
 
 			if (p_antialiased) {
-				pline->lines[i] = p_points[i] + tangent;
-				pline->lines[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
+				pline->lines.write[i] = p_points[i] + tangent;
+				pline->lines.write[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
 				if (pline->line_colors.size() > 1) {
-					pline->line_colors[i] = p_colors[i];
-					pline->line_colors[p_points.size() * 2 - i - 1] = p_colors[i];
+					pline->line_colors.write[i] = p_colors[i];
+					pline->line_colors.write[p_points.size() * 2 - i - 1] = p_colors[i];
 				}
 			}
 
-			pline->triangles[i * 2 + 0] = p_points[i] + tangent;
-			pline->triangles[i * 2 + 1] = p_points[i] - tangent;
+			pline->triangles.write[i * 2 + 0] = p_points[i] + tangent;
+			pline->triangles.write[i * 2 + 1] = p_points[i] - tangent;
 
 			if (pline->triangle_colors.size() > 1) {
 
-				pline->triangle_colors[i * 2 + 0] = p_colors[i];
-				pline->triangle_colors[i * 2 + 1] = p_colors[i];
+				pline->triangle_colors.write[i * 2 + 0] = p_colors[i];
+				pline->triangle_colors.write[i * 2 + 1] = p_colors[i];
 			}
 
 			prev_t = t;
@@ -665,7 +669,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	int color_size = p_colors.size();
 	int uv_size = p_uvs.size();
 	ERR_FAIL_COND(color_size != 0 && color_size != 1 && color_size != pointcount);
-	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount || !p_texture.is_valid()));
+	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry::triangulate_polygon(p_points);
 
@@ -690,7 +694,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	canvas_item->commands.push_back(polygon);
 }
 
-void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, int p_count, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, const Vector<int> &p_bones, const Vector<float> &p_weights, RID p_texture, int p_count, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -698,6 +702,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	int ps = p_points.size();
 	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != ps && p_colors.size() != 1);
 	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != ps);
+	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != ps * 4);
+	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != ps * 4);
 
 	Vector<int> indices = p_indices;
 
@@ -722,6 +728,8 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	polygon->points = p_points;
 	polygon->uvs = p_uvs;
 	polygon->colors = p_colors;
+	polygon->bones = p_bones;
+	polygon->weights = p_weights;
 	polygon->indices = indices;
 	polygon->count = count;
 	polygon->antialiased = false;
@@ -742,7 +750,7 @@ void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transfo
 	canvas_item->commands.push_back(tr);
 }
 
-void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_skeleton) {
+void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_texture, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -750,7 +758,8 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID
 	Item::CommandMesh *m = memnew(Item::CommandMesh);
 	ERR_FAIL_COND(!m);
 	m->mesh = p_mesh;
-	m->skeleton = p_skeleton;
+	m->texture = p_texture;
+	m->normal_map = p_normal_map;
 
 	canvas_item->commands.push_back(m);
 }
@@ -774,7 +783,7 @@ void VisualServerCanvas::canvas_item_add_particles(RID p_item, RID p_particles, 
 	canvas_item->commands.push_back(part);
 }
 
-void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_skeleton) {
+void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -782,7 +791,8 @@ void VisualServerCanvas::canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p
 	Item::CommandMultiMesh *mm = memnew(Item::CommandMultiMesh);
 	ERR_FAIL_COND(!mm);
 	mm->multimesh = p_mesh;
-	mm->skeleton = p_skeleton;
+	mm->texture = p_texture;
+	mm->normal_map = p_normal_map;
 
 	canvas_item->rect_dirty = true;
 	canvas_item->commands.push_back(mm);
@@ -822,6 +832,15 @@ void VisualServerCanvas::canvas_item_set_z_as_relative_to_parent(RID p_item, boo
 
 	canvas_item->z_relative = p_enable;
 }
+
+void VisualServerCanvas::canvas_item_attach_skeleton(RID p_item, RID p_skeleton) {
+
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	canvas_item->skeleton = p_skeleton;
+}
+
 void VisualServerCanvas::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);

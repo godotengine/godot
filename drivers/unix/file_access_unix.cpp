@@ -69,6 +69,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 		fclose(f);
 	f = NULL;
 
+	path_src = p_path;
 	path = fix_path(p_path);
 	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
@@ -135,7 +136,7 @@ void FileAccessUnix::close() {
 	if (save_path != "") {
 
 		//unlink(save_path.utf8().get_data());
-		//print_line("renaming..");
+		//print_line("renaming...");
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -150,6 +151,16 @@ void FileAccessUnix::close() {
 bool FileAccessUnix::is_open() const {
 
 	return (f != NULL);
+}
+
+String FileAccessUnix::get_path() const {
+
+	return path_src;
+}
+
+String FileAccessUnix::get_path_absolute() const {
+
+	return path;
 }
 
 void FileAccessUnix::seek(size_t p_position) {
@@ -173,7 +184,7 @@ size_t FileAccessUnix::get_position() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	int pos = ftell(f);
+	long pos = ftell(f);
 	if (pos < 0) {
 		check_errors();
 		ERR_FAIL_V(0);
@@ -185,10 +196,10 @@ size_t FileAccessUnix::get_len() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 
-	int pos = ftell(f);
+	long pos = ftell(f);
 	ERR_FAIL_COND_V(pos < 0, 0);
 	ERR_FAIL_COND_V(fseek(f, 0, SEEK_END), 0);
-	int size = ftell(f);
+	long size = ftell(f);
 	ERR_FAIL_COND_V(size < 0, 0);
 	ERR_FAIL_COND_V(fseek(f, pos, SEEK_SET), 0);
 

@@ -138,6 +138,12 @@ void Generic6DOFJointBullet::set_param(Vector3::Axis p_axis, PhysicsServer::G6DO
 		case PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING:
 			sixDOFConstraint->getTranslationalLimitMotor()->m_damping = p_value;
 			break;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY:
+			sixDOFConstraint->getTranslationalLimitMotor()->m_targetVelocity.m_floats[p_axis] = p_value;
+			break;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT:
+			sixDOFConstraint->getTranslationalLimitMotor()->m_maxMotorForce.m_floats[p_axis] = p_value;
+			break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LOWER_LIMIT:
 			limits_lower[1][p_axis] = p_value;
 			set_flag(p_axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT, flags[p_axis][p_param]); // Reload bullet parameter
@@ -185,6 +191,10 @@ real_t Generic6DOFJointBullet::get_param(Vector3::Axis p_axis, PhysicsServer::G6
 			return sixDOFConstraint->getTranslationalLimitMotor()->m_restitution;
 		case PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING:
 			return sixDOFConstraint->getTranslationalLimitMotor()->m_damping;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY:
+			return sixDOFConstraint->getTranslationalLimitMotor()->m_targetVelocity.m_floats[p_axis];
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT:
+			return sixDOFConstraint->getTranslationalLimitMotor()->m_maxMotorForce.m_floats[p_axis];
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LOWER_LIMIT:
 			return limits_lower[1][p_axis];
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_UPPER_LIMIT:
@@ -231,6 +241,9 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 			break;
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_MOTOR:
 			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_enableMotor = flags[p_axis][p_flag];
+			break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR:
+			sixDOFConstraint->getTranslationalLimitMotor()->m_enableMotor[p_axis] = flags[p_axis][p_flag];
 			break;
 		default:
 			WARN_PRINT("This flag is not supported by Bullet engine");

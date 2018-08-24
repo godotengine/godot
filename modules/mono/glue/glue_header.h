@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "builtin_types_glue.h"
+#include "collections_glue.h"
 
 #include "../csharp_script.h"
 #include "../mono_gd/gd_mono_class.h"
@@ -308,4 +309,5 @@ MonoObject *godot_icall_Godot_weakref(Object *p_obj) {
 
 void godot_register_header_icalls() {
 	godot_register_builtin_type_icalls();
+	godot_register_collections_icalls();
 }

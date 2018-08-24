@@ -5,6 +5,8 @@ Import('env')
 
 common_server = [\
     "os_server.cpp",\
+    "#platform/x11/crash_handler_x11.cpp",
+    "#platform/x11/power_x11.cpp",
 ]
 
 prog = env.add_program('#bin/godot_server', ['godot_server.cpp'] + common_server)

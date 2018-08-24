@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" category="Core" version="3.0-stable">
+<class name="ItemList" inherits="Control" category="Core" version="3.1">
 	<brief_description>
 		Control that provides a list of selectable items (and/or icons) in a single column, or optionally in multiple columns.
 	</brief_description>
 	<description>
-		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons,
-		or both text and icon.  Tooltips are supported and may be different for every item in the list.  Selectable items in the list
-		may be selected or deselected and multiple selection may be enabled.  Selection with right mouse button may also be enabled
-		to allow use of popup context menus.  Items may also be 'activated' with a double click (or Enter key).
+		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be 'activated' with a double click (or Enter key).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -79,12 +77,29 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_item_custom_fg_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="get_item_icon_modulate" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns a [Color] modulating item's icon at the specified index.
 			</description>
 		</method>
 		<method name="get_item_icon_region" qualifiers="const">
@@ -135,6 +150,13 @@
 				Returns the current vertical scroll bar for the List.
 			</description>
 		</method>
+		<method name="is_anything_selected">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if one or more items are selected.
+			</description>
+		</method>
 		<method name="is_item_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -171,6 +193,17 @@
 				Returns whether or not item at the specified index is currently selected.
 			</description>
 		</method>
+		<method name="move_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_idx" type="int">
+			</argument>
+			<argument index="1" name="to_idx" type="int">
+			</argument>
+			<description>
+				Moves item at index [code]from_idx[/code] to [code]to_idx[/code].
+			</description>
+		</method>
 		<method name="remove_item">
 			<return type="void">
 			</return>
@@ -202,6 +235,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_item_custom_fg_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="custom_fg_color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_item_disabled">
 			<return type="void">
 			</return>
@@ -223,6 +266,17 @@
 			</argument>
 			<description>
 				Set (or replace) icon of the item at the specified index.
+			</description>
+		</method>
+		<method name="set_item_icon_modulate">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="modulate" type="Color">
+			</argument>
+			<description>
+				Sets a modulating [Color] for item's icon at the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_region">
@@ -304,6 +358,13 @@
 			</argument>
 			<description>
 				Ensure item at specified index is not selected.
+			</description>
+		</method>
+		<method name="unselect_all">
+			<return type="void">
+			</return>
+			<description>
+				Ensure there are no items selected.
 			</description>
 		</method>
 	</methods>

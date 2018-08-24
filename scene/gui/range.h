@@ -43,6 +43,8 @@ class Range : public Control {
 		double val, min, max;
 		double step, page;
 		bool exp_ratio;
+		bool allow_greater;
+		bool allow_lesser;
 		Set<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
@@ -85,6 +87,12 @@ public:
 
 	void set_exp_ratio(bool p_enable);
 	bool is_ratio_exp() const;
+
+	void set_allow_greater(bool p_allow);
+	bool is_greater_allowed() const;
+
+	void set_allow_lesser(bool p_allow);
+	bool is_lesser_allowed() const;
 
 	void share(Range *p_range);
 	void unshare();

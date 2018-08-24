@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Dictionary" category="Built-In Types" version="3.0-stable">
+<class name="Dictionary" category="Built-In Types" version="3.1">
 	<brief_description>
 		Dictionary type.
 	</brief_description>
@@ -19,7 +19,10 @@
 		<method name="duplicate">
 			<return type="Dictionary">
 			</return>
+			<argument index="0" name="deep" type="bool" default="False">
+			</argument>
 			<description>
+				Creates a copy of the dictionary, and returns it.
 			</description>
 		</method>
 		<method name="empty">
@@ -30,6 +33,8 @@
 			</description>
 		</method>
 		<method name="erase">
+			<return type="bool">
+			</return>
 			<argument index="0" name="key" type="var">
 			</argument>
 			<description>

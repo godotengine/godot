@@ -149,11 +149,13 @@ public:
 class RayShapeSW : public ShapeSW {
 
 	real_t length;
+	bool slips_on_slope;
 
-	void _setup(real_t p_length);
+	void _setup(real_t p_length, bool p_slips_on_slope);
 
 public:
 	real_t get_length() const;
+	bool get_slips_on_slope() const;
 
 	virtual real_t get_area() const { return 0.0; }
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_RAY; }
@@ -238,7 +240,7 @@ public:
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
-	virtual real_t get_area() { return 4.0 / 3.0 * Math_PI * radius * radius * radius + height * Math_PI * radius * radius; }
+	virtual real_t get_area() const { return 4.0 / 3.0 * Math_PI * radius * radius * radius + height * Math_PI * radius * radius; }
 
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_CAPSULE; }
 

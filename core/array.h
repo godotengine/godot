@@ -71,6 +71,7 @@ public:
 
 	Array &sort();
 	Array &sort_custom(Object *p_obj, const StringName &p_function);
+	void shuffle();
 	int bsearch(const Variant &p_value, bool p_before = true);
 	int bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before = true);
 	Array &invert();
@@ -87,7 +88,10 @@ public:
 	Variant pop_back();
 	Variant pop_front();
 
-	Array duplicate() const;
+	Array duplicate(bool p_deep = false) const;
+
+	Variant min() const;
+	Variant max() const;
 
 	Array(const Array &p_from);
 	Array();

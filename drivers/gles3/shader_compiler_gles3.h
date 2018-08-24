@@ -52,6 +52,7 @@ public:
 
 		Vector<CharString> defines;
 		Vector<StringName> texture_uniforms;
+		Vector<ShaderLanguage::DataType> texture_types;
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
 		Vector<uint32_t> uniform_offsets;
@@ -83,6 +84,7 @@ private:
 	StringName current_func_name;
 	StringName vertex_name;
 	StringName fragment_name;
+	StringName light_name;
 	StringName time_name;
 
 	Set<StringName> used_name_defines;

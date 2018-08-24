@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfigFile" inherits="Reference" category="Core" version="3.0-stable">
+<class name="ConfigFile" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
 		Helper class to handle INI-style files.
 	</brief_description>
 	<description>
-		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are indentified by a section and a key:
+		This helper class can be used to store [Variant] values on the filesystem using INI-style formatting. The stored values are identified by a section and a key:
 		[codeblock]
 		[section]
 		some_key=42
@@ -117,7 +117,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Assigns a value to the specified key of the the specified section. If the section and/or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
+				Assigns a value to the specified key of the specified section. If the section and/or the key do not exist, they are created. Passing a [code]null[/code] value deletes the specified key if it exists, and deletes the section if it ends up empty once the key has been removed.
 			</description>
 		</method>
 	</methods>

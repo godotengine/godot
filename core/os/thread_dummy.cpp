@@ -55,3 +55,11 @@ Semaphore *SemaphoreDummy::create() {
 void SemaphoreDummy::make_default() {
 	Semaphore::create_func = &SemaphoreDummy::create;
 };
+
+RWLock *RWLockDummy::create() {
+	return memnew(RWLockDummy);
+};
+
+void RWLockDummy::make_default() {
+	RWLock::create_func = &RWLockDummy::create;
+};

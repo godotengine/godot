@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer3D" inherits="Spatial" category="Core" version="3.0-stable">
+<class name="AudioStreamPlayer3D" inherits="Spatial" category="Core" version="3.1">
 	<brief_description>
-		Plays 3D sound in 3D space
+		Plays 3D sound in 3D space.
 	</brief_description>
 	<description>
 		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/latest/learning/features/audio/index.html
-		http://docs.godotengine.org/en/3.0/tutorials/audio/audio_streams.html
+		<link>http://docs.godotengine.org/en/latest/learning/features/audio/index.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -86,11 +86,16 @@
 		<member name="out_of_range_mode" type="int" setter="set_out_of_range_mode" getter="get_out_of_range_mode" enum="AudioStreamPlayer3D.OutOfRangeMode">
 			Decides if audio should pause when source is outside of 'max_distance' range.
 		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
+			Changes the pitch and the tempo of the audio.
+		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing">
 			If [code]true[/code], audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] object to be played.
+		</member>
+		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused">
 		</member>
 		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db">
 			Base sound level unaffected by dampening, in dB.

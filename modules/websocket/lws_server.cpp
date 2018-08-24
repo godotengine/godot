@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,11 +92,6 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			_peer_map[id] = peer;
 
 			peer_data->peer_id = id;
-			peer_data->in_size = 0;
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbw.resize(16);
-			peer_data->rbr.resize(16);
 			peer_data->force_close = false;
 
 			_on_connect(id, lws_get_protocol(wsi)->name);
@@ -111,10 +106,6 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 				_peer_map[id]->close();
 				_peer_map.erase(id);
 			}
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbr.resize(0);
-			peer_data->rbw.resize(0);
 			_on_disconnect(id);
 			return 0; // we can end here
 		}
@@ -162,6 +153,24 @@ bool LWSServer::has_peer(int p_id) const {
 Ref<WebSocketPeer> LWSServer::get_peer(int p_id) const {
 	ERR_FAIL_COND_V(!has_peer(p_id), NULL);
 	return _peer_map[p_id];
+}
+
+IP_Address LWSServer::get_peer_address(int p_peer_id) const {
+	ERR_FAIL_COND_V(!has_peer(p_peer_id), IP_Address());
+
+	return _peer_map[p_peer_id]->get_connected_host();
+}
+
+int LWSServer::get_peer_port(int p_peer_id) const {
+	ERR_FAIL_COND_V(!has_peer(p_peer_id), 0);
+
+	return _peer_map[p_peer_id]->get_connected_port();
+}
+
+void LWSServer::disconnect_peer(int p_peer_id) {
+	ERR_FAIL_COND(!has_peer(p_peer_id));
+
+	get_peer(p_peer_id)->close();
 }
 
 LWSServer::LWSServer() {

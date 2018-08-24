@@ -63,7 +63,7 @@ public:
 template <class T>
 class Ref {
 
-	T *reference = NULL;
+	T *reference;
 
 	void ref(const Ref &p_from) {
 
@@ -87,6 +87,13 @@ class Ref {
 
 	//virtual Reference * get_reference() const { return reference; }
 public:
+	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
+		return reference == p_ptr;
+	}
+	_FORCE_INLINE_ bool operator!=(const T *p_ptr) const {
+		return reference != p_ptr;
+	}
+
 	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
 
 		return reference < p_r.reference;
@@ -213,10 +220,9 @@ public:
 
 	Ref(T *p_reference) {
 
+		reference = NULL;
 		if (p_reference)
 			ref_pointer(p_reference);
-		else
-			reference = NULL;
 	}
 
 	Ref(const Variant &p_variant) {

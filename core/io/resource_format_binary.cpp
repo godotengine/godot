@@ -894,7 +894,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	for (uint32_t i = 0; i < string_table_size; i++) {
 
 		StringName s = get_unicode_string();
-		string_map[i] = s;
+		string_map.write[i] = s;
 	}
 
 	print_bl("strings: " + itos(string_table_size));
@@ -1124,7 +1124,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		da->remove(p_path + ".depren");
 		memdelete(da);
-		//fuck it, use the old approach;
+		//use the old approach
 
 		WARN_PRINT(("This file is old, so it can't refactor dependencies, opening and resaving: " + p_path).utf8().get_data());
 
@@ -1162,9 +1162,11 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
 	}
 
-	fw->store_32(VERSION_MAJOR); //current version
-	fw->store_32(VERSION_MINOR);
-	fw->store_32(FORMAT_VERSION);
+	// Since we're not actually converting the file contents, leave the version
+	// numbers in the file untouched.
+	fw->store_32(ver_major);
+	fw->store_32(ver_minor);
+	fw->store_32(ver_format);
 
 	save_ustring(fw, get_ustring(f)); //type
 
@@ -1832,7 +1834,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	save_order.resize(external_resources.size());
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		save_order[E->get()] = E->key();
+		save_order.write[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {

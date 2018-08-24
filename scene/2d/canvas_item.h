@@ -34,6 +34,7 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/material.h"
+#include "scene/resources/multimesh.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
@@ -53,7 +54,8 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA
+		BLEND_MODE_PREMULT_ALPHA,
+		BLEND_MODE_DISABLED
 	};
 
 	enum LightMode {
@@ -144,7 +146,8 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_PREMULT_ALPHA
+		BLEND_MODE_PREMULT_ALPHA,
+		BLEND_MODE_DISABLED
 	};
 
 private:
@@ -219,32 +222,36 @@ public:
 
 	/* EDITOR */
 
+	// Select the node
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
+	// Save and restore a CanvasItem state
 	virtual void _edit_set_state(const Dictionary &p_state){};
 	virtual Dictionary _edit_get_state() const { return Dictionary(); };
 
-	// Used to move/select the node
-	virtual void _edit_set_position(const Point2 &p_position){};
-	virtual Point2 _edit_get_position() const { return Point2(); };
-	virtual bool _edit_use_position() const { return false; };
+	// Used to move the node
+	virtual void _edit_set_position(const Point2 &p_position) = 0;
+	virtual Point2 _edit_get_position() const = 0;
 
-	// Used to resize/move/select the node
-	virtual void _edit_set_rect(const Rect2 &p_rect){};
-	virtual Rect2 _edit_get_rect() const { return Rect2(-32, -32, 64, 64); };
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const { return true; }
-	Rect2 _edit_get_item_and_children_rect() const;
-	virtual bool _edit_use_rect() const { return false; };
+	// Used to scale the node
+	virtual void _edit_set_scale(const Size2 &p_scale) = 0;
+	virtual Size2 _edit_get_scale() const = 0;
 
 	// Used to rotate the node
+	virtual bool _edit_use_rotation() const { return false; };
 	virtual void _edit_set_rotation(float p_rotation){};
 	virtual float _edit_get_rotation() const { return 0.0; };
-	virtual bool _edit_use_rotation() const { return false; };
+
+	// Used to resize/move the node
+	virtual bool _edit_use_rect() const { return false; }; // MAYBE REPLACE BY A _edit_get_editmode()
+	virtual void _edit_set_rect(const Rect2 &p_rect){};
+	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); };
+	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); }; // LOOKS WEIRD
 
 	// Used to set a pivot
+	virtual bool _edit_use_pivot() const { return false; };
 	virtual void _edit_set_pivot(const Point2 &p_pivot){};
 	virtual Point2 _edit_get_pivot() const { return Point2(); };
-	virtual bool _edit_use_pivot() const { return false; };
-
-	virtual Size2 _edit_get_minimum_size() const;
 
 	/* VISIBILITY */
 
@@ -282,6 +289,9 @@ public:
 	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture> p_texture = Ref<Texture>(), const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_antialiased = false);
 	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture> p_texture = Ref<Texture>(), const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_antialiased = false);
 
+	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map);
+	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map);
+
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
 
@@ -304,7 +314,9 @@ public:
 	virtual Transform2D get_global_transform_with_canvas() const;
 
 	CanvasItem *get_toplevel() const;
-	_FORCE_INLINE_ RID get_canvas_item() const { return canvas_item; }
+	_FORCE_INLINE_ RID get_canvas_item() const {
+		return canvas_item;
+	}
 
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;
@@ -333,6 +345,9 @@ public:
 
 	void set_notify_transform(bool p_enable);
 	bool is_transform_notification_enabled() const;
+
+	// Used by control nodes to retreive the parent's anchorable area
+	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;
 

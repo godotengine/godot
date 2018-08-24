@@ -41,6 +41,7 @@
 #include "../utils/path_utils.h"
 #include "bindings_generator.h"
 #include "csharp_project.h"
+#include "godotsharp_export.h"
 #include "net_solution.h"
 
 #ifdef WINDOWS_ENABLED
@@ -84,10 +85,10 @@ bool GodotSharpEditor::_create_project_solution() {
 			return false;
 		}
 
-		if (!GodotSharpBuilds::make_api_sln(GodotSharpBuilds::API_CORE))
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
 			return false;
 
-		if (!GodotSharpBuilds::make_api_sln(GodotSharpBuilds::API_EDITOR))
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
 			return false;
 
 		pr.step(TTR("Done"));
@@ -277,12 +278,11 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 		about_label->set_autowrap(true);
 		String about_text =
 				String("C# support in Godot Engine is a brand new feature and a work in progress.\n") +
-				"It is at the alpha stage and thus not suitable for use in production.\n\n" +
-				"As of Godot 3.0, C# support is not feature-complete and can crash in some situations. " +
-				"Bugs and usability issues will be addressed gradually over 3.0.x and 3.x releases.\n" +
-				"The main missing feature is the ability to export games using C# assemblies - you will therefore be able to develop and run games in the editor, " +
-				"but not to share them as standalone binaries. This feature is of course high on the priority list and should be available in 3.0.1.\n\n" +
-				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, Mono version, IDE, etc.:\n\n" +
+				"It is currently in an alpha stage and is not suitable for use in production.\n\n" +
+				"As of Godot 3.1, C# support is not feature-complete and may crash in some situations. " +
+				"Bugs and usability issues will be addressed gradually over future 3.x releases, " +
+				"including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
+				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, Mono version, IDE, etc:\n\n" +
 				"        https://github.com/godotengine/godot/issues\n\n" +
 				"Your critical feedback at this stage will play a great role in shaping the C# support in future releases, so thank you!";
 		about_label->set_text(about_text);
@@ -315,6 +315,11 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 	EDITOR_DEF("mono/editor/external_editor", EDITOR_NONE);
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, "None,MonoDevelop,Visual Studio Code"));
+
+	// Export plugin
+	Ref<GodotSharpExport> godotsharp_export;
+	godotsharp_export.instance();
+	EditorExport::get_singleton()->add_export_plugin(godotsharp_export);
 }
 
 GodotSharpEditor::~GodotSharpEditor() {

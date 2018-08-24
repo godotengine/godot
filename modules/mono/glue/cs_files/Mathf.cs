@@ -1,75 +1,85 @@
 using System;
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
 
 namespace Godot
 {
-    public static class Mathf
+    public static partial class Mathf
     {
-        public const float PI = 3.14159274f;
-        public const float Epsilon = 1e-06f;
+        // Define constants with Decimal precision and cast down to double or float.
 
-        private const float Deg2RadConst = 0.0174532924f;
-        private const float Rad2DegConst = 57.29578f;
+        public const real_t Tau = (real_t) 6.2831853071795864769252867666M; // 6.2831855f and 6.28318530717959
+        public const real_t Pi = (real_t) 3.1415926535897932384626433833M; // 3.1415927f and 3.14159265358979
+        public const real_t Inf = real_t.PositiveInfinity;
+        public const real_t NaN = real_t.NaN;
 
-        public static float Abs(float s)
+        private const real_t Deg2RadConst = (real_t) 0.0174532925199432957692369077M; // 0.0174532924f and 0.0174532925199433
+        private const real_t Rad2DegConst = (real_t) 57.295779513082320876798154814M; // 57.29578f and 57.2957795130823
+
+        public static real_t Abs(real_t s)
         {
             return Math.Abs(s);
         }
 
-        public static float Acos(float s)
+        public static int Abs(int s)
         {
-            return (float)Math.Acos(s);
+            return Math.Abs(s);
         }
 
-        public static float Asin(float s)
+        public static real_t Acos(real_t s)
         {
-            return (float)Math.Asin(s);
+            return (real_t)Math.Acos(s);
         }
 
-        public static float Atan(float s)
+        public static real_t Asin(real_t s)
         {
-            return (float)Math.Atan(s);
+            return (real_t)Math.Asin(s);
         }
 
-        public static float Atan2(float x, float y)
+        public static real_t Atan(real_t s)
         {
-            return (float)Math.Atan2(x, y);
+            return (real_t)Math.Atan(s);
         }
 
-		public static Vector2 Cartesian2Polar(float x, float y)
-		{
-			return new Vector2(Sqrt(x * x + y * y), Atan2(y, x));
-		}
-
-        public static float Ceil(float s)
+        public static real_t Atan2(real_t x, real_t y)
         {
-            return (float)Math.Ceiling(s);
+            return (real_t)Math.Atan2(x, y);
         }
 
-        public static float Clamp(float val, float min, float max)
+        public static Vector2 Cartesian2Polar(real_t x, real_t y)
         {
-            if (val < min)
-            {
-                return min;
-            }
-            else if (val > max)
-            {
-                return max;
-            }
-
-            return val;
+            return new Vector2(Sqrt(x * x + y * y), Atan2(y, x));
         }
 
-        public static float Cos(float s)
+        public static real_t Ceil(real_t s)
         {
-            return (float)Math.Cos(s);
+            return (real_t)Math.Ceiling(s);
         }
 
-        public static float Cosh(float s)
+        public static int Clamp(int value, int min, int max)
         {
-            return (float)Math.Cosh(s);
+            return value < min ? min : value > max ? max : value;
         }
 
-        public static int Decimals(float step)
+        public static real_t Clamp(real_t value, real_t min, real_t max)
+        {
+            return value < min ? min : value > max ? max : value;
+        }
+
+        public static real_t Cos(real_t s)
+        {
+            return (real_t)Math.Cos(s);
+        }
+
+        public static real_t Cosh(real_t s)
+        {
+            return (real_t)Math.Cosh(s);
+        }
+
+        public static int Decimals(real_t step)
         {
             return Decimals((decimal)step);
         }
@@ -79,12 +89,12 @@ namespace Godot
             return BitConverter.GetBytes(decimal.GetBits(step)[3])[2];
         }
 
-        public static float Deg2Rad(float deg)
+        public static real_t Deg2Rad(real_t deg)
         {
             return deg * Deg2RadConst;
         }
 
-        public static float Ease(float s, float curve)
+        public static real_t Ease(real_t s, real_t curve)
         {
             if (s < 0f)
             {
@@ -104,7 +114,8 @@ namespace Godot
 
                 return Pow(s, curve);
             }
-            else if (curve < 0f)
+
+            if (curve < 0f)
             {
                 if (s < 0.5f)
                 {
@@ -117,111 +128,145 @@ namespace Godot
             return 0f;
         }
 
-        public static float Exp(float s)
+        public static real_t Exp(real_t s)
         {
-            return (float)Math.Exp(s);
+            return (real_t)Math.Exp(s);
         }
 
-        public static float Floor(float s)
+        public static real_t Floor(real_t s)
         {
-            return (float)Math.Floor(s);
+            return (real_t)Math.Floor(s);
         }
 
-        public static float Fposmod(float x, float y)
+        public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
-            if (x >= 0f)
-            {
-                return x % y;
-            }
-            else
-            {
-                return y - (-x % y);
-            }
+           return (weight - from) / (to - from);
         }
 
-        public static float Lerp(float from, float to, float weight)
+        public static bool IsInf(real_t s)
         {
-            return from + (to - from) * Clamp(weight, 0f, 1f);
+           return real_t.IsInfinity(s);
         }
 
-        public static float Log(float s)
+        public static bool IsNaN(real_t s)
         {
-            return (float)Math.Log(s);
+           return real_t.IsNaN(s);
+        }
+
+        public static real_t Lerp(real_t from, real_t to, real_t weight)
+        {
+            return from + (to - from) * weight;
+        }
+
+        public static real_t Log(real_t s)
+        {
+            return (real_t)Math.Log(s);
         }
 
         public static int Max(int a, int b)
         {
-            return (a > b) ? a : b;
+            return a > b ? a : b;
         }
 
-        public static float Max(float a, float b)
+        public static real_t Max(real_t a, real_t b)
         {
-            return (a > b) ? a : b;
+            return a > b ? a : b;
         }
 
         public static int Min(int a, int b)
         {
-            return (a < b) ? a : b;
+            return a < b ? a : b;
         }
 
-        public static float Min(float a, float b)
+        public static real_t Min(real_t a, real_t b)
         {
-            return (a < b) ? a : b;
+            return a < b ? a : b;
         }
 
-        public static int NearestPo2(int val)
+        public static int NearestPo2(int value)
         {
-            val--;
-            val |= val >> 1;
-            val |= val >> 2;
-            val |= val >> 4;
-            val |= val >> 8;
-            val |= val >> 16;
-            val++;
-            return val;
+            value--;
+            value |= value >> 1;
+            value |= value >> 2;
+            value |= value >> 4;
+            value |= value >> 8;
+            value |= value >> 16;
+            value++;
+            return value;
         }
 
-		public static Vector2 Polar2Cartesian(float r, float th)
-		{
-			return new Vector2(r * Cos(th), r * Sin(th));
-		}
-
-        public static float Pow(float x, float y)
+        public static Vector2 Polar2Cartesian(real_t r, real_t th)
         {
-            return (float)Math.Pow(x, y);
+            return new Vector2(r * Cos(th), r * Sin(th));
         }
 
-        public static float Rad2Deg(float rad)
+        /// <summary>
+        /// Performs a canonical Modulus operation, where the output is on the range [0, b).
+        /// </summary>
+        public static real_t PosMod(real_t a, real_t b)
+        {
+            real_t c = a % b;
+            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            {
+                c += b;
+            }
+            return c;
+        }
+
+        /// <summary>
+        /// Performs a canonical Modulus operation, where the output is on the range [0, b).
+        /// </summary>
+        public static int PosMod(int a, int b)
+        {
+            int c = a % b;
+            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            {
+                c += b;
+            }
+            return c;
+        }
+
+        public static real_t Pow(real_t x, real_t y)
+        {
+            return (real_t)Math.Pow(x, y);
+        }
+
+        public static real_t Rad2Deg(real_t rad)
         {
             return rad * Rad2DegConst;
         }
 
-        public static float Round(float s)
+        public static real_t Round(real_t s)
         {
-            return (float)Math.Round(s);
+            return (real_t)Math.Round(s);
         }
 
-        public static float Sign(float s)
+        public static int Sign(int s)
         {
-            return (s < 0f) ? -1f : 1f;
+            return s < 0 ? -1 : 1;
         }
 
-        public static float Sin(float s)
+        public static real_t Sign(real_t s)
         {
-            return (float)Math.Sin(s);
+            return s < 0f ? -1f : 1f;
         }
 
-        public static float Sinh(float s)
+        public static real_t Sin(real_t s)
         {
-            return (float)Math.Sinh(s);
+            return (real_t)Math.Sin(s);
         }
 
-        public static float Sqrt(float s)
+        public static real_t Sinh(real_t s)
         {
-            return (float)Math.Sqrt(s);
+            return (real_t)Math.Sinh(s);
         }
 
-        public static float Stepify(float s, float step)
+        public static real_t Sqrt(real_t s)
+        {
+            return (real_t)Math.Sqrt(s);
+        }
+
+        public static real_t Stepify(real_t s, real_t step)
         {
             if (step != 0f)
             {
@@ -231,14 +276,26 @@ namespace Godot
             return s;
         }
 
-        public static float Tan(float s)
+        public static real_t Tan(real_t s)
         {
-            return (float)Math.Tan(s);
+            return (real_t)Math.Tan(s);
         }
 
-        public static float Tanh(float s)
+        public static real_t Tanh(real_t s)
         {
-            return (float)Math.Tanh(s);
+            return (real_t)Math.Tanh(s);
+        }
+
+        public static int Wrap(int value, int min, int max)
+        {
+            int rng = max - min;
+            return min + ((value - min) % rng + rng) % rng;
+        }
+
+        public static real_t Wrap(real_t value, real_t min, real_t max)
+        {
+            real_t rng = max - min;
+            return min + ((value - min) % rng + rng) % rng;
         }
     }
 }

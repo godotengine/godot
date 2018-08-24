@@ -33,7 +33,9 @@
 #include "dir_access.h"
 #include "input.h"
 #include "os/file_access.h"
+#include "os/midi_driver.h"
 #include "project_settings.h"
+#include "servers/audio_server.h"
 #include "version_generated.gen.h"
 
 #include <stdarg.h>
@@ -410,7 +412,7 @@ Error OS::set_cwd(const String &p_cwd) {
 bool OS::has_touchscreen_ui_hint() const {
 
 	//return false;
-	return Input::get_singleton() && Input::get_singleton()->is_emulating_touchscreen();
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
 int OS::get_free_static_memory() const {
@@ -575,6 +577,13 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "release")
 		return true;
 #endif
+#ifdef TOOLS_ENABLED
+	if (p_feature == "editor")
+		return true;
+#else
+	if (p_feature == "standalone")
+		return true;
+#endif
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
 		return true;
@@ -613,6 +622,9 @@ bool OS::has_feature(const String &p_feature) {
 	if (_check_internal_feature_support(p_feature))
 		return true;
 
+	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature))
+		return true;
+
 	return false;
 }
 
@@ -627,9 +639,60 @@ void OS::center_window() {
 	set_window_position(Vector2(x, y));
 }
 
+int OS::get_video_driver_count() const {
+
+	return 2;
+}
+
+const char *OS::get_video_driver_name(int p_driver) const {
+
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+		case VIDEO_DRIVER_GLES3:
+		default:
+			return "GLES3";
+	}
+}
+
+int OS::get_audio_driver_count() const {
+
+	return AudioDriverManager::get_driver_count();
+}
+
+const char *OS::get_audio_driver_name(int p_driver) const {
+
+	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
+	ERR_FAIL_COND_V(!driver, "");
+	return AudioDriverManager::get_driver(p_driver)->get_name();
+}
+
+void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
+	restart_on_exit = p_restart;
+	restart_commandline = p_restart_arguments;
+}
+
+bool OS::is_restart_on_exit_set() const {
+	return restart_on_exit;
+}
+
+List<String> OS::get_restart_on_exit_arguments() const {
+	return restart_commandline;
+}
+
+PoolStringArray OS::get_connected_midi_inputs() {
+
+	if (MIDIDriver::get_singleton())
+		return MIDIDriver::get_singleton()->get_connected_inputs();
+
+	PoolStringArray list;
+	return list;
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 
+	restart_on_exit = false;
 	last_error = NULL;
 	singleton = this;
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
@@ -643,6 +706,7 @@ OS::OS() {
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
 	_allow_hidpi = false;
+	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;

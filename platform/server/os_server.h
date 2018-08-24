@@ -27,14 +27,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-#include "../x11/power_x11.h"
+#include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
+#include "platform/x11/crash_handler_x11.h"
+#include "platform/x11/power_x11.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -46,7 +47,6 @@
 
 class OS_Server : public OS_Unix {
 
-	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
@@ -63,10 +63,20 @@ class OS_Server : public OS_Unix {
 
 	PowerX11 *power_manager;
 
+	CrashHandler crash_handler;
+
+	int video_driver_index;
+
+	ResourceFormatDummyTexture *resource_loader_dummy;
+
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual int get_current_video_driver() const;
+	virtual int get_audio_driver_count() const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
@@ -102,6 +112,16 @@ public:
 	virtual OS::PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	virtual String get_config_path() const;
+	virtual String get_data_path() const;
+	virtual String get_cache_path() const;
+
+	virtual String get_system_dir(SystemDir p_dir) const;
+
+	void disable_crash_handler();
+	bool is_disable_crash_handler() const;
 
 	OS_Server();
 };

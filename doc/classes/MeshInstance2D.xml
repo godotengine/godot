@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshInstance2D" inherits="Node2D" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
+		</member>
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

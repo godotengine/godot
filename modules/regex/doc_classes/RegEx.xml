@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RegEx" inherits="Reference" category="Core" version="3.0-stable">
+<class name="RegEx" inherits="Reference" category="Core" version="3.1">
 	<brief_description>
 		Class for searching text for patterns using regular expressions.
 	</brief_description>
 	<description>
-		Regular Expression (or regex) is a compact programming language that can be used to recognise strings that follow a specific pattern, such as URLs, email addresses, complete sentences, etc. For instance, a regex of [code]ab[0-9][/code] would find any string that is [code]ab[/code] followed by any number from [code]0[/code] to [code]9[/code]. For a more in-depth look, you can easily find various tutorials and detailed explainations on the Internet.
+		Regular Expression (or regex) is a compact programming language that can be used to recognise strings that follow a specific pattern, such as URLs, email addresses, complete sentences, etc. For instance, a regex of [code]ab[0-9][/code] would find any string that is [code]ab[/code] followed by any number from [code]0[/code] to [code]9[/code]. For a more in-depth look, you can easily find various tutorials and detailed explanations on the Internet.
 		To begin, the RegEx object needs to be compiled with the search pattern using [method compile] before it can be used.
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\w-(\\d+)")
 		[/codeblock]
 		The search pattern must be escaped first for gdscript before it is escaped for the expression. For example, [code]compile("\\d+")[/code] would be read by RegEx as [code]\d+[/code]. Similarly, [code]compile("\"(?:\\\\.|[^\"])*\"")[/code] would be read as [code]"(?:\\.|[^"])*"[/code]
-		Using [method search] you can find the pattern within the given text. If a pattern is found, [RegExMatch] is returned and you can retrieve details of the results using fuctions such as [method RegExMatch.get_string] and [method RegExMatch.get_start].
+		Using [method search] you can find the pattern within the given text. If a pattern is found, [RegExMatch] is returned and you can retrieve details of the results using functions such as [method RegExMatch.get_string] and [method RegExMatch.get_start].
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\w-(\\d+)")

@@ -5,7 +5,7 @@
 /*    Basic SFNT/TrueType type definitions and interface (specification    */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -148,7 +148,7 @@ FT_BEGIN_HEADER
   /* <Fields>                                                              */
   /*    See                                                                */
   /*                                                                       */
-  /*      http://www.w3.org/TR/WOFF/#WOFFHeader                            */
+  /*      https://www.w3.org/TR/WOFF/#WOFFHeader                           */
   /*                                                                       */
   typedef struct  WOFF_HeaderRec_
   {
@@ -1299,10 +1299,6 @@ FT_BEGIN_HEADER
   /*                            variation tables (rather like Multiple     */
   /*                            Master data).                              */
   /*                                                                       */
-  /*    is_default_instance  :: Set if the glyph outlines can be used      */
-  /*                            unmodified (i.e., without applying glyph   */
-  /*                            variation deltas).                         */
-  /*                                                                       */
   /*    variation_support    :: Flags that indicate which OpenType         */
   /*                            functionality related to font variation    */
   /*                            support is present, valid, and usable.     */
@@ -1445,6 +1441,9 @@ FT_BEGIN_HEADER
     void*                 var;
 #endif
 
+    /* a typeless pointer to the PostScript Aux service */
+    void*                 psaux;
+
 
     /***********************************************************************/
     /*                                                                     */
@@ -1509,7 +1508,6 @@ FT_BEGIN_HEADER
     FT_Bool               doblend;
     GX_Blend              blend;
 
-    FT_Bool               is_default_instance;   /* since 2.7.1 */
     FT_UInt32             variation_support;     /* since 2.7.1 */
 
     const char*           var_postscript_prefix;     /* since 2.7.2 */

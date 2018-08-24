@@ -87,7 +87,7 @@ public:
 
 public:
 	/// Use this function to move kinematic body
-	/// -- or set initial transfom before body creation.
+	/// -- or set initial transform before body creation.
 	void moveBody(const btTransform &newWorldTransform) {
 		bodyKinematicWorldTransf = newWorldTransform;
 	}

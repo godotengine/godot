@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line2D" inherits="Node2D" category="Core" version="3.0-stable">
+<class name="Line2D" inherits="Node2D" category="Core" version="3.1">
 	<brief_description>
 		A 2D line.
 	</brief_description>
@@ -53,7 +53,7 @@
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
-				Overwites the position in point [code]i[/code] with the supplied [code]position[/code].
+				Overwrites the position in point [code]i[/code] with the supplied [code]position[/code].
 			</description>
 		</method>
 	</methods>
@@ -116,6 +116,9 @@
 		</constant>
 		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
 			Tiles the texture over the line. The texture need to be imported with Repeat Enabled for it to work properly.
+		</constant>
+		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
+			Stretches the texture across the line. Import the texture with Repeat Disabled for best results.
 		</constant>
 	</constants>
 </class>

@@ -101,7 +101,7 @@ void RayCast2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
-		set_physics_process(p_enabled);
+		set_physics_process_internal(p_enabled);
 	if (!p_enabled)
 		collided = false;
 }
@@ -141,9 +141,9 @@ void RayCast2D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (enabled && !Engine::get_singleton()->is_editor_hint())
-				set_physics_process(true);
+				set_physics_process_internal(true);
 			else
-				set_physics_process(false);
+				set_physics_process_internal(false);
 
 			if (Object::cast_to<CollisionObject2D>(get_parent())) {
 				if (exclude_parent_body)
@@ -155,7 +155,7 @@ void RayCast2D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 			if (enabled)
-				set_physics_process(false);
+				set_physics_process_internal(false);
 
 		} break;
 
@@ -183,7 +183,7 @@ void RayCast2D::_notification(int p_what) {
 
 		} break;
 
-		case NOTIFICATION_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 
 			if (!enabled)
 				break;
@@ -209,7 +209,7 @@ void RayCast2D::_update_raycast_state() {
 
 	Physics2DDirectSpaceState::RayResult rr;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask)) {
+	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 
 		collided = true;
 		against = rr.collider_id;
@@ -258,6 +258,26 @@ void RayCast2D::clear_exceptions() {
 	exclude.clear();
 }
 
+void RayCast2D::set_collide_with_areas(bool p_clip) {
+
+	collide_with_areas = p_clip;
+}
+
+bool RayCast2D::is_collide_with_areas_enabled() const {
+
+	return collide_with_areas;
+}
+
+void RayCast2D::set_collide_with_bodies(bool p_clip) {
+
+	collide_with_bodies = p_clip;
+}
+
+bool RayCast2D::is_collide_with_bodies_enabled() const {
+
+	return collide_with_bodies;
+}
+
 void RayCast2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast2D::set_enabled);
@@ -291,10 +311,20 @@ void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast2D::set_exclude_parent_body);
 	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast2D::get_exclude_parent_body);
 
+	ClassDB::bind_method(D_METHOD("set_collide_with_areas", "enable"), &RayCast2D::set_collide_with_areas);
+	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &RayCast2D::is_collide_with_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &RayCast2D::set_collide_with_bodies);
+	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &RayCast2D::is_collide_with_bodies_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cast_to"), "set_cast_to", "get_cast_to");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Collide With", "collide_with");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 }
 
 RayCast2D::RayCast2D() {
@@ -306,4 +336,6 @@ RayCast2D::RayCast2D() {
 	collision_mask = 1;
 	cast_to = Vector2(0, 50);
 	exclude_parent_body = true;
+	collide_with_bodies = true;
+	collide_with_areas = false;
 }

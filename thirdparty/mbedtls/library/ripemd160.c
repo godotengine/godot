@@ -34,6 +34,7 @@
 #if defined(MBEDTLS_RIPEMD160_C)
 
 #include "mbedtls/ripemd160.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -71,11 +72,6 @@
 }
 #endif
 
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
-
 void mbedtls_ripemd160_init( mbedtls_ripemd160_context *ctx )
 {
     memset( ctx, 0, sizeof( mbedtls_ripemd160_context ) );
@@ -86,7 +82,7 @@ void mbedtls_ripemd160_free( mbedtls_ripemd160_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_ripemd160_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_ripemd160_context ) );
 }
 
 void mbedtls_ripemd160_clone( mbedtls_ripemd160_context *dst,
@@ -111,6 +107,13 @@ int mbedtls_ripemd160_starts_ret( mbedtls_ripemd160_context *ctx )
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_starts( mbedtls_ripemd160_context *ctx )
+{
+    mbedtls_ripemd160_starts_ret( ctx );
+}
+#endif
 
 #if !defined(MBEDTLS_RIPEMD160_PROCESS_ALT)
 /*
@@ -295,6 +298,14 @@ int mbedtls_internal_ripemd160_process( mbedtls_ripemd160_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_process( mbedtls_ripemd160_context *ctx,
+                                const unsigned char data[64] )
+{
+    mbedtls_internal_ripemd160_process( ctx, data );
+}
+#endif
 #endif /* !MBEDTLS_RIPEMD160_PROCESS_ALT */
 
 /*
@@ -349,6 +360,15 @@ int mbedtls_ripemd160_update_ret( mbedtls_ripemd160_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_update( mbedtls_ripemd160_context *ctx,
+                               const unsigned char *input,
+                               size_t ilen )
+{
+    mbedtls_ripemd160_update_ret( ctx, input, ilen );
+}
+#endif
+
 static const unsigned char ripemd160_padding[64] =
 {
  0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -395,6 +415,14 @@ int mbedtls_ripemd160_finish_ret( mbedtls_ripemd160_context *ctx,
     return( 0 );
 }
 
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160_finish( mbedtls_ripemd160_context *ctx,
+                               unsigned char output[20] )
+{
+    mbedtls_ripemd160_finish_ret( ctx, output );
+}
+#endif
+
 #endif /* ! MBEDTLS_RIPEMD160_ALT */
 
 /*
@@ -423,6 +451,15 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_ripemd160( const unsigned char *input,
+                        size_t ilen,
+                        unsigned char output[20] )
+{
+    mbedtls_ripemd160_ret( input, ilen, output );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /*

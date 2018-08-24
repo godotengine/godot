@@ -1,95 +1,106 @@
 using System;
+#if REAL_T_IS_DOUBLE
+using real_t = System.Double;
+#else
+using real_t = System.Single;
+#endif
 
 namespace Godot
 {
     public struct Plane : IEquatable<Plane>
     {
-        Vector3 normal;
+        private Vector3 _normal;
 
-        public float x
+        public Vector3 Normal
+        {
+            get { return _normal; }
+            set { _normal = value; }
+        }
+
+        public real_t x
         {
             get
             {
-                return normal.x;
+                return _normal.x;
             }
             set
             {
-                normal.x = value;
+                _normal.x = value;
             }
         }
 
-        public float y
+        public real_t y
         {
             get
             {
-                return normal.y;
+                return _normal.y;
             }
             set
             {
-                normal.y = value;
+                _normal.y = value;
             }
         }
 
-        public float z
+        public real_t z
         {
             get
             {
-                return normal.z;
+                return _normal.z;
             }
             set
             {
-                normal.z = value;
+                _normal.z = value;
             }
         }
 
-        float d;
+        public real_t D { get; set; }
 
         public Vector3 Center
         {
             get
             {
-                return normal * d;
+                return _normal * D;
             }
         }
 
-        public float DistanceTo(Vector3 point)
+        public real_t DistanceTo(Vector3 point)
         {
-            return normal.Dot(point) - d;
+            return _normal.Dot(point) - D;
         }
 
         public Vector3 GetAnyPoint()
         {
-            return normal * d;
+            return _normal * D;
         }
 
-        public bool HasPoint(Vector3 point, float epsilon = Mathf.Epsilon)
+        public bool HasPoint(Vector3 point, real_t epsilon = Mathf.Epsilon)
         {
-            float dist = normal.Dot(point) - d;
+            real_t dist = _normal.Dot(point) - D;
             return Mathf.Abs(dist) <= epsilon;
         }
 
         public Vector3 Intersect3(Plane b, Plane c)
         {
-            float denom = normal.Cross(b.normal).Dot(c.normal);
+            real_t denom = _normal.Cross(b._normal).Dot(c._normal);
 
             if (Mathf.Abs(denom) <= Mathf.Epsilon)
                 return new Vector3();
 
-            Vector3 result = (b.normal.Cross(c.normal) * this.d) +
-                                (c.normal.Cross(normal) * b.d) +
-                                (normal.Cross(b.normal) * c.d);
+            Vector3 result = b._normal.Cross(c._normal) * D +
+                                c._normal.Cross(_normal) * b.D +
+                                _normal.Cross(b._normal) * c.D;
 
             return result / denom;
         }
 
         public Vector3 IntersectRay(Vector3 from, Vector3 dir)
         {
-            float den = normal.Dot(dir);
+            real_t den = _normal.Dot(dir);
 
             if (Mathf.Abs(den) <= Mathf.Epsilon)
                 return new Vector3();
 
-            float dist = (normal.Dot(from) - d) / den;
+            real_t dist = (_normal.Dot(from) - D) / den;
 
             // This is a ray, before the emitting pos (from) does not exist
             if (dist > Mathf.Epsilon)
@@ -101,14 +112,14 @@ namespace Godot
         public Vector3 IntersectSegment(Vector3 begin, Vector3 end)
         {
             Vector3 segment = begin - end;
-            float den = normal.Dot(segment);
+            real_t den = _normal.Dot(segment);
 
             if (Mathf.Abs(den) <= Mathf.Epsilon)
                 return new Vector3();
 
-            float dist = (normal.Dot(begin) - d) / den;
+            real_t dist = (_normal.Dot(begin) - D) / den;
 
-            if (dist < -Mathf.Epsilon || dist > (1.0f + Mathf.Epsilon))
+            if (dist < -Mathf.Epsilon || dist > 1.0f + Mathf.Epsilon)
                 return new Vector3();
 
             return begin + segment * -dist;
@@ -116,46 +127,55 @@ namespace Godot
 
         public bool IsPointOver(Vector3 point)
         {
-            return normal.Dot(point) > d;
+            return _normal.Dot(point) > D;
         }
 
         public Plane Normalized()
         {
-            float len = normal.Length();
+            real_t len = _normal.Length();
 
             if (len == 0)
                 return new Plane(0, 0, 0, 0);
 
-            return new Plane(normal / len, d / len);
+            return new Plane(_normal / len, D / len);
         }
 
         public Vector3 Project(Vector3 point)
         {
-            return point - normal * DistanceTo(point);
+            return point - _normal * DistanceTo(point);
         }
+        
+        // Constants
+        private static readonly Plane _planeYZ = new Plane(1, 0, 0, 0);
+        private static readonly Plane _planeXZ = new Plane(0, 1, 0, 0);
+        private static readonly Plane _planeXY = new Plane(0, 0, 1, 0);
 
-        public Plane(float a, float b, float c, float d)
+        public static Plane PlaneYZ { get { return _planeYZ; } }
+        public static Plane PlaneXZ { get { return _planeXZ; } }
+        public static Plane PlaneXY { get { return _planeXY; } }
+        
+        // Constructors 
+        public Plane(real_t a, real_t b, real_t c, real_t d)
         {
-            normal = new Vector3(a, b, c);
-            this.d = d;
+            _normal = new Vector3(a, b, c);
+            this.D = d;
         }
-
-        public Plane(Vector3 normal, float d)
+        public Plane(Vector3 normal, real_t d)
         {
-            this.normal = normal;
-            this.d = d;
+            this._normal = normal;
+            this.D = d;
         }
 
         public Plane(Vector3 v1, Vector3 v2, Vector3 v3)
         {
-            normal = (v1 - v3).Cross(v1 - v2);
-            normal.Normalize();
-            d = normal.Dot(v1);
+            _normal = (v1 - v3).Cross(v1 - v2);
+            _normal.Normalize();
+            D = _normal.Dot(v1);
         }
 
         public static Plane operator -(Plane plane)
         {
-            return new Plane(-plane.normal, -plane.d);
+            return new Plane(-plane._normal, -plane.D);
         }
 
         public static bool operator ==(Plane left, Plane right)
@@ -180,20 +200,20 @@ namespace Godot
 
         public bool Equals(Plane other)
         {
-            return normal == other.normal && d == other.d;
+            return _normal == other._normal && D == other.D;
         }
 
         public override int GetHashCode()
         {
-            return normal.GetHashCode() ^ d.GetHashCode();
+            return _normal.GetHashCode() ^ D.GetHashCode();
         }
 
         public override string ToString()
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.normal.ToString(),
-                this.d.ToString()
+                _normal.ToString(),
+                D.ToString()
             });
         }
 
@@ -201,8 +221,8 @@ namespace Godot
         {
             return String.Format("({0}, {1})", new object[]
             {
-                this.normal.ToString(format),
-                this.d.ToString(format)
+                _normal.ToString(format),
+                D.ToString(format)
             });
         }
     }

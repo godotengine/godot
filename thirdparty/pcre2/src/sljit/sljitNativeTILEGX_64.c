@@ -2,7 +2,7 @@
  *    Stack-less Just-In-Time compiler
  *
  *    Copyright 2013-2013 Tilera Corporation(jiwang@tilera.com). All rights reserved.
- *    Copyright 2009-2012 Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
+ *    Copyright Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -687,7 +687,7 @@ static sljit_s32 update_buffer(struct sljit_compiler *compiler)
 			inst_buf[0] = inst1;
 			inst_buf_index = 1;
 		} else
-			SLJIT_ASSERT_STOP();
+			SLJIT_UNREACHABLE();
 
 #ifdef TILEGX_JIT_DEBUG
 		return push_inst_nodebug(compiler, bits);
@@ -727,10 +727,10 @@ static sljit_s32 update_buffer(struct sljit_compiler *compiler)
 			return push_inst(compiler, bits);
 #endif
 		} else
-			SLJIT_ASSERT_STOP();
+			SLJIT_UNREACHABLE();
 	}
 
-	SLJIT_ASSERT_STOP();
+	SLJIT_UNREACHABLE();
 }
 
 static sljit_s32 flush_buffer(struct sljit_compiler *compiler)
@@ -814,7 +814,7 @@ static sljit_s32 push_3_buffer(struct sljit_compiler *compiler, tilegx_mnemonic 
 		break;
 	default:
 		printf("unrecoginzed opc: %s\n", opcode->name);
-		SLJIT_ASSERT_STOP();
+		SLJIT_UNREACHABLE();
 	}
 
 	inst_buf_index++;
@@ -859,7 +859,7 @@ static sljit_s32 push_2_buffer(struct sljit_compiler *compiler, tilegx_mnemonic 
 		break;
 	default:
 		printf("unrecoginzed opc: %s\n", opcode->name);
-		SLJIT_ASSERT_STOP();
+		SLJIT_UNREACHABLE();
 	}
 
 	inst_buf_index++;
@@ -1952,7 +1952,7 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		return SLJIT_SUCCESS;
 	}
 
-	SLJIT_ASSERT_STOP();
+	SLJIT_UNREACHABLE();
 	return SLJIT_SUCCESS;
 }
 
@@ -2092,9 +2092,6 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_flags(struct sljit_compiler *co
 	CHECK(check_sljit_emit_op_flags(compiler, op, dst, dstw, src, srcw, type));
 	ADJUST_LOCAL_OFFSET(dst, dstw);
 
-	if (dst == SLJIT_UNUSED)
-		return SLJIT_SUCCESS;
-
 	op = GET_OPCODE(op);
 	if (op == SLJIT_MOV_S32 || op == SLJIT_MOV_U32)
 		mem_type = INT_DATA | SIGNED_DATA;
@@ -2143,7 +2140,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op_flags(struct sljit_compiler *co
 		break;
 
 	default:
-		SLJIT_ASSERT_STOP();
+		SLJIT_UNREACHABLE();
 		dst_ar = sugg_dst_ar;
 		break;
 	}
@@ -2186,7 +2183,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
 	case SLJIT_DIVMOD_SW:
 	case SLJIT_DIV_UW:
 	case SLJIT_DIV_SW:
-		SLJIT_ASSERT_STOP();
+		SLJIT_UNREACHABLE();
 	}
 
 	return SLJIT_SUCCESS;
@@ -2487,19 +2484,14 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump * sljit_emit_jump(struct sljit_compil
 	return jump;
 }
 
-SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_is_fpu_available(void)
-{
-	return 0;
-}
-
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fop1(struct sljit_compiler *compiler, sljit_s32 op, sljit_s32 dst, sljit_sw dstw, sljit_s32 src, sljit_sw srcw)
 {
-	SLJIT_ASSERT_STOP();
+	SLJIT_UNREACHABLE();
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fop2(struct sljit_compiler *compiler, sljit_s32 op, sljit_s32 dst, sljit_sw dstw, sljit_s32 src1, sljit_sw src1w, sljit_s32 src2, sljit_sw src2w)
 {
-	SLJIT_ASSERT_STOP();
+	SLJIT_UNREACHABLE();
 }
 
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_const * sljit_emit_const(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw, sljit_sw init_value)

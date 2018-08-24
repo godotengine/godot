@@ -136,7 +136,7 @@ public:
 
 	Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	DynamicFontAtSize();
 	~DynamicFontAtSize();
@@ -171,7 +171,7 @@ public:
 
 	virtual bool is_distance_field_hint() const;
 
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const;
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	DynamicFont();
 	~DynamicFont();

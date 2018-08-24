@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for color filtering of subpixel bitmap glyphs (body).   */
 /*                                                                         */
-/*  Copyright 2006-2017 by                                                 */
+/*  Copyright 2006-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -31,8 +31,41 @@
 
 #define FT_SHIFTCLAMP( x )  ( x >>= 8, (FT_Byte)( x > 255 ? 255 : x ) )
 
+
+  /* add padding according to filter weights */
+  FT_BASE_DEF (void)
+  ft_lcd_padding( FT_Pos*       Min,
+                  FT_Pos*       Max,
+                  FT_GlyphSlot  slot )
+  {
+    FT_Byte*                 lcd_weights;
+    FT_Bitmap_LcdFilterFunc  lcd_filter_func;
+
+
+    /* Per-face LCD filtering takes priority if set up. */
+    if ( slot->face && slot->face->internal->lcd_filter_func )
+    {
+      lcd_weights     = slot->face->internal->lcd_weights;
+      lcd_filter_func = slot->face->internal->lcd_filter_func;
+    }
+    else
+    {
+      lcd_weights     = slot->library->lcd_weights;
+      lcd_filter_func = slot->library->lcd_filter_func;
+    }
+
+    if ( lcd_filter_func == ft_lcd_filter_fir )
+    {
+      *Min -= lcd_weights[0] ? 43 :
+              lcd_weights[1] ? 22 : 0;
+      *Max += lcd_weights[4] ? 43 :
+              lcd_weights[3] ? 22 : 0;
+    }
+  }
+
+
   /* FIR filter used by the default and light filters */
-  FT_BASE( void )
+  FT_BASE_DEF( void )
   ft_lcd_filter_fir( FT_Bitmap*           bitmap,
                      FT_Render_Mode       mode,
                      FT_LcdFiveTapFilter  weights )
@@ -44,7 +77,7 @@
 
 
     /* take care of bitmap flow */
-    if ( pitch > 0 )
+    if ( pitch > 0 && height > 0 )
       origin += pitch * (FT_Int)( height - 1 );
 
     /* horizontal in-place FIR filter */
@@ -159,7 +192,7 @@
 
 
     /* take care of bitmap flow */
-    if ( pitch > 0 )
+    if ( pitch > 0 && height > 0 )
       origin += pitch * (FT_Int)( height - 1 );
 
     /* horizontal in-place intra-pixel filter */
@@ -305,21 +338,21 @@
       return FT_THROW( Invalid_Argument );
     }
 
-    library->lcd_filter = filter;
-
     return FT_Err_Ok;
   }
 
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
-  FT_BASE( void )
-  ft_lcd_filter_fir( FT_Bitmap*           bitmap,
-                     FT_Render_Mode       mode,
-                     FT_LcdFiveTapFilter  weights )
+  /* add padding according to accommodate outline shifts */
+  FT_BASE_DEF (void)
+  ft_lcd_padding( FT_Pos*       Min,
+                  FT_Pos*       Max,
+                  FT_GlyphSlot  slot )
   {
-    FT_UNUSED( bitmap );
-    FT_UNUSED( mode );
-    FT_UNUSED( weights );
+    FT_UNUSED( slot );
+
+    *Min -= 21;
+    *Max += 21;
   }
 
 

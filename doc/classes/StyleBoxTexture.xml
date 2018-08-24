@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.0-stable">
+<class name="StyleBoxTexture" inherits="StyleBox" category="Core" version="3.1">
 	<brief_description>
 		Texture Based 3x3 scale style.
 	</brief_description>
@@ -59,11 +59,11 @@
 		</member>
 		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate">
 		</member>
-		<member name="normal_map" type="Resource" setter="set_normal_map" getter="get_normal_map">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
 		</member>
-		<member name="texture" type="Resource" setter="set_texture" getter="get_texture">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 	</members>
 	<signals>

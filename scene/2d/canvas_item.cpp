@@ -94,6 +94,7 @@ void CanvasItemMaterial::_update_shader() {
 		case BLEND_MODE_SUB: code += "blend_sub"; break;
 		case BLEND_MODE_MUL: code += "blend_mul"; break;
 		case BLEND_MODE_PREMULT_ALPHA: code += "blend_premul_alpha"; break;
+		case BLEND_MODE_DISABLED: code += "blend_disabled"; break;
 	}
 
 	switch (light_mode) {
@@ -245,6 +246,14 @@ CanvasItemMaterial::~CanvasItemMaterial() {
 
 ///////////////////////////////////////////////////////////////////
 
+bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (_edit_use_rect()) {
+		return _edit_get_rect().has_point(p_point);
+	} else {
+		return p_point.length() < p_tolerance;
+	}
+}
+
 bool CanvasItem::is_visible_in_tree() const {
 
 	if (!is_inside_tree())
@@ -312,11 +321,6 @@ void CanvasItem::hide() {
 	_change_notify("visible");
 }
 
-Size2 CanvasItem::_edit_get_minimum_size() const {
-
-	return Size2(-1, -1); //no limit
-}
-
 void CanvasItem::_update_callback() {
 
 	if (!is_inside_tree()) {
@@ -345,23 +349,12 @@ void CanvasItem::_update_callback() {
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
-	const CanvasItem *ci = this;
-	Transform2D xform;
-	const CanvasItem *last_valid = NULL;
-
-	while (ci) {
-
-		last_valid = ci;
-		xform = ci->get_transform() * xform;
-		ci = ci->get_parent_item();
-	}
-
-	if (last_valid->canvas_layer)
-		return last_valid->canvas_layer->get_transform() * xform;
+	if (canvas_layer)
+		return canvas_layer->get_transform() * get_global_transform();
 	else if (is_inside_tree())
-		return get_viewport()->get_canvas_transform() * xform;
-
-	return xform;
+		return get_viewport()->get_canvas_transform() * get_global_transform();
+	else
+		return get_global_transform();
 }
 
 Transform2D CanvasItem::get_global_transform() const {
@@ -407,12 +400,15 @@ void CanvasItem::_enter_canvas() {
 			if (canvas_layer) {
 				break;
 			}
+			if (Object::cast_to<Viewport>(n)) {
+				break;
+			}
 			n = n->get_parent();
 		}
 
 		RID canvas;
 		if (canvas_layer)
-			canvas = canvas_layer->get_world_2d()->get_canvas();
+			canvas = canvas_layer->get_canvas();
 		else
 			canvas = get_viewport()->find_world_2d()->get_canvas();
 
@@ -684,7 +680,7 @@ void CanvasItem::draw_texture(const Ref<Texture> &p_texture, const Point2 &p_pos
 
 	ERR_FAIL_COND(p_texture.is_null());
 
-	p_texture->draw(canvas_item, p_pos, p_modulate);
+	p_texture->draw(canvas_item, p_pos, p_modulate, false, p_normal_map);
 }
 
 void CanvasItem::draw_texture_rect(const Ref<Texture> &p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) {
@@ -779,6 +775,22 @@ void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Colo
 	VisualServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid, rid_normal, p_antialiased);
 }
 
+void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
+
+	ERR_FAIL_COND(p_mesh.is_null());
+	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
+
+	VisualServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), texture_rid, normal_map_rid);
+}
+void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
+
+	ERR_FAIL_COND(p_multimesh.is_null());
+	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid, normal_map_rid);
+}
+
 void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w) {
 
 	if (!drawing) {
@@ -804,6 +816,12 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 }
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
+
+	/* This check exists to avoid re-propagating the transform
+	 * notification down the tree on dirty nodes. It provides
+	 * optimization by avoiding redundancy (nodes are dirty, will get the
+	 * notification anyway).
+	 */
 
 	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid) {
 		return; //nothing to do
@@ -838,7 +856,7 @@ RID CanvasItem::get_canvas() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
 
 	if (canvas_layer)
-		return canvas_layer->get_world_2d()->get_canvas();
+		return canvas_layer->get_canvas();
 	else
 		return get_viewport()->find_world_2d()->get_canvas();
 }
@@ -859,9 +877,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 	CanvasItem *tl = get_toplevel();
 
-	if (tl->canvas_layer) {
-		return tl->canvas_layer->get_world_2d();
-	} else if (tl->get_viewport()) {
+	if (tl->get_viewport()) {
 		return tl->get_viewport()->find_world_2d();
 	} else {
 		return Ref<World2D>();
@@ -960,11 +976,11 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_edit_set_position", "position"), &CanvasItem::_edit_set_position);
 	ClassDB::bind_method(D_METHOD("_edit_get_position"), &CanvasItem::_edit_get_position);
-	ClassDB::bind_method(D_METHOD("_edit_use_position"), &CanvasItem::_edit_use_position);
+	ClassDB::bind_method(D_METHOD("_edit_set_scale", "scale"), &CanvasItem::_edit_set_scale);
+	ClassDB::bind_method(D_METHOD("_edit_get_scale"), &CanvasItem::_edit_get_scale);
 	ClassDB::bind_method(D_METHOD("_edit_set_rect", "rect"), &CanvasItem::_edit_set_rect);
 	ClassDB::bind_method(D_METHOD("_edit_get_rect"), &CanvasItem::_edit_get_rect);
 	ClassDB::bind_method(D_METHOD("_edit_use_rect"), &CanvasItem::_edit_use_rect);
-	ClassDB::bind_method(D_METHOD("_edit_get_item_and_children_rect"), &CanvasItem::_edit_get_item_and_children_rect);
 	ClassDB::bind_method(D_METHOD("_edit_set_rotation", "degrees"), &CanvasItem::_edit_set_rotation);
 	ClassDB::bind_method(D_METHOD("_edit_get_rotation"), &CanvasItem::_edit_get_rotation);
 	ClassDB::bind_method(D_METHOD("_edit_use_rotation"), &CanvasItem::_edit_use_rotation);
@@ -1016,6 +1032,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("draw_multimesh", "mesh", "texture", "normal_map"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()));
 
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform);
 	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix", "xform"), &CanvasItem::draw_set_transform_matrix);
@@ -1073,6 +1091,7 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULT_ALPHA);
+	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_DRAW);
@@ -1140,21 +1159,6 @@ int CanvasItem::get_canvas_layer() const {
 		return canvas_layer->get_layer();
 	else
 		return 0;
-}
-
-Rect2 CanvasItem::_edit_get_item_and_children_rect() const {
-
-	Rect2 rect = _edit_get_rect();
-
-	for (int i = 0; i < get_child_count(); i++) {
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
-		if (c) {
-			Rect2 sir = c->get_transform().xform(c->_edit_get_item_and_children_rect());
-			rect = rect.merge(sir);
-		}
-	}
-
-	return rect;
 }
 
 CanvasItem::CanvasItem() :

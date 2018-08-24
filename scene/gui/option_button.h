@@ -43,6 +43,7 @@ class OptionButton : public Button {
 	PopupMenu *popup;
 	int current;
 
+	void _focused(int p_which);
 	void _selected(int p_which);
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);

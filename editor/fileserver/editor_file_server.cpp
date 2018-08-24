@@ -78,7 +78,7 @@ void EditorFileServer::_subthread_start(void *s) {
 			_close_client(cd);
 			ERR_FAIL_COND(err != OK);
 		}
-		passutf8[passlen] = 0;
+		passutf8.write[passlen] = 0;
 		String s;
 		s.parse_utf8(passutf8.ptr());
 		if (s != cd->efs->password) {
@@ -145,7 +145,7 @@ void EditorFileServer::_subthread_start(void *s) {
 					_close_client(cd);
 					ERR_FAIL_COND(err != OK);
 				}
-				fileutf8[namelen] = 0;
+				fileutf8.write[namelen] = 0;
 				String s;
 				s.parse_utf8(fileutf8.ptr());
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area" inherits="CollisionObject" category="Core" version="3.0-stable">
+<class name="Area" inherits="CollisionObject" category="Core" version="3.1">
 	<brief_description>
 		General purpose area node for detection and 3D physics influence.
 	</brief_description>
@@ -192,7 +192,7 @@
 			<argument index="0" name="body" type="Object">
 			</argument>
 			<description>
-				Emitted when a [PhysicsBody2D] object exits.
+				Emitted when a [PhysicsBody] object exits.
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -205,7 +205,7 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a [PhysicsBody2D] object enters, reporting which shapes overlapped.
+				Emitted when a [PhysicsBody] object enters, reporting which shapes overlapped.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -218,7 +218,7 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a [PhysicsBody2D] object exits, reporting which shapes were overlapping.
+				Emitted when a [PhysicsBody] object exits, reporting which shapes were overlapping.
 			</description>
 		</signal>
 	</signals>

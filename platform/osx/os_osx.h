@@ -33,6 +33,7 @@
 
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "drivers/coremidi/core_midi.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
@@ -74,6 +75,7 @@ public:
 	IP_Unix *ip_unix;
 
 	AudioDriverCoreAudio audio_driver;
+	MIDIDriverCoreMidi midi_driver;
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;
@@ -99,14 +101,17 @@ public:
 	id pixelFormat;
 	id context;
 
+	bool layered_window;
+
 	CursorShape cursor_shape;
-	NSCursor *cursors[CURSOR_MAX] = { NULL };
+	NSCursor *cursors[CURSOR_MAX];
 	MouseMode mouse_mode;
 
 	String title;
 	bool minimized;
 	bool maximized;
 	bool zoomed;
+	bool resizable;
 
 	Size2 window_size;
 	Rect2 restore_rect;
@@ -114,6 +119,7 @@ public:
 	String open_with_filename;
 
 	Point2 im_position;
+	bool im_active;
 	ImeCallback im_callback;
 	void *im_target;
 
@@ -133,10 +139,10 @@ public:
 
 	void _update_window();
 
-protected:
-	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
+	int video_driver_index;
+	virtual int get_current_video_driver() const;
 
+protected:
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
@@ -229,6 +235,11 @@ public:
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
+
+	virtual bool get_window_per_pixel_transparency_enabled() const;
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
+
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
 

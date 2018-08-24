@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGTorus" inherits="CSGPrimitive" category="Core" version="3.1">
+	<brief_description>
+		A CSG Torus shape.
+	</brief_description>
+	<description>
+		This node allows you to create a torus for use with the CSG system.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="inner_radius" type="float" setter="set_inner_radius" getter="get_inner_radius">
+			The inner radius of the torus.
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The material used to render the torus.
+		</member>
+		<member name="outer_radius" type="float" setter="set_outer_radius" getter="get_outer_radius">
+			The outer radius of the torus.
+		</member>
+		<member name="ring_sides" type="int" setter="set_ring_sides" getter="get_ring_sides">
+			The number of edges each ring of the torus is constructed of.
+		</member>
+		<member name="sides" type="int" setter="set_sides" getter="get_sides">
+			The number of slices the torus is constructed of.
+		</member>
+		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces">
+			If true the normals of the torus are set to give a smooth effect making the torus seem rounded. When false the torus will have a flat shaded look.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

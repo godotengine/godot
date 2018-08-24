@@ -83,6 +83,8 @@
 @property(strong, nonatomic) MPMoviePlayerController *moviePlayerController;
 @property(strong, nonatomic) UIWindow *backgroundWindow;
 
+@property(nonatomic) UITextAutocorrectionType autocorrectionType;
+
 - (void)startAnimation;
 - (void)stopAnimation;
 - (void)drawView;

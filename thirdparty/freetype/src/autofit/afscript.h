@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Auto-fitter scripts (specification only).                            */
 /*                                                                         */
-/*  Copyright 2013-2017 by                                                 */
+/*  Copyright 2013-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -137,7 +137,7 @@
           "Georgian (Mkhedruli)",
           HB_SCRIPT_GEORGIAN,
           HINTING_BOTTOM_TO_TOP,
-          "\xE1\x83\x98 \xE1\x83\x94 \xE1\x83\x90" ) /* ი ე ა */
+          "\xE1\x83\x98 \xE1\x83\x94 \xE1\x83\x90 \xE1\xB2\xBF" ) /* ი ე ა Ი */
 
   SCRIPT( geok, GEOK,
           "Georgian (Khutsuri)",

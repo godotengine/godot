@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    TrueType font driver implementation (body).                          */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -31,7 +31,7 @@
 #include FT_SERVICE_TRUETYPE_ENGINE_H
 #include FT_SERVICE_TRUETYPE_GLYF_H
 #include FT_SERVICE_PROPERTIES_H
-#include FT_TRUETYPE_DRIVER_H
+#include FT_DRIVER_H
 
 #include "ttdriver.h"
 #include "ttgload.h"
@@ -233,8 +233,8 @@
     {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       /* no fast retrieval for blended MM fonts without VVAR table */
-      if ( !face->is_default_instance                               &&
-           !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
+      if ( ( FT_IS_NAMED_INSTANCE( ttface ) || FT_IS_VARIATION( ttface ) ) &&
+           !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE )        )
         return FT_THROW( Unimplemented_Feature );
 #endif
 
@@ -253,8 +253,8 @@
     {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       /* no fast retrieval for blended MM fonts without HVAR table */
-      if ( !face->is_default_instance                               &&
-           !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
+      if ( ( FT_IS_NAMED_INSTANCE( ttface ) || FT_IS_VARIATION( ttface ) ) &&
+           !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE )        )
         return FT_THROW( Unimplemented_Feature );
 #endif
 
@@ -498,6 +498,7 @@
     (FT_Get_MM_Var_Func)    TT_Get_MM_Var,          /* get_mm_var     */
     (FT_Set_Var_Design_Func)TT_Set_Var_Design,      /* set_var_design */
     (FT_Get_Var_Design_Func)TT_Get_Var_Design,      /* get_var_design */
+    (FT_Set_Instance_Func)  TT_Set_Named_Instance,  /* set_instance   */
 
     (FT_Get_Var_Blend_Func) tt_get_var_blend,       /* get_var_blend  */
     (FT_Done_Blend_Func)    tt_done_blend           /* done_blend     */

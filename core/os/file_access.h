@@ -89,6 +89,9 @@ public:
 	virtual void close() = 0; ///< close a file
 	virtual bool is_open() const = 0; ///< true when file is open
 
+	virtual String get_path() const { return ""; } /// returns the path for the current open file
+	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
+
 	virtual void seek(size_t p_position) = 0; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file
 	virtual size_t get_position() const = 0; ///< get position in the file

@@ -101,6 +101,7 @@ LineBuilder::LineBuilder() {
 	round_precision = 8;
 	begin_cap_mode = Line2D::LINE_CAP_NONE;
 	end_cap_mode = Line2D::LINE_CAP_NONE;
+	tile_aspect = 1.f;
 
 	_interpolate_color = false;
 	_last_index[0] = 0;
@@ -111,6 +112,7 @@ void LineBuilder::clear_output() {
 	vertices.clear();
 	colors.clear();
 	indices.clear();
+	uvs.clear();
 }
 
 void LineBuilder::build() {
@@ -120,6 +122,8 @@ void LineBuilder::build() {
 		clear_output();
 		return;
 	}
+
+	ERR_FAIL_COND(tile_aspect <= 0.f);
 
 	const float hw = width / 2.f;
 	const float hw_sq = hw * hw;
@@ -142,7 +146,9 @@ void LineBuilder::build() {
 	float current_distance1 = 0.f;
 	float total_distance = 0.f;
 	_interpolate_color = gradient != NULL;
-	bool distance_required = _interpolate_color || texture_mode == Line2D::LINE_TEXTURE_TILE;
+	bool distance_required = _interpolate_color ||
+							 texture_mode == Line2D::LINE_TEXTURE_TILE ||
+							 texture_mode == Line2D::LINE_TEXTURE_STRETCH;
 	if (distance_required)
 		total_distance = calculate_total_distance(points);
 	if (_interpolate_color)
@@ -164,9 +170,9 @@ void LineBuilder::build() {
 		current_distance1 = current_distance0;
 	} else if (begin_cap_mode == Line2D::LINE_CAP_ROUND) {
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
-			uvx0 = 0.5f;
+			uvx0 = 0.5f / tile_aspect;
 		}
-		new_arc(pos0, pos_up0 - pos0, -Math_PI, color0, Rect2(0.f, 0.f, 1.f, 1.f));
+		new_arc(pos0, pos_up0 - pos0, -Math_PI, color0, Rect2(0.f, 0.f, fmin(uvx0 * 2, 1.f), 1.f));
 		total_distance += width;
 		current_distance0 += hw;
 		current_distance1 = current_distance0;
@@ -286,8 +292,10 @@ void LineBuilder::build() {
 			color1 = gradient->get_color_at_offset(current_distance1 / total_distance);
 		}
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
-			uvx0 = current_distance0 / width;
-			uvx1 = current_distance1 / width;
+			uvx1 = current_distance1 / (width * tile_aspect);
+		} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
+			uvx0 = current_distance0 / total_distance;
+			uvx1 = current_distance1 / total_distance;
 		}
 
 		strip_add_quad(pos_up1, pos_down1, color1, uvx1);
@@ -297,7 +305,6 @@ void LineBuilder::build() {
 		u0 = u1;
 		f0 = f1;
 		pos0 = pos1;
-		current_distance0 = current_distance1;
 		if (intersection_result == SEGMENT_INTERSECT) {
 			if (current_joint_mode == Line2D::LINE_JOINT_SHARP) {
 				pos_up0 = pos_up1;
@@ -347,7 +354,7 @@ void LineBuilder::build() {
 			}
 
 			if (intersection_result != SEGMENT_INTERSECT)
-				// In this case the joint is too fucked up to be re-used,
+				// In this case the joint is too corrputed to be re-used,
 				// start again the strip with fallback points
 				strip_begin(pos_up0, pos_down0, color1, uvx1);
 		}
@@ -373,7 +380,9 @@ void LineBuilder::build() {
 		color1 = gradient->get_color(gradient->get_points_count() - 1);
 	}
 	if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
-		uvx1 = current_distance1 / width;
+		uvx1 = current_distance1 / (width * tile_aspect);
+	} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
+		uvx1 = current_distance1 / total_distance;
 	}
 
 	strip_add_quad(pos_up1, pos_down1, color1, uvx1);
@@ -382,7 +391,7 @@ void LineBuilder::build() {
 	if (end_cap_mode == Line2D::LINE_CAP_ROUND) {
 		// Note: color is not used in case we don't interpolate...
 		Color color = _interpolate_color ? gradient->get_color(gradient->get_points_count() - 1) : Color(0, 0, 0);
-		new_arc(pos1, pos_up1 - pos1, Math_PI, color, Rect2(uvx1 - 0.5f, 0.f, 1.f, 1.f));
+		new_arc(pos1, pos_up1 - pos1, Math_PI, color, Rect2(uvx1 - 0.5f / tile_aspect, 0.f, 1.0f / tile_aspect, 1.f));
 	}
 }
 

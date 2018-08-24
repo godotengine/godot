@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticlesMaterial" inherits="Material" category="Core" version="3.0-stable">
+<class name="ParticlesMaterial" inherits="Material" category="Core" version="3.1">
 	<brief_description>
 		Particle properties for [Particles] and [Particles2D] nodes.
 	</brief_description>
@@ -132,7 +132,7 @@
 			Orbital velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="radial_accel" type="float" setter="set_param" getter="get_param">
-			Linear acceleration applied to each particle.
+			Radial acceleration applied to each particle.
 		</member>
 		<member name="radial_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's radial acceleration will vary along this [CurveTexture].

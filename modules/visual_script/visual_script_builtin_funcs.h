@@ -129,7 +129,7 @@ public:
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
 
 	virtual String get_caption() const;
-	virtual String get_text() const;
+	//virtual String get_text() const;
 	virtual String get_category() const { return "functions"; }
 
 	void set_func(BuiltinFunc p_which);

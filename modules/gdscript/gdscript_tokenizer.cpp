@@ -91,6 +91,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"match",
 	"func",
 	"class",
+	"class_name",
 	"extends",
 	"is",
 	"onready",
@@ -100,6 +101,8 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"setget",
 	"const",
 	"var",
+	"as",
+	"void",
 	"enum",
 	"preload",
 	"assert",
@@ -110,6 +113,9 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"sync",
 	"master",
 	"slave",
+	"remotesync",
+	"mastersync",
+	"slavesync",
 	"'['",
 	"']'",
 	"'{'",
@@ -121,6 +127,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"'.'",
 	"'?'",
 	"':'",
+	"'->'",
 	"'$'",
 	"'\\n'",
 	"PI",
@@ -184,6 +191,7 @@ static const _kws _keyword_list[] = {
 	//func
 	{ GDScriptTokenizer::TK_PR_FUNCTION, "func" },
 	{ GDScriptTokenizer::TK_PR_CLASS, "class" },
+	{ GDScriptTokenizer::TK_PR_CLASS_NAME, "class_name" },
 	{ GDScriptTokenizer::TK_PR_EXTENDS, "extends" },
 	{ GDScriptTokenizer::TK_PR_IS, "is" },
 	{ GDScriptTokenizer::TK_PR_ONREADY, "onready" },
@@ -192,6 +200,8 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_EXPORT, "export" },
 	{ GDScriptTokenizer::TK_PR_SETGET, "setget" },
 	{ GDScriptTokenizer::TK_PR_VAR, "var" },
+	{ GDScriptTokenizer::TK_PR_AS, "as" },
+	{ GDScriptTokenizer::TK_PR_VOID, "void" },
 	{ GDScriptTokenizer::TK_PR_PRELOAD, "preload" },
 	{ GDScriptTokenizer::TK_PR_ASSERT, "assert" },
 	{ GDScriptTokenizer::TK_PR_YIELD, "yield" },
@@ -201,6 +211,9 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_MASTER, "master" },
 	{ GDScriptTokenizer::TK_PR_SLAVE, "slave" },
 	{ GDScriptTokenizer::TK_PR_SYNC, "sync" },
+	{ GDScriptTokenizer::TK_PR_REMOTESYNC, "remotesync" },
+	{ GDScriptTokenizer::TK_PR_MASTERSYNC, "mastersync" },
+	{ GDScriptTokenizer::TK_PR_SLAVESYNC, "slavesync" },
 	{ GDScriptTokenizer::TK_PR_CONST, "const" },
 	{ GDScriptTokenizer::TK_PR_ENUM, "enum" },
 	//controlflow
@@ -247,6 +260,9 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_MASTER:
 		case TK_PR_SLAVE:
 		case TK_PR_SYNC:
+		case TK_PR_REMOTESYNC:
+		case TK_PR_MASTERSYNC:
+		case TK_PR_SLAVESYNC:
 			return true;
 
 		// Literal for non-variables only:
@@ -510,8 +526,13 @@ void GDScriptTokenizerText::_advance() {
 				return;
 			}
 			case '#': { // line comment skip
-
+#ifdef DEBUG_ENABLED
+				String comment;
+#endif // DEBUG_ENABLED
 				while (GETCHAR(0) != '\n') {
+#ifdef DEBUG_ENABLED
+					comment += GETCHAR(0);
+#endif // DEBUG_ENABLED
 					code_pos++;
 					if (GETCHAR(0) == 0) { //end of file
 						//_make_error("Unterminated Comment");
@@ -519,6 +540,17 @@ void GDScriptTokenizerText::_advance() {
 						return;
 					}
 				}
+#ifdef DEBUG_ENABLED
+				if (comment.begins_with("#warning-ignore:")) {
+					String code = comment.get_slice(":", 1);
+					warning_skips.push_back(Pair<int, String>(line, code.strip_edges().to_lower()));
+				} else if (comment.begins_with("#warning-ignore-all:")) {
+					String code = comment.get_slice(":", 1);
+					warning_global_skips.insert(code.strip_edges().to_lower());
+				} else if (comment.strip_edges() == "#warnings-disable") {
+					ignore_warnings = true;
+				}
+#endif // DEBUG_ENABLED
 				INCPOS(1);
 				column = 1;
 				line++;
@@ -696,11 +728,9 @@ void GDScriptTokenizerText::_advance() {
 				if (GETCHAR(1) == '=') {
 					_make_token(TK_OP_ASSIGN_SUB);
 					INCPOS(1);
-					/*
-				}  else if (GETCHAR(1)=='-') {
-					_make_token(TK_OP_MINUS_MINUS);
+				} else if (GETCHAR(1) == '>') {
+					_make_token(TK_FORWARD_ARROW);
 					INCPOS(1);
-				*/
 				} else {
 					_make_token(TK_OP_SUB);
 				}
@@ -1031,6 +1061,9 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	column = 1; //the same holds for columns
 	tk_rb_pos = 0;
 	error_flag = false;
+#ifdef DEBUG_ENABLED
+	ignore_warnings = false;
+#endif // DEBUG_ENABLED
 	last_error = "";
 	for (int i = 0; i < MAX_LOOKAHEAD + 1; i++)
 		_advance();
@@ -1126,9 +1159,9 @@ void GDScriptTokenizerText::advance(int p_amount) {
 		_advance();
 }
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 12
+#define BYTECODE_VERSION 13
 
 Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) {
 
@@ -1158,15 +1191,15 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 		Vector<uint8_t> cs;
 		cs.resize(len);
 		for (int j = 0; j < len; j++) {
-			cs[j] = b[j] ^ 0xb6;
+			cs.write[j] = b[j] ^ 0xb6;
 		}
 
-		cs[cs.size() - 1] = 0;
+		cs.write[cs.size() - 1] = 0;
 		String s;
 		s.parse_utf8((const char *)cs.ptr());
 		b += len;
 		total_len -= len + 4;
-		identifiers[i] = s;
+		identifiers.write[i] = s;
 	}
 
 	constants.resize(constant_count);
@@ -1179,7 +1212,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 			return err;
 		b += len;
 		total_len -= len;
-		constants[i] = v;
+		constants.write[i] = v;
 	}
 
 	ERR_FAIL_COND_V(line_count * 8 > total_len, ERR_INVALID_DATA);
@@ -1204,10 +1237,10 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 		if ((*b) & TOKEN_BYTE_MASK) { //little endian always
 			ERR_FAIL_COND_V(total_len < 4, ERR_INVALID_DATA);
 
-			tokens[i] = decode_uint32(b) & ~TOKEN_BYTE_MASK;
+			tokens.write[i] = decode_uint32(b) & ~TOKEN_BYTE_MASK;
 			b += 4;
 		} else {
-			tokens[i] = *b;
+			tokens.write[i] = *b;
 			b += 1;
 			total_len--;
 		}
@@ -1306,15 +1339,15 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 
 	//save header
 	buf.resize(24);
-	buf[0] = 'G';
-	buf[1] = 'D';
-	buf[2] = 'S';
-	buf[3] = 'C';
-	encode_uint32(BYTECODE_VERSION, &buf[4]);
-	encode_uint32(identifier_map.size(), &buf[8]);
-	encode_uint32(constant_map.size(), &buf[12]);
-	encode_uint32(line_map.size(), &buf[16]);
-	encode_uint32(token_array.size(), &buf[20]);
+	buf.write[0] = 'G';
+	buf.write[1] = 'D';
+	buf.write[2] = 'S';
+	buf.write[3] = 'C';
+	encode_uint32(BYTECODE_VERSION, &buf.write[4]);
+	encode_uint32(identifier_map.size(), &buf.write[8]);
+	encode_uint32(constant_map.size(), &buf.write[12]);
+	encode_uint32(line_map.size(), &buf.write[16]);
+	encode_uint32(token_array.size(), &buf.write[20]);
 
 	//save identifiers
 
@@ -1346,7 +1379,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 		ERR_FAIL_COND_V(err != OK, Vector<uint8_t>());
 		int pos = buf.size();
 		buf.resize(pos + len);
-		encode_variant(E->get(), &buf[pos], len);
+		encode_variant(E->get(), &buf.write[pos], len);
 	}
 
 	for (Map<int, uint32_t>::Element *E = rev_line_map.front(); E; E = E->next()) {

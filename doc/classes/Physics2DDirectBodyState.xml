@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Physics2DDirectBodyState" inherits="Object" category="Core" version="3.0-stable">
+<class name="Physics2DDirectBodyState" inherits="Object" category="Core" version="3.1">
 	<brief_description>
 		Direct access object to a physics body in the [Physics2DServer].
 	</brief_description>
@@ -11,6 +11,58 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<argument index="1" name="force" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="torque" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="impulse" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<argument index="1" name="impulse" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="apply_torque_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="impulse" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_contact_collider" qualifiers="const">
 			<return type="RID">
 			</return>

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "video_player.h"
+#include "scene/scene_string_names.h"
 
 #include "os/os.h"
 #include "servers/audio_server.h"
@@ -159,11 +160,7 @@ void VideoPlayer::_notification(int p_notification) {
 
 			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-			if (stream.is_null())
-				return;
-			if (paused)
-				return;
-			if (!playback->is_playing())
+			if (stream.is_null() || paused || !playback->is_playing())
 				return;
 
 			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
@@ -174,7 +171,11 @@ void VideoPlayer::_notification(int p_notification) {
 			if (delta == 0)
 				return;
 
-			playback->update(delta);
+			playback->update(delta); // playback->is_playing() returns false in the last video frame
+
+			if (!playback->is_playing()) {
+				emit_signal(SceneStringNames::get_singleton()->finished);
+			}
 
 		} break;
 
@@ -466,6 +467,8 @@ void VideoPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bus"), &VideoPlayer::get_bus);
 
 	ClassDB::bind_method(D_METHOD("get_video_texture"), &VideoPlayer::get_video_texture);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");

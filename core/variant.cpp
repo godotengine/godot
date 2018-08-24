@@ -1192,7 +1192,7 @@ Variant::operator int64_t() const {
 		case BOOL: return _data._bool ? 1 : 0;
 		case INT: return _data._int;
 		case REAL: return _data._real;
-		case STRING: return operator String().to_int();
+		case STRING: return operator String().to_int64();
 		default: {
 
 			return 0;
@@ -1460,7 +1460,7 @@ Variant::operator String() const {
 
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
 			//const String *K=NULL;
-			String str;
+			String str("{");
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
@@ -1479,8 +1479,9 @@ Variant::operator String() const {
 			for (int i = 0; i < pairs.size(); i++) {
 				if (i > 0)
 					str += ", ";
-				str += "(" + pairs[i].key + ":" + pairs[i].value + ")";
+				str += pairs[i].key + ":" + pairs[i].value;
 			}
+			str += "}";
 
 			return str;
 		} break;
@@ -1607,6 +1608,8 @@ Variant::operator Vector3() const {
 
 	if (type == VECTOR3)
 		return *reinterpret_cast<const Vector3 *>(_data._mem);
+	else if (type == VECTOR2)
+		return Vector3(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
 	else
 		return Vector3();
 }
@@ -1876,7 +1879,7 @@ Variant::operator Vector<RID>() const {
 	Vector<RID> rids;
 	rids.resize(va.size());
 	for (int i = 0; i < rids.size(); i++)
-		rids[i] = va[i];
+		rids.write[i] = va[i];
 	return rids;
 }
 
@@ -1889,7 +1892,7 @@ Variant::operator Vector<Vector2>() const {
 		return Vector<Vector2>();
 	to.resize(len);
 	PoolVector<Vector2>::Read r = from.read();
-	Vector2 *w = &to[0];
+	Vector2 *w = to.ptrw();
 	for (int i = 0; i < len; i++) {
 
 		w[i] = r[i];
@@ -1943,7 +1946,7 @@ Variant::operator Vector<Plane>() const {
 	planes.resize(va_size);
 
 	for (int i = 0; i < va_size; i++)
-		planes[i] = va[i];
+		planes.write[i] = va[i];
 
 	return planes;
 }
@@ -1956,7 +1959,7 @@ Variant::operator Vector<Variant>() const {
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
 
-		to[i] = from[i];
+		to.write[i] = from[i];
 	}
 	return to;
 }
@@ -1969,7 +1972,7 @@ Variant::operator Vector<uint8_t>() const {
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
 
-		to[i] = from[i];
+		to.write[i] = from[i];
 	}
 	return to;
 }
@@ -1981,7 +1984,7 @@ Variant::operator Vector<int>() const {
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
 
-		to[i] = from[i];
+		to.write[i] = from[i];
 	}
 	return to;
 }
@@ -1993,7 +1996,7 @@ Variant::operator Vector<real_t>() const {
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
 
-		to[i] = from[i];
+		to.write[i] = from[i];
 	}
 	return to;
 }
@@ -2006,10 +2009,23 @@ Variant::operator Vector<String>() const {
 	to.resize(len);
 	for (int i = 0; i < len; i++) {
 
-		to[i] = from[i];
+		to.write[i] = from[i];
 	}
 	return to;
 }
+Variant::operator Vector<StringName>() const {
+
+	PoolVector<String> from = operator PoolVector<String>();
+	Vector<StringName> to;
+	int len = from.size();
+	to.resize(len);
+	for (int i = 0; i < len; i++) {
+
+		to.write[i] = from[i];
+	}
+	return to;
+}
+
 Variant::operator Vector<Vector3>() const {
 
 	PoolVector<Vector3> from = operator PoolVector<Vector3>();
@@ -2019,7 +2035,7 @@ Variant::operator Vector<Vector3>() const {
 		return Vector<Vector3>();
 	to.resize(len);
 	PoolVector<Vector3>::Read r = from.read();
-	Vector3 *w = &to[0];
+	Vector3 *w = to.ptrw();
 	for (int i = 0; i < len; i++) {
 
 		w[i] = r[i];
@@ -2035,7 +2051,7 @@ Variant::operator Vector<Color>() const {
 		return Vector<Color>();
 	to.resize(len);
 	PoolVector<Color>::Read r = from.read();
-	Color *w = &to[0];
+	Color *w = to.ptrw();
 	for (int i = 0; i < len; i++) {
 
 		w[i] = r[i];
@@ -2432,6 +2448,17 @@ Variant::Variant(const Vector<real_t> &p_array) {
 }
 
 Variant::Variant(const Vector<String> &p_array) {
+
+	type = NIL;
+	PoolVector<String> v;
+	int len = p_array.size();
+	v.resize(len);
+	for (int i = 0; i < len; i++)
+		v.set(i, p_array[i]);
+	*this = v;
+}
+
+Variant::Variant(const Vector<StringName> &p_array) {
 
 	type = NIL;
 	PoolVector<String> v;
@@ -3165,7 +3192,11 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 
 	if (ce.error == Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
 		int errorarg = ce.argument;
-		err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(ce.expected) + ".";
+		if (p_argptrs) {
+			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from " + Variant::get_type_name(p_argptrs[errorarg]->get_type()) + " to " + Variant::get_type_name(ce.expected) + ".";
+		} else {
+			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(ce.expected) + ".";
+		}
 	} else if (ce.error == Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
 		err_text = "Method expected " + itos(ce.argument) + " arguments, but called with " + itos(p_argcount) + ".";
 	} else if (ce.error == Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {

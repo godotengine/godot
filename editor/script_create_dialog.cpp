@@ -41,10 +41,12 @@
 void ScriptCreateDialog::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			path_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
-		}
+			status_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
+		} break;
 	}
 }
 
@@ -434,6 +436,13 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
+	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
+	if (path_error != "") {
+		_msg_path_valid(false, path_error);
+		_update_dialog();
+		return;
+	}
+
 	/* All checks passed */
 
 	is_path_valid = true;
@@ -535,15 +544,19 @@ void ScriptCreateDialog::_update_dialog() {
 
 	/* Is Script created or loaded from existing file */
 
-	if (is_new_script_created) {
+	if (is_built_in) {
+		get_ok()->set_text(TTR("Create"));
+		parent_name->set_editable(true);
+		parent_browse_button->set_disabled(false);
+		internal->set_disabled(!supports_built_in);
+		_msg_path_valid(true, TTR("Built-in script (into scene file)"));
+	} else if (is_new_script_created) {
 		// New Script Created
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_browse_button->set_disabled(false);
 		internal->set_disabled(!supports_built_in);
-		if (is_built_in) {
-			_msg_path_valid(true, TTR("Built-in script (into scene file)"));
-		} else if (is_path_valid) {
+		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Create new script file"));
 		}
 	} else {
@@ -551,7 +564,7 @@ void ScriptCreateDialog::_update_dialog() {
 		get_ok()->set_text(TTR("Load"));
 		parent_name->set_editable(false);
 		parent_browse_button->set_disabled(true);
-		internal->set_disabled(true);
+		internal->set_disabled(!supports_built_in);
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Load existing script file"));
 		}
@@ -569,6 +582,9 @@ void ScriptCreateDialog::_bind_methods() {
 	ClassDB::bind_method("_path_changed", &ScriptCreateDialog::_path_changed);
 	ClassDB::bind_method("_path_entered", &ScriptCreateDialog::_path_entered);
 	ClassDB::bind_method("_template_changed", &ScriptCreateDialog::_template_changed);
+
+	ClassDB::bind_method(D_METHOD("config", "inherits", "path"), &ScriptCreateDialog::config);
+
 	ADD_SIGNAL(MethodInfo("script_created", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 }
 
@@ -605,10 +621,10 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->add_child(path_error_label);
 	vb->add_child(hb);
 
-	PanelContainer *pc = memnew(PanelContainer);
-	pc->set_h_size_flags(Control::SIZE_FILL);
-	pc->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
-	pc->add_child(vb);
+	status_panel = memnew(PanelContainer);
+	status_panel->set_h_size_flags(Control::SIZE_FILL);
+	status_panel->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
+	status_panel->add_child(vb);
 
 	/* Margins */
 
@@ -627,7 +643,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb->add_child(empty_h->duplicate());
 	vb->add_child(gc);
 	vb->add_child(empty_h->duplicate());
-	vb->add_child(pc);
+	vb->add_child(status_panel);
 	vb->add_child(empty_h->duplicate());
 	hb = memnew(HBoxContainer);
 	hb->add_child(empty_v->duplicate());

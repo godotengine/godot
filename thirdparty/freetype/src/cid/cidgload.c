@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID-keyed Type1 Glyph Loader (body).                                 */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -23,6 +23,10 @@
 #include FT_INTERNAL_STREAM_H
 #include FT_OUTLINE_H
 #include FT_INTERNAL_CALC_H
+
+#include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include FT_INTERNAL_CFF_TYPES_H
+#include FT_DRIVER_H
 
 #include "ciderrs.h"
 
@@ -52,9 +56,11 @@
     FT_ULong       glyph_length = 0;
     PSAux_Service  psaux        = (PSAux_Service)face->psaux;
 
+    FT_Bool  force_scaling = FALSE;
+
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-    FT_Incremental_InterfaceRec *inc =
-                                  face->root.internal->incremental_interface;
+    FT_Incremental_InterfaceRec  *inc =
+                                   face->root.internal->incremental_interface;
 #endif
 
 
@@ -169,9 +175,57 @@
       if ( decoder->lenIV >= 0 )
         psaux->t1_decrypt( charstring, glyph_length, 4330 );
 
-      error = decoder->funcs.parse_charstrings(
-                decoder, charstring + cs_offset,
-                glyph_length - cs_offset );
+      /* choose which renderer to use */
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+      if ( ( (PS_Driver)FT_FACE_DRIVER( face ) )->hinting_engine ==
+               FT_HINTING_FREETYPE                                  ||
+           decoder->builder.metrics_only                            )
+        error = psaux->t1_decoder_funcs->parse_charstrings_old(
+                  decoder,
+                  charstring + cs_offset,
+                  glyph_length - cs_offset );
+#else
+      if ( decoder->builder.metrics_only )
+        error = psaux->t1_decoder_funcs->parse_metrics(
+                  decoder,
+                  charstring + cs_offset,
+                  glyph_length - cs_offset );
+#endif
+      else
+      {
+        PS_Decoder      psdecoder;
+        CFF_SubFontRec  subfont;
+
+
+        psaux->ps_decoder_init( &psdecoder, decoder, TRUE );
+
+        psaux->t1_make_subfont( FT_FACE( face ),
+                                &dict->private_dict,
+                                &subfont );
+        psdecoder.current_subfont = &subfont;
+
+        error = psaux->t1_decoder_funcs->parse_charstrings(
+                  &psdecoder,
+                  charstring + cs_offset,
+                  glyph_length - cs_offset );
+
+        /* Adobe's engine uses 16.16 numbers everywhere;              */
+        /* as a consequence, glyphs larger than 2000ppem get rejected */
+        if ( FT_ERR_EQ( error, Glyph_Too_Big ) )
+        {
+          /* this time, we retry unhinted and scale up the glyph later on */
+          /* (the engine uses and sets the hardcoded value 0x10000 / 64 = */
+          /* 0x400 for both `x_scale' and `y_scale' in this case)         */
+          ((CID_GlyphSlot)decoder->builder.glyph)->hint = FALSE;
+
+          force_scaling = TRUE;
+
+          error = psaux->t1_decoder_funcs->parse_charstrings(
+                    &psdecoder,
+                    charstring + cs_offset,
+                    glyph_length - cs_offset );
+        }
+      }
     }
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
@@ -199,6 +253,8 @@
 
   Exit:
     FT_FREE( charstring );
+
+    ((CID_GlyphSlot)decoder->builder.glyph)->scaled = force_scaling;
 
     return error;
   }
@@ -288,10 +344,12 @@
     T1_DecoderRec  decoder;
     CID_Face       face = (CID_Face)cidglyph->face;
     FT_Bool        hinting;
+    FT_Bool        scaled;
 
     PSAux_Service  psaux = (PSAux_Service)face->psaux;
     FT_Matrix      font_matrix;
     FT_Vector      font_offset;
+    FT_Bool        must_finish_decoder = FALSE;
 
 
     if ( glyph_index >= (FT_UInt)face->root.num_glyphs )
@@ -311,7 +369,10 @@
 
     hinting = FT_BOOL( ( load_flags & FT_LOAD_NO_SCALE   ) == 0 &&
                        ( load_flags & FT_LOAD_NO_HINTING ) == 0 );
+    scaled  = FT_BOOL( ( load_flags & FT_LOAD_NO_SCALE   ) == 0 );
 
+    glyph->hint      = hinting;
+    glyph->scaled    = scaled;
     cidglyph->format = FT_GLYPH_FORMAT_OUTLINE;
 
     error = psaux->t1_decoder_funcs->init( &decoder,
@@ -329,6 +390,8 @@
     /* TODO: initialize decoder.len_buildchar and decoder.buildchar */
     /*       if we ever support CID-keyed multiple master fonts     */
 
+    must_finish_decoder = TRUE;
+
     /* set up the decoder */
     decoder.builder.no_recurse = FT_BOOL(
       ( ( load_flags & FT_LOAD_NO_RECURSE ) != 0 ) );
@@ -337,11 +400,17 @@
     if ( error )
       goto Exit;
 
+    /* copy flags back for forced scaling */
+    hinting = glyph->hint;
+    scaled  = glyph->scaled;
+
     font_matrix = decoder.font_matrix;
     font_offset = decoder.font_offset;
 
     /* save new glyph tables */
     psaux->t1_decoder_funcs->done( &decoder );
+
+    must_finish_decoder = FALSE;
 
     /* now set the metrics -- this is rather simple, as    */
     /* the left side bearing is the xMin, and the top side */
@@ -410,7 +479,7 @@
         metrics->vertAdvance += font_offset.y;
       }
 
-      if ( ( load_flags & FT_LOAD_NO_SCALE ) == 0 )
+      if ( ( load_flags & FT_LOAD_NO_SCALE ) == 0 || scaled )
       {
         /* scale the outline and the metrics */
         FT_Int       n;
@@ -451,6 +520,10 @@
     }
 
   Exit:
+
+    if ( must_finish_decoder )
+      psaux->t1_decoder_funcs->done( &decoder );
+
     return error;
   }
 

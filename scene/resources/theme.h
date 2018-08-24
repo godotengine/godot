@@ -55,12 +55,12 @@ class Theme : public Resource {
 	void _unref_font(Ref<Font> p_sc);
 	void _emit_theme_changed();
 
-	HashMap<StringName, HashMap<StringName, Ref<Texture>, StringNameHasher>, StringNameHasher> icon_map;
-	HashMap<StringName, HashMap<StringName, Ref<StyleBox>, StringNameHasher>, StringNameHasher> style_map;
-	HashMap<StringName, HashMap<StringName, Ref<Font>, StringNameHasher>, StringNameHasher> font_map;
-	HashMap<StringName, HashMap<StringName, Ref<Shader>, StringNameHasher>, StringNameHasher> shader_map;
-	HashMap<StringName, HashMap<StringName, Color, StringNameHasher>, StringNameHasher> color_map;
-	HashMap<StringName, HashMap<StringName, int, StringNameHasher>, StringNameHasher> constant_map;
+	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
+	HashMap<StringName, HashMap<StringName, Ref<StyleBox> > > style_map;
+	HashMap<StringName, HashMap<StringName, Ref<Font> > > font_map;
+	HashMap<StringName, HashMap<StringName, Ref<Shader> > > shader_map;
+	HashMap<StringName, HashMap<StringName, Color> > color_map;
+	HashMap<StringName, HashMap<StringName, int> > constant_map;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

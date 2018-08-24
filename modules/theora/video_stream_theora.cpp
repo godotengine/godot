@@ -261,14 +261,12 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		/* look for further theora headers */
 		while (theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&to, &op))) {
 			if (ret < 0) {
-				fprintf(stderr, "Error parsing Theora stream headers; "
-								"corrupt stream?\n");
+				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
 				return;
 			}
 			if (!th_decode_headerin(&ti, &tc, &ts, &op)) {
-				fprintf(stderr, "Error parsing Theora stream headers; "
-								"corrupt stream?\n");
+				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
 				return;
 			}
@@ -312,9 +310,15 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		td = th_decode_alloc(&ti, ts);
 		px_fmt = ti.pixel_fmt;
 		switch (ti.pixel_fmt) {
-			case TH_PF_420: printf(" 4:2:0 video\n"); break;
-			case TH_PF_422: printf(" 4:2:2 video\n"); break;
-			case TH_PF_444: printf(" 4:4:4 video\n"); break;
+			case TH_PF_420:
+				//printf(" 4:2:0 video\n");
+				break;
+			case TH_PF_422:
+				//printf(" 4:2:2 video\n");
+				break;
+			case TH_PF_444:
+				//printf(" 4:4:4 video\n");
+				break;
 			case TH_PF_RSVD:
 			default:
 				printf(" video\n  (UNKNOWN Chroma sampling!)\n");
@@ -519,7 +523,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 #else
 		if (file && /*!videobuf_ready && */ no_theora && theora_eos) {
 #endif
-			printf("video done, stopping\n");
+			//printf("video done, stopping\n");
 			stop();
 			return;
 		};
@@ -725,4 +729,47 @@ void VideoStreamTheora::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
+}
+
+////////////
+
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		memdelete(f);
+		return RES();
+	}
+
+	VideoStreamTheora *stream = memnew(VideoStreamTheora);
+	stream->set_file(p_path);
+
+	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return ogv_stream;
+}
+
+void ResourceFormatLoaderTheora::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("ogv");
+}
+
+bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
+
+	return ClassDB::is_parent_class(p_type, "VideoStream");
+}
+
+String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
+
+	String el = p_path.get_extension().to_lower();
+	if (el == "ogv")
+		return "VideoStreamTheora";
+	return "";
 }

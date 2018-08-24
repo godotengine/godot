@@ -67,6 +67,7 @@ private:
 
 	Color color;
 	bool raw_mode_enabled;
+	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
 	float h, s, v;
@@ -88,6 +89,9 @@ private:
 	void _screen_input(const Ref<InputEvent> &p_event);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
+	void _focus_enter();
+	void _focus_exit();
+	void _html_focus_exit();
 
 protected:
 	void _notification(int);
@@ -104,6 +108,9 @@ public:
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
 
+	void set_deferred_mode(bool p_enabled);
+	bool is_deferred_mode() const;
+
 	void set_focus_on_line_edit();
 
 	ColorPicker();
@@ -115,9 +122,15 @@ class ColorPickerButton : public Button {
 
 	PopupPanel *popup;
 	ColorPicker *picker;
+	Color color;
+	bool edit_alpha;
 
 	void _color_changed(const Color &p_color);
+	void _modal_closed();
+
 	virtual void pressed();
+
+	void _update_picker();
 
 protected:
 	void _notification(int);
@@ -130,8 +143,8 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	ColorPicker *get_picker() const;
-	PopupPanel *get_popup() const;
+	ColorPicker *get_picker();
+	PopupPanel *get_popup();
 
 	ColorPickerButton();
 };

@@ -5,7 +5,7 @@
 /*    Auxiliary functions and data structures related to PostScript fonts  */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -25,10 +25,30 @@
 #include FT_INTERNAL_OBJECTS_H
 #include FT_INTERNAL_TYPE1_TYPES_H
 #include FT_INTERNAL_HASH_H
+#include FT_INTERNAL_TRUETYPE_TYPES_H
 #include FT_SERVICE_POSTSCRIPT_CMAPS_H
+#include FT_INTERNAL_CFF_TYPES_H
+#include FT_INTERNAL_CFF_OBJECTS_TYPES_H
+
 
 
 FT_BEGIN_HEADER
+
+
+  /***********************************************************************/
+  /*                                                                     */
+  /* PostScript modules driver class.                                    */
+  /*                                                                     */
+  typedef struct  PS_DriverRec_
+  {
+    FT_DriverRec  root;
+
+    FT_UInt   hinting_engine;
+    FT_Bool   no_stem_darkening;
+    FT_Int    darken_params[8];
+    FT_Int32  random_seed;
+
+  } PS_DriverRec, *PS_Driver;
 
 
   /*************************************************************************/
@@ -442,6 +462,202 @@ FT_BEGIN_HEADER
   /*************************************************************************/
   /*************************************************************************/
   /*****                                                               *****/
+  /*****                         PS BUILDER                            *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+
+  typedef struct PS_Builder_  PS_Builder;
+  typedef const struct PS_Builder_FuncsRec_*  PS_Builder_Funcs;
+
+  typedef struct  PS_Builder_FuncsRec_
+  {
+    void
+    (*init)( PS_Builder*  ps_builder,
+             void*        builder,
+             FT_Bool      is_t1 );
+
+    void
+    (*done)( PS_Builder*  builder );
+
+  } PS_Builder_FuncsRec;
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Structure>                                                           */
+  /*    PS_Builder                                                         */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*     A structure used during glyph loading to store its outline.       */
+  /*                                                                       */
+  /* <Fields>                                                              */
+  /*    memory       :: The current memory object.                         */
+  /*                                                                       */
+  /*    face         :: The current face object.                           */
+  /*                                                                       */
+  /*    glyph        :: The current glyph slot.                            */
+  /*                                                                       */
+  /*    loader       :: XXX                                                */
+  /*                                                                       */
+  /*    base         :: The base glyph outline.                            */
+  /*                                                                       */
+  /*    current      :: The current glyph outline.                         */
+  /*                                                                       */
+  /*    pos_x        :: The horizontal translation (if composite glyph).   */
+  /*                                                                       */
+  /*    pos_y        :: The vertical translation (if composite glyph).     */
+  /*                                                                       */
+  /*    left_bearing :: The left side bearing point.                       */
+  /*                                                                       */
+  /*    advance      :: The horizontal advance vector.                     */
+  /*                                                                       */
+  /*    bbox         :: Unused.                                            */
+  /*                                                                       */
+  /*    path_begun   :: A flag which indicates that a new path has begun.  */
+  /*                                                                       */
+  /*    load_points  :: If this flag is not set, no points are loaded.     */
+  /*                                                                       */
+  /*    no_recurse   :: Set but not used.                                  */
+  /*                                                                       */
+  /*    metrics_only :: A boolean indicating that we only want to compute  */
+  /*                    the metrics of a given glyph, not load all of its  */
+  /*                    points.                                            */
+  /*                                                                       */
+  /*    is_t1        :: Set if current font type is Type 1.                */
+  /*                                                                       */
+  /*    funcs        :: An array of function pointers for the builder.     */
+  /*                                                                       */
+  struct  PS_Builder_
+  {
+    FT_Memory       memory;
+    FT_Face         face;
+    CFF_GlyphSlot   glyph;
+    FT_GlyphLoader  loader;
+    FT_Outline*     base;
+    FT_Outline*     current;
+
+    FT_Pos*  pos_x;
+    FT_Pos*  pos_y;
+
+    FT_Vector*  left_bearing;
+    FT_Vector*  advance;
+
+    FT_BBox*  bbox;          /* bounding box */
+    FT_Bool   path_begun;
+    FT_Bool   load_points;
+    FT_Bool   no_recurse;
+
+    FT_Bool  metrics_only;
+    FT_Bool  is_t1;
+
+    PS_Builder_FuncsRec  funcs;
+
+  };
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                            PS DECODER                         *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+#define PS_MAX_OPERANDS        48
+#define PS_MAX_SUBRS_CALLS     16   /* maximum subroutine nesting;         */
+                                    /* only 10 are allowed but there exist */
+                                    /* fonts like `HiraKakuProN-W3.ttf'    */
+                                    /* (Hiragino Kaku Gothic ProN W3;      */
+                                    /* 8.2d6e1; 2014-12-19) that exceed    */
+                                    /* this limit                          */
+
+  /* execution context charstring zone */
+
+  typedef struct  PS_Decoder_Zone_
+  {
+    FT_Byte*  base;
+    FT_Byte*  limit;
+    FT_Byte*  cursor;
+
+  } PS_Decoder_Zone;
+
+
+  typedef FT_Error
+  (*CFF_Decoder_Get_Glyph_Callback)( TT_Face    face,
+                                     FT_UInt    glyph_index,
+                                     FT_Byte**  pointer,
+                                     FT_ULong*  length );
+
+  typedef void
+  (*CFF_Decoder_Free_Glyph_Callback)( TT_Face    face,
+                                      FT_Byte**  pointer,
+                                      FT_ULong   length );
+
+
+  typedef struct  PS_Decoder_
+  {
+    PS_Builder  builder;
+
+    FT_Fixed   stack[PS_MAX_OPERANDS + 1];
+    FT_Fixed*  top;
+
+    PS_Decoder_Zone   zones[PS_MAX_SUBRS_CALLS + 1];
+    PS_Decoder_Zone*  zone;
+
+    FT_Int     flex_state;
+    FT_Int     num_flex_vectors;
+    FT_Vector  flex_vectors[7];
+
+    CFF_Font     cff;
+    CFF_SubFont  current_subfont; /* for current glyph_index */
+    FT_Generic*  cf2_instance;
+
+    FT_Pos*  glyph_width;
+    FT_Bool  width_only;
+    FT_Int   num_hints;
+
+    FT_UInt  num_locals;
+    FT_UInt  num_globals;
+
+    FT_Int  locals_bias;
+    FT_Int  globals_bias;
+
+    FT_Byte**  locals;
+    FT_Byte**  globals;
+
+    FT_Byte**  glyph_names;   /* for pure CFF fonts only  */
+    FT_UInt    num_glyphs;    /* number of glyphs in font */
+
+    FT_Render_Mode  hint_mode;
+
+    FT_Bool  seac;
+
+    CFF_Decoder_Get_Glyph_Callback   get_glyph_callback;
+    CFF_Decoder_Free_Glyph_Callback  free_glyph_callback;
+
+    /* Type 1 stuff */
+    FT_Service_PsCMaps  psnames;      /* for seac */
+
+    FT_Int    lenIV;         /* internal for sub routine calls   */
+    FT_UInt*  locals_len;    /* array of subrs length (optional) */
+    FT_Hash   locals_hash;   /* used if `num_subrs' was massaged */
+
+    FT_Matrix  font_matrix;
+    FT_Vector  font_offset;
+
+    PS_Blend  blend;         /* for multiple master support */
+
+    FT_Long*  buildchar;
+    FT_UInt   len_buildchar;
+
+  } PS_Decoder;
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
   /*****                         T1 BUILDER                            *****/
   /*****                                                               *****/
   /*************************************************************************/
@@ -653,10 +869,23 @@ FT_BEGIN_HEADER
     void
     (*done)( T1_Decoder  decoder );
 
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
     FT_Error
-    (*parse_charstrings)( T1_Decoder  decoder,
-                          FT_Byte*    base,
-                          FT_UInt     len );
+    (*parse_charstrings_old)( T1_Decoder  decoder,
+                              FT_Byte*    base,
+                              FT_UInt     len );
+#else
+    FT_Error
+    (*parse_metrics)( T1_Decoder  decoder,
+                      FT_Byte*    base,
+                      FT_UInt     len );
+#endif
+
+    FT_Error
+    (*parse_charstrings)( PS_Decoder*  decoder,
+                          FT_Byte*     charstring_base,
+                          FT_ULong     charstring_len );
+
 
   } T1_Decoder_FuncsRec;
 
@@ -700,7 +929,256 @@ FT_BEGIN_HEADER
 
     FT_Bool              seac;
 
+    FT_Generic           cf2_instance;
+
   } T1_DecoderRec;
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                        CFF BUILDER                            *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+
+  typedef struct CFF_Builder_  CFF_Builder;
+
+
+  typedef FT_Error
+  (*CFF_Builder_Check_Points_Func)( CFF_Builder*  builder,
+                                    FT_Int        count );
+
+  typedef void
+  (*CFF_Builder_Add_Point_Func)( CFF_Builder*  builder,
+                                 FT_Pos        x,
+                                 FT_Pos        y,
+                                 FT_Byte       flag );
+  typedef FT_Error
+  (*CFF_Builder_Add_Point1_Func)( CFF_Builder*  builder,
+                                  FT_Pos        x,
+                                  FT_Pos        y );
+  typedef FT_Error
+  (*CFF_Builder_Start_Point_Func)( CFF_Builder*  builder,
+                                   FT_Pos        x,
+                                   FT_Pos        y );
+  typedef void
+  (*CFF_Builder_Close_Contour_Func)( CFF_Builder*  builder );
+
+  typedef FT_Error
+  (*CFF_Builder_Add_Contour_Func)( CFF_Builder*  builder );
+
+  typedef const struct CFF_Builder_FuncsRec_*  CFF_Builder_Funcs;
+
+  typedef struct  CFF_Builder_FuncsRec_
+  {
+    void
+    (*init)( CFF_Builder*   builder,
+             TT_Face        face,
+             CFF_Size       size,
+             CFF_GlyphSlot  glyph,
+             FT_Bool        hinting );
+
+    void
+    (*done)( CFF_Builder*  builder );
+
+    CFF_Builder_Check_Points_Func   check_points;
+    CFF_Builder_Add_Point_Func      add_point;
+    CFF_Builder_Add_Point1_Func     add_point1;
+    CFF_Builder_Add_Contour_Func    add_contour;
+    CFF_Builder_Start_Point_Func    start_point;
+    CFF_Builder_Close_Contour_Func  close_contour;
+
+  } CFF_Builder_FuncsRec;
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Structure>                                                           */
+  /*    CFF_Builder                                                        */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*     A structure used during glyph loading to store its outline.       */
+  /*                                                                       */
+  /* <Fields>                                                              */
+  /*    memory        :: The current memory object.                        */
+  /*                                                                       */
+  /*    face          :: The current face object.                          */
+  /*                                                                       */
+  /*    glyph         :: The current glyph slot.                           */
+  /*                                                                       */
+  /*    loader        :: The current glyph loader.                         */
+  /*                                                                       */
+  /*    base          :: The base glyph outline.                           */
+  /*                                                                       */
+  /*    current       :: The current glyph outline.                        */
+  /*                                                                       */
+  /*    pos_x         :: The horizontal translation (if composite glyph).  */
+  /*                                                                       */
+  /*    pos_y         :: The vertical translation (if composite glyph).    */
+  /*                                                                       */
+  /*    left_bearing  :: The left side bearing point.                      */
+  /*                                                                       */
+  /*    advance       :: The horizontal advance vector.                    */
+  /*                                                                       */
+  /*    bbox          :: Unused.                                           */
+  /*                                                                       */
+  /*    path_begun    :: A flag which indicates that a new path has begun. */
+  /*                                                                       */
+  /*    load_points   :: If this flag is not set, no points are loaded.    */
+  /*                                                                       */
+  /*    no_recurse    :: Set but not used.                                 */
+  /*                                                                       */
+  /*    metrics_only  :: A boolean indicating that we only want to compute */
+  /*                     the metrics of a given glyph, not load all of its */
+  /*                     points.                                           */
+  /*                                                                       */
+  /*    hints_funcs   :: Auxiliary pointer for hinting.                    */
+  /*                                                                       */
+  /*    hints_globals :: Auxiliary pointer for hinting.                    */
+  /*                                                                       */
+  /*    funcs         :: A table of method pointers for this object.       */
+  /*                                                                       */
+  struct  CFF_Builder_
+  {
+    FT_Memory       memory;
+    TT_Face         face;
+    CFF_GlyphSlot   glyph;
+    FT_GlyphLoader  loader;
+    FT_Outline*     base;
+    FT_Outline*     current;
+
+    FT_Pos  pos_x;
+    FT_Pos  pos_y;
+
+    FT_Vector  left_bearing;
+    FT_Vector  advance;
+
+    FT_BBox  bbox;          /* bounding box */
+
+    FT_Bool  path_begun;
+    FT_Bool  load_points;
+    FT_Bool  no_recurse;
+
+    FT_Bool  metrics_only;
+
+    void*  hints_funcs;     /* hinter-specific */
+    void*  hints_globals;   /* hinter-specific */
+
+    CFF_Builder_FuncsRec  funcs;
+  };
+
+
+  /*************************************************************************/
+  /*************************************************************************/
+  /*****                                                               *****/
+  /*****                        CFF DECODER                            *****/
+  /*****                                                               *****/
+  /*************************************************************************/
+  /*************************************************************************/
+
+
+#define CFF_MAX_OPERANDS        48
+#define CFF_MAX_SUBRS_CALLS     16  /* maximum subroutine nesting;         */
+                                    /* only 10 are allowed but there exist */
+                                    /* fonts like `HiraKakuProN-W3.ttf'    */
+                                    /* (Hiragino Kaku Gothic ProN W3;      */
+                                    /* 8.2d6e1; 2014-12-19) that exceed    */
+                                    /* this limit                          */
+#define CFF_MAX_TRANS_ELEMENTS  32
+
+  /* execution context charstring zone */
+
+  typedef struct  CFF_Decoder_Zone_
+  {
+    FT_Byte*  base;
+    FT_Byte*  limit;
+    FT_Byte*  cursor;
+
+  } CFF_Decoder_Zone;
+
+
+  typedef struct  CFF_Decoder_
+  {
+    CFF_Builder  builder;
+    CFF_Font     cff;
+
+    FT_Fixed   stack[CFF_MAX_OPERANDS + 1];
+    FT_Fixed*  top;
+
+    CFF_Decoder_Zone   zones[CFF_MAX_SUBRS_CALLS + 1];
+    CFF_Decoder_Zone*  zone;
+
+    FT_Int     flex_state;
+    FT_Int     num_flex_vectors;
+    FT_Vector  flex_vectors[7];
+
+    FT_Pos  glyph_width;
+    FT_Pos  nominal_width;
+
+    FT_Bool   read_width;
+    FT_Bool   width_only;
+    FT_Int    num_hints;
+    FT_Fixed  buildchar[CFF_MAX_TRANS_ELEMENTS];
+
+    FT_UInt  num_locals;
+    FT_UInt  num_globals;
+
+    FT_Int  locals_bias;
+    FT_Int  globals_bias;
+
+    FT_Byte**  locals;
+    FT_Byte**  globals;
+
+    FT_Byte**  glyph_names;   /* for pure CFF fonts only  */
+    FT_UInt    num_glyphs;    /* number of glyphs in font */
+
+    FT_Render_Mode  hint_mode;
+
+    FT_Bool  seac;
+
+    CFF_SubFont  current_subfont; /* for current glyph_index */
+
+    CFF_Decoder_Get_Glyph_Callback   get_glyph_callback;
+    CFF_Decoder_Free_Glyph_Callback  free_glyph_callback;
+
+  } CFF_Decoder;
+
+
+  typedef const struct CFF_Decoder_FuncsRec_*  CFF_Decoder_Funcs;
+
+  typedef struct  CFF_Decoder_FuncsRec_
+  {
+    void
+    (*init)( CFF_Decoder*                     decoder,
+             TT_Face                          face,
+             CFF_Size                         size,
+             CFF_GlyphSlot                    slot,
+             FT_Bool                          hinting,
+             FT_Render_Mode                   hint_mode,
+             CFF_Decoder_Get_Glyph_Callback   get_callback,
+             CFF_Decoder_Free_Glyph_Callback  free_callback );
+
+    FT_Error
+    (*prepare)( CFF_Decoder*  decoder,
+                CFF_Size      size,
+                FT_UInt       glyph_index );
+
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+    FT_Error
+    (*parse_charstrings_old)( CFF_Decoder*  decoder,
+                              FT_Byte*      charstring_base,
+                              FT_ULong      charstring_len,
+                              FT_Bool       in_dict );
+#endif
+
+    FT_Error
+    (*parse_charstrings)( PS_Decoder*  decoder,
+                          FT_Byte*     charstring_base,
+                          FT_ULong     charstring_len );
+
+  } CFF_Decoder_FuncsRec;
 
 
   /*************************************************************************/
@@ -810,10 +1288,25 @@ FT_BEGIN_HEADER
                    FT_Offset  length,
                    FT_UShort  seed );
 
+    FT_UInt32
+    (*cff_random)( FT_UInt32  r );
+
+    void
+    (*ps_decoder_init)( PS_Decoder*  ps_decoder,
+                        void*        decoder,
+                        FT_Bool      is_t1 );
+
+    void
+    (*t1_make_subfont)( FT_Face      face,
+                        PS_Private   priv,
+                        CFF_SubFont  subfont );
+
     T1_CMap_Classes  t1_cmap_classes;
 
     /* fields after this comment line were added after version 2.1.10 */
     const AFM_Parser_FuncsRec*  afm_parser_funcs;
+
+    const CFF_Decoder_FuncsRec*  cff_decoder_funcs;
 
   } PSAux_ServiceRec, *PSAux_Service;
 

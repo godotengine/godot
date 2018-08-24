@@ -50,10 +50,20 @@ class EditorAutoloadSettings : public VBoxContainer {
 
 	struct AutoLoadInfo {
 		String name;
+		String path;
+		bool is_singleton;
+		bool in_editor;
 		int order;
+		Node *node;
 
 		bool operator==(const AutoLoadInfo &p_info) {
 			return order == p_info.order;
+		}
+
+		AutoLoadInfo() {
+			is_singleton = false;
+			in_editor = false;
+			node = NULL;
 		}
 	};
 
@@ -76,6 +86,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 	void _autoload_activated();
 	void _autoload_open(const String &fpath);
 	void _autoload_file_callback(const String &p_path);
+	Node *_create_autoload(const String &p_path);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;
@@ -87,8 +98,11 @@ protected:
 
 public:
 	void update_autoload();
+	void autoload_add(const String &p_name, const String &p_path);
+	void autoload_remove(const String &p_name);
 
 	EditorAutoloadSettings();
+	~EditorAutoloadSettings();
 };
 
 #endif

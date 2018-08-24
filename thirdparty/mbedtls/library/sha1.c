@@ -33,6 +33,7 @@
 #if defined(MBEDTLS_SHA1_C)
 
 #include "mbedtls/sha1.h"
+#include "mbedtls/platform_util.h"
 
 #include <string.h>
 
@@ -46,11 +47,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_SHA1_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = (unsigned char*)v; while( n-- ) *p++ = 0;
-}
 
 /*
  * 32-bit integer manipulation macros (big endian)
@@ -85,7 +81,7 @@ void mbedtls_sha1_free( mbedtls_sha1_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_sha1_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_sha1_context ) );
 }
 
 void mbedtls_sha1_clone( mbedtls_sha1_context *dst,
@@ -110,6 +106,13 @@ int mbedtls_sha1_starts_ret( mbedtls_sha1_context *ctx )
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha1_starts( mbedtls_sha1_context *ctx )
+{
+    mbedtls_sha1_starts_ret( ctx );
+}
+#endif
 
 #if !defined(MBEDTLS_SHA1_PROCESS_ALT)
 int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
@@ -270,6 +273,14 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha1_process( mbedtls_sha1_context *ctx,
+                           const unsigned char data[64] )
+{
+    mbedtls_internal_sha1_process( ctx, data );
+}
+#endif
 #endif /* !MBEDTLS_SHA1_PROCESS_ALT */
 
 /*
@@ -322,13 +333,14 @@ int mbedtls_sha1_update_ret( mbedtls_sha1_context *ctx,
     return( 0 );
 }
 
-static const unsigned char sha1_padding[64] =
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha1_update( mbedtls_sha1_context *ctx,
+                          const unsigned char *input,
+                          size_t ilen )
 {
- 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
+    mbedtls_sha1_update_ret( ctx, input, ilen );
+}
+#endif
 
 /*
  * SHA-1 final digest
@@ -337,25 +349,48 @@ int mbedtls_sha1_finish_ret( mbedtls_sha1_context *ctx,
                              unsigned char output[20] )
 {
     int ret;
-    uint32_t last, padn;
+    uint32_t used;
     uint32_t high, low;
-    unsigned char msglen[8];
 
+    /*
+     * Add padding: 0x80 then 0x00 until 8 bytes remain for the length
+     */
+    used = ctx->total[0] & 0x3F;
+
+    ctx->buffer[used++] = 0x80;
+
+    if( used <= 56 )
+    {
+        /* Enough room for padding + length in current block */
+        memset( ctx->buffer + used, 0, 56 - used );
+    }
+    else
+    {
+        /* We'll need an extra block */
+        memset( ctx->buffer + used, 0, 64 - used );
+
+        if( ( ret = mbedtls_internal_sha1_process( ctx, ctx->buffer ) ) != 0 )
+            return( ret );
+
+        memset( ctx->buffer, 0, 56 );
+    }
+
+    /*
+     * Add message length
+     */
     high = ( ctx->total[0] >> 29 )
          | ( ctx->total[1] <<  3 );
     low  = ( ctx->total[0] <<  3 );
 
-    PUT_UINT32_BE( high, msglen, 0 );
-    PUT_UINT32_BE( low,  msglen, 4 );
+    PUT_UINT32_BE( high, ctx->buffer, 56 );
+    PUT_UINT32_BE( low,  ctx->buffer, 60 );
 
-    last = ctx->total[0] & 0x3F;
-    padn = ( last < 56 ) ? ( 56 - last ) : ( 120 - last );
-
-    if( ( ret = mbedtls_sha1_update_ret( ctx, sha1_padding, padn ) ) != 0 )
-        return( ret );
-    if( ( ret = mbedtls_sha1_update_ret( ctx, msglen, 8 ) ) != 0 )
+    if( ( ret = mbedtls_internal_sha1_process( ctx, ctx->buffer ) ) != 0 )
         return( ret );
 
+    /*
+     * Output final state
+     */
     PUT_UINT32_BE( ctx->state[0], output,  0 );
     PUT_UINT32_BE( ctx->state[1], output,  4 );
     PUT_UINT32_BE( ctx->state[2], output,  8 );
@@ -364,6 +399,14 @@ int mbedtls_sha1_finish_ret( mbedtls_sha1_context *ctx,
 
     return( 0 );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha1_finish( mbedtls_sha1_context *ctx,
+                          unsigned char output[20] )
+{
+    mbedtls_sha1_finish_ret( ctx, output );
+}
+#endif
 
 #endif /* !MBEDTLS_SHA1_ALT */
 
@@ -393,6 +436,15 @@ exit:
 
     return( ret );
 }
+
+#if !defined(MBEDTLS_DEPRECATED_REMOVED)
+void mbedtls_sha1( const unsigned char *input,
+                   size_t ilen,
+                   unsigned char output[20] )
+{
+    mbedtls_sha1_ret( input, ilen, output );
+}
+#endif
 
 #if defined(MBEDTLS_SELF_TEST)
 /*

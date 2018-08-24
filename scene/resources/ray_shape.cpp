@@ -43,7 +43,10 @@ Vector<Vector3> RayShape::_gen_debug_mesh_lines() {
 
 void RayShape::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(), length);
+	Dictionary d;
+	d["length"] = length;
+	d["slips_on_slope"] = slips_on_slope;
+	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
 	emit_changed();
 }
 
@@ -52,6 +55,7 @@ void RayShape::set_length(float p_length) {
 	length = p_length;
 	_update_shape();
 	notify_change_to_owners();
+	_change_notify("length");
 }
 
 float RayShape::get_length() const {
@@ -59,16 +63,33 @@ float RayShape::get_length() const {
 	return length;
 }
 
+void RayShape::set_slips_on_slope(bool p_active) {
+
+	slips_on_slope = p_active;
+	_update_shape();
+	notify_change_to_owners();
+	_change_notify("slips_on_slope");
+}
+
+bool RayShape::get_slips_on_slope() const {
+	return slips_on_slope;
+}
+
 void RayShape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &RayShape::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &RayShape::get_length);
 
+	ClassDB::bind_method(D_METHOD("set_slips_on_slope", "active"), &RayShape::set_slips_on_slope);
+	ClassDB::bind_method(D_METHOD("get_slips_on_slope"), &RayShape::get_slips_on_slope);
+
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "slips_on_slope"), "set_slips_on_slope", "get_slips_on_slope");
 }
 
 RayShape::RayShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
 
 	set_length(1.0);
+	set_slips_on_slope(false);
 }

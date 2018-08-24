@@ -33,7 +33,7 @@
 
 #include "typedefs.h"
 /**
- * Error macros. Unlike exceptions and asserts, these macros try to mantain consistency and stability
+ * Error macros. Unlike exceptions and asserts, these macros try to maintain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error, the
  * engine can stay working well.
  * In most cases, bugs and/or invalid data are not fatal and should never allow a perfectly running application
@@ -309,6 +309,16 @@ extern bool _err_error_exists;
 	{                                                                                                                \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, String(m_string).utf8().get_data(), ERR_HANDLER_WARNING); \
 		_err_error_exists = false;                                                                                   \
+	}
+
+#define WARN_DEPRECATED                                                                                                                                   \
+	{                                                                                                                                                     \
+		static volatile bool warning_shown = false;                                                                                                       \
+		if (!warning_shown) {                                                                                                                             \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future", ERR_HANDLER_WARNING); \
+			_err_error_exists = false;                                                                                                                    \
+			warning_shown = true;                                                                                                                         \
+		}                                                                                                                                                 \
 	}
 
 #endif

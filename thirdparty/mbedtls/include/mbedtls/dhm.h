@@ -1,7 +1,13 @@
 /**
  * \file dhm.h
  *
- * \brief Diffie-Hellman-Merkle key exchange.
+ * \brief   This file contains Diffie-Hellman-Merkle (DHM) key exchange
+ *          definitions and functions.
+ *
+ * Diffie-Hellman-Merkle (DHM) key exchange is defined in
+ * <em>RFC-2631: Diffie-Hellman Key Agreement Method</em> and
+ * <em>Public-Key Cryptography Standards (PKCS) #3: Diffie
+ * Hellman Key Agreement Standard</em>.
  *
  * <em>RFC-3526: More Modular Exponential (MODP) Diffie-Hellman groups for
  * Internet Key Exchange (IKE)</em> defines a number of standardized
@@ -65,7 +71,6 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 #include "bignum.h"
-#if !defined(MBEDTLS_DHM_ALT)
 
 /*
  * DHM Error codes
@@ -86,6 +91,8 @@
 extern "C" {
 #endif
 
+#if !defined(MBEDTLS_DHM_ALT)
+
 /**
  * \brief          The DHM context structure.
  */
@@ -104,6 +111,10 @@ typedef struct
     mbedtls_mpi pX;     /*!<  The previous \c X. */
 }
 mbedtls_dhm_context;
+
+#else /* MBEDTLS_DHM_ALT */
+#include "dhm_alt.h"
+#endif /* MBEDTLS_DHM_ALT */
 
 /**
  * \brief          This function initializes the DHM context.
@@ -125,8 +136,8 @@ void mbedtls_dhm_init( mbedtls_dhm_context *ctx );
  *                 failures.
  * \param end      The end of the input buffer.
  *
- * \return         \c 0 on success, or an \c MBEDTLS_ERR_DHM_XXX error code
- *                 on failure.
+ * \return         \c 0 on success.
+ * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
                      unsigned char **p,
@@ -135,13 +146,6 @@ int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
 /**
  * \brief          This function sets up and writes the ServerKeyExchange
  *                 parameters.
- *
- * \param ctx      The DHM context.
- * \param x_size   The private value size in Bytes.
- * \param olen     The number of characters written.
- * \param output   The destination buffer.
- * \param f_rng    The RNG function.
- * \param p_rng    The RNG parameter.
  *
  * \note           The destination buffer must be large enough to hold
  *                 the reduced binary presentation of the modulus, the generator
@@ -155,8 +159,15 @@ int mbedtls_dhm_read_params( mbedtls_dhm_context *ctx,
  *                 mbedtls_dhm_set_group() below in conjunction with
  *                 mbedtls_mpi_read_binary() and mbedtls_mpi_read_string().
  *
- * \return         \c 0 on success, or an \c MBEDTLS_ERR_DHM_XXX error code
- *                 on failure.
+ * \param ctx      The DHM context.
+ * \param x_size   The private key size in Bytes.
+ * \param olen     The number of characters written.
+ * \param output   The destination buffer.
+ * \param f_rng    The RNG function.
+ * \param p_rng    The RNG context.
+ *
+ * \return         \c 0 on success.
+ * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_make_params( mbedtls_dhm_context *ctx, int x_size,
                      unsigned char *output, size_t *olen,
@@ -164,54 +175,54 @@ int mbedtls_dhm_make_params( mbedtls_dhm_context *ctx, int x_size,
                      void *p_rng );
 
 /**
- * \brief          Set prime modulus and generator
+ * \brief          This function sets the prime modulus and generator.
+ *
+ * \note           This function can be used to set \p P, \p G
+ *                 in preparation for mbedtls_dhm_make_params().
  *
  * \param ctx      The DHM context.
- * \param P        The MPI holding DHM prime modulus.
- * \param G        The MPI holding DHM generator.
+ * \param P        The MPI holding the DHM prime modulus.
+ * \param G        The MPI holding the DHM generator.
  *
- * \note           This function can be used to set P, G
- *                 in preparation for \c mbedtls_dhm_make_params.
- *
- * \return         \c 0 if successful, or an \c MBEDTLS_ERR_DHM_XXX error code
- *                 on failure.
+ * \return         \c 0 if successful.
+ * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_set_group( mbedtls_dhm_context *ctx,
                            const mbedtls_mpi *P,
                            const mbedtls_mpi *G );
 
 /**
- * \brief          This function imports the public value G^Y of the peer.
+ * \brief          This function imports the public value of the peer, G^Y.
  *
  * \param ctx      The DHM context.
- * \param input    The input buffer.
+ * \param input    The input buffer containing the G^Y value of the peer.
  * \param ilen     The size of the input buffer.
  *
- * \return         \c 0 on success, or an \c MBEDTLS_ERR_DHM_XXX error code
- *                 on failure.
+ * \return         \c 0 on success.
+ * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_read_public( mbedtls_dhm_context *ctx,
                      const unsigned char *input, size_t ilen );
 
 /**
- * \brief          This function creates its own private value \c X and
+ * \brief          This function creates its own private key, \c X, and
  *                 exports \c G^X.
  *
+ * \note           The destination buffer is always fully written
+ *                 so as to contain a big-endian representation of G^X mod P.
+ *                 If it is larger than ctx->len, it is padded accordingly
+ *                 with zero-bytes at the beginning.
+ *
  * \param ctx      The DHM context.
- * \param x_size   The private value size in Bytes.
+ * \param x_size   The private key size in Bytes.
  * \param output   The destination buffer.
  * \param olen     The length of the destination buffer. Must be at least
-                   equal to ctx->len (the size of \c P).
+ *                  equal to ctx->len (the size of \c P).
  * \param f_rng    The RNG function.
- * \param p_rng    The RNG parameter.
+ * \param p_rng    The RNG context.
  *
- * \note           The destination buffer will always be fully written
- *                 so as to contain a big-endian presentation of G^X mod P.
- *                 If it is larger than ctx->len, it will accordingly be
- *                 padded with zero-bytes in the beginning.
- *
- * \return         \c 0 on success, or an \c MBEDTLS_ERR_DHM_XXX error code
- *                 on failure.
+ * \return         \c 0 on success.
+ * \return         An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_make_public( mbedtls_dhm_context *ctx, int x_size,
                      unsigned char *output, size_t olen,
@@ -222,22 +233,22 @@ int mbedtls_dhm_make_public( mbedtls_dhm_context *ctx, int x_size,
  * \brief               This function derives and exports the shared secret
  *                      \c (G^Y)^X mod \c P.
  *
+ * \note                If \p f_rng is not NULL, it is used to blind the input as
+ *                      a countermeasure against timing attacks. Blinding is used
+ *                      only if our private key \c X is re-used, and not used
+ *                      otherwise. We recommend always passing a non-NULL
+ *                      \p f_rng argument.
+ *
  * \param ctx           The DHM context.
  * \param output        The destination buffer.
  * \param output_size   The size of the destination buffer. Must be at least
- *                      the size of ctx->len.
+ *                      the size of ctx->len (the size of \c P).
  * \param olen          On exit, holds the actual number of Bytes written.
  * \param f_rng         The RNG function, for blinding purposes.
- * \param p_rng         The RNG parameter.
+ * \param p_rng         The RNG context.
  *
- * \return         \c 0 on success, or an \c MBEDTLS_ERR_DHM_XXX error code
- *                 on failure.
- *
- * \note           If non-NULL, \p f_rng is used to blind the input as
- *                 a countermeasure against timing attacks. Blinding is used
- *                 only if our secret value \p X is re-used and omitted
- *                 otherwise. Therefore, we recommend always passing a
- *                 non-NULL \p f_rng argument.
+ * \return              \c 0 on success.
+ * \return              An \c MBEDTLS_ERR_DHM_XXX error code on failure.
  */
 int mbedtls_dhm_calc_secret( mbedtls_dhm_context *ctx,
                      unsigned char *output, size_t output_size, size_t *olen,
@@ -245,7 +256,7 @@ int mbedtls_dhm_calc_secret( mbedtls_dhm_context *ctx,
                      void *p_rng );
 
 /**
- * \brief          This function frees and clears the components of a DHM key.
+ * \brief          This function frees and clears the components of a DHM context.
  *
  * \param ctx      The DHM context to free and clear.
  */
@@ -261,8 +272,9 @@ void mbedtls_dhm_free( mbedtls_dhm_context *ctx );
  * \param dhminlen    The size of the buffer, including the terminating null
  *                    Byte for PEM data.
  *
- * \return            \c 0 on success, or a specific DHM or PEM error code
- *                    on failure.
+ * \return            \c 0 on success.
+ * \return            An \c MBEDTLS_ERR_DHM_XXX or \c MBEDTLS_ERR_PEM_XXX error code
+ *                    error code on failure.
  */
 int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
                    size_t dhminlen );
@@ -275,29 +287,19 @@ int mbedtls_dhm_parse_dhm( mbedtls_dhm_context *dhm, const unsigned char *dhmin,
  * \param dhm      The DHM context to load the parameters to.
  * \param path     The filename to read the DHM parameters from.
  *
- * \return         \c 0 on success, or a specific DHM or PEM error code
- *                 on failure.
+ * \return         \c 0 on success.
+ * \return            An \c MBEDTLS_ERR_DHM_XXX or \c MBEDTLS_ERR_PEM_XXX error code
+ *                    error code on failure.
  */
 int mbedtls_dhm_parse_dhmfile( mbedtls_dhm_context *dhm, const char *path );
 #endif /* MBEDTLS_FS_IO */
 #endif /* MBEDTLS_ASN1_PARSE_C */
 
-#ifdef __cplusplus
-}
-#endif
-
-#else /* MBEDTLS_DHM_ALT */
-#include "dhm_alt.h"
-#endif /* MBEDTLS_DHM_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * \brief          The DMH checkup routine.
  *
- * \return         \c 0 on success, or \c 1 on failure.
+ * \return         \c 0 on success.
+ * \return         \c 1 on failure.
  */
 int mbedtls_dhm_self_test( int verbose );
 
@@ -372,7 +374,7 @@ MBEDTLS_DEPRECATED typedef char const * mbedtls_deprecated_constant_t;
  * in <em>RFC-5114: Additional Diffie-Hellman Groups for Use with
  * IETF Standards</em>.
  */
-#define MBEDTLS_DHM_RFC5114_MODP_P                              \
+#define MBEDTLS_DHM_RFC5114_MODP_2048_P                         \
     MBEDTLS_DEPRECATED_STRING_CONSTANT(                         \
         "AD107E1E9123A9D0D660FAA79559C51FA20D64E5683B9FD1"      \
         "B54B1597B61D0A75E6FA141DF95A56DBAF9A3C407BA1DF15"      \

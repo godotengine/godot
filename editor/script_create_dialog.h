@@ -46,6 +46,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	LineEdit *class_name;
 	Label *error_label;
 	Label *path_error_label;
+	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
 	OptionButton *language_menu;

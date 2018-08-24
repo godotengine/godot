@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeerUDP" inherits="PacketPeer" category="Core" version="3.0-stable">
+<class name="PacketPeerUDP" inherits="PacketPeer" category="Core" version="3.1">
 	<brief_description>
 		UDP packet peer.
 	</brief_description>
@@ -22,14 +22,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the IP of the remote peer that sent the last packet(that was received with [method get_packet] or [method get_var]).
+				Return the IP of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
 		<method name="get_packet_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the port of the remote peer that sent the last packet(that was received with [method get_packet] or [method get_var]).
+				Return the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
