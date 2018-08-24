@@ -82,9 +82,7 @@ Error AudioDriverAndroid::init() {
 
 	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
 	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer size: " + itos(buffer_size));
-	}
+	print_verbose("Audio buffer size: " + itos(buffer_size));
 
 	audioBuffer = env->CallObjectMethod(io, _init_audio, mix_rate, buffer_size);
 

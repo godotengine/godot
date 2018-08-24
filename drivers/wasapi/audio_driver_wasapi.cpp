@@ -321,10 +321,8 @@ Error AudioDriverWASAPI::init_render_device(bool reinit) {
 	input_position = 0;
 	input_size = 0;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("WASAPI: detected " + itos(channels) + " channels");
-		print_line("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	print_verbose("WASAPI: detected " + itos(channels) + " channels");
+	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }

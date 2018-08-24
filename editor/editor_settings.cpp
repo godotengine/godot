@@ -853,10 +853,7 @@ void EditorSettings::create() {
 		singleton->data_dir = data_dir;
 		singleton->cache_dir = cache_dir;
 
-		if (OS::get_singleton()->is_stdout_verbose()) {
-
-			print_line("EditorSettings: Load OK!");
-		}
+		print_verbose("EditorSettings: Load OK!");
 
 		singleton->setup_language();
 		singleton->setup_network();
@@ -968,8 +965,8 @@ void EditorSettings::save() {
 
 	if (err != OK) {
 		ERR_PRINTS("Error saving editor settings to " + singleton->config_file_path);
-	} else if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("EditorSettings Save OK!");
+	} else {
+		print_verbose("EditorSettings: Save OK!");
 	}
 }
 

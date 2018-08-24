@@ -33,7 +33,9 @@
 #include "gl_context/context_gl.h"
 #include "os/os.h"
 #include "project_settings.h"
+
 #include <string.h>
+
 RasterizerStorage *RasterizerGLES3::get_storage() {
 
 	return storage;
@@ -136,9 +138,7 @@ typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userP
 
 void RasterizerGLES3::initialize() {
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Using GLES3 video driver");
-	}
+	print_verbose("Using GLES3 video driver");
 
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {

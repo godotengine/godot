@@ -107,3 +107,10 @@ void print_error(String p_string) {
 
 	_global_unlock();
 }
+
+void print_verbose(String p_string) {
+
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line(p_string);
+	}
+}

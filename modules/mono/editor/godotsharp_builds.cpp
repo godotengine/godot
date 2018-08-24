@@ -97,8 +97,7 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 				return GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
 			}
 
-			if (OS::get_singleton()->is_stdout_verbose())
-				OS::get_singleton()->print("Cannot find executable for '" PROP_NAME_MSBUILD_VS "'. Trying with '" PROP_NAME_MSBUILD_MONO "'...\n");
+			print_verbose("Cannot find executable for '" PROP_NAME_MSBUILD_VS "'. Trying with '" PROP_NAME_MSBUILD_MONO "'...");
 		} // FALL THROUGH
 		case GodotSharpBuilds::MSBUILD_MONO: {
 			String msbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("msbuild.bat");
@@ -556,8 +555,9 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 		exited = true;
 		exit_code = klass->get_field("exitCode")->get_int_value(mono_object);
 
-		if (exit_code != 0 && OS::get_singleton()->is_stdout_verbose())
-			OS::get_singleton()->print(String("MSBuild finished with exit code " + itos(exit_code) + "\n").utf8());
+		if (exit_code != 0) {
+			print_verbose("MSBuild finished with exit code " + itos(exit_code));
+		}
 
 		build_tab->on_build_exit(exit_code == 0 ? MonoBuildTab::RESULT_SUCCESS : MonoBuildTab::RESULT_ERROR);
 	} else {

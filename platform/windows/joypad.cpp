@@ -540,9 +540,7 @@ void JoypadWindows::load_xinput() {
 	}
 
 	if (!xinput_dll) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			print_line("Could not find XInput, using DirectInput only");
-		}
+		print_verbose("Could not find XInput, using DirectInput only");
 		return;
 	}
 

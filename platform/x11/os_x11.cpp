@@ -170,13 +170,13 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 #ifdef TOUCH_ENABLED
 	if (!XQueryExtension(x11_display, "XInputExtension", &touch.opcode, &event_base, &error_base)) {
-		fprintf(stderr, "XInput extension not available");
+		print_verbose("XInput extension not available, touch support disabled.");
 	} else {
 		// 2.2 is the first release with multitouch
 		int xi_major = 2;
 		int xi_minor = 2;
 		if (XIQueryVersion(x11_display, &xi_major, &xi_minor) != Success) {
-			fprintf(stderr, "XInput 2.2 not available (server supports %d.%d)\n", xi_major, xi_minor);
+			print_verbose(vformat("XInput 2.2 not available (server supports %d.%d), touch support disabled.", xi_major, xi_minor));
 			touch.opcode = 0;
 		} else {
 			int dev_count;
@@ -198,14 +198,14 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				}
 				if (direct_touch) {
 					touch.devices.push_back(dev->deviceid);
-					fprintf(stderr, "Using touch device: %s\n", dev->name);
+					print_verbose("XInput: Using touch device: " + String(dev->name));
 				}
 			}
 
 			XIFreeDeviceInfo(info);
 
-			if (is_stdout_verbose() && !touch.devices.size()) {
-				fprintf(stderr, "No touch devices found\n");
+			if (!touch.devices.size()) {
+				print_verbose("XInput: No touch devices found.");
 			}
 		}
 	}
@@ -266,7 +266,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	*/
 
 // maybe contextgl wants to be in charge of creating the window
-//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED)
 
 	ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_3_0_COMPATIBLE;
@@ -427,9 +426,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	cursor_theme = XcursorGetTheme(x11_display);
 
 	if (!cursor_theme) {
-		if (is_stdout_verbose()) {
-			print_line("XcursorGetTheme could not get cursor theme");
-		}
+		print_verbose("XcursorGetTheme could not get cursor theme");
 		cursor_theme = "default";
 	}
 
@@ -442,7 +439,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	current_cursor = CURSOR_ARROW;
 
 	if (cursor_theme) {
-		//print_line("cursor theme: "+String(cursor_theme));
 		for (int i = 0; i < CURSOR_MAX; i++) {
 
 			static const char *cursor_file[] = {
@@ -468,10 +464,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
 			if (img[i]) {
 				cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
-				//print_line("found cursor: "+String(cursor_file[i])+" id "+itos(cursors[i]));
 			} else {
-				if (OS::is_stdout_verbose())
-					print_line("failed cursor: " + String(cursor_file[i]));
+				print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
 			}
 		}
 	}
@@ -1516,7 +1510,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// KeyMappingX11 also translates keysym to unicode.
 	// It does a binary search on a table to translate
 	// most properly.
-	//print_line("keysym_unicode: "+rtos(keysym_unicode));
 	unsigned int unicode = keysym_unicode > 0 ? KeyMappingX11::get_unicode_from_keysym(keysym_unicode) : 0;
 
 	/* Phase 4, determine if event must be filtered */

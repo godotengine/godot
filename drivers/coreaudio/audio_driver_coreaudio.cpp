@@ -178,10 +178,8 @@ Error AudioDriverCoreAudio::init() {
 	input_position = 0;
 	input_size = 0;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("CoreAudio: detected " + itos(channels) + " channels");
-		print_line("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	print_verbose("CoreAudio: detected " + itos(channels) + " channels");
+	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	AURenderCallbackStruct callback;
 	zeromem(&callback, sizeof(AURenderCallbackStruct));

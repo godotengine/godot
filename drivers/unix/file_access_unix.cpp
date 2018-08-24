@@ -106,7 +106,6 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
 		save_path = path;
 		path = path + ".tmp";
-		//print_line("saving instead to "+path);
 	}
 
 	f = fopen(path.utf8().get_data(), mode_string);
@@ -134,9 +133,6 @@ void FileAccessUnix::close() {
 	}
 
 	if (save_path != "") {
-
-		//unlink(save_path.utf8().get_data());
-		//print_line("renaming...");
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -291,8 +287,7 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return flags.st_mtime;
 	} else {
-		print_line("ERROR IN: " + p_file);
-
+		ERR_EXPLAIN("Failed to get modified time for: " + p_file);
 		ERR_FAIL_V(0);
 	};
 }
