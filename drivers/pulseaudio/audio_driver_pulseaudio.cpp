@@ -183,10 +183,8 @@ Error AudioDriverPulseAudio::init_device() {
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("PulseAudio: detected " + itos(pa_map.channels) + " channels");
-		print_line("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " channels");
+	print_verbose("PulseAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	pa_sample_spec spec;
 	spec.format = PA_SAMPLE_S16LE;
@@ -614,9 +612,7 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 	}
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
-	}
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
 
 	pa_sample_spec spec;
 

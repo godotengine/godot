@@ -112,10 +112,7 @@ Error AudioDriverRtAudio::init() {
 
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	unsigned int buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	print_verbose("Audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	short int tries = 2;
 

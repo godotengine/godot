@@ -138,9 +138,7 @@ RasterizerScene *RasterizerGLES2::get_scene() {
 
 void RasterizerGLES2::initialize() {
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Using GLES2 video driver");
-	}
+	print_verbose("Using GLES2 video driver");
 
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {

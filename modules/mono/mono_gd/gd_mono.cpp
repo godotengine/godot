@@ -148,7 +148,7 @@ void GDMono::initialize() {
 
 	ERR_FAIL_NULL(Engine::get_singleton());
 
-	OS::get_singleton()->print("Mono: Initializing module...\n");
+	print_verbose("Mono: Initializing module...");
 
 #ifdef DEBUG_METHODS_ENABLED
 	_initialize_and_check_api_hashes();
@@ -202,7 +202,7 @@ void GDMono::initialize() {
 
 	runtime_initialized = true;
 
-	OS::get_singleton()->print("Mono: Runtime initialized\n");
+	print_verbose("Mono: Runtime initialized");
 
 	// mscorlib assembly MUST be present at initialization
 	ERR_EXPLAIN("Mono: Failed to load mscorlib assembly");
@@ -226,7 +226,7 @@ void GDMono::initialize() {
 #ifdef DEBUG_ENABLED
 	bool debugger_attached = _wait_for_debugger_msecs(500);
 	if (!debugger_attached && OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->printerr("Mono: Debugger wait timeout\n");
+		print_error("Mono: Debugger wait timeout");
 #endif
 
 	_register_internal_calls();
@@ -256,7 +256,7 @@ void GDMono::initialize() {
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
 
-			OS::get_singleton()->print("Mono: Proceeding to unload scripts domain because of invalid API assemblies\n");
+			print_line("Mono: Proceeding to unload scripts domain because of invalid API assemblies.");
 
 			Error err = _unload_scripts_domain();
 			if (err != OK) {
@@ -269,11 +269,10 @@ void GDMono::initialize() {
 		}
 	}
 #else
-	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
+	print_verbose("Mono: Glue disabled, ignoring script assemblies.");
 #endif
 
-	OS::get_singleton()->print("Mono: INITIALIZED\n");
+	print_verbose("Mono: INITIALIZED");
 }
 
 #ifndef MONO_GLUE_DISABLED
@@ -352,8 +351,7 @@ bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMo
 
 	CRASH_COND(!r_assembly);
 
-	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print((String() + "Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...\n").utf8());
+	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
 	MonoAssembly *assembly = mono_assembly_load_full(p_aname, NULL, &status, p_refonly);
@@ -372,8 +370,7 @@ bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMo
 
 	*r_assembly = *stored_assembly;
 
-	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print(String("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path() + "\n").utf8());
+	print_verbose("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path());
 
 	return true;
 }
@@ -500,7 +497,7 @@ bool GDMono::_load_project_assembly() {
 		mono_assembly_set_main(project_assembly->get_assembly());
 	} else {
 		if (OS::get_singleton()->is_stdout_verbose())
-			OS::get_singleton()->printerr("Mono: Failed to load project assembly\n");
+			print_error("Mono: Failed to load project assembly");
 	}
 
 	return success;
@@ -510,13 +507,13 @@ bool GDMono::_load_api_assemblies() {
 
 	if (!_load_core_api_assembly()) {
 		if (OS::get_singleton()->is_stdout_verbose())
-			OS::get_singleton()->printerr("Mono: Failed to load Core API assembly\n");
+			print_error("Mono: Failed to load Core API assembly");
 		return false;
 	} else {
 #ifdef TOOLS_ENABLED
 		if (!_load_editor_api_assembly()) {
 			if (OS::get_singleton()->is_stdout_verbose())
-				OS::get_singleton()->printerr("Mono: Failed to load Editor API assembly\n");
+				print_error("Mono: Failed to load Editor API assembly");
 			return false;
 		}
 #endif
@@ -593,9 +590,7 @@ Error GDMono::_load_scripts_domain() {
 
 	ERR_FAIL_COND_V(scripts_domain != NULL, ERR_BUG);
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Mono: Loading scripts domain...\n");
-	}
+	print_verbose("Mono: Loading scripts domain...");
 
 	scripts_domain = GDMonoUtils::create_domain("GodotEngine.ScriptsDomain");
 
@@ -611,9 +606,7 @@ Error GDMono::_unload_scripts_domain() {
 
 	ERR_FAIL_NULL_V(scripts_domain, ERR_BUG);
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Mono: Unloading scripts domain...\n");
-	}
+	print_verbose("Mono: Unloading scripts domain...");
 
 	_GodotSharp::get_singleton()->_dispose_callback();
 
@@ -661,9 +654,7 @@ Error GDMono::_load_tools_domain() {
 
 	ERR_FAIL_COND_V(tools_domain != NULL, ERR_BUG);
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print("Mono: Loading tools domain...\n");
-	}
+	print_verbose("Mono: Loading tools domain...");
 
 	tools_domain = GDMonoUtils::create_domain("GodotEngine.ToolsDomain");
 
@@ -728,8 +719,7 @@ Error GDMono::reload_scripts_domain() {
 	if (!_load_project_assembly())
 		return ERR_CANT_OPEN;
 #else
-	if (OS::get_singleton()->is_stdout_verbose())
-		OS::get_singleton()->print("Mono: Glue disabled, ignoring script assemblies\n");
+	print_verbose("Mono: Glue disabled, ignoring script assemblies.");
 #endif
 
 	return OK;
@@ -742,9 +732,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	String domain_name = mono_domain_get_friendly_name(p_domain);
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		OS::get_singleton()->print(String("Mono: Unloading domain `" + domain_name + "`...\n").utf8());
-	}
+	print_verbose("Mono: Unloading domain `" + domain_name + "`...");
 
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
@@ -877,7 +865,7 @@ GDMono::~GDMono() {
 
 		GDMonoUtils::clear_cache();
 
-		OS::get_singleton()->print("Mono: Runtime cleanup...\n");
+		print_verbose("Mono: Runtime cleanup...");
 
 		runtime_initialized = false;
 		mono_jit_cleanup(root_domain);

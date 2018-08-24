@@ -2118,11 +2118,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 		if (script_class) {
 #ifdef DEBUG_ENABLED
-			if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print(String("Found class " + script_class->get_namespace() + "." +
-												  script_class->get_name() + " for script " + get_path() + "\n")
-												   .utf8());
-			}
+			print_verbose("Found class " + script_class->get_namespace() + "." + script_class->get_name() + " for script " + get_path());
 #endif
 
 			tool = script_class->has_attribute(CACHED_CLASS(ToolAttribute));
