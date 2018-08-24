@@ -769,6 +769,7 @@ void Control::force_drag(const Variant &p_data, Control *p_control) {
 void Control::set_drag_preview(Control *p_control) {
 
 	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND(get_viewport()->gui_is_dragging());
 	get_viewport()->_gui_set_drag_preview(this, p_control);
 }
 

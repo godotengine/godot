@@ -185,6 +185,7 @@ public:
 
 Viewport::GUI::GUI() {
 
+	dragging = false;
 	mouse_focus = NULL;
 	mouse_click_grabber = NULL;
 	mouse_focus_button = -1;
@@ -1718,6 +1719,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				gui.drag_data = Variant();
+				gui.dragging = false;
 
 				if (gui.drag_preview) {
 					memdelete(gui.drag_preview);
@@ -1747,6 +1749,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				gui.drag_data = Variant();
+				gui.dragging = false;
 				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
 				//change mouse accordingly
 			}
@@ -1809,10 +1812,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						Control *control = Object::cast_to<Control>(ci);
 						if (control) {
 
+							gui.dragging = true;
 							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos) - gui.drag_accum);
 							if (gui.drag_data.get_type() != Variant::NIL) {
 
 								gui.mouse_focus = NULL;
+							} else {
+								gui.dragging = false;
 							}
 
 							if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
@@ -2252,6 +2258,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	ERR_EXPLAIN("Drag data must be a value");
 	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
 
+	gui.dragging = true;
 	gui.drag_data = p_data;
 	gui.mouse_focus = NULL;
 
@@ -2691,6 +2698,9 @@ bool Viewport::is_snap_controls_to_pixels_enabled() const {
 	return snap_controls_to_pixels;
 }
 
+bool Viewport::gui_is_dragging() const {
+	return gui.dragging;
+}
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);
@@ -2777,6 +2787,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
+	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
