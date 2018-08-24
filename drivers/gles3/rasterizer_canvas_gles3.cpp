@@ -1173,8 +1173,8 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 		{
 			//skeleton handling
-			if (ci->skeleton.is_valid()) {
-				skeleton = storage->skeleton_owner.getornull(ci->skeleton);
+			if (ci->skeleton.is_valid() && storage->skeleton_owner.owns(ci->skeleton)) {
+				skeleton = storage->skeleton_owner.get(ci->skeleton);
 				if (!skeleton->use_2d) {
 					skeleton = NULL;
 				} else {
