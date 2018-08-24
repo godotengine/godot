@@ -5830,134 +5830,6 @@ msgstr "Asiayhteydellinen ohje"
 msgid "Shader"
 msgstr "Sävytin"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Muuta skalaarivakiota"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Muuta vektorivakiota"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "Muuta RGB-värivakiota"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Muuta skalaarioperaattoria"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Muuta vektorioperaattoria"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Muuta vektori- ja skalaarioperaattoria"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "Muuta RGB-värioperaattoria"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Vain kierto"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Muuta skalaarifunktiota"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Muuta vektorifunktiota"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Muuta skalaariuniformia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Muuta vektoriuniformia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "Muuta RGB-uniformia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Muuta oletusarvoa"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "Muuta XForm-uniformia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "Muuta tekstuuriuniformia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Muuta Cubemap-uniformia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "Vaihda kommenttia"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "Lisää tai poista väriluiskalta"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Muokkaa väriliukumaa"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Lisää tai poista käyräkartalta"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Muokkaa käyräkarttaa"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "Vaihda syötteen nimi"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "Yhdistä graafin solmut"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "Erota graafin solmut"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Poista sävytingraafin solmu"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Siirrä sävytingraafin solmua"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "Kahdenna graafin solmut(t)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Poista sävytingraafin solmuja"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "Virhe: syklinen kytkentä"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "Virhe: syöteliitännät puuttuvat"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Lisää sävytingraafin solmu"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9599,6 +9471,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Muuta skalaarivakiota"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Muuta vektorivakiota"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "Muuta RGB-värivakiota"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Muuta skalaarioperaattoria"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Muuta vektorioperaattoria"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Muuta vektori- ja skalaarioperaattoria"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "Muuta RGB-värioperaattoria"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Vain kierto"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Muuta skalaarifunktiota"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Muuta vektorifunktiota"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Muuta skalaariuniformia"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Muuta vektoriuniformia"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Muuta RGB-uniformia"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Muuta oletusarvoa"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "Muuta XForm-uniformia"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "Muuta tekstuuriuniformia"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Muuta Cubemap-uniformia"
+
+#~ msgid "Change Comment"
+#~ msgstr "Vaihda kommenttia"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "Lisää tai poista väriluiskalta"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Muokkaa väriliukumaa"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Lisää tai poista käyräkartalta"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Muokkaa käyräkarttaa"
+
+#~ msgid "Change Input Name"
+#~ msgstr "Vaihda syötteen nimi"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "Yhdistä graafin solmut"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "Erota graafin solmut"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Poista sävytingraafin solmu"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Siirrä sävytingraafin solmua"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "Kahdenna graafin solmut(t)"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Poista sävytingraafin solmuja"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "Virhe: syklinen kytkentä"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "Virhe: syöteliitännät puuttuvat"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Lisää sävytingraafin solmu"
 
 #~ msgid "Disabled"
 #~ msgstr "Poistettu käytöstä"

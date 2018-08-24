@@ -5789,134 +5789,6 @@ msgstr "搜索光标位置"
 msgid "Shader"
 msgstr "着色器"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "修改Scalar常量系数"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "修改Vec常量系数"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "修改RGB常量系数"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "更改标量运算符（Scalar Operator）"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "更改 Vec 运算符（Vec Operator）"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "更改Vec标量运算符（Vec Scalar Operator）"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "更改RGB运算符（RGB Operator）"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "切换旋转模式"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "修改Function Scalar"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "修改Function Vec"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "修改Uniform Scalar"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "修改Uniform Vec"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "修改Uniform RGB"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "修改默认值"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "修改Uniform XForm"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "修改Uniform纹理"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "修改Uniform Cubemap"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "修改注释"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "添加/删除颜色坡度"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "修改色彩曲线图"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "添加/删除曲线地图"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "修改曲线图"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "更改输入名称"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "连接Graph Node"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "断开Graph Node连接"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "移除Graph Node节点"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "移动Graph Node节点"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "复制Graph Node节点"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "删除Graph Node节点"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "错误:循环的连接"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "错误:缺少输入连接"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "添加着色器Graph Node"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9481,6 +9353,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "修改Scalar常量系数"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "修改Vec常量系数"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "修改RGB常量系数"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "更改标量运算符（Scalar Operator）"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "更改 Vec 运算符（Vec Operator）"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "更改Vec标量运算符（Vec Scalar Operator）"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "更改RGB运算符（RGB Operator）"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "切换旋转模式"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "修改Function Scalar"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "修改Function Vec"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "修改Uniform Scalar"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "修改Uniform Vec"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "修改Uniform RGB"
+
+#~ msgid "Change Default Value"
+#~ msgstr "修改默认值"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "修改Uniform XForm"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "修改Uniform纹理"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "修改Uniform Cubemap"
+
+#~ msgid "Change Comment"
+#~ msgstr "修改注释"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "添加/删除颜色坡度"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "修改色彩曲线图"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "添加/删除曲线地图"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "修改曲线图"
+
+#~ msgid "Change Input Name"
+#~ msgstr "更改输入名称"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "连接Graph Node"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "断开Graph Node连接"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "移除Graph Node节点"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "移动Graph Node节点"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "复制Graph Node节点"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "删除Graph Node节点"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "错误:循环的连接"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "错误:缺少输入连接"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "添加着色器Graph Node"
 
 #~ msgid "Disabled"
 #~ msgstr "已禁用"
