@@ -1645,6 +1645,18 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 	}
 }
 
+void ScriptEditorDebugger::live_debug_replace_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
+
+	if (live_debug && connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_replace_node");
+		msg.push_back(p_parent);
+		msg.push_back(p_type);
+		msg.push_back(p_name);
+		ppeer->put_var(msg);
+	}
+}
+
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
 
 	if (connection.is_valid()) {
@@ -1855,6 +1867,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("live_debug_restore_node"), &ScriptEditorDebugger::live_debug_restore_node);
 	ClassDB::bind_method(D_METHOD("live_debug_duplicate_node"), &ScriptEditorDebugger::live_debug_duplicate_node);
 	ClassDB::bind_method(D_METHOD("live_debug_reparent_node"), &ScriptEditorDebugger::live_debug_reparent_node);
+	ClassDB::bind_method(D_METHOD("live_debug_replace_node"), &ScriptEditorDebugger::live_debug_replace_node);
 	ClassDB::bind_method(D_METHOD("_scene_tree_property_select_object"), &ScriptEditorDebugger::_scene_tree_property_select_object);
 	ClassDB::bind_method(D_METHOD("_scene_tree_property_value_edited"), &ScriptEditorDebugger::_scene_tree_property_value_edited);
 

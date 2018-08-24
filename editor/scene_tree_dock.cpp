@@ -1684,8 +1684,12 @@ void SceneTreeDock::_create() {
 		}
 
 	} else if (current_option == TOOL_REPLACE) {
+
+		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 		List<Node *> selection = editor_selection->get_selected_node_list();
 		ERR_FAIL_COND(selection.size() <= 0);
+
+		editor_data->get_undo_redo().create_action(TTR("Change Node Type"));
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 			Node *n = E->get();
 			ERR_FAIL_COND(!n);
@@ -1693,11 +1697,26 @@ void SceneTreeDock::_create() {
 			Object *c = create_dialog->instance_selected();
 
 			ERR_FAIL_COND(!c);
-			Node *newnode = Object::cast_to<Node>(c);
-			ERR_FAIL_COND(!newnode);
+			Node *new_node = Object::cast_to<Node>(c);
+			ERR_FAIL_COND(!new_node);
 
-			replace_node(n, newnode);
+			String path_to_n = edited_scene->get_path_to(n);
+			int n_pos_in_parent = n->get_position_in_parent();
+			String n_name = n->get_name();
+
+			editor_data->get_undo_redo().add_do_method(this, "replace_node", n, new_node);
+			editor_data->get_undo_redo().add_do_reference(new_node);
+			editor_data->get_undo_redo().add_do_method(sed, "live_debug_replace_node", path_to_n, new_node->get_class(), n_name);
+			editor_data->get_undo_redo().add_do_method(this, "memdelete", n);
+			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+
+			editor_data->get_undo_redo().add_undo_method(this, "replace_node", new_node, n);
+			editor_data->get_undo_redo().add_undo_reference(n);
+			editor_data->get_undo_redo().add_undo_method(sed, "live_debug_replace_node", path_to_n, n->get_class(), n_name);
+			editor_data->get_undo_redo().add_undo_method(this, "memdelete", new_node);
+			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
 		}
+		editor_data->get_undo_redo().commit_action();
 	}
 }
 
@@ -1761,12 +1780,9 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 		Node *c = newnode->get_child(i);
 		c->call("set_transform", c->call("get_transform"));
 	}
-	editor_data->get_undo_redo().clear_history();
 	newnode->set_name(newname);
 
 	editor->push_item(newnode);
-
-	memdelete(n);
 
 	while (to_erase.front()) {
 		memdelete(to_erase.front()->get());
@@ -2300,6 +2316,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_nodes_dragged"), &SceneTreeDock::_nodes_dragged);
 	ClassDB::bind_method(D_METHOD("_files_dropped"), &SceneTreeDock::_files_dropped);
 	ClassDB::bind_method(D_METHOD("_script_dropped"), &SceneTreeDock::_script_dropped);
+	ClassDB::bind_method(D_METHOD("replace_node"), &SceneTreeDock::replace_node);
 	ClassDB::bind_method(D_METHOD("_tree_rmb"), &SceneTreeDock::_tree_rmb);
 	ClassDB::bind_method(D_METHOD("_filter_changed"), &SceneTreeDock::_filter_changed);
 	ClassDB::bind_method(D_METHOD("_focus_node"), &SceneTreeDock::_focus_node);

@@ -1646,6 +1646,37 @@ void SceneTree::_live_edit_reparent_node_func(const NodePath &p_at, const NodePa
 	}
 }
 
+void SceneTree::_live_edit_replace_node_func(const NodePath &p_node, const String &p_type, const String &p_name) {
+
+	Node *base = NULL;
+	if (root->has_node(live_edit_root))
+		base = root->get_node(live_edit_root);
+
+	Map<String, Set<Node *> >::Element *E = live_scene_edit_cache.find(live_edit_scene);
+	if (!E)
+		return; //scene not editable
+
+	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
+
+		Node *n = F->get();
+
+		if (base && !base->is_a_parent_of(n))
+			continue;
+
+		if (!n->has_node(p_node))
+			continue;
+		Node *n2 = n->get_node(p_node);
+
+		Node *no = Object::cast_to<Node>(ClassDB::instance(p_type));
+		if (!no) {
+			continue;
+		}
+
+		no->set_name(p_name);
+		n2->replace_by(no, true);
+	}
+}
+
 #endif
 
 void SceneTree::drop_files(const Vector<String> &p_files, int p_from_screen) {
@@ -2056,6 +2087,7 @@ SceneTree::SceneTree() {
 	live_edit_funcs.tree_restore_node_func = _live_edit_restore_node_funcs;
 	live_edit_funcs.tree_duplicate_node_func = _live_edit_duplicate_node_funcs;
 	live_edit_funcs.tree_reparent_node_func = _live_edit_reparent_node_funcs;
+	live_edit_funcs.tree_replace_node_func = _live_edit_replace_node_funcs;
 
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_live_edit_funcs(&live_edit_funcs);

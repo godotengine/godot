@@ -551,6 +551,10 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array &p_command) {
 
 		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3], p_command[4]);
 
+	} else if (cmdstr == "live_replace_node") {
+
+		live_edit_funcs->tree_replace_node_func(live_edit_funcs->udata, p_command[1], p_command[2], p_command[3]);
+
 	} else {
 
 		return false;
