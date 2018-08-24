@@ -1216,6 +1216,12 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 			glDisableVertexAttribArray(15); // color
 			glDisableVertexAttribArray(8); // custom data
 
+			if (!s->attribs[VS::ARRAY_COLOR].enabled) {
+				glDisableVertexAttribArray(VS::ARRAY_COLOR);
+
+				glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
+			}
+
 			glVertexAttrib4f(15, 1, 1, 1, 1);
 			glVertexAttrib4f(8, 0, 0, 0, 0);
 
@@ -1259,7 +1265,12 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				}
 
 				if (multi_mesh->color_floats) {
-					glVertexAttrib4fv(15, buffer + color_ofs);
+					if (multi_mesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
+						uint8_t *color_data = (uint8_t *)(buffer + color_ofs);
+						glVertexAttrib4f(15, color_data[0] / 255.0, color_data[1] / 255.0, color_data[2] / 255.0, color_data[3] / 255.0);
+					} else {
+						glVertexAttrib4fv(15, buffer + color_ofs);
+					}
 				}
 
 				if (multi_mesh->custom_data_floats) {
