@@ -161,7 +161,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text.as_string();
 
 		} break;
-		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real) + "f";
+		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real);
 		case SL::TYPE_VEC2:
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
