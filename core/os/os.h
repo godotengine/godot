@@ -190,6 +190,8 @@ public:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual PoolStringArray get_connected_midi_inputs();
+	virtual void open_midi_inputs();
+	virtual void close_midi_inputs();
 
 	virtual int get_screen_count() const { return 1; }
 	virtual int get_current_screen() const { return 0; }

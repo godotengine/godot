@@ -240,6 +240,14 @@ PoolStringArray _OS::get_connected_midi_inputs() {
 	return OS::get_singleton()->get_connected_midi_inputs();
 }
 
+void _OS::open_midi_inputs() {
+	return OS::get_singleton()->open_midi_inputs();
+}
+
+void _OS::close_midi_inputs() {
+	return OS::get_singleton()->close_midi_inputs();
+}
+
 void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
 
 	OS::VideoMode vm;
@@ -1085,6 +1093,8 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_audio_driver_count"), &_OS::get_audio_driver_count);
 	ClassDB::bind_method(D_METHOD("get_audio_driver_name", "driver"), &_OS::get_audio_driver_name);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_OS::get_connected_midi_inputs);
+	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
+	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &_OS::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_current_screen"), &_OS::get_current_screen);

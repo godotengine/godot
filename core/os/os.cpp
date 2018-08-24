@@ -689,6 +689,18 @@ PoolStringArray OS::get_connected_midi_inputs() {
 	return list;
 }
 
+void OS::open_midi_inputs() {
+
+	if (MIDIDriver::get_singleton())
+		MIDIDriver::get_singleton()->open();
+}
+
+void OS::close_midi_inputs() {
+
+	if (MIDIDriver::get_singleton())
+		MIDIDriver::get_singleton()->close();
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 

@@ -53,6 +53,12 @@ Error MIDIDriverWinMidi::open() {
 			char err[256];
 			midiInGetErrorText(res, err, 256);
 			ERR_PRINTS("midiInOpen error: " + String(err));
+
+			MIDIINCAPS caps;
+			res = midiInGetDevCaps(i, &caps, sizeof(MIDIINCAPS));
+			if (res == MMSYSERR_NOERROR) {
+				ERR_PRINTS("Can't open MIDI device \"" + String(caps.szPname) + "\", is it being used by another application?");
+			}
 		}
 	}
 

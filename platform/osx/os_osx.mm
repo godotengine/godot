@@ -1351,8 +1351,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	AudioDriverManager::initialize(p_audio_driver);
 
-	midi_driver.open();
-
 	input = memnew(InputDefault);
 	joypad_osx = memnew(JoypadOSX);
 
@@ -1369,6 +1367,8 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 }
 
 void OS_OSX::finalize() {
+
+	midi_driver.close();
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
