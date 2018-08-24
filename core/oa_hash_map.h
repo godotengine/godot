@@ -320,7 +320,7 @@ public:
 
 		memdelete_arr(keys);
 		memdelete_arr(values);
-		memdelete(hashes);
+		memdelete_arr(hashes);
 	}
 };
 
