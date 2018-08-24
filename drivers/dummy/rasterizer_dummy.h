@@ -789,6 +789,10 @@ public:
 	void end_frame(bool p_swap_buffers) {}
 	void finalize() {}
 
+	static Error is_viable() {
+		return OK;
+	}
+
 	static Rasterizer *_create_current() {
 		return memnew(RasterizerDummy);
 	}

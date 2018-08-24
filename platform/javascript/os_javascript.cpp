@@ -652,23 +652,57 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	attributes.alpha = false;
 	attributes.antialias = false;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
-	switch (p_video_driver) {
-		case VIDEO_DRIVER_GLES3:
-			attributes.majorVersion = 2;
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-			break;
-		case VIDEO_DRIVER_GLES2:
-			attributes.majorVersion = 1;
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-			break;
+
+	bool gles3 = true;
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		gles3 = false;
+	}
+
+	bool gl_initialization_error = false;
+
+	while (true) {
+		if (gles3) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				attributes.majorVersion = 2;
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					gles3 = false;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		} else {
+			if (RasterizerGLES2::is_viable() == OK) {
+				attributes.majorVersion = 1;
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
+		gl_initialization_error = true;
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your browser does not support any of the supported WebGL versions.\n"
+								   "Please update your browser version.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
 	}
 
 	video_driver_index = p_video_driver;
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
-	ERR_EXPLAIN("WebGL " + itos(attributes.majorVersion) + ".0 not available");
-	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	video_mode = p_desired;
 	// Can't fulfil fullscreen request during start-up due to browser security.
