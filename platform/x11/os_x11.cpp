@@ -84,6 +84,10 @@ void OS_X11::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
+int OS_X11::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	long im_event_mask = 0;
@@ -285,6 +289,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		} break;
 	}
 
+	video_driver_index = p_video_driver; // FIXME TODO - FIX IF DRIVER DETECTION HAPPENS AND GLES2 MUST BE USED
+
 	context_gl->set_use_vsync(current_videomode.use_vsync);
 
 #endif
@@ -335,6 +341,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	AudioDriverManager::initialize(p_audio_driver);
+
+#ifdef ALSAMIDI_ENABLED
+	driver_alsamidi.open();
+#endif
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(x11_window == 0, ERR_UNAVAILABLE);
@@ -391,6 +401,9 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
 
+	im_active = false;
+	im_position = Vector2();
+
 	if (xim && xim_style) {
 
 		xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, x11_window, XNFocusWindow, x11_window, (char *)NULL);
@@ -400,7 +413,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			xic = NULL;
 		}
 		if (xic) {
-			XSetICFocus(xic);
+			XUnsetICFocus(xic);
 		} else {
 			WARN_PRINT("XCreateIC couldn't create xic");
 		}
@@ -541,7 +554,24 @@ void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 	os->xic = NULL;
 }
 
+void OS_X11::set_ime_active(const bool p_active) {
+
+	im_active = p_active;
+
+	if (!xic)
+		return;
+
+	if (p_active) {
+		XSetICFocus(xic);
+		set_ime_position(im_position);
+	} else {
+		XUnsetICFocus(xic);
+	}
+}
+
 void OS_X11::set_ime_position(const Point2 &p_pos) {
+
+	im_position = p_pos;
 
 	if (!xic)
 		return;
@@ -580,6 +610,9 @@ void OS_X11::finalize() {
 		memdelete(debugger_connection_console);
 	}
 	*/
+#ifdef ALSAMIDI_ENABLED
+	driver_alsamidi.close();
+#endif
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
@@ -1306,7 +1339,7 @@ void OS_X11::request_attention() {
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
 	// Will be unset by the window manager after user react on the request for attention
-	//
+
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
@@ -1320,6 +1353,7 @@ void OS_X11::request_attention() {
 	xev.xclient.data.l[1] = wm_attention;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
@@ -1805,8 +1839,8 @@ void OS_X11::process_xevents() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-					// Grab touch devices to avoid OS gesture interference
-					/*for (int i = 0; i < touch.devices.size(); ++i) {
+				// Grab touch devices to avoid OS gesture interference
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
 				}*/
 #endif
@@ -1934,6 +1968,7 @@ void OS_X11::process_xevents() {
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
+#ifdef TOUCH_ENABLED
 				// Avoidance of spurious mouse motion (see handling of touch)
 				bool filter = false;
 				// Adding some tolerance to match better Point2i to Vector2
@@ -1945,6 +1980,7 @@ void OS_X11::process_xevents() {
 				if (filter) {
 					break;
 				}
+#endif
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -2070,7 +2106,7 @@ void OS_X11::process_xevents() {
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
 					for (int i = 0; i < files.size(); i++) {
-						files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
+						files.write[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
 					}
 					main_loop->drop_files(files);
 
@@ -2308,7 +2344,7 @@ Error OS_X11::shell_open(String p_uri) {
 
 bool OS_X11::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc";
+	return p_feature == "pc" || p_feature == "s3tc" || p_feature == "bptc";
 }
 
 String OS_X11::get_config_path() const {
@@ -2401,7 +2437,19 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 
 void OS_X11::move_window_to_foreground() {
 
-	XRaiseWindow(x11_display, x11_window);
+	XEvent xev;
+	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = net_active_window;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
@@ -2507,17 +2555,23 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 void OS_X11::release_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->release_current();
+#endif
 }
 
 void OS_X11::make_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->make_current();
+#endif
 }
 
 void OS_X11::swap_buffers() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
+#endif
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
@@ -2546,12 +2600,12 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 
 		pd.resize(2 + w * h);
 
-		pd[0] = w;
-		pd[1] = h;
+		pd.write[0] = w;
+		pd.write[1] = h;
 
 		PoolVector<uint8_t>::Read r = img->get_data().read();
 
-		long *wr = &pd[2];
+		long *wr = &pd.write[2];
 		uint8_t const *pr = r.ptr();
 
 		for (int i = 0; i < w * h; i++) {
@@ -2611,8 +2665,10 @@ String OS_X11::get_joy_guid(int p_device) const {
 }
 
 void OS_X11::_set_use_vsync(bool p_enable) {
+#if defined(OPENGL_ENABLED)
 	if (context_gl)
-		return context_gl->set_use_vsync(p_enable);
+		context_gl->set_use_vsync(p_enable);
+#endif
 }
 /*
 bool OS_X11::is_vsync_enabled() const {

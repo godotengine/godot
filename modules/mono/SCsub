@@ -5,9 +5,11 @@ Import('env_modules')
 
 env_mono = env_modules.Clone()
 
-from compat import byte_to_str
+# TODO move functions to their own modules
 
 def make_cs_files_header(src, dst):
+    from compat import byte_to_str
+
     with open(dst, 'w') as header:
         header.write('/* This is an automatically generated file; DO NOT EDIT! OK THX */\n')
         header.write('#ifndef _CS_FILES_DATA_H\n')
@@ -16,14 +18,20 @@ def make_cs_files_header(src, dst):
         header.write('#include "ustring.h"\n')
         inserted_files = ''
         import os
-        for file in os.listdir(src):
-            if file.endswith('.cs'):
-                with open(os.path.join(src, file), 'rb') as f:
+        latest_mtime = 0
+        for root, _, files in os.walk(src):
+            files = [f for f in files if f.endswith('.cs')]
+            for file in files:
+                filepath = os.path.join(root, file)
+                filepath_src_rel = os.path.relpath(filepath, src)
+                mtime = os.path.getmtime(filepath)
+                latest_mtime = mtime if mtime > latest_mtime else latest_mtime
+                with open(filepath, 'rb') as f:
                     buf = f.read()
                     decomp_size = len(buf)
                     import zlib
                     buf = zlib.compress(buf)
-                    name = os.path.splitext(file)[0]
+                    name = os.path.splitext(os.path.normpath(filepath_src_rel))[0].strip(os.sep).replace(os.sep, '_').replace('.', '_dotto_')
                     header.write('\nstatic const int _cs_' + name + '_compressed_size = ' + str(len(buf)) + ';\n')
                     header.write('static const int _cs_' + name + '_uncompressed_size = ' + str(decomp_size) + ';\n')
                     header.write('static const unsigned char _cs_' + name + '_compressed[] = { ')
@@ -31,18 +39,13 @@ def make_cs_files_header(src, dst):
                         if i > 0:
                             header.write(', ')
                         header.write(byte_to_str(buf[buf_idx]))
-                    inserted_files += '\tr_files.insert("' + file + '", ' \
+                    inserted_files += '\tr_files.insert("' + filepath_src_rel + '", ' \
                                         'CompressedFile(_cs_' + name + '_compressed_size, ' \
                                         '_cs_' + name + '_uncompressed_size, ' \
                                         '_cs_' + name + '_compressed));\n'
                     header.write(' };\n')
-        version_file = os.path.join(src, 'VERSION.txt')
-        with open(version_file, 'r') as content_file:
-            try:
-                glue_version = int(content_file.read()) # make sure the format is valid
-                header.write('\n#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
-            except ValueError:
-                raise ValueError('Invalid C# glue version in: ' + version_file)
+        glue_version = int(latest_mtime) # The latest modified time will do for now
+        header.write('\n#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
         header.write('\nstruct CompressedFile\n' '{\n'
             '\tint compressed_size;\n' '\tint uncompressed_size;\n' '\tconst unsigned char* data;\n'
             '\n\tCompressedFile(int p_comp_size, int p_uncomp_size, const unsigned char* p_data)\n'
@@ -59,6 +62,7 @@ env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 
 if env['tools']:
     env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
+    # NOTE: It is safe to generate this file here, since this is still execute serially
     make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h')
 
 vars = Variables()
@@ -75,6 +79,13 @@ else:
 if ARGUMENTS.get('yolo_copy', False):
     env_mono.Append(CPPDEFINES=['YOLO_COPY'])
 
+# Configure TLS checks
+
+import tls_configure
+conf = Configure(env_mono)
+tls_configure.configure(conf)
+env_mono = conf.Finish()
+
 
 # Build GodotSharpTools solution
 
@@ -88,7 +99,7 @@ def find_msbuild_unix(filename):
 
     hint_dirs = ['/opt/novell/mono/bin']
     if sys.platform == 'darwin':
-        hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current/bin'] + hint_dirs
+        hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current/bin', '/usr/local/var/homebrew/linked/mono/bin'] + hint_dirs
 
     for hint_dir in hint_dirs:
         hint_path = os.path.join(hint_dir, filename)
@@ -127,15 +138,25 @@ def find_msbuild_windows():
     if not mono_root:
         raise RuntimeError('Cannot find mono root directory')
 
+    framework_path = os.path.join(mono_root, 'lib', 'mono', '4.5')
+    mono_bin_dir = os.path.join(mono_root, 'bin')
+    msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
+
+    if os.path.isfile(msbuild_mono):
+        # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
+        # building with Mono's MSBuild. They must point to the batch files
+        # in Mono's bin directory to make sure they are executed with Mono.
+        mono_msbuild_env = {
+            'CscToolExe': os.path.join(mono_bin_dir, 'csc.bat'),
+            'VbcToolExe': os.path.join(mono_bin_dir, 'vbc.bat'),
+            'FscToolExe': os.path.join(mono_bin_dir, 'fsharpc.bat')
+        }
+        return (msbuild_mono, framework_path, mono_msbuild_env)
+
     msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
 
     if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), os.path.join(mono_root, 'lib', 'mono', '4.5'))
-    else:
-        msbuild_mono = os.path.join(mono_root, 'bin', 'msbuild.bat')
-
-        if os.path.isfile(msbuild_mono):
-            return (msbuild_mono, '')
+        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
 
     return None
 
@@ -145,14 +166,21 @@ def mono_build_solution(source, target, env):
     import mono_reg_utils as monoreg
     from shutil import copyfile
 
-    framework_path_override = ''
+    framework_path = ''
+
+    msbuild_env = os.environ.copy()
+
+    # Needed when running from Developer Command Prompt for VS
+    if 'PLATFORM' in msbuild_env:
+        del msbuild_env['PLATFORM']
 
     if os.name == 'nt':
         msbuild_info = find_msbuild_windows()
         if msbuild_info is None:
             raise RuntimeError('Cannot find MSBuild executable')
         msbuild_path = msbuild_info[0]
-        framework_path_override = msbuild_info[1]
+        framework_path = msbuild_info[1]
+        msbuild_env.update(msbuild_info[2])
     else:
         msbuild_path = find_msbuild_unix('msbuild')
         if msbuild_path is None:
@@ -183,14 +211,8 @@ def mono_build_solution(source, target, env):
         '/p:Configuration=' + build_config,
     ]
 
-    if framework_path_override:
-        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path_override]
-
-    msbuild_env = os.environ.copy()
-
-    # Needed when running from Developer Command Prompt for VS
-    if 'PLATFORM' in msbuild_env:
-        del msbuild_env['PLATFORM']
+    if framework_path:
+        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path]
 
     try:
         subprocess.check_call(msbuild_args, env=msbuild_env)

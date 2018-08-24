@@ -48,15 +48,24 @@ class AudioDriverCoreAudio : public AudioDriver {
 	Mutex *mutex;
 
 	String device_name;
+	String capture_device_name;
 
 	int mix_rate;
 	unsigned int channels;
+	unsigned int capture_channels;
 	unsigned int buffer_frames;
-	unsigned int buffer_size;
 
 	Vector<int32_t> samples_in;
+	Vector<int16_t> input_buf;
 
 #ifdef OSX_ENABLED
+	Array _get_device_list(bool capture = false);
+	void _set_device(const String &device, bool capture = false);
+
+	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
+			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+			void *inClientData);
+
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
@@ -68,8 +77,11 @@ class AudioDriverCoreAudio : public AudioDriver {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
-	Error init_device();
-	Error finish_device();
+	static OSStatus input_callback(void *inRefCon,
+			AudioUnitRenderActionFlags *ioActionFlags,
+			const AudioTimeStamp *inTimeStamp,
+			UInt32 inBusNumber, UInt32 inNumberFrames,
+			AudioBufferList *ioData);
 
 public:
 	const char *get_name() const {
@@ -80,17 +92,26 @@ public:
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
-#ifdef OSX_ENABLED
-	virtual Array get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
-#endif
+
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 
+	virtual Error capture_start();
+	virtual Error capture_stop();
+
 	bool try_lock();
 	void stop();
+
+#ifdef OSX_ENABLED
+	virtual Array get_device_list();
+	virtual String get_device();
+	virtual void set_device(String device);
+
+	virtual Array capture_get_device_list();
+	virtual void capture_set_device(const String &p_name);
+	virtual String capture_get_device();
+#endif
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio();

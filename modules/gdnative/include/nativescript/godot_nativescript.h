@@ -68,6 +68,7 @@ typedef enum {
 	GODOT_PROPERTY_HINT_GLOBAL_DIR, ///< a directort path must be passed
 	GODOT_PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
 	GODOT_PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
+	GODOT_PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	GODOT_PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	GODOT_PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	GODOT_PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
@@ -236,6 +237,8 @@ int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_inst
 void GDAPI godot_nativescript_unregister_instance_binding_data_functions(int p_idx);
 
 void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object *p_object);
+
+void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64_t p_time);
 
 #ifdef __cplusplus
 }

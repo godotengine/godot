@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeStateMachine" inherits="AnimationRootNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="node" type="AnimationNode">
+			</argument>
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_transition">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="to" type="String">
+			</argument>
+			<argument index="2" name="transition" type="AnimationNodeStateMachineTransition">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_end_node" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_graph_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_node" qualifiers="const">
+			<return type="AnimationNode">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="node" type="AnimationNode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_node_position" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_start_node" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transition" qualifiers="const">
+			<return type="AnimationNodeStateMachineTransition">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_transition_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_transition_from" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_transition_to" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_node" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_transition" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="to" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_transition">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="to" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_transition_by_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="rename_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="new_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_end_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_graph_offset">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_node_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_start_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

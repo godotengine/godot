@@ -244,6 +244,8 @@ class EditorHelp : public VBoxContainer {
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
+	String _fix_constant(const String &p_constant) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -272,9 +274,9 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public Panel {
+class EditorHelpBit : public PanelContainer {
 
-	GDCLASS(EditorHelpBit, Panel);
+	GDCLASS(EditorHelpBit, PanelContainer);
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
@@ -285,6 +287,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	RichTextLabel *get_rich_text() { return rich_text; }
 	void set_text(const String &p_text);
 	EditorHelpBit();
 };

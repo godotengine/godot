@@ -31,6 +31,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "hash_map.h"
 #include "list.h"
 #include "map.h"
 #include "os/rw_lock.h"
@@ -70,6 +71,7 @@ enum PropertyHint {
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
 	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
+	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
@@ -85,6 +87,7 @@ enum PropertyHint {
 	PROPERTY_HINT_PROPERTY_OF_INSTANCE, ///< a property of an instance
 	PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
 	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
+	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -389,7 +392,8 @@ public:
 
 		CONNECT_DEFERRED = 1,
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
-		CONNECT_ONESHOT = 4
+		CONNECT_ONESHOT = 4,
+		CONNECT_REFERENCE_COUNTED = 8,
 	};
 
 	struct Connection {
@@ -440,8 +444,10 @@ private:
 
 		struct Slot {
 
+			int reference_count;
 			Connection conn;
 			List<Connection>::Element *cE;
+			Slot() { reference_count = 0; }
 		};
 
 		MethodInfo user;
@@ -450,7 +456,7 @@ private:
 		Signal() { lock = 0; }
 	};
 
-	HashMap<StringName, Signal, StringNameHasher> signal_map;
+	HashMap<StringName, Signal> signal_map;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
@@ -544,6 +550,8 @@ protected:
 
 	friend class ClassDB;
 	virtual void _validate_property(PropertyInfo &property) const;
+
+	void _disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force = false);
 
 public: //should be protected, but bug in clang++
 	static void initialize_class();

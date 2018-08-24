@@ -31,13 +31,13 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "math_2d.h"
 #include "rid.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
+#include "transform_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -182,7 +182,6 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal;
 		bool modal_exclusive;
 		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
@@ -202,12 +201,12 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture>, StringNameHasher> icon_override;
-		HashMap<StringName, Ref<Shader>, StringNameHasher> shader_override;
-		HashMap<StringName, Ref<StyleBox>, StringNameHasher> style_override;
-		HashMap<StringName, Ref<Font>, StringNameHasher> font_override;
-		HashMap<StringName, Color, StringNameHasher> color_override;
-		HashMap<StringName, int, StringNameHasher> constant_override;
+		HashMap<StringName, Ref<Texture> > icon_override;
+		HashMap<StringName, Ref<Shader> > shader_override;
+		HashMap<StringName, Ref<StyleBox> > style_override;
+		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Color> color_override;
+		HashMap<StringName, int> constant_override;
 		Map<Ref<Font>, int> font_refcount;
 
 	} data;
@@ -220,10 +219,6 @@ private:
 
 	void _set_anchor(Margin p_margin, float p_anchor);
 
-	float _get_parent_range(int p_idx) const;
-	float _get_range(int p_idx) const;
-	float _s2a(float p_val, float p_anchor, float p_range) const;
-	float _a2s(float p_val, float p_anchor, float p_range) const;
 	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
@@ -232,6 +227,9 @@ private:
 
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
+
+	Rect2 _compute_child_rect(const float p_anchors[4], const float p_margins[4]) const;
+	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 
 	void _size_changed();
 	String _get_tooltip() const;
@@ -283,6 +281,7 @@ public:
 
 	};
 
+	/* EDITOR */
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);
 
@@ -358,6 +357,7 @@ public:
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
+	Rect2 get_anchorable_rect() const;
 
 	void set_rotation(float p_radians);
 	void set_rotation_degrees(float p_degrees);
@@ -453,6 +453,7 @@ public:
 
 	void set_tooltip(const String &p_tooltip);
 	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	/* CURSOR */
 
@@ -465,6 +466,7 @@ public:
 	bool is_toplevel_control() const;
 
 	Size2 get_parent_area_size() const;
+	Rect2 get_parent_anchorable_rect() const;
 
 	void grab_click_focus();
 

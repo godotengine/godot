@@ -41,7 +41,10 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
@@ -144,7 +147,7 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path"), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport"), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
 }
 
 ViewportTexture::ViewportTexture() {
@@ -166,9 +169,9 @@ ViewportTexture::~ViewportTexture() {
 
 /////////////////////////////////////
 
-class TooltipPanel : public Panel {
+class TooltipPanel : public PanelContainer {
 
-	GDCLASS(TooltipPanel, Panel)
+	GDCLASS(TooltipPanel, PanelContainer)
 public:
 	TooltipPanel(){};
 };
@@ -441,7 +444,7 @@ void Viewport::_notification(int p_what) {
 
 						Vector2 point = get_canvas_transform().affine_inverse().xform(pos);
 						Physics2DDirectSpaceState::ShapeResult res[64];
-						int rc = ss2d->intersect_point(point, res, 64, Set<RID>(), 0xFFFFFFFF, true);
+						int rc = ss2d->intersect_point(point, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
 						for (int i = 0; i < rc; i++) {
 
 							if (res[i].collider_id && res[i].collider) {
@@ -524,7 +527,7 @@ void Viewport::_notification(int p_what) {
 							PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
 							if (space) {
 
-								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true);
+								bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
 								ObjectID new_collider = 0;
 								if (col) {
 
@@ -560,7 +563,7 @@ void Viewport::_notification(int p_what) {
 					PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
 					if (space) {
 
-						bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true);
+						bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
 						ObjectID new_collider = 0;
 						if (col) {
 							CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
@@ -626,7 +629,7 @@ Rect2 Viewport::get_visible_rect() const {
 
 	if (size == Size2()) {
 
-		r = Rect2(Point2(), Size2(OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height));
+		r = Rect2(Point2(), Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height));
 	} else {
 
 		r = Rect2(Point2(), size);
@@ -1305,7 +1308,36 @@ void Viewport::_gui_cancel_tooltip() {
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
 		gui.tooltip_popup = NULL;
+		gui.tooltip_label = NULL;
 	}
+}
+
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which) {
+
+	Vector2 pos = p_pos;
+	String tooltip;
+
+	while (p_control) {
+
+		tooltip = p_control->get_tooltip(pos);
+
+		if (r_which) {
+			*r_which = p_control;
+		}
+
+		if (tooltip != String())
+			break;
+		pos = p_control->get_transform().xform(pos);
+
+		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+			break;
+		if (p_control->is_set_as_toplevel())
+			break;
+
+		p_control = p_control->get_parent_control();
+	}
+
+	return tooltip;
 }
 
 void Viewport::_gui_show_tooltip() {
@@ -1314,41 +1346,49 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
-	String tooltip = gui.tooltip->get_tooltip(gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos));
+	Control *which = NULL;
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
 	if (tooltip.length() == 0)
 		return; // bye
 
 	if (gui.tooltip_popup) {
 		memdelete(gui.tooltip_popup);
 		gui.tooltip_popup = NULL;
+		gui.tooltip_label = NULL;
 	}
 
-	if (!gui.tooltip) {
+	if (!which) {
 		return;
 	}
 
-	Control *rp = gui.tooltip->get_root_parent_control();
+	Control *rp = which; //->get_root_parent_control();
 	if (!rp)
 		return;
 
-	gui.tooltip_popup = memnew(TooltipPanel);
+	gui.tooltip_popup = which->make_custom_tooltip(tooltip);
+
+	if (!gui.tooltip_popup) {
+		gui.tooltip_popup = memnew(TooltipPanel);
+
+		gui.tooltip_label = memnew(TooltipLabel);
+		gui.tooltip_popup->add_child(gui.tooltip_label);
+
+		Ref<StyleBox> ttp = gui.tooltip_label->get_stylebox("panel", "TooltipPanel");
+
+		gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_LEFT));
+		gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
+		gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
+		gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
+		gui.tooltip_label->set_text(tooltip.strip_edges());
+	}
 
 	rp->add_child(gui.tooltip_popup);
 	gui.tooltip_popup->force_parent_owned();
-	gui.tooltip_label = memnew(TooltipLabel);
-	gui.tooltip_popup->add_child(gui.tooltip_label);
 	gui.tooltip_popup->set_as_toplevel(true);
-	gui.tooltip_popup->hide();
+	//gui.tooltip_popup->hide();
 
-	Ref<StyleBox> ttp = gui.tooltip_label->get_stylebox("panel", "TooltipPanel");
-
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_LEFT));
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
-	gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
-	gui.tooltip_label->set_text(tooltip.strip_edges());
-	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_label->get_minimum_size() + ttp->get_minimum_size());
-	Rect2 vr = gui.tooltip_label->get_viewport_rect();
+	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_popup->get_minimum_size());
+	Rect2 vr = gui.tooltip_popup->get_viewport_rect();
 	if (r.size.x + r.position.x > vr.size.x)
 		r.position.x = vr.size.x - r.size.x;
 	else if (r.position.x < 0)
@@ -1380,6 +1420,8 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 									 mb->get_button_index() == BUTTON_WHEEL_UP ||
 									 mb->get_button_index() == BUTTON_WHEEL_LEFT ||
 									 mb->get_button_index() == BUTTON_WHEEL_RIGHT));
+	Ref<InputEventPanGesture> pn = p_input;
+	cant_stop_me_now = pn.is_valid() || cant_stop_me_now;
 
 	bool ismouse = ev.is_valid() || Object::cast_to<InputEventMouseMotion>(*p_input) != NULL;
 
@@ -1388,12 +1430,14 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
+			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
 			if (gui.key_event_accepted)
 				break;
 			if (!control->is_inside_tree())
 				break;
-			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev);
+			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
 			if (!control->is_inside_tree() || control->is_set_as_toplevel())
 				break;
 			if (gui.key_event_accepted)
@@ -1812,8 +1856,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.drag_data.get_type() == Variant::NIL && over && !gui.modal_stack.empty()) {
 
 			Control *top = gui.modal_stack.back()->get();
+
 			if (over != top && !top->is_a_parent_of(over)) {
-				over = NULL; //nothing can be found outside the modal stack
+
+				PopupMenu *popup_menu = Object::cast_to<PopupMenu>(top);
+				MenuButton *popup_menu_parent = NULL;
+				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
+
+				if (popup_menu)
+					popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
+
+				// If the mouse is over a menu button, this menu will open automatically
+				// if there is already a pop-up menu open at the same hierarchical level.
+				if (popup_menu_parent && menu_button &&
+						popup_menu_parent->get_icon().is_null() &&
+						menu_button->get_icon().is_null() &&
+						(popup_menu->get_parent()->get_parent()->is_a_parent_of(menu_button) ||
+								menu_button->get_parent()->is_a_parent_of(popup_menu))) {
+
+					popup_menu->notification(Control::NOTIFICATION_MODAL_CLOSE);
+					popup_menu->_modal_stack_remove();
+					popup_menu->hide();
+
+					menu_button->pressed();
+				} else {
+					over = NULL; //nothing can be found outside the modal stack
+				}
 			}
 		}
 
@@ -1863,13 +1931,18 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			bool is_tooltip_shown = false;
 
 			if (gui.tooltip_popup) {
-				if (can_tooltip) {
-					String tooltip = over->get_tooltip(gui.tooltip->get_global_transform().xform_inv(mpos));
+				if (can_tooltip && gui.tooltip) {
+					String tooltip = _gui_get_tooltip(over, gui.tooltip->get_global_transform().xform_inv(mpos));
 
 					if (tooltip.length() == 0)
 						_gui_cancel_tooltip();
-					else if (tooltip == gui.tooltip_label->get_text())
+					else if (gui.tooltip_label) {
+						if (tooltip == gui.tooltip_label->get_text()) {
+							is_tooltip_shown = true;
+						}
+					} else if (tooltip == String(gui.tooltip_popup->call("get_tooltip_text"))) {
 						is_tooltip_shown = true;
+					}
 				} else
 					_gui_cancel_tooltip();
 			}
@@ -1886,7 +1959,23 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		mm->set_position(pos);
 
-		Control::CursorShape cursor_shape = over->get_cursor_shape(pos);
+		Control::CursorShape cursor_shape = Control::CURSOR_ARROW;
+		{
+			Control *c = over;
+			Vector2 cpos = pos;
+			while (c) {
+				cursor_shape = c->get_cursor_shape(cpos);
+				cpos = c->get_transform().xform(cpos);
+				if (cursor_shape != Control::CURSOR_ARROW)
+					break;
+				if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+					break;
+				if (c->is_set_as_toplevel())
+					break;
+				c = c->get_parent_control();
+			}
+		}
+
 		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
 
 		if (over->can_process()) {

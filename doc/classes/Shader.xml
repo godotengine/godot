@@ -7,7 +7,7 @@
 		This class allows you to define a custom shader program that can be used for various materials to render objects.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/shading/index.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/shading/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>

@@ -87,6 +87,13 @@ class Ref {
 
 	//virtual Reference * get_reference() const { return reference; }
 public:
+	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
+		return reference == p_ptr;
+	}
+	_FORCE_INLINE_ bool operator!=(const T *p_ptr) const {
+		return reference != p_ptr;
+	}
+
 	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
 
 		return reference < p_r.reference;

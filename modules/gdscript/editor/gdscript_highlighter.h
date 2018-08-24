@@ -44,7 +44,8 @@ private:
 		FUNCTION,
 		KEYWORD,
 		MEMBER,
-		IDENTIFIER
+		IDENTIFIER,
+		TYPE,
 	};
 
 	// colours
@@ -56,6 +57,7 @@ private:
 	Color number_color;
 	Color member_color;
 	Color node_path_color;
+	Color type_color;
 
 public:
 	static SyntaxHighlighter *create();

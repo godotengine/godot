@@ -13,8 +13,8 @@
 		- Adjustments
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/tutorials/3d/environment_and_post_processing.html
-		http://docs.godotengine.org/en/3.0/tutorials/3d/high_dynamic_range.html
+		<link>http://docs.godotengine.org/en/3.0/tutorials/3d/environment_and_post_processing.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/3d/high_dynamic_range.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -202,6 +202,8 @@
 		<member name="ss_reflections_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps">
 		</member>
 		<member name="ss_reflections_roughness" type="bool" setter="set_ssr_rough" getter="is_ssr_rough">
+		</member>
+		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect">
 		</member>
 		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias">
 		</member>

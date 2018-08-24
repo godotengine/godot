@@ -32,7 +32,11 @@
 
 #include "../csharp_script.h"
 #include "../mono_gc_handle.h"
+#include "../utils/macros.h"
+#include "../utils/thread_local.h"
 #include "gd_mono_utils.h"
+
+#include <mono/metadata/exception.h>
 
 namespace GDMonoInternals {
 
@@ -64,4 +68,11 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	return;
 }
+
+void unhandled_exception(MonoException *p_exc) {
+	mono_unhandled_exception((MonoObject *)p_exc); // prints the exception as well
+	abort();
+	_UNREACHABLE_();
+}
+
 } // namespace GDMonoInternals

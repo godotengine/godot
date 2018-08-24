@@ -76,6 +76,7 @@ public:
 	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const;
 
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_planes, int p_plane_count) const;
+	_FORCE_INLINE_ bool inside_convex_shape(const Plane *p_planes, int p_plane_count) const;
 	bool intersects_plane(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool has_point(const Vector3 &p_point) const;
@@ -199,6 +200,25 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count) con
 				(p.normal.x > 0) ? -half_extents.x : half_extents.x,
 				(p.normal.y > 0) ? -half_extents.y : half_extents.y,
 				(p.normal.z > 0) ? -half_extents.z : half_extents.z);
+		point += ofs;
+		if (p.is_point_over(point))
+			return false;
+	}
+
+	return true;
+}
+
+bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
+
+	Vector3 half_extents = size * 0.5;
+	Vector3 ofs = position + half_extents;
+
+	for (int i = 0; i < p_plane_count; i++) {
+		const Plane &p = p_planes[i];
+		Vector3 point(
+				(p.normal.x < 0) ? -half_extents.x : half_extents.x,
+				(p.normal.y < 0) ? -half_extents.y : half_extents.y,
+				(p.normal.z < 0) ? -half_extents.z : half_extents.z);
 		point += ofs;
 		if (p.is_point_over(point))
 			return false;

@@ -113,37 +113,9 @@ void Popup::set_as_minsize() {
 
 void Popup::popup_centered_minsize(const Size2 &p_minsize) {
 
-	Size2 total_minsize = p_minsize;
-
-	for (int i = 0; i < get_child_count(); i++) {
-
-		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
-			continue;
-		if (!c->is_visible())
-			continue;
-
-		Size2 minsize = c->get_combined_minimum_size();
-
-		for (int j = 0; j < 2; j++) {
-
-			Margin m_beg = Margin(0 + j);
-			Margin m_end = Margin(2 + j);
-
-			float margin_begin = c->get_margin(m_beg);
-			float margin_end = c->get_margin(m_end);
-			float anchor_begin = c->get_anchor(m_beg);
-			float anchor_end = c->get_anchor(m_end);
-
-			minsize[j] += margin_begin * (ANCHOR_END - anchor_begin) + margin_end * anchor_end;
-		}
-
-		total_minsize.width = MAX(total_minsize.width, minsize.width);
-		total_minsize.height = MAX(total_minsize.height, minsize.height);
-	}
-
-	popup_centered(total_minsize);
-	popped_up = true;
+	set_custom_minimum_size(p_minsize);
+	_fix_size();
+	popup_centered();
 }
 
 void Popup::popup_centered(const Size2 &p_size) {

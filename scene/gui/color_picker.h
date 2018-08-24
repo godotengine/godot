@@ -67,6 +67,7 @@ private:
 
 	Color color;
 	bool raw_mode_enabled;
+	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
 	float h, s, v;
@@ -107,6 +108,9 @@ public:
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
 
+	void set_deferred_mode(bool p_enabled);
+	bool is_deferred_mode() const;
+
 	void set_focus_on_line_edit();
 
 	ColorPicker();
@@ -140,7 +144,7 @@ public:
 	bool is_editing_alpha() const;
 
 	ColorPicker *get_picker();
-	PopupPanel *get_popup() const;
+	PopupPanel *get_popup();
 
 	ColorPickerButton();
 };

@@ -75,11 +75,17 @@ class EditorScenePostImport : public Reference {
 
 	GDCLASS(EditorScenePostImport, Reference);
 
+	String source_folder;
+	String source_file;
+
 protected:
 	static void _bind_methods();
 
 public:
+	String get_source_folder() const;
+	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
+	virtual void init(const String &p_scene_folder, const String &p_scene_path);
 	EditorScenePostImport();
 };
 

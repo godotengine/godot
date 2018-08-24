@@ -30,7 +30,7 @@
 
 #include "gdnative/vector2.h"
 
-#include "core/math/math_2d.h"
+#include "core/math/vector2.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus

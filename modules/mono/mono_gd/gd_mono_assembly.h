@@ -89,8 +89,10 @@ class GDMonoAssembly {
 #endif
 
 	static bool no_search;
+	static bool in_preload;
 	static Vector<String> search_dirs;
 
+	static void assembly_load_hook(MonoAssembly *assembly, void *user_data);
 	static MonoAssembly *assembly_search_hook(MonoAssemblyName *aname, void *user_data);
 	static MonoAssembly *assembly_refonly_search_hook(MonoAssemblyName *aname, void *user_data);
 	static MonoAssembly *assembly_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data);
@@ -100,6 +102,7 @@ class GDMonoAssembly {
 	static MonoAssembly *_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data, bool refonly);
 
 	static GDMonoAssembly *_load_assembly_from(const String &p_name, const String &p_path, bool p_refonly);
+	static void _wrap_mono_assembly(MonoAssembly *assembly);
 
 	friend class GDMono;
 	static void initialize();

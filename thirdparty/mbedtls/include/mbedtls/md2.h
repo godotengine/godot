@@ -39,13 +39,13 @@
 
 #define MBEDTLS_ERR_MD2_HW_ACCEL_FAILED                   -0x002B  /**< MD2 hardware accelerator failed */
 
-#if !defined(MBEDTLS_MD2_ALT)
-// Regular implementation
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_MD2_ALT)
+// Regular implementation
+//
 
 /**
  * \brief          MD2 context structure
@@ -63,6 +63,10 @@ typedef struct
     size_t left;                /*!< amount of data in buffer   */
 }
 mbedtls_md2_context;
+
+#else  /* MBEDTLS_MD2_ALT */
+#include "md2_alt.h"
+#endif /* MBEDTLS_MD2_ALT */
 
 /**
  * \brief          Initialize MD2 context
@@ -234,18 +238,6 @@ MBEDTLS_DEPRECATED void mbedtls_md2_process( mbedtls_md2_context *ctx );
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_MD2_ALT */
-#include "md2_alt.h"
-#endif /* MBEDTLS_MD2_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Output = MD2( input buffer )

@@ -272,8 +272,7 @@ bool CanvasItem::is_visible_in_tree() const {
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
-	if (!first_draw)
-		notification(NOTIFICATION_VISIBILITY_CHANGED);
+	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible)
 		update(); //todo optimize
@@ -322,11 +321,6 @@ void CanvasItem::hide() {
 	_change_notify("visible");
 }
 
-Size2 CanvasItem::_edit_get_minimum_size() const {
-
-	return Size2(-1, -1); //no limit
-}
-
 void CanvasItem::_update_callback() {
 
 	if (!is_inside_tree()) {
@@ -355,23 +349,12 @@ void CanvasItem::_update_callback() {
 
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
-	const CanvasItem *ci = this;
-	Transform2D xform;
-	const CanvasItem *last_valid = NULL;
-
-	while (ci) {
-
-		last_valid = ci;
-		xform = ci->get_transform() * xform;
-		ci = ci->get_parent_item();
-	}
-
-	if (last_valid->canvas_layer)
-		return last_valid->canvas_layer->get_transform() * xform;
+	if (canvas_layer)
+		return canvas_layer->get_transform() * get_global_transform();
 	else if (is_inside_tree())
-		return get_viewport()->get_canvas_transform() * xform;
-
-	return xform;
+		return get_viewport()->get_canvas_transform() * get_global_transform();
+	else
+		return get_global_transform();
 }
 
 Transform2D CanvasItem::get_global_transform() const {
@@ -415,6 +398,9 @@ void CanvasItem::_enter_canvas() {
 
 			canvas_layer = Object::cast_to<CanvasLayer>(n);
 			if (canvas_layer) {
+				break;
+			}
+			if (Object::cast_to<Viewport>(n)) {
 				break;
 			}
 			n = n->get_parent();
@@ -995,7 +981,6 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_set_rect", "rect"), &CanvasItem::_edit_set_rect);
 	ClassDB::bind_method(D_METHOD("_edit_get_rect"), &CanvasItem::_edit_get_rect);
 	ClassDB::bind_method(D_METHOD("_edit_use_rect"), &CanvasItem::_edit_use_rect);
-	ClassDB::bind_method(D_METHOD("_edit_get_item_and_children_rect"), &CanvasItem::_edit_get_item_and_children_rect);
 	ClassDB::bind_method(D_METHOD("_edit_set_rotation", "degrees"), &CanvasItem::_edit_set_rotation);
 	ClassDB::bind_method(D_METHOD("_edit_get_rotation"), &CanvasItem::_edit_get_rotation);
 	ClassDB::bind_method(D_METHOD("_edit_use_rotation"), &CanvasItem::_edit_use_rotation);
@@ -1174,21 +1159,6 @@ int CanvasItem::get_canvas_layer() const {
 		return canvas_layer->get_layer();
 	else
 		return 0;
-}
-
-Rect2 CanvasItem::_edit_get_item_and_children_rect() const {
-
-	Rect2 rect = _edit_get_rect();
-
-	for (int i = 0; i < get_child_count(); i++) {
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
-		if (c) {
-			Rect2 sir = c->get_transform().xform(c->_edit_get_item_and_children_rect());
-			rect = rect.merge(sir);
-		}
-	}
-
-	return rect;
 }
 
 CanvasItem::CanvasItem() :

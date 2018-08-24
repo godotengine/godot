@@ -64,6 +64,7 @@ String _find_build_engine_on_unix(const String &p_name) {
 	const char *locations[] = {
 #ifdef OSX_ENABLED
 		"/Library/Frameworks/Mono.framework/Versions/Current/bin/",
+		"/usr/local/var/homebrew/linked/mono/bin/",
 #endif
 		"/opt/novell/mono/bin/"
 	};
@@ -209,6 +210,8 @@ bool GodotSharpBuilds::build_api_sln(const String &p_name, const String &p_api_s
 
 	if (!FileAccess::exists(api_assembly_file)) {
 		MonoBuildInfo api_build_info(api_sln_file, p_config);
+		// TODO Replace this global NoWarn with '#pragma warning' directives on generated files,
+		// once we start to actively document manually maintained C# classes
 		api_build_info.custom_props.push_back("NoWarn=1591"); // Ignore missing documentation warnings
 
 		if (!GodotSharpBuilds::get_singleton()->build(api_build_info)) {
@@ -461,12 +464,12 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	exit_code = -1;
 
-	String logs_dir = GodotSharpDirs::get_build_logs_dir().plus_file(build_info.solution.md5_text() + "_" + build_info.configuration);
+	String log_dirpath = build_info.get_log_dirpath();
 
 	if (build_tab) {
 		build_tab->on_build_start();
 	} else {
-		build_tab = memnew(MonoBuildTab(build_info, logs_dir));
+		build_tab = memnew(MonoBuildTab(build_info, log_dirpath));
 		MonoBottomPanel::get_singleton()->add_build_tab(build_tab);
 	}
 
@@ -488,12 +491,12 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 	// Remove old issues file
 
 	String issues_file = "msbuild_issues.csv";
-	DirAccessRef d = DirAccess::create_for_path(logs_dir);
+	DirAccessRef d = DirAccess::create_for_path(log_dirpath);
 	if (d->file_exists(issues_file)) {
 		Error err = d->remove(issues_file);
 		if (err != OK) {
 			exited = true;
-			String file_path = ProjectSettings::get_singleton()->localize_path(logs_dir).plus_file(issues_file);
+			String file_path = ProjectSettings::get_singleton()->localize_path(log_dirpath).plus_file(issues_file);
 			String message = "Cannot remove issues file: " + file_path;
 			build_tab->on_build_exec_failed(message);
 			ERR_EXPLAIN(message);
@@ -512,14 +515,14 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	const Variant *ctor_args[2] = { &solution, &config };
 
-	MonoObject *ex = NULL;
+	MonoException *exc = NULL;
 	GDMonoMethod *ctor = klass->get_method(".ctor", 2);
-	ctor->invoke(mono_object, ctor_args, &ex);
+	ctor->invoke(mono_object, ctor_args, &exc);
 
-	if (ex) {
+	if (exc) {
 		exited = true;
-		GDMonoUtils::print_unhandled_exception(ex);
-		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		GDMonoUtils::debug_unhandled_exception(exc);
+		String message = "The build constructor threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(exc);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
 		ERR_FAIL();
@@ -527,20 +530,21 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	// Call Build
 
-	Variant logger_assembly = OS::get_singleton()->get_executable_path().get_base_dir().plus_file(EDITOR_TOOLS_ASSEMBLY_NAME) + ".dll";
-	Variant logger_output_dir = logs_dir;
+	String logger_assembly_path = GDMono::get_singleton()->get_editor_tools_assembly()->get_path();
+	Variant logger_assembly = ProjectSettings::get_singleton()->globalize_path(logger_assembly_path);
+	Variant logger_output_dir = log_dirpath;
 	Variant custom_props = build_info.custom_props;
 
 	const Variant *args[3] = { &logger_assembly, &logger_output_dir, &custom_props };
 
-	ex = NULL;
+	exc = NULL;
 	GDMonoMethod *build_method = klass->get_method(p_blocking ? "Build" : "BuildAsync", 3);
-	build_method->invoke(mono_object, args, &ex);
+	build_method->invoke(mono_object, args, &exc);
 
-	if (ex) {
+	if (exc) {
 		exited = true;
-		GDMonoUtils::print_unhandled_exception(ex);
-		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(ex);
+		GDMonoUtils::debug_unhandled_exception(exc);
+		String message = "The build method threw an exception.\n" + GDMonoUtils::get_exception_name_and_message(exc);
 		build_tab->on_build_exec_failed(message);
 		ERR_EXPLAIN(message);
 		ERR_FAIL();

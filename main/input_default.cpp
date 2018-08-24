@@ -684,7 +684,7 @@ void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 		return;
 	};
 
-	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
+	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
 	if (!el) {
 		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
 		//return _button_event(p_last_id, p_device, p_button, p_pressed);
@@ -755,7 +755,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		return;
 	};
 
-	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
+	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
 		//return _axis_event(p_last_id, p_device, p_axis, p_value);
 		return;
@@ -831,7 +831,7 @@ void InputDefault::joy_hat(int p_device, int p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 
-	JoyEvent *map;
+	const JoyEvent *map;
 
 	if (joy.mapping == -1) {
 		map = hat_map_default;

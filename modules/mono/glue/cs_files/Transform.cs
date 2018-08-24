@@ -102,7 +102,18 @@ namespace Godot
                 basis[0, 2] * vInv.x + basis[1, 2] * vInv.y + basis[2, 2] * vInv.z
             );
         }
-        
+
+        // Constants
+        private static readonly Transform _identity = new Transform(Basis.Identity, Vector3.Zero);
+        private static readonly Transform _flipX = new Transform(new Basis(new Vector3(-1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)), Vector3.Zero);
+        private static readonly Transform _flipY = new Transform(new Basis(new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 1)), Vector3.Zero);
+        private static readonly Transform _flipZ = new Transform(new Basis(new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, -1)), Vector3.Zero);
+
+        public static Transform Identity { get { return _identity; } }
+        public static Transform FlipX { get { return _flipX; } }
+        public static Transform FlipY { get { return _flipY; } }
+        public static Transform FlipZ { get { return _flipZ; } }
+
         // Constructors 
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {

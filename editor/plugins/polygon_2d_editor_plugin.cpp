@@ -563,6 +563,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				if (uv_move_current == UV_MODE_REMOVE_SPLIT) {
 
+					splits_prev = node->get_splits();
 					for (int i = 0; i < splits_prev.size(); i += 2) {
 						if (splits_prev[i] < 0 || splits_prev[i] >= points_prev.size())
 							continue;

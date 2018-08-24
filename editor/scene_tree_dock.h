@@ -68,6 +68,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
@@ -76,11 +77,17 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_BUTTON_MAX,
 		TOOL_SCENE_EDITABLE_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
-		TOOL_SCENE_CLEAR_INSTANCING,
+		TOOL_SCENE_MAKE_LOCAL,
 		TOOL_SCENE_OPEN,
 		TOOL_SCENE_CLEAR_INHERITANCE,
 		TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM,
-		TOOL_SCENE_OPEN_INHERITED
+		TOOL_SCENE_OPEN_INHERITED,
+
+		TOOL_CREATE_2D_SCENE,
+		TOOL_CREATE_3D_SCENE,
+		TOOL_CREATE_USER_INTERFACE,
+		TOOL_CREATE_FAVORITE,
+
 	};
 
 	enum {
@@ -134,13 +141,23 @@ class SceneTreeDock : public VBoxContainer {
 	Node *edited_scene;
 	EditorNode *editor;
 
+	VBoxContainer *create_root_dialog;
+	String selected_favorite_root;
+
 	void _add_children_to_popup(Object *p_obj, int p_depth);
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
-	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root);
+
+	enum ReplaceOwnerMode {
+		MODE_BIDI,
+		MODE_DO,
+		MODE_UNDO
+	};
+
+	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 
@@ -186,6 +203,9 @@ class SceneTreeDock : public VBoxContainer {
 	void _remote_tree_selected();
 	void _local_tree_selected();
 
+	void _update_create_root_dialog();
+	void _favorite_root_selected(const String &p_class);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -215,6 +235,9 @@ public:
 	void replace_node(Node *p_node, Node *p_by_node);
 
 	void open_script_dialog(Node *p_for_node);
+
+	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
+
 	SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 };
 

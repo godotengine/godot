@@ -973,8 +973,9 @@
 			</return>
 			<argument index="0" name="swap_buffers" type="bool" default="true">
 			</argument>
+			<argument index="1" name="frame_step" type="float" default="0.0">
+			</argument>
 			<description>
-				Draws a frame.
 			</description>
 		</method>
 		<method name="environment_create">
@@ -1206,13 +1207,15 @@
 			</argument>
 			<argument index="7" name="light_affect" type="float">
 			</argument>
-			<argument index="8" name="color" type="Color">
+			<argument index="8" name="ao_channel_affect" type="float">
 			</argument>
-			<argument index="9" name="quality" type="int" enum="VisualServer.EnvironmentSSAOQuality">
+			<argument index="9" name="color" type="Color">
 			</argument>
-			<argument index="10" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur">
+			<argument index="10" name="quality" type="int" enum="VisualServer.EnvironmentSSAOQuality">
 			</argument>
-			<argument index="11" name="bilateral_sharpness" type="float">
+			<argument index="11" name="blur" type="int" enum="VisualServer.EnvironmentSSAOBlur">
+			</argument>
+			<argument index="12" name="bilateral_sharpness" type="float">
 			</argument>
 			<description>
 			</description>
@@ -1273,8 +1276,9 @@
 			</return>
 			<argument index="0" name="swap_buffers" type="bool" default="true">
 			</argument>
+			<argument index="1" name="frame_step" type="float" default="0.0">
+			</argument>
 			<description>
-				Draws a frame. Same as [method draw].
 			</description>
 		</method>
 		<method name="force_sync">
@@ -1332,7 +1336,7 @@
 		<method name="gi_probe_get_bias" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1356,7 +1360,7 @@
 		<method name="gi_probe_get_dynamic_data" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1364,7 +1368,7 @@
 		<method name="gi_probe_get_dynamic_range" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1372,7 +1376,7 @@
 		<method name="gi_probe_get_energy" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1380,7 +1384,7 @@
 		<method name="gi_probe_get_normal_bias" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1388,7 +1392,7 @@
 		<method name="gi_probe_get_propagation" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1396,7 +1400,7 @@
 		<method name="gi_probe_get_to_cell_xform" qualifiers="const">
 			<return type="Transform">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1404,7 +1408,7 @@
 		<method name="gi_probe_is_compressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1412,7 +1416,7 @@
 		<method name="gi_probe_is_interior" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="arg0" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
 			<description>
 			</description>
@@ -1420,9 +1424,9 @@
 		<method name="gi_probe_set_bias">
 			<return type="void">
 			</return>
-			<argument index="0" name="bias" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="bias" type="float">
 			</argument>
 			<description>
 			</description>
@@ -1450,9 +1454,9 @@
 		<method name="gi_probe_set_compress">
 			<return type="void">
 			</return>
-			<argument index="0" name="enable" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -1460,9 +1464,9 @@
 		<method name="gi_probe_set_dynamic_data">
 			<return type="void">
 			</return>
-			<argument index="0" name="data" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="PoolIntArray">
+			<argument index="1" name="data" type="PoolIntArray">
 			</argument>
 			<description>
 			</description>
@@ -1470,9 +1474,9 @@
 		<method name="gi_probe_set_dynamic_range">
 			<return type="void">
 			</return>
-			<argument index="0" name="range" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="int">
+			<argument index="1" name="range" type="int">
 			</argument>
 			<description>
 			</description>
@@ -1480,9 +1484,9 @@
 		<method name="gi_probe_set_energy">
 			<return type="void">
 			</return>
-			<argument index="0" name="energy" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="energy" type="float">
 			</argument>
 			<description>
 			</description>
@@ -1490,9 +1494,9 @@
 		<method name="gi_probe_set_interior">
 			<return type="void">
 			</return>
-			<argument index="0" name="enable" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="bool">
+			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -1500,9 +1504,9 @@
 		<method name="gi_probe_set_normal_bias">
 			<return type="void">
 			</return>
-			<argument index="0" name="bias" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="bias" type="float">
 			</argument>
 			<description>
 			</description>
@@ -1510,9 +1514,9 @@
 		<method name="gi_probe_set_propagation">
 			<return type="void">
 			</return>
-			<argument index="0" name="propagation" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="float">
+			<argument index="1" name="propagation" type="float">
 			</argument>
 			<description>
 			</description>
@@ -1520,9 +1524,9 @@
 		<method name="gi_probe_set_to_cell_xform">
 			<return type="void">
 			</return>
-			<argument index="0" name="xform" type="RID">
+			<argument index="0" name="probe" type="RID">
 			</argument>
-			<argument index="1" name="arg1" type="Transform">
+			<argument index="1" name="xform" type="Transform">
 			</argument>
 			<description>
 			</description>
@@ -2258,7 +2262,7 @@
 			</argument>
 			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
-			<argument index="4" name="compress_format" type="int" default="97792">
+			<argument index="4" name="compress_format" type="int" default="97280">
 			</argument>
 			<description>
 				Adds a surface generated from the Arrays to a mesh. See PRIMITIVE_TYPE_* constants for types.
@@ -2437,6 +2441,32 @@
 				Returns the format of a mesh's surface.
 			</description>
 		</method>
+		<method name="mesh_surface_get_format_offset" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="vertex_len" type="int">
+			</argument>
+			<argument index="2" name="index_len" type="int">
+			</argument>
+			<argument index="3" name="array_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_get_format_stride" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="format" type="int">
+			</argument>
+			<argument index="1" name="vertex_len" type="int">
+			</argument>
+			<argument index="2" name="index_len" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="mesh_surface_get_index_array" qualifiers="const">
 			<return type="PoolByteArray">
 			</return>
@@ -2494,6 +2524,20 @@
 				Sets a mesh's surface's material.
 			</description>
 		</method>
+		<method name="mesh_surface_update_region">
+			<return type="void">
+			</return>
+			<argument index="0" name="mesh" type="RID">
+			</argument>
+			<argument index="1" name="surface" type="int">
+			</argument>
+			<argument index="2" name="offset" type="int">
+			</argument>
+			<argument index="3" name="data" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="multimesh_allocate">
 			<return type="void">
 			</return>
@@ -2504,6 +2548,8 @@
 			<argument index="2" name="transform_format" type="int" enum="VisualServer.MultimeshTransformFormat">
 			</argument>
 			<argument index="3" name="color_format" type="int" enum="VisualServer.MultimeshColorFormat">
+			</argument>
+			<argument index="4" name="custom_data_format" type="int" enum="VisualServer.MultimeshCustomDataFormat" default="0">
 			</argument>
 			<description>
 			</description>
@@ -2550,6 +2596,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="multimesh_instance_get_custom_data" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="multimesh_instance_get_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -2582,6 +2638,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="multimesh_instance_set_custom_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<argument index="2" name="custom_data" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="multimesh_instance_set_transform">
 			<return type="void">
 			</return>
@@ -2602,6 +2670,16 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<argument index="2" name="transform" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="multimesh_set_as_bulk_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="multimesh" type="RID">
+			</argument>
+			<argument index="1" name="array" type="PoolRealArray">
 			</argument>
 			<description>
 			</description>
@@ -3222,12 +3300,15 @@
 			</argument>
 			<argument index="2" name="height" type="int">
 			</argument>
-			<argument index="3" name="format" type="int" enum="Image.Format">
+			<argument index="3" name="depth_3d" type="int">
 			</argument>
-			<argument index="4" name="flags" type="int" default="7">
+			<argument index="4" name="format" type="int" enum="Image.Format">
+			</argument>
+			<argument index="5" name="type" type="int" enum="VisualServer.TextureType">
+			</argument>
+			<argument index="6" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Allocates space for a texture's image or video.
 			</description>
 		</method>
 		<method name="texture_create">
@@ -3260,10 +3341,18 @@
 			</return>
 			<argument index="0" name="texture" type="RID">
 			</argument>
-			<argument index="1" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
+			<argument index="1" name="cube_side" type="int" default="0">
 			</argument>
 			<description>
 				Returns a copy of a texture's image unless it's a CubeMap, in which case it returns the [RID] of the image at one of the cubes sides.
+			</description>
+		</method>
+		<method name="texture_get_depth" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="texture_get_flags" qualifiers="const">
@@ -3311,6 +3400,14 @@
 				Returns the opengl id of the texture's image.
 			</description>
 		</method>
+		<method name="texture_get_type" qualifiers="const">
+			<return type="int" enum="VisualServer.TextureType">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_width" qualifiers="const">
 			<return type="int">
 			</return>
@@ -3327,7 +3424,7 @@
 			</argument>
 			<argument index="1" name="image" type="Image">
 			</argument>
-			<argument index="2" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
+			<argument index="2" name="layer" type="int" default="0">
 			</argument>
 			<description>
 				Sets the texture's image data. If it's a CubeMap, it sets the image data at a cube side.
@@ -3354,7 +3451,7 @@
 			</argument>
 			<argument index="8" name="dst_mip" type="int">
 			</argument>
-			<argument index="9" name="cube_side" type="int" enum="VisualServer.CubeMapSide" default="0">
+			<argument index="9" name="layer" type="int" default="0">
 			</argument>
 			<description>
 			</description>
@@ -3399,8 +3496,9 @@
 			</argument>
 			<argument index="2" name="height" type="int">
 			</argument>
+			<argument index="3" name="depth" type="int">
+			</argument>
 			<description>
-				Overwrites the texture's width and height.
 			</description>
 		</method>
 		<method name="textures_keep_original">
@@ -3746,7 +3844,11 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="frame_drawn_in_thread">
+		<signal name="frame_post_draw">
+			<description>
+			</description>
+		</signal>
+		<signal name="frame_pre_draw">
 			<description>
 			</description>
 		</signal>
@@ -3791,6 +3893,14 @@
 		<constant name="CUBEMAP_BACK" value="5" enum="CubeMapSide">
 			Marks the back side of a cubemap.
 		</constant>
+		<constant name="TEXTURE_TYPE_2D" value="0" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_CUBEMAP" value="1" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_2D_ARRAY" value="2" enum="TextureType">
+		</constant>
+		<constant name="TEXTURE_TYPE_3D" value="3" enum="TextureType">
+		</constant>
 		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
 			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
@@ -3810,10 +3920,7 @@
 		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
 			Repeat texture with alternate sections mirrored.
 		</constant>
-		<constant name="TEXTURE_FLAG_CUBEMAP" value="2048" enum="TextureFlags">
-			Texture is a cubemap.
-		</constant>
-		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="4096" enum="TextureFlags">
+		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="2048" enum="TextureFlags">
 			Texture is a video surface.
 		</constant>
 		<constant name="TEXTURE_FLAGS_DEFAULT" value="7" enum="TextureFlags">
@@ -3919,7 +4026,7 @@
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
 			Flag used to mark that the array uses 16 bit bones instead of 8 bit.
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
 			Used to set flags ARRAY_COMPRESS_VERTEX, ARRAY_COMPRESS_NORMAL, ARRAY_COMPRESS_TANGENT, ARRAY_COMPRESS_COLOR, ARRAY_COMPRESS_TEX_UV, ARRAY_COMPRESS_TEX_UV2 and ARRAY_COMPRESS_WEIGHTS quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
@@ -4126,7 +4233,9 @@
 		</constant>
 		<constant name="INSTANCE_FLAG_USE_BAKED_LIGHT" value="0" enum="InstanceFlags">
 		</constant>
-		<constant name="INSTANCE_FLAG_MAX" value="1" enum="InstanceFlags">
+		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="1" enum="InstanceFlags">
+		</constant>
+		<constant name="INSTANCE_FLAG_MAX" value="2" enum="InstanceFlags">
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 		</constant>

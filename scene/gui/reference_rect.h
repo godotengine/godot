@@ -36,12 +36,17 @@
 class ReferenceRect : public Control {
 
 	GDCLASS(ReferenceRect, Control);
+	Color border_color;
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	ReferenceRect();
+
+	void set_border_color(const Color &color);
+	Color get_border_color() const;
 };
 
 #endif // REFERENCE_RECT_H

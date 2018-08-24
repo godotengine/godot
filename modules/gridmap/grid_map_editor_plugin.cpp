@@ -43,7 +43,7 @@ void GridMapEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = NULL;
 		hide();
-		theme_pallete->hide();
+		mesh_library_palette->hide();
 	}
 }
 
@@ -231,6 +231,13 @@ void GridMapEditor::_menu_option(int p_option) {
 			_delete_selection();
 
 		} break;
+		case MENU_OPTION_SELECTION_FILL: {
+			if (!selection.active)
+				return;
+
+			_fill_selection();
+
+		} break;
 		case MENU_OPTION_GRIDMAP_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50) * EDSCALE);
 		} break;
@@ -313,12 +320,12 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	if (!spatial_editor)
 		return false;
 
-	if (selected_pallete < 0 && input_action != INPUT_COPY && input_action != INPUT_SELECT && input_action != INPUT_DUPLICATE)
+	if (selected_palette < 0 && input_action != INPUT_COPY && input_action != INPUT_SELECT && input_action != INPUT_DUPLICATE)
 		return false;
-	Ref<MeshLibrary> theme = node->get_theme();
-	if (theme.is_null())
+	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
+	if (mesh_library.is_null())
 		return false;
-	if (input_action != INPUT_COPY && input_action != INPUT_SELECT && input_action != INPUT_DUPLICATE && !theme->has_item(selected_pallete))
+	if (input_action != INPUT_COPY && input_action != INPUT_SELECT && input_action != INPUT_DUPLICATE && !mesh_library->has_item(selected_palette))
 		return false;
 
 	Camera *camera = p_camera;
@@ -400,9 +407,9 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 
 		int item = node->get_cell_item(cell[0], cell[1], cell[2]);
 		if (item >= 0) {
-			selected_pallete = item;
-			theme_pallete->set_current(item);
-			update_pallete();
+			selected_palette = item;
+			mesh_library_palette->set_current(item);
+			update_palette();
 			_update_cursor_instance();
 		}
 		return true;
@@ -410,12 +417,12 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	if (input_action == INPUT_PAINT) {
 		SetItem si;
 		si.pos = Vector3(cell[0], cell[1], cell[2]);
-		si.new_value = selected_pallete;
+		si.new_value = selected_palette;
 		si.new_orientation = cursor_rot;
 		si.old_value = node->get_cell_item(cell[0], cell[1], cell[2]);
 		si.old_orientation = node->get_cell_item_orientation(cell[0], cell[1], cell[2]);
 		set_items.push_back(si);
-		node->set_cell_item(cell[0], cell[1], cell[2], selected_pallete, cursor_rot);
+		node->set_cell_item(cell[0], cell[1], cell[2], selected_palette, cursor_rot);
 		return true;
 	} else if (input_action == INPUT_ERASE) {
 		SetItem si;
@@ -445,6 +452,29 @@ void GridMapEditor::_delete_selection() {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
 
 				undo_redo->add_do_method(node, "set_cell_item", i, j, k, GridMap::INVALID_CELL_ITEM);
+				undo_redo->add_undo_method(node, "set_cell_item", i, j, k, node->get_cell_item(i, j, k), node->get_cell_item_orientation(i, j, k));
+			}
+		}
+	}
+	undo_redo->commit_action();
+
+	selection.active = false;
+	_validate_selection();
+}
+
+void GridMapEditor::_fill_selection() {
+
+	if (!selection.active)
+		return;
+
+	undo_redo->create_action(TTR("GridMap Fill Selection"));
+	for (int i = selection.begin.x; i <= selection.end.x; i++) {
+
+		for (int j = selection.begin.y; j <= selection.end.y; j++) {
+
+			for (int k = selection.begin.z; k <= selection.end.z; k++) {
+
+				undo_redo->add_do_method(node, "set_cell_item", i, j, k, selected_palette, cursor_rot);
 				undo_redo->add_undo_method(node, "set_cell_item", i, j, k, node->get_cell_item(i, j, k), node->get_cell_item_orientation(i, j, k));
 			}
 		}
@@ -682,42 +712,42 @@ void GridMapEditor::_set_display_mode(int p_mode) {
 
 	display_mode = p_mode;
 
-	update_pallete();
+	update_palette();
 }
 
-void GridMapEditor::update_pallete() {
-	int selected = theme_pallete->get_current();
+void GridMapEditor::update_palette() {
+	int selected = mesh_library_palette->get_current();
 
-	theme_pallete->clear();
+	mesh_library_palette->clear();
 	if (display_mode == DISPLAY_THUMBNAIL) {
-		theme_pallete->set_max_columns(0);
-		theme_pallete->set_icon_mode(ItemList::ICON_MODE_TOP);
+		mesh_library_palette->set_max_columns(0);
+		mesh_library_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	} else if (display_mode == DISPLAY_LIST) {
-		theme_pallete->set_max_columns(1);
-		theme_pallete->set_icon_mode(ItemList::ICON_MODE_LEFT);
+		mesh_library_palette->set_max_columns(1);
+		mesh_library_palette->set_icon_mode(ItemList::ICON_MODE_LEFT);
 	}
 
 	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
-	theme_pallete->set_fixed_icon_size(Size2(min_size, min_size));
-	theme_pallete->set_fixed_column_width(min_size * 3 / 2);
-	theme_pallete->set_max_text_lines(2);
+	mesh_library_palette->set_fixed_icon_size(Size2(min_size, min_size));
+	mesh_library_palette->set_fixed_column_width(min_size * 3 / 2);
+	mesh_library_palette->set_max_text_lines(2);
 
-	Ref<MeshLibrary> theme = node->get_theme();
+	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
 
-	if (theme.is_null()) {
-		last_theme = NULL;
+	if (mesh_library.is_null()) {
+		last_mesh_library = NULL;
 		return;
 	}
 
 	Vector<int> ids;
-	ids = theme->get_item_list();
+	ids = mesh_library->get_item_list();
 
 	List<_CGMEItemSort> il;
 	for (int i = 0; i < ids.size(); i++) {
 
 		_CGMEItemSort is;
 		is.id = ids[i];
-		is.name = theme->get_item_name(ids[i]);
+		is.name = mesh_library->get_item_name(ids[i]);
 		il.push_back(is);
 	}
 	il.sort();
@@ -727,28 +757,28 @@ void GridMapEditor::update_pallete() {
 	for (List<_CGMEItemSort>::Element *E = il.front(); E; E = E->next()) {
 		int id = E->get().id;
 
-		theme_pallete->add_item("");
+		mesh_library_palette->add_item("");
 
-		String name = theme->get_item_name(id);
-		Ref<Texture> preview = theme->get_item_preview(id);
+		String name = mesh_library->get_item_name(id);
+		Ref<Texture> preview = mesh_library->get_item_preview(id);
 
 		if (!preview.is_null()) {
-			theme_pallete->set_item_icon(item, preview);
-			theme_pallete->set_item_tooltip(item, name);
+			mesh_library_palette->set_item_icon(item, preview);
+			mesh_library_palette->set_item_tooltip(item, name);
 		}
 		if (name != "") {
-			theme_pallete->set_item_text(item, name);
+			mesh_library_palette->set_item_text(item, name);
 		}
-		theme_pallete->set_item_metadata(item, id);
+		mesh_library_palette->set_item_metadata(item, id);
 
 		item++;
 	}
 
 	if (selected != -1) {
-		theme_pallete->select(selected);
+		mesh_library_palette->select(selected);
 	}
 
-	last_theme = theme.operator->();
+	last_mesh_library = mesh_library.operator->();
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
@@ -775,7 +805,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 		return;
 	}
 
-	update_pallete();
+	update_palette();
 
 	set_process(true);
 
@@ -884,7 +914,7 @@ void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
-			theme_pallete->connect("item_selected", this, "_item_selected_cbk");
+			mesh_library_palette->connect("item_selected", this, "_item_selected_cbk");
 			for (int i = 0; i < 3; i++) {
 
 				grid[i] = VS::get_singleton()->mesh_create();
@@ -929,9 +959,9 @@ void GridMapEditor::_notification(int p_what) {
 				}
 				grid_xform = xf;
 			}
-			Ref<MeshLibrary> cgmt = node->get_theme();
-			if (cgmt.operator->() != last_theme)
-				update_pallete();
+			Ref<MeshLibrary> cgmt = node->get_mesh_library();
+			if (cgmt.operator->() != last_mesh_library)
+				update_palette();
 
 			if (lock_view) {
 
@@ -964,10 +994,10 @@ void GridMapEditor::_update_cursor_instance() {
 		VisualServer::get_singleton()->free(cursor_instance);
 	cursor_instance = RID();
 
-	if (selected_pallete >= 0) {
+	if (selected_palette >= 0) {
 
-		if (node && !node->get_theme().is_null()) {
-			Ref<Mesh> mesh = node->get_theme()->get_item_mesh(selected_pallete);
+		if (node && !node->get_mesh_library().is_null()) {
+			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
 
 				cursor_instance = VisualServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
@@ -978,7 +1008,7 @@ void GridMapEditor::_update_cursor_instance() {
 }
 
 void GridMapEditor::_item_selected_cbk(int idx) {
-	selected_pallete = theme_pallete->get_item_metadata(idx);
+	selected_palette = mesh_library_palette->get_item_metadata(idx);
 
 	_update_cursor_instance();
 }
@@ -1072,6 +1102,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_C);
 	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_X);
+	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_SHIFT + KEY_F);
 
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
@@ -1115,9 +1146,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	display_mode = DISPLAY_THUMBNAIL;
 
-	theme_pallete = memnew(ItemList);
-	add_child(theme_pallete);
-	theme_pallete->set_v_size_flags(SIZE_EXPAND_FILL);
+	mesh_library_palette = memnew(ItemList);
+	add_child(mesh_library_palette);
+	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	edit_axis = Vector3::AXIS_Y;
 	edit_floor[0] = -1;
@@ -1125,7 +1156,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	edit_floor[2] = -1;
 
 	cursor_visible = false;
-	selected_pallete = -1;
+	selected_palette = -1;
 	lock_view = false;
 	cursor_rot = 0;
 	last_mouseover = Vector3(-1, -1, -1);
@@ -1284,9 +1315,24 @@ GridMapEditor::~GridMapEditor() {
 		VisualServer::get_singleton()->free(duplicate_instance);
 }
 
+void GridMapEditorPlugin::_notification(int p_what) {
+
+	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+
+		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+			case 0: { // Left.
+				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
+			} break;
+			case 1: { // Right.
+				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
+			} break;
+		}
+	}
+}
+
 void GridMapEditorPlugin::edit(Object *p_object) {
 
-	gridmap_editor->edit(Object::cast_to<GridMap>(p_object));
+	grid_map_editor->edit(Object::cast_to<GridMap>(p_object));
 }
 
 bool GridMapEditorPlugin::handles(Object *p_object) const {
@@ -1297,29 +1343,35 @@ bool GridMapEditorPlugin::handles(Object *p_object) const {
 void GridMapEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		gridmap_editor->show();
-		gridmap_editor->spatial_editor_hb->show();
-		gridmap_editor->set_process(true);
+		grid_map_editor->show();
+		grid_map_editor->spatial_editor_hb->show();
+		grid_map_editor->set_process(true);
 	} else {
 
-		gridmap_editor->spatial_editor_hb->hide();
-		gridmap_editor->hide();
-		gridmap_editor->edit(NULL);
-		gridmap_editor->set_process(false);
+		grid_map_editor->spatial_editor_hb->hide();
+		grid_map_editor->hide();
+		grid_map_editor->edit(NULL);
+		grid_map_editor->set_process(false);
 	}
 }
 
 GridMapEditorPlugin::GridMapEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	gridmap_editor = memnew(GridMapEditor(editor));
 
-	SpatialEditor::get_singleton()->get_palette_split()->add_child(gridmap_editor);
-	// TODO: make this configurable, so the user can choose were to put this, it makes more sense
-	// on the right, but some people might find it strange.
-	SpatialEditor::get_singleton()->get_palette_split()->move_child(gridmap_editor, 1);
+	EDITOR_DEF("editors/grid_map/editor_side", 1);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/grid_map/editor_side", PROPERTY_HINT_ENUM, "Left,Right"));
 
-	gridmap_editor->hide();
+	grid_map_editor = memnew(GridMapEditor(editor));
+	switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
+		case 0: { // Left.
+			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, grid_map_editor);
+		} break;
+		case 1: { // Right.
+			add_control_to_container(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, grid_map_editor);
+		} break;
+	}
+	grid_map_editor->hide();
 }
 
 GridMapEditorPlugin::~GridMapEditorPlugin() {

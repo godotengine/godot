@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "polygon_2d.h"
+
 #include "core/math/geometry.h"
 #include "skeleton_2d.h"
+
 Dictionary Polygon2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -113,7 +115,7 @@ void Polygon2D::_notification(int p_what) {
 
 				PoolVector<Vector2>::Read polyr = polygon.read();
 				for (int i = 0; i < len; i++) {
-					points[i] = polyr[i] + offset;
+					points.write[i] = polyr[i] + offset;
 				}
 			}
 
@@ -153,18 +155,18 @@ void Polygon2D::_notification(int p_what) {
 					SWAP(ep[1], ep[4]);
 					SWAP(ep[2], ep[3]);
 					SWAP(ep[5], ep[0]);
-					SWAP(ep[6], points[highest_idx]);
+					SWAP(ep[6], points.write[highest_idx]);
 				}
 
 				points.resize(points.size() + 7);
 				for (int i = points.size() - 1; i >= highest_idx + 7; i--) {
 
-					points[i] = points[i - 7];
+					points.write[i] = points[i - 7];
 				}
 
 				for (int i = 0; i < 7; i++) {
 
-					points[highest_idx + i + 1] = ep[i];
+					points.write[highest_idx + i + 1] = ep[i];
 				}
 
 				len = points.size();
@@ -182,12 +184,12 @@ void Polygon2D::_notification(int p_what) {
 					PoolVector<Vector2>::Read uvr = uv.read();
 
 					for (int i = 0; i < len; i++) {
-						uvs[i] = texmat.xform(uvr[i]) / tex_size;
+						uvs.write[i] = texmat.xform(uvr[i]) / tex_size;
 					}
 
 				} else {
 					for (int i = 0; i < len; i++) {
-						uvs[i] = texmat.xform(points[i]) / tex_size;
+						uvs.write[i] = texmat.xform(points[i]) / tex_size;
 					}
 				}
 			}
@@ -262,10 +264,10 @@ void Polygon2D::_notification(int p_what) {
 			{
 				PoolVector<Color>::Read color_r = vertex_colors.read();
 				for (int i = 0; i < color_len && i < len; i++) {
-					colors[i] = color_r[i];
+					colors.write[i] = color_r[i];
 				}
 				for (int i = color_len; i < len; i++) {
-					colors[i] = color;
+					colors.write[i] = color;
 				}
 			}
 
@@ -333,13 +335,13 @@ void Polygon2D::_notification(int p_what) {
 					Vector<Vector2> vertices;
 					vertices.resize(loop.size());
 					for (int j = 0; j < vertices.size(); j++) {
-						vertices[j] = points[loop[j]];
+						vertices.write[j] = points[loop[j]];
 					}
 					Vector<int> sub_indices = Geometry::triangulate_polygon(vertices);
 					int from = indices.size();
 					indices.resize(from + sub_indices.size());
 					for (int j = 0; j < sub_indices.size(); j++) {
-						indices[from + j] = loop[sub_indices[j]];
+						indices.write[from + j] = loop[sub_indices[j]];
 					}
 				}
 
@@ -538,12 +540,12 @@ void Polygon2D::clear_bones() {
 
 void Polygon2D::set_bone_weights(int p_index, const PoolVector<float> &p_weights) {
 	ERR_FAIL_INDEX(p_index, bone_weights.size());
-	bone_weights[p_index].weights = p_weights;
+	bone_weights.write[p_index].weights = p_weights;
 	update();
 }
 void Polygon2D::set_bone_path(int p_index, const NodePath &p_path) {
 	ERR_FAIL_INDEX(p_index, bone_weights.size());
-	bone_weights[p_index].path = p_path;
+	bone_weights.write[p_index].path = p_path;
 	update();
 }
 
@@ -646,10 +648,10 @@ void Polygon2D::_bind_methods() {
 	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_offset"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_scale"), "set_texture_scale", "get_texture_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_rotation_degrees", PROPERTY_HINT_RANGE, "-1440,1440,0.1"), "set_texture_rotation_degrees", "get_texture_rotation_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_rotation_degrees", PROPERTY_HINT_RANGE, "-1080,1080,0.1,or_lesser,or_greater"), "set_texture_rotation_degrees", "get_texture_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "texture_rotation", PROPERTY_HINT_NONE, "", 0), "set_texture_rotation", "get_texture_rotation");
 	ADD_GROUP("Skeleton", "");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton"), "set_skeleton", "get_skeleton");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 
 	ADD_GROUP("Invert", "invert_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enable"), "set_invert", "get_invert");

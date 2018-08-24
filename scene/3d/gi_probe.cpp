@@ -557,6 +557,7 @@ GIProbe::GIProbe() {
 	compress = false;
 
 	gi_probe = VS::get_singleton()->gi_probe_create();
+	set_disable_scale(true);
 }
 
 GIProbe::~GIProbe() {

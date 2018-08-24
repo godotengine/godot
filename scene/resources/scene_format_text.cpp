@@ -896,7 +896,7 @@ static void bs_save_unicode_string(FileAccess *f, const String &p_string, bool p
 
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32(utf8.length() + 1 | 0x80000000);
+		f->store_32((utf8.length() + 1) | 0x80000000);
 	} else {
 		f->store_32(utf8.length() + 1);
 	}
@@ -1523,7 +1523,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
 
-		sorted_er[E->get()] = E->key();
+		sorted_er.write[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < sorted_er.size(); i++) {

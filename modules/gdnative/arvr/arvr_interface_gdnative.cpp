@@ -125,7 +125,7 @@ bool ARVRInterfaceGDNative::is_stereo() {
 	return stereo;
 }
 
-bool ARVRInterfaceGDNative::is_initialized() {
+bool ARVRInterfaceGDNative::is_initialized() const {
 	bool initialized;
 
 	ERR_FAIL_COND_V(interface == NULL, false);

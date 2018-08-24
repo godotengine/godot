@@ -117,13 +117,13 @@
 			</description>
 		</method>
 		<method name="redo">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<description>
 			</description>
 		</method>
 		<method name="undo">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<description>
 			</description>

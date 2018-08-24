@@ -32,6 +32,7 @@
 #define PHYSICS_BODY__H
 
 #include "scene/3d/collision_object.h"
+#include "scene/resources/physics_material.h"
 #include "servers/physics_server.h"
 #include "skeleton.h"
 #include "vset.h"
@@ -81,18 +82,22 @@ class StaticBody : public PhysicsBody {
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
 
-	real_t bounce;
-	real_t friction;
+	Ref<PhysicsMaterial> physics_material_override;
 
 protected:
 	static void _bind_methods();
 
 public:
+#ifndef DISABLE_DEPRECATED
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
+#endif
+
+	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
+	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	void set_constant_linear_velocity(const Vector3 &p_vel);
 	void set_constant_angular_velocity(const Vector3 &p_vel);
@@ -102,6 +107,9 @@ public:
 
 	StaticBody();
 	~StaticBody();
+
+private:
+	void _reload_physics_characteristics();
 };
 
 class RigidBody : public PhysicsBody {
@@ -121,9 +129,8 @@ protected:
 	PhysicsDirectBodyState *state;
 	Mode mode;
 
-	real_t bounce;
 	real_t mass;
-	real_t friction;
+	Ref<PhysicsMaterial> physics_material_override;
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
@@ -196,11 +203,16 @@ public:
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
+#endif
+
+	void set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override);
+	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	void set_linear_velocity(const Vector3 &p_velocity);
 	Vector3 get_linear_velocity() const;
@@ -242,6 +254,11 @@ public:
 
 	Array get_colliding_bodies() const;
 
+	void add_central_force(const Vector3 &p_force);
+	void add_force(const Vector3 &p_force, const Vector3 &p_pos);
+	void add_torque(const Vector3 &p_torque);
+
+	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
@@ -249,6 +266,9 @@ public:
 
 	RigidBody();
 	~RigidBody();
+
+private:
+	void _reload_physics_characteristics();
 };
 
 VARIANT_ENUM_CAST(RigidBody::Mode);
@@ -265,6 +285,7 @@ public:
 		Vector3 normal;
 		Vector3 collider_vel;
 		ObjectID collider;
+		RID collider_rid;
 		int collider_shape;
 		Variant collider_metadata;
 		Vector3 remainder;
@@ -278,6 +299,7 @@ private:
 	float margin;
 
 	Vector3 floor_velocity;
+	RID on_floor_body;
 	bool on_floor;
 	bool on_ceiling;
 	bool on_wall;
@@ -287,15 +309,17 @@ private:
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
 
-	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true);
+	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
 
 protected:
 	static void _bind_methods();
 
 public:
-	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision);
+	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collisionz, bool p_test_only = false);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
+
+	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
 	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool p_lock);
 	bool get_axis_lock(PhysicsServer::BodyAxis p_axis) const;
@@ -303,7 +327,8 @@ public:
 	void set_safe_margin(float p_margin);
 	float get_safe_margin() const;
 
-	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_infinite_inertia = true, float p_slope_stop_min_velocity = 0.05, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
+	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
+	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_infinite_inertia = true, bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
@@ -537,6 +562,7 @@ protected:
 
 private:
 	static Skeleton *find_skeleton_parent(Node *p_parent);
+
 	void _fix_joint_offset();
 	void _reload_joint();
 

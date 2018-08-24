@@ -350,6 +350,15 @@
 				Loads an image from the binary contents of a PNG file.
 			</description>
 		</method>
+		<method name="load_webp_from_buffer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+				Loads an image from the binary contents of a WebP file.
+			</description>
+		</method>
 		<method name="lock">
 			<return type="void">
 			</return>
@@ -391,6 +400,12 @@
 			</argument>
 			<description>
 				Resizes the image to the nearest power of 2 for the width and height. If [code]square[/code] is [code]true[/code] then set width and height to be the same.
+			</description>
+		</method>
+		<method name="rgbe_to_srgb">
+			<return type="Image">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
@@ -577,6 +592,12 @@
 		<constant name="INTERPOLATE_BILINEAR" value="1" enum="Interpolation">
 		</constant>
 		<constant name="INTERPOLATE_CUBIC" value="2" enum="Interpolation">
+		</constant>
+		<constant name="INTERPOLATE_TRILINEAR" value="3" enum="Interpolation">
+			Performs bilinear separately on the two most suited mipmap levels, then linearly interpolates between them.
+			It's slower than [code]INTERPOLATE_BILINEAR[/code], but produces higher quality results, with much less aliasing artifacts.
+			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image. (Note that if you intend to scale multiple copies of the original image, it's better to call [code]generate_mipmaps[/code] on it in advance, to avoid wasting processing power in generating them again and again.)
+			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 		</constant>

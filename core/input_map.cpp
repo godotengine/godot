@@ -44,7 +44,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
-	ClassDB::bind_method(D_METHOD("action_set_deadzone", "deadzone"), &InputMap::action_set_deadzone);
+	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
 	ClassDB::bind_method(D_METHOD("action_add_event", "action", "event"), &InputMap::action_add_event);
 	ClassDB::bind_method(D_METHOD("action_has_event", "action", "event"), &InputMap::action_has_event);
 	ClassDB::bind_method(D_METHOD("action_erase_event", "action", "event"), &InputMap::action_erase_event);

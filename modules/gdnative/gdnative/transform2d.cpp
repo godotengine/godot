@@ -30,7 +30,7 @@
 
 #include "gdnative/transform2d.h"
 
-#include "core/math/math_2d.h"
+#include "core/math/transform_2d.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus

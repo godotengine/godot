@@ -109,6 +109,8 @@ struct Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_b) const;
 
+	_FORCE_INLINE_ Vector3 project(const Vector3 &p_b) const;
+
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_b) const;
 
 	_FORCE_INLINE_ Vector3 slide(const Vector3 &p_normal) const;
@@ -236,6 +238,10 @@ real_t Vector3::distance_to(const Vector3 &p_b) const {
 real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
 
 	return (p_b - *this).length_squared();
+}
+
+Vector3 Vector3::project(const Vector3 &p_b) const {
+	return p_b * (dot(p_b) / p_b.length_squared());
 }
 
 real_t Vector3::angle_to(const Vector3 &p_b) const {

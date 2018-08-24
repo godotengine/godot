@@ -72,6 +72,7 @@ public:
 	void rename_animation(const StringName &p_prev, const StringName &p_next);
 
 	void get_animation_list(List<StringName> *r_animations) const;
+	Vector<String> get_animation_names() const;
 
 	void set_animation_speed(const StringName &p_anim, float p_fps);
 	float get_animation_speed(const StringName &p_anim) const;
@@ -112,7 +113,7 @@ public:
 		ERR_FAIL_COND(p_idx < 0);
 		if (p_idx >= E->get().frames.size())
 			return;
-		E->get().frames[p_idx] = p_frame;
+		E->get().frames.write[p_idx] = p_frame;
 	}
 	void remove_frame(const StringName &p_anim, int p_idx);
 	void clear(const StringName &p_anim);
@@ -145,6 +146,7 @@ class AnimatedSprite : public Node2D {
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
+	Rect2 _get_rect() const;
 
 protected:
 	static void _bind_methods();
@@ -160,6 +162,8 @@ public:
 	virtual bool _edit_use_pivot() const;
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
+
+	virtual Rect2 get_anchorable_rect() const;
 
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;

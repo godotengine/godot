@@ -169,6 +169,10 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 		ERR_FAIL();
 	}
 
+	if (allow_focus_steal_pid) {
+		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
+	}
+
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);
@@ -779,13 +783,13 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		if (p_for_frame)
-			ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info[ofs], profile_info.size() - ofs);
+			ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&profile_info.write[ofs], profile_info.size() - ofs);
 		else
-			ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info[ofs], profile_info.size() - ofs);
+			ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&profile_info.write[ofs], profile_info.size() - ofs);
 	}
 
 	for (int i = 0; i < ofs; i++) {
-		profile_info_ptrs[i] = &profile_info[i];
+		profile_info_ptrs.write[i] = &profile_info.write[i];
 	}
 
 	SortArray<ScriptLanguage::ProfilingInfo *, ProfileInfoSort> sa;
@@ -1050,7 +1054,7 @@ void ScriptDebuggerRemote::add_profiling_frame_data(const StringName &p_name, co
 	if (idx == -1) {
 		profile_frame_data.push_back(fd);
 	} else {
-		profile_frame_data[idx] = fd;
+		profile_frame_data.write[idx] = fd;
 	}
 }
 
@@ -1068,6 +1072,10 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	idle_time = p_idle_time;
 	physics_time = p_physics_time;
 	physics_frame_time = p_physics_frame_time;
+}
+
+void ScriptDebuggerRemote::set_allow_focus_steal_pid(OS::ProcessID p_pid) {
+	allow_focus_steal_pid = p_pid;
 }
 
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
@@ -1091,6 +1099,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		n_errors_dropped(0),
 		last_msec(0),
 		msec_count(0),
+		allow_focus_steal_pid(0),
 		locking(false),
 		poll_every(0),
 		request_scene_tree(NULL),

@@ -44,8 +44,6 @@
 #include "ecp.h"
 #include "md.h"
 
-#if !defined(MBEDTLS_ECJPAKE_ALT)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -58,6 +56,7 @@ typedef enum {
     MBEDTLS_ECJPAKE_SERVER,             /**< Server                         */
 } mbedtls_ecjpake_role;
 
+#if !defined(MBEDTLS_ECJPAKE_ALT)
 /**
  * EC J-PAKE context structure.
  *
@@ -87,6 +86,10 @@ typedef struct
 
     mbedtls_mpi s;                      /**< Pre-shared secret (passphrase) */
 } mbedtls_ecjpake_context;
+
+#else  /* MBEDTLS_ECJPAKE_ALT */
+#include "ecjpake_alt.h"
+#endif /* MBEDTLS_ECJPAKE_ALT */
 
 /**
  * \brief           Initialize a context
@@ -225,19 +228,9 @@ int mbedtls_ecjpake_derive_secret( mbedtls_ecjpake_context *ctx,
  */
 void mbedtls_ecjpake_free( mbedtls_ecjpake_context *ctx );
 
-#ifdef __cplusplus
-}
-#endif
 
-#else  /* MBEDTLS_ECJPAKE_ALT */
-#include "ecjpake_alt.h"
-#endif /* MBEDTLS_ECJPAKE_ALT */
 
 #if defined(MBEDTLS_SELF_TEST)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Checkup routine
@@ -246,10 +239,11 @@ extern "C" {
  */
 int mbedtls_ecjpake_self_test( int verbose );
 
+#endif /* MBEDTLS_SELF_TEST */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MBEDTLS_SELF_TEST */
 
 #endif /* ecjpake.h */

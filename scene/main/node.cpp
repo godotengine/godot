@@ -240,7 +240,7 @@ void Node::_propagate_enter_tree() {
 
 void Node::_propagate_exit_tree() {
 
-//block while removing children
+	//block while removing children
 
 #ifdef DEBUG_ENABLED
 
@@ -725,6 +725,17 @@ const Map<StringName, MultiplayerAPI::RPCMode>::Element *Node::get_node_rset_mod
 	return data.rpc_properties.find(p_property);
 }
 
+bool Node::can_process_notification(int p_what) const {
+	switch (p_what) {
+		case NOTIFICATION_PHYSICS_PROCESS: return data.physics_process;
+		case NOTIFICATION_PROCESS: return data.idle_process;
+		case NOTIFICATION_INTERNAL_PROCESS: return data.idle_process_internal;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: return data.physics_process_internal;
+	}
+
+	return true;
+}
+
 bool Node::can_process() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
@@ -807,6 +818,22 @@ void Node::set_process_internal(bool p_idle_process_internal) {
 bool Node::is_processing_internal() const {
 
 	return data.idle_process_internal;
+}
+
+void Node::set_process_priority(int p_priority) {
+	data.process_priority = p_priority;
+
+	if (is_processing())
+		data.tree->make_group_changed("idle_process");
+
+	if (is_processing_internal())
+		data.tree->make_group_changed("idle_process_internal");
+
+	if (is_physics_processing())
+		data.tree->make_group_changed("physics_process");
+
+	if (is_physics_processing_internal())
+		data.tree->make_group_changed("physics_process_internal");
 }
 
 void Node::set_process_input(bool p_enable) {
@@ -1095,6 +1122,10 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 }
 
 void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL(p_child);
+
 	add_child(p_child, p_legible_unique_name);
 
 	if (is_a_parent_of(p_node)) {
@@ -1891,7 +1922,7 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 				// Skip nodes not really belonging to the instanced hierarchy; they'll be processed normally later
 				// but remember non-instanced nodes that are hidden below instanced ones
 				if (descendant->data.owner != this) {
-					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this)
+					if (descendant->get_parent() && descendant->get_parent() != this && descendant->get_parent()->data.owner == this && descendant->data.owner != descendant->get_parent())
 						hidden_roots.push_back(descendant);
 					continue;
 				}
@@ -1930,8 +1961,9 @@ Node *Node::_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap) const
 			if (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE) {
 
 				Resource *res = Object::cast_to<Resource>(value);
-				if (res) // Duplicate only if it's a resource
+				if (res) { // Duplicate only if it's a resource
 					current_node->set(name, res->duplicate());
+				}
 
 			} else {
 
@@ -2523,6 +2555,9 @@ void Node::clear_internal_tree_resource_paths() {
 
 String Node::get_configuration_warning() const {
 
+	if (get_script_instance() && get_script_instance()->has_method("_get_configuration_warning")) {
+		return get_script_instance()->call("_get_configuration_warning");
+	}
 	return String();
 }
 
@@ -2603,6 +2638,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_physics_processing"), &Node::is_physics_processing);
 	ClassDB::bind_method(D_METHOD("get_process_delta_time"), &Node::get_process_delta_time);
 	ClassDB::bind_method(D_METHOD("set_process", "enable"), &Node::set_process);
+	ClassDB::bind_method(D_METHOD("set_process_priority", "priority"), &Node::set_process_priority);
 	ClassDB::bind_method(D_METHOD("is_processing"), &Node::is_processing);
 	ClassDB::bind_method(D_METHOD("set_process_input", "enable"), &Node::set_process_input);
 	ClassDB::bind_method(D_METHOD("is_processing_input"), &Node::is_processing_input);
@@ -2730,6 +2766,7 @@ void Node::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_configuration_warning"));
 
 	//ClassDB::bind_method(D_METHOD("get_child",&Node::get_child,PH("index")));
 	//ClassDB::bind_method(D_METHOD("get_node",&Node::get_node,PH("path")));
@@ -2754,6 +2791,7 @@ Node::Node() {
 	data.tree = NULL;
 	data.physics_process = false;
 	data.idle_process = false;
+	data.process_priority = 0;
 	data.physics_process_internal = false;
 	data.idle_process_internal = false;
 	data.inside_tree = false;

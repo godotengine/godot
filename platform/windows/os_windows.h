@@ -35,6 +35,7 @@
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
+#include "drivers/winmidi/win_midi.h"
 #include "os/input.h"
 #include "os/os.h"
 #include "power_windows.h"
@@ -111,6 +112,10 @@ class OS_Windows : public OS {
 
 	WNDPROC user_proc;
 
+	// IME
+	HIMC im_himc;
+	Vector2 im_position;
+
 	MouseMode mouse_mode;
 	bool alt_mem;
 	bool gr_mem;
@@ -120,6 +125,7 @@ class OS_Windows : public OS {
 	bool force_quit;
 	bool window_has_focus;
 	uint32_t last_button_state;
+	bool use_raw_input;
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
@@ -130,6 +136,7 @@ class OS_Windows : public OS {
 
 	PowerWindows *power_manager;
 
+	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
 #endif
@@ -138,6 +145,9 @@ class OS_Windows : public OS {
 #endif
 #ifdef XAUDIO2_ENABLED
 	AudioDriverXAudio2 driver_xaudio2;
+#endif
+#ifdef WINMIDI_ENABLED
+	MIDIDriverWinMidi driver_midi;
 #endif
 
 	CrashHandler crash_handler;
@@ -149,6 +159,8 @@ class OS_Windows : public OS {
 
 	// functions used by main to initialize/deintialize the OS
 protected:
+	virtual int get_current_video_driver() const;
+
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
@@ -247,7 +259,7 @@ public:
 	virtual uint64_t get_ticks_usec() const;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
-	virtual Error kill(const ProcessID &p_pid);
+	virtual Error kill(const ProcessID &p_pid, const int p_stop_max_wait_msec = -1);
 	virtual int get_process_id() const;
 
 	virtual bool has_environment(const String &p_var) const;
@@ -282,6 +294,7 @@ public:
 
 	virtual String get_unique_id() const;
 
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	virtual void release_rendering_thread();

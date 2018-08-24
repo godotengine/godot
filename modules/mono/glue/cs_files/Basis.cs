@@ -343,17 +343,17 @@ namespace Godot
         {
             var tr = this;
 
-            real_t temp = this[0, 1];
-            this[0, 1] = this[1, 0];
-            this[1, 0] = temp;
+            real_t temp = tr[0, 1];
+            tr[0, 1] = tr[1, 0];
+            tr[1, 0] = temp;
 
-            temp = this[0, 2];
-            this[0, 2] = this[2, 0];
-            this[2, 0] = temp;
+            temp = tr[0, 2];
+            tr[0, 2] = tr[2, 0];
+            tr[2, 0] = temp;
 
-            temp = this[1, 2];
-            this[1, 2] = this[2, 1];
-            this[2, 1] = temp;
+            temp = tr[1, 2];
+            tr[1, 2] = tr[2, 1];
+            tr[2, 1] = temp;
 
             return tr;
         }

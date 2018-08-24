@@ -55,7 +55,7 @@ RID VisualServer::texture_create_from_image(const Ref<Image> &p_image, uint32_t 
 
 	ERR_FAIL_COND_V(!p_image.is_valid(), RID());
 	RID texture = texture_create();
-	texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), p_flags); //if it has mipmaps, use, else generate
+	texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_flags); //if it has mipmaps, use, else generate
 	ERR_FAIL_COND_V(!texture.is_valid(), texture);
 
 	texture_set_data(texture, p_image);
@@ -72,7 +72,9 @@ Array VisualServer::_texture_debug_usage_bind() {
 
 		Dictionary dict;
 		dict["texture"] = E->get().texture;
-		dict["size"] = E->get().size;
+		dict["width"] = E->get().width;
+		dict["height"] = E->get().height;
+		dict["depth"] = E->get().depth;
 		dict["format"] = E->get().format;
 		dict["bytes"] = E->get().bytes;
 		dict["path"] = E->get().path;
@@ -187,16 +189,14 @@ RID VisualServer::_make_test_cube() {
 	PoolVector<float> tangents;
 	PoolVector<Vector3> uvs;
 
-	int vtx_idx = 0;
-#define ADD_VTX(m_idx)                                                             \
-	vertices.push_back(face_points[m_idx]);                                        \
-	normals.push_back(normal_points[m_idx]);                                       \
-	tangents.push_back(normal_points[m_idx][1]);                                   \
-	tangents.push_back(normal_points[m_idx][2]);                                   \
-	tangents.push_back(normal_points[m_idx][0]);                                   \
-	tangents.push_back(1.0);                                                       \
-	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0)); \
-	vtx_idx++;
+#define ADD_VTX(m_idx)                           \
+	vertices.push_back(face_points[m_idx]);      \
+	normals.push_back(normal_points[m_idx]);     \
+	tangents.push_back(normal_points[m_idx][1]); \
+	tangents.push_back(normal_points[m_idx][2]); \
+	tangents.push_back(normal_points[m_idx][0]); \
+	tangents.push_back(1.0);                     \
+	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0));
 
 	for (int i = 0; i < 6; i++) {
 
@@ -335,7 +335,7 @@ RID VisualServer::get_white_texture() {
 	}
 	Ref<Image> white = memnew(Image(4, 4, 0, Image::FORMAT_RGB8, wt));
 	white_texture = texture_create();
-	texture_allocate(white_texture, 4, 4, Image::FORMAT_RGB8);
+	texture_allocate(white_texture, 4, 4, 0, Image::FORMAT_RGB8, TEXTURE_TYPE_2D);
 	texture_set_data(white_texture, white);
 	return white_texture;
 }
@@ -746,7 +746,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 		if (first) {
 			for (int i = 0; i < total_bones; i++) {
-				r_bone_aabb[i].size = Vector3(-1, -1, -1); //negative means unused
+				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); //negative means unused
 			}
 		}
 
@@ -793,6 +793,140 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 		}
 	}
 	return OK;
+}
+
+uint32_t VisualServer::mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const {
+	uint32_t offsets[ARRAY_MAX];
+	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets);
+	return offsets[p_array_index];
+}
+
+uint32_t VisualServer::mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const {
+	uint32_t offsets[ARRAY_MAX];
+	return mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets);
+}
+
+uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const {
+
+	int total_elem_size = 0;
+
+	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+
+		r_offsets[i] = 0; //reset
+
+		if (!(p_format & (1 << i))) // no array
+			continue;
+
+		int elem_size = 0;
+
+		switch (i) {
+
+			case VS::ARRAY_VERTEX: {
+
+				if (p_format & ARRAY_FLAG_USE_2D_VERTICES) {
+					elem_size = 2;
+				} else {
+					elem_size = 3;
+				}
+
+				if (p_format & ARRAY_COMPRESS_VERTEX) {
+					elem_size *= sizeof(int16_t);
+				} else {
+					elem_size *= sizeof(float);
+				}
+
+				if (elem_size == 6) {
+					elem_size = 8;
+				}
+
+			} break;
+			case VS::ARRAY_NORMAL: {
+
+				if (p_format & ARRAY_COMPRESS_NORMAL) {
+					elem_size = sizeof(uint32_t);
+				} else {
+					elem_size = sizeof(float) * 3;
+				}
+
+			} break;
+
+			case VS::ARRAY_TANGENT: {
+				if (p_format & ARRAY_COMPRESS_TANGENT) {
+					elem_size = sizeof(uint32_t);
+				} else {
+					elem_size = sizeof(float) * 4;
+				}
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				if (p_format & ARRAY_COMPRESS_COLOR) {
+					elem_size = sizeof(uint32_t);
+				} else {
+					elem_size = sizeof(float) * 4;
+				}
+			} break;
+			case VS::ARRAY_TEX_UV: {
+				if (p_format & ARRAY_COMPRESS_TEX_UV) {
+					elem_size = sizeof(uint32_t);
+				} else {
+					elem_size = sizeof(float) * 2;
+				}
+
+			} break;
+
+			case VS::ARRAY_TEX_UV2: {
+				if (p_format & ARRAY_COMPRESS_TEX_UV2) {
+					elem_size = sizeof(uint32_t);
+				} else {
+					elem_size = sizeof(float) * 2;
+				}
+
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				if (p_format & ARRAY_COMPRESS_WEIGHTS) {
+					elem_size = sizeof(uint16_t) * 4;
+				} else {
+					elem_size = sizeof(float) * 4;
+				}
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				if (p_format & ARRAY_FLAG_USE_16_BIT_BONES) {
+					elem_size = sizeof(uint16_t) * 4;
+				} else {
+					elem_size = sizeof(uint32_t);
+				}
+
+			} break;
+			case VS::ARRAY_INDEX: {
+
+				if (p_index_len <= 0) {
+					ERR_PRINT("index_array_len==NO_INDEX_ARRAY");
+					break;
+				}
+				/* determine whether using 16 or 32 bits indices */
+				if (p_vertex_len >= (1 << 16)) {
+
+					elem_size = 4;
+
+				} else {
+					elem_size = 2;
+				}
+				r_offsets[i] = elem_size;
+				continue;
+			} break;
+			default: {
+				ERR_FAIL_V(0);
+			}
+		}
+
+		r_offsets[i] = total_elem_size;
+		total_elem_size += elem_size;
+	}
+	return total_elem_size;
 }
 
 void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_compress_format) {
@@ -1516,37 +1650,39 @@ Array VisualServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surfa
 void VisualServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_sync"), &VisualServer::sync);
-	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers"), &VisualServer::draw, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &VisualServer::draw, DEFVAL(true), DEFVAL(0.0));
 
 	// "draw" and "sync" are deprecated duplicates of "force_draw" and "force_sync"
 	// FIXME: Add deprecation messages using GH-4397 once available, and retire
 	// once the warnings have been enabled for a full release cycle
 	ClassDB::bind_method(D_METHOD("sync"), &VisualServer::sync);
-	ClassDB::bind_method(D_METHOD("draw", "swap_buffers"), &VisualServer::draw, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw", "swap_buffers", "frame_step"), &VisualServer::draw, DEFVAL(true), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("texture_create"), &VisualServer::texture_create);
 	ClassDB::bind_method(D_METHOD("texture_create_from_image", "image", "flags"), &VisualServer::texture_create_from_image, DEFVAL(TEXTURE_FLAGS_DEFAULT));
-	ClassDB::bind_method(D_METHOD("texture_allocate", "texture", "width", "height", "format", "flags"), &VisualServer::texture_allocate, DEFVAL(TEXTURE_FLAGS_DEFAULT));
-	ClassDB::bind_method(D_METHOD("texture_set_data", "texture", "image", "cube_side"), &VisualServer::texture_set_data, DEFVAL(CUBEMAP_LEFT));
-	ClassDB::bind_method(D_METHOD("texture_set_data_partial", "texture", "image", "src_x", "src_y", "src_w", "src_h", "dst_x", "dst_y", "dst_mip", "cube_side"), &VisualServer::texture_set_data_partial, DEFVAL(CUBEMAP_LEFT));
+	ClassDB::bind_method(D_METHOD("texture_allocate", "texture", "width", "height", "depth_3d", "format", "type", "flags"), &VisualServer::texture_allocate, DEFVAL(TEXTURE_FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("texture_set_data", "texture", "image", "layer"), &VisualServer::texture_set_data, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_set_data_partial", "texture", "image", "src_x", "src_y", "src_w", "src_h", "dst_x", "dst_y", "dst_mip", "layer"), &VisualServer::texture_set_data_partial, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "cube_side"), &VisualServer::texture_get_data, DEFVAL(CUBEMAP_LEFT));
 	ClassDB::bind_method(D_METHOD("texture_set_flags", "texture", "flags"), &VisualServer::texture_set_flags);
 	ClassDB::bind_method(D_METHOD("texture_get_flags", "texture"), &VisualServer::texture_get_flags);
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &VisualServer::texture_get_format);
+	ClassDB::bind_method(D_METHOD("texture_get_type", "texture"), &VisualServer::texture_get_type);
 	ClassDB::bind_method(D_METHOD("texture_get_texid", "texture"), &VisualServer::texture_get_texid);
 	ClassDB::bind_method(D_METHOD("texture_get_width", "texture"), &VisualServer::texture_get_width);
 	ClassDB::bind_method(D_METHOD("texture_get_height", "texture"), &VisualServer::texture_get_height);
-	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height"), &VisualServer::texture_set_size_override);
+	ClassDB::bind_method(D_METHOD("texture_get_depth", "texture"), &VisualServer::texture_get_depth);
+	ClassDB::bind_method(D_METHOD("texture_set_size_override", "texture", "width", "height", "depth"), &VisualServer::texture_set_size_override);
 	ClassDB::bind_method(D_METHOD("texture_set_path", "texture", "path"), &VisualServer::texture_set_path);
 	ClassDB::bind_method(D_METHOD("texture_get_path", "texture"), &VisualServer::texture_get_path);
 	ClassDB::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", "shrink"), &VisualServer::texture_set_shrink_all_x2_on_set_data);
 
 	ClassDB::bind_method(D_METHOD("texture_debug_usage"), &VisualServer::_texture_debug_usage_bind);
 	ClassDB::bind_method(D_METHOD("textures_keep_original", "enable"), &VisualServer::textures_keep_original);
-
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
 	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "cube_map", "radiance_size"), &VisualServer::sky_set_texture);
-
+#endif
 	ClassDB::bind_method(D_METHOD("shader_create"), &VisualServer::shader_create);
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &VisualServer::shader_set_code);
 	ClassDB::bind_method(D_METHOD("shader_get_code", "shader"), &VisualServer::shader_get_code);
@@ -1564,11 +1700,14 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("material_set_next_pass", "material", "next_material"), &VisualServer::material_set_next_pass);
 
 	ClassDB::bind_method(D_METHOD("mesh_create"), &VisualServer::mesh_create);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_offset", "format", "vertex_len", "index_len", "array_index"), &VisualServer::mesh_surface_get_format_offset);
+	ClassDB::bind_method(D_METHOD("mesh_surface_get_format_stride", "format", "vertex_len", "index_len"), &VisualServer::mesh_surface_get_format_stride);
 	ClassDB::bind_method(D_METHOD("mesh_add_surface_from_arrays", "mesh", "primtive", "arrays", "blend_shapes", "compress_format"), &VisualServer::mesh_add_surface_from_arrays, DEFVAL(Array()), DEFVAL(ARRAY_COMPRESS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("mesh_set_blend_shape_count", "mesh", "amount"), &VisualServer::mesh_set_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_count", "mesh"), &VisualServer::mesh_get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("mesh_set_blend_shape_mode", "mesh", "mode"), &VisualServer::mesh_set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("mesh_get_blend_shape_mode", "mesh"), &VisualServer::mesh_get_blend_shape_mode);
+	ClassDB::bind_method(D_METHOD("mesh_surface_update_region", "mesh", "surface", "offset", "data"), &VisualServer::mesh_surface_update_region);
 	ClassDB::bind_method(D_METHOD("mesh_surface_set_material", "mesh", "surface", "material"), &VisualServer::mesh_surface_set_material);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_material", "mesh", "surface"), &VisualServer::mesh_surface_get_material);
 	ClassDB::bind_method(D_METHOD("mesh_surface_get_array_len", "mesh", "surface"), &VisualServer::mesh_surface_get_array_len);
@@ -1587,20 +1726,23 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_get_custom_aabb", "mesh"), &VisualServer::mesh_get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("mesh_clear", "mesh"), &VisualServer::mesh_clear);
 
-	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format"), &VisualServer::multimesh_allocate);
+	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &VisualServer::multimesh_allocate, DEFVAL(MULTIMESH_CUSTOM_DATA_NONE));
 	ClassDB::bind_method(D_METHOD("multimesh_get_instance_count", "multimesh"), &VisualServer::multimesh_get_instance_count);
 	ClassDB::bind_method(D_METHOD("multimesh_set_mesh", "multimesh", "mesh"), &VisualServer::multimesh_set_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform", "multimesh", "index", "transform"), &VisualServer::multimesh_instance_set_transform);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform_2d", "multimesh", "index", "transform"), &VisualServer::multimesh_instance_set_transform_2d);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_color", "multimesh", "index", "color"), &VisualServer::multimesh_instance_set_color);
+	ClassDB::bind_method(D_METHOD("multimesh_instance_set_custom_data", "multimesh", "index", "custom_data"), &VisualServer::multimesh_instance_set_custom_data);
 	ClassDB::bind_method(D_METHOD("multimesh_get_mesh", "multimesh"), &VisualServer::multimesh_get_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_get_aabb", "multimesh"), &VisualServer::multimesh_get_aabb);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_transform", "multimesh", "index"), &VisualServer::multimesh_instance_get_transform);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_transform_2d", "multimesh", "index"), &VisualServer::multimesh_instance_get_transform_2d);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_color", "multimesh", "index"), &VisualServer::multimesh_instance_get_color);
+	ClassDB::bind_method(D_METHOD("multimesh_instance_get_custom_data", "multimesh", "index"), &VisualServer::multimesh_instance_get_custom_data);
 	ClassDB::bind_method(D_METHOD("multimesh_set_visible_instances", "multimesh", "visible"), &VisualServer::multimesh_set_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &VisualServer::multimesh_get_visible_instances);
-
+	ClassDB::bind_method(D_METHOD("multimesh_set_as_bulk_array", "multimesh", "array"), &VisualServer::multimesh_set_as_bulk_array);
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("immediate_create"), &VisualServer::immediate_create);
 	ClassDB::bind_method(D_METHOD("immediate_begin", "immediate", "primitive", "texture"), &VisualServer::immediate_begin, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("immediate_vertex", "immediate", "vertex"), &VisualServer::immediate_vertex);
@@ -1614,6 +1756,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("immediate_clear", "immediate"), &VisualServer::immediate_clear);
 	ClassDB::bind_method(D_METHOD("immediate_set_material", "immediate", "material"), &VisualServer::immediate_set_material);
 	ClassDB::bind_method(D_METHOD("immediate_get_material", "immediate"), &VisualServer::immediate_get_material);
+#endif
 
 	ClassDB::bind_method(D_METHOD("skeleton_create"), &VisualServer::skeleton_create);
 	ClassDB::bind_method(D_METHOD("skeleton_allocate", "skeleton", "bones", "is_2d_skeleton"), &VisualServer::skeleton_allocate, DEFVAL(false));
@@ -1623,6 +1766,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("skeleton_bone_set_transform_2d", "skeleton", "bone", "transform"), &VisualServer::skeleton_bone_set_transform_2d);
 	ClassDB::bind_method(D_METHOD("skeleton_bone_get_transform_2d", "skeleton", "bone"), &VisualServer::skeleton_bone_get_transform_2d);
 
+#ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("directional_light_create"), &VisualServer::directional_light_create);
 	ClassDB::bind_method(D_METHOD("omni_light_create"), &VisualServer::omni_light_create);
 	ClassDB::bind_method(D_METHOD("spot_light_create"), &VisualServer::spot_light_create);
@@ -1662,24 +1806,24 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gi_probe_get_bounds", "probe"), &VisualServer::gi_probe_get_bounds);
 	ClassDB::bind_method(D_METHOD("gi_probe_set_cell_size", "probe", "range"), &VisualServer::gi_probe_set_cell_size);
 	ClassDB::bind_method(D_METHOD("gi_probe_get_cell_size", "probe"), &VisualServer::gi_probe_get_cell_size);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_to_cell_xform", "xform"), &VisualServer::gi_probe_set_to_cell_xform);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_to_cell_xform"), &VisualServer::gi_probe_get_to_cell_xform);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_dynamic_data", "data"), &VisualServer::gi_probe_set_dynamic_data);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_dynamic_data"), &VisualServer::gi_probe_get_dynamic_data);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_dynamic_range", "range"), &VisualServer::gi_probe_set_dynamic_range);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_dynamic_range"), &VisualServer::gi_probe_get_dynamic_range);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_energy", "energy"), &VisualServer::gi_probe_set_energy);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_energy"), &VisualServer::gi_probe_get_energy);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_bias", "bias"), &VisualServer::gi_probe_set_bias);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_bias"), &VisualServer::gi_probe_get_bias);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_normal_bias", "bias"), &VisualServer::gi_probe_set_normal_bias);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_normal_bias"), &VisualServer::gi_probe_get_normal_bias);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_propagation", "propagation"), &VisualServer::gi_probe_set_propagation);
-	ClassDB::bind_method(D_METHOD("gi_probe_get_propagation"), &VisualServer::gi_probe_get_propagation);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_interior", "enable"), &VisualServer::gi_probe_set_interior);
-	ClassDB::bind_method(D_METHOD("gi_probe_is_interior"), &VisualServer::gi_probe_is_interior);
-	ClassDB::bind_method(D_METHOD("gi_probe_set_compress", "enable"), &VisualServer::gi_probe_set_compress);
-	ClassDB::bind_method(D_METHOD("gi_probe_is_compressed"), &VisualServer::gi_probe_is_compressed);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_to_cell_xform", "probe", "xform"), &VisualServer::gi_probe_set_to_cell_xform);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_to_cell_xform", "probe"), &VisualServer::gi_probe_get_to_cell_xform);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_dynamic_data", "probe", "data"), &VisualServer::gi_probe_set_dynamic_data);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_dynamic_data", "probe"), &VisualServer::gi_probe_get_dynamic_data);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_dynamic_range", "probe", "range"), &VisualServer::gi_probe_set_dynamic_range);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_dynamic_range", "probe"), &VisualServer::gi_probe_get_dynamic_range);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_energy", "probe", "energy"), &VisualServer::gi_probe_set_energy);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_energy", "probe"), &VisualServer::gi_probe_get_energy);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_bias", "probe", "bias"), &VisualServer::gi_probe_set_bias);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_bias", "probe"), &VisualServer::gi_probe_get_bias);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_normal_bias", "probe", "bias"), &VisualServer::gi_probe_set_normal_bias);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_normal_bias", "probe"), &VisualServer::gi_probe_get_normal_bias);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_propagation", "probe", "propagation"), &VisualServer::gi_probe_set_propagation);
+	ClassDB::bind_method(D_METHOD("gi_probe_get_propagation", "probe"), &VisualServer::gi_probe_get_propagation);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_interior", "probe", "enable"), &VisualServer::gi_probe_set_interior);
+	ClassDB::bind_method(D_METHOD("gi_probe_is_interior", "probe"), &VisualServer::gi_probe_is_interior);
+	ClassDB::bind_method(D_METHOD("gi_probe_set_compress", "probe", "enable"), &VisualServer::gi_probe_set_compress);
+	ClassDB::bind_method(D_METHOD("gi_probe_is_compressed", "probe"), &VisualServer::gi_probe_is_compressed);
 
 	ClassDB::bind_method(D_METHOD("lightmap_capture_create"), &VisualServer::lightmap_capture_create);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_bounds", "capture", "bounds"), &VisualServer::lightmap_capture_set_bounds);
@@ -1692,7 +1836,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_octree", "capture"), &VisualServer::lightmap_capture_get_octree);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_set_energy", "capture", "energy"), &VisualServer::lightmap_capture_set_energy);
 	ClassDB::bind_method(D_METHOD("lightmap_capture_get_energy", "capture"), &VisualServer::lightmap_capture_get_energy);
-
+#endif
 	ClassDB::bind_method(D_METHOD("particles_create"), &VisualServer::particles_create);
 	ClassDB::bind_method(D_METHOD("particles_set_emitting", "particles", "emitting"), &VisualServer::particles_set_emitting);
 	ClassDB::bind_method(D_METHOD("particles_get_emitting", "particles"), &VisualServer::particles_get_emitting);
@@ -1768,7 +1912,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &VisualServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &VisualServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance", "roughness"), &VisualServer::environment_set_ssr);
-	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "radius2", "intensity2", "bias", "light_affect", "color", "quality", "blur", "bilateral_sharpness"), &VisualServer::environment_set_ssao);
+	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "radius2", "intensity2", "bias", "light_affect", "ao_channel_affect", "color", "quality", "blur", "bilateral_sharpness"), &VisualServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "color", "sun_color", "sun_amount"), &VisualServer::environment_set_fog);
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "enable", "depth_begin", "depth_curve", "transmit", "transmit_curve"), &VisualServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_fog_height", "env", "enable", "min_height", "max_height", "height_curve"), &VisualServer::environment_set_fog_height);
@@ -1778,6 +1922,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("scenario_set_environment", "scenario", "environment"), &VisualServer::scenario_set_environment);
 	ClassDB::bind_method(D_METHOD("scenario_set_reflection_atlas_size", "scenario", "p_size", "subdiv"), &VisualServer::scenario_set_reflection_atlas_size);
 	ClassDB::bind_method(D_METHOD("scenario_set_fallback_environment", "scenario", "environment"), &VisualServer::scenario_set_fallback_environment);
+
+#ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("instance_create2", "base", "scenario"), &VisualServer::instance_create2);
 	ClassDB::bind_method(D_METHOD("instance_create"), &VisualServer::instance_create);
@@ -1803,7 +1949,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instances_cull_aabb", "aabb", "scenario"), &VisualServer::_instances_cull_aabb_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_ray", "from", "to", "scenario"), &VisualServer::_instances_cull_ray_bind, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("instances_cull_convex", "convex", "scenario"), &VisualServer::_instances_cull_convex_bind, DEFVAL(RID()));
-
+#endif
 	ClassDB::bind_method(D_METHOD("canvas_create"), &VisualServer::canvas_create);
 	ClassDB::bind_method(D_METHOD("canvas_set_item_mirroring", "canvas", "item", "mirroring"), &VisualServer::canvas_set_item_mirroring);
 	ClassDB::bind_method(D_METHOD("canvas_set_modulate", "canvas", "color"), &VisualServer::canvas_set_modulate);
@@ -1886,12 +2032,13 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);
 	ClassDB::bind_method(D_METHOD("finish"), &VisualServer::finish);
 	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &VisualServer::get_render_info);
-
-	ClassDB::bind_method(D_METHOD("get_test_cube"), &VisualServer::get_test_cube);
-	ClassDB::bind_method(D_METHOD("get_test_texture"), &VisualServer::get_test_texture);
-	ClassDB::bind_method(D_METHOD("get_white_texture"), &VisualServer::get_white_texture);
+#ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("make_sphere_mesh", "latitudes", "longitudes", "radius"), &VisualServer::make_sphere_mesh);
+	ClassDB::bind_method(D_METHOD("get_test_cube"), &VisualServer::get_test_cube);
+#endif
+	ClassDB::bind_method(D_METHOD("get_test_texture"), &VisualServer::get_test_texture);
+	ClassDB::bind_method(D_METHOD("get_white_texture"), &VisualServer::get_white_texture);
 
 	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale"), &VisualServer::set_boot_image);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &VisualServer::set_default_clear_color);
@@ -1916,13 +2063,17 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUBEMAP_FRONT);
 	BIND_ENUM_CONSTANT(CUBEMAP_BACK);
 
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D);
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_CUBEMAP);
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D_ARRAY);
+	BIND_ENUM_CONSTANT(TEXTURE_TYPE_3D);
+
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_MIPMAPS);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_REPEAT);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_FILTER);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_ANISOTROPIC_FILTER);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_CONVERT_TO_LINEAR);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_MIRRORED_REPEAT);
-	BIND_ENUM_CONSTANT(TEXTURE_FLAG_CUBEMAP);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAG_USED_FOR_STREAMING);
 	BIND_ENUM_CONSTANT(TEXTURE_FLAGS_DEFAULT);
 
@@ -2058,6 +2209,7 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(INSTANCE_GEOMETRY_MASK);
 
 	BIND_ENUM_CONSTANT(INSTANCE_FLAG_USE_BAKED_LIGHT);
+	BIND_ENUM_CONSTANT(INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE);
 	BIND_ENUM_CONSTANT(INSTANCE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_OFF);
@@ -2143,7 +2295,8 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_2x2);
 	BIND_ENUM_CONSTANT(ENV_SSAO_BLUR_3x3);
 
-	ADD_SIGNAL(MethodInfo("frame_drawn_in_thread"));
+	ADD_SIGNAL(MethodInfo("frame_pre_draw"));
+	ADD_SIGNAL(MethodInfo("frame_post_draw"));
 }
 
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {
@@ -2208,6 +2361,7 @@ VisualServer::VisualServer() {
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
 
+	GLOBAL_DEF("rendering/vram_compression/import_bptc", false);
 	GLOBAL_DEF("rendering/vram_compression/import_s3tc", true);
 	GLOBAL_DEF("rendering/vram_compression/import_etc", false);
 	GLOBAL_DEF("rendering/vram_compression/import_etc2", true);

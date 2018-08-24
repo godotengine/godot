@@ -62,11 +62,12 @@ class EditorPropertyArray : public EditorProperty {
 	EditorSpinSlider *length;
 	EditorSpinSlider *page;
 	HBoxContainer *page_hb;
+	Variant::Type array_type;
 
 	void _page_changed(double p_page);
 	void _length_changed(double p_page);
 	void _edit_pressed();
-	void _property_changed(const String &p_prop, Variant p_value);
+	void _property_changed(const String &p_prop, Variant p_value, bool changing = false);
 	void _change_type(Object *p_button, int p_index);
 	void _change_type_menu(int p_index);
 
@@ -75,6 +76,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void setup(Variant::Type p_array_type);
 	virtual void update_property();
 	EditorPropertyArray();
 };
@@ -97,7 +99,7 @@ class EditorPropertyDictionary : public EditorProperty {
 
 	void _page_changed(double p_page);
 	void _edit_pressed();
-	void _property_changed(const String &p_prop, Variant p_value);
+	void _property_changed(const String &p_prop, Variant p_value, bool changing = false);
 	void _change_type(Object *p_button, int p_index);
 	void _change_type_menu(int p_index);
 

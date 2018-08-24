@@ -111,7 +111,7 @@ class CSharpScript : public Script {
 
 	void _clear();
 
-	bool _update_signals();
+	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params);
 
 	bool _update_exports();
@@ -139,6 +139,7 @@ public:
 	virtual bool can_instance() const;
 	virtual StringName get_instance_base_type() const;
 	virtual ScriptInstance *instance_create(Object *p_this);
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
 	virtual bool instance_has(const Object *p_this) const;
 
 	virtual bool has_source_code() const;
@@ -149,7 +150,6 @@ public:
 
 	virtual bool has_script_signal(const StringName &p_signal) const;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
-	virtual void update_signals();
 
 	/* TODO */ virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
@@ -293,7 +293,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	/* TODO */ virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const { return true; }
+	/* TODO */ virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const { return true; }
 	virtual String validate_path(const String &p_path) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;

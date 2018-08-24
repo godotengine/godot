@@ -7,8 +7,8 @@
 		An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html
-		http://docs.godotengine.org/en/3.0/tutorials/animation/index.html
+		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html</link>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/animation/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -271,6 +271,10 @@
 				Notifies when an animation starts playing.
 			</description>
 		</signal>
+		<signal name="caches_cleared">
+			<description>
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
@@ -278,6 +282,9 @@
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
 			Process animation during the idle process.
+		</constant>
+		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
+			Do not process animation. Use the 'advance' method to process the animation manually.
 		</constant>
 	</constants>
 </class>

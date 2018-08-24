@@ -30,6 +30,7 @@
 
 #include "scene_tree_editor.h"
 
+#include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor_node.h"
 #include "message_queue.h"
@@ -89,6 +90,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			n->set_meta("_edit_lock_", Variant());
 			_update_tree();
 			emit_signal("node_changed");
+		}
+	} else if (p_id == BUTTON_PIN) {
+
+		if (n->is_class("AnimationPlayer")) {
+			AnimationPlayerEditor::singleton->unpin();
+			_update_tree();
 		}
 
 	} else if (p_id == BUTTON_GROUP) {
@@ -159,6 +166,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	}
 
 	TreeItem *item = tree->create_item(p_parent);
+
 	item->set_text(0, p_node->get_name());
 	if (can_rename && !part_of_subscene /*(p_node->get_owner() == get_scene_node() || p_node==get_scene_node())*/)
 		item->set_editable(0, true);
@@ -189,7 +197,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (part_of_subscene) {
 
 		//item->set_selectable(0,marked_selectable);
-		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		if (valid_types.size() == 0) {
+			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+		}
 
 	} else if (marked.has(p_node)) {
 
@@ -284,6 +294,13 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 				p_node->connect("visibility_changed", this, "_node_visibility_changed", varray(p_node));
 
 			_update_visibility_color(p_node, item);
+		} else if (p_node->is_class("AnimationPlayer")) {
+
+			bool is_pinned = AnimationPlayerEditor::singleton->get_player() == p_node && AnimationPlayerEditor::singleton->is_pinned();
+
+			if (is_pinned) {
+				item->add_button(0, get_icon("Pin", "EditorIcons"), BUTTON_PIN, false, TTR("AnimationPlayer is pinned.\nClick to unpin."));
+			}
 		}
 	}
 
@@ -307,6 +324,22 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		bool child_keep = _add_nodes(p_node->get_child(i), item);
 
 		keep = keep || child_keep;
+	}
+
+	if (valid_types.size()) {
+		bool valid = false;
+		for (int i = 0; i < valid_types.size(); i++) {
+			if (p_node->is_class(valid_types[i])) {
+				valid = true;
+				break;
+			}
+		}
+
+		if (!valid) {
+			//item->set_selectable(0,marked_selectable);
+			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+			item->set_selectable(0, false);
+		}
 	}
 
 	if (!keep) {
@@ -488,8 +521,10 @@ void SceneTreeEditor::_selected_changed() {
 void SceneTreeEditor::_deselect_items() {
 
 	// Clear currently elected items in scene tree dock.
-	if (editor_selection)
+	if (editor_selection) {
 		editor_selection->clear();
+		emit_signal("node_changed");
+	}
 }
 
 void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_selected) {
@@ -513,6 +548,7 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	} else {
 		editor_selection->remove_node(n);
 	}
+	emit_signal("node_changed");
 }
 
 void SceneTreeEditor::_notification(int p_what) {
@@ -700,6 +736,10 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 bool SceneTreeEditor::get_display_foreign_nodes() const {
 
 	return display_foreign;
+}
+
+void SceneTreeEditor::set_valid_types(const Vector<StringName> &p_valid) {
+	valid_types = p_valid;
 }
 
 void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {

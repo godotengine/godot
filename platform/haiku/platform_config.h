@@ -34,3 +34,4 @@
 #define _BSD_SOURCE 1
 
 #define GLES3_INCLUDE_H "glad/glad.h"
+#define GLES2_INCLUDE_H "glad/glad.h"

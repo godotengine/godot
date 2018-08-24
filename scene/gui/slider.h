@@ -48,6 +48,7 @@ class Slider : public Range {
 	Orientation orientation;
 	float custom_step;
 	bool editable;
+	bool scrollable;
 
 protected:
 	void _gui_input(Ref<InputEvent> p_event);
@@ -69,6 +70,9 @@ public:
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
+
+	void set_scrollable(bool p_scrollable);
+	bool is_scrollable() const;
 
 	Slider(Orientation p_orientation = VERTICAL);
 };

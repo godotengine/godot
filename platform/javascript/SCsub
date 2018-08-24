@@ -32,6 +32,6 @@ zip_files = env.InstallAs([
 ], [
     js_wrapped,
     wasm,
-    '#misc/dist/html/default.html'
+    '#misc/dist/html/full-size.html'
 ])
 env.Zip('#bin/godot', zip_files, ZIPROOT=zip_dir, ZIPSUFFIX='${PROGSUFFIX}${ZIPSUFFIX}', ZIPCOMSTR='Archving $SOURCES as $TARGET')

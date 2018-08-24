@@ -35,13 +35,13 @@
 
 #define MBEDTLS_ERR_RIPEMD160_HW_ACCEL_FAILED             -0x0031  /**< RIPEMD160 hardware accelerator failed */
 
-#if !defined(MBEDTLS_RIPEMD160_ALT)
-// Regular implementation
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_RIPEMD160_ALT)
+// Regular implementation
+//
 
 /**
  * \brief          RIPEMD-160 context structure
@@ -53,6 +53,10 @@ typedef struct
     unsigned char buffer[64];   /*!< data block being processed */
 }
 mbedtls_ripemd160_context;
+
+#else  /* MBEDTLS_RIPEMD160_ALT */
+#include "ripemd160.h"
+#endif /* MBEDTLS_RIPEMD160_ALT */
 
 /**
  * \brief          Initialize RIPEMD-160 context
@@ -177,18 +181,6 @@ MBEDTLS_DEPRECATED void mbedtls_ripemd160_process(
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_RIPEMD160_ALT */
-#include "ripemd160_alt.h"
-#endif /* MBEDTLS_RIPEMD160_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Output = RIPEMD-160( input buffer )

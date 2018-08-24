@@ -57,6 +57,10 @@
 		</member>
 		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
 		</member>
+		<member name="script_class_icon_path" type="String" setter="set_script_class_icon_path" getter="get_script_class_icon_path">
+		</member>
+		<member name="script_class_name" type="String" setter="set_script_class_name" getter="get_script_class_name">
+		</member>
 	</members>
 	<constants>
 	</constants>

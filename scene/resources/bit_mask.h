@@ -46,6 +46,8 @@ class BitMap : public Resource {
 
 	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
 
+	Array _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
+
 protected:
 	void _set_data(const Dictionary &p_d);
 	Dictionary _get_data() const;

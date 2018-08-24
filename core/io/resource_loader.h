@@ -60,6 +60,7 @@ class ResourceFormatLoader {
 public:
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
@@ -106,6 +107,7 @@ class ResourceLoader {
 public:
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
 	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
+	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
 	static void add_resource_format_loader(ResourceFormatLoader *p_format_loader, bool p_at_front = false);

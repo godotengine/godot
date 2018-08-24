@@ -93,12 +93,26 @@ Error ContextEGL::initialize() {
 
 	EGLint numConfigs = 0;
 	EGLint majorVersion = 1;
-	EGLint minorVersion = 0;
+	EGLint minorVersion;
+	if (driver == GLES_2_0) {
+		minorVersion = 0;
+	} else {
+		minorVersion = 5;
+	}
 	EGLDisplay display = EGL_NO_DISPLAY;
 	EGLContext context = EGL_NO_CONTEXT;
 	EGLSurface surface = EGL_NO_SURFACE;
 	EGLConfig config = nullptr;
-	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE, EGL_NONE };
+	EGLint contextAttribs[3];
+	if (driver == GLES_2_0) {
+		contextAttribs[0] = EGL_CONTEXT_CLIENT_VERSION;
+		contextAttribs[1] = 2;
+		contextAttribs[2] = EGL_NONE;
+	} else {
+		contextAttribs[0] = EGL_CONTEXT_CLIENT_VERSION;
+		contextAttribs[1] = 3;
+		contextAttribs[2] = EGL_NONE;
+	}
 
 	try {
 
@@ -114,7 +128,8 @@ Error ContextEGL::initialize() {
 
 			// EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER is an optimization that can have large performance benefits on mobile devices.
 			// Its syntax is subject to change, though. Please update your Visual Studio templates if you experience compilation issues with it.
-			//EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
+			EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER,
+			EGL_TRUE,
 
 			// EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE is an option that enables ANGLE to automatically call
 			// the IDXGIDevice3::Trim method on behalf of the application when it gets suspended.
@@ -193,13 +208,12 @@ void ContextEGL::cleanup() {
 	}
 };
 
-ContextEGL::ContextEGL(CoreWindow ^ p_window) :
+ContextEGL::ContextEGL(CoreWindow ^ p_window, Driver p_driver) :
 		mEglDisplay(EGL_NO_DISPLAY),
 		mEglContext(EGL_NO_CONTEXT),
-		mEglSurface(EGL_NO_SURFACE) {
-
-	window = p_window;
-};
+		mEglSurface(EGL_NO_SURFACE),
+		driver(p_driver),
+		window(p_window) {}
 
 ContextEGL::~ContextEGL() {
 

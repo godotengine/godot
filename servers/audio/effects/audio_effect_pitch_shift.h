@@ -100,7 +100,7 @@ protected:
 public:
 	Ref<AudioEffectInstance> instance();
 
-	void set_pitch_scale(float p_adjust);
+	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
 	AudioEffectPitchShift();

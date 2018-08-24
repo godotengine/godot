@@ -33,6 +33,7 @@
 #if defined(MBEDTLS_SHA512_C)
 
 #include "mbedtls/sha512.h"
+#include "mbedtls/platform_util.h"
 
 #if defined(_MSC_VER) || defined(__WATCOMC__)
   #define UL64(x) x##ui64
@@ -55,11 +56,6 @@
 #endif /* MBEDTLS_SELF_TEST */
 
 #if !defined(MBEDTLS_SHA512_ALT)
-
-/* Implementation that should never be optimized out by the compiler */
-static void mbedtls_zeroize( void *v, size_t n ) {
-    volatile unsigned char *p = v; while( n-- ) *p++ = 0;
-}
 
 /*
  * 64-bit integer manipulation macros (big endian)
@@ -102,7 +98,7 @@ void mbedtls_sha512_free( mbedtls_sha512_context *ctx )
     if( ctx == NULL )
         return;
 
-    mbedtls_zeroize( ctx, sizeof( mbedtls_sha512_context ) );
+    mbedtls_platform_zeroize( ctx, sizeof( mbedtls_sha512_context ) );
 }
 
 void mbedtls_sha512_clone( mbedtls_sha512_context *dst,
@@ -345,18 +341,6 @@ void mbedtls_sha512_update( mbedtls_sha512_context *ctx,
 }
 #endif
 
-static const unsigned char sha512_padding[128] =
-{
- 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
 /*
  * SHA-512 final digest
  */
@@ -364,26 +348,48 @@ int mbedtls_sha512_finish_ret( mbedtls_sha512_context *ctx,
                                unsigned char output[64] )
 {
     int ret;
-    size_t last, padn;
+    unsigned used;
     uint64_t high, low;
-    unsigned char msglen[16];
 
+    /*
+     * Add padding: 0x80 then 0x00 until 16 bytes remain for the length
+     */
+    used = ctx->total[0] & 0x7F;
+
+    ctx->buffer[used++] = 0x80;
+
+    if( used <= 112 )
+    {
+        /* Enough room for padding + length in current block */
+        memset( ctx->buffer + used, 0, 112 - used );
+    }
+    else
+    {
+        /* We'll need an extra block */
+        memset( ctx->buffer + used, 0, 128 - used );
+
+        if( ( ret = mbedtls_internal_sha512_process( ctx, ctx->buffer ) ) != 0 )
+            return( ret );
+
+        memset( ctx->buffer, 0, 112 );
+    }
+
+    /*
+     * Add message length
+     */
     high = ( ctx->total[0] >> 61 )
          | ( ctx->total[1] <<  3 );
     low  = ( ctx->total[0] <<  3 );
 
-    PUT_UINT64_BE( high, msglen, 0 );
-    PUT_UINT64_BE( low,  msglen, 8 );
+    PUT_UINT64_BE( high, ctx->buffer, 112 );
+    PUT_UINT64_BE( low,  ctx->buffer, 120 );
 
-    last = (size_t)( ctx->total[0] & 0x7F );
-    padn = ( last < 112 ) ? ( 112 - last ) : ( 240 - last );
+    if( ( ret = mbedtls_internal_sha512_process( ctx, ctx->buffer ) ) != 0 )
+        return( ret );
 
-    if( ( ret = mbedtls_sha512_update_ret( ctx, sha512_padding, padn ) ) != 0 )
-            return( ret );
-
-    if( ( ret = mbedtls_sha512_update_ret( ctx, msglen, 16 ) ) != 0 )
-            return( ret );
-
+    /*
+     * Output final state
+     */
     PUT_UINT64_BE( ctx->state[0], output,  0 );
     PUT_UINT64_BE( ctx->state[1], output,  8 );
     PUT_UINT64_BE( ctx->state[2], output, 16 );

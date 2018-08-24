@@ -33,6 +33,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_line_edit">
+			<return type="LineEdit">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_vbox">
 			<return type="VBoxContainer">
 			</return>

@@ -31,7 +31,7 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
-#include "editor/animation_editor.h"
+#include "editor/animation_track_editor.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
@@ -51,13 +51,12 @@ class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);
 
 	enum MenuOptions {
-		RESOURCE_NEW,
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
-		RESOURCE_UNREF,
+		RESOURCE_MAKE_BUILT_IN,
 		RESOURCE_COPY,
-		RESOURCE_PASTE,
+		RESOURCE_EDIT_CLIPBOARD,
 		OBJECT_COPY_PARAMS,
 		OBJECT_PASTE_PARAMS,
 		OBJECT_UNIQUE_RESOURCES,
@@ -121,6 +120,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void go_back();
 	void update_keying();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);

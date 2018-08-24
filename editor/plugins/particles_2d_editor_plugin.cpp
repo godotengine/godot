@@ -68,6 +68,11 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
+			float gen_time = particles->get_lifetime();
+			if (gen_time < 1.0)
+				generate_seconds->set_value(1.0);
+			else
+				generate_seconds->set_value(trunc(gen_time) + 1.0);
 			generate_aabb->popup_centered_minsize();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
@@ -90,6 +95,12 @@ void Particles2DEditorPlugin::_generate_visibility_rect() {
 
 	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
 
+	bool was_emitting = particles->is_emitting();
+	if (!was_emitting) {
+		particles->set_emitting(true);
+		OS::get_singleton()->delay_usec(1000);
+	}
+
 	Rect2 rect;
 	while (running < time) {
 
@@ -104,6 +115,10 @@ void Particles2DEditorPlugin::_generate_visibility_rect() {
 			rect = rect.merge(capture);
 
 		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+	}
+
+	if (!was_emitting) {
+		particles->set_emitting(false);
 	}
 
 	particles->set_visibility_rect(rect);
@@ -165,12 +180,12 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 					if (emode == EMISSION_MODE_SOLID) {
 
 						if (capture_colors) {
-							valid_colors[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
-							valid_colors[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
-							valid_colors[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
-							valid_colors[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
+							valid_colors.write[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
+							valid_colors.write[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
+							valid_colors.write[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
+							valid_colors.write[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
 						}
-						valid_positions[vpc++] = Point2(i, j);
+						valid_positions.write[vpc++] = Point2(i, j);
 
 					} else {
 
@@ -189,7 +204,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 						}
 
 						if (on_border) {
-							valid_positions[vpc] = Point2(i, j);
+							valid_positions.write[vpc] = Point2(i, j);
 
 							if (emode == EMISSION_MODE_BORDER_DIRECTED) {
 								Vector2 normal;
@@ -206,14 +221,14 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 								}
 
 								normal.normalize();
-								valid_normals[vpc] = normal;
+								valid_normals.write[vpc] = normal;
 							}
 
 							if (capture_colors) {
-								valid_colors[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
-								valid_colors[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
-								valid_colors[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
-								valid_colors[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
+								valid_colors.write[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
+								valid_colors.write[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
+								valid_colors.write[vpc * 4 + 2] = r[(j * s.width + i) * 4 + 2];
+								valid_colors.write[vpc * 4 + 3] = r[(j * s.width + i) * 4 + 3];
 							}
 
 							vpc++;

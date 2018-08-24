@@ -62,7 +62,7 @@ void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const Poo
 	faces.resize(p_vertices.size() / 3);
 
 	for (int i = 0; i < faces.size(); i++) {
-		Face &f = faces[i];
+		Face &f = faces.write[i];
 		f.vertices[0] = rv[i * 3 + 0];
 		f.vertices[1] = rv[i * 3 + 1];
 		f.vertices[2] = rv[i * 3 + 2];
@@ -101,7 +101,7 @@ void CSGBrush::build_from_faces(const PoolVector<Vector3> &p_vertices, const Poo
 
 	materials.resize(material_map.size());
 	for (Map<Ref<Material>, int>::Element *E = material_map.front(); E; E = E->next()) {
-		materials[E->get()] = E->key();
+		materials.write[E->get()] = E->key();
 	}
 
 	_regen_face_aabbs();
@@ -111,10 +111,10 @@ void CSGBrush::_regen_face_aabbs() {
 
 	for (int i = 0; i < faces.size(); i++) {
 
-		faces[i].aabb.position = faces[i].vertices[0];
-		faces[i].aabb.expand_to(faces[i].vertices[1]);
-		faces[i].aabb.expand_to(faces[i].vertices[2]);
-		faces[i].aabb.grow_by(faces[i].aabb.get_longest_axis_size() * 0.001); //make it a tad bigger to avoid num precision erros
+		faces.write[i].aabb.position = faces[i].vertices[0];
+		faces.write[i].aabb.expand_to(faces[i].vertices[1]);
+		faces.write[i].aabb.expand_to(faces[i].vertices[2]);
+		faces.write[i].aabb.grow_by(faces[i].aabb.get_longest_axis_size() * 0.001); //make it a tad bigger to avoid num precision erros
 	}
 }
 
@@ -125,7 +125,7 @@ void CSGBrush::copy_from(const CSGBrush &p_brush, const Transform &p_xform) {
 
 	for (int i = 0; i < faces.size(); i++) {
 		for (int j = 0; j < 3; j++) {
-			faces[i].vertices[j] = p_xform.xform(p_brush.faces[i].vertices[j]);
+			faces.write[i].vertices[j] = p_xform.xform(p_brush.faces[i].vertices[j]);
 		}
 	}
 
@@ -341,7 +341,7 @@ void CSGBrushOperation::BuildPoly::_clip_segment(const CSGBrush *p_brush, int p_
 			new_edge.points[0] = edges[i].points[0];
 			new_edge.points[1] = point_idx;
 			new_edge.outer = edges[i].outer;
-			edges[i].points[0] = point_idx;
+			edges.write[i].points[0] = point_idx;
 			edges.insert(i, new_edge);
 			i++; //skip newly inserted edge
 			base_edges++; //will need an extra one in the base triangle
@@ -637,7 +637,7 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 		int to_point = e.edge_point;
 		int current_edge = e.edge;
 
-		edge_process[e.edge] = true; //mark as processed
+		edge_process.write[e.edge] = true; //mark as processed
 
 		int limit = p_poly.points.size() * 4; //avoid infinite recursion
 
@@ -708,7 +708,7 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 
 			prev_point = to_point;
 			to_point = next_point;
-			edge_process[next_edge] = true; //mark this edge as processed
+			edge_process.write[next_edge] = true; //mark this edge as processed
 			current_edge = next_edge;
 
 			limit--;
@@ -792,13 +792,13 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 
 	//none processed by default
 	for (int i = 0; i < edge_process.size(); i++) {
-		edge_process[i] = false;
+		edge_process.write[i] = false;
 	}
 
 	//put edges in points, so points can go through them
 	for (int i = 0; i < p_poly.edges.size(); i++) {
-		vertex_process[p_poly.edges[i].points[0]].push_back(i);
-		vertex_process[p_poly.edges[i].points[1]].push_back(i);
+		vertex_process.write[p_poly.edges[i].points[0]].push_back(i);
+		vertex_process.write[p_poly.edges[i].points[1]].push_back(i);
 	}
 
 	Vector<PolyPoints> polys;
@@ -854,7 +854,7 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 			_add_poly_outline(p_poly, p_poly.edges[i].points[0], p_poly.edges[i].points[1], vertex_process, outline);
 
 			if (outline.size() > 1) {
-				polys[intersect_poly].holes.push_back(outline);
+				polys.write[intersect_poly].holes.push_back(outline);
 			}
 		}
 		_add_poly_points(p_poly, i, p_poly.edges[i].points[0], p_poly.edges[i].points[1], vertex_process, edge_process, polys);
@@ -953,18 +953,18 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 
 					//duplicate point
 					int insert_at = with_outline_vertex;
-					polys[i].points.insert(insert_at, polys[i].points[insert_at]);
+					polys.write[i].points.insert(insert_at, polys[i].points[insert_at]);
 					insert_at++;
 					//insert all others, outline should be backwards (must check)
 					int holesize = polys[i].holes[j].size();
 					for (int k = 0; k <= holesize; k++) {
 						int idx = (from_hole_vertex + k) % holesize;
-						polys[i].points.insert(insert_at, polys[i].holes[j][idx]);
+						polys.write[i].points.insert(insert_at, polys[i].holes[j][idx]);
 						insert_at++;
 					}
 
 					added_hole = true;
-					polys[i].holes.remove(j);
+					polys.write[i].holes.remove(j);
 					break; //got rid of hole, break and continue
 				}
 			}
@@ -980,7 +980,7 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 		Vector<Vector2> vertices;
 		vertices.resize(polys[i].points.size());
 		for (int j = 0; j < vertices.size(); j++) {
-			vertices[j] = p_poly.points[polys[i].points[j]].point;
+			vertices.write[j] = p_poly.points[polys[i].points[j]].point;
 		}
 
 		Vector<int> indices = Geometry::triangulate_polygon(vertices);
@@ -1267,7 +1267,7 @@ void CSGBrushOperation::MeshMerge::mark_inside_faces() {
 		int intersections = _bvh_count_intersections(bvh, max_depth, max_alloc - 1, center, target, i);
 
 		if (intersections & 1) {
-			faces[i].inside = true;
+			faces.write[i].inside = true;
 		}
 	}
 }
@@ -1419,13 +1419,13 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_A
 				if (mesh_merge.faces[i].inside)
 					continue;
 				for (int j = 0; j < 3; j++) {
-					result.faces[outside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					result.faces[outside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+					result.faces.write[outside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+					result.faces.write[outside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
 				}
 
-				result.faces[outside_count].smooth = mesh_merge.faces[i].smooth;
-				result.faces[outside_count].invert = mesh_merge.faces[i].invert;
-				result.faces[outside_count].material = mesh_merge.faces[i].material_idx;
+				result.faces.write[outside_count].smooth = mesh_merge.faces[i].smooth;
+				result.faces.write[outside_count].invert = mesh_merge.faces[i].invert;
+				result.faces.write[outside_count].material = mesh_merge.faces[i].material_idx;
 				outside_count++;
 			}
 
@@ -1451,13 +1451,13 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_A
 				if (!mesh_merge.faces[i].inside)
 					continue;
 				for (int j = 0; j < 3; j++) {
-					result.faces[inside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					result.faces[inside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+					result.faces.write[inside_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+					result.faces.write[inside_count].uvs[j] = mesh_merge.faces[i].uvs[j];
 				}
 
-				result.faces[inside_count].smooth = mesh_merge.faces[i].smooth;
-				result.faces[inside_count].invert = mesh_merge.faces[i].invert;
-				result.faces[inside_count].material = mesh_merge.faces[i].material_idx;
+				result.faces.write[inside_count].smooth = mesh_merge.faces[i].smooth;
+				result.faces.write[inside_count].invert = mesh_merge.faces[i].invert;
+				result.faces.write[inside_count].material = mesh_merge.faces[i].material_idx;
 				inside_count++;
 			}
 
@@ -1489,19 +1489,19 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_A
 					continue;
 
 				for (int j = 0; j < 3; j++) {
-					result.faces[face_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
-					result.faces[face_count].uvs[j] = mesh_merge.faces[i].uvs[j];
+					result.faces.write[face_count].vertices[j] = mesh_merge.points[mesh_merge.faces[i].points[j]];
+					result.faces.write[face_count].uvs[j] = mesh_merge.faces[i].uvs[j];
 				}
 
 				if (mesh_merge.faces[i].from_b) {
 					//invert facing of insides of B
-					SWAP(result.faces[face_count].vertices[1], result.faces[face_count].vertices[2]);
-					SWAP(result.faces[face_count].uvs[1], result.faces[face_count].uvs[2]);
+					SWAP(result.faces.write[face_count].vertices[1], result.faces.write[face_count].vertices[2]);
+					SWAP(result.faces.write[face_count].uvs[1], result.faces.write[face_count].uvs[2]);
 				}
 
-				result.faces[face_count].smooth = mesh_merge.faces[i].smooth;
-				result.faces[face_count].invert = mesh_merge.faces[i].invert;
-				result.faces[face_count].material = mesh_merge.faces[i].material_idx;
+				result.faces.write[face_count].smooth = mesh_merge.faces[i].smooth;
+				result.faces.write[face_count].invert = mesh_merge.faces[i].invert;
+				result.faces.write[face_count].material = mesh_merge.faces[i].material_idx;
 				face_count++;
 			}
 
@@ -1513,6 +1513,6 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_A
 	//updatelist of materials
 	result.materials.resize(mesh_merge.materials.size());
 	for (const Map<Ref<Material>, int>::Element *E = mesh_merge.materials.front(); E; E = E->next()) {
-		result.materials[E->get()] = E->key();
+		result.materials.write[E->get()] = E->key();
 	}
 }

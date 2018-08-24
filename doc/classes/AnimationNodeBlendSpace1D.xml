@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeBlendSpace1D" inherits="AnimationRootNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_blend_point">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="AnimationRootNode">
+			</argument>
+			<argument index="1" name="pos" type="float">
+			</argument>
+			<argument index="2" name="at_index" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_point_node" qualifiers="const">
+			<return type="AnimationRootNode">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_point_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_blend_point">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_point_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="node" type="AnimationRootNode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_point_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="pos" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space">
+		</member>
+		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space">
+		</member>
+		<member name="snap" type="float" setter="set_snap" getter="get_snap">
+		</member>
+		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

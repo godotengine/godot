@@ -53,7 +53,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			err = FAILED;
 		}
 
-		if (bits_per_pixel != 24 || bits_per_pixel != 32) {
+		if (!(bits_per_pixel == 24 || bits_per_pixel == 32)) {
 			err = FAILED;
 		}
 

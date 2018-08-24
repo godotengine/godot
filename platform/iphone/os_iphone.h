@@ -47,14 +47,6 @@
 
 class OSIPhone : public OS_Unix {
 
-public:
-	enum Orientations {
-		PortraitDown,
-		PortraitUp,
-		LandscapeLeft,
-		LandscapeRight,
-	};
-
 private:
 	enum {
 		MAX_MOUSE_COUNT = 8,
@@ -63,8 +55,6 @@ private:
 
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
-
-	uint8_t supported_orientations;
 
 	VisualServer *visual_server;
 
@@ -86,6 +76,8 @@ private:
 
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
+
+	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
@@ -121,6 +113,8 @@ private:
 	InputDefault *input;
 
 	int virtual_keyboard_height;
+
+	int video_driver_index;
 
 public:
 	bool iterate();

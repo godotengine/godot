@@ -87,6 +87,10 @@ private:
 	int cached_width;
 	int cached_placeholder_width;
 
+	bool clear_button_enabled;
+
+	Ref<Texture> right_icon;
+
 	struct Selection {
 
 		int begin;
@@ -104,6 +108,13 @@ private:
 	};
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos;
+
+	struct ClearButtonStatus {
+		bool press_attempt;
+		bool pressing_inside;
+	} clear_button_status;
+
+	bool _is_over_clear_button(const Point2 &p_pos) const;
 
 	void _clear_undo_stack();
 	void _clear_redo();
@@ -149,6 +160,8 @@ public:
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
 
 	void menu_option(int p_option);
 	void set_context_menu_enabled(bool p_enable);
@@ -200,6 +213,11 @@ public:
 
 	void set_expand_to_text_length(bool p_enabled);
 	bool get_expand_to_text_length() const;
+
+	void set_clear_button_enabled(bool p_enabled);
+	bool is_clear_button_enabled() const;
+
+	void set_right_icon(const Ref<Texture> &p_icon);
 
 	virtual bool is_text_field() const;
 	LineEdit();

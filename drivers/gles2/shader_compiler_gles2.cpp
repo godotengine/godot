@@ -325,10 +325,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				uniform_code += ";\n";
 
 				if (SL::is_sampler_type(E->get().type)) {
-					r_gen_code.texture_uniforms[E->get().texture_order] = _mkid(E->key());
-					r_gen_code.texture_hints[E->get().texture_order] = E->get().hint;
+					r_gen_code.texture_uniforms.write[E->get().texture_order] = E->key();
+					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
 				} else {
-					r_gen_code.uniforms[E->get().order] = E->key();
+					r_gen_code.uniforms.write[E->get().order] = E->key();
 				}
 
 				vertex_global += uniform_code.as_string();
@@ -507,7 +507,6 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				case SL::OP_ASSIGN_DIV:
 				case SL::OP_ASSIGN_SHIFT_LEFT:
 				case SL::OP_ASSIGN_SHIFT_RIGHT:
-				case SL::OP_ASSIGN_MOD:
 				case SL::OP_ASSIGN_BIT_AND:
 				case SL::OP_ASSIGN_BIT_OR:
 				case SL::OP_ASSIGN_BIT_XOR: {
@@ -516,6 +515,16 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _opstr(op_node->op);
 					code += " ";
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} break;
+
+				case SL::OP_ASSIGN_MOD: {
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += " = ";
+					code += "mod(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, true);
+					code += ", ";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ")";
 				} break;
 
 				case SL::OP_BIT_INVERT:
@@ -550,6 +559,45 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 								code += "texture2D";
 							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
 								code += "textureCube";
+							}
+
+						} else if (var_node->name == "textureLod") {
+							// emit texture call
+
+							if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLER2D) {
+								code += "texture2DLod";
+							} else if (op_node->arguments[1]->get_datatype() == SL::TYPE_SAMPLERCUBE) {
+								code += "textureCubeLod";
+							}
+
+						} else if (var_node->name == "mix") {
+
+							switch (op_node->arguments[3]->get_datatype()) {
+
+								case SL::TYPE_BVEC2: {
+									code += "select2";
+								} break;
+
+								case SL::TYPE_BVEC3: {
+									code += "select3";
+								} break;
+
+								case SL::TYPE_BVEC4: {
+									code += "select4";
+								} break;
+
+								case SL::TYPE_VEC2:
+								case SL::TYPE_VEC3:
+								case SL::TYPE_VEC4:
+								case SL::TYPE_FLOAT: {
+
+									code += "mix";
+								} break;
+
+								default: {
+									SL::DataType type = op_node->arguments[3]->get_datatype();
+									print_line(String("uhhhh invalid mix with type: ") + itos(type));
+								} break;
 							}
 
 						} else if (p_default_actions.renames.has(var_node->name)) {
@@ -588,6 +636,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += " : ";
 					code += _dump_node_code(op_node->arguments[2], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				} break;
+
+				case SL::OP_MOD: {
+
+					code += "mod(";
+					code += _dump_node_code(op_node->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ", ";
+					code += _dump_node_code(op_node->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ")";
 				} break;
 
 				default: {
@@ -647,6 +704,10 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				}
 				code += ";\n";
 			} else if (cf_node->flow_op == SL::FLOW_OP_DISCARD) {
+				if (p_actions.usage_flag_pointers.has("DISCARD") && !used_flag_pointers.has("DISCARD")) {
+					*p_actions.usage_flag_pointers["DISCARD"] = true;
+					used_flag_pointers.insert("DISCARD");
+				}
 				code += "discard;";
 			} else if (cf_node->flow_op == SL::FLOW_OP_CONTINUE) {
 				code += "continue;";
@@ -712,7 +773,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[VS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] == "extra_matrix";
+	actions[VS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] = "extra_matrix";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TIME"] = "time";
 	actions[VS::SHADER_CANVAS_ITEM].renames["AT_LIGHT_PASS"] = "at_light_pass";
 	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
@@ -721,8 +782,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP"] = "normal_map";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP_DEPTH"] = "normal_depth";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv_interp";
-	actions[VS::SHADER_CANVAS_ITEM].renames["COLOR"] = "color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE"] = "color_texture";
 	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE_PIXEL_SIZE"] = "color_texpixel_size";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL_TEXTURE"] = "normal_texture";
@@ -736,7 +795,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_HEIGHT"] = "light_height";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_COLOR"] = "light_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_UV"] = "light_uv";
-	//actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_SHADOW_COLOR"]="light_shadow_color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT"] = "light";
 	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_COLOR"] = "shadow_color";
 
@@ -754,10 +812,10 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	/** SPATIAL SHADER **/
 
 	actions[VS::SHADER_SPATIAL].renames["WORLD_MATRIX"] = "world_transform";
-	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
-	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_matrix";
+	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "projection_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
 
 	actions[VS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
@@ -768,7 +826,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
-	//actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"]=ShaderLanguage::TYPE_INT;
+	// gl_InstanceID is not available in OpenGL ES 2.0
+	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
 
 	//builtins
 
@@ -790,13 +849,11 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["CLEARCOAT_GLOSS"] = "clearcoat_gloss";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY"] = "anisotropy";
 	actions[VS::SHADER_SPATIAL].renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
-	//actions[VS::SHADER_SPATIAL].renames["SSS_SPREAD"] = "sss_spread";
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 	actions[VS::SHADER_SPATIAL].renames["TRANSMISSION"] = "transmission";
 	actions[VS::SHADER_SPATIAL].renames["AO"] = "ao";
 	actions[VS::SHADER_SPATIAL].renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"] = "emission";
-	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"] = "gl_PointCoord";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"] = "screen_uv";
@@ -837,8 +894,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_SPATIAL].usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
-	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";

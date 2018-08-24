@@ -31,11 +31,11 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include "math_2d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
 #include "servers/visual_server.h"
+#include "transform_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -255,7 +255,7 @@ private:
 		Control *key_focus;
 		Control *mouse_over;
 		Control *tooltip;
-		Panel *tooltip_popup;
+		Control *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
@@ -312,6 +312,7 @@ private:
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which = NULL);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 

@@ -110,7 +110,6 @@ struct ClassAPI {
 	bool is_singleton;
 	bool is_instanciable;
 	// @Unclear
-	bool is_creatable;
 	bool is_reference;
 
 	List<MethodAPI> methods;
@@ -385,7 +384,6 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back(String("\t\t\"instanciable\": ") + (api.is_instanciable ? "true" : "false") + ",\n");
 		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
 		// @Unclear
-		// source.push_back(String("\t\t\"createable\": ") + (api.is_creatable ? "true" : "false") + ",\n");
 
 		source.push_back("\t\t\"constants\": {\n");
 		for (List<ConstantAPI>::Element *e = api.constants.front(); e; e = e->next()) {

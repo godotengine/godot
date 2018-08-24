@@ -12,7 +12,7 @@
 		<method name="get_bone">
 			<return type="Bone2D">
 			</return>
-			<argument index="0" name="arg0" type="int">
+			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
 			</description>

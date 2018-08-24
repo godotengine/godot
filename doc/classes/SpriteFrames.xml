@@ -17,7 +17,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				Adds a new animation to the the library.
+				Adds a new animation to the library.
 			</description>
 		</method>
 		<method name="add_frame">
@@ -56,6 +56,13 @@
 			</argument>
 			<description>
 				If [code]true[/code] the given animation will loop.
+			</description>
+		</method>
+		<method name="get_animation_names" qualifiers="const">
+			<return type="PoolStringArray">
+			</return>
+			<description>
+				Returns an array containing the names associated to each animation. Values are placed in alphabetical order.
 			</description>
 		</method>
 		<method name="get_animation_speed" qualifiers="const">

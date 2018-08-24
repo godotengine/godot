@@ -55,7 +55,11 @@ public:
 	PoolVector<String> get_recognized_extensions_for_type(const String &p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	PoolStringArray get_dependencies(const String &p_path);
+#ifndef DISABLE_DEPRECATED
 	bool has(const String &p_path);
+#endif // DISABLE_DEPRECATED
+	bool has_cached(const String &p_path);
+	bool exists(const String &p_path, const String &p_type_hint = "");
 
 	_ResourceLoader();
 };
@@ -152,6 +156,8 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual String get_audio_driver_name(int p_driver) const;
 
+	virtual PoolStringArray get_connected_midi_inputs();
+
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
@@ -183,6 +189,7 @@ public:
 	virtual bool get_window_per_pixel_transparency_enabled() const;
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
 
+	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
@@ -263,8 +270,8 @@ public:
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
-	Dictionary get_datetime_from_unix_time(uint64_t unix_time_val) const;
-	uint64_t get_unix_time_from_datetime(Dictionary datetime) const;
+	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
+	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
 	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 	uint64_t get_system_time_secs() const;
@@ -276,6 +283,7 @@ public:
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_usec() const;
 	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;

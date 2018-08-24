@@ -184,6 +184,11 @@ namespace Godot
             return result;
         }
 
+        public Vector2 Project(Vector2 onNormal)
+        {
+            return onNormal * (Dot(onNormal) / onNormal.LengthSquared());
+        }
+
         public Vector2 Reflect(Vector2 n)
         {
             return 2.0f * n * Dot(n) - this;
@@ -231,24 +236,27 @@ namespace Godot
         {
             return new Vector2(y, -x);
         }
-        
-        private static readonly Vector2 zero   = new Vector2 (0, 0);
-        private static readonly Vector2 one    = new Vector2 (1, 1);
-        private static readonly Vector2 negOne = new Vector2 (-1, -1);
-    
-        private static readonly Vector2 up     = new Vector2 (0, 1);
-        private static readonly Vector2 down   = new Vector2 (0, -1);
-        private static readonly Vector2 right  = new Vector2 (1, 0);
-        private static readonly Vector2 left   = new Vector2 (-1, 0);
 
-        public static Vector2 Zero   { get { return zero;    } }
-        public static Vector2 One    { get { return one;     } }
-        public static Vector2 NegOne { get { return negOne;  } }
-        
-        public static Vector2 Up     { get { return up;      } }
-        public static Vector2 Down   { get { return down;    } }
-        public static Vector2 Right  { get { return right;   } }
-        public static Vector2 Left   { get { return left;    } }
+        // Constants
+        private static readonly Vector2 _zero = new Vector2(0, 0);
+        private static readonly Vector2 _one = new Vector2(1, 1);
+        private static readonly Vector2 _negOne = new Vector2(-1, -1);
+        private static readonly Vector2 _inf = new Vector2(Mathf.Inf, Mathf.Inf);
+      
+        private static readonly Vector2 _up = new Vector2(0, -1);
+        private static readonly Vector2 _down = new Vector2(0, 1);
+        private static readonly Vector2 _right  = new Vector2(1, 0);
+        private static readonly Vector2 _left = new Vector2(-1, 0);
+
+        public static Vector2 Zero { get { return _zero; } }
+        public static Vector2 NegOne { get { return _negOne; } }
+        public static Vector2 One { get { return _one; } }
+        public static Vector2 Inf { get { return _inf; } }
+
+        public static Vector2 Up { get { return _up; } }
+        public static Vector2 Down { get { return _down; } }
+        public static Vector2 Right { get { return _right; } }
+        public static Vector2 Left { get { return _left; } }
 
         // Constructors
         public Vector2(real_t x, real_t y)

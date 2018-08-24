@@ -31,8 +31,9 @@
 #ifndef HAIKU_DIRECT_WINDOW_H
 #define HAIKU_DIRECT_WINDOW_H
 
-#include <DirectWindow.h>
 #include <kernel/image.h> // needed for image_id
+
+#include <DirectWindow.h>
 
 #include "core/os/os.h"
 #include "main/input_default.h"
@@ -63,7 +64,7 @@ private:
 	void HandleWindowResized(BMessage *message);
 	void HandleKeyboardEvent(BMessage *message);
 	void HandleKeyboardModifierEvent(BMessage *message);
-	inline InputModifierState GetKeyModifierState(uint32 p_state);
+	inline void GetKeyModifierState(Ref<InputEventWithModifiers> event, uint32 p_state);
 	inline int GetMouseButtonState(uint32 p_state);
 
 public:

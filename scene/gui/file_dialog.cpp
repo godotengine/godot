@@ -582,7 +582,8 @@ void FileDialog::set_current_file(const String &p_file) {
 	int lp = p_file.find_last(".");
 	if (lp != -1) {
 		file->select(0, lp);
-		file->grab_focus();
+		if (file->is_inside_tree())
+			file->grab_focus();
 	}
 }
 void FileDialog::set_current_path(const String &p_path) {
@@ -777,6 +778,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &FileDialog::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &FileDialog::get_mode);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &FileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &FileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &FileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &FileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);

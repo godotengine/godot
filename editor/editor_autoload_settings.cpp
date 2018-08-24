@@ -598,7 +598,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	int i = 0;
 
 	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		orders[i++] = E->get().order;
+		orders.write[i++] = E->get().order;
 	}
 
 	orders.sort();
@@ -610,8 +610,8 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	i = 0;
 
 	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", E->get().name, orders[i++]);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", E->get().name, E->get().order);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + E->get().name, orders[i++]);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + E->get().name, E->get().order);
 	}
 
 	orders.clear();
@@ -742,7 +742,21 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		info.name = name;
 		info.path = path;
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
-		info.node = _create_autoload(path);
+
+		if (info.is_singleton) {
+			// Make sure name references work before parsing scripts
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->add_named_global_constant(info.name, Variant());
+			}
+		}
+
+		autoload_cache.push_back(info);
+	}
+
+	for (List<AutoLoadInfo>::Element *E = autoload_cache.front(); E; E = E->next()) {
+		AutoLoadInfo &info = E->get();
+
+		info.node = _create_autoload(info.path);
 
 		if (info.node) {
 			Ref<Script> scr = info.node->get_script();
@@ -760,8 +774,6 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			memdelete(info.node);
 			info.node = NULL;
 		}
-
-		autoload_cache.push_back(info);
 	}
 
 	autoload_changed = "autoload_changed";

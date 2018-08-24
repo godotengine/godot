@@ -14,7 +14,7 @@
 	</methods>
 	<members>
 		<member name="left_to_right" type="float" setter="set_left_to_right" getter="get_left_to_right">
-			Displacement of of the upper edge along the x-axis. 0.0 positions edge straight above the bottome left edge. Defaults to 0.5 (positioned on the midpoint).
+			Displacement of the upper edge along the x-axis. 0.0 positions edge straight above the bottome left edge. Defaults to 0.5 (positioned on the midpoint).
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size">
 			Size of the prism. Defaults to (2.0, 2.0, 2.0).

@@ -42,7 +42,6 @@
 #include "dvector.h"
 #include "face3.h"
 #include "io/ip_address.h"
-#include "math_2d.h"
 #include "matrix3.h"
 #include "node_path.h"
 #include "plane.h"
@@ -50,6 +49,7 @@
 #include "ref_ptr.h"
 #include "rid.h"
 #include "transform.h"
+#include "transform_2d.h"
 #include "ustring.h"
 #include "vector3.h"
 
@@ -216,6 +216,7 @@ public:
 	operator Vector<int>() const;
 	operator Vector<real_t>() const;
 	operator Vector<String>() const;
+	operator Vector<StringName>() const;
 	operator Vector<Vector3>() const;
 	operator Vector<Color>() const;
 	operator Vector<RID>() const;
@@ -280,6 +281,7 @@ public:
 	Variant(const Vector<int> &p_int_array);
 	Variant(const Vector<real_t> &p_real_array);
 	Variant(const Vector<String> &p_string_array);
+	Variant(const Vector<StringName> &p_string_array);
 	Variant(const Vector<Vector3> &p_vector3_array);
 	Variant(const Vector<Color> &p_color_array);
 	Variant(const Vector<Plane> &p_array); // helper
@@ -396,9 +398,9 @@ public:
 
 	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
-	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
-	static bool has_numeric_constant(Variant::Type p_type, const StringName &p_value);
-	static int get_numeric_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
+	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
+	static bool has_constant(Variant::Type p_type, const StringName &p_value);
+	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = NULL);
 
 	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
 	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);

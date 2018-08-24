@@ -108,7 +108,7 @@ Ref<Script> PluginScriptLanguage::get_template(const String &p_class_name, const
 	return script;
 }
 
-bool PluginScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions) const {
+bool PluginScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	PoolStringArray functions;
 	if (_desc.validate) {
 		bool ret = _desc.validate(

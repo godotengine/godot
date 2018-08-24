@@ -83,7 +83,9 @@ int mbedtls_asn1_write_len( unsigned char **p, unsigned char *start, size_t len 
         return( 4 );
     }
 
+#if SIZE_MAX > 0xFFFFFFFF
     if( len <= 0xFFFFFFFF )
+#endif
     {
         if( *p - start < 5 )
             return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
@@ -96,7 +98,9 @@ int mbedtls_asn1_write_len( unsigned char **p, unsigned char *start, size_t len 
         return( 5 );
     }
 
+#if SIZE_MAX > 0xFFFFFFFF
     return( MBEDTLS_ERR_ASN1_INVALID_LENGTH );
+#endif
 }
 
 int mbedtls_asn1_write_tag( unsigned char **p, unsigned char *start, unsigned char tag )
@@ -232,10 +236,6 @@ int mbedtls_asn1_write_int( unsigned char **p, unsigned char *start, int val )
     int ret;
     size_t len = 0;
 
-    // TODO negative values and values larger than 128
-    // DER format assumes 2s complement for numbers, so the leftmost bit
-    // should be 0 for positive numbers and 1 for negative numbers.
-    //
     if( *p - start < 1 )
         return( MBEDTLS_ERR_ASN1_BUF_TOO_SMALL );
 

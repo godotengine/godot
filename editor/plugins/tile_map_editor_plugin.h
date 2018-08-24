@@ -35,6 +35,7 @@
 #include "editor/editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
@@ -77,6 +78,8 @@ class TileMapEditor : public VBoxContainer {
 	};
 
 	TileMap *node;
+	bool manual_autotile;
+	Vector2 manual_position;
 
 	EditorNode *editor;
 	UndoRedo *undo_redo;
@@ -85,6 +88,7 @@ class TileMapEditor : public VBoxContainer {
 	LineEdit *search_box;
 	HSlider *size_slider;
 	ItemList *palette;
+	ItemList *manual_palette;
 
 	HBoxContainer *toolbar;
 
@@ -97,6 +101,7 @@ class TileMapEditor : public VBoxContainer {
 	ToolButton *rotate_90;
 	ToolButton *rotate_180;
 	ToolButton *rotate_270;
+	CheckBox *manual_button;
 
 	Tool tool;
 
@@ -124,6 +129,7 @@ class TileMapEditor : public VBoxContainer {
 		bool xf;
 		bool yf;
 		bool tr;
+		Vector2 ac;
 
 		CellOp() :
 				idx(TileMap::INVALID_CELL),
@@ -150,6 +156,9 @@ class TileMapEditor : public VBoxContainer {
 
 	List<TileData> copydata;
 
+	Map<Point2i, CellOp> undo_data;
+	Vector<int> invalid_cell;
+
 	void _pick_tile(const Point2 &p_pos);
 
 	PoolVector<Vector2> _bucket_fill(const Point2i &p_start, bool erase = false, bool preview = false);
@@ -165,16 +174,22 @@ class TileMapEditor : public VBoxContainer {
 
 	void _update_copydata();
 
-	int get_selected_tile() const;
-	void set_selected_tile(int p_tile);
+	Vector<int> get_selected_tiles() const;
+	void set_selected_tiles(Vector<int> p_tile);
 
+	void _manual_toggled(bool p_enabled);
 	void _text_entered(const String &p_text);
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_palette();
 	void _menu_option(int p_option);
+	void _palette_selected(int index);
+	void _palette_multi_selected(int index, bool selected);
 
-	void _set_cell(const Point2i &p_pos, int p_value, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false);
+	void _start_undo(const String &p_action);
+	void _finish_undo();
+	void _create_set_cell_undo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new);
+	void _set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false);
 
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();
@@ -204,6 +219,9 @@ class TileMapEditorPlugin : public EditorPlugin {
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
 	TileMapEditor *tile_map_editor;
+
+protected:
+	void _notification(int p_what);
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }

@@ -75,7 +75,7 @@ public:
 	enum TileMode {
 		SINGLE_TILE,
 		AUTO_TILE,
-		ANIMATED_TILE
+		ATLAS_TILE
 	};
 
 	struct AutotileData {

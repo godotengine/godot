@@ -31,25 +31,26 @@
 #ifndef PROJECT_EXPORT_SETTINGS_H
 #define PROJECT_EXPORT_SETTINGS_H
 
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+#include "editor/editor_export.h"
 #include "editor/editor_file_dialog.h"
-#include "os/dir_access.h"
-#include "os/thread.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
-
-#include "editor/editor_file_system.h"
-#include "editor_export.h"
-#include "property_editor.h"
-#include "scene/gui/slider.h"
 
 class EditorNode;
 
@@ -64,11 +65,8 @@ private:
 	ItemList *presets;
 
 	LineEdit *name;
-	PropertyEditor *parameters;
+	EditorInspector *parameters;
 	CheckButton *runnable;
-
-	//EditorFileDialog *pck_export;
-	//EditorFileDialog *file_export;
 
 	Button *button_export;
 	bool updating;

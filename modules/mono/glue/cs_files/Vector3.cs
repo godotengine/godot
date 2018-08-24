@@ -210,6 +210,11 @@ namespace Godot
             );
         }
 
+        public Vector3 Project(Vector3 onNormal)
+        {
+            return onNormal * (Dot(onNormal) / onNormal.LengthSquared());
+        }
+
         public Vector3 Reflect(Vector3 n)
         {
 #if DEBUG
@@ -272,27 +277,30 @@ namespace Godot
             );
         }
         
-        private static readonly Vector3 zero    = new Vector3 (0, 0, 0);
-        private static readonly Vector3 one     = new Vector3 (1, 1, 1);
-        private static readonly Vector3 negOne  = new Vector3 (-1, -1, -1);
+        // Constants
+        private static readonly Vector3 _zero = new Vector3(0, 0, 0);
+        private static readonly Vector3 _one = new Vector3(1, 1, 1);
+        private static readonly Vector3 _negOne = new Vector3(-1, -1, -1);
+        private static readonly Vector3 _inf = new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf);
     
-        private static readonly Vector3 up      = new Vector3 (0, 1, 0);
-        private static readonly Vector3 down    = new Vector3 (0, -1, 0);
-        private static readonly Vector3 right   = new Vector3 (1, 0, 0);
-        private static readonly Vector3 left    = new Vector3 (-1, 0, 0);
-        private static readonly Vector3 forward = new Vector3 (0, 0, -1);
-        private static readonly Vector3 back    = new Vector3 (0, 0, 1);
+        private static readonly Vector3 _up = new Vector3(0, 1, 0);
+        private static readonly Vector3 _down = new Vector3(0, -1, 0);
+        private static readonly Vector3 _right = new Vector3(1, 0, 0);
+        private static readonly Vector3 _left = new Vector3(-1, 0, 0);
+        private static readonly Vector3 _forward = new Vector3(0, 0, -1);
+        private static readonly Vector3 _back = new Vector3(0, 0, 1);
 
-        public static Vector3 Zero    { get { return zero;    } }
-        public static Vector3 One     { get { return one;     } }
-        public static Vector3 NegOne  { get { return negOne;  } }
+        public static Vector3 Zero { get { return _zero; } }
+        public static Vector3 One { get { return _one; } }
+        public static Vector3 NegOne { get { return _negOne; } }
+        public static Vector3 Inf { get { return _inf; } }
         
-        public static Vector3 Up      { get { return up;      } }
-        public static Vector3 Down    { get { return down;    } }
-        public static Vector3 Right   { get { return right;   } }
-        public static Vector3 Left    { get { return left;    } }
-        public static Vector3 Forward { get { return forward; } }
-        public static Vector3 Back    { get { return back;    } }
+        public static Vector3 Up { get { return _up; } }
+        public static Vector3 Down { get { return _down; } }
+        public static Vector3 Right { get { return _right; } }
+        public static Vector3 Left { get { return _left; } }
+        public static Vector3 Forward { get { return _forward; } }
+        public static Vector3 Back { get { return _back; } }
 
         // Constructors
         public Vector3(real_t x, real_t y, real_t z)

@@ -56,8 +56,10 @@ class RWLockRead {
 	RWLock *lock;
 
 public:
-	RWLockRead(RWLock *p_lock) {
-		lock = p_lock;
+	RWLockRead(const RWLock *p_lock) {
+		if (p_lock) {
+			lock = const_cast<RWLock *>(p_lock);
+		}
 		if (lock) lock->read_lock();
 	}
 	~RWLockRead() {

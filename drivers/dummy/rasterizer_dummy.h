@@ -67,7 +67,7 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
+	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
 
 	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {}
 
@@ -154,7 +154,8 @@ public:
 		ERR_FAIL_COND_V(!texture, RID());
 		return texture_owner.make_rid(texture);
 	}
-	void texture_allocate(RID p_texture, int p_width, int p_height, Image::Format p_format, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) {
+
+	void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VisualServer::TextureType p_type = VS::TEXTURE_TYPE_2D, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT) {
 		DummyTexture *t = texture_owner.getornull(p_texture);
 		ERR_FAIL_COND(!t);
 		t->width = p_width;
@@ -164,7 +165,7 @@ public:
 		t->image = Ref<Image>(memnew(Image));
 		t->image->create(p_width, p_height, false, p_format);
 	}
-	void texture_set_data(RID p_texture, const Ref<Image> &p_image, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) {
+	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_level) {
 		DummyTexture *t = texture_owner.getornull(p_texture);
 		ERR_FAIL_COND(!t);
 		t->width = p_image->get_width();
@@ -173,7 +174,7 @@ public:
 		t->image->create(t->width, t->height, false, t->format, p_image->get_data());
 	}
 
-	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, VS::CubeMapSide p_cube_side) {
+	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_level) {
 		DummyTexture *t = texture_owner.get(p_texture);
 
 		ERR_FAIL_COND(!t);
@@ -186,7 +187,7 @@ public:
 		t->image->blit_rect(p_image, Rect2(src_x, src_y, src_w, src_h), Vector2(dst_x, dst_y));
 	}
 
-	Ref<Image> texture_get_data(RID p_texture, VS::CubeMapSide p_cube_side = VS::CUBEMAP_LEFT) const {
+	Ref<Image> texture_get_data(RID p_texture, int p_level) const {
 		DummyTexture *t = texture_owner.getornull(p_texture);
 		ERR_FAIL_COND_V(!t, Ref<Image>());
 		return t->image;
@@ -206,10 +207,13 @@ public:
 		ERR_FAIL_COND_V(!t, Image::FORMAT_RGB8);
 		return t->format;
 	}
+
+	VisualServer::TextureType texture_get_type(RID p_texture) const { return VS::TEXTURE_TYPE_2D; }
 	uint32_t texture_get_texid(RID p_texture) const { return 0; }
 	uint32_t texture_get_width(RID p_texture) const { return 0; }
 	uint32_t texture_get_height(RID p_texture) const { return 0; }
-	void texture_set_size_override(RID p_texture, int p_width, int p_height) {}
+	uint32_t texture_get_depth(RID p_texture) const { return 0; }
+	void texture_set_size_override(RID p_texture, int p_width, int p_height, int p_depth_3d) {}
 
 	void texture_set_path(RID p_texture, const String &p_path) {
 		DummyTexture *t = texture_owner.getornull(p_texture);
@@ -235,6 +239,7 @@ public:
 	void textures_keep_original(bool p_enable) {}
 
 	void texture_set_proxy(RID p_proxy, RID p_base) {}
+	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 
 	/* SKY API */
 
@@ -288,7 +293,7 @@ public:
 		ERR_FAIL_COND(!m);
 
 		m->surfaces.push_back(DummySurface());
-		DummySurface *s = &m->surfaces[m->surfaces.size() - 1];
+		DummySurface *s = &m->surfaces.write[m->surfaces.size() - 1];
 		s->format = p_format;
 		s->primitive = p_primitive;
 		s->array = p_array;
@@ -408,19 +413,23 @@ public:
 
 	virtual RID multimesh_create() { return RID(); }
 
-	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format) {}
+	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
 	int multimesh_get_instance_count(RID p_multimesh) const { return 0; }
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
 	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
+	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
 
 	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
 
 	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
 	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
+	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
+
+	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
 
 	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
@@ -772,7 +781,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {}
 
 	void initialize() {}
-	void begin_frame() {}
+	void begin_frame(double frame_step) {}
 	void set_current_render_target(RID p_render_target) {}
 	void restore_render_target() {}
 	void clear_render_target(const Color &p_color) {}

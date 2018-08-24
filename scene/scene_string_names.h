@@ -127,6 +127,8 @@ public:
 	StringName _update_scroll;
 	StringName _update_xform;
 
+	StringName _clips_input;
+
 	StringName _proxgroup_add;
 	StringName _proxgroup_remove;
 
@@ -198,6 +200,10 @@ public:
 	StringName _default;
 
 	StringName node_configuration_warning_changed;
+
+	StringName output;
+
+	StringName parameters_base_path;
 
 	enum {
 		MAX_MATERIALS = 32

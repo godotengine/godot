@@ -63,7 +63,7 @@
 #define MBEDTLS_ERR_PK_INVALID_ALG         -0x3A80  /**< The algorithm tag or value is invalid. */
 #define MBEDTLS_ERR_PK_UNKNOWN_NAMED_CURVE -0x3A00  /**< Elliptic curve is unsupported (only NIST curves are supported). */
 #define MBEDTLS_ERR_PK_FEATURE_UNAVAILABLE -0x3980  /**< Unavailable feature, e.g. RSA disabled for RSA key. */
-#define MBEDTLS_ERR_PK_SIG_LEN_MISMATCH    -0x3900  /**< The signature is valid but its length is less than expected. */
+#define MBEDTLS_ERR_PK_SIG_LEN_MISMATCH    -0x3900  /**< The buffer contains a valid signature followed by more data. */
 #define MBEDTLS_ERR_PK_HW_ACCEL_FAILED     -0x3880  /**< PK hardware accelerator failed. */
 
 #ifdef __cplusplus
@@ -269,8 +269,8 @@ int mbedtls_pk_can_do( const mbedtls_pk_context *ctx, mbedtls_pk_type_t type );
  * \param sig_len   Signature length
  *
  * \return          0 on success (signature is valid),
- *                  MBEDTLS_ERR_PK_SIG_LEN_MISMATCH if the signature is
- *                  valid but its actual length is less than sig_len,
+ *                  #MBEDTLS_ERR_PK_SIG_LEN_MISMATCH if there is a valid
+ *                  signature in sig but its length is less than \p siglen,
  *                  or a specific error code.
  *
  * \note            For RSA keys, the default padding type is PKCS#1 v1.5.
@@ -300,10 +300,10 @@ int mbedtls_pk_verify( mbedtls_pk_context *ctx, mbedtls_md_type_t md_alg,
  * \param sig_len   Signature length
  *
  * \return          0 on success (signature is valid),
- *                  MBEDTLS_ERR_PK_TYPE_MISMATCH if the PK context can't be
+ *                  #MBEDTLS_ERR_PK_TYPE_MISMATCH if the PK context can't be
  *                  used for this type of signatures,
- *                  MBEDTLS_ERR_PK_SIG_LEN_MISMATCH if the signature is
- *                  valid but its actual length is less than sig_len,
+ *                  #MBEDTLS_ERR_PK_SIG_LEN_MISMATCH if there is a valid
+ *                  signature in sig but its length is less than \p siglen,
  *                  or a specific error code.
  *
  * \note            If hash_len is 0, then the length associated with md_alg

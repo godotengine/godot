@@ -139,8 +139,13 @@ public:
 	bool is_position_behind(const Vector3 &p_pos) const;
 	virtual Vector3 project_position(const Point2 &p_point) const;
 
+	Vector<Vector3> get_near_plane_points() const;
+
 	void set_cull_mask(uint32_t p_layers);
 	uint32_t get_cull_mask() const;
+
+	void set_cull_mask_bit(int p_layer, bool p_enable);
+	bool get_cull_mask_bit(int p_layer) const;
 
 	virtual Vector<Plane> get_frustum() const;
 
@@ -169,4 +174,62 @@ VARIANT_ENUM_CAST(Camera::Projection);
 VARIANT_ENUM_CAST(Camera::KeepAspect);
 VARIANT_ENUM_CAST(Camera::DopplerTracking);
 
+class ClippedCamera : public Camera {
+
+	GDCLASS(ClippedCamera, Camera);
+
+public:
+	enum ProcessMode {
+		CLIP_PROCESS_PHYSICS,
+		CLIP_PROCESS_IDLE,
+	};
+
+private:
+	ProcessMode process_mode;
+	RID pyramid_shape;
+	float margin;
+	float clip_offset;
+	uint32_t collision_mask;
+	bool clip_to_areas;
+	bool clip_to_bodies;
+
+	Set<RID> exclude;
+
+	Vector<Vector3> points;
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+	virtual Transform get_camera_transform() const;
+
+public:
+	void set_clip_to_areas(bool p_clip);
+	bool is_clip_to_areas_enabled() const;
+
+	void set_clip_to_bodies(bool p_clip);
+	bool is_clip_to_bodies_enabled() const;
+
+	void set_margin(float p_margin);
+	float get_margin() const;
+
+	void set_process_mode(ProcessMode p_mode);
+	ProcessMode get_process_mode() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
+	void add_exception_rid(const RID &p_rid);
+	void add_exception(const Object *p_object);
+	void remove_exception_rid(const RID &p_rid);
+	void remove_exception(const Object *p_object);
+	void clear_exceptions();
+
+	ClippedCamera();
+	~ClippedCamera();
+};
+
+VARIANT_ENUM_CAST(ClippedCamera::ProcessMode);
 #endif

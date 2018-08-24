@@ -71,9 +71,9 @@ public:
 
 	void *get_thunk();
 
-	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoObject **r_exc = NULL);
-	MonoObject *invoke(MonoObject *p_object, MonoObject **r_exc = NULL);
-	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoObject **r_exc = NULL);
+	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = NULL);
+	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = NULL);
+	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL);
 
 	String get_full_name(bool p_signature = false) const;
 	String get_full_name_no_class() const;

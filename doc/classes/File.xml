@@ -9,20 +9,20 @@
 		[codeblock]
 		func save(content):
 		    var file = File.new()
-		    file.open("user://save_game.dat", file.WRITE)
+		    file.open("user://save_game.dat", File.WRITE)
 		    file.store_string(content)
 		    file.close()
 
 		func load():
 		    var file = File.new()
-		    file.open("user://save_game.dat", file.READ)
+		    file.open("user://save_game.dat", File.READ)
 		    var content = file.get_as_text()
 		    file.close()
 		    return content
 		[/codeblock]
 	</description>
 	<tutorials>
-		http://docs.godotengine.org/en/3.0/getting_started/step_by_step/filesystem.html
+		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/filesystem.html</link>
 	</tutorials>
 	<demos>
 	</demos>

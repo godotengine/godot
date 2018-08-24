@@ -173,5 +173,11 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
+		</constant>
+		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
+		</constant>
+		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
+		</constant>
 	</constants>
 </class>
