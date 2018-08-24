@@ -38,6 +38,7 @@
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"
 #include "audio/effects/audio_effect_amplify.h"
+#include "audio/effects/audio_effect_buffer.h"
 #include "audio/effects/audio_effect_chorus.h"
 #include "audio/effects/audio_effect_compressor.h"
 #include "audio/effects/audio_effect_delay.h"
@@ -114,6 +115,7 @@ void register_server_types() {
 	{
 		//audio effects
 		ClassDB::register_class<AudioEffectAmplify>();
+		ClassDB::register_class<AudioEffectBuffer>();
 
 		ClassDB::register_class<AudioEffectReverb>();
 
