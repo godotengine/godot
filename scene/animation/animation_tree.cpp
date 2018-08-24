@@ -674,6 +674,7 @@ void AnimationTree::_clear_caches() {
 	cache_valid = false;
 }
 
+
 void AnimationTree::_process_graph(float p_delta) {
 
 	_update_properties(); //if properties need updating, update them
@@ -697,6 +698,29 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
+
+	ObjectID current_animation_player =0;
+
+	if (player) {
+		current_animation_player=player->get_instance_id();
+	}
+
+	if (last_animation_player != current_animation_player) {
+
+		if (last_animation_player) {
+			Object *old_player = ObjectDB::get_instance(last_animation_player);
+			if (old_player) {
+				old_player->disconnect("caches_cleared",this,"_clear_caches");
+			}
+		}
+
+		if (player) {
+			player->connect("caches_cleared",this,"_clear_caches");
+		}
+
+		last_animation_player = current_animation_player;
+
+	}
 
 	if (!player) {
 		ERR_PRINT("AnimationTree: path points to a node not an AnimationPlayer, disabling playback");
@@ -1197,6 +1221,14 @@ void AnimationTree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_caches();
+		if (last_animation_player) {
+
+			Object *old_player = ObjectDB::get_instance(last_animation_player);
+			if (old_player) {
+				old_player->disconnect("caches_cleared",this,"_clear_caches");
+			}
+		}
+
 	}
 }
 
@@ -1447,6 +1479,7 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
+	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
@@ -1468,6 +1501,7 @@ AnimationTree::AnimationTree() {
 	setup_pass = 1;
 	started = true;
 	properties_dirty = true;
+	last_animation_player =0;
 }
 
 AnimationTree::~AnimationTree() {

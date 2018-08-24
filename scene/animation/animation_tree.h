@@ -266,6 +266,8 @@ private:
 
 	void _update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node);
 
+	ObjectID last_animation_player;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
