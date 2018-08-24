@@ -1035,6 +1035,7 @@ DynamicFont::DynamicFont() :
 		font_list(this) {
 
 	cache_id.size = 16;
+	outline_cache_id.size = 16;
 	spacing_top = 0;
 	spacing_bottom = 0;
 	spacing_char = 0;
