@@ -85,17 +85,15 @@ uniform float custom_alpha;
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
 	vec2 st = vec2(
-	        atan(normal.x, normal.z),
-	        acos(normal.y)
-	);
+			atan(normal.x, normal.z),
+			acos(normal.y));
 
-	if(st.x < 0.0)
-		st.x += M_PI*2.0;
+	if (st.x < 0.0)
+		st.x += M_PI * 2.0;
 
-	st/=vec2(M_PI*2.0,M_PI);
+	st /= vec2(M_PI * 2.0, M_PI);
 
-	return texture2D(pano,st);
-
+	return texture2D(pano, st);
 }
 
 #endif
@@ -109,16 +107,15 @@ void main() {
 #elif defined(USE_CUBEMAP)
 	vec4 color = textureCube(source_cube, normalize(cube_interp));
 #else
-	vec4 color = texture2D( source,  uv_interp );
+	vec4 color = texture2D(source, uv_interp);
 #endif
 
-
 #ifdef USE_NO_ALPHA
-	color.a=1.0;
+	color.a = 1.0;
 #endif
 
 #ifdef USE_CUSTOM_ALPHA
-	color.a=custom_alpha;
+	color.a = custom_alpha;
 #endif
 
 #ifdef USE_MULTIPLIER
