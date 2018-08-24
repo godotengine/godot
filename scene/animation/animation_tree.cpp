@@ -109,12 +109,12 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
 	//inputs.write[p_input].last_pass = state->last_pass;
-	float activity=0;
+	float activity = 0;
 	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), NULL, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
-	if (activity_ptr && p_input<activity_ptr->size()) {
+	if (activity_ptr && p_input < activity_ptr->size()) {
 		activity_ptr->write[p_input].last_pass = state->last_pass;
 		activity_ptr->write[p_input].activity = activity;
 	}
@@ -674,7 +674,6 @@ void AnimationTree::_clear_caches() {
 	cache_valid = false;
 }
 
-
 void AnimationTree::_process_graph(float p_delta) {
 
 	_update_properties(); //if properties need updating, update them
@@ -699,10 +698,10 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
-	ObjectID current_animation_player =0;
+	ObjectID current_animation_player = 0;
 
 	if (player) {
-		current_animation_player=player->get_instance_id();
+		current_animation_player = player->get_instance_id();
 	}
 
 	if (last_animation_player != current_animation_player) {
@@ -710,16 +709,15 @@ void AnimationTree::_process_graph(float p_delta) {
 		if (last_animation_player) {
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
-				old_player->disconnect("caches_cleared",this,"_clear_caches");
+				old_player->disconnect("caches_cleared", this, "_clear_caches");
 			}
 		}
 
 		if (player) {
-			player->connect("caches_cleared",this,"_clear_caches");
+			player->connect("caches_cleared", this, "_clear_caches");
 		}
 
 		last_animation_player = current_animation_player;
-
 	}
 
 	if (!player) {
@@ -1225,10 +1223,9 @@ void AnimationTree::_notification(int p_what) {
 
 			Object *old_player = ObjectDB::get_instance(last_animation_player);
 			if (old_player) {
-				old_player->disconnect("caches_cleared",this,"_clear_caches");
+				old_player->disconnect("caches_cleared", this, "_clear_caches");
 			}
 		}
-
 	}
 }
 
@@ -1328,13 +1325,13 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	if (node->get_input_count() && !input_activity_map.has(p_base_path)) {
 
 		Vector<Activity> activity;
-		for(int i=0;i<node->get_input_count();i++) {
+		for (int i = 0; i < node->get_input_count(); i++) {
 			Activity a;
-			a.last_pass=0;
+			a.last_pass = 0;
 			activity.push_back(a);
 		}
 		input_activity_map[p_base_path] = activity;
-		input_activity_map_get[String(p_base_path).substr(0,String(p_base_path).length()-1)]=&input_activity_map[p_base_path];
+		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
 	}
 
 	List<PropertyInfo> plist;
@@ -1434,14 +1431,14 @@ void AnimationTree::rename_parameter(const String &p_base, const String &p_new_b
 	_update_properties();
 }
 
-float AnimationTree::get_connection_activity(const StringName& p_path,int p_connection) const {
+float AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
 	}
 	const Vector<Activity> *activity = input_activity_map_get[p_path];
 
-	if (!activity || p_connection<0 || p_connection>=activity->size()) {
+	if (!activity || p_connection < 0 || p_connection >= activity->size()) {
 		return 0;
 	}
 
@@ -1451,7 +1448,6 @@ float AnimationTree::get_connection_activity(const StringName& p_path,int p_conn
 
 	return (*activity)[p_connection].activity;
 }
-
 
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &AnimationTree::set_active);
@@ -1501,7 +1497,7 @@ AnimationTree::AnimationTree() {
 	setup_pass = 1;
 	started = true;
 	properties_dirty = true;
-	last_animation_player =0;
+	last_animation_player = 0;
 }
 
 AnimationTree::~AnimationTree() {
