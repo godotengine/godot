@@ -1022,30 +1022,12 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 
 	//this might not necessarily work well if using a rect, needs to be fixed properly
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
 
-	Rect2 src = p_src_rect;
-	src.position += (rc.position - margin.position);
-	Rect2 src_c = rc.clip(src);
-	if (src_c.size == Size2())
-		return;
-	Vector2 ofs = (src_c.position - src.position);
-
-	Vector2 scale = p_rect.size / p_src_rect.size;
-	if (scale.x < 0) {
-		float mx = (margin.size.width - margin.position.x);
-		mx -= margin.position.x;
-		ofs.x = -(ofs.x + mx);
-	}
-	if (scale.y < 0) {
-		float my = margin.size.height - margin.position.y;
-		my -= margin.position.y;
-		ofs.y = -(ofs.y + my);
-	}
-	Rect2 dr(p_rect.position + ofs * scale, src_c.size * scale);
+	Rect2 dr;
+	Rect2 src_c;
+	get_rect_region(p_rect, p_src_rect, dr, src_c);
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose, normal_rid, filter_clip);
@@ -1059,13 +1041,17 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 		return false;
 
 	Rect2 src = p_src_rect;
+	if (src.size == Size2()) {
+		src.size = rc.size;
+	}
+	Vector2 scale = p_rect.size / src.size;
+
 	src.position += (rc.position - margin.position);
 	Rect2 src_c = rc.clip(src);
 	if (src_c.size == Size2())
 		return false;
 	Vector2 ofs = (src_c.position - src.position);
 
-	Vector2 scale = p_rect.size / p_src_rect.size;
 	if (scale.x < 0) {
 		float mx = (margin.size.width - margin.position.x);
 		mx -= margin.position.x;
