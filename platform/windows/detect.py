@@ -210,6 +210,7 @@ def configure_msvc(env, manual_msvc_config):
                                    'WIN32', 'MSVC',
                                    {'WINVER' : '$target_win_version',
                                     '_WIN32_WINNT': '$target_win_version'}])
+    env.AppendUnique(CPPDEFINES=['NOMINMAX']) # disable bogus min/max WinDef.h macros
     if env["bits"] == "64":
         env.AppendUnique(CPPDEFINES=['_WIN64'])
 
