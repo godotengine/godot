@@ -244,23 +244,23 @@ void main() {
 
 		vec3 H = ImportanceSampleGGX(xi, roughness, N);
 		vec3 V = N;
-		vec3 L = normalize(2.0 * dot(V, H) * H - V);
+		vec3 L = (2.0 * dot(V, H) * H - V);
 
 		float ndotl = clamp(dot(N, L), 0.0, 1.0);
 
 		if (ndotl > 0.0) {
 #ifdef USE_SOURCE_PANORAMA
-			sum.rgb += texturePanorama(H, source_panorama).rgb * ndotl;
+			sum.rgb += texturePanorama(L, source_panorama).rgb * ndotl;
 #endif
 
 #ifdef USE_SOURCE_DUAL_PARABOLOID_ARRAY
 
-			sum.rgb += textureDualParaboloidArray(H).rgb * ndotl;
+			sum.rgb += textureDualParaboloidArray(L).rgb * ndotl;
 #endif
 
 #if !defined(USE_SOURCE_DUAL_PARABOLOID_ARRAY) && !defined(USE_SOURCE_PANORAMA)
-			H.y = -H.y;
-			sum.rgb += textureLod(source_cube, H, 0.0).rgb * ndotl;
+			L.y = -L.y;
+			sum.rgb += textureLod(source_cube, L, 0.0).rgb * ndotl;
 #endif
 			sum.a += ndotl;
 		}

@@ -170,10 +170,10 @@ void main() {
 		if (NdotL > 0.0) {
 
 #ifdef USE_SOURCE_PANORAMA
-			sum.rgb += texturePanorama(source_panorama, H).rgb * NdotL;
+			sum.rgb += texturePanorama(source_panorama, L).rgb * NdotL;
 #else
-			H.y = -H.y;
-			sum.rgb += textureCubeLod(source_cube, H, 0.0).rgb * NdotL;
+			L.y = -L.y;
+			sum.rgb += textureCubeLod(source_cube, L, 0.0).rgb * NdotL;
 #endif
 
 			sum.a += NdotL;
