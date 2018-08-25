@@ -4,7 +4,8 @@
 		Vertical box container.
 	</brief_description>
 	<description>
-		Vertical box container. See [BoxContainer].
+		A box container subclass that arranges it's children vertically.
+		This class inherits almost all of its parameters, see [BoxContainer] and [Control] for more properties.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,6 +17,9 @@
 	</constants>
 	<theme_items>
 		<theme_item name="separation" type="int">
+			Seperation is a parameter unique to HBoxContainer and VBoxContainer.
+			Enabling this will allow the user to specify the seperation distance in pixels between the contained elements.
+			You can find this setting in the inspector under the Custom Constants rollout in the Control heirlooms.
 		</theme_item>
 	</theme_items>
 </class>
