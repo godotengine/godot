@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HBoxContainer" inherits="BoxContainer" category="Core" version="3.0.7">
 	<brief_description>
-		A box container subclass that arranges it's children horizontally.
+		Horizontal box container.
 	</brief_description>
 	<description>
+		A box container subclass that arranges it's children horizontally.
 		This class inherits almost all of its parameters, see [BoxContainer] and [Control] for more properties.
 	</description>
 	<tutorials>
