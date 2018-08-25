@@ -1133,20 +1133,23 @@ template <class Component, int CC, bool renormalize,
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
 
 	//fast power of 2 mipmap generation
-	uint32_t dst_w = p_width >> 1;
-	uint32_t dst_h = p_height >> 1;
+	uint32_t dst_w = MAX(p_width >> 1, 1);
+	uint32_t dst_h = MAX(p_height >> 1, 1);
+
+	int right_step = (p_width == 1) ? 0 : CC;
+	int down_step = (p_height == 1) ? 0 : (p_width * CC);
 
 	for (uint32_t i = 0; i < dst_h; i++) {
 
-		const Component *rup_ptr = &p_src[i * 2 * p_width * CC];
-		const Component *rdown_ptr = rup_ptr + p_width * CC;
+		const Component *rup_ptr = &p_src[i * 2 * down_step];
+		const Component *rdown_ptr = rup_ptr + down_step;
 		Component *dst_ptr = &p_dst[i * dst_w * CC];
 		uint32_t count = dst_w;
 
 		while (count--) {
 
 			for (int j = 0; j < CC; j++) {
-				average_func(dst_ptr[j], rup_ptr[j], rup_ptr[j + CC], rdown_ptr[j], rdown_ptr[j + CC]);
+				average_func(dst_ptr[j], rup_ptr[j], rup_ptr[j + right_step], rdown_ptr[j], rdown_ptr[j + right_step]);
 			}
 
 			if (renormalize) {
@@ -1154,8 +1157,8 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 			}
 
 			dst_ptr += CC;
-			rup_ptr += CC * 2;
-			rdown_ptr += CC * 2;
+			rup_ptr += right_step * 2;
+			rdown_ptr += right_step * 2;
 		}
 	}
 }
@@ -1313,7 +1316,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 	int prev_h = height;
 	int prev_w = width;
 
-	for (int i = 1; i < mmcount; i++) {
+	for (int i = 1; i <= mmcount; i++) {
 
 		int ofs, w, h;
 		_get_mipmap_offset_and_size(i, ofs, w, h);
