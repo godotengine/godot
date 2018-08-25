@@ -18,7 +18,7 @@
 	<theme_items>
 		<theme_item name="separation" type="int">
 			Seperation is a parameter unique to HBoxContainer and VBoxContainer.
-			Enabling this will allow the user to specify the seperation distance between the contained elements.
+			Enabling this will allow the user to specify the seperation distance in pixels between the contained elements.
 			You can find this setting in the inspector under the Custom Constants rollout in the Control heirlooms.
 		</theme_item>
 	</theme_items>
