@@ -44,12 +44,12 @@ uint32_t MonoGCHandle::make_weak_handle(MonoObject *p_object) {
 
 Ref<MonoGCHandle> MonoGCHandle::create_strong(MonoObject *p_object) {
 
-	return memnew(MonoGCHandle(make_strong_handle(p_object)));
+	return memnew(MonoGCHandle(make_strong_handle(p_object), STRONG_HANDLE));
 }
 
 Ref<MonoGCHandle> MonoGCHandle::create_weak(MonoObject *p_object) {
 
-	return memnew(MonoGCHandle(make_weak_handle(p_object)));
+	return memnew(MonoGCHandle(make_weak_handle(p_object), WEAK_HANDLE));
 }
 
 void MonoGCHandle::release() {
@@ -64,9 +64,10 @@ void MonoGCHandle::release() {
 	}
 }
 
-MonoGCHandle::MonoGCHandle(uint32_t p_handle) {
+MonoGCHandle::MonoGCHandle(uint32_t p_handle, HandleType p_handle_type) {
 
 	released = false;
+	weak = p_handle_type == WEAK_HANDLE;
 	handle = p_handle;
 }
 

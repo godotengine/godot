@@ -490,9 +490,11 @@ private:
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
-	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
-
 	void property_list_changed_notify();
+
+	friend class Reference;
+	uint32_t instance_binding_count;
+	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 protected:
 	virtual void _initialize_classv() { initialize_class(); }

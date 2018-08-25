@@ -1013,6 +1013,69 @@ void CSharpLanguage::free_instance_binding_data(void *p_data) {
 #endif
 }
 
+void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
+
+	Reference *ref_owner = Object::cast_to<Reference>(p_object);
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!ref_owner);
+#endif
+
+	void *data = p_object->get_script_instance_binding(get_language_index());
+	if (!data)
+		return;
+	Ref<MonoGCHandle> &gchandle = ((Map<Object *, Ref<MonoGCHandle> >::Element *)data)->get();
+
+	if (ref_owner->reference_get_count() > 1 && gchandle->is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
+		// The reference count was increased after the managed side was the only one referencing our owner.
+		// This means the owner is being referenced again by the unmanaged side,
+		// so the owner must hold the managed side alive again to avoid it from being GCed.
+
+		MonoObject *target = gchandle->get_target();
+		if (!target)
+			return; // Called after the managed side was collected, so nothing to do here
+
+		// Release the current weak handle and replace it with a strong handle.
+		uint32_t strong_gchandle = MonoGCHandle::make_strong_handle(target);
+		gchandle->release();
+		gchandle->set_handle(strong_gchandle, MonoGCHandle::STRONG_HANDLE);
+	}
+}
+
+bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
+
+	Reference *ref_owner = Object::cast_to<Reference>(p_object);
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!ref_owner);
+#endif
+
+	int refcount = ref_owner->reference_get_count();
+
+	void *data = p_object->get_script_instance_binding(get_language_index());
+	if (!data)
+		return refcount == 0;
+	Ref<MonoGCHandle> &gchandle = ((Map<Object *, Ref<MonoGCHandle> >::Element *)data)->get();
+
+	if (refcount == 1 && !gchandle->is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
+		// If owner owner is no longer referenced by the unmanaged side,
+		// the managed instance takes responsibility of deleting the owner when GCed.
+
+		MonoObject *target = gchandle->get_target();
+		if (!target)
+			return refcount == 0; // Called after the managed side was collected, so nothing to do here
+
+		// Release the current strong handle and replace it with a weak handle.
+		uint32_t weak_gchandle = MonoGCHandle::make_weak_handle(target);
+		gchandle->release();
+		gchandle->set_handle(weak_gchandle, MonoGCHandle::WEAK_HANDLE);
+
+		return false;
+	}
+
+	return refcount == 0;
+}
+
 CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpScript *p_script, const Ref<MonoGCHandle> &p_gchandle) {
 
 	CSharpInstance *instance = memnew(CSharpInstance);
@@ -1303,11 +1366,13 @@ void CSharpInstance::mono_object_disposed() {
 
 void CSharpInstance::refcount_incremented() {
 
+#ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
+#endif
 
 	Reference *ref_owner = Object::cast_to<Reference>(owner);
 
-	if (ref_owner->reference_get_count() > 1) { // The managed side also holds a reference, hence 1 instead of 0
+	if (ref_owner->reference_get_count() > 1 && gchandle->is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
 		// The reference count was increased after the managed side was the only one referencing our owner.
 		// This means the owner is being referenced again by the unmanaged side,
 		// so the owner must hold the managed side alive again to avoid it from being GCed.
@@ -1315,26 +1380,28 @@ void CSharpInstance::refcount_incremented() {
 		// Release the current weak handle and replace it with a strong handle.
 		uint32_t strong_gchandle = MonoGCHandle::make_strong_handle(gchandle->get_target());
 		gchandle->release();
-		gchandle->set_handle(strong_gchandle);
+		gchandle->set_handle(strong_gchandle, MonoGCHandle::STRONG_HANDLE);
 	}
 }
 
 bool CSharpInstance::refcount_decremented() {
 
+#ifdef DEBUG_ENABLED
 	CRASH_COND(!base_ref);
+#endif
 
 	Reference *ref_owner = Object::cast_to<Reference>(owner);
 
 	int refcount = ref_owner->reference_get_count();
 
-	if (refcount == 1) { // The managed side also holds a reference, hence 1 instead of 0
+	if (refcount == 1 && !gchandle->is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
 		// If owner owner is no longer referenced by the unmanaged side,
 		// the managed instance takes responsibility of deleting the owner when GCed.
 
 		// Release the current strong handle and replace it with a weak handle.
 		uint32_t weak_gchandle = MonoGCHandle::make_weak_handle(gchandle->get_target());
 		gchandle->release();
-		gchandle->set_handle(weak_gchandle);
+		gchandle->set_handle(weak_gchandle, MonoGCHandle::WEAK_HANDLE);
 
 		return false;
 	}

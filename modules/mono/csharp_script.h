@@ -346,6 +346,8 @@ public:
 	// Don't use these. I'm watching you
 	virtual void *alloc_instance_binding_data(Object *p_object);
 	virtual void free_instance_binding_data(void *p_data);
+	virtual void refcount_incremented_instance_binding(Object *p_object);
+	virtual bool refcount_decremented_instance_binding(Object *p_object);
 
 #ifdef DEBUG_ENABLED
 	Vector<StackInfo> stack_trace_get_info(MonoObject *p_stack_trace);

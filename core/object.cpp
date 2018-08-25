@@ -1916,7 +1916,11 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	//as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
 
 	if (!_script_instance_bindings[p_script_language_index]) {
-		_script_instance_bindings[p_script_language_index] = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
+		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
+		if (script_data) {
+			atomic_increment(&instance_binding_count);
+			_script_instance_bindings[p_script_language_index] = script_data;
+		}
 	}
 
 	return _script_instance_bindings[p_script_language_index];
@@ -1931,6 +1935,7 @@ Object::Object() {
 	_instance_ID = ObjectDB::add_instance(this);
 	_can_translate = true;
 	_is_queued_for_deletion = false;
+	instance_binding_count = 0;
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
 	script_instance = NULL;
 #ifdef TOOLS_ENABLED
