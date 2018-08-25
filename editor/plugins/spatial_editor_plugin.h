@@ -445,6 +445,9 @@ private:
 	float ratio_h;
 	float ratio_v;
 
+	bool hovering_v;
+	bool hovering_h;
+
 	bool dragging_v;
 	bool dragging_h;
 	Vector2 drag_begin_pos;

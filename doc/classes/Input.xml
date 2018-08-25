@@ -381,7 +381,7 @@
 			Pointing hand cursor. Usually used to indicate the pointer is over a link or other interactable item.
 		</constant>
 		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
-			Cross cursor. Typically appears over regions in which a drawing operation can be performance or for selections.
+			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
 			Wait cursor. Indicates that the application is busy performing an operation.
