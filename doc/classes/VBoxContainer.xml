@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A box container subclass that arranges it's children vertically.
-		This class inherits almost all of its parameters, see [BoxContainer] and [Control] for more properties.
+		This node inherits nearly all of its properties, see [BoxContainer] and [Control] for more.
 	</description>
 	<tutorials>
 	</tutorials>
