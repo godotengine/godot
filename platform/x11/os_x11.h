@@ -40,6 +40,7 @@
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/alsa_midi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/tts_libspeechd/tts_libspeechd.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
@@ -175,6 +176,10 @@ class OS_X11 : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+#ifdef SPDTTS_ENABLED
+	TTSDriverSPD tts_driver;
 #endif
 
 	Atom net_wm_icon;

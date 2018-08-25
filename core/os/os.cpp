@@ -34,6 +34,7 @@
 #include "input.h"
 #include "os/file_access.h"
 #include "os/midi_driver.h"
+#include "os/tts_driver.h"
 #include "project_settings.h"
 #include "servers/audio_server.h"
 #include "version_generated.gen.h"
@@ -699,6 +700,69 @@ void OS::close_midi_inputs() {
 
 	if (MIDIDriver::get_singleton())
 		MIDIDriver::get_singleton()->close();
+}
+
+void OS::tts_speak(const String &p_text, bool p_interrupt) {
+
+	if (TTSDriver::get_singleton())
+		TTSDriver::get_singleton()->speak(p_text, p_interrupt);
+}
+
+void OS::tts_stop() {
+
+	if (TTSDriver::get_singleton())
+		TTSDriver::get_singleton()->stop();
+}
+
+bool OS::tts_is_speaking() {
+
+	if (TTSDriver::get_singleton())
+		return TTSDriver::get_singleton()->is_speaking();
+	else
+		return false;
+}
+
+Array OS::get_tts_voices() {
+
+	if (TTSDriver::get_singleton())
+		return TTSDriver::get_singleton()->get_voices();
+
+	Array list;
+	return list;
+}
+
+void OS::set_tts_voice(const String &p_voice) {
+
+	if (TTSDriver::get_singleton())
+		TTSDriver::get_singleton()->set_voice(p_voice);
+}
+
+void OS::set_tts_volume(int p_volume) {
+
+	if (TTSDriver::get_singleton())
+		TTSDriver::get_singleton()->set_volume(p_volume);
+}
+
+int OS::get_tts_volume() {
+
+	if (TTSDriver::get_singleton())
+		return TTSDriver::get_singleton()->get_volume();
+	else
+		return 0;
+}
+
+void OS::set_tts_rate(int p_rate) {
+
+	if (TTSDriver::get_singleton())
+		TTSDriver::get_singleton()->set_rate(p_rate);
+}
+
+int OS::get_tts_rate() {
+
+	if (TTSDriver::get_singleton())
+		return TTSDriver::get_singleton()->get_rate();
+	else
+		return 0;
 }
 
 OS::OS() {

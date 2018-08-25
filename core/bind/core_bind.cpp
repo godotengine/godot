@@ -248,6 +248,42 @@ void _OS::close_midi_inputs() {
 	return OS::get_singleton()->close_midi_inputs();
 }
 
+void _OS::tts_speak(const String &p_text, bool p_interrupt) {
+	OS::get_singleton()->tts_speak(p_text, p_interrupt);
+}
+
+void _OS::tts_stop() {
+	OS::get_singleton()->tts_stop();
+}
+
+bool _OS::tts_is_speaking() {
+	return OS::get_singleton()->tts_is_speaking();
+}
+
+Array _OS::get_tts_voices() {
+	return OS::get_singleton()->get_tts_voices();
+}
+
+void _OS::set_tts_voice(const String &p_voice) {
+	OS::get_singleton()->set_tts_voice(p_voice);
+}
+
+void _OS::set_tts_volume(int p_volume) {
+	OS::get_singleton()->set_tts_volume(p_volume);
+}
+
+int _OS::get_tts_volume() {
+	return OS::get_singleton()->get_tts_volume();
+}
+
+void _OS::set_tts_rate(int p_rate) {
+	OS::get_singleton()->set_tts_rate(p_rate);
+}
+
+int _OS::get_tts_rate() {
+	return OS::get_singleton()->get_tts_rate();
+}
+
 void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
 
 	OS::VideoMode vm;
@@ -1096,6 +1132,19 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
 
+	ClassDB::bind_method(D_METHOD("tts_speak", "text", "interrupt"), &_OS::tts_speak, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("tts_stop"), &_OS::tts_stop);
+	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &_OS::tts_is_speaking);
+
+	ClassDB::bind_method(D_METHOD("get_tts_voices"), &_OS::get_tts_voices);
+	ClassDB::bind_method(D_METHOD("set_tts_voice", "voice_name"), &_OS::set_tts_voice);
+
+	ClassDB::bind_method(D_METHOD("set_tts_volume", "volume"), &_OS::set_tts_volume);
+	ClassDB::bind_method(D_METHOD("get_tts_volume"), &_OS::get_tts_volume);
+
+	ClassDB::bind_method(D_METHOD("set_tts_rate", "rate"), &_OS::set_tts_rate);
+	ClassDB::bind_method(D_METHOD("get_tts_rate"), &_OS::get_tts_rate);
+
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &_OS::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_current_screen"), &_OS::get_current_screen);
 	ClassDB::bind_method(D_METHOD("set_current_screen", "screen"), &_OS::set_current_screen);
@@ -1252,6 +1301,9 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_resizable"), "set_window_resizable", "is_window_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_position"), "set_window_position", "get_window_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_size"), "set_window_size", "get_window_size");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tts_volume"), "set_tts_volume", "get_tts_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tts_rate"), "set_tts_rate", "get_tts_rate");
 
 	BIND_ENUM_CONSTANT(DAY_SUNDAY);
 	BIND_ENUM_CONSTANT(DAY_MONDAY);

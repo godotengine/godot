@@ -160,6 +160,20 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	virtual void tts_speak(const String &p_text, bool p_interrupt);
+	virtual void tts_stop();
+
+	virtual bool tts_is_speaking();
+
+	virtual Array get_tts_voices();
+	virtual void set_tts_voice(const String &p_voice);
+
+	virtual void set_tts_volume(int p_volume);
+	virtual int get_tts_volume();
+
+	virtual void set_tts_rate(int p_rate);
+	virtual int get_tts_rate();
+
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);

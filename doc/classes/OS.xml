@@ -153,6 +153,49 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_tts_voices">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an Array of voice information Dictionaries.
+				"name" - String, voice identifier
+				"language" - String, language code
+			</description>
+		</method>
+		<method name="set_tts_voice">
+			<return type="void">
+			</return>
+			<argument index="0" name="voice_id" type="String">
+			</argument>
+			<description>
+				Sets the speech synthesizer’s current voice.
+			</description>
+		</method>
+		<method name="tts_speak">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="interrupt" type="bool" default="false">
+			</argument>
+			<description>
+				Begins speaking synthesized text.
+			</description>
+		</method>
+		<method name="tts_stop">
+			<return type="void">
+			</return>
+			<description>
+				Stops synthesis in progress.
+			</description>
+		</method>
+		<method name="tts_is_speaking">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the synthesizer is generating speech, [code]false[/code] otherwise.
+			</description>
+		</method>
 		<method name="get_date" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -726,6 +769,12 @@
 		</member>
 		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
 			The current screen orientation.
+		</member>
+		<member name="tts_volume" type="int" setter="set_tts_volume" getter="get_tts_volume">
+			The speech synthesizer’s volume. The granularity of the volume is engine dependent. Values may be truncated. Ranges from 0 to 100.
+		</member>
+		<member name="tts_rate" type="int" setter="set_tts_rate" getter="get_tts_rate">
+			The speech synthesizer’s rendering rate adjustment. The granularity of the rate is engine dependent. Values may be truncated. Ranges from -100 to 100.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
 			If [code]true[/code] vertical synchronization (Vsync) is enabled.

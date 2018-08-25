@@ -58,6 +58,7 @@ def get_opts():
         BoolVariable('use_sanitizer', 'Use LLVM compiler address sanitizer', False),
         BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
+        BoolVariable('speechd', 'Detect & use Speech Dispatcher', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
@@ -261,6 +262,14 @@ def configure(env):
             env.ParseConfig('pkg-config --cflags --libs libpulse')
         else:
             print("PulseAudio development libraries not found, disabling driver")
+
+    if env['speechd']:
+        if (os.system("pkg-config --exists speech-dispatcher") == 0): # 0 means found
+            print("Enabling TTS (Speech Dispatcher)")
+            env.Append(CPPFLAGS=["-DSPDTTS_ENABLED"])
+            env.ParseConfig('pkg-config --cflags --libs speech-dispatcher')
+        else:
+            print("Speech Dispatcher development libraries not found, disabling driver")
 
     if (platform.system() == "Linux"):
         env.Append(CPPFLAGS=["-DJOYDEV_ENABLED"])
