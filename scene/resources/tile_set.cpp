@@ -59,7 +59,13 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_region(id, p_value);
 	else if (what == "tile_mode")
 		tile_set_tile_mode(id, (TileMode)((int)p_value));
-	else if (what.left(9) == "autotile/") {
+	else if (what == "is_autotile") {
+		// backward compatibility for Godot 3.0.x
+		// autotile used to be a bool, it's now an enum
+		bool is_autotile = p_value;
+		if (is_autotile)
+			tile_set_tile_mode(id, AUTO_TILE);
+	} else if (what.left(9) == "autotile/") {
 		what = what.right(9);
 		if (what == "bitmask_mode")
 			autotile_set_bitmask_mode(id, (BitmaskMode)((int)p_value));
