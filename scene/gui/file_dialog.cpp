@@ -284,7 +284,13 @@ bool FileDialog::_is_open_should_be_disabled() {
 	if (mode == MODE_OPEN_ANY || mode == MODE_SAVE_FILE)
 		return false;
 
-	TreeItem *ti = tree->get_selected();
+	TreeItem *ti = tree->get_next_selected(tree->get_root());
+	while (ti) {
+		TreeItem *prev_ti = ti;
+		ti = tree->get_next_selected(tree->get_root());
+		if (ti == prev_ti)
+			break;
+	}
 	// We have something that we can't select?
 	if (!ti)
 		return mode != MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
@@ -326,6 +332,10 @@ void FileDialog::deselect_items() {
 				break;
 		}
 	}
+}
+
+void FileDialog::_tree_multi_selected(Object *p_object, int p_cell, bool p_selected) {
+	_tree_selected();
 }
 
 void FileDialog::_tree_selected() {
@@ -754,6 +764,7 @@ void FileDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &FileDialog::_unhandled_input);
 
+	ClassDB::bind_method(D_METHOD("_tree_multi_selected"), &FileDialog::_tree_multi_selected);
 	ClassDB::bind_method(D_METHOD("_tree_selected"), &FileDialog::_tree_selected);
 	ClassDB::bind_method(D_METHOD("_tree_item_activated"), &FileDialog::_tree_item_activated);
 	ClassDB::bind_method(D_METHOD("_dir_entered"), &FileDialog::_dir_entered);
@@ -794,7 +805,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"), "set_access", "get_access");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
@@ -890,6 +901,7 @@ FileDialog::FileDialog() {
 	_update_drives();
 
 	connect("confirmed", this, "_action_pressed");
+	tree->connect("multi_selected", this, "_tree_multi_selected", varray(), CONNECT_DEFERRED);
 	tree->connect("cell_selected", this, "_tree_selected", varray(), CONNECT_DEFERRED);
 	tree->connect("item_activated", this, "_tree_item_activated", varray());
 	tree->connect("nothing_selected", this, "deselect_items");
