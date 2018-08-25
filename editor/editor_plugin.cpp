@@ -301,6 +301,56 @@ void EditorPlugin::remove_custom_type(const String &p_type) {
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
+bool EditorPlugin::class_type_exists(const String &p_type) const {
+	return ClassDB::class_exists(p_type) || ScriptServer::is_global_class(p_type);
+}
+
+bool EditorPlugin::class_type_is_parent(const String &p_type, const String &p_base) const {
+	if (ClassDB::class_exists(p_type)) {
+		return ClassDB::is_parent_class(p_type, p_base);
+	} else if (ScriptServer::is_global_class(p_type)) {
+		return EditorNode::get_editor_data().script_class_is_parent(p_type, p_base);
+	}
+	return false;
+}
+
+StringName EditorPlugin::class_type_get_base(const String &p_type) const {
+	if (ClassDB::class_exists(p_type)) {
+		return ClassDB::get_parent_class(p_type);
+	} else if (ScriptServer::is_global_class(p_type)) {
+		return EditorNode::get_editor_data().script_class_get_base(p_type);
+	}
+	return StringName();
+}
+
+String EditorPlugin::class_type_get_path(const String &p_type) const {
+	if (ScriptServer::is_global_class(p_type)) {
+		return ScriptServer::get_global_class_path(p_type);
+	}
+	return String();
+}
+
+Array EditorPlugin::class_type_get_list() const {
+	List<StringName> type_list;
+	ClassDB::get_class_list(&type_list);
+	ScriptServer::get_global_class_list(&type_list);
+	type_list.sort_custom<StringName::AlphCompare>();
+	Array ret;
+	for (List<StringName>::Element *E = type_list.front(); E; E = E->next()) {
+		ret.push_back(E->get());
+	}
+	return ret;
+}
+
+Object *EditorPlugin::class_type_instance(const String &p_type) {
+	if (ClassDB::class_exists(p_type)) {
+		return ClassDB::instance(p_type);
+	} else if (ScriptServer::is_global_class(p_type)) {
+		return EditorNode::get_editor_data().script_class_instance(p_type);
+	}
+	return NULL;
+}
+
 void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path);
 }
@@ -733,6 +783,13 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+
+	ClassDB::bind_method(D_METHOD("class_type_exists", "type"), &EditorPlugin::class_type_exists);
+	ClassDB::bind_method(D_METHOD("class_type_is_parent", "type", "base"), &EditorPlugin::class_type_is_parent);
+	ClassDB::bind_method(D_METHOD("class_type_get_base", "type"), &EditorPlugin::class_type_get_base);
+	ClassDB::bind_method(D_METHOD("class_type_get_path", "type"), &EditorPlugin::class_type_get_path);
+	ClassDB::bind_method(D_METHOD("class_type_get_list"), &EditorPlugin::class_type_get_list);
+	ClassDB::bind_method(D_METHOD("class_type_instance", "type"), &EditorPlugin::class_type_instance);
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);

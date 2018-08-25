@@ -123,6 +123,13 @@ protected:
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
 	void remove_custom_type(const String &p_type);
 
+	bool class_type_exists(const String &p_type) const;
+	bool class_type_is_parent(const String &p_type, const String &p_base) const;
+	StringName class_type_get_base(const String &p_type) const;
+	String class_type_get_path(const String &p_type) const;
+	Array class_type_get_list() const;
+	Object *class_type_instance(const String &p_type);
+
 public:
 	enum CustomControlContainer {
 		CONTAINER_TOOLBAR,
