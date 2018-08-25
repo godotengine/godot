@@ -156,6 +156,7 @@ void MonoCache::cleanup() {
 }
 
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
+#define GODOT_API_NS_CLAS(m_ns, m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(m_ns, #m_class))
 
 void update_corlib_cache() {
 
@@ -206,8 +207,8 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
 	CACHE_CLASS_AND_CHECK(Spatial, GODOT_API_CLASS(Spatial));
 	CACHE_CLASS_AND_CHECK(WeakRef, GODOT_API_CLASS(WeakRef));
-	CACHE_CLASS_AND_CHECK(Array, GODOT_API_CLASS(Array));
-	CACHE_CLASS_AND_CHECK(Dictionary, GODOT_API_CLASS(Dictionary));
+	CACHE_CLASS_AND_CHECK(Array, GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Array));
+	CACHE_CLASS_AND_CHECK(Dictionary, GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary));
 	CACHE_CLASS_AND_CHECK(MarshalUtils, GODOT_API_CLASS(MarshalUtils));
 
 #ifdef DEBUG_ENABLED
@@ -234,8 +235,8 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(NodePath, ptr, CACHED_CLASS(NodePath)->get_field(BINDINGS_PTR_FIELD));
 	CACHE_FIELD_AND_CHECK(RID, ptr, CACHED_CLASS(RID)->get_field(BINDINGS_PTR_FIELD));
 
-	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_CLASS(Array)->get_method_thunk("GetPtr", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_CLASS(Dictionary)->get_method_thunk("GetPtr", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Array)->get_method_thunk("GetPtr", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary)->get_method_thunk("GetPtr", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsArrayGenericType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsDictionaryGenericType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("SignalCallback", 1));
