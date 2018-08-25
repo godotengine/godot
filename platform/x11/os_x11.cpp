@@ -2564,14 +2564,68 @@ void OS_X11::swap_buffers() {
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
+	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
+
+	String path = get_environment("PATH");
+	Vector<String> path_elems = path.split(":", false);
+	String program;
+
+	for (int i = 0; i < path_elems.size(); i++) {
+		for (unsigned int k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+			String tested_path = path_elems[i] + "/" + message_programs[k];
+
+			if (FileAccess::exists(tested_path)) {
+				program = tested_path;
+				break;
+			}
+		}
+
+		if (program.length())
+			break;
+	}
 
 	List<String> args;
-	args.push_back("-center");
-	args.push_back("-title");
-	args.push_back(p_title);
-	args.push_back(p_alert);
 
-	execute("xmessage", args, true);
+	if (program.ends_with("zenity")) {
+		args.push_back("--error");
+		args.push_back("--width");
+		args.push_back("500");
+		args.push_back("--title");
+		args.push_back(p_title);
+		args.push_back("--text");
+		args.push_back(p_alert);
+	}
+
+	if (program.ends_with("kdialog")) {
+		args.push_back("--error");
+		args.push_back(p_alert);
+		args.push_back("--title");
+		args.push_back(p_title);
+	}
+
+	if (program.ends_with("Xdialog")) {
+		args.push_back("--title");
+		args.push_back(p_title);
+		args.push_back("--msgbox");
+		args.push_back(p_alert);
+		args.push_back("0");
+		args.push_back("0");
+	}
+
+	if (program.ends_with("xmessage")) {
+		args.push_back("-center");
+		args.push_back("-title");
+		args.push_back(p_title);
+		args.push_back(p_alert);
+	}
+
+	if (program.length()) {
+		execute(program, args, true);
+	} else {
+		print_line(p_alert);
+	}
+
+	return;
 }
 
 void OS_X11::set_icon(const Ref<Image> &p_icon) {
