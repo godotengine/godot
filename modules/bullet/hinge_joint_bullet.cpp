@@ -95,11 +95,6 @@ real_t HingeJointBullet::get_hinge_angle() {
 
 void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer::HINGE_JOINT_BIAS:
-			if (0 < p_value) {
-				WARN_PRINTS("HingeJoint doesn't support bias in the Bullet backend, so it's always 0.");
-			}
-			break;
 		case PhysicsServer::HINGE_JOINT_LIMIT_UPPER:
 			hingeConstraint->setLimit(hingeConstraint->getLowerLimit(), p_value, hingeConstraint->getLimitSoftness(), hingeConstraint->getLimitBiasFactor(), hingeConstraint->getLimitRelaxationFactor());
 			break;
@@ -121,8 +116,11 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			hingeConstraint->setMaxMotorImpulse(p_value);
 			break;
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINTS("HingeJoint doesn't support this parameter in the Bullet backend: " + itos(p_param) + ", value: " + itos(p_value));
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED
+#endif // DISABLE_DEPRECATED
 	}
 }
 
@@ -145,9 +143,12 @@ real_t HingeJointBullet::get_param(PhysicsServer::HingeJointParam p_param) const
 			return hingeConstraint->getMotorTargetVelocity();
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			return hingeConstraint->getMaxMotorImpulse();
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINTS("HingeJoint doesn't support this parameter in the Bullet backend: " + itos(p_param));
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED;
 			return 0;
+#endif // DISABLE_DEPRECATED
 	}
 }
 
