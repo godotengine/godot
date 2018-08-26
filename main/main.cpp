@@ -1728,6 +1728,7 @@ bool Main::start() {
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
 			real_t stretch_shrink = GLOBAL_DEF("display/window/stretch/shrink", 1.0);
+			real_t stretch_scale = GLOBAL_DEF("display/window/stretch/scale", 1.0);
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")
@@ -1745,7 +1746,7 @@ bool Main::start() {
 			else if (stretch_aspect == "expand")
 				sml_aspect = SceneTree::STRETCH_ASPECT_EXPAND;
 
-			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size, stretch_shrink);
+			sml->set_screen_stretch(sml_sm, sml_aspect, stretch_size, stretch_shrink, stretch_scale);
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
@@ -1784,6 +1785,8 @@ bool Main::start() {
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect", PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"));
 			GLOBAL_DEF("display/window/stretch/shrink", 1.0);
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink", PropertyInfo(Variant::FLOAT, "display/window/stretch/shrink", PROPERTY_HINT_RANGE, "1.0,8.0,0.1"));
+			GLOBAL_DEF("display/window/stretch/scale", 1.0);
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale", PropertyInfo(Variant::FLOAT, "display/window/stretch/scale", PROPERTY_HINT_RANGE, "0.1,8,0.01,or_greater"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
