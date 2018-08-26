@@ -924,7 +924,7 @@ void SpatialMaterial::_update_shader() {
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 
-			code += "\tvec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal);\n";
+			code += "\tvec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
 			code += "\tvec4 detail_mask_tex = texture(texture_detail_mask,base_uv);\n";
 		}
