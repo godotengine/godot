@@ -429,7 +429,7 @@ bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) c
 	Ref<SpatialMaterial> mat = p_resource;
 	return mat.is_valid();
 }
-Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) {
+Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
 	Ref<SpatialMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
@@ -475,7 +475,7 @@ bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource)
 	Ref<ParticlesMaterial> mat = p_resource;
 	return mat.is_valid();
 }
-Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) {
+Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
 	Ref<ParticlesMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
@@ -513,7 +513,7 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 	Ref<CanvasItemMaterial> mat = p_resource;
 	return mat.is_valid();
 }
-Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) {
+Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
 	Ref<CanvasItemMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
