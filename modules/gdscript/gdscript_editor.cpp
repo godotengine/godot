@@ -63,8 +63,8 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	String _template = "extends %BASE%\n"
 					   "\n"
 					   "# Declare member variables here. Examples:\n"
-					   "# var a %INT_TYPE%= 2\n"
-					   "# var b %STRING_TYPE%= \"text\"\n"
+					   "# var a%INT_TYPE% = 2\n"
+					   "# var b%STRING_TYPE% = \"text\"\n"
 					   "\n"
 					   "# Called when the node enters the scene tree for the first time.\n"
 					   "func _ready()%VOID_RETURN%:\n"
@@ -76,9 +76,9 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 
 #ifdef TOOLS_ENABLED
 	if (EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
-		_template = _template.replace("%INT_TYPE%", ": int ");
-		_template = _template.replace("%STRING_TYPE%", ": String ");
-		_template = _template.replace("%FLOAT_TYPE%", " : float");
+		_template = _template.replace("%INT_TYPE%", ": int");
+		_template = _template.replace("%STRING_TYPE%", ": String");
+		_template = _template.replace("%FLOAT_TYPE%", ": float");
 		_template = _template.replace("%VOID_RETURN%", " -> void");
 	} else {
 		_template = _template.replace("%INT_TYPE%", "");
@@ -466,7 +466,7 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 			if (th) {
 				String type = p_args[i].get_slice(":", 1);
 				if (!type.empty() && type != "var") {
-					s += " : " + type;
+					s += ": " + type;
 				}
 			}
 		}
@@ -2596,7 +2596,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						}
 						method_hint += arg;
 						if (use_type_hint && mi.arguments[i].type != Variant::NIL) {
-							method_hint += " : ";
+							method_hint += ": ";
 							if (mi.arguments[i].type == Variant::OBJECT && mi.arguments[i].class_name != StringName()) {
 								method_hint += mi.arguments[i].class_name.operator String();
 							} else {
