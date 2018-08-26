@@ -116,8 +116,8 @@ public:
 		INSTANCE_FROM_ID,
 		LEN,
 		IS_INSTANCE_VALID,
+		ORD,
 		FUNC_MAX
-
 	};
 
 	static const char *get_func_name(Function p_func);
