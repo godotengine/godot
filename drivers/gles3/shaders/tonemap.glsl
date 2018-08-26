@@ -122,13 +122,16 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 #endif
 
 vec3 tonemap_filmic(vec3 color, float white) {
-	const float A = 0.15f;
-	const float B = 0.50f;
+	// exposure bias: input scale (color *= bias, white *= bias) to make the brighness consistent with other tonemappers
+	// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
+	// has no effect on the curve's general shape or visual properties
+	const float exposure_bias = 2.0f;
+	const float A = 0.22f * exposure_bias * exposure_bias; // bias baked into constants for performance
+	const float B = 0.30f * exposure_bias;
 	const float C = 0.10f;
 	const float D = 0.20f;
-	const float E = 0.02f;
+	const float E = 0.01f;
 	const float F = 0.30f;
-	const float W = 11.2f;
 
 	vec3 color_tonemapped = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
 	float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
@@ -137,10 +140,11 @@ vec3 tonemap_filmic(vec3 color, float white) {
 }
 
 vec3 tonemap_aces(vec3 color, float white) {
-	const float A = 2.51f;
-	const float B = 0.03f;
-	const float C = 2.43f;
-	const float D = 0.59f;
+	const float exposure_bias = 0.85f;
+	const float A = 2.51f * exposure_bias * exposure_bias;
+	const float B = 0.03f * exposure_bias;
+	const float C = 2.43f * exposure_bias * exposure_bias;
+	const float D = 0.59f * exposure_bias;
 	const float E = 0.14f;
 
 	vec3 color_tonemapped = (color * (A * color + B)) / (color * (C * color + D) + E);
@@ -149,8 +153,8 @@ vec3 tonemap_aces(vec3 color, float white) {
 	return clamp(color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f));
 }
 
-vec3 tonemap_reindhart(vec3 color, float white) {
-	return clamp((color) / (1.0f + color) * (1.0f + (color / (white))), vec3(0.0f), vec3(1.0f)); // whitepoint is probably not in linear space here!
+vec3 tonemap_reinhard(vec3 color, float white) {
+	return clamp((white * color + color) / (color * white + white), vec3(0.0f), vec3(1.0f));
 }
 
 vec3 linear_to_srgb(vec3 color) { // convert linear rgb to srgb, assumes clamped input in range [0;1]
@@ -159,8 +163,8 @@ vec3 linear_to_srgb(vec3 color) { // convert linear rgb to srgb, assumes clamped
 }
 
 vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always outputs clamped [0;1] color
-#ifdef USE_REINDHART_TONEMAPPER
-	return tonemap_reindhart(color, white);
+#ifdef USE_REINHARD_TONEMAPPER
+	return tonemap_reinhard(color, white);
 #endif
 
 #ifdef USE_FILMIC_TONEMAPPER
