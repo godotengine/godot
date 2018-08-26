@@ -1253,6 +1253,25 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					codegen.opcodes.push_back(src_address_b); // argument 2 (unary only takes one parameter)
 
 				} break;
+				case GDScriptParser::OperatorNode::OP_IS_BUILTIN: {
+					ERR_FAIL_COND_V(on->arguments.size() != 2, false);
+					ERR_FAIL_COND_V(on->arguments[1]->type != GDScriptParser::Node::TYPE_TYPE, false);
+
+					int slevel = p_stack_level;
+
+					int src_address_a = _parse_expression(codegen, on->arguments[0], slevel);
+					if (src_address_a < 0)
+						return -1;
+
+					if (src_address_a & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS)
+						slevel++; //uses stack for return, increase stack
+
+					const GDScriptParser::TypeNode *tn = static_cast<const GDScriptParser::TypeNode *>(on->arguments[1]);
+
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_IS_BUILTIN); // perform operator
+					codegen.opcodes.push_back(src_address_a); // argument 1
+					codegen.opcodes.push_back((int)tn->vtype); // argument 2 (unary only takes one parameter)
+				} break;
 				default: {
 
 					ERR_EXPLAIN("Bug in bytecode compiler, unexpected operator #" + itos(on->op) + " in parse tree while parsing expression.");
