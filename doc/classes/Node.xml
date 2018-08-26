@@ -50,7 +50,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Called when there is an input event. The input event propagates through the node tree until a node consumes it.
+				Called when there is an input event. The input event propagates up through the node tree until a node consumes it.
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
@@ -93,7 +93,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Propagated to all nodes when the previous [InputEvent] is not consumed by any nodes.
+				Called when an [InputEvent] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
@@ -105,7 +105,7 @@
 			<argument index="0" name="event" type="InputEventKey">
 			</argument>
 			<description>
-				Propagated to all nodes when the previous [InputEventKey] is not consumed by any nodes.
+				Called when an [InputEventKey] hasn't been consumed by [method _input] or any GUI. The input event propagates up through the node tree until a node consumes it.
 				It is only called if unhandled key input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_key_input].
 				To consume the input event and stop it propagating further to other nodes, [method SceneTree.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
