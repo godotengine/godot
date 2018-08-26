@@ -1722,8 +1722,16 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		return;
 
 	Skeleton *sk(physical_bone->find_skeleton_parent());
+	if (!sk)
+		return;
+
 	PhysicalBone *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
+	if (!pb)
+		return;
+
 	PhysicalBone *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
+	if (!pbp)
+		return;
 
 	Vector<Vector3> points;
 
