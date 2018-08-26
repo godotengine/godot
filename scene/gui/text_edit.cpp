@@ -104,6 +104,14 @@ static CharType _get_right_pair_symbol(CharType c) {
 	return 0;
 }
 
+static int _sum_columns(const Vector<String> p_rows, int p_index) {
+	int z = 0;
+	for (int i = 0; i < p_index; i++) {
+		z += p_rows[i].length();
+	}
+	return z;
+}
+
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 
 	font = p_font;
@@ -808,9 +816,6 @@ void TextEdit::_notification(int p_what) {
 
 			Point2 cursor_pos;
 
-			drawn_inlines.clear();
-			int next_inline = 0;
-
 			// get the highlighted words
 			String highlighted_text = get_selection_text();
 
@@ -851,6 +856,10 @@ void TextEdit::_notification(int p_what) {
 				if (readonly) {
 					current_color.a *= readonly_alpha;
 				}
+
+				// we keep a non-const ref to annotations, as we update its render pos further down.
+				Vector<Annotation> &annotations = _get_line_annotations(line);
+				int next_annotation = 0;
 
 				bool underlined = false;
 
@@ -976,20 +985,15 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					if (syntax_coloring && inline_processor) {
-						next_inline = drawn_inlines.size();
-						inline_processor->_parse_inline(*this, line, str, drawn_inlines);
-					}
-
 					//loop through characters in one line
 					for (int j = 0; j < str.length(); j++) {
 
-						int current_inline = -1;
-						int inline_width = 0;
+						int current_annotation = -1;
+						int annotation_width = 0;
 
-						if (next_inline < drawn_inlines.size() && drawn_inlines[next_inline].insert == j) {
-							current_inline = next_inline++;
-							inline_width = drawn_inlines[current_inline].pixel_width;
+						if (next_annotation < annotations.size() && annotations[next_annotation].column == last_wrap_column + j) {
+							current_annotation = next_annotation++;
+							annotation_width = annotations[current_annotation].size.width;
 						}
 
 						if (syntax_coloring) {
@@ -1007,8 +1011,8 @@ void TextEdit::_notification(int p_what) {
 						//handle tabulator
 						char_w = text.get_char_width(str[j], str[j + 1], char_ofs);
 
-						if (current_inline >= 0) {
-							char_w += inline_width;
+						if (current_annotation >= 0) {
+							char_w += annotation_width;
 						}
 
 						if ((char_ofs + char_margin) < xmargin_beg) {
@@ -1111,7 +1115,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						if (brace_matching_enabled) {
-							const int bx = current_inline >= 0 ? inline_width : 0;
+							const int bx = current_annotation >= 0 ? annotation_width : 0;
 							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
 							if ((brace_open_match_line == line && brace_open_match_column == last_wrap_column + j) ||
 									(cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
@@ -1193,22 +1197,31 @@ void TextEdit::_notification(int p_what) {
 							color.a *= readonly_alpha;
 						}
 
-						if (current_inline >= 0) {
+						if (current_annotation >= 0) {
 
-							Inline &inlined = drawn_inlines.write[current_inline];
+							Annotation &annotation = annotations.write[current_annotation];
 
-							const Size2 circle_size = cache.font->get_char_size(inlined.symbol);
-							const int dy = get_row_height() / 2 - circle_size.height / 2 + ascent;
-							const int dx = inline_width / 2 - circle_size.width / 2;
+							const int dy = get_row_height() / 2 - annotation.size.height / 2 + ascent;
+							const int dx = annotation.padding;
 
-							Color c(inlined.color);
+							Color c(annotation.color);
 							c.components[3] = 1.0;
-							cache.font->draw_char(ci, Point2(char_ofs + char_margin + ofs_x + dx, ofs_y + dy), inlined.symbol, 0, c);
 
-							inlined.rect = Rect2i(Point2i(char_ofs + char_margin + ofs_x, ofs_y), Size2i(inlined.pixel_width, inlined.pixel_height));
+							float x0 = char_ofs + char_margin + ofs_x;
+							annotation.pos = Point2i(x0, ofs_y);
+							annotation.pos_valid = true;
 
-							char_ofs += inline_width;
-							char_w -= inline_width;
+							const String &s = annotation.text;
+							const int n = s.length();
+							for (int j = 0; j < n; j++) {
+								cache.font->draw_char(ci, Point2(x0 + dx, ofs_y + dy), s[j], 0, c);
+								if (j + 1 < n) {
+									x0 += text.get_char_width(s[j], s[j + 1], 0);
+								}
+							}
+
+							char_ofs += annotation_width;
+							char_w -= annotation_width;
 						}
 
 						if (str[j] >= 32) {
@@ -1811,18 +1824,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			_cancel_code_hint();
 		}
 
-		if (inline_processor) {
-			for (int i = 0; i < drawn_inlines.size(); i++) {
-				const Inline &item = drawn_inlines[i];
-				if (item.editable) {
-					if (item.rect.has_point(mb->get_position())) {
-						inline_processor->_edit_inline(item);
-						return;
-					}
-				}
-			}
-		}
-
 		if (mb->is_pressed()) {
 
 			if (mb->get_button_index() == BUTTON_WHEEL_UP && !mb->get_command()) {
@@ -1889,6 +1890,16 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					line_width += cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width - cursor.x_ofs;
 					if (mb->get_position().x > line_width - 3 && mb->get_position().x <= line_width + cache.folded_eol_icon->get_width() + 3) {
 						unfold_line(row);
+						return;
+					}
+				}
+
+				// handle annotation click
+				Vector<Annotation> annotations = _get_line_annotations(row);
+				for (int i = 0; i < annotations.size(); i++) {
+					const Annotation &ann = annotations[i];
+					if (ann.pos_valid && ann.type == ScriptLanguage::ANNOTATION_COLOR && ann.get_rect().has_point(mb->get_position())) {
+						annotation_processor->edit_annotation(ann);
 						return;
 					}
 				}
@@ -3446,7 +3457,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
 		text_changed_dirty = true;
 	}
-	_line_edited_from(p_line);
+	_line_edited_from(p_line, r_end_line != p_line);
 }
 
 String TextEdit::_base_get_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
@@ -3508,7 +3519,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 			MessageQueue::get_singleton()->push_call(this, "_text_changed_emit");
 		text_changed_dirty = true;
 	}
-	_line_edited_from(p_from_line);
+	_line_edited_from(p_from_line, p_to_line != p_from_line);
 }
 
 void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r_end_line, int *r_end_char) {
@@ -3631,10 +3642,15 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 	update();
 }
 
-void TextEdit::_line_edited_from(int p_line) {
+void TextEdit::_line_edited_from(int p_line, bool p_changed_below) {
 	int cache_size = color_region_cache.size();
 	for (int i = p_line; i < cache_size; i++) {
 		color_region_cache.erase(i);
+	}
+	if (p_changed_below) {
+		annotation_cache.clear();
+	} else {
+		annotation_cache.erase(p_line);
 	}
 }
 
@@ -3728,11 +3744,8 @@ void TextEdit::adjust_viewport_to_cursor() {
 	if (!is_wrap_enabled()) {
 
 		// adjust x offset
-		Vector<Inline> inlines;
-		if (syntax_coloring && inline_processor) {
-			inline_processor->_parse_inline(*this, cursor.line, text[cursor.line], inlines);
-		}
-		int cursor_x = get_column_x_offset(cursor.column, text[cursor.line], inlines);
+		Vector<Annotation> annotations = _get_line_annotations(cursor.line);
+		int cursor_x = get_column_x_offset(cursor.column, text[cursor.line], annotations);
 
 		if (cursor_x > (cursor.x_ofs + visible_width))
 			cursor.x_ofs = cursor_x - visible_width + 1;
@@ -4067,8 +4080,7 @@ int TextEdit::get_row_height() const {
 int TextEdit::get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) const {
 
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
-
-	Vector<Inline> inlines;
+	Vector<Annotation> annotations = _get_line_annotations(p_line);
 
 	if (line_wraps(p_line)) {
 
@@ -4081,7 +4093,7 @@ int TextEdit::get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) cons
 		else
 			p_wrap_index = 0;
 		Vector<String> rows = get_wrap_rows_text(p_line);
-		int c_pos = get_char_pos_for(p_px, rows[p_wrap_index], inlines);
+		int c_pos = get_char_pos_for(p_px, rows[p_wrap_index], annotations, _sum_columns(rows, p_wrap_index));
 		for (int i = 0; i < p_wrap_index; i++) {
 			String s = rows[i];
 			c_pos += s.length();
@@ -4090,19 +4102,14 @@ int TextEdit::get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) cons
 		return c_pos;
 	} else {
 
-		if (syntax_coloring && inline_processor) {
-			inline_processor->_parse_inline(*this, p_line, text[p_line], inlines);
-		}
-
-		return get_char_pos_for(p_px, text[p_line], inlines);
+		return get_char_pos_for(p_px, text[p_line], annotations);
 	}
 }
 
 int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
-
-	Vector<Inline> inlines;
+	Vector<Annotation> annotations = _get_line_annotations(p_line);
 
 	if (line_wraps(p_line)) {
 
@@ -4118,7 +4125,7 @@ int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 				break;
 			n_char -= s.length();
 		}
-		int px = get_column_x_offset(n_char, rows[wrap_index], inlines);
+		int px = get_column_x_offset(n_char, rows[wrap_index], annotations, _sum_columns(rows, wrap_index));
 
 		int wrap_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
 		if (wrap_index != 0)
@@ -4127,19 +4134,20 @@ int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 		return px;
 	} else {
 
-		if (syntax_coloring && inline_processor) {
-			inline_processor->_parse_inline(*this, p_line, text[p_line], inlines);
-		}
-
-		return get_column_x_offset(p_char, text[p_line], inlines);
+		Vector<Annotation> annotations = _get_line_annotations(p_line);
+		return get_column_x_offset(p_char, text[p_line], annotations);
 	}
 }
 
-int TextEdit::get_char_pos_for(int p_px, const String &p_str, const Vector<Inline> &p_inlines) const {
+int TextEdit::get_char_pos_for(int p_px, const String &p_str, const Vector<Annotation> &p_annotations, int p_col0) const {
 
 	int px = 0;
 	int c = 0;
-	int next_inline = 0;
+
+	int next_annotation = 0;
+	while (next_annotation < p_annotations.size() && p_annotations[next_annotation].column< p_col0) {
+		next_annotation++;
+	}
 
 	int tab_w = cache.font->get_char_size(' ').width * indent_size;
 
@@ -4147,9 +4155,8 @@ int TextEdit::get_char_pos_for(int p_px, const String &p_str, const Vector<Inlin
 
 		int w = text.get_char_width(p_str[c], p_str[c + 1], px);
 
-		if (next_inline < p_inlines.size() && c == p_inlines[next_inline].insert) {
-			w += p_inlines[next_inline].pixel_width;
-			next_inline++;
+		if (next_annotation < p_annotations.size() && p_col0 + c == p_annotations[next_annotation].column) {
+			w += p_annotations[next_annotation++].size.width;
 		}
 
 		if (p_px < (px + w / 2))
@@ -4161,22 +4168,25 @@ int TextEdit::get_char_pos_for(int p_px, const String &p_str, const Vector<Inlin
 	return c;
 }
 
-int TextEdit::get_column_x_offset(int p_char, const String &p_str, const Vector<Inline> &p_inlines) const {
+int TextEdit::get_column_x_offset(int p_char, const String &p_str, const Vector<Annotation> &p_annotations, int p_col0) const {
 
 	int px = 0;
-	int next_inline = 0;
+
+	int next_annotation = 0;
+	while (next_annotation < p_annotations.size() && p_annotations[next_annotation].column< p_col0) {
+		next_annotation++;
+	}
 
 	for (int i = 0; i < p_char; i++) {
 
 		if (i >= p_str.length())
 			break;
 
-		px += text.get_char_width(p_str[i], p_str[i + 1], px);
-
-		if (next_inline < p_inlines.size() && i == p_inlines[next_inline].insert) {
-			px += p_inlines[next_inline].pixel_width;
-			next_inline++;
+		if (next_annotation < p_annotations.size() && p_col0 + i == p_annotations[next_annotation].column) {
+			px += p_annotations[next_annotation++].size.width;
 		}
+
+		px += text.get_char_width(p_str[i], p_str[i + 1], px);
 	}
 
 	return px;
@@ -4198,12 +4208,42 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 	update();
 }
 
-TextEdit::InlineProcessor *TextEdit::_get_inline_processor() const {
-	return inline_processor;
+TextEdit::AnnotationProcessor *TextEdit::_get_annotation_processor() const {
+	return annotation_processor;
 }
 
-void TextEdit::_set_inline_processor(TextEdit::InlineProcessor *p_processor) {
-	inline_processor = p_processor;
+void TextEdit::_set_annotation_processor(TextEdit::AnnotationProcessor *p_processor) {
+	annotation_processor = p_processor;
+}
+
+Vector<TextEdit::Annotation> &TextEdit::_get_line_annotations(int p_line) const {
+	if (!syntax_coloring || !annotation_processor) {
+		static Vector<Annotation> empty;
+		return empty;
+	}
+
+	Map<int, Vector<Annotation> >::Element *e = annotation_cache.find(p_line);
+	if (e) {
+		return e->value();
+	}
+
+	Vector<Annotation> annotations;
+	const Vector<ScriptLanguage::Annotation> raw_annotations = annotation_processor->parse_annotations(p_line, text[p_line]);
+	for (int i = 0; i < raw_annotations.size(); i++) {
+		Annotation ann = raw_annotations[i];
+		const String &s = ann.text;
+		int w = 0;
+		int h = 0;
+		for (int j = 0; j < s.length(); j++) {
+			h = MAX(cache.font->get_char_size(s[j]).height, h);
+			w += text.get_char_width(s[j], j + 1 < s.length() ? s[j + 1] : 0, 0);
+		}
+		ann.padding = h / 4;
+		ann.size = Size2i(w + 2 * ann.padding, h);
+		ann.pos_valid = false; // not yet rendered
+		annotations.push_back(ann);
+	}
+	return annotation_cache.insert(p_line, annotations)->value();
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
@@ -4245,12 +4285,13 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 				return CURSOR_POINTING_HAND;
 			}
 		}
-	}
 
-	for (int i = 0; i < drawn_inlines.size(); i++) {
-		const Inline &item = drawn_inlines[i];
-		if (item.editable && item.rect.has_point(p_pos)) {
-			return CURSOR_POINTING_HAND;
+		Vector<Annotation> annotations = _get_line_annotations(row);
+		for (int i = 0; i < annotations.size(); i++) {
+			const Annotation &ann = annotations[i];
+			if (ann.pos_valid && ann.type == ScriptLanguage::ANNOTATION_COLOR && ann.get_rect().has_point(p_pos)) {
+				return CURSOR_POINTING_HAND;
+			}
 		}
 	}
 
@@ -6435,7 +6476,7 @@ TextEdit::TextEdit() {
 	menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
 
-	inline_processor = NULL;
+	annotation_processor = NULL;
 }
 
 TextEdit::~TextEdit() {

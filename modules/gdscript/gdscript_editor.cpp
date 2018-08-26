@@ -43,6 +43,14 @@
 #include "engine.h"
 #endif
 
+inline const String &get_filled_circle() {
+	static String text;
+	if (text.empty()) {
+		text += (CharType)0x25CF; // filled circle
+	}
+	return text;
+}
+
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("#");
@@ -3355,6 +3363,148 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	}
 
 	return ERR_CANT_RESOLVE;
+}
+
+Vector<ScriptLanguage::Annotation> GDScriptLanguage::parse_annotations(int p_line, const String &p_code) {
+	GDScriptTokenizerText tokenizer;
+	tokenizer.set_code(p_code);
+	Vector<Annotation> annotations;
+
+	bool done = false;
+	do {
+		switch (tokenizer.get_token()) {
+			case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
+				if (tokenizer.get_token_type() == Variant::COLOR) {
+					const int column = tokenizer.get_token_column(0) - 1;
+					tokenizer.advance(1);
+					if (tokenizer.get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+						tokenizer.advance(1);
+
+						bool error = false;
+						Color color;
+						for (int c = 0; c < 4; c++) {
+							if (c > 0) {
+								if (tokenizer.get_token() != GDScriptTokenizer::TK_COMMA) {
+									error = c < 3;
+									break;
+								}
+								tokenizer.advance(1);
+							}
+							if (tokenizer.get_token() != GDScriptTokenizer::TK_CONSTANT) {
+								error = true;
+								break;
+							}
+							color.components[c] = tokenizer.get_token_constant();
+							tokenizer.advance(1);
+						}
+						if (!error && tokenizer.get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+							tokenizer.advance(1);
+
+							Annotation annotation;
+							annotation.line = p_line;
+							annotation.column = column;
+							annotation.type = ANNOTATION_COLOR;
+							annotation.text = get_filled_circle();
+							annotation.color = color;
+
+							annotations.push_back(annotation);
+						}
+					}
+				} else {
+					tokenizer.advance(1);
+				}
+			} break;
+
+			case GDScriptTokenizer::TK_ERROR:
+			case GDScriptTokenizer::TK_EOF: {
+				done = true;
+			} break;
+
+			default: {
+				tokenizer.advance(1);
+			} break;
+		}
+	} while (!done);
+
+	return annotations;
+}
+
+String GDScriptLanguage::update_color(const String &p_code, int p_col, const Color &p_color) {
+	String new_args;
+	if (p_color.a == 1.0f) {
+		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ")");
+	} else {
+		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ", " + rtos(p_color.a) + ")");
+	}
+
+	GDScriptTokenizerText tokenizer;
+	tokenizer.set_code(p_code);
+
+	bool done = false;
+	do {
+		switch (tokenizer.get_token()) {
+			case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
+				if (tokenizer.get_token_type() == Variant::COLOR) {
+					const int color_keyword_col = tokenizer.get_token_column(0) - 1;
+					tokenizer.advance(1);
+					if (color_keyword_col == p_col) {
+						if (tokenizer.get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+							const int begin = tokenizer.get_token_column(0) - 1;
+							tokenizer.advance(1);
+
+							bool error = false;
+							Color color;
+							for (int c = 0; c < 4; c++) {
+								if (c > 0) {
+									if (tokenizer.get_token() != GDScriptTokenizer::TK_COMMA) {
+										error = c < 3;
+										break;
+									}
+									tokenizer.advance(1);
+								}
+								if (tokenizer.get_token() != GDScriptTokenizer::TK_CONSTANT) {
+									error = true;
+									break;
+								}
+								color.components[c] = tokenizer.get_token_constant();
+								tokenizer.advance(1);
+							}
+							if (!error && tokenizer.get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+								const int end = tokenizer.get_token_column(0) - 1;
+								//tokenizer.advance(1);
+
+								return p_code.substr(0, begin) + new_args + p_code.substr(end + 1, p_code.length());
+							}
+						}
+					}
+				} else {
+					tokenizer.advance(1);
+				}
+			} break;
+
+			case GDScriptTokenizer::TK_ERROR:
+			case GDScriptTokenizer::TK_EOF: {
+				done = true;
+			} break;
+
+			default: {
+				tokenizer.advance(1);
+			} break;
+		}
+	} while (!done);
+
+	return p_code;
+/*
+
+	const TextEdit::Inline &c = edited_inline_color;
+	const String line = code_editor->get_text_edit()->get_line(c.line);
+	const String old_args = line.substr(c.begin, c.end);
+	if (old_args.length() > 0 && old_args[0] == '(' && old_args[old_args.length() - 1] == ')') {
+		code_editor->get_text_edit()->set_line(c.line, line.substr(0, c.begin) + new_args + line.substr(c.end + 1, line.length()));
+		code_editor->get_text_edit()->update();
+		edited_inline_color.end = c.begin + new_args.length();
+	}*/
+
 }
 
 #endif

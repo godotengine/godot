@@ -33,7 +33,7 @@
 
 #include "script_editor_plugin.h"
 
-class ScriptTextEditor : public ScriptEditorBase, public TextEdit::InlineProcessor {
+class ScriptTextEditor : public ScriptEditorBase, public TextEdit::AnnotationProcessor {
 
 	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
@@ -56,9 +56,11 @@ class ScriptTextEditor : public ScriptEditorBase, public TextEdit::InlineProcess
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
 
+	typedef ScriptLanguage::Annotation Annotation;
+
 	PopupPanel *color_panel;
 	ColorPicker *color_picker;
-	TextEdit::Inline edited_inline_color;
+	Annotation edited_color_annotation;
 
 	int error_line;
 	int error_col;
@@ -151,8 +153,8 @@ public:
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 
-	virtual void _parse_inline(const TextEdit &p_text_edit, int p_line, const String &p_str, Vector<TextEdit::Inline> &r_inlines);
-	virtual void _edit_inline(const TextEdit::Inline &p_inline);
+	virtual Vector<Annotation> parse_annotations(int p_line, const String &p_code);
+	virtual void edit_annotation(const Annotation &p_annotation);
 
 	void _color_changed(const Color &p_color);
 

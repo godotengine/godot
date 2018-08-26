@@ -256,6 +256,37 @@ public:
 
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
+	enum AnnotationType {
+		ANNOTATION_INFO,
+		ANNOTATION_COLOR
+	};
+
+	struct Annotation {
+		int line;
+		int column;
+
+		AnnotationType type;
+		String text;
+		Color color;
+
+		// used later during rendering stage in TextEdit:
+		Size2i size;
+		Point2i pos;
+		bool pos_valid;
+		int padding:8;
+
+		inline Rect2i get_rect() const {
+			return Rect2i(pos, size);
+		}
+
+		inline bool operator<(const Annotation &p_other) const {
+			return line < p_other.line || (line == p_other.line && column < p_other.column);
+		}
+	};
+
+	virtual Vector<Annotation> parse_annotations(int p_line, const String &p_code) { return Vector<Annotation>(); }
+	virtual String update_color(const String &p_code, int p_col, const Color &p_color) { return p_code; }
+
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}

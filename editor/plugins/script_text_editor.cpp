@@ -39,6 +39,14 @@
 #include "modules/gdscript/gdscript_tokenizer.h"
 #endif
 
+inline const String &get_right_triangle() {
+	static String text;
+	if (text.empty()) {
+		text += (CharType)0x25BA;
+	}
+	return text;
+}
+
 Vector<String> ScriptTextEditor::get_functions() {
 
 	String errortxt;
@@ -60,105 +68,35 @@ Vector<String> ScriptTextEditor::get_functions() {
 	return functions;
 }
 
-void ScriptTextEditor::_parse_inline(const TextEdit &p_text_edit, int p_line, const String &p_str, Vector<TextEdit::Inline> &r_inlines) {
+Vector<ScriptTextEditor::Annotation> ScriptTextEditor::parse_annotations(int p_line, const String &p_code) {
 
-#ifdef GDSCRIPT_ENABLED
-	GDScriptTokenizerText tokenizer;
-	tokenizer.set_code(p_str);
+	Vector<Annotation> anns = script->get_language()->parse_annotations(p_line, p_code);
 
-	const int inline_size = p_text_edit.get_row_height();
-
-	bool done = false;
-	do {
-		switch (tokenizer.get_token()) {
-			case GDScriptTokenizer::TK_BUILT_IN_TYPE: {
-				if (tokenizer.get_token_type() == Variant::COLOR) {
-					const int insert = tokenizer.get_token_column(0) - 1;
-					tokenizer.advance(1);
-					if (tokenizer.get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
-						const int begin = tokenizer.get_token_column(0) - 1;
-						tokenizer.advance(1);
-
-						TextEdit::Inline inline_color;
-						inline_color.line = p_line;
-						inline_color.editable = false;
-						inline_color.insert = insert;
-						inline_color.begin = begin;
-						inline_color.end = -1;
-						inline_color.symbol = 0x25CF; // filled circle
-						inline_color.color = Color(0, 0, 0);
-						inline_color.pixel_width = inline_size;
-						inline_color.pixel_height = inline_size;
-
-						bool error = false;
-						for (int c = 0; c < 4; c++) {
-							if (c > 0) {
-								if (tokenizer.get_token() != GDScriptTokenizer::TK_COMMA) {
-									error = c < 3;
-									break;
-								}
-								tokenizer.advance(1);
-							}
-							if (tokenizer.get_token() != GDScriptTokenizer::TK_CONSTANT) {
-								error = true;
-								break;
-							}
-							inline_color.color.components[c] = tokenizer.get_token_constant();
-							tokenizer.advance(1);
-						}
-						if (!error && tokenizer.get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
-							tokenizer.advance(1);
-							inline_color.editable = true;
-							inline_color.begin = begin;
-							inline_color.end = tokenizer.get_token_column(0) - 1;
-						}
-
-						r_inlines.push_back(inline_color);
-					}
-				} else {
-					tokenizer.advance(1);
-				}
-			} break;
-
-			case GDScriptTokenizer::TK_ERROR:
-			case GDScriptTokenizer::TK_EOF: {
-				done = true;
-			} break;
-
-			default: {
-				tokenizer.advance(1);
-			} break;
-		}
-	} while (!done);
-#endif
-
-	if (error_line == p_line) {
-
-		TextEdit::Inline inline_error;
-		inline_error.line = p_line;
-		inline_error.editable = false;
-		inline_error.insert = error_col;
-		inline_error.begin = -1;
-		inline_error.end = -1;
-		inline_error.symbol = 0x25BA; // right triangle
-		inline_error.color = Color(1, 0, 0);
-		inline_error.pixel_width = inline_size;
-		inline_error.pixel_height = inline_size;
-
-		r_inlines.push_back(inline_error);
-		r_inlines.sort_custom<TextEdit::InlineComparator>();
+	if (p_line == error_line) {
+		Annotation error_annotation;
+		error_annotation.type = ScriptLanguage::ANNOTATION_INFO;
+		error_annotation.line = error_line;
+		error_annotation.column = error_col;
+		error_annotation.text = get_right_triangle();
+		error_annotation.color = Color(0.9, 0, 0);
+		anns.push_back(error_annotation);
+		anns.sort();
 	}
+
+	return anns;
 }
 
-void ScriptTextEditor::_edit_inline(const TextEdit::Inline &p_inline) {
+void ScriptTextEditor::edit_annotation(const Annotation &p_annotation) {
 
 	if (color_panel->is_visible_in_tree())
 		return; // avoid endless recursion
+	if (p_annotation.type != ScriptLanguage::ANNOTATION_COLOR)
+		return;
 	color_picker->set_edit_alpha(true);
-	color_picker->set_pick_color(p_inline.color);
-	const Rect2 &r = p_inline.rect;
+	color_picker->set_pick_color(p_annotation.color);
+	const Rect2 r = p_annotation.get_rect();
 	color_panel->set_position(get_global_transform().xform(r.get_position() + Vector2(0, r.get_size().height)));
-	edited_inline_color = p_inline;
+	edited_color_annotation = p_annotation;
 	color_panel->popup();
 }
 
@@ -1404,24 +1342,14 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 void ScriptTextEditor::_color_changed(const Color &p_color) {
 
-	if (edited_inline_color.line < 0)
+	if (edited_color_annotation.line < 0)
 		return;
 
-	String new_args;
-	if (p_color.a == 1.0f) {
-		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ")");
-	} else {
-		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ", " + rtos(p_color.a) + ")");
-	}
-
-	const TextEdit::Inline &c = edited_inline_color;
-	const String line = code_editor->get_text_edit()->get_line(c.line);
-	const String old_args = line.substr(c.begin, c.end);
-	if (old_args.length() > 0 && old_args[0] == '(' && old_args[old_args.length() - 1] == ')') {
-		code_editor->get_text_edit()->set_line(c.line, line.substr(0, c.begin) + new_args + line.substr(c.end + 1, line.length()));
-		code_editor->get_text_edit()->update();
-		edited_inline_color.end = c.begin + new_args.length();
-	}
+	const ScriptLanguage::Annotation ann = edited_color_annotation;
+	String line = code_editor->get_text_edit()->get_line(ann.line);
+	line = script->get_language()->update_color(line, ann.column, p_color);
+	code_editor->get_text_edit()->set_line(ann.line, line);
+	code_editor->get_text_edit()->update();
 }
 
 void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_foldable, bool p_open_docs, bool p_goto_definition) {
@@ -1507,7 +1435,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_edit()->set_context_menu_enabled(false);
 	code_editor->get_text_edit()->connect("gui_input", this, "_text_edit_gui_input");
 
-	code_editor->get_text_edit()->_set_inline_processor(this);
+	code_editor->get_text_edit()->_set_annotation_processor(this);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
@@ -1519,7 +1447,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	color_picker = memnew(ColorPicker);
 	color_panel->add_child(color_picker);
 	color_picker->connect("color_changed", this, "_color_changed");
-	edited_inline_color.line = -1;
+	edited_color_annotation.line = -1;
 
 	edit_hb = memnew(HBoxContainer);
 
@@ -1608,7 +1536,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 ScriptTextEditor::~ScriptTextEditor() {
 
-	code_editor->get_text_edit()->_set_inline_processor(NULL);
+	code_editor->get_text_edit()->_set_annotation_processor(NULL);
 }
 
 static ScriptEditorBase *create_editor(const RES &p_resource) {

@@ -64,6 +64,8 @@ public:
 		}
 	};
 
+	typedef ScriptLanguage::Annotation Annotation;
+
 	class Text {
 	public:
 		struct ColorRegionInfo {
@@ -80,6 +82,7 @@ public:
 			bool safe : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
+			Vector<Annotation> annotations;
 			String data;
 		};
 
@@ -118,23 +121,6 @@ public:
 		void clear_wrap_cache();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
 		Text() { indent_size = 4; }
-	};
-
-	struct Inline {
-
-		int line;
-		int insert;
-
-		int begin;
-		int end;
-
-		bool editable;
-		CharType symbol;
-		Color color;
-
-		int pixel_width : 8;
-		int pixel_height : 8;
-		Rect2i rect;
 	};
 
 private:
@@ -215,6 +201,7 @@ private:
 	} cache;
 
 	Map<int, int> color_region_cache;
+	mutable Map<int, Vector<Annotation> > annotation_cache;
 
 	struct TextOperation {
 
@@ -377,8 +364,8 @@ private:
 
 	int get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 	int get_column_x_offset_for_line(int p_char, int p_line) const;
-	int get_char_pos_for(int p_px, const String &p_str, const Vector<Inline> &p_inlines) const;
-	int get_column_x_offset(int p_char, const String &p_str, const Vector<Inline> &p_inlines) const;
+	int get_char_pos_for(int p_px, const String &p_str, const Vector<Annotation> &p_annotations, int p_col0 = 0) const;
+	int get_column_x_offset(int p_char, const String &p_str, const Vector<Annotation> &p_annotations, int p_col0 = 0) const;
 
 	void adjust_viewport_to_cursor();
 	double get_scroll_line_diff() const;
@@ -412,7 +399,7 @@ private:
 	void _update_caches();
 	void _cursor_changed_emit();
 	void _text_changed_emit();
-	void _line_edited_from(int p_line);
+	void _line_edited_from(int p_line, bool p_changed_below);
 
 	void _push_current_op();
 
@@ -433,6 +420,8 @@ private:
 	void _cancel_code_hint();
 	void _confirm_completion();
 	void _update_completion_candidates();
+
+	static Vector<Annotation> _skip_annotations(const Vector<Annotation> &p_annotations, int p_column);
 
 protected:
 	virtual String get_tooltip(const Point2 &p_pos) const;
@@ -474,22 +463,15 @@ public:
 		SEARCH_BACKWARDS = 4
 	};
 
-	struct InlineComparator {
-
-		bool operator()(const Inline &p_a, const Inline &p_b) const {
-
-			return p_a.line < p_b.line || (p_a.line == p_b.line && p_a.insert < p_b.insert);
-		}
-	};
-
-	class InlineProcessor {
+	class AnnotationProcessor {
 	public:
-		virtual void _parse_inline(const TextEdit &text, int p_line, const String &p_str, Vector<Inline> &r_inlines) = 0;
-		virtual void _edit_inline(const Inline &p_inline) = 0;
+		virtual Vector<Annotation> parse_annotations(int p_line, const String &p_code) = 0;
+		virtual void edit_annotation(const Annotation &p_annotation) = 0;
 	};
 
-	InlineProcessor *_get_inline_processor() const;
-	void _set_inline_processor(InlineProcessor *p_processor);
+	AnnotationProcessor *_get_annotation_processor() const;
+	void _set_annotation_processor(AnnotationProcessor *p_processor);
+	Vector<Annotation> &_get_line_annotations(int p_line) const;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
@@ -714,8 +696,7 @@ public:
 	~TextEdit();
 
 private:
-	InlineProcessor *inline_processor;
-	Vector<Inline> drawn_inlines;
+	AnnotationProcessor *annotation_processor;
 };
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);

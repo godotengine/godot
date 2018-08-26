@@ -451,6 +451,8 @@ public:
 	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint);
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result);
+	virtual Vector<Annotation> parse_annotations(int p_line, const String &p_code);
+	virtual String update_color(const String &p_code, int p_col, const Color &p_color);
 #endif
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
