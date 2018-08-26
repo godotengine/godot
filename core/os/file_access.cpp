@@ -500,6 +500,11 @@ void FileAccess::store_string(const String &p_string) {
 
 void FileAccess::store_pascal_string(const String &p_string) {
 
+	if (p_string.length() == 0) {
+		store_32(0);
+		return;
+	}
+
 	CharString cs = p_string.utf8();
 	store_32(cs.length());
 	store_buffer((uint8_t *)&cs[0], cs.length());
