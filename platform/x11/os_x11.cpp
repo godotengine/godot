@@ -2628,41 +2628,82 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 	return;
 }
 
+bool g_set_icon_error = false;
+int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
+	g_set_icon_error = true;
+	return 0;
+}
+
 void OS_X11::set_icon(const Ref<Image> &p_icon) {
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&set_icon_errorhandler);
+
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 	if (p_icon.is_valid()) {
 		Ref<Image> img = p_icon->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
-		int w = img->get_width();
-		int h = img->get_height();
+		while (true) {
+			int w = img->get_width();
+			int h = img->get_height();
 
-		// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
-		Vector<long> pd;
+			if (g_set_icon_error) {
+				g_set_icon_error = false;
 
-		pd.resize(2 + w * h);
+				WARN_PRINT("Icon too large, attempting to resize icon.");
 
-		pd.write[0] = w;
-		pd.write[1] = h;
+				int new_width, new_height;
+				if (w > h) {
+					new_width = w / 2;
+					new_height = h * new_width / w;
+				} else {
+					new_height = h / 2;
+					new_width = w * new_height / h;
+				}
 
-		PoolVector<uint8_t>::Read r = img->get_data().read();
+				w = new_width;
+				h = new_height;
 
-		long *wr = &pd.write[2];
-		uint8_t const *pr = r.ptr();
+				if (!w || !h) {
+					WARN_PRINT("Unable to set icon.");
+					break;
+				}
 
-		for (int i = 0; i < w * h; i++) {
-			long v = 0;
-			//    A             R             G            B
-			v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
-			*wr++ = v;
-			pr += 4;
+				img->resize(w, h, Image::INTERPOLATE_CUBIC);
+			}
+
+			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
+			Vector<long> pd;
+
+			pd.resize(2 + w * h);
+
+			pd.write[0] = w;
+			pd.write[1] = h;
+
+			PoolVector<uint8_t>::Read r = img->get_data().read();
+
+			long *wr = &pd.write[2];
+			uint8_t const *pr = r.ptr();
+
+			for (int i = 0; i < w * h; i++) {
+				long v = 0;
+				//    A             R             G            B
+				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+				*wr++ = v;
+				pr += 4;
+			}
+
+			XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+
+			if (!g_set_icon_error)
+				break;
 		}
-		XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
 	} else {
 		XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
+
 	XFlush(x11_display);
+	XSetErrorHandler(oldHandler);
 }
 
 void OS_X11::force_process_input() {
