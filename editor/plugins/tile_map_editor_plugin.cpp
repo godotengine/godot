@@ -457,36 +457,38 @@ void TileMapEditor::_update_palette() {
 		palette->select(0);
 	}
 
-	if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE) {
+	if (sel_tile != TileMap::INVALID_CELL) {
+		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE) {
 
-		const Map<Vector2, uint16_t> &tiles = tileset->autotile_get_bitmask_map(sel_tile);
+			const Map<Vector2, uint16_t> &tiles = tileset->autotile_get_bitmask_map(sel_tile);
 
-		Vector<Vector2> entries;
-		for (const Map<Vector2, uint16_t>::Element *E = tiles.front(); E; E = E->next()) {
-			entries.push_back(E->key());
-		}
-		entries.sort();
-
-		Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
-
-		for (int i = 0; i < entries.size(); i++) {
-
-			manual_palette->add_item(String());
-
-			if (tex.is_valid()) {
-
-				Rect2 region = tileset->tile_get_region(sel_tile);
-				int spacing = tileset->autotile_get_spacing(sel_tile);
-				region.size = tileset->autotile_get_size(sel_tile); // !!
-				region.position += (region.size + Vector2(spacing, spacing)) * entries[i];
-
-				if (!region.has_no_area())
-					manual_palette->set_item_icon_region(manual_palette->get_item_count() - 1, region);
-
-				manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
+			Vector<Vector2> entries;
+			for (const Map<Vector2, uint16_t>::Element *E = tiles.front(); E; E = E->next()) {
+				entries.push_back(E->key());
 			}
+			entries.sort();
 
-			manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries[i]);
+			Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
+
+			for (int i = 0; i < entries.size(); i++) {
+
+				manual_palette->add_item(String());
+
+				if (tex.is_valid()) {
+
+					Rect2 region = tileset->tile_get_region(sel_tile);
+					int spacing = tileset->autotile_get_spacing(sel_tile);
+					region.size = tileset->autotile_get_size(sel_tile); // !!
+					region.position += (region.size + Vector2(spacing, spacing)) * entries[i];
+
+					if (!region.has_no_area())
+						manual_palette->set_item_icon_region(manual_palette->get_item_count() - 1, region);
+
+					manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
+				}
+
+				manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries[i]);
+			}
 		}
 	}
 
