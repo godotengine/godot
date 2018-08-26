@@ -6998,7 +6998,10 @@ RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {
 	//printf("errnum: %x\n",status);
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 
-	ERR_FAIL_COND_V(status != GL_FRAMEBUFFER_COMPLETE, RID());
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		memdelete(cls);
+		ERR_FAIL_COND_V(status != GL_FRAMEBUFFER_COMPLETE, RID());
+	}
 
 	return canvas_light_shadow_owner.make_rid(cls);
 }

@@ -1008,7 +1008,10 @@ RID RasterizerSceneGLES3::light_instance_create(RID p_light) {
 	light_instance->light = p_light;
 	light_instance->light_ptr = storage->light_owner.getornull(p_light);
 
-	ERR_FAIL_COND_V(!light_instance->light_ptr, RID());
+	if (!light_instance->light_ptr) {
+		memdelete(light_instance);
+		ERR_FAIL_COND_V(!light_instance->light_ptr, RID());
+	}
 
 	light_instance->self = light_instance_owner.make_rid(light_instance);
 

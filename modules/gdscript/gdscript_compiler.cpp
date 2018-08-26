@@ -1322,6 +1322,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 						int ret = _parse_expression(codegen, op, p_stack_level);
 						if (ret < 0) {
+							memdelete(id);
+							memdelete(op);
 							return ERR_PARSE_ERROR;
 						}
 
@@ -1341,6 +1343,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							// compile the condition
 							int ret = _parse_expression(codegen, branch.compiled_pattern, p_stack_level);
 							if (ret < 0) {
+								memdelete(id);
+								memdelete(op);
 								return ERR_PARSE_ERROR;
 							}
 
@@ -1353,6 +1357,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 							Error err = _parse_block(codegen, branch.body, p_stack_level, p_break_addr, continue_addr);
 							if (err) {
+								memdelete(id);
+								memdelete(op);
 								return ERR_PARSE_ERROR;
 							}
 
@@ -1363,6 +1369,9 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 						}
 
 						codegen.opcodes.write[break_addr + 1] = codegen.opcodes.size();
+
+						memdelete(id);
+						memdelete(op);
 
 					} break;
 

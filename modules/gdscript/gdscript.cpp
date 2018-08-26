@@ -126,7 +126,10 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		GDScriptLanguage::singleton->lock->unlock();
 #endif
 
-		ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, NULL); //error constructing
+		if (r_error.error != Variant::CallError::CALL_OK) {
+			memdelete(instance);
+			ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, NULL); //error constructing
+		}
 	}
 
 	//@TODO make thread safe
@@ -719,22 +722,36 @@ Error GDScript::load_byte_code(const String &p_path) {
 
 		FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
 		ERR_FAIL_COND_V(!fa, ERR_CANT_OPEN);
+
 		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 		ERR_FAIL_COND_V(!fae, ERR_CANT_OPEN);
+
 		Vector<uint8_t> key;
 		key.resize(32);
 		for (int i = 0; i < key.size(); i++) {
 			key.write[i] = script_encryption_key[i];
 		}
+
 		Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_READ);
-		ERR_FAIL_COND_V(err, err);
+
+		if (err) {
+			fa->close();
+			memdelete(fa);
+			memdelete(fae);
+
+			ERR_FAIL_COND_V(err, err);
+		}
+
 		bytecode.resize(fae->get_len());
 		fae->get_buffer(bytecode.ptrw(), bytecode.size());
+		fae->close();
 		memdelete(fae);
+
 	} else {
 
 		bytecode = FileAccess::get_file_as_array(p_path);
 	}
+
 	ERR_FAIL_COND_V(bytecode.size() == 0, ERR_PARSE_ERROR);
 	path = p_path;
 
@@ -2097,7 +2114,7 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 		Error err = script->load_byte_code(p_path);
 
 		if (err != OK) {
-
+			memdelete(script);
 			ERR_FAIL_COND_V(err != OK, RES());
 		}
 
@@ -2105,7 +2122,7 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 		Error err = script->load_source_code(p_path);
 
 		if (err != OK) {
-
+			memdelete(script);
 			ERR_FAIL_COND_V(err != OK, RES());
 		}
 
@@ -2120,6 +2137,7 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 
 	return scriptres;
 }
+
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 
 	p_extensions->push_back("gd");
