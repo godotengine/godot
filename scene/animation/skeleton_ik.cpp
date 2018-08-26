@@ -280,7 +280,7 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_
 	}
 }
 
-void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool p_use_magnet, const Vector3 &p_magnet_position) {
+void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position) {
 
 	if (blending_delta <= 0.01f) {
 		return; // Skip solving
@@ -314,7 +314,10 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool p_u
 			}
 		} else {
 			// Set target orientation to tip
-			new_bone_pose.basis = p_task->chain.tips[0].end_effector->goal_transform.basis;
+			if (override_tip_basis)
+				new_bone_pose.basis = p_task->chain.tips[0].end_effector->goal_transform.basis;
+			else
+				new_bone_pose.basis = new_bone_pose.basis * p_task->chain.tips[0].end_effector->goal_transform.basis;
 		}
 
 		p_task->skeleton->set_bone_global_pose(ci->bone, new_bone_pose);
@@ -366,6 +369,9 @@ void SkeletonIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "node"), &SkeletonIK::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonIK::get_target_node);
 
+	ClassDB::bind_method(D_METHOD("set_override_tip_basis", "override"), &SkeletonIK::set_override_tip_basis);
+	ClassDB::bind_method(D_METHOD("is_override_tip_basis"), &SkeletonIK::is_override_tip_basis);
+
 	ClassDB::bind_method(D_METHOD("set_use_magnet", "use"), &SkeletonIK::set_use_magnet);
 	ClassDB::bind_method(D_METHOD("is_using_magnet"), &SkeletonIK::is_using_magnet);
 
@@ -388,6 +394,7 @@ void SkeletonIK::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tip_bone"), "set_tip_bone", "get_tip_bone");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "interpolation", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_interpolation", "get_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "target"), "set_target_transform", "get_target_transform");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_tip_basis"), "set_override_tip_basis", "is_override_tip_basis");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_magnet"), "set_use_magnet", "is_using_magnet");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "magnet"), "set_magnet_position", "get_magnet_position");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_node"), "set_target_node", "get_target_node");
@@ -418,6 +425,7 @@ void SkeletonIK::_notification(int p_what) {
 SkeletonIK::SkeletonIK() :
 		Node(),
 		interpolation(1),
+		override_tip_basis(true),
 		use_magnet(false),
 		min_distance(0.01),
 		max_iterations(10),
@@ -476,6 +484,14 @@ void SkeletonIK::set_target_node(const NodePath &p_node) {
 
 NodePath SkeletonIK::get_target_node() {
 	return target_node_path_override;
+}
+
+void SkeletonIK::set_override_tip_basis(bool p_override) {
+	override_tip_basis = p_override;
+}
+
+bool SkeletonIK::is_override_tip_basis() const {
+	return override_tip_basis;
 }
 
 void SkeletonIK::set_use_magnet(bool p_use) {
@@ -555,7 +571,7 @@ void SkeletonIK::reload_goal() {
 void SkeletonIK::_solve_chain() {
 	if (!task)
 		return;
-	FabrikInverseKinematic::solve(task, interpolation, use_magnet, magnet_position);
+	FabrikInverseKinematic::solve(task, interpolation, override_tip_basis, use_magnet, magnet_position);
 }
 
 #endif // _3D_DISABLED
