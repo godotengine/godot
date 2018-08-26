@@ -4,7 +4,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Godot
+namespace Godot.Collections
 {
     class ArraySafeHandle : SafeHandle
     {

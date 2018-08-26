@@ -1,4 +1,5 @@
 using System;
+using Godot.Collections;
 
 namespace Godot
 {

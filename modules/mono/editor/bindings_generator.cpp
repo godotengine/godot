@@ -533,7 +533,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 
 	cs_icalls_content.push_back("using System;\n"
 								"using System.Runtime.CompilerServices;\n"
-								"using System.Collections.Generic;\n"
+								"using " BINDINGS_NAMESPACE_COLLECTIONS ";\n"
 								"\n");
 	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 OPEN_BLOCK);
@@ -638,7 +638,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 
 	cs_icalls_content.push_back("using System;\n"
 								"using System.Runtime.CompilerServices;\n"
-								"using System.Collections.Generic;\n"
+								"using " BINDINGS_NAMESPACE_COLLECTIONS ";\n"
 								"\n");
 	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" INDENT1 OPEN_BLOCK);
@@ -713,7 +713,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.push_back("using System;\n"); // IntPtr
 
 	if (itype.requires_collections)
-		output.push_back("using System.Collections.Generic;\n"); // Dictionary
+		output.push_back("using " BINDINGS_NAMESPACE_COLLECTIONS ";\n"); // Dictionary
 
 	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
@@ -1922,7 +1922,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = Variant::get_type_name(return_info.type);
 			}
 
-			if (!itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary)
+			if (!itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
 				itype.requires_collections = true;
 
 			for (int i = 0; i < argc; i++) {
@@ -1946,7 +1946,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
-				if (!itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary)
+				if (!itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
 					itype.requires_collections = true;
 
 				if (m && m->has_default_argument(i)) {
@@ -2371,14 +2371,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "Array";
 	itype.cname = itype.name;
-	itype.proxy_name = "Array";
+	itype.proxy_name = "Collections.Array";
 	itype.c_out = "\treturn memnew(Array(%1));\n";
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type + "*";
 	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
-	itype.cs_out = "return new Array(%0);";
+	itype.cs_out = "return new Collections.Array(%0);";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);
@@ -2387,14 +2387,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "Dictionary";
 	itype.cname = itype.name;
-	itype.proxy_name = "Dictionary";
+	itype.proxy_name = "Collections.Dictionary";
 	itype.c_out = "\treturn memnew(Dictionary(%1));\n";
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type + "*";
 	itype.c_type_out = itype.c_type + "*";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
-	itype.cs_out = "return new Dictionary(%0);";
+	itype.cs_out = "return new Collections.Dictionary(%0);";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);
@@ -2441,7 +2441,7 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 			else
 				iarg.type.cname = Variant::get_type_name(pi.type);
 
-			if (!r_itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary)
+			if (!r_itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
 				r_itype.requires_collections = true;
 
 			if ((mi.default_arguments.size() - mi.arguments.size() + i) >= 0)
@@ -2457,7 +2457,7 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 			imethod.return_type.cname = Variant::get_type_name(mi.return_val.type);
 		}
 
-		if (!r_itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary)
+		if (!r_itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
 			r_itype.requires_collections = true;
 
 		if (r_itype.class_doc) {
