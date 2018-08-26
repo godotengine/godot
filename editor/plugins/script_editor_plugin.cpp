@@ -1692,7 +1692,6 @@ void ScriptEditor::_update_script_names() {
 	if (restoring_layout)
 		return;
 
-	waiting_update_names = false;
 	Set<Ref<Script> > used;
 	Node *edited = EditorNode::get_singleton()->get_edited_scene();
 	if (edited) {
@@ -1816,8 +1815,12 @@ void ScriptEditor::_update_script_names() {
 		}
 	}
 
-	_update_members_overview();
-	_update_help_overview();
+	if (!waiting_update_names) {
+		_update_members_overview();
+		_update_help_overview();
+	} else {
+		waiting_update_names = false;
+	}
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 	_update_script_colors();
