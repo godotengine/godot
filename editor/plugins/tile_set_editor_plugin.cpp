@@ -498,7 +498,7 @@ void TileSetEditor::_on_tileset_toolbar_button_pressed(int p_index) {
 		} break;
 		case TOOL_TILESET_REMOVE_TEXTURE: {
 			if (get_current_texture().is_valid()) {
-				cd->set_text(TTR("Remove Selected Textue and ALL TILES wich uses it?"));
+				cd->set_text(TTR("Remove selected texture and ALL TILES which use it?"));
 				cd->popup_centered(Size2(300, 60));
 			} else {
 				err_dialog->set_text(TTR("You haven't selected a texture to remove."));
