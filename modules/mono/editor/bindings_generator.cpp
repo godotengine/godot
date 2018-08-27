@@ -533,7 +533,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_output_dir, bo
 
 	cs_icalls_content.push_back("using System;\n"
 								"using System.Runtime.CompilerServices;\n"
-								"using " BINDINGS_NAMESPACE_COLLECTIONS ";\n"
 								"\n");
 	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 OPEN_BLOCK);
@@ -638,7 +637,6 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_output_dir, 
 
 	cs_icalls_content.push_back("using System;\n"
 								"using System.Runtime.CompilerServices;\n"
-								"using " BINDINGS_NAMESPACE_COLLECTIONS ";\n"
 								"\n");
 	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" INDENT1 OPEN_BLOCK);
@@ -711,10 +709,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	List<String> output;
 
 	output.push_back("using System;\n"); // IntPtr
-
-	if (itype.requires_collections)
-		output.push_back("using " BINDINGS_NAMESPACE_COLLECTIONS ";\n"); // Dictionary
-
+	output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
+					 "'Missing XML comment for publicly visible type or member'\n");
 	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
@@ -737,8 +733,15 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	}
 
 	output.push_back(INDENT1 "public ");
-	bool is_abstract = itype.is_object_type && !ClassDB::can_instance(itype.name) && ClassDB::is_class_enabled(itype.name); // can_instance returns true if there's a constructor and the class is not 'disabled'
-	output.push_back(itype.is_singleton ? "static partial class " : (is_abstract ? "abstract partial class " : "partial class "));
+	if (itype.is_object_type) {
+		if (itype.is_singleton) {
+			output.push_back("static partial class ");
+		} else {
+			output.push_back(itype.is_instantiable ? "partial class " : "abstract partial class ");
+		}
+	} else {
+		output.push_back("partial class ");
+	}
 	output.push_back(itype.proxy_name);
 
 	if (itype.is_singleton) {
@@ -1034,7 +1037,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			custom_icalls.push_back(ctor_icall);
 	}
 
-	output.push_back(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
+	output.push_back(INDENT1 CLOSE_BLOCK /* class */
+					CLOSE_BLOCK /* namespace */);
+
+	output.push_back("\n#pragma warning restore CS1591\n");
 
 	return _save_file(p_output_file, output);
 }
@@ -1922,9 +1928,6 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = Variant::get_type_name(return_info.type);
 			}
 
-			if (!itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
-				itype.requires_collections = true;
-
 			for (int i = 0; i < argc; i++) {
 				PropertyInfo arginfo = method_info.arguments[i];
 
@@ -1945,9 +1948,6 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
-
-				if (!itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
-					itype.requires_collections = true;
 
 				if (m && m->has_default_argument(i)) {
 					_default_argument_from_variant(m->get_default_argument(i), iarg);
@@ -2371,14 +2371,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "Array";
 	itype.cname = itype.name;
-	itype.proxy_name = "Collections.Array";
+	itype.proxy_name = itype.name;
 	itype.c_out = "\treturn memnew(Array(%1));\n";
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type + "*";
 	itype.c_type_out = itype.c_type + "*";
-	itype.cs_type = itype.proxy_name;
+	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
-	itype.cs_out = "return new Collections.Array(%0);";
+	itype.cs_out = "return new " + itype.cs_type + "(%0);";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);
@@ -2387,14 +2387,14 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "Dictionary";
 	itype.cname = itype.name;
-	itype.proxy_name = "Collections.Dictionary";
+	itype.proxy_name = itype.name;
 	itype.c_out = "\treturn memnew(Dictionary(%1));\n";
 	itype.c_type = itype.name;
 	itype.c_type_in = itype.c_type + "*";
 	itype.c_type_out = itype.c_type + "*";
-	itype.cs_type = itype.proxy_name;
+	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in = "%0." CS_SMETHOD_GETINSTANCE "()";
-	itype.cs_out = "return new Collections.Dictionary(%0);";
+	itype.cs_out = "return new " + itype.cs_type + "(%0);";
 	itype.im_type_in = "IntPtr";
 	itype.im_type_out = "IntPtr";
 	builtin_types.insert(itype.cname, itype);
@@ -2441,9 +2441,6 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 			else
 				iarg.type.cname = Variant::get_type_name(pi.type);
 
-			if (!r_itype.requires_collections && iarg.type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
-				r_itype.requires_collections = true;
-
 			if ((mi.default_arguments.size() - mi.arguments.size() + i) >= 0)
 				_default_argument_from_variant(Variant::construct(pi.type, NULL, 0, cerror), iarg);
 
@@ -2456,9 +2453,6 @@ void BindingsGenerator::_populate_builtin_type(TypeInterface &r_itype, Variant::
 		} else {
 			imethod.return_type.cname = Variant::get_type_name(mi.return_val.type);
 		}
-
-		if (!r_itype.requires_collections && imethod.return_type.cname == name_cache.type_Dictionary || imethod.return_type.cname == name_cache.type_Array)
-			r_itype.requires_collections = true;
 
 		if (r_itype.class_doc) {
 			for (int i = 0; i < r_itype.class_doc->methods.size(); i++) {
