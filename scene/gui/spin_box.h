@@ -54,10 +54,10 @@ class SpinBox : public Range {
 
 	struct Drag {
 		float base_val;
+		bool allowed;
 		bool enabled;
-		Vector2 from;
-		Vector2 mouse_pos;
 		Vector2 capture_pos;
+		float diff_y;
 	} drag;
 
 	void _line_edit_focus_exit();
