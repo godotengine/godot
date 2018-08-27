@@ -38,7 +38,6 @@ libvpx_sources = [
     "vp8/decoder/decodemv.c",
     "vp8/decoder/detokenize.c",
     "vp8/decoder/onyxd_if.c",
-    "vp8/decoder/threading.c",
 
 
     "vp9/vp9_dx_iface.c",
@@ -100,6 +99,10 @@ libvpx_sources = [
 
 
     "vpx_util/vpx_thread.c"
+]
+
+libvpx_sources_mt = [
+    "vp8/decoder/threading.c",
 ]
 
 libvpx_sources_intrin_x86 = [
@@ -231,6 +234,7 @@ libvpx_sources_arm_neon_gas_apple = [
 ]
 
 libvpx_sources = [libvpx_dir + file for file in libvpx_sources]
+libvpx_sources_mt = [libvpx_dir + file for file in libvpx_sources_mt]
 libvpx_sources_intrin_x86 = [libvpx_dir + file for file in libvpx_sources_intrin_x86]
 libvpx_sources_intrin_x86_mmx = [libvpx_dir + file for file in libvpx_sources_intrin_x86_mmx]
 libvpx_sources_intrin_x86_sse2 = [libvpx_dir + file for file in libvpx_sources_intrin_x86_sse2]
@@ -252,6 +256,8 @@ env_webm.Append(CPPPATH=[libvpx_dir])
 
 env_libvpx = env.Clone()
 env_libvpx.Append(CPPPATH=[libvpx_dir])
+
+webm_multithread = env["platform"] != 'javascript'
 
 cpu_bits = env["bits"]
 webm_cpu_x86 = False
@@ -338,6 +344,10 @@ if webm_simd_optimizations == False:
     print("WebM SIMD optimizations are disabled. Check if your CPU architecture, CPU bits or platform are supported!")
 
 env_libvpx.add_source_files(env.modules_sources, libvpx_sources)
+
+if webm_multithread:
+    env_libvpx.add_source_files(env.modules_sources, libvpx_sources_mt)
+
 if webm_cpu_x86:
     is_clang_or_gcc = ('gcc' in env["CC"]) or ('clang' in env["CC"]) or ("OSXCROSS_ROOT" in os.environ)
 
