@@ -78,7 +78,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		if (assign != String()) {
 			if (!path_found && assign.begins_with("path.") && r_path_and_type.path == String()) {
 				String feature = assign.get_slicec('.', 1);
-				if (feature == "fallback" || OS::get_singleton()->has_feature(feature)) {
+				if (OS::get_singleton()->has_feature(feature)) {
 					r_path_and_type.path = value;
 					path_found = true; //first match must have priority
 				}

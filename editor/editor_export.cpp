@@ -667,7 +667,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				String remap = F->get();
 				String feature = remap.get_slice(".", 1);
-				if (feature == "fallback" || features.has(feature)) {
+				if (features.has(feature)) {
 					remap_features.insert(feature);
 				}
 			}
@@ -1457,7 +1457,6 @@ void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<Edito
 	if (p_features.has("bptc")) {
 		if (p_preset->has("texture_format/no_bptc_fallbacks")) {
 			p_features.erase("s3tc");
-			p_features.erase("fallback");
 		}
 	}
 }
