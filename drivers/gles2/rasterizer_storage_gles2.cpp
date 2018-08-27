@@ -365,6 +365,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	ERR_FAIL_COND(!texture);
 	texture->width = p_width;
 	texture->height = p_height;
+	texture->depth = 0;
 	texture->format = p_format;
 	texture->flags = p_flags;
 	texture->stored_cube_sides = 0;
@@ -384,6 +385,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 		} break;
 		case VS::TEXTURE_TYPE_3D: {
 			texture->images.resize(p_depth_3d);
+			texture->depth = p_depth_3d;
 		} break;
 		default: {
 			ERR_PRINT("Unknown texture type!");
@@ -396,6 +398,7 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 
 	texture->alloc_width = texture->width;
 	texture->alloc_height = texture->height;
+	texture->alloc_depth = texture->depth;
 
 	texture->gl_format_cache = format;
 	texture->gl_type_cache = type;
@@ -591,7 +594,9 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 
 	PoolVector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1 ? -1 : 0);
+	int alloc_depth = MAX(texture->alloc_depth, 1);
+
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1 ? -1 : 0) * alloc_depth;
 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	PoolVector<uint8_t>::Write wb = data.write();
@@ -620,7 +625,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 
 	wb = PoolVector<uint8_t>::Write();
 
-	data.resize(data_size);
+	data.resize(data_size / alloc_depth);
 
 	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, real_format, data));
 
@@ -780,7 +785,7 @@ void RasterizerStorageGLES2::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = 0;
+		tinfo.depth = t->alloc_depth;
 		tinfo.bytes = t->total_data_size;
 		r_info->push_back(tinfo);
 	}
@@ -3662,6 +3667,8 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	texture->alloc_width = rt->width;
 	texture->height = rt->height;
 	texture->alloc_height = rt->height;
+	texture->depth = 0;
+	texture->alloc_depth = 0;
 	texture->active = true;
 
 	texture_set_flags(rt->texture, texture->flags);
@@ -3709,6 +3716,8 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 	Texture *tex = texture_owner.get(rt->texture);
 	tex->alloc_height = 0;
 	tex->alloc_width = 0;
+	tex->alloc_depth = 0;
+	tex->depth = 0;
 	tex->width = 0;
 	tex->height = 0;
 	tex->active = false;
@@ -3732,8 +3741,10 @@ RID RasterizerStorageGLES2::render_target_create() {
 	t->flags = 0;
 	t->width = 0;
 	t->height = 0;
-	t->alloc_height = 0;
+	t->depth = 0;
 	t->alloc_width = 0;
+	t->alloc_height = 0;
+	t->alloc_depth = 0;
 	t->format = Image::FORMAT_R8;
 	t->target = GL_TEXTURE_2D;
 	t->gl_format_cache = 0;
