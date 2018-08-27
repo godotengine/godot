@@ -109,7 +109,7 @@ class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin {
@@ -117,7 +117,7 @@ class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin 
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
@@ -125,7 +125,7 @@ class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource);
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
 };
 
 #endif // MATERIAL_EDITOR_PLUGIN_H
