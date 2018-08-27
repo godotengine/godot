@@ -190,20 +190,32 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
+struct _CloseData {
+	DWORD pid;
+	UINT msg;
+};
+
 BOOL CALLBACK _CloseWindowsEnum(HWND hWnd, LPARAM lParam) {
 	DWORD dwID;
 
 	GetWindowThreadProcessId(hWnd, &dwID);
 
-	if (dwID == (DWORD)lParam) {
-		PostMessage(hWnd, WM_CLOSE, 0, 0);
+	const _CloseData const *cd = reinterpret_cast<_CloseData *>(lParam);
+
+	if (dwID == cd->pid) {
+		PostMessage(hWnd, cd->msg, 0, 0);
 	}
 
 	return TRUE;
 }
 
-bool _close_gracefully(const PROCESS_INFORMATION &pi, const DWORD dwStopWaitMsec) {
-	if (!EnumWindows(_CloseWindowsEnum, pi.dwProcessId))
+bool _close_gracefully(const PROCESS_INFORMATION &pi, const UINT msg, const DWORD dwStopWaitMsec) {
+	_CloseData cd;
+
+	cd.msg = msg;
+	cd.pid = pi.dwProcessId;
+
+	if (!EnumWindows(_CloseWindowsEnum, reinterpret_cast<LPARAM>(&cd)))
 		return false;
 
 	if (WaitForSingleObject(pi.hProcess, dwStopWaitMsec) != WAIT_OBJECT_0)
@@ -262,6 +274,10 @@ void OS_Windows::initialize_core() {
 	IP_Unix::make_default();
 
 	cursor_shape = CURSOR_ARROW;
+
+#ifdef TOOLS_ENABLED
+	close_now_msg = RegisterWindowMessage("GodotCloseNow");
+#endif
 }
 
 bool OS_Windows::can_draw() const {
@@ -948,6 +964,20 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 
 		default: {
+
+#ifdef TOOLS_ENABLED
+			if (uMsg == close_now_msg) {
+				if (!main_loop)
+					break;
+
+				SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
+				if (!scene_tree)
+					break;
+
+				scene_tree->quit();
+				return 0;
+			}
+#endif
 
 			if (user_proc) {
 
@@ -2471,8 +2501,15 @@ Error OS_Windows::kill(const ProcessID &p_pid, const int p_max_wait_msec) {
 	process_map->erase(p_pid);
 
 	Error result;
+	bool closed;
 
-	if (p_max_wait_msec != -1 && _close_gracefully(pi, p_max_wait_msec)) {
+#ifdef TOOLS_ENABLED
+	closed = p_max_wait_msec != -1 && _close_gracefully(pi, close_now_msg, p_max_wait_msec);
+#else
+	closed = false;
+#endif
+
+	if (closed) {
 		result = OK;
 	} else {
 		const int ret = TerminateProcess(pi.hProcess, 0);
