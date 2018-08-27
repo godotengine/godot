@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -11,6 +13,7 @@ void main() {
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 //#define QUALIFIER uniform // some guy on the interweb says it may be faster with this
@@ -18,7 +21,8 @@ void main() {
 
 #ifdef USE_25_SAMPLES
 const int kernel_size = 25;
-QUALIFIER vec2 kernel[25] = vec2[] (
+/* clang-format on */
+QUALIFIER vec2 kernel[25] = vec2[](
 		vec2(0.530605, 0.0),
 		vec2(0.000973794, -3.0),
 		vec2(0.00333804, -2.52083),
@@ -43,8 +47,7 @@ QUALIFIER vec2 kernel[25] = vec2[] (
 		vec2(0.00700976, 1.6875),
 		vec2(0.00500364, 2.08333),
 		vec2(0.00333804, 2.52083),
-		vec2(0.000973794, 3.0)
-);
+		vec2(0.000973794, 3.0));
 #endif //USE_25_SAMPLES
 
 #ifdef USE_17_SAMPLES
@@ -66,10 +69,8 @@ QUALIFIER vec2 kernel[17] = vec2[](
 		vec2(0.0216301, 0.78125),
 		vec2(0.0144609, 1.125),
 		vec2(0.0100386, 1.53125),
-		vec2(0.00317394, 2.0)
-);
+		vec2(0.00317394, 2.0));
 #endif //USE_17_SAMPLES
-
 
 #ifdef USE_11_SAMPLES
 const int kernel_size = 11;
@@ -84,8 +85,7 @@ QUALIFIER vec2 kernel[11] = vec2[](
 		vec2(0.0821904, 0.32),
 		vec2(0.03639, 0.72),
 		vec2(0.0192831, 1.28),
-		vec2(0.00471691, 2.0)
-);
+		vec2(0.00471691, 2.0));
 #endif //USE_11_SAMPLES
 
 uniform float max_radius;

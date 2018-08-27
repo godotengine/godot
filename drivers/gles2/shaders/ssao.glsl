@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 
 void main() {
 
@@ -8,6 +10,7 @@ void main() {
 	gl_Position.z = 1.0;
 }
 
+/* clang-format off */
 [fragment]
 
 #define TWO_PI 6.283185307179586476925286766559
@@ -53,6 +56,7 @@ const int ROTATIONS[] = int[](
 		29, 21, 19, 27, 31, 29, 21, 18, 17, 29,
 		31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
 		19, 27, 21, 25, 39, 29, 17, 21, 27);
+/* clang-format on */
 
 //#define NUM_SPIRAL_TURNS (7)
 const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES - 1];

@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -13,9 +15,11 @@ void main() {
 	pos_interp.xy = gl_Position.xy;
 }
 
+/* clang-format off */
 [fragment]
 
 in vec2 uv_interp;
+/* clang-format on */
 in vec2 pos_interp;
 
 uniform sampler2D source_diffuse; //texunit:0

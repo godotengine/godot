@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 /*
@@ -23,6 +24,7 @@ ARRAY_INDEX=8,
 /* INPUT ATTRIBS */
 
 layout(location = 0) in highp VFORMAT vertex_attrib;
+/* clang-format on */
 layout(location = 1) in vec3 normal_attrib;
 
 #ifdef ENABLE_TANGENT
@@ -183,8 +185,10 @@ void main() {
 	gl_Position = vec4(0.0);
 }
 
+/* clang-format off */
 [fragment]
 
 void main() {
 
 }
+/* clang-format on */

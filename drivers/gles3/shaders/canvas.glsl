@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec2 vertex;
+/* clang-format on */
 layout(location = 3) in vec4 color_attrib;
 
 #ifdef USE_SKELETON
@@ -97,15 +99,21 @@ uniform int v_frames;
 
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData { //ubo:2
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
 
 void main() {
 
@@ -151,11 +159,13 @@ void main() {
 
 #define extra_matrix extra_matrix2
 
-{
+	{
+		/* clang-format off */
 
 VERTEX_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
 
 #ifdef USE_NINEPATCH
 
@@ -188,29 +198,29 @@ VERTEX_SHADER_CODE
 		highp mat2x4 m;
 		m = mat2x4(
 					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.x;
+					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			bone_weights.x;
 
 		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 2);
 
 		m += mat2x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.y;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			 bone_weights.y;
 
 		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 2);
 
 		m += mat2x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.z;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			 bone_weights.z;
 
 		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 2);
 
 		m += mat2x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.w;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			 bone_weights.w;
 
 		mat4 bone_matrix = skeleton_transform * transpose(mat4(m[0], m[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))) * skeleton_transform_inverse;
 
@@ -246,9 +256,11 @@ VERTEX_SHADER_CODE
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 uniform mediump sampler2D color_texture; // texunit:0
+/* clang-format on */
 uniform highp vec2 color_texpixel_size;
 uniform mediump sampler2D normal_texture; // texunit:1
 
@@ -313,15 +325,21 @@ layout(location = 0) out mediump vec4 frag_color;
 
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData {
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
 
 void light_compute(
 		inout vec4 light,
@@ -339,7 +357,11 @@ void light_compute(
 
 #if defined(USE_LIGHT_SHADER_CODE)
 
+	/* clang-format off */
+
 LIGHT_SHADER_CODE
+
+	/* clang-format on */
 
 #endif
 }
@@ -472,7 +494,11 @@ void main() {
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
 #endif
 
+		/* clang-format off */
+
 FRAGMENT_SHADER_CODE
+
+		/* clang-format on */
 
 #if defined(NORMALMAP_USED)
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);

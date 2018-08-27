@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 
 void main() {
 
@@ -8,9 +10,11 @@ void main() {
 	gl_Position.z = 1.0;
 }
 
+/* clang-format off */
 [fragment]
 
 uniform sampler2D source_ssao; //texunit:0
+/* clang-format on */
 uniform sampler2D source_depth; //texunit:1
 uniform sampler2D source_normal; //texunit:3
 
@@ -36,16 +40,14 @@ uniform int filter_scale;
 /** Filter radius in pixels. This will be multiplied by SCALE. */
 #define R (4)
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////
-
 
 // Gaussian coefficients
 const float gaussian[R + 1] =
-//	float[](0.356642, 0.239400, 0.072410, 0.009869);
-//	float[](0.398943, 0.241971, 0.053991, 0.004432, 0.000134);  // stddev = 1.0
-	float[](0.153170, 0.144893, 0.122649, 0.092902, 0.062970);  // stddev = 2.0
-//	float[](0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108); // stddev = 3.0
+		//float[](0.356642, 0.239400, 0.072410, 0.009869);
+		//float[](0.398943, 0.241971, 0.053991, 0.004432, 0.000134);  // stddev = 1.0
+		float[](0.153170, 0.144893, 0.122649, 0.092902, 0.062970); // stddev = 2.0
+//float[](0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108); // stddev = 3.0
 
 /** (1, 0) or (0, 1) */
 uniform ivec2 axis;

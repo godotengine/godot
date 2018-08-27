@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
@@ -15,6 +16,7 @@ precision mediump int;
 //
 
 attribute highp vec4 vertex_attrib; // attrib:0
+/* clang-format on */
 attribute vec3 normal_attrib; // attrib:1
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
@@ -108,7 +110,11 @@ varying vec2 uv_interp;
 varying vec2 uv2_interp;
 #endif
 
+/* clang-format off */
+
 VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
 
 void main() {
 
@@ -206,11 +212,13 @@ void main() {
 
 #define world_transform world_matrix
 
-{
+	{
+		/* clang-format off */
 
 VERTEX_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
 
 	vec4 outvec = vertex;
 
@@ -254,6 +262,7 @@ VERTEX_SHADER_CODE
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 }
 
+/* clang-format off */
 [fragment]
 #extension GL_ARB_shader_texture_lod : enable
 
@@ -279,6 +288,7 @@ precision mediump int;
 //
 
 uniform mat4 camera_matrix;
+/* clang-format on */
 uniform mat4 camera_inverse_matrix;
 uniform mat4 projection_matrix;
 uniform mat4 projection_inverse_matrix;
@@ -390,7 +400,11 @@ vec3 metallic_to_specular_color(float metallic, float specular, vec3 albedo) {
 	return mix(vec3(dielectric), albedo, metallic); // TODO: reference?
 }
 
+/* clang-format off */
+
 FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
 
 #ifdef LIGHT_PASS
 void light_compute(
@@ -504,11 +518,13 @@ void main() {
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #endif
 
-{
+	{
+		/* clang-format off */
 
 FRAGMENT_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
 
 #if defined(ENABLE_NORMALMAP)
 	normalmap.xy = normalmap.xy * 2.0 - 1.0;
