@@ -667,7 +667,7 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 		int mipmaps = 0;
 
 		while (width != 1 && height != 1) {
-			glTexImage3D(texture->target, mipmaps, internal_format, width, height, depth, 0, format, type, NULL);
+			glTexImage3D(texture->target, 0, internal_format, width, height, depth, 0, format, type, NULL);
 
 			width = MAX(1, width / 2);
 			height = MAX(1, height / 2);
@@ -1029,11 +1029,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	PoolVector<uint8_t> data;
 
-	int alloc_depth = MAX(texture->alloc_depth, 1);
-
-	ERR_FAIL_COND_V(p_layer < 0 || p_layer >= alloc_depth, Ref<Image>());
-
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1 ? -1 : 0) * alloc_depth;
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1 ? -1 : 0);
 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	PoolVector<uint8_t>::Write wb = data.write();
@@ -1089,13 +1085,9 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 		img_format = real_format;
 	}
 
-	int slice_size = data_size / alloc_depth;
+	wb = PoolVector<uint8_t>::Write();
 
-	if (p_layer) {
-		memcpy(&wb[0], &wb[slice_size * p_layer], slice_size);
-	}
-
-	data.resize(slice_size);
+	data.resize(data_size);
 
 	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, img_format, data));
 
@@ -1283,7 +1275,7 @@ void RasterizerStorageGLES3::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = t->alloc_depth;
+		tinfo.depth = 0;
 		tinfo.bytes = t->total_data_size;
 		r_info->push_back(tinfo);
 	}
@@ -1450,7 +1442,6 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
 	ctex->height = p_resolution;
 	ctex->alloc_width = p_resolution;
 	ctex->alloc_height = p_resolution;
-	ctex->alloc_depth = 0;
 	ctex->format = use_float ? Image::FORMAT_RGBAH : Image::FORMAT_RGBA8;
 	ctex->target = GL_TEXTURE_CUBE_MAP;
 	ctex->gl_format_cache = format;
@@ -6473,7 +6464,6 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 	Texture *tex = texture_owner.get(rt->texture);
 	tex->alloc_height = 0;
 	tex->alloc_width = 0;
-	tex->alloc_depth = 0;
 	tex->width = 0;
 	tex->height = 0;
 	tex->active = false;
@@ -6587,7 +6577,6 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		tex->height = rt->height;
 		tex->alloc_height = rt->height;
 		tex->active = true;
-		tex->alloc_depth = 0;
 
 		texture_set_flags(rt->texture, tex->flags);
 	}
@@ -6876,10 +6865,8 @@ RID RasterizerStorageGLES3::render_target_create() {
 	t->flags = 0;
 	t->width = 0;
 	t->height = 0;
-	t->depth = 0;
 	t->alloc_height = 0;
 	t->alloc_width = 0;
-	t->alloc_depth = 0;
 	t->format = Image::FORMAT_R8;
 	t->target = GL_TEXTURE_2D;
 	t->gl_format_cache = 0;
