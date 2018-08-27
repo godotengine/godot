@@ -30,7 +30,6 @@ def get_flags():
         ('module_etc1_enabled', 'no'),
         ('module_mpc_enabled', 'no'),
         ('module_speex_enabled', 'no'),
-        ('module_theora_enabled', 'no'),
     ]
 
 
