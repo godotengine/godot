@@ -232,7 +232,7 @@ public:
 		String path;
 		uint32_t flags;
 		int width, height, depth;
-		int alloc_width, alloc_height, alloc_depth;
+		int alloc_width, alloc_height;
 		Image::Format format;
 		VS::TextureType type;
 
@@ -275,10 +275,8 @@ public:
 			flags = 0;
 			width = 0;
 			height = 0;
-			depth = 0;
 			alloc_width = 0;
 			alloc_height = 0;
-			alloc_depth = 0;
 			format = Image::FORMAT_L8;
 
 			target = 0;
