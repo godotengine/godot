@@ -329,7 +329,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	return OK;
 }
 
-Error OS_Unix::kill(const ProcessID &p_pid, const int p_max_wait_msec) {
+Error OS_Unix::kill(const ProcessID &p_pid) {
 
 	int ret = ::kill(p_pid, SIGKILL);
 	if (!ret) {

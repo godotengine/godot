@@ -190,28 +190,6 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
-BOOL CALLBACK _CloseWindowsEnum(HWND hWnd, LPARAM lParam) {
-	DWORD dwID;
-
-	GetWindowThreadProcessId(hWnd, &dwID);
-
-	if (dwID == (DWORD)lParam) {
-		PostMessage(hWnd, WM_CLOSE, 0, 0);
-	}
-
-	return TRUE;
-}
-
-bool _close_gracefully(const PROCESS_INFORMATION &pi, const DWORD dwStopWaitMsec) {
-	if (!EnumWindows(_CloseWindowsEnum, pi.dwProcessId))
-		return false;
-
-	if (WaitForSingleObject(pi.hProcess, dwStopWaitMsec) != WAIT_OBJECT_0)
-		return false;
-
-	return true;
-}
-
 void OS_Windows::initialize_debugging() {
 
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
@@ -2464,26 +2442,20 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	return OK;
 };
 
-Error OS_Windows::kill(const ProcessID &p_pid, const int p_max_wait_msec) {
+Error OS_Windows::kill(const ProcessID &p_pid) {
+
 	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
 
 	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
 	process_map->erase(p_pid);
 
-	Error result;
-
-	if (p_max_wait_msec != -1 && _close_gracefully(pi, p_max_wait_msec)) {
-		result = OK;
-	} else {
-		const int ret = TerminateProcess(pi.hProcess, 0);
-		result = ret != 0 ? OK : FAILED;
-	}
+	const int ret = TerminateProcess(pi.hProcess, 0);
 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 
-	return result;
-}
+	return ret != 0 ? OK : FAILED;
+};
 
 int OS_Windows::get_process_id() const {
 	return _getpid();
