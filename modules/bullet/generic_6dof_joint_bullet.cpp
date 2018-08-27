@@ -152,8 +152,11 @@ void Generic6DOFJointBullet::set_param(Vector3::Axis p_axis, PhysicsServer::G6DO
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT:
 			sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_maxMotorForce = p_value;
 			break;
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINT("This parameter is not supported");
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED
+#endif // DISABLE_DEPRECATED
 	}
 }
 
@@ -180,9 +183,12 @@ real_t Generic6DOFJointBullet::get_param(Vector3::Axis p_axis, PhysicsServer::G6
 			return sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_targetVelocity;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT:
 			return sixDOFConstraint->getRotationalLimitMotor(p_axis)->m_maxMotorForce;
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINT("This parameter is not supported");
-			return 0.;
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED;
+			return 0;
+#endif // DISABLE_DEPRECATED
 	}
 }
 
@@ -212,9 +218,11 @@ void Generic6DOFJointBullet::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOF
 		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR:
 			sixDOFConstraint->getTranslationalLimitMotor()->m_enableMotor[p_axis] = flags[p_axis][p_flag];
 			break;
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINT("This flag is not supported by Bullet engine");
-			return;
+			ERR_EXPLAIN("This flag " + itos(p_flag) + " is deprecated");
+			WARN_DEPRECATED
+#endif // DISABLE_DEPRECATED
 	}
 }
 

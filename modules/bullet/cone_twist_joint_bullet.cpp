@@ -82,8 +82,11 @@ void ConeTwistJointBullet::set_param(PhysicsServer::ConeTwistJointParam p_param,
 		case PhysicsServer::CONE_TWIST_JOINT_RELAXATION:
 			coneConstraint->setLimit(coneConstraint->getSwingSpan1(), coneConstraint->getSwingSpan2(), coneConstraint->getTwistSpan(), coneConstraint->getLimitSoftness(), coneConstraint->getBiasFactor(), p_value);
 			break;
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINT("This parameter is not supported by Bullet engine");
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED
+#endif // DISABLE_DEPRECATED
 	}
 }
 
@@ -99,8 +102,11 @@ real_t ConeTwistJointBullet::get_param(PhysicsServer::ConeTwistJointParam p_para
 			return coneConstraint->getLimitSoftness();
 		case PhysicsServer::CONE_TWIST_JOINT_RELAXATION:
 			return coneConstraint->getRelaxationFactor();
+#ifndef DISABLE_DEPRECATED
 		default:
-			WARN_PRINT("This parameter is not supported by Bullet engine");
+			ERR_EXPLAIN("This parameter " + itos(p_param) + " is deprecated");
+			WARN_DEPRECATED;
 			return 0;
+#endif // DISABLE_DEPRECATED
 	}
 }

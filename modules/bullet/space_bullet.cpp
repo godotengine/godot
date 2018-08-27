@@ -178,7 +178,9 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, 0.002);
 
 	if (btResult.hasHit()) {
-		p_closest_safe = p_closest_unsafe = btResult.m_closestHitFraction;
+		const btScalar l = bt_motion.length();
+		p_closest_unsafe = btResult.m_closestHitFraction;
+		p_closest_safe = MAX(p_closest_unsafe - (1 - ((l - 0.01) / l)), 0);
 		if (r_info) {
 			if (btCollisionObject::CO_RIGID_BODY == btResult.m_hitCollisionObject->getInternalType()) {
 				B_TO_G(static_cast<const btRigidBody *>(btResult.m_hitCollisionObject)->getVelocityInLocalPoint(btResult.m_hitPointWorld), r_info->linear_velocity);

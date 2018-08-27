@@ -54,9 +54,9 @@ FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::add_child(
 }
 
 /// Build a chain that starts from the root to tip
-void FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain) {
+bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain) {
 
-	ERR_FAIL_COND(-1 == p_task->root_bone);
+	ERR_FAIL_COND_V(-1 == p_task->root_bone, false);
 
 	Chain &chain(p_task->chain);
 
@@ -77,8 +77,8 @@ void FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	for (int x = p_task->end_effectors.size() - 1; 0 <= x; --x) {
 
 		const EndEffector *ee(&p_task->end_effectors[x]);
-		ERR_FAIL_COND(p_task->root_bone >= ee->tip_bone);
-		ERR_FAIL_INDEX(ee->tip_bone, p_task->skeleton->get_bone_count());
+		ERR_FAIL_COND_V(p_task->root_bone >= ee->tip_bone, false);
+		ERR_FAIL_INDEX_V(ee->tip_bone, p_task->skeleton->get_bone_count(), false);
 
 		sub_chain_size = 0;
 		// Picks all IDs that composing a single chain in reverse order (except the root)
@@ -133,6 +133,7 @@ void FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 			break;
 		}
 	}
+	return true;
 }
 
 void FabrikInverseKinematic::update_chain(const Skeleton *p_sk, ChainItem *p_chain_item) {
@@ -247,7 +248,10 @@ FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleto
 	task->end_effectors.push_back(ee);
 	task->goal_global_transform = goal_transform;
 
-	build_chain(task);
+	if (!build_chain(task)) {
+		free_task(task);
+		return NULL;
+	}
 
 	return task;
 }
@@ -535,8 +539,10 @@ void SkeletonIK::reload_chain() {
 		return;
 
 	task = FabrikInverseKinematic::create_simple_task(skeleton, skeleton->find_bone(root_bone), skeleton->find_bone(tip_bone), _get_target_transform());
-	task->max_iterations = max_iterations;
-	task->min_distance = min_distance;
+	if (task) {
+		task->max_iterations = max_iterations;
+		task->min_distance = min_distance;
+	}
 }
 
 void SkeletonIK::reload_goal() {
