@@ -793,7 +793,7 @@ Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state,
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
 		}
 	}
 	return ret;
@@ -1793,17 +1793,24 @@ template <>
 struct EditorSceneImporterGLTFInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
+		ERR_FAIL_COND_V(a.is_normalized() == false, Quat());
+		ERR_FAIL_COND_V(b.is_normalized() == false, Quat());
 
-		return a.slerp(b, c);
+		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
+		ERR_FAIL_COND_V(p1.is_normalized() == false, Quat());
+		ERR_FAIL_COND_V(p2.is_normalized() == false, Quat());
 
-		return p1.slerp(p2, c);
+		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		return start.slerp(end, t);
+		ERR_FAIL_COND_V(start.is_normalized() == false, Quat());
+		ERR_FAIL_COND_V(end.is_normalized() == false, Quat());
+
+		return start.slerp(end, t).normalized();
 	}
 };
 
@@ -1945,7 +1952,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 				Vector3 base_scale = Vector3(1, 1, 1);
 
 				if (!track.rotation_track.values.size()) {
-					base_rot = state.nodes[E->key()]->rotation;
+					base_rot = state.nodes[E->key()]->rotation.normalized();
 				}
 
 				if (!track.translation_track.values.size()) {
@@ -1991,6 +1998,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 						xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
 
 						rot = xform.basis.get_rotation_quat();
+						rot.normalize();
 						scale = xform.basis.get_scale();
 						pos = xform.origin;
 					}
