@@ -149,6 +149,9 @@ class OS_Windows : public OS {
 #ifdef WINMIDI_ENABLED
 	MIDIDriverWinMidi driver_midi;
 #endif
+#ifdef TOOLS_ENABLED
+	UINT close_now_msg;
+#endif
 
 	CrashHandler crash_handler;
 
