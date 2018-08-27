@@ -465,34 +465,41 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			ok_on_pc = true;
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc") && !no_ldr_compression) {
-
-			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
-			r_platform_variants->push_back("s3tc");
-			ok_on_pc = true;
-		}
-
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2") && !no_ldr_compression) {
-
-			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
-			r_platform_variants->push_back("etc2");
-		}
-
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc") && !no_ldr_compression) {
-			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
-			r_platform_variants->push_back("etc");
-		}
-
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc") && !no_ldr_compression) {
-
-			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
-			r_platform_variants->push_back("pvrtc");
-		}
-
 		if (is_hdr && rgbe_fallback) {
 			_save_stex(image, p_save_path + ".fallback.stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags, stream, detect_3d, detect_srgb, true, detect_normal, force_normal);
 			r_platform_variants->push_back("fallback");
 			ok_on_pc = true;
+		}
+
+		if (!no_ldr_compression) {
+			if (is_hdr) {
+				// Convert to LDR so compressors that only accept LDR input will work
+				image->convert(Image::FORMAT_RGBA8);
+			}
+
+			if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
+
+				_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
+				r_platform_variants->push_back("s3tc");
+				ok_on_pc = true;
+			}
+
+			if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
+
+				_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
+				r_platform_variants->push_back("etc2");
+			}
+
+			if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
+				_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
+				r_platform_variants->push_back("etc");
+			}
+
+			if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
+
+				_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
+				r_platform_variants->push_back("pvrtc");
+			}
 		}
 
 		if (!ok_on_pc) {
