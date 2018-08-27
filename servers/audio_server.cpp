@@ -185,8 +185,12 @@ void AudioDriverManager::initialize(int p_driver) {
 
 		if (drivers[i]->init() == OK) {
 			drivers[i]->set_singleton();
-			return;
+			break;
 		}
+	}
+
+	if (driver_count > 1 && AudioDriver::get_singleton()->get_name() == "Dummy") {
+		WARN_PRINT("All audio drivers failed, falling back to the dummy driver.");
 	}
 }
 
