@@ -62,12 +62,19 @@ public:
 
 int OS_Android::get_video_driver_count() const {
 
-	return 1;
+	return 2;
 }
 
 const char *OS_Android::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+	}
+	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
+	ERR_FAIL_V(NULL);
 }
 int OS_Android::get_audio_driver_count() const {
 
@@ -132,26 +139,55 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
 	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
-	use_gl2 = !use_gl3;
+	bool gl_initialization_error = false;
 
-	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud, use_gl2);
-
-	if (use_gl2) {
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
-		video_driver_index = VIDEO_DRIVER_GLES2;
-	} else {
-		RasterizerGLES3::register_config();
-		RasterizerGLES3::make_current();
-		video_driver_index = VIDEO_DRIVER_GLES3;
+	while (true) {
+		if (use_gl3) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				if (gfx_init_func)
+					gfx_init_func(gfx_init_ud, false);
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					use_gl3 = false;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		} else {
+			if (RasterizerGLES2::is_viable() == OK) {
+				if (gfx_init_func)
+					gfx_init_func(gfx_init_ud, true);
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
 	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.\n"
+								   "Please try updating your Android version.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
+	}
+
+	video_driver_index = p_video_driver;
 
 	visual_server = memnew(VisualServerRaster);
 	/*	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	};*/
+
 	visual_server->init();
 	//	visual_server->cursor_set_visible(false, 0);
 

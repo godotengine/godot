@@ -62,9 +62,10 @@ public:
 	virtual void end_frame(bool p_swap_buffers);
 	virtual void finalize();
 
+	static Error is_viable();
 	static void make_current();
-
 	static void register_config();
+
 	RasterizerGLES3();
 	~RasterizerGLES3();
 };

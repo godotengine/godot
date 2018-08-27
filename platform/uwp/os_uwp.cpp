@@ -187,12 +187,78 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	main_loop = NULL;
 	outside = true;
 
+	ContextEGL::Driver opengl_api_type = ContextEGL::GLES_2_0;
+
 	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gl_context = memnew(ContextEGL(window, ContextEGL::GLES_2_0));
-	} else {
-		gl_context = memnew(ContextEGL(window, ContextEGL::GLES_3_0));
+		opengl_api_type = ContextEGL::GLES_2_0;
 	}
-	gl_context->initialize();
+
+	bool gl_initialization_error = false;
+
+	gl_context = NULL;
+	while (!gl_context) {
+		gl_context = memnew(ContextEGL(window, opengl_api_type));
+
+		if (gl_context->initialize() != OK) {
+			memdelete(gl_context);
+			gl_context = NULL;
+
+			if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+				if (p_video_driver == VIDEO_DRIVER_GLES2) {
+					gl_initialization_error = true;
+					break;
+				}
+
+				p_video_driver = VIDEO_DRIVER_GLES2;
+				opengl_api_type = ContextEGL::GLES_2_0;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	while (true) {
+		if (opengl_api_type == ContextEGL::GLES_3_0) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					opengl_api_type = ContextEGL::GLES_2_0;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		}
+
+		if (opengl_api_type == ContextEGL::GLES_2_0) {
+			if (RasterizerGLES2::is_viable() == OK) {
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
+								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
+	}
+
+	video_driver_index = p_video_driver;
+	gl_context->make_current();
+	gl_context->set_use_vsync(video_mode.use_vsync);
+
 	VideoMode vm;
 	vm.width = gl_context->get_window_width();
 	vm.height = gl_context->get_window_height();
@@ -230,19 +296,6 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	set_video_mode(vm);
 
-	gl_context->make_current();
-
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		RasterizerGLES2::register_config();
-		RasterizerGLES2::make_current();
-	} else {
-		RasterizerGLES3::register_config();
-		RasterizerGLES3::make_current();
-	}
-	gl_context->set_use_vsync(vm.use_vsync);
-
-	video_driver_index = p_video_driver;
-
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering? Or remove?
 	/*
@@ -253,7 +306,6 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	*/
 
 	visual_server->init();
-
 	input = memnew(InputDefault);
 
 	joypad = ref new JoypadUWP(input);

@@ -136,26 +136,21 @@ RasterizerScene *RasterizerGLES2::get_scene() {
 	return scene;
 }
 
-void RasterizerGLES2::initialize() {
-
-	print_verbose("Using GLES2 video driver");
+Error RasterizerGLES2::is_viable() {
 
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
+		return ERR_UNAVAILABLE;
 	}
 
 // GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
 #ifdef OPENGL_ENABLED // OpenGL 2.1 Profile required
-	if (GLVersion.major < 2) {
-#else // OpenGL ES 3.0
+	if (GLVersion.major < 2 || (GLVersion.major == 2 && GLVersion.minor < 1)) {
+#else // OpenGL ES 2.0
 	if (GLVersion.major < 2) {
 #endif
-		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 2.1 / OpenGL ES 2.0, sorry :(\n"
-				  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 2.1 / OpenGL ES 2.0, sorry :(\n"
-								   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-				"Fatal error: Insufficient OpenGL / GLES driver support");
+		return ERR_UNAVAILABLE;
 	}
 
 #ifdef GLES_OVER_GL
@@ -181,14 +176,21 @@ void RasterizerGLES2::initialize() {
 			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
 			glGenerateMipmap = glGenerateMipmapEXT;
 		} else {
-			ERR_PRINT("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
-					  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-			OS::get_singleton()->alert("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
-									   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-					"Fatal error: Insufficient OpenGL / GLES driver support");
+			return ERR_UNAVAILABLE;
 		}
 	}
 #endif
+
+#endif // GLAD_ENABLED
+
+	return OK;
+}
+
+void RasterizerGLES2::initialize() {
+
+	print_verbose("Using GLES2 video driver");
+
+#ifdef GLAD_ENABLED
 	if (true || OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
@@ -198,7 +200,6 @@ void RasterizerGLES2::initialize() {
 			print_line("OpenGL debugging not supported!");
 		}
 	}
-
 #endif // GLAD_ENABLED
 
 	// For debugging

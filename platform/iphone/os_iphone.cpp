@@ -99,8 +99,11 @@ int OSIPhone::get_current_video_driver() const {
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	video_driver_index = p_video_driver; //this may be misleading
+	video_driver_index = VIDEO_DRIVER_GLES3;
 
+	if (RasterizerGLES3::is_viable() != OK) {
+		return ERR_UNAVAILABLE;
+	}
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
 
