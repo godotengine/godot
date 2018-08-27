@@ -249,14 +249,9 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		n->distance = _compute_cost(begin_point->id, n->id) * n->weight_scale;
 		n->last_pass = pass;
 		open_list.add(&n->list);
-
-		if (end_point == n) {
-			found_route = true;
-			break;
-		}
 	}
 
-	while (!found_route) {
+	while (true) {
 
 		if (open_list.first() == NULL) {
 			// No path found
@@ -276,13 +271,16 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 			cost += _estimate_cost(p->id, end_point->id);
 
 			if (cost < least_cost) {
-
 				least_cost_point = E;
 				least_cost = cost;
 			}
 		}
 
 		Point *p = least_cost_point->self();
+		if (p == end_point) {
+			found_route = true;
+			break;
+		}
 
 		for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
@@ -294,7 +292,6 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 				// Already visited, is this cheaper?
 
 				if (e->distance > distance) {
-
 					e->prev_point = p;
 					e->distance = distance;
 				}
@@ -305,17 +302,8 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 				e->distance = distance;
 				e->last_pass = pass; // Mark as used
 				open_list.add(&e->list);
-
-				if (e == end_point) {
-					// End reached; stop algorithm
-					found_route = true;
-					break;
-				}
 			}
 		}
-
-		if (found_route)
-			break;
 
 		open_list.remove(least_cost_point);
 	}
