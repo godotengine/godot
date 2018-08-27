@@ -2051,8 +2051,8 @@ void TextureLayered::create(uint32_t p_width, uint32_t p_height, uint32_t p_dept
 	width = p_width;
 	height = p_height;
 	depth = p_depth;
-
 	flags = p_flags;
+	format = p_format;
 }
 
 void TextureLayered::set_layer_data(const Ref<Image> &p_image, int p_layer) {

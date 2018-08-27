@@ -294,7 +294,13 @@ public:
 			stored_cube_sides = 0;
 			ignore_mipmaps = false;
 			render_target = NULL;
-			flags = width = height = 0;
+			flags = 0;
+			width = 0;
+			height = 0;
+			depth = 0;
+			alloc_width = 0;
+			alloc_height = 0;
+			alloc_depth = 0;
 			tex_id = 0;
 			data_size = 0;
 			format = Image::FORMAT_L8;
