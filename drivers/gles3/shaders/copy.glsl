@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 layout(location = 4) in vec3 cube_in;
 #else
@@ -45,6 +47,7 @@ void main() {
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 #define M_PI 3.14159265359
@@ -58,6 +61,7 @@ in vec3 cube_interp;
 #else
 in vec2 uv_interp;
 #endif
+/* clang-format on */
 
 #ifdef USE_ASYM_PANO
 uniform highp mat4 pano_transform;

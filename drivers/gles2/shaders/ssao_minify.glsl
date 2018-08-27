@@ -1,12 +1,15 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 
 void main() {
 
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 #ifdef MINIFY_START
@@ -14,6 +17,7 @@ void main() {
 #define SDEPTH_TYPE highp sampler2D
 uniform float camera_z_far;
 uniform float camera_z_near;
+/* clang-format on */
 
 #else
 

@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #define M_PI 3.14159265359
@@ -21,6 +22,7 @@ ARRAY_INDEX=8,
 /* INPUT ATTRIBS */
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 1) in vec3 normal_attrib;
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 layout(location = 2) in vec4 tangent_attrib;
@@ -226,15 +228,21 @@ out vec3 binormal_interp;
 
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData { // ubo:1
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
 
 #ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
@@ -340,32 +348,32 @@ void main() {
 		m = mat3x4(
 					texelFetch(skeleton_texture, tex_ofs, 0),
 					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0))
-			* bone_weights.x;
+					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+			bone_weights.x;
 
 		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 3);
 
 		m += mat3x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0))
-			* bone_weights.y;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+			 bone_weights.y;
 
 		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 3);
 
 		m += mat3x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0))
-			* bone_weights.z;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+			 bone_weights.z;
 
 		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 3);
 
 		m += mat3x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0))
-			* bone_weights.w;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+			 bone_weights.w;
 
 		mat4 bone_matrix = transpose(mat4(m[0], m[1], m[2], vec4(0.0, 0.0, 0.0, 1.0)));
 
@@ -374,11 +382,13 @@ void main() {
 #endif
 
 	mat4 modelview = camera_inverse_matrix * world_matrix;
-{
+	{
+		/* clang-format off */
 
 VERTEX_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
 
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
@@ -501,6 +511,7 @@ VERTEX_SHADER_CODE
 #endif // USE_VERTEX_LIGHTING
 }
 
+/* clang-format off */
 [fragment]
 
 /* texture unit usage, N is max_texture_unity-N
@@ -519,6 +530,7 @@ VERTEX_SHADER_CODE
 */
 
 uniform highp mat4 world_transform;
+/* clang-format on */
 
 #define M_PI 3.14159265359
 
@@ -552,7 +564,6 @@ layout(std140) uniform Radiance { // ubo:2
 
 	mat4 radiance_inverse_xform;
 	float radiance_ambient_contribution;
-
 };
 
 #define RADIANCE_MAX_LOD 5.0
@@ -608,15 +619,21 @@ vec3 textureDualParaboloid(sampler2D p_tex, vec3 p_vec, float p_roughness) {
 
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData {
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
 
 layout(std140) uniform SceneData {
 
@@ -663,7 +680,7 @@ layout(std140) uniform SceneData {
 	highp float fog_height_curve;
 };
 
-//directional light data
+	//directional light data
 
 #ifdef USE_LIGHT_DIRECTIONAL
 
@@ -701,7 +718,6 @@ struct LightData {
 	mediump vec4 light_clamp;
 	mediump vec4 shadow_color_contact;
 	highp mat4 shadow_matrix;
-
 };
 
 layout(std140) uniform OmniLightData { // ubo:4
@@ -916,7 +932,11 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 B, vec3 T, vec3 light_color, vec
 	vec3 light = L;
 	vec3 view = V;
 
+	/* clang-format off */
+
 LIGHT_SHADER_CODE
+
+	/* clang-format on */
 
 #else
 	float NdotL = dot(N, L);
@@ -1599,11 +1619,13 @@ void main() {
 	float sss_strength = 0.0;
 #endif
 
-{
+	{
+		/* clang-format off */
 
 FRAGMENT_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
 
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {

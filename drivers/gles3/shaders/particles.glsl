@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 color;
+/* clang-format on */
 layout(location = 1) in highp vec4 velocity_active;
 layout(location = 2) in highp vec4 custom;
 layout(location = 3) in highp vec4 xform_1;
@@ -45,15 +47,21 @@ out highp vec4 out_xform_3; //tfb:
 
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData { //ubo:0
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
 
 uint hash(uint x) {
 
@@ -165,7 +173,11 @@ void main() {
 		//execute shader
 
 		{
+			/* clang-format off */
+
 VERTEX_SHADER_CODE
+
+			/* clang-format on */
 		}
 
 #if !defined(DISABLE_FORCE)
@@ -221,6 +233,7 @@ VERTEX_SHADER_CODE
 #endif //PARTICLES_COPY
 }
 
+/* clang-format off */
 [fragment]
 
 // any code here is never executed, stuff is filled just so it works
@@ -240,10 +253,15 @@ FRAGMENT_SHADER_GLOBALS
 void main() {
 
 	{
+
 LIGHT_SHADER_CODE
+
 	}
 
 	{
+
 FRAGMENT_SHADER_CODE
+
 	}
 }
+/* clang-format on */

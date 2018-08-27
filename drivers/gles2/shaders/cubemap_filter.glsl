@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
@@ -9,6 +10,7 @@ precision mediump int;
 #endif
 
 attribute highp vec2 vertex; // attrib:0
+/* clang-format on */
 attribute highp vec2 uv; // attrib:4
 
 varying highp vec2 uv_interp;
@@ -19,6 +21,7 @@ void main() {
 	gl_Position = vec4(vertex, 0, 1);
 }
 
+/* clang-format off */
 [fragment]
 
 #extension GL_ARB_shader_texture_lod : enable
@@ -41,6 +44,7 @@ uniform sampler2D source_panorama; //texunit:0
 #else
 uniform samplerCube source_cube; //texunit:0
 #endif
+/* clang-format on */
 
 uniform int face_id;
 uniform float roughness;

@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -14,6 +16,7 @@ void main() {
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 #if !defined(GLES_OVER_GL)
@@ -21,6 +24,7 @@ precision mediump float;
 #endif
 
 in vec2 uv_interp;
+/* clang-format on */
 
 uniform highp sampler2D source; //texunit:0
 
@@ -115,7 +119,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - 0.5) * pixel_size;
 
 	return (g0(fuv.y) * (g0x * textureLod(tex, p0, lod) + g1x * textureLod(tex, p1, lod))) +
-			(g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
+		   (g1(fuv.y) * (g0x * textureLod(tex, p2, lod) + g1x * textureLod(tex, p3, lod)));
 }
 
 #define GLOW_TEXTURE_SAMPLE(m_tex, m_uv, m_lod) texture2D_bicubic(m_tex, m_uv, m_lod)

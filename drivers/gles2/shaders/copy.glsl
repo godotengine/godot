@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
@@ -9,6 +10,7 @@ precision mediump int;
 #endif
 
 attribute highp vec4 vertex_attrib; // attrib:0
+/* clang-format on */
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 attribute vec3 cube_in; // attrib:4
@@ -46,6 +48,7 @@ void main() {
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 #define M_PI 3.14159265359
@@ -63,6 +66,7 @@ varying vec3 cube_interp;
 #else
 varying vec2 uv_interp;
 #endif
+/* clang-format on */
 
 #ifdef USE_CUBEMAP
 uniform samplerCube source_cube; // texunit:0

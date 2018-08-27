@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -11,9 +13,11 @@ void main() {
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 uniform highp samplerCube source_cube; //texunit:0
+/* clang-format on */
 in vec2 uv_interp;
 
 uniform bool z_flip;
