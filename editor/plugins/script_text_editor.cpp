@@ -1575,15 +1575,20 @@ void ScriptTextEditor::register_editor() {
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_MASK_CMD | KEY_G);
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G);
+	ED_SHORTCUT("script_text_editor/replace", TTR("Replace..."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
 #else
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);
 	ED_SHORTCUT("script_text_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3);
-#endif
 	ED_SHORTCUT("script_text_editor/replace", TTR("Replace..."), KEY_MASK_CMD | KEY_R);
+#endif
 
 	ED_SHORTCUT("script_text_editor/find_in_files", TTR("Find in files..."), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F);
 
+#ifdef OSX_ENABLED
+	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function..."), KEY_MASK_CTRL | KEY_MASK_CMD | KEY_J);
+#else
 	ED_SHORTCUT("script_text_editor/goto_function", TTR("Goto Function..."), KEY_MASK_ALT | KEY_MASK_CMD | KEY_F);
+#endif
 	ED_SHORTCUT("script_text_editor/goto_line", TTR("Goto Line..."), KEY_MASK_CMD | KEY_L);
 
 #ifdef OSX_ENABLED
