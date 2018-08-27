@@ -861,6 +861,20 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			op->arguments.push_back(subexpr);
 			expr=op;*/
 
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_IS && tokenizer->get_token(1) == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
+			// 'is' operator with built-in type
+			OperatorNode *op = alloc_node<OperatorNode>();
+			op->op = OperatorNode::OP_IS_BUILTIN;
+			op->arguments.push_back(expr);
+
+			tokenizer->advance();
+
+			TypeNode *tn = alloc_node<TypeNode>();
+			tn->vtype = tokenizer->get_token_type();
+			op->arguments.push_back(tn);
+			tokenizer->advance();
+
+			expr = op;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_BRACKET_OPEN) {
 			// array
 			tokenizer->advance();
@@ -1071,6 +1085,15 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			expr = op;
 
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE && expression.size() > 0 && expression[expression.size() - 1].is_op && expression[expression.size() - 1].op == OperatorNode::OP_IS) {
+			Expression e = expression[expression.size() - 1];
+			e.op = OperatorNode::OP_IS_BUILTIN;
+			expression.write[expression.size() - 1] = e;
+
+			TypeNode *tn = alloc_node<TypeNode>();
+			tn->vtype = tokenizer->get_token_type();
+			expr = tn;
+			tokenizer->advance();
 		} else {
 
 			//find list [ or find dictionary {
@@ -1329,6 +1352,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			switch (expression[i].op) {
 
 				case OperatorNode::OP_IS:
+				case OperatorNode::OP_IS_BUILTIN:
 					priority = -1;
 					break; //before anything
 
@@ -5794,6 +5818,13 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 		case Node::TYPE_CONSTANT: {
 			node_type = _type_from_variant(static_cast<ConstantNode *>(p_node)->value);
 		} break;
+		case Node::TYPE_TYPE: {
+			TypeNode *tn = static_cast<TypeNode *>(p_node);
+			node_type.has_type = true;
+			node_type.is_meta_type = true;
+			node_type.kind = DataType::BUILTIN;
+			node_type.builtin_type = tn->vtype;
+		} break;
 		case Node::TYPE_ARRAY: {
 			node_type.has_type = true;
 			node_type.kind = DataType::BUILTIN;
@@ -5897,7 +5928,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					// yield can return anything
 					node_type.has_type = false;
 				} break;
-				case OperatorNode::OP_IS: {
+				case OperatorNode::OP_IS:
+				case OperatorNode::OP_IS_BUILTIN: {
 
 					if (op->arguments.size() != 2) {
 						_set_error("Parser bug: binary operation without 2 arguments.", op->line);
@@ -5914,8 +5946,11 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						}
 						type_type.is_meta_type = false; // Test the actual type
 						if (!_is_type_compatible(type_type, value_type) && !_is_type_compatible(value_type, type_type)) {
-							// TODO: Make this a warning?
-							_set_error("A value of type '" + value_type.to_string() + "' will never be an instance of '" + type_type.to_string() + "'.", op->line);
+							if (op->op == OperatorNode::OP_IS) {
+								_set_error("A value of type '" + value_type.to_string() + "' will never be an instance of '" + type_type.to_string() + "'.", op->line);
+							} else {
+								_set_error("A value of type '" + value_type.to_string() + "' will never be of type '" + type_type.to_string() + "'.", op->line);
+							}
 							return DataType();
 						}
 					}
