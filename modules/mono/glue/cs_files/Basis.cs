@@ -426,7 +426,7 @@ namespace Godot
 
         public Basis(Quat quat)
         {
-            real_t s = 2.0f / quat.LengthSquared();
+            real_t s = 2.0f / quat.LengthSquared;
 
             real_t xs = quat.x * s;
             real_t ys = quat.y * s;
