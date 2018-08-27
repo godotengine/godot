@@ -4822,28 +4822,27 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 
 		pos = -1;
 
-		int pos_from = 0;
+		int pos_from = (p_search_flags & SEARCH_BACKWARDS) ? text_line.length() : 0;
 		int last_pos = -1;
 
 		while (true) {
 
-			while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.find(p_key, pos_from) : text_line.findn(p_key, pos_from)) != -1) {
-
-				if (p_search_flags & SEARCH_BACKWARDS) {
-
-					if (last_pos > from_column)
+			if (p_search_flags & SEARCH_BACKWARDS) {
+				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.rfind(p_key, pos_from) : text_line.rfindn(p_key, pos_from)) != -1) {
+					if (last_pos <= from_column) {
+						pos = last_pos;
 						break;
-					pos = last_pos;
-
-				} else {
-
+					}
+					pos_from = last_pos - p_key.length();
+				}
+			} else {
+				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.find(p_key, pos_from) : text_line.findn(p_key, pos_from)) != -1) {
 					if (last_pos >= from_column) {
 						pos = last_pos;
 						break;
 					}
+					pos_from = last_pos + p_key.length();
 				}
-
-				pos_from = last_pos + p_key.length();
 			}
 
 			bool is_match = true;
@@ -4856,11 +4855,15 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 					is_match = false;
 			}
 
+			if (pos_from == -1) {
+				pos = -1;
+			}
+
 			if (is_match || last_pos == -1 || pos == -1) {
 				break;
 			}
 
-			pos_from = pos + 1;
+			pos_from = (p_search_flags & SEARCH_BACKWARDS) ? pos - 1 : pos + 1;
 			pos = -1;
 		}
 
