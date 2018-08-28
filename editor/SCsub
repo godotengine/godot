@@ -77,6 +77,7 @@ if env['tools']:
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
     flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    flist.sort()
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
 
