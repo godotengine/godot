@@ -581,7 +581,7 @@ void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
 	texture_list->select(texture_list->get_item_count() - 1);
 	_on_texture_list_selected(texture_list->get_item_count() - 1);
 	if (invalid_count > 0) {
-		err_dialog->set_text(String::num(invalid_count, 0) + TTR(" file(s) was not added because was already on the list."));
+		err_dialog->set_text(vformat(TTR("%s file(s) were not added because was already on the list."), String::num(invalid_count, 0)));
 		err_dialog->popup_centered(Size2(300, 60));
 	}
 }

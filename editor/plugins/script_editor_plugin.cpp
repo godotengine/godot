@@ -862,7 +862,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			if (extensions.find(p_file.get_extension())) {
 				Ref<Script> scr = ResourceLoader::load(p_file);
 				if (!scr.is_valid()) {
-					editor->show_warning(TTR("Error could not load file."), TTR("Error!"));
+					editor->show_warning(TTR("Error: could not load file."), TTR("Error!"));
 					file_dialog_option = -1;
 					return;
 				}
