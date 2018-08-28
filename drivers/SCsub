@@ -26,6 +26,14 @@ SConscript('alsamidi/SCsub')
 SConscript('coremidi/SCsub')
 SConscript('winmidi/SCsub')
 
+# TTS drivers
+if (env["platform"] == "windows"):
+    SConscript("tts_sapi/SCsub")
+if (env["platform"] == "x11"):
+    SConscript("tts_libspeechd/SCsub")
+if (env["platform"] == "osx"):
+    SConscript("tts_nsspeech/SCsub")
+
 # Graphics drivers
 if (env["platform"] != "server"):
     SConscript('gles3/SCsub')

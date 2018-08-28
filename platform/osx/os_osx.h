@@ -34,6 +34,7 @@
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/coremidi/core_midi.h"
+#include "drivers/tts_nsspeech/tts_nsspeech.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
@@ -76,6 +77,10 @@ public:
 
 	AudioDriverCoreAudio audio_driver;
 	MIDIDriverCoreMidi midi_driver;
+
+#ifdef NSTTS_ENABLED
+	TTSDriverNSSpeech tts_driver;
+#endif
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;

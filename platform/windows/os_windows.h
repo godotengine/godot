@@ -34,6 +34,7 @@
 #include "core/project_settings.h"
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/tts_sapi/tts_sapi.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/win_midi.h"
 #include "os/input.h"
@@ -149,7 +150,9 @@ class OS_Windows : public OS {
 #ifdef WINMIDI_ENABLED
 	MIDIDriverWinMidi driver_midi;
 #endif
-
+#ifdef SAPITTS_ENABLED
+	TTSDriverSAPI tts_driver;
+#endif
 	CrashHandler crash_handler;
 
 	void _drag_event(float p_x, float p_y, int idx);

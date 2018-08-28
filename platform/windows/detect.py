@@ -207,7 +207,7 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
                                    'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
                                    'WINMIDI_ENABLED', 'TYPED_METHOD_BIND',
-                                   'WIN32', 'MSVC',
+                                   'WIN32', 'MSVC', 'SAPITTS_ENABLED',
                                    {'WINVER' : '$target_win_version',
                                     '_WIN32_WINNT': '$target_win_version'}])
     env.AppendUnique(CPPDEFINES=['NOMINMAX']) # disable bogus min/max WinDef.h macros
@@ -218,7 +218,8 @@ def configure_msvc(env, manual_msvc_config):
 
     LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32',
             'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',
-            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt']
+            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt',
+            'sapi']
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:
@@ -326,10 +327,11 @@ def configure_mingw(env):
 
     env.Append(CCFLAGS=['-DWINDOWS_ENABLED', '-mwindows'])
     env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
+    env.Append(CCFLAGS=['-DSAPITTS_ENABLED'])
     env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
     env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
     env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
-    env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt'])
+    env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'sapi', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt'])
 
     env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
 
