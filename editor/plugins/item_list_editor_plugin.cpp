@@ -296,7 +296,7 @@ void ItemListEditor::_delete_pressed() {
 
 void ItemListEditor::_edit_items() {
 
-	dialog->popup_centered(Vector2(300, 400));
+	dialog->popup_centered(Vector2(300, 400) * EDSCALE);
 }
 
 void ItemListEditor::edit(Node *p_item_list) {
