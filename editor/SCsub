@@ -448,7 +448,7 @@ if env['tools']:
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
-    flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, make_fonts_header)
 
