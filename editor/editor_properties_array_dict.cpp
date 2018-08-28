@@ -393,7 +393,13 @@ void EditorPropertyArray::update_property() {
 
 				} break;
 				case Variant::NODE_PATH: {
-					prop = memnew(EditorPropertyNodePath);
+					EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
+					if (edited_parent_object) {
+						editor->set_parent_object(edited_parent_object);
+					} else {
+						editor->set_parent_object(get_edited_object());
+					}
+					prop = editor;
 
 				} break;
 				case Variant::_RID: {
@@ -414,6 +420,7 @@ void EditorPropertyArray::update_property() {
 				case Variant::ARRAY: {
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
 					editor->setup(Variant::ARRAY);
+					editor->set_edited_parent_object(get_edited_object());
 					prop = editor;
 
 				} break;
@@ -538,6 +545,11 @@ void EditorPropertyArray::_length_changed(double p_page) {
 void EditorPropertyArray::setup(Variant::Type p_array_type) {
 
 	array_type = p_array_type;
+}
+
+void EditorPropertyArray::set_edited_parent_object(Object *p_object) {
+
+	edited_parent_object = p_object;
 }
 
 void EditorPropertyArray::_bind_methods() {

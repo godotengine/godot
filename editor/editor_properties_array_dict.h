@@ -54,6 +54,7 @@ class EditorPropertyArray : public EditorProperty {
 	bool updating;
 
 	Ref<EditorPropertyArrayObject> object;
+	Object *edited_parent_object;
 	int page_len;
 	int page_idx;
 	int changing_type_idx;
@@ -77,6 +78,7 @@ protected:
 
 public:
 	void setup(Variant::Type p_array_type);
+	void set_edited_parent_object(Object *p_object);
 	virtual void update_property();
 	EditorPropertyArray();
 };

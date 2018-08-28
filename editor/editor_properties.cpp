@@ -1796,12 +1796,21 @@ EditorPropertyColor::EditorPropertyColor() {
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	NodePath path = p_path;
-	Node *base_node = Object::cast_to<Node>(get_edited_object());
-	if (base_node == NULL && get_edited_object()->has_method("get_root_path")) {
-		base_node = get_edited_object()->call("get_root_path");
+	Object *edited_object = get_edited_object();
+	if (edited_object->get_class() == "EditorPropertyArrayObject") {
+		edited_object = parent_object;
 	}
+
+	Node *base_node = Object::cast_to<Node>(edited_object);
+	if (base_node == NULL && edited_object->has_method("get_root_path")) {
+		base_node = edited_object->call("get_root_path");
+	}
+
 	if (base_node) { // for AnimationTrackKeyEdit
 		path = base_node->get_path().rel_path_to(p_path);
+		if (edited_object->get_class() == "EditorPropertyArrayObject") {
+			base_hint = path;
+		}
 	}
 	emit_signal("property_changed", get_edited_property(), path);
 	update_property();
@@ -1826,7 +1835,11 @@ void EditorPropertyNodePath::_node_clear() {
 
 void EditorPropertyNodePath::update_property() {
 
-	NodePath p = get_edited_object()->get(get_edited_property());
+	Object *edited_object = get_edited_object();
+	NodePath p = edited_object->get(get_edited_property());
+	if (edited_object->get_class() == "EditorPropertyArrayObject") {
+		edited_object = parent_object;
+	}
 
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
@@ -1843,7 +1856,7 @@ void EditorPropertyNodePath::update_property() {
 			base_node = get_tree()->get_root()->get_node(base_hint);
 		}
 	} else {
-		base_node = Object::cast_to<Node>(get_edited_object());
+		base_node = Object::cast_to<Node>(edited_object);
 	}
 
 	if (!base_node || !base_node->has_node(p)) {
@@ -1870,6 +1883,11 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 
 	base_hint = p_base_hint;
 	valid_types = p_valid_types;
+}
+
+void EditorPropertyNodePath::set_parent_object(Object *p_object) {
+
+	parent_object = p_object;
 }
 
 void EditorPropertyNodePath::_notification(int p_what) {
@@ -3026,6 +3044,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		case Variant::ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::ARRAY);
+			editor->set_edited_parent_object(NULL);
 			add_property_editor(p_path, editor);
 		} break;
 		case Variant::POOL_BYTE_ARRAY: {
