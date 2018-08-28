@@ -13,11 +13,11 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Platinum sponsors
 
     Enjin Coin <https://enjincoin.io>
+    GameDev.TV <https://gdev.tv/godot>
 
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
-    GameDev.TV <https://www.gamedev.tv>
 
 ## Mini sponsors
 
