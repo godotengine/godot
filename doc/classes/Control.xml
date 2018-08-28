@@ -38,7 +38,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				The node's parent forwards input events to this method. Use it to process and accept inputs on UI elements. See [method accept_event].
+				Use this method to process and accept inputs on UI elements. See [method accept_event].
 				Replaces Godot 2's [code]_input_event[/code].
 			</description>
 		</method>
