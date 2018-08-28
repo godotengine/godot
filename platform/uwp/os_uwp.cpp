@@ -225,7 +225,7 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					opengl_api_type = ContextEGL::GLES_2_0;
 					continue;
