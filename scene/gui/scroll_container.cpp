@@ -368,8 +368,10 @@ void ScrollContainer::update_scrollbars() {
 	Ref<StyleBox> sb = get_stylebox("bg");
 	size -= sb->get_minimum_size();
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin;
+	Size2 vmin;
+	if (scroll_h) hmin = h_scroll->get_combined_minimum_size();
+	if (scroll_v) vmin = v_scroll->get_combined_minimum_size();
 
 	Size2 min = child_max_size;
 
