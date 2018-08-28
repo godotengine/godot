@@ -100,8 +100,6 @@ void EditorProfiler::clear() {
 	updating_frame = false;
 	hover_metric = -1;
 	seeking = false;
-
-	_update_plot();
 }
 
 static String _get_percent_txt(float p_value, float p_total) {
@@ -169,7 +167,7 @@ void EditorProfiler::_update_plot() {
 	int w = graph->get_size().width;
 	int h = graph->get_size().height;
 
-	bool reset_texture = graph_texture.is_null();
+	bool reset_texture = false;
 
 	int desired_len = w * h * 4;
 
@@ -437,6 +435,7 @@ void EditorProfiler::_activate_pressed() {
 void EditorProfiler::_clear_pressed() {
 
 	clear();
+	_update_plot();
 }
 
 void EditorProfiler::_notification(int p_what) {
