@@ -43,8 +43,7 @@ Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 			return ERR_CANT_RESOLVE;
 	}
 
-	connect_to_host(ip, p_port);
-	return OK;
+	return connect_to_host(ip, p_port);
 }
 
 void StreamPeerTCP::_bind_methods() {
