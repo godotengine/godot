@@ -117,7 +117,7 @@ IP_Address IP::resolve_hostname(const String &p_hostname, IP::Type p_type) {
 	resolver->mutex->lock();
 
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
-	if (resolver->cache.has(key)) {
+	if (resolver->cache.has(key) && resolver->cache[key].is_valid()) {
 		IP_Address res = resolver->cache[key];
 		resolver->mutex->unlock();
 		return res;
@@ -144,7 +144,7 @@ IP::ResolverID IP::resolve_hostname_queue_item(const String &p_hostname, IP::Typ
 	String key = _IP_ResolverPrivate::get_cache_key(p_hostname, p_type);
 	resolver->queue[id].hostname = p_hostname;
 	resolver->queue[id].type = p_type;
-	if (resolver->cache.has(key)) {
+	if (resolver->cache.has(key) && resolver->cache[key].is_valid()) {
 		resolver->queue[id].response = resolver->cache[key];
 		resolver->queue[id].status = IP::RESOLVER_STATUS_DONE;
 	} else {
