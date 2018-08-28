@@ -115,6 +115,8 @@
 			<argument index="6" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
 			<description>
+				Moves the body while keeping it attached to slopes. Similar to [method move_and_slide].
+				As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting[code]snap[/code] to[code](0, 0, 0)[/code] or by using [method move_and_slide] instead.
 			</description>
 		</method>
 		<method name="test_move">

@@ -78,7 +78,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount (t). (t) should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -151,7 +151,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation..
 			</description>
 		</method>
 		<method name="max_axis">
@@ -228,7 +228,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 				Both vectors need to be normalized.
 			</description>
 		</method>
@@ -280,20 +280,28 @@
 			Enumerated value for the Z axis.
 		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
+			Null vector.
 		</constant>
 		<constant name="INF" value="Vector3( inf, inf, inf )">
+			Infinite vector.
 		</constant>
 		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
+			Left unit vector.
 		</constant>
 		<constant name="RIGHT" value="Vector3( 1, 0, 0 )">
+			Right unit vector.
 		</constant>
 		<constant name="UP" value="Vector3( 0, 1, 0 )">
+			Up unit vector.
 		</constant>
 		<constant name="DOWN" value="Vector3( 0, -1, 0 )">
+			Down unit vector.
 		</constant>
 		<constant name="FORWARD" value="Vector3( 0, 0, -1 )">
+			Forward unit vector.
 		</constant>
 		<constant name="BACK" value="Vector3( 0, 0, 1 )">
+			Back unit vector.
 		</constant>
 	</constants>
 </class>

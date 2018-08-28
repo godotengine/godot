@@ -109,7 +109,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], or a percentage of how far along the interpolation is.
+				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -175,7 +175,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="normalized">
@@ -227,7 +227,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of  [code]0.0 - 1.0[/code], representing the amount of interpolation.
 				Both vectors need to be normalized.
 			</description>
 		</method>
@@ -267,16 +267,22 @@
 	</members>
 	<constants>
 		<constant name="ZERO" value="Vector2( 0, 0 )">
+			Null vector.
 		</constant>
 		<constant name="INF" value="Vector2( inf, inf )">
+			Infinite vector.
 		</constant>
 		<constant name="LEFT" value="Vector2( -1, 0 )">
+			Left unit vector.
 		</constant>
 		<constant name="RIGHT" value="Vector2( 1, 0 )">
+			Right unit vector.
 		</constant>
 		<constant name="UP" value="Vector2( 0, -1 )">
+			Up unit vector.
 		</constant>
 		<constant name="DOWN" value="Vector2( 0, 1 )">
+			Down unit vector.
 		</constant>
 	</constants>
 </class>
