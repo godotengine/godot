@@ -68,6 +68,7 @@ static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p
 	m_name->add_fallback(FontArabic);   \
 	m_name->add_fallback(FontHebrew);   \
 	m_name->add_fallback(FontThai);     \
+	m_name->add_fallback(FontHindi);    \
 	m_name->add_fallback(FontJapanese); \
 	m_name->add_fallback(FontFallback);
 
@@ -203,6 +204,12 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	FontThai->set_hinting(font_hinting);
 	FontThai->set_font_ptr(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
 	FontThai->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> FontHindi;
+	FontHindi.instance();
+	FontHindi->set_hinting(font_hinting);
+	FontHindi->set_font_ptr(_font_NotoSansDevanagariUI_Regular, _font_NotoSansDevanagariUI_Regular_size);
+	FontHindi->set_force_autohinter(true); //just looks better..i think?
 
 	/* Hack */
 
