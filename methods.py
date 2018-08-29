@@ -13,7 +13,7 @@ def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 
     if isbasestring(filetype):
         dir_path = self.Dir('.').abspath
-        filetype = glob.glob(dir_path + "/" + filetype)
+        filetype = sorted(glob.glob(dir_path + "/" + filetype))
 
     for path in filetype:
         sources.append(self.Object(path))
