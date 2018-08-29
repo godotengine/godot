@@ -650,8 +650,8 @@ void ConnectionsDock::_handle_signal_menu_option(int option) {
 			_open_connection_dialog(*item);
 		} break;
 		case DISCONNECT_ALL: {
-			StringName signalName = item->get_metadata(0).operator Dictionary()["name"];
-			disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from the \"") + signalName + "\" signal?");
+			StringName signal_name = item->get_metadata(0).operator Dictionary()["name"];
+			disconnect_all_dialog->set_text(vformat(TTR("Are you sure you want to remove all connections from the \"%s\" signal?"), signal_name));
 			disconnect_all_dialog->popup_centered();
 		} break;
 	}

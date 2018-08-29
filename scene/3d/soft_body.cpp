@@ -401,7 +401,7 @@ String SoftBody::get_configuration_warning() const {
 		if (!warning.empty())
 			warning += "\n\n";
 
-		warning += TTR("Size changes to SoftBody will be overriden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warning += TTR("Size changes to SoftBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
 
 	return warning;
