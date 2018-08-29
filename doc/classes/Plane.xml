@@ -157,11 +157,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="X" value="Plane( 1, 0, 0, 0 )">
+		<constant name="PLANE_YZ" value="Plane( 1, 0, 0, 0 )">
 		</constant>
-		<constant name="Y" value="Plane( 0, 1, 0, 0 )">
+		<constant name="PLANE_XZ" value="Plane( 0, 1, 0, 0 )">
 		</constant>
-		<constant name="Z" value="Plane( 0, 0, 1, 0 )">
+		<constant name="PLANE_XY" value="Plane( 0, 0, 1, 0 )">
 		</constant>
 	</constants>
 </class>

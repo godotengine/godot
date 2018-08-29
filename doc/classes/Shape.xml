@@ -13,6 +13,10 @@
 	</demos>
 	<methods>
 	</methods>
+	<members>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

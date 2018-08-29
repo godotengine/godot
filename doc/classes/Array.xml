@@ -216,12 +216,26 @@
 			<argument index="1" name="value" type="var">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
 				Reverse the order of the elements in the array (so first element will now be the last) and return reference to the array.
+			</description>
+		</method>
+		<method name="max">
+			<return type="var">
+			</return>
+			<description>
+				Return maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="min">
+			<return type="var">
+			</return>
+			<description>
+				Return minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="pop_back">

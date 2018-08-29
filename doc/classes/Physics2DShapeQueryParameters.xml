@@ -22,6 +22,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled">
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled">
+		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 			The physics layer the query should be made on.
 		</member>

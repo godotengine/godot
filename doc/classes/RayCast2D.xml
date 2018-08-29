@@ -134,6 +134,10 @@
 		<member name="cast_to" type="Vector2" setter="set_cast_to" getter="get_cast_to">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled">
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled">
+		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>

@@ -64,11 +64,11 @@
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="SpatialMaterial.DetailUV">
 		</member>
-		<member name="distance_fade_enable" type="bool" setter="set_distance_fade" getter="is_distance_fade_enabled">
-		</member>
 		<member name="distance_fade_max_distance" type="float" setter="set_distance_fade_max_distance" getter="get_distance_fade_max_distance">
 		</member>
 		<member name="distance_fade_min_distance" type="float" setter="set_distance_fade_min_distance" getter="get_distance_fade_min_distance">
+		</member>
+		<member name="distance_fade_mode" type="int" setter="set_distance_fade" getter="get_distance_fade" enum="SpatialMaterial.DistanceFadeMode">
 		</member>
 		<member name="emission" type="Color" setter="set_emission" getter="get_emission">
 		</member>
@@ -375,6 +375,14 @@
 		<constant name="EMISSION_OP_ADD" value="0" enum="EmissionOperator">
 		</constant>
 		<constant name="EMISSION_OP_MULTIPLY" value="1" enum="EmissionOperator">
+		</constant>
+		<constant name="DISTANCE_FADE_DISABLED" value="0" enum="DistanceFadeMode">
+		</constant>
+		<constant name="DISTANCE_FADE_PIXEL_ALPHA" value="1" enum="DistanceFadeMode">
+		</constant>
+		<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2" enum="DistanceFadeMode">
+		</constant>
+		<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3" enum="DistanceFadeMode">
 		</constant>
 	</constants>
 </class>

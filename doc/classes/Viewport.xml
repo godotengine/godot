@@ -104,6 +104,12 @@
 				Returns [code]true[/code] if there are visible modals on-screen.
 			</description>
 		</method>
+		<method name="gui_is_dragging" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="input">
 			<return type="void">
 			</return>

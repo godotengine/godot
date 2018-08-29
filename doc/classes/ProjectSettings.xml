@@ -656,10 +656,10 @@
 		</member>
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="">
 		</member>
-		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
-		</member>
 		<member name="rendering/quality/driver/driver_fallback" type="String" setter="" getter="">
 			Whether to allow falling back to other graphics drivers if the preferred driver is not available. Best means use the best working driver (this is the default). Never means never fall back to another driver even if it does not work. This means the project will not run if the preferred driver does not function.
+		</member>
+		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
 		</member>
 		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="">
 			Maximum Anisotropic filter level used for textures when anisotropy enabled.
@@ -725,6 +725,8 @@
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but syncinc to the main thread can cause a bit more jitter.
+		</member>
+		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="">
 			If the project uses this compression (usually low end mobile), texture importer will import these.

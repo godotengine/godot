@@ -43,6 +43,12 @@
 				Centers the window on the screen if in windowed mode.
 			</description>
 		</method>
+		<method name="close_midi_inputs">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="delay_msec" qualifiers="const">
 			<return type="void">
 			</return>
@@ -591,6 +597,12 @@
 			</return>
 			<description>
 				Resumes native video playback.
+			</description>
+		</method>
+		<method name="open_midi_inputs">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="print_all_resources">
