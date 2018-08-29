@@ -17,6 +17,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant force (i.e. acceleration).
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -27,6 +28,7 @@
 			<argument index="1" name="j" type="Vector3">
 			</argument>
 			<description>
+				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the position are in global coordinates, and the position is relative to the object's origin.
 			</description>
 		</method>
 		<method name="apply_torqe_impulse">
@@ -44,6 +46,7 @@
 			<argument index="0" name="j" type="Vector3">
 			</argument>
 			<description>
+				Apply a torque impulse (which will be affected by the body mass and shape). This will rotate the body around the passed in vector.
 			</description>
 		</method>
 		<method name="get_contact_collider" qualifiers="const">
