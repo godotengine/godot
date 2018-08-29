@@ -836,6 +836,7 @@ public:
 		bool clip;
 		bool visible;
 		bool behind;
+		bool update_when_visible;
 		//VS::MaterialBlendMode blend_mode;
 		int light_mask;
 		Vector<Command *> commands;
@@ -1037,6 +1038,7 @@ public:
 			copy_back_buffer = NULL;
 			distance_field = false;
 			light_masked = false;
+			update_when_visible = false;
 		}
 		virtual ~Item() {
 			clear();

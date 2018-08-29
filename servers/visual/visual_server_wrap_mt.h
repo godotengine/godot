@@ -490,6 +490,8 @@ public:
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
 
+	FUNC2(canvas_item_set_update_when_visible, RID, bool)
+
 	FUNC2(canvas_item_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_set_clip, RID, bool)
 	FUNC2(canvas_item_set_distance_field_mode, RID, bool)

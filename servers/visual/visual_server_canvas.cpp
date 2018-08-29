@@ -30,6 +30,7 @@
 
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
+#include "visual_server_raster.h"
 #include "visual_server_viewport.h"
 
 void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
@@ -117,6 +118,10 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	if (ci->copy_back_buffer) {
 
 		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+	}
+
+	if (ci->update_when_visible) {
+		VisualServerRaster::redraw_request();
 	}
 
 	if ((!ci->commands.empty() && p_clip_rect.intersects(global_rect)) || ci->vp_render || ci->copy_back_buffer) {
@@ -388,6 +393,14 @@ void VisualServerCanvas::canvas_item_set_draw_behind_parent(RID p_item, bool p_e
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->behind = p_enable;
+}
+
+void VisualServerCanvas::canvas_item_set_update_when_visible(RID p_item, bool p_update) {
+
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	canvas_item->update_when_visible = p_update;
 }
 
 void VisualServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width, bool p_antialiased) {

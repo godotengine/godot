@@ -42,6 +42,7 @@
 #include "scene/2d/canvas_modulate.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/collision_shape_2d.h"
+#include "scene/2d/cpu_particles_2d.h"
 #include "scene/2d/joints_2d.h"
 #include "scene/2d/light_2d.h"
 #include "scene/2d/light_occluder_2d.h"
@@ -514,6 +515,7 @@ void register_scene_types() {
 	SceneTree::add_idle_callback(CanvasItemMaterial::flush_changes);
 	CanvasItemMaterial::init_shaders();
 	ClassDB::register_class<Node2D>();
+	ClassDB::register_class<CPUParticles2D>();
 	ClassDB::register_class<Particles2D>();
 	//ClassDB::register_class<ParticleAttractor2D>();
 	ClassDB::register_class<Sprite>();

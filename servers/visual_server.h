@@ -863,6 +863,8 @@ public:
 	virtual void canvas_item_set_visible(RID p_item, bool p_visible) = 0;
 	virtual void canvas_item_set_light_mask(RID p_item, int p_mask) = 0;
 
+	virtual void canvas_item_set_update_when_visible(RID p_item, bool p_update) = 0;
+
 	virtual void canvas_item_set_transform(RID p_item, const Transform2D &p_transform) = 0;
 	virtual void canvas_item_set_clip(RID p_item, bool p_clip) = 0;
 	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable) = 0;

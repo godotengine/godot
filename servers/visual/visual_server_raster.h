@@ -574,6 +574,8 @@ public:
 	BIND2(canvas_item_set_visible, RID, bool)
 	BIND2(canvas_item_set_light_mask, RID, int)
 
+	BIND2(canvas_item_set_update_when_visible, RID, bool)
+
 	BIND2(canvas_item_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_set_clip, RID, bool)
 	BIND2(canvas_item_set_distance_field_mode, RID, bool)
