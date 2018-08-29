@@ -238,8 +238,8 @@ void TileMapEditor::_create_set_cell_undo(const Vector2 &p_vec, const CellOp &p_
 	cell_new["transpose"] = p_cell_new.tr;
 	cell_new["auto_coord"] = p_cell_new.ac;
 
-	undo_redo->add_undo_method(node, "set_celld", p_vec, cell_old);
-	undo_redo->add_do_method(node, "set_celld", p_vec, cell_new);
+	undo_redo->add_undo_method(node, "_set_celld", p_vec, cell_old);
+	undo_redo->add_do_method(node, "_set_celld", p_vec, cell_new);
 }
 
 void TileMapEditor::_start_undo(const String &p_action) {
