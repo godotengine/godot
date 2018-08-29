@@ -307,7 +307,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 	ObjectID closest = 0;
-	Spatial *item = NULL;
+	Node *item = NULL;
 	float closest_dist = 1e20;
 	int selected_handle = -1;
 
@@ -341,19 +341,16 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 		if (dist < closest_dist) {
 			//make sure that whathever is selected is editable
-			while (spat && spat != edited_scene && spat->get_owner() != edited_scene && !edited_scene->is_editable_instance(spat->get_owner())) {
-
-				spat = Object::cast_to<Spatial>(spat->get_owner());
-			}
-
-			if (spat) {
-				item = spat;
-				closest = spat->get_instance_id();
-				closest_dist = dist;
-				selected_handle = handle;
+			Node *owner = spat->get_owner();
+			if (owner != edited_scene && !edited_scene->is_editable_instance(owner)) {
+				item = owner;
 			} else {
-				ERR_PRINT("Bug?");
+				item = Object::cast_to<Node>(spat);
 			}
+
+			closest = item->get_instance_id();
+			closest_dist = dist;
+			selected_handle = handle;
 		}
 	}
 
