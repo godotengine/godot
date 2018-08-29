@@ -4468,6 +4468,7 @@ void SpatialEditor::_init_indicators() {
 
 		VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(origin_instance, VS::SHADOW_CASTING_SETTING_OFF);
 
+		origin_enabled = true;
 		grid_enabled = true;
 		last_grid_snap = 1;
 	}
