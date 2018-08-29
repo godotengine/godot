@@ -917,7 +917,7 @@ CSGBrush *CSGBox::_build_brush() {
 
 		int face = 0;
 
-		Vector3 vertex_mul(width, height, depth);
+		Vector3 vertex_mul(width * 0.5, height * 0.5, depth * 0.5);
 
 		{
 
@@ -1051,9 +1051,9 @@ Ref<Material> CSGBox::get_material() const {
 
 CSGBox::CSGBox() {
 	// defaults
-	width = 1.0;
-	height = 1.0;
-	depth = 1.0;
+	width = 2.0;
+	height = 2.0;
+	depth = 2.0;
 }
 
 ///////////////

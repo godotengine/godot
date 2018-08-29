@@ -139,9 +139,9 @@ void CSGShapeSpatialGizmoPlugin::set_handle(EditorSpatialGizmo *p_gizmo, int p_i
 			d = 0.001;
 
 		switch (p_idx) {
-			case 0: s->set_width(d); break;
-			case 1: s->set_height(d); break;
-			case 2: s->set_depth(d); break;
+			case 0: s->set_width(d * 2); break;
+			case 1: s->set_height(d * 2); break;
+			case 2: s->set_depth(d * 2); break;
 		}
 	}
 
@@ -329,9 +329,9 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		CSGBox *s = Object::cast_to<CSGBox>(cs);
 
 		Vector<Vector3> handles;
-		handles.push_back(Vector3(s->get_width(), 0, 0));
-		handles.push_back(Vector3(0, s->get_height(), 0));
-		handles.push_back(Vector3(0, 0, s->get_depth()));
+		handles.push_back(Vector3(s->get_width() * 0.5, 0, 0));
+		handles.push_back(Vector3(0, s->get_height() * 0.5, 0));
+		handles.push_back(Vector3(0, 0, s->get_depth() * 0.5));
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
