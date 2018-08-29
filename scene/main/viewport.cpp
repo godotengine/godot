@@ -2002,6 +2002,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *over = _gui_find_control(pos);
 			if (over) {
 
+				over->notification(Control::NOTIFICATION_MOUSE_ENTER);
+				gui.mouse_over = over;
+
 				if (!gui.modal_stack.empty()) {
 
 					Control *top = gui.modal_stack.back()->get();
@@ -2024,9 +2027,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				get_tree()->set_input_as_handled();
 				return;
 			}
-		} else if (gui.mouse_focus) {
+		} else {
 
-			if (gui.mouse_focus->can_process()) {
+			if (gui.mouse_over) {
+				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
+				_gui_cancel_tooltip();
+				gui.mouse_over = NULL;
+			}
+
+			if (gui.mouse_focus && gui.mouse_focus->can_process()) {
 
 				touch_event = touch_event->xformed_by(Transform2D()); //make a copy
 				touch_event->set_position(gui.focus_inv_xform.xform(pos));
