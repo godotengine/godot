@@ -211,13 +211,17 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 #ifndef DISABLE_DEPRECATED
 void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
 
-	WARN_PRINTS("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
+	ERR_EXPLAIN("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
+	WARN_DEPRECATED
+
 	set_mesh_library(p_theme);
 }
 
 Ref<MeshLibrary> GridMap::get_theme() const {
 
-	WARN_PRINTS("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
+	ERR_EXPLAIN("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
+	WARN_DEPRECATED
+
 	return get_mesh_library();
 }
 #endif // DISABLE_DEPRECATED
@@ -903,7 +907,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary", PROPERTY_USAGE_NOEDITOR), "set_theme", "get_theme");
+	ADD_PROPERTYNO(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary", 0), "set_theme", "get_theme");
 #endif // DISABLE_DEPRECATED
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
