@@ -980,7 +980,7 @@ int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform &p
 
 	btVector3 recover_motion(0, 0, 0);
 
-	int rays_found;
+	int rays_found = 0;
 
 	for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
 		int last_ray_index = recover_from_penetration_ray(p_body, body_transform, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, p_result_max, recover_motion, r_results);
