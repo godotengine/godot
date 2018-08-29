@@ -66,13 +66,6 @@
 				Returns the name of the blend shape at this index.
 			</description>
 		</method>
-		<method name="get_surface_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the amount of surfaces that the [code]ArrayMesh[/code] holds.
-			</description>
-		</method>
 		<method name="lightmap_unwrap">
 			<return type="int" enum="Error">
 			</return>
@@ -118,24 +111,6 @@
 				Return the length in vertices of the vertex array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
-		<method name="surface_get_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method add_surface_from_arrays]).
-			</description>
-		</method>
-		<method name="surface_get_blend_shape_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Returns the blend shape arrays for the requested surface.
-			</description>
-		</method>
 		<method name="surface_get_format" qualifiers="const">
 			<return type="int">
 			</return>
@@ -143,15 +118,6 @@
 			</argument>
 			<description>
 				Return the format mask of the requested surface (see [method add_surface_from_arrays]).
-			</description>
-		</method>
-		<method name="surface_get_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Return a [Material] in a given surface. Surface is rendered using this material.
 			</description>
 		</method>
 		<method name="surface_get_name" qualifiers="const">
