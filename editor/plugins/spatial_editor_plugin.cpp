@@ -2218,8 +2218,21 @@ void SpatialEditorViewport::_notification(int p_what) {
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 		info_label->set_visible(show_info);
 
+		Camera *current_camera;
+
+		if (previewing) {
+			current_camera = previewing;
+		} else {
+			current_camera = camera;
+		}
+
 		if (show_info) {
 			String text;
+			text += "X: " + rtos(current_camera->get_translation().x).pad_decimals(1) + "\n";
+			text += "Y: " + rtos(current_camera->get_translation().y).pad_decimals(1) + "\n";
+			text += "Z: " + rtos(current_camera->get_translation().z).pad_decimals(1) + "\n";
+			text += TTR("Pitch") + ": " + itos(Math::round(current_camera->get_rotation_degrees().x)) + "\n";
+			text += TTR("Yaw") + ": " + itos(Math::round(current_camera->get_rotation_degrees().y)) + "\n\n";
 			text += TTR("Objects Drawn") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
 			text += TTR("Material Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_MATERIAL_CHANGES_IN_FRAME)) + "\n";
 			text += TTR("Shader Changes") + ": " + itos(viewport->get_render_info(Viewport::RENDER_INFO_SHADER_CHANGES_IN_FRAME)) + "\n";
