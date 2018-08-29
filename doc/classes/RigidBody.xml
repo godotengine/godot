@@ -30,6 +30,8 @@
 			<argument index="0" name="force" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant directional force without affecting rotation.
+				This is equivalent to [code]add_force(force, Vector3(0,0,0))[/code].
 			</description>
 		</method>
 		<method name="add_force">
@@ -40,6 +42,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant force (i.e. acceleration).
 			</description>
 		</method>
 		<method name="add_torque">
@@ -48,6 +51,7 @@
 			<argument index="0" name="torque" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant rotational force (i.e. a motor) without affecting position.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -56,6 +60,8 @@
 			<argument index="0" name="impulse" type="Vector3">
 			</argument>
 			<description>
+				Applies a single directional impulse without affecting rotation.
+				This is equivalent to ``apply_impulse(Vector3(0,0,0), impulse)``.
 			</description>
 		</method>
 		<method name="apply_impulse">
