@@ -43,7 +43,19 @@ void BitMap::create(const Size2 &p_size) {
 	zeromem(bitmask.ptrw(), bitmask.size());
 }
 
-void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
+void BitMap::create_from_image_alpha(const Ref<Image> &p_image) {
+
+	_create_from_image_alpha_impl(p_image, false);
+}
+
+void BitMap::create_from_image_alpha_with_threshold(const Ref<Image> &p_image, float p_threshold) {
+
+	WARN_PRINT("This method is deprecated and will be removed in 3.1, where `create_from_image_alpha` will have a `threshold` parameter.");
+
+	_create_from_image_alpha_impl(p_image, true, p_threshold);
+}
+
+void BitMap::_create_from_image_alpha_impl(const Ref<Image> &p_image, bool p_use_threshold, float p_threshold) {
 
 	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
 	Ref<Image> img = p_image->duplicate();
@@ -59,7 +71,7 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 
 		int bbyte = i / 8;
 		int bbit = i % 8;
-		if (r[i * 2 + 1] / 255.0 > p_threshold) {
+		if (p_use_threshold && r[i * 2 + 1] / 255.0 > p_threshold || !p_use_threshold && r[i * 2 + 1]) {
 			w[bbyte] |= (1 << bbit);
 		}
 	}
@@ -606,7 +618,8 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
-	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "threshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
+	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image"), &BitMap::create_from_image_alpha);
+	ClassDB::bind_method(D_METHOD("create_from_image_alpha_with_threshold", "image", "threshold"), &BitMap::create_from_image_alpha_with_threshold, DEFVAL(0.1));
 
 	ClassDB::bind_method(D_METHOD("set_bit", "position", "bit"), &BitMap::set_bit);
 	ClassDB::bind_method(D_METHOD("get_bit", "position"), &BitMap::get_bit);

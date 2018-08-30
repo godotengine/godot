@@ -44,6 +44,8 @@ class BitMap : public Resource {
 	int width;
 	int height;
 
+	void _create_from_image_alpha_impl(const Ref<Image> &p_image, bool p_use_threshold, float p_threshold = 0.0);
+
 	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
 
 	Array _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
@@ -56,7 +58,8 @@ protected:
 
 public:
 	void create(const Size2 &p_size);
-	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
+	void create_from_image_alpha(const Ref<Image> &p_image);
+	void create_from_image_alpha_with_threshold(const Ref<Image> &p_image, float p_threshold = 0.1);
 
 	void set_bit(const Point2 &p_pos, bool p_value);
 	bool get_bit(const Point2 &p_pos) const;
