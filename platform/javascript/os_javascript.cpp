@@ -565,8 +565,11 @@ void OS_JavaScript::process_joypads() {
 	int joypad_count = emscripten_get_num_gamepads();
 	for (int joypad = 0; joypad < joypad_count; joypad++) {
 		EmscriptenGamepadEvent state;
-		emscripten_get_gamepad_status(joypad, &state);
-		if (state.connected) {
+		EMSCRIPTEN_RESULT query_result = emscripten_get_gamepad_status(joypad, &state);
+		// Chromium reserves gamepads slots, so NO_DATA is an expected result.
+		ERR_CONTINUE(query_result != EMSCRIPTEN_RESULT_SUCCESS &&
+					 query_result != EMSCRIPTEN_RESULT_NO_DATA);
+		if (query_result == EMSCRIPTEN_RESULT_SUCCESS && state.connected) {
 
 			int button_count = MIN(state.numButtons, 18);
 			int axis_count = MIN(state.numAxes, 8);
