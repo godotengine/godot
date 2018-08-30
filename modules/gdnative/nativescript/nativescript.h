@@ -353,6 +353,8 @@ public:
 
 	virtual void *alloc_instance_binding_data(Object *p_object);
 	virtual void free_instance_binding_data(void *p_data);
+	virtual void refcount_incremented_instance_binding(Object *p_object);
+	virtual bool refcount_decremented_instance_binding(Object *p_object);
 
 	void set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag);
 	const void *get_global_type_tag(int p_idx, StringName p_class_name) const;

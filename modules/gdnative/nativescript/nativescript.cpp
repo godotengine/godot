@@ -1370,6 +1370,54 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	delete &binding_data;
 }
 
+void NativeScriptLanguage::refcount_incremented_instance_binding(Object *p_object) {
+
+	void *data = p_object->get_script_instance_binding(lang_idx);
+
+	if (!data)
+		return;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)data;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (!binding_functions[i].first)
+			continue;
+
+		if (binding_functions[i].second.refcount_incremented_instance_binding) {
+			binding_functions[i].second.refcount_incremented_instance_binding(binding_data[i], p_object);
+		}
+	}
+}
+
+bool NativeScriptLanguage::refcount_decremented_instance_binding(Object *p_object) {
+
+	void *data = p_object->get_script_instance_binding(lang_idx);
+
+	if (!data)
+		return true;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)data;
+
+	bool can_die = true;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (!binding_functions[i].first)
+			continue;
+
+		if (binding_functions[i].second.refcount_decremented_instance_binding) {
+			can_die = can_die && binding_functions[i].second.refcount_decremented_instance_binding(binding_data[i], p_object);
+		}
+	}
+
+	return can_die;
+}
+
 void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {
 	if (!global_type_tags.has(p_idx)) {
 		global_type_tags.insert(p_idx, HashMap<StringName, const void *>());
