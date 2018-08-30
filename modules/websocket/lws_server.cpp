@@ -41,9 +41,6 @@ Error LWSServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_a
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof info);
 
-	if (p_protocols.size() == 0) // default to binary protocol
-		p_protocols.append(String("binary"));
-
 	// Prepare lws protocol structs
 	_lws_make_protocols(this, &LWSServer::_lws_gd_callback, p_protocols, &_lws_ref);
 
