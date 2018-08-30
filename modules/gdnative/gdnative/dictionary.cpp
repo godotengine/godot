@@ -155,6 +155,12 @@ godot_string GDAPI godot_dictionary_to_json(const godot_dictionary *p_self) {
 	return raw_dest;
 }
 
+godot_bool GDAPI godot_dictionary_erase_with_return(godot_dictionary *p_self, const godot_variant *p_key) {
+	Dictionary *self = (Dictionary *)p_self;
+	const Variant *key = (const Variant *)p_key;
+	return self->erase(*key);
+}
+
 #ifdef __cplusplus
 }
 #endif
