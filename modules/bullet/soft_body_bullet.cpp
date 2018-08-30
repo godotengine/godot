@@ -168,6 +168,7 @@ void SoftBodyBullet::set_node_position(int p_node_index, const Vector3 &p_global
 
 void SoftBodyBullet::set_node_position(int p_node_index, const btVector3 &p_global_position) {
 	if (bt_soft_body) {
+		bt_soft_body->m_nodes[p_node_index].m_q = bt_soft_body->m_nodes[p_node_index].m_x;
 		bt_soft_body->m_nodes[p_node_index].m_x = p_global_position;
 	}
 }
