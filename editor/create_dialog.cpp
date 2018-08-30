@@ -497,7 +497,11 @@ Object *CreateDialog::instance_selected() {
 
 		if (custom != String()) {
 			if (ScriptServer::is_global_class(custom)) {
-				return EditorNode::get_editor_data().script_class_instance(custom);
+				Object *obj = EditorNode::get_editor_data().script_class_instance(custom);
+				Node *n = Object::cast_to<Node>(obj);
+				if (n)
+					n->set_name(custom);
+				return obj;
 			}
 			return EditorNode::get_editor_data().instance_custom_type(selected->get_text(0), custom);
 		} else {
