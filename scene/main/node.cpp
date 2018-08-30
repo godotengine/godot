@@ -2550,11 +2550,37 @@ void Node::clear_internal_tree_resource_paths() {
 }
 
 String Node::get_configuration_warning() const {
-
+	String rs = String();
 	if (get_script_instance() && get_script_instance()->has_method("_get_configuration_warning")) {
-		return get_script_instance()->call("_get_configuration_warning");
+		rs = get_script_instance()->call("_get_configuration_warning");
 	}
-	return String();
+	if (get_child_count() > 0) {
+		Array no_transform_types = Array();
+		no_transform_types.push_back("AnimationPlayer");
+		no_transform_types.push_back("AnimationTree");
+		no_transform_types.push_back("AnimationTreePlayer");
+		no_transform_types.push_back("AudioStreamPlayer");
+		no_transform_types.push_back("HTTPRequest");
+		no_transform_types.push_back("ResourcePreloader");
+		no_transform_types.push_back("SkeletonIK");
+		no_transform_types.push_back("Timer");
+		no_transform_types.push_back("Tween");
+		no_transform_types.push_back("WorldEnvironment");
+
+		if (no_transform_types.has(get_class())) {
+			for (int i = 0; i < get_child_count(); i++) {
+				if (!no_transform_types.has(get_child(i)->get_class())) {
+					if (rs == String()) {
+						rs += "\n";
+					}
+					rs += TTR("This Node has no Transform. Children won't be affected by parent Transform. This can cause unexpected behavior on window resize or parent Transform changes.");
+					break;
+				}
+			}
+		}
+	}
+
+	return rs;
 }
 
 void Node::update_configuration_warning() {
