@@ -56,6 +56,12 @@ void GDAPI godot_transform_new(godot_transform *r_dest, const godot_basis *p_bas
 	*dest = Transform(*basis, *origin);
 }
 
+void GDAPI godot_transform_new_with_quat(godot_transform *r_dest, const godot_quat *p_quat) {
+	const Quat *quat = (const Quat *)p_quat;
+	Transform *dest = (Transform *)r_dest;
+	*dest = Transform(*quat);
+}
+
 godot_basis GDAPI godot_transform_get_basis(const godot_transform *p_self) {
 	godot_basis dest;
 	const Transform *self = (const Transform *)p_self;

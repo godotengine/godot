@@ -282,6 +282,10 @@ void GDAPI godot_print_error(const char *p_description, const char *p_function, 
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print(const godot_string *p_message);
 
+// GDNATIVE CORE 1.0.1
+
+bool GDAPI godot_is_instance_valid(const godot_object *p_object);
+
 #ifdef __cplusplus
 }
 #endif

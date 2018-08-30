@@ -49,6 +49,18 @@ void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector
 	*dest = Quat(*axis, p_angle);
 }
 
+void GDAPI godot_quat_new_with_basis(godot_quat *r_dest, const godot_basis *p_basis) {
+	const Basis *basis = (const Basis *)p_basis;
+	Quat *dest = (Quat *)r_dest;
+	*dest = Quat(*basis);
+}
+
+void GDAPI godot_quat_new_with_euler(godot_quat *r_dest, const godot_vector3 *p_euler) {
+	const Vector3 *euler = (const Vector3 *)p_euler;
+	Quat *dest = (Quat *)r_dest;
+	*dest = Quat(*euler);
+}
+
 godot_real GDAPI godot_quat_get_x(const godot_quat *p_self) {
 	const Quat *self = (const Quat *)p_self;
 	return self->x;
