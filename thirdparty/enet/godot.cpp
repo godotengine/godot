@@ -168,8 +168,9 @@ int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buf
 
 	PacketPeerUDP *sock = (PacketPeerUDP *)socket;
 
-	if (sock->get_available_packet_count() == 0) {
-		return 0;
+	int pc = sock->get_available_packet_count();
+	if (pc < 1) {
+		return pc;
 	}
 
 	const uint8_t *buffer;

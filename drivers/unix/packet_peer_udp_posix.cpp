@@ -61,7 +61,7 @@ int PacketPeerUDPPosix::get_available_packet_count() const {
 
 	Error err = const_cast<PacketPeerUDPPosix *>(this)->_poll(false);
 	if (err != OK)
-		return 0;
+		return -1;
 
 	return queue_count;
 }
