@@ -205,8 +205,6 @@
 		<member name="audio/mix_rate" type="int" setter="" getter="">
 			Mix rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
-		<member name="audio/output_latency" type="int" setter="" getter="">
-		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
 			Setting to harcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
