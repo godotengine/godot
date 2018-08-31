@@ -33,30 +33,17 @@
 #include "spatial_editor_plugin.h"
 
 void CameraEditor::_notification(int p_what) {
-
-	switch (p_what) {
-
-		/*		case NOTIFICATION_PROCESS: {
-
-			if (preview->is_pressed() && node)
-				node->call("make_current");
-
-		} break;*/
-	}
 }
+
 void CameraEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
 		node = NULL;
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
 		hide();
 	}
 }
 
 void CameraEditor::_pressed() {
-
-	Node *sn = (node && preview->is_pressed()) ? node : NULL;
-	SpatialEditor::get_singleton()->set_custom_camera(sn);
 }
 
 void CameraEditor::_bind_methods() {
@@ -70,13 +57,6 @@ void CameraEditor::edit(Node *p_camera) {
 
 	if (!node) {
 		preview->set_pressed(false);
-		SpatialEditor::get_singleton()->set_custom_camera(NULL);
-	} else {
-
-		if (preview->is_pressed())
-			SpatialEditor::get_singleton()->set_custom_camera(p_camera);
-		else
-			SpatialEditor::get_singleton()->set_custom_camera(NULL);
 	}
 }
 
@@ -99,7 +79,6 @@ CameraEditor::CameraEditor() {
 void CameraEditorPlugin::edit(Object *p_object) {
 
 	SpatialEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
-	//camera_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool CameraEditorPlugin::handles(Object *p_object) const {
@@ -117,21 +96,7 @@ void CameraEditorPlugin::make_visible(bool p_visible) {
 }
 
 CameraEditorPlugin::CameraEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
-	/*	camera_editor = memnew( CameraEditor );
-	editor->get_viewport()->add_child(camera_editor);
-
-	camera_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	camera_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	camera_editor->set_margin(MARGIN_LEFT,60);
-	camera_editor->set_margin(MARGIN_RIGHT,0);
-	camera_editor->set_margin(MARGIN_TOP,0);
-	camera_editor->set_margin(MARGIN_BOTTOM,10);
-
-
-	camera_editor->hide();
-*/
 }
 
 CameraEditorPlugin::~CameraEditorPlugin() {

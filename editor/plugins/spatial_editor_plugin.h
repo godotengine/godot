@@ -620,8 +620,6 @@ private:
 
 	void _toggle_maximize_view(Object *p_viewport);
 
-	Node *custom_camera;
-
 	Object *_get_editor_data(Object *p_what);
 
 	Ref<Environment> viewport_environment;
@@ -680,7 +678,6 @@ public:
 	void update_all_gizmos();
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
-	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	Dictionary get_state() const;

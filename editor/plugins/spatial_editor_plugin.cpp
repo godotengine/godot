@@ -5263,7 +5263,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	undo_redo = p_editor->get_undo_redo();
 	VBoxContainer *vbc = this;
 
-	custom_camera = NULL;
 	singleton = this;
 	editor = p_editor;
 	editor_selection = editor->get_editor_selection();
