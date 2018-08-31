@@ -142,7 +142,7 @@ void DocDump::dump(const String &p_file) {
 					if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE)
 						type_name = arginfo.hint_string;
 					else if (arginfo.type == Variant::NIL)
-						type_name = "var";
+						type_name = "Variant";
 					else
 						type_name = Variant::get_type_name(arginfo.type);
 
