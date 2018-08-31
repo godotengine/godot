@@ -36,14 +36,14 @@
 			</description>
 		</signal>
 		<signal name="viewport_entered">
-			<argument index="0" name="viewport" type="Object">
+			<argument index="0" name="viewport" type="Viewport">
 			</argument>
 			<description>
 				Emitted when the VisibilityNotifier2D enters a [Viewport]'s view.
 			</description>
 		</signal>
 		<signal name="viewport_exited">
-			<argument index="0" name="viewport" type="Object">
+			<argument index="0" name="viewport" type="Viewport">
 			</argument>
 			<description>
 				Emitted when the VisibilityNotifier2D exits a [Viewport]'s view.

@@ -98,7 +98,7 @@
 		<signal name="resource_selected">
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="resource" type="Object">
+			<argument index="1" name="resource" type="Resource">
 			</argument>
 			<description>
 			</description>
