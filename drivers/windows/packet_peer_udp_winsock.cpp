@@ -155,6 +155,7 @@ void PacketPeerUDPWinsock::close() {
 		::closesocket(sockfd);
 	sockfd = -1;
 	sock_type = IP::TYPE_NONE;
+	sock_blocking = true;
 	rb.resize(16);
 	queue_count = 0;
 }
