@@ -205,8 +205,6 @@
 		<member name="audio/mix_rate" type="int" setter="" getter="">
 			Mix rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
-		<member name="audio/output_latency" type="int" setter="" getter="">
-		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
 			Setting to harcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
@@ -575,6 +573,14 @@
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="">
 			This is used by servers when used in multi threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
+		</member>
+		<member name="mono/debugger_agent/port" type="int" setter="" getter="">
+		</member>
+		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="">
+		</member>
+		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="">
+		</member>
+		<member name="mono/export/include_scripts_content" type="bool" setter="" getter="">
 		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.

@@ -445,13 +445,13 @@
 			</description>
 		</signal>
 		<signal name="resource_saved">
-			<argument index="0" name="resource" type="Object">
+			<argument index="0" name="resource" type="Resource">
 			</argument>
 			<description>
 			</description>
 		</signal>
 		<signal name="scene_changed">
-			<argument index="0" name="scene_root" type="Object">
+			<argument index="0" name="scene_root" type="Node">
 			</argument>
 			<description>
 				Emitted when user change scene. The argument is a root node of freshly opened scene.

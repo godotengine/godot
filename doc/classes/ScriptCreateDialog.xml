@@ -31,7 +31,7 @@
 	</methods>
 	<signals>
 		<signal name="script_created">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when the user clicks the OK button.
