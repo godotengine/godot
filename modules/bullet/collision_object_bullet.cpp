@@ -114,6 +114,7 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 	bt_collision_object->setUserIndex(type);
 	// Force the enabling of collision and avoid problems
 	set_collision_enabled(collisionsEnabled);
+	p_collisionObject->setCollisionFlags(p_collisionObject->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 }
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {

@@ -321,7 +321,8 @@ void RigidBodyBullet::main_shape_resetted() {
 void RigidBodyBullet::reload_body() {
 	if (space) {
 		space->remove_rigid_body(this);
-		space->add_rigid_body(this);
+		if (get_main_shape())
+			space->add_rigid_body(this);
 	}
 }
 

@@ -597,6 +597,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	godotFilterCallback = bulletnew(GodotFilterCallback);
 	gCalculateCombinedRestitutionCallback = &calculateGodotCombinedRestitution;
 	gCalculateCombinedFrictionCallback = &calculateGodotCombinedFriction;
+	gContactAddedCallback = &godotContactAddedCallback;
 
 	dynamicsWorld->setWorldUserInfo(this);
 
