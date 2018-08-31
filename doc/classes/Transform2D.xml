@@ -54,7 +54,7 @@
 		<method name="basis_xform">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
 				Transforms the given vector by this transform's basis (no translation).
@@ -63,7 +63,7 @@
 		<method name="basis_xform_inv">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
 				Inverse-transforms the given vector by this transform's basis (no translation).
@@ -145,7 +145,7 @@
 		<method name="xform">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
 				Transforms the given vector "v" by this transform.
@@ -154,7 +154,7 @@
 		<method name="xform_inv">
 			<return type="Transform2D">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
 				Inverse-transforms the given vector "v" by this transform.
