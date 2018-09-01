@@ -329,21 +329,21 @@
 			</description>
 		</signal>
 		<signal name="node_added">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted whenever a node is added to the SceneTree.
 			</description>
 		</signal>
 		<signal name="node_configuration_warning_changed">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted when a node's configuration changed. Only emitted in tool mode.
 			</description>
 		</signal>
 		<signal name="node_removed">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted whenever a node is removed from the SceneTree.

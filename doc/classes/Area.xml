@@ -182,14 +182,14 @@
 			</description>
 		</signal>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a [PhysicsBody] object enters.
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a [PhysicsBody] object exits.
@@ -198,7 +198,7 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
@@ -211,7 +211,7 @@
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
