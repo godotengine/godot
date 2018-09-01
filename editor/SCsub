@@ -81,18 +81,6 @@ if env['tools']:
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
 
-    # Authors
-    env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
-    env.CommandNoCache('#editor/authors.gen.h', "../AUTHORS.md", run_in_subprocess(editor_builders.make_authors_header))
-
-    # Donors
-    env.Depends('#editor/donors.gen.h', "../DONORS.md")
-    env.CommandNoCache('#editor/donors.gen.h', "../DONORS.md", run_in_subprocess(editor_builders.make_donors_header))
-
-    # License
-    env.Depends('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
-    env.CommandNoCache('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], run_in_subprocess(editor_builders.make_license_header))
-
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, ["#thirdparty/misc/clipper.cpp"])
 
