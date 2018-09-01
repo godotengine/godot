@@ -225,7 +225,6 @@ bool EditorHelpSearch::IncrementalSearch::work(uint64_t slot) {
 
 void EditorHelpSearch::_update_search() {
 	search_options->clear();
-	search_options->set_hide_root(true);
 
 	String term = search_box->get_text();
 	if (term.length() < 2)
@@ -307,6 +306,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_box->connect("text_changed", this, "_text_changed");
 	search_box->connect("gui_input", this, "_sbox_input");
 	search_options = memnew(Tree);
+	search_options->set_hide_root(true);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
@@ -397,6 +397,16 @@ void EditorHelpIndex::_notification(int p_what) {
 		//_update_icons
 		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
+
+		bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+		Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+
+		if (enable_rl) {
+			class_list->add_constant_override("draw_relationship_lines", 1);
+			class_list->add_color_override("relationship_line_color", rl_color);
+		} else {
+			class_list->add_constant_override("draw_relationship_lines", 0);
+		}
 	}
 }
 
@@ -410,7 +420,6 @@ void EditorHelpIndex::_update_class_list() {
 	class_list->clear();
 	tree_item_map.clear();
 	TreeItem *root = class_list->create_item();
-	class_list->set_hide_root(true);
 
 	String filter = search_box->get_text().strip_edges();
 	String to_select = "";
@@ -489,9 +498,20 @@ EditorHelpIndex::EditorHelpIndex() {
 
 	class_list = memnew(Tree);
 	vbc->add_margin_child(TTR("Class List:") + " ", class_list, true);
+	class_list->set_hide_root(true);
 	class_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	class_list->connect("item_activated", this, "_tree_item_selected");
+
+	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+
+	if (enable_rl) {
+		class_list->add_constant_override("draw_relationship_lines", 1);
+		class_list->add_color_override("relationship_line_color", rl_color);
+	} else {
+		class_list->add_constant_override("draw_relationship_lines", 0);
+	}
 
 	get_ok()->set_text(TTR("Open"));
 	set_title(TTR("Search Classes"));
