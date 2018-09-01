@@ -2368,9 +2368,9 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		2,
 		3,
 		4,
-		2,
-		3,
 		4,
+		9,
+		16,
 		1,
 		1,
 		1,
@@ -3307,7 +3307,9 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 		ERR_FAIL_COND_V(op->arguments[0]->type != Node::TYPE_VARIABLE, p_node);
 
-		DataType base = get_scalar_type(op->get_datatype());
+		DataType type = op->get_datatype();
+		DataType base = get_scalar_type(type);
+		int cardinality = get_cardinality(type);
 
 		Vector<ConstantNode::Value> values;
 
@@ -3318,19 +3320,9 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 				ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[i]);
 
 				if (get_scalar_type(cn->datatype) == base) {
-
-					int cardinality = get_cardinality(op->arguments[i]->get_datatype());
-					if (cn->values.size() == cardinality) {
-
-						for (int j = 0; j < cn->values.size(); j++) {
-							values.push_back(cn->values[j]);
-						}
-					} else if (cn->values.size() == 1) {
-
-						for (int j = 0; j < cardinality; j++) {
-							values.push_back(cn->values[0]);
-						}
-					} // else: should be filtered by the parser as it's an invalid constructor
+					for (int j = 0; j < cn->values.size(); j++) {
+						values.push_back(cn->values[j]);
+					}
 				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
 
 					ConstantNode::Value v;
@@ -3345,6 +3337,29 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 			} else {
 				return p_node;
 			}
+		}
+
+		if (values.size() == 1) {
+			if (type >= TYPE_MAT2 && type <= TYPE_MAT4) {
+				ConstantNode::Value value = values[0];
+				ConstantNode::Value zero;
+				zero.real = 0.0f;
+				int size = 2 + (type - TYPE_MAT2);
+
+				values.clear();
+				for (int i = 0; i < size; i++) {
+					for (int j = 0; j < size; j++) {
+						values.push_back(i == j ? value : zero);
+					}
+				}
+			} else {
+				for (int i = 1; i < cardinality; i++) {
+					values.push_back(values[0]);
+				}
+			}
+		} else if (values.size() != cardinality) {
+			ERR_PRINT("Failed to reduce expression, values and cardinality mismatch.");
+			return p_node;
 		}
 
 		ConstantNode *cn = alloc_node<ConstantNode>();
