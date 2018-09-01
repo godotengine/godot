@@ -230,7 +230,7 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		Variant p = get(E->get().name);
 
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
-			p = p.duplicate(p_subresources); //does not make a long of sense but should work?
+			r->set(E->get().name, p.duplicate(p_subresources));
 		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E->get().usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
 
 			RES sr = p;
