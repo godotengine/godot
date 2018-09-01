@@ -1475,9 +1475,9 @@ ScriptTextEditor::ScriptTextEditor() {
 	convert_case->set_name("convert_case");
 	edit_menu->get_popup()->add_child(convert_case);
 	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
-	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
-	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
-	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase"), KEY_MASK_SHIFT | KEY_F4), EDIT_TO_UPPERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase"), KEY_MASK_SHIFT | KEY_F5), EDIT_TO_LOWERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F6), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", this, "_edit_option");
 
 	highlighters["Standard"] = NULL;
@@ -1567,10 +1567,6 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F9);
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Goto Next Breakpoint"), KEY_MASK_CMD | KEY_PERIOD);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Goto Previous Breakpoint"), KEY_MASK_CMD | KEY_COMMA);
-
-	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Convert To Uppercase"), KEY_MASK_SHIFT | KEY_F4);
-	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Convert To Lowercase"), KEY_MASK_SHIFT | KEY_F3);
-	ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F2);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F);
 #ifdef OSX_ENABLED
