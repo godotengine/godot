@@ -1552,7 +1552,7 @@
 			<argument index="0" name="feature" type="String">
 			</argument>
 			<description>
-				Returns true, if the OS supports a certain feature. Features might be s3tc, etc, etc2 and pvrtc,
+				Returns [code]true[/code] if the OS supports a certain feature. Features might be s3tc, etc, etc2 and pvrtc,
 			</description>
 		</method>
 		<method name="immediate_begin">
@@ -3110,7 +3110,7 @@
 			<argument index="2" name="scale" type="bool">
 			</argument>
 			<description>
-				Sets a boot image. The color defines the background color and if scale is [code]true[/code], the image will be scaled to fit the screen size.
+				Sets a boot image. The color defines the background color and if scale is [code]true[/code] the image will be scaled to fit the screen size.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -3484,7 +3484,7 @@
 			<argument index="0" name="shrink" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], sets internal processes to shrink all image data to half the size.
+				If [code]true[/code] sets internal processes to shrink all image data to half the size.
 			</description>
 		</method>
 		<method name="texture_set_size_override">
@@ -3507,7 +3507,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the image will be stored in the texture's images array if overwritten.
+				If [code]true[/code] the image will be stored in the texture's images array if overwritten.
 			</description>
 		</method>
 		<method name="viewport_attach_camera">
@@ -3600,7 +3600,7 @@
 			<argument index="1" name="active" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], sets the viewport active, else sets it inactive.
+				If [code]true[/code] sets the viewport active, else sets it inactive.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_layer">
@@ -3659,7 +3659,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] a viewport's 3D rendering should be disabled.
+				If [code]true[/code] a viewport's 3D rendering is disabled.
 			</description>
 		</method>
 		<method name="viewport_set_disable_environment">
@@ -3670,7 +3670,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] rendering of a viewport's environment should be disabled.
+				If [code]true[/code] rendering of a viewport's environment is disabled.
 			</description>
 		</method>
 		<method name="viewport_set_global_canvas_transform">
@@ -3692,7 +3692,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport should render to hdr.
+				If [code]true[/code] the viewport renders to hdr.
 			</description>
 		</method>
 		<method name="viewport_set_hide_canvas">
@@ -3703,7 +3703,7 @@
 			<argument index="1" name="hidden" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport's canvas should not be rendered.
+				If [code]true[/code] the viewport's canvas is not rendered.
 			</description>
 		</method>
 		<method name="viewport_set_hide_scenario">
@@ -3795,7 +3795,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport should render its background as transparent.
+				If [code]true[/code] the viewport renders its background as transparent.
 			</description>
 		</method>
 		<method name="viewport_set_update_mode">
@@ -3806,7 +3806,7 @@
 			<argument index="1" name="update_mode" type="int" enum="VisualServer.ViewportUpdateMode">
 			</argument>
 			<description>
-				Sets when the viewport should be updated. See VIEWPORT_UPDATE_MODE_* constants for options.
+				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
 			</description>
 		</method>
 		<method name="viewport_set_usage">
@@ -3817,7 +3817,7 @@
 			<argument index="1" name="usage" type="int" enum="VisualServer.ViewportUsage">
 			</argument>
 			<description>
-				Sets what should be rendered in the viewport. See VIEWPORT_USAGE_* constants for options.
+				Sets the viewport's 2D/3D mode. See [enum ViewportUsage] constants for options.
 			</description>
 		</method>
 		<method name="viewport_set_use_arvr">
@@ -3828,7 +3828,7 @@
 			<argument index="1" name="use_arvr" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport should use augmented or virtual reality technologies. See [ARVRInterface].
+				If [code]true[/code] the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
 			</description>
 		</method>
 		<method name="viewport_set_vflip">
@@ -3839,7 +3839,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport's rendering should be flipped vertically.
+				If [code]true[/code] the viewport's rendering is flipped vertically.
 			</description>
 		</method>
 	</methods>
