@@ -168,14 +168,14 @@
 	</members>
 	<signals>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. Contact monitor and contacts reported must be enabled for this to work.
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a body shape exits contact with this one. Contact monitor and contacts reported must be enabled for this to work.
@@ -184,7 +184,7 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
@@ -198,7 +198,7 @@
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>

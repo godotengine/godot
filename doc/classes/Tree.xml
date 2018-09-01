@@ -244,7 +244,7 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<argument index="1" name="column" type="int">
 			</argument>
@@ -286,7 +286,7 @@
 			</description>
 		</signal>
 		<signal name="item_collapsed">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<description>
 				Emitted when an item is collapsed by a click on the folding arrow.
@@ -324,7 +324,7 @@
 			</description>
 		</signal>
 		<signal name="multi_selected">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<argument index="1" name="column" type="int">
 			</argument>
