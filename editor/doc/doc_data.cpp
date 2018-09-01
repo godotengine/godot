@@ -505,7 +505,7 @@ void DocData::generate(bool p_basic_types) {
 				ad.name = arginfo.name;
 
 				if (arginfo.type == Variant::NIL)
-					ad.type = "var";
+					ad.type = "Variant";
 				else
 					ad.type = Variant::get_type_name(arginfo.type);
 
@@ -518,7 +518,7 @@ void DocData::generate(bool p_basic_types) {
 
 			if (mi.return_val.type == Variant::NIL) {
 				if (mi.return_val.name != "")
-					method.return_type = "var";
+					method.return_type = "Variant";
 			} else {
 				method.return_type = Variant::get_type_name(mi.return_val.type);
 			}
