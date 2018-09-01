@@ -5109,6 +5109,10 @@ void EditorNode::_export_godot3_path(const String &p_path) {
 
 EditorNode::EditorNode() {
 
+	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
+	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
+	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
+
 	EditorHelp::generate_doc(); //before any editor classes are crated
 	SceneState::set_disable_placeholders(true);
 	editor_initialize_certificates(); //for asset sharing
@@ -6287,10 +6291,6 @@ EditorNode::EditorNode() {
 	//	force_top_viewport(true);
 	_edit_current();
 	current = NULL;
-
-	PhysicsServer::get_singleton()->set_active(false); // no physics by default if editor
-	Physics2DServer::get_singleton()->set_active(false); // no physics by default if editor
-	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
 	Globals::get_singleton()->set("debug/indicators_enabled", true);
 	Globals::get_singleton()->set("render/room_cull_enabled", false);
