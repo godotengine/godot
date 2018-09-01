@@ -466,9 +466,9 @@ void TextureProgress::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_progress_texture", "get_progress_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom), Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
 	ADD_GROUP("Tint", "tint_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_under", "get_tint_under");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_over", "get_tint_over");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_progress", "get_tint_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over"), "set_tint_over", "get_tint_over");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
 	ADD_GROUP("Radial Fill", "radial_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
