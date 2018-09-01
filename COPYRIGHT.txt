@@ -10,8 +10,9 @@
 # all corresponding files (also recursively in subfolders), apart from those
 # with a more explicit copyright statement.
 #
-# Licenses are given with their SPDX identifier, and are all included in
-# plain text at the end of this file (in alphabetical order).
+# Licenses are given with their debian/copyright short name (or SPDX identifier
+# if no standard short name exists) and are all included in plain text at the
+# end of this file (in alphabetical order).
 #
 # Disclaimer for thirdparty libraries:
 # ------------------------------------
@@ -139,7 +140,7 @@ Files: ./thirdparty/cvtt/
 Comment: Convection Texture Tools Stand-Alone Kernels
 Copyright: 2018, Eric Lasota
   2018, Microsoft Corp.
-License: MIT
+License: Expat
 
 Files: ./thirdparty/enet/
 Comment: ENet
@@ -373,7 +374,7 @@ Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
 Copyright: 2014-2017, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
-License: BSD-3-Clause
+License: BSD-3-clause
 
 Files: ./thirdparty/zlib/
 Comment: zlib
@@ -383,7 +384,7 @@ License: Zlib
 Files: ./thirdparty/zstd/
 Comment: Zstandard
 Copyright: 2016-2018, Facebook, Inc.
-License: BSD-3-Clause
+License: BSD-3-clause
 
 
 
