@@ -37,7 +37,7 @@
 			</description>
 		</method>
 		<method name="create_item">
-			<return type="Object">
+			<return type="TreeItem">
 			</return>
 			<argument index="0" name="parent" type="Object" default="null">
 			</argument>

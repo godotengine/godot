@@ -516,7 +516,7 @@ protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Object *_create_item(Object *p_parent, int p_idx = -1) {
+	TreeItem *_create_item(Object *p_parent, int p_idx = -1) {
 		return create_item(Object::cast_to<TreeItem>(p_parent), p_idx);
 	}
 
