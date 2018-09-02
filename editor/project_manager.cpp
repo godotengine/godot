@@ -1751,7 +1751,11 @@ ProjectManager::ProjectManager() {
 			} break;
 		}
 
+#ifndef OSX_ENABLED
+		// The macOS platform implementation uses its own hiDPI window resizing code
+		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
 		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
+#endif
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
