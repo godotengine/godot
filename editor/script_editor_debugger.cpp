@@ -1952,7 +1952,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
 		sc->add_child(inspector);
 
-		server = TCP_Server::create_ref();
+		server.instance();
 
 		pending_in_queue = 0;
 

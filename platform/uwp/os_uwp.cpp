@@ -43,8 +43,6 @@
 #include "drivers/windows/mutex_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
-#include "drivers/windows/stream_peer_tcp_winsock.h"
-#include "drivers/windows/tcp_server_winsock.h"
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
@@ -154,8 +152,6 @@ void OSUWP::initialize_core() {
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
 	NetSocketPosix::make_default();
-	TCPServerWinsock::make_default();
-	StreamPeerTCPWinsock::make_default();
 
 	// We need to know how often the clock is updated
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))

@@ -40,8 +40,6 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/semaphore_posix.h"
-#include "drivers/unix/stream_peer_tcp_posix.h"
-#include "drivers/unix/tcp_server_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/visual_server.h"
 
@@ -125,8 +123,6 @@ void OS_Unix::initialize_core() {
 
 #ifndef NO_NETWORK
 	NetSocketPosix::make_default();
-	TCPServerPosix::make_default();
-	StreamPeerTCPPosix::make_default();
 	IP_Unix::make_default();
 #endif
 
