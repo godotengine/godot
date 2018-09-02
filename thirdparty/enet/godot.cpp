@@ -108,7 +108,7 @@ int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
 
 ENetSocket enet_socket_create(ENetSocketType type) {
 
-	PacketPeerUDP *socket = PacketPeerUDP::create();
+	PacketPeerUDP *socket = memnew(PacketPeerUDP);
 	socket->set_blocking_mode(false);
 
 	return socket;
@@ -151,7 +151,7 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 	err = sock->put_packet((const uint8_t *)&w[0], size);
 	if (err != OK) {
 
-		if (err == ERR_UNAVAILABLE) { // blocking call
+		if (err == ERR_BUSY) { // Blocking call
 			return 0;
 		}
 

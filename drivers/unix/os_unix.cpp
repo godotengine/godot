@@ -37,7 +37,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/mutex_posix.h"
-#include "drivers/unix/packet_peer_udp_posix.h"
+#include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/semaphore_posix.h"
 #include "drivers/unix/stream_peer_tcp_posix.h"
@@ -124,9 +124,9 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
 #ifndef NO_NETWORK
+	NetSocketPosix::make_default();
 	TCPServerPosix::make_default();
 	StreamPeerTCPPosix::make_default();
-	PacketPeerUDPPosix::make_default();
 	IP_Unix::make_default();
 #endif
 
