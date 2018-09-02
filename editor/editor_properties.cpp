@@ -61,7 +61,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	emit_signal("property_changed", get_edited_property(), p_string, true);
+	emit_signal("property_changed", get_edited_property(), p_string, "", true);
 }
 
 void EditorPropertyText::update_property() {
@@ -96,11 +96,11 @@ EditorPropertyText::EditorPropertyText() {
 
 void EditorPropertyMultilineText::_big_text_changed() {
 	text->set_text(big_text->get_text());
-	emit_signal("property_changed", get_edited_property(), big_text->get_text(), true);
+	emit_signal("property_changed", get_edited_property(), big_text->get_text(), "", true);
 }
 
 void EditorPropertyMultilineText::_text_changed() {
-	emit_signal("property_changed", get_edited_property(), text->get_text(), true);
+	emit_signal("property_changed", get_edited_property(), text->get_text(), "", true);
 }
 
 void EditorPropertyMultilineText::_open_big_text() {
@@ -1049,14 +1049,14 @@ EditorPropertyEasing::EditorPropertyEasing() {
 
 ///////////////////// VECTOR2 /////////////////////////
 
-void EditorPropertyVector2::_value_changed(double val) {
+void EditorPropertyVector2::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
 	Vector2 v2;
 	v2.x = spin[0]->get_value();
 	v2.y = spin[1]->get_value();
-	emit_signal("property_changed", get_edited_property(), v2);
+	emit_signal("property_changed", get_edited_property(), v2, p_name);
 }
 
 void EditorPropertyVector2::update_property() {
@@ -1114,7 +1114,7 @@ EditorPropertyVector2::EditorPropertyVector2() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1128,7 +1128,7 @@ EditorPropertyVector2::EditorPropertyVector2() {
 
 ///////////////////// RECT2 /////////////////////////
 
-void EditorPropertyRect2::_value_changed(double val) {
+void EditorPropertyRect2::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1137,7 +1137,7 @@ void EditorPropertyRect2::_value_changed(double val) {
 	r2.position.y = spin[1]->get_value();
 	r2.size.x = spin[2]->get_value();
 	r2.size.y = spin[3]->get_value();
-	emit_signal("property_changed", get_edited_property(), r2);
+	emit_signal("property_changed", get_edited_property(), r2, p_name);
 }
 
 void EditorPropertyRect2::update_property() {
@@ -1196,7 +1196,7 @@ EditorPropertyRect2::EditorPropertyRect2() {
 		spin[i]->set_flat(true);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1210,7 +1210,7 @@ EditorPropertyRect2::EditorPropertyRect2() {
 
 ///////////////////// VECTOR3 /////////////////////////
 
-void EditorPropertyVector3::_value_changed(double val) {
+void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1218,7 +1218,7 @@ void EditorPropertyVector3::_value_changed(double val) {
 	v3.x = spin[0]->get_value();
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
-	emit_signal("property_changed", get_edited_property(), v3);
+	emit_signal("property_changed", get_edited_property(), v3, p_name);
 }
 
 void EditorPropertyVector3::update_property() {
@@ -1275,7 +1275,7 @@ EditorPropertyVector3::EditorPropertyVector3() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1288,7 +1288,7 @@ EditorPropertyVector3::EditorPropertyVector3() {
 }
 ///////////////////// PLANE /////////////////////////
 
-void EditorPropertyPlane::_value_changed(double val) {
+void EditorPropertyPlane::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1297,7 +1297,7 @@ void EditorPropertyPlane::_value_changed(double val) {
 	p.normal.y = spin[1]->get_value();
 	p.normal.z = spin[2]->get_value();
 	p.d = spin[3]->get_value();
-	emit_signal("property_changed", get_edited_property(), p);
+	emit_signal("property_changed", get_edited_property(), p, p_name);
 }
 
 void EditorPropertyPlane::update_property() {
@@ -1356,7 +1356,7 @@ EditorPropertyPlane::EditorPropertyPlane() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1370,7 +1370,7 @@ EditorPropertyPlane::EditorPropertyPlane() {
 
 ///////////////////// QUAT /////////////////////////
 
-void EditorPropertyQuat::_value_changed(double val) {
+void EditorPropertyQuat::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1379,7 +1379,7 @@ void EditorPropertyQuat::_value_changed(double val) {
 	p.y = spin[1]->get_value();
 	p.z = spin[2]->get_value();
 	p.w = spin[3]->get_value();
-	emit_signal("property_changed", get_edited_property(), p);
+	emit_signal("property_changed", get_edited_property(), p, p_name);
 }
 
 void EditorPropertyQuat::update_property() {
@@ -1437,7 +1437,7 @@ EditorPropertyQuat::EditorPropertyQuat() {
 		spin[i]->set_label(desc[i]);
 		bc->add_child(spin[i]);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
@@ -1451,7 +1451,7 @@ EditorPropertyQuat::EditorPropertyQuat() {
 
 ///////////////////// AABB /////////////////////////
 
-void EditorPropertyAABB::_value_changed(double val) {
+void EditorPropertyAABB::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1463,7 +1463,7 @@ void EditorPropertyAABB::_value_changed(double val) {
 	p.size.y = spin[4]->get_value();
 	p.size.z = spin[5]->get_value();
 
-	emit_signal("property_changed", get_edited_property(), p);
+	emit_signal("property_changed", get_edited_property(), p, p_name);
 }
 
 void EditorPropertyAABB::update_property() {
@@ -1517,7 +1517,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1525,7 +1525,7 @@ EditorPropertyAABB::EditorPropertyAABB() {
 
 ///////////////////// TRANSFORM2D /////////////////////////
 
-void EditorPropertyTransform2D::_value_changed(double val) {
+void EditorPropertyTransform2D::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1537,7 +1537,7 @@ void EditorPropertyTransform2D::_value_changed(double val) {
 	p[2][0] = spin[4]->get_value();
 	p[2][1] = spin[5]->get_value();
 
-	emit_signal("property_changed", get_edited_property(), p);
+	emit_signal("property_changed", get_edited_property(), p, p_name);
 }
 
 void EditorPropertyTransform2D::update_property() {
@@ -1590,7 +1590,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1598,7 +1598,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D() {
 
 ///////////////////// BASIS /////////////////////////
 
-void EditorPropertyBasis::_value_changed(double val) {
+void EditorPropertyBasis::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1613,7 +1613,7 @@ void EditorPropertyBasis::_value_changed(double val) {
 	p[1][2] = spin[7]->get_value();
 	p[2][2] = spin[8]->get_value();
 
-	emit_signal("property_changed", get_edited_property(), p);
+	emit_signal("property_changed", get_edited_property(), p, p_name);
 }
 
 void EditorPropertyBasis::update_property() {
@@ -1669,7 +1669,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1677,7 +1677,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 
 ///////////////////// TRANSFORM /////////////////////////
 
-void EditorPropertyTransform::_value_changed(double val) {
+void EditorPropertyTransform::_value_changed(double val, const String &p_name) {
 	if (setting)
 		return;
 
@@ -1695,7 +1695,7 @@ void EditorPropertyTransform::_value_changed(double val) {
 	p.origin[1] = spin[10]->get_value();
 	p.origin[2] = spin[11]->get_value();
 
-	emit_signal("property_changed", get_edited_property(), p);
+	emit_signal("property_changed", get_edited_property(), p, p_name);
 }
 
 void EditorPropertyTransform::update_property() {
@@ -1754,7 +1754,7 @@ EditorPropertyTransform::EditorPropertyTransform() {
 		g->add_child(spin[i]);
 		spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", this, "_value_changed");
+		spin[i]->connect("value_changed", this, "_value_changed", varray(desc[i]));
 	}
 	set_bottom_editor(g);
 	setting = false;
@@ -1764,12 +1764,12 @@ EditorPropertyTransform::EditorPropertyTransform() {
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
 
-	emit_signal("property_changed", get_edited_property(), p_color, true);
+	emit_signal("property_changed", get_edited_property(), p_color, "", true);
 }
 
 void EditorPropertyColor::_popup_closed() {
 
-	emit_signal("property_changed", get_edited_property(), picker->get_pick_color(), false);
+	emit_signal("property_changed", get_edited_property(), picker->get_pick_color(), "", false);
 }
 
 void EditorPropertyColor::_bind_methods() {
