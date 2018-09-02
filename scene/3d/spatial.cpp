@@ -185,10 +185,8 @@ void Spatial::_notification(int p_what) {
 
 					if (data.gizmo.is_valid()) {
 						data.gizmo->create();
-						if (data.gizmo->can_draw()) {
-							if (is_visible_in_tree()) {
-								data.gizmo->redraw();
-							}
+						if (is_visible_in_tree()) {
+							data.gizmo->redraw();
 						}
 						data.gizmo->transform();
 					}
@@ -423,10 +421,8 @@ void Spatial::set_gizmo(const Ref<SpatialGizmo> &p_gizmo) {
 	if (data.gizmo.is_valid() && is_inside_world()) {
 
 		data.gizmo->create();
-		if (data.gizmo->can_draw()) {
-			if (is_visible_in_tree()) {
-				data.gizmo->redraw();
-			}
+		if (is_visible_in_tree()) {
+			data.gizmo->redraw();
 		}
 		data.gizmo->transform();
 	}
@@ -452,12 +448,10 @@ void Spatial::_update_gizmo() {
 		return;
 	data.gizmo_dirty = false;
 	if (data.gizmo.is_valid()) {
-		if (data.gizmo->can_draw()) {
-			if (is_visible_in_tree())
-				data.gizmo->redraw();
-			else
-				data.gizmo->clear();
-		}
+		if (is_visible_in_tree())
+			data.gizmo->redraw();
+		else
+			data.gizmo->clear();
 	}
 #endif
 }

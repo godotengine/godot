@@ -720,6 +720,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						node->set_scene_instance_load_placeholder(false);
 						menu->set_item_checked(placeholder_item_idx, false);
 					}
+
+					SpatialEditor::get_singleton()->update_all_gizmos(node);
+
 					scene_tree->update_tree();
 				}
 			}

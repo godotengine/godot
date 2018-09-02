@@ -52,9 +52,6 @@
 
 #define HANDLE_HALF_SIZE 9.5
 
-bool EditorSpatialGizmo::can_draw() const {
-	return is_editable();
-}
 bool EditorSpatialGizmo::is_editable() const {
 
 	ERR_FAIL_COND_V(!spatial_node, false);
