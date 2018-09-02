@@ -338,7 +338,7 @@ class EditorPropertyVector2 : public EditorProperty {
 	GDCLASS(EditorPropertyVector2, EditorProperty)
 	EditorSpinSlider *spin[2];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -354,7 +354,7 @@ class EditorPropertyRect2 : public EditorProperty {
 	GDCLASS(EditorPropertyRect2, EditorProperty)
 	EditorSpinSlider *spin[4];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -370,7 +370,7 @@ class EditorPropertyVector3 : public EditorProperty {
 	GDCLASS(EditorPropertyVector3, EditorProperty)
 	EditorSpinSlider *spin[3];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -386,7 +386,7 @@ class EditorPropertyPlane : public EditorProperty {
 	GDCLASS(EditorPropertyPlane, EditorProperty)
 	EditorSpinSlider *spin[4];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -402,7 +402,7 @@ class EditorPropertyQuat : public EditorProperty {
 	GDCLASS(EditorPropertyQuat, EditorProperty)
 	EditorSpinSlider *spin[4];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -418,7 +418,7 @@ class EditorPropertyAABB : public EditorProperty {
 	GDCLASS(EditorPropertyAABB, EditorProperty)
 	EditorSpinSlider *spin[6];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -434,7 +434,7 @@ class EditorPropertyTransform2D : public EditorProperty {
 	GDCLASS(EditorPropertyTransform2D, EditorProperty)
 	EditorSpinSlider *spin[6];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -450,7 +450,7 @@ class EditorPropertyBasis : public EditorProperty {
 	GDCLASS(EditorPropertyBasis, EditorProperty)
 	EditorSpinSlider *spin[9];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -466,7 +466,7 @@ class EditorPropertyTransform : public EditorProperty {
 	GDCLASS(EditorPropertyTransform, EditorProperty)
 	EditorSpinSlider *spin[12];
 	bool setting;
-	void _value_changed(double p_val);
+	void _value_changed(double p_val, const String &p_name);
 
 protected:
 	void _notification(int p_what);
