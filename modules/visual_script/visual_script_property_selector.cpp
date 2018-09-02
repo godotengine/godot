@@ -31,6 +31,7 @@
 #include "visual_script_property_selector.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "editor_scale.h"
 #include "modules/visual_script/visual_script.h"
 #include "modules/visual_script/visual_script_builtin_funcs.h"
@@ -176,10 +177,8 @@ void VisualScriptPropertySelector::_update_search() {
 				Ref<Texture> icon;
 				if (E->get().name == "Script Variables") {
 					icon = get_icon("Script", "EditorIcons");
-				} else if (has_icon(E->get().name, "EditorIcons")) {
-					icon = get_icon(E->get().name, "EditorIcons");
 				} else {
-					icon = get_icon("Object", "EditorIcons");
+					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
 				}
 				category->set_icon(0, icon);
 				continue;
@@ -289,10 +288,8 @@ void VisualScriptPropertySelector::_update_search() {
 			if (E->get().name == "*Script Methods") {
 				icon = get_icon("Script", "EditorIcons");
 				script_methods = true;
-			} else if (has_icon(rep, "EditorIcons")) {
-				icon = get_icon(rep, "EditorIcons");
 			} else {
-				icon = get_icon("Object", "EditorIcons");
+				icon = EditorNode::get_singleton()->get_class_icon(rep);
 			}
 			category->set_icon(0, icon);
 

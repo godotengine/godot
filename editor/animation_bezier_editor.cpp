@@ -30,6 +30,8 @@
 
 #include "animation_bezier_editor.h"
 
+#include "editor/editor_node.h"
+
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 	float h = p_h;
 	h = (h - v_scroll) / v_zoom;
@@ -288,12 +290,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			int h = font->get_height();
 
 			if (node) {
-				Ref<Texture> icon;
-				if (has_icon(node->get_class(), "EditorIcons")) {
-					icon = get_icon(node->get_class(), "EditorIcons");
-				} else {
-					icon = get_icon("Node", "EditorIcons");
-				}
+				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
 				h = MAX(h, icon->get_height());
 

@@ -847,11 +847,7 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 			Spatial *spat = selection_results[i].item;
 
-			Ref<Texture> icon;
-			if (spat->has_meta("_editor_icon"))
-				icon = spat->get_meta("_editor_icon");
-			else
-				icon = get_icon(has_icon(spat->get_class(), "EditorIcons") ? spat->get_class() : String("Object"), "EditorIcons");
+			Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
 
 			String node_path = "/" + root_name + "/" + root_path.rel_path_to(spat->get_path());
 

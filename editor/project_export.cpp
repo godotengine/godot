@@ -655,16 +655,9 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		file->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		file->set_text(0, p_dir->get_file(i));
 
-		Ref<Texture> tex;
-		if (has_icon(type, editor_icons)) {
-			tex = get_icon(type, editor_icons);
-		} else {
-			tex = get_icon("Object", editor_icons);
-		}
-
 		String path = p_dir->get_file_path(i);
 
-		file->set_icon(0, tex);
+		file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
 		file->set_editable(0, true);
 		file->set_checked(0, current->has_export_file(path));
 		file->set_metadata(0, path);

@@ -428,8 +428,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			ObjectID id = ObjectID(p_data[i + 3]);
 
 			it->set_text(0, p_data[i + 1]);
-			if (has_icon(p_data[i + 2], "EditorIcons"))
-				it->set_icon(0, get_icon(p_data[i + 2], "EditorIcons"));
+			Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(p_data[i + 2], "");
+			if (icon.is_valid())
+				it->set_icon(0, icon);
 			it->set_metadata(0, id);
 
 			if (id == inspected_object_id) {

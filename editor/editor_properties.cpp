@@ -846,18 +846,11 @@ void EditorPropertyObjectID::update_property() {
 	if (type == "")
 		type = "Object";
 
-	String icon_type = type;
-	if (has_icon(icon_type, "EditorIcons")) {
-		type = icon_type;
-	} else {
-		type = "Object";
-	}
-
 	ObjectID id = get_edited_object()->get(get_edited_property());
 	if (id != 0) {
 		edit->set_text(type + " ID: " + itos(id));
 		edit->set_disabled(false);
-		edit->set_icon(get_icon(icon_type, "EditorIcons"));
+		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
 		edit->set_text(TTR("[Empty]"));
 		edit->set_disabled(true);
@@ -1858,14 +1851,7 @@ void EditorPropertyNodePath::update_property() {
 	ERR_FAIL_COND(!target_node);
 
 	assign->set_text(target_node->get_name());
-
-	Ref<Texture> icon;
-	if (has_icon(target_node->get_class(), "EditorIcons"))
-		icon = get_icon(target_node->get_class(), "EditorIcons");
-	else
-		icon = get_icon("Node", "EditorIcons");
-
-	assign->set_icon(icon);
+	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
 void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types) {
@@ -2363,13 +2349,7 @@ void EditorPropertyResource::update_property() {
 		assign->set_text(TTR("[empty]"));
 	} else {
 
-		Ref<Texture> icon;
-		if (has_icon(res->get_class(), "EditorIcons"))
-			icon = get_icon(res->get_class(), "EditorIcons");
-		else
-			icon = get_icon("Node", "EditorIcons");
-
-		assign->set_icon(icon);
+		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Node"));
 
 		if (res->get_name() != String()) {
 			assign->set_text(res->get_name());

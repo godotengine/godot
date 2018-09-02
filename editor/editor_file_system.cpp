@@ -1358,6 +1358,7 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 		}
 		ScriptServer::add_global_class(files[i]->script_class_name, files[i]->script_class_extends, lang, p_dir->get_file_path(i));
 		EditorNode::get_editor_data().script_class_set_icon_path(files[i]->script_class_name, files[i]->script_class_icon_path);
+		EditorNode::get_editor_data().script_class_set_name(files[i]->file, files[i]->script_class_name);
 	}
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		_scan_script_classes(p_dir->get_subdir(i));

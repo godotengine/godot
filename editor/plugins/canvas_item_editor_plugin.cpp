@@ -1905,11 +1905,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				for (int i = 0; i < selection_results.size(); i++) {
 					CanvasItem *item = selection_results[i].item;
 
-					Ref<Texture> icon;
-					if (item->has_meta("_editor_icon"))
-						icon = item->get_meta("_editor_icon");
-					else
-						icon = get_icon(has_icon(item->get_class(), "EditorIcons") ? item->get_class() : String("Object"), "EditorIcons");
+					Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
 					String node_path = "/" + root_name + "/" + root_path.rel_path_to(item->get_path());
 
 					selection_menu->add_item(item->get_name());
@@ -2046,10 +2042,7 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 
 			_HoverResult hover_result;
 			hover_result.position = canvas_item->get_global_transform_with_canvas().get_origin();
-			if (has_icon(canvas_item->get_class(), "EditorIcons"))
-				hover_result.icon = get_icon(canvas_item->get_class(), "EditorIcons");
-			else
-				hover_result.icon = get_icon("Object", "EditorIcons");
+			hover_result.icon = EditorNode::get_singleton()->get_object_icon(canvas_item);
 			hover_result.name = canvas_item->get_name();
 
 			hovering_results_tmp.push_back(hover_result);

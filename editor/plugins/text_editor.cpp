@@ -30,6 +30,8 @@
 
 #include "text_editor.h"
 
+#include "editor_node.h"
+
 void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	highlighters[p_highlighter->get_name()] = p_highlighter;
 	highlighter_menu->add_radio_check_item(p_highlighter->get_name());
@@ -158,10 +160,7 @@ String TextEditor::get_name() {
 
 Ref<Texture> TextEditor::get_icon() {
 
-	if (get_parent_control() && get_parent_control()->has_icon(text_file->get_class(), "EditorIcons")) {
-		return get_parent_control()->get_icon(text_file->get_class(), "EditorIcons");
-	}
-	return Ref<Texture>();
+	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
 }
 
 RES TextEditor::get_edited_resource() const {
