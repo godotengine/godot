@@ -1502,14 +1502,28 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		String icon_path;
 		String name = p_script->get_language()->get_global_class_name(p_script->get_path(), NULL, &icon_path);
 		if (ScriptServer::is_global_class(name)) {
-			RES icon = ResourceLoader::load(icon_path);
+			RES icon = icon_path.length() ? ResourceLoader::load(icon_path) : RES();
+			Ref<Script> inherited_script = p_script->get_base_script();
+
+			while (icon.is_null() && inherited_script.is_valid()) {
+				String inherited_icon_path;
+				inherited_script->get_language()->get_global_class_name(inherited_script->get_path(), NULL, &inherited_icon_path);
+				RES inherited_icon = inherited_icon_path.length() ? ResourceLoader::load(inherited_icon_path) : RES();
+				if (inherited_icon.is_valid())
+					icon = inherited_icon;
+				inherited_script = inherited_script->get_base_script();
+			}
+
+			RES base_icon = get_icon(E->get()->get_class(), "EditorIcons");
+			if (icon.is_null())
+				icon = base_icon;
+
 			editor_data->get_undo_redo().add_do_method(E->get(), "set_meta", "_editor_icon", icon);
 			String existing_name = existing.is_valid() ? existing->get_language()->get_global_class_name(existing->get_path()) : String();
-			if (existing.is_null() || !ScriptServer::is_global_class(existing_name)) {
-				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", get_icon(E->get()->get_class(), "EditorIcons"));
-			} else {
+			if (ScriptServer::is_global_class(existing_name))
 				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", editor_data->script_class_get_icon_path(existing_name));
-			}
+			else
+				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", base_icon);
 		}
 	}
 
