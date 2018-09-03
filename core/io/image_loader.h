@@ -70,20 +70,21 @@ public:
 
 class ImageLoader {
 
-	enum {
-		MAX_LOADERS = 8
-	};
+	static Vector<ImageFormatLoader *> loader;
 	friend class ResourceFormatLoaderImage;
-	static ImageFormatLoader *loader[MAX_LOADERS];
-	static int loader_count;
 
 protected:
 public:
 	static Error load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom = NULL, bool p_force_linear = false, float p_scale = 1.0);
 	static void get_recognized_extensions(List<String> *p_extensions);
-	static bool recognize(const String &p_extension);
+	static ImageFormatLoader *recognize(const String &p_extension);
 
 	static void add_image_format_loader(ImageFormatLoader *p_loader);
+	static void remove_image_format_loader(ImageFormatLoader *p_loader);
+
+	static const Vector<ImageFormatLoader *> &get_image_format_loaders();
+
+	static void cleanup();
 };
 
 class ResourceFormatLoaderImage : public ResourceFormatLoader {
