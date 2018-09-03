@@ -1992,6 +1992,8 @@ void Main::cleanup() {
 		memdelete(arvr_server);
 	}
 
+	ImageLoader::cleanup();
+
 	unregister_driver_types();
 	unregister_module_types();
 	unregister_platform_apis();
