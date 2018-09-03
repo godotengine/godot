@@ -321,9 +321,25 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
+	if (p_scale) {
 
-	screenrect = imgrect;
-	screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.position.x = (window_w - screenrect.size.x) / 2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.position.y = (window_h - screenrect.size.y) / 2;
+		}
+	} else {
+
+		screenrect = imgrect;
+		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+	}
 
 	RasterizerStorageGLES2::Texture *t = storage->texture_owner.get(texture);
 	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
