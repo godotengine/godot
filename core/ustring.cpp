@@ -3528,6 +3528,20 @@ String String::pad_zeros(int p_digits) const {
 	return s;
 }
 
+String String::trim(const String &to_trim) const {
+	String s = *this;
+
+	while (s.begins_with(to_trim)) {
+		s = s.trim_prefix(to_trim);
+	}
+
+	while (s.ends_with(to_trim)) {
+		s = s.trim_suffix(to_trim);
+	}
+
+	return s;
+}
+
 String String::trim_prefix(const String &p_prefix) const {
 
 	String s = *this;

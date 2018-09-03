@@ -359,9 +359,9 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 
 	is_path_valid = false;
 	is_new_script_created = true;
-	String p = p_path;
+	String p = p_path.trim(" ");
 
-	if (p == "") {
+	if (p == "" || p.trim(".") == p.get_extension()) {
 		_msg_path_valid(false, TTR("Path is empty"));
 		_update_dialog();
 		return;
