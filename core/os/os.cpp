@@ -632,10 +632,13 @@ void OS::center_window() {
 
 	if (is_window_fullscreen()) return;
 
+	Point2 sp = get_screen_position(get_current_screen());
 	Size2 scr = get_screen_size(get_current_screen());
 	Size2 wnd = get_real_window_size();
-	int x = scr.width / 2 - wnd.width / 2;
-	int y = scr.height / 2 - wnd.height / 2;
+
+	int x = sp.width + (scr.width - wnd.width) / 2;
+	int y = sp.height + (scr.height - wnd.height) / 2;
+
 	set_window_position(Vector2(x, y));
 }
 
