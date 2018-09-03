@@ -2579,7 +2579,23 @@ bool Viewport::gui_has_modal_stack() const {
 	return gui.modal_stack.size();
 }
 
+void Viewport::gui_clear_modal_stack() {
+
+	if (!gui.modal_stack.size()) {
+		return;
+	}
+
+	Control *modal;
+	while (!gui.modal_stack.empty()) {
+		modal = gui.modal_stack.back()->get();
+		modal->notification(Control::NOTIFICATION_MODAL_CLOSE);
+		modal->_modal_stack_remove();
+		modal->hide();
+	}
+}
+
 void Viewport::set_disable_input(bool p_disable) {
+
 	disable_input = p_disable;
 }
 
@@ -2589,6 +2605,7 @@ bool Viewport::is_input_disabled() const {
 }
 
 void Viewport::set_disable_3d(bool p_disable) {
+
 	disable_3d = p_disable;
 	VS::get_singleton()->viewport_set_disable_3d(viewport, p_disable);
 }
@@ -2701,6 +2718,7 @@ bool Viewport::is_snap_controls_to_pixels_enabled() const {
 bool Viewport::gui_is_dragging() const {
 	return gui.dragging;
 }
+
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);
@@ -2786,6 +2804,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
+
+	ClassDB::bind_method(D_METHOD("gui_clear_modal_stack"), &Viewport::gui_clear_modal_stack);
+
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
 

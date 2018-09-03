@@ -90,6 +90,13 @@
 				Returns the visible rectangle in global screen coordinates.
 			</description>
 		</method>
+		<method name="gui_clear_modal_stack">
+			<return type="void">
+			</return>
+			<description>
+				Clears all modals present in the Viewport.
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant">
 			</return>
