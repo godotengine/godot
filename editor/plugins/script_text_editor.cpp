@@ -1556,7 +1556,7 @@ void ScriptTextEditor::register_editor() {
 #endif
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_T);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent To Spaces"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Y);
-	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent To Tabs"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_X);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent To Tabs"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_I);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
 
 #ifdef OSX_ENABLED
