@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextLayoutItemTable" inherits="TextLayoutItem" category="Core" version="3.0-alpha">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_cell">
+			<return type="void">
+			</return>
+			<argument index="0" name="layout" type="TextLayout">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell" qualifiers="const">
+			<return type="TextLayout">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cell_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_column_count">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_hseparation">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_vseparation">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="remove_cell">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cell">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="layout" type="TextLayout">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_column_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="columns" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_hseparation">
+			<return type="void">
+			</return>
+			<argument index="0" name="hseparation" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_vseparation">
+			<return type="void">
+			</return>
+			<argument index="0" name="vseparation" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="column_count" type="int" setter="set_column_count" getter="get_column_count">
+		</member>
+		<member name="hseparation" type="int" setter="set_hseparation" getter="get_hseparation">
+		</member>
+		<member name="vseparation" type="int" setter="set_vseparation" getter="get_vseparation">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

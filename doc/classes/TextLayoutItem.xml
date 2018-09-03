@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextLayoutItem" inherits="Resource" category="Core" version="3.0-alpha">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_align">
+			<return type="int" enum="TextVAlign">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_align_percentage">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_margins">
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_align">
+			<return type="void">
+			</return>
+			<argument index="0" name="align" type="int" enum="TextVAlign">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_align_percentage">
+			<return type="void">
+			</return>
+			<argument index="0" name="align_percentage" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_margins">
+			<return type="void">
+			</return>
+			<argument index="0" name="margins" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="align" type="int" setter="set_align" getter="get_align" enum="TextVAlign">
+		</member>
+		<member name="align_percentage" type="float" setter="set_align_percentage" getter="get_align_percentage">
+		</member>
+		<member name="margins" type="Rect2" setter="set_margins" getter="get_margins">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

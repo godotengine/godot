@@ -110,6 +110,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/text_layout_rect.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/texture_rect.h"
@@ -639,8 +640,19 @@ void register_scene_types() {
 	ClassDB::register_class<DynamicFont>();
 
 	DynamicFont::initialize_dynamic_fonts();
+	Font::initialize_hex_font();
+	TextLayout::initialize_icu();
 
 	ClassDB::register_virtual_class<StyleBox>();
+
+	ClassDB::register_class<TextHitInfo>();
+	ClassDB::register_class<TextLayout>();
+	ClassDB::register_class<TextLayoutItemText>();
+	ClassDB::register_class<TextLayoutItemImage>();
+	ClassDB::register_class<TextLayoutItemSpan>();
+	ClassDB::register_class<TextLayoutItemTable>();
+	ClassDB::register_class<TextLayoutRect>();
+
 	ClassDB::register_class<StyleBoxEmpty>();
 	ClassDB::register_class<StyleBoxTexture>();
 	ClassDB::register_class<StyleBoxFlat>();
@@ -744,6 +756,8 @@ void unregister_scene_types() {
 	memdelete(resource_loader_texture_layered);
 	memdelete(resource_loader_theme);
 
+	TextLayout::finish_icu();
+	Font::finish_hex_font();
 	DynamicFont::finish_dynamic_fonts();
 
 	if (resource_saver_text) {

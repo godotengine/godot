@@ -1,0 +1,513 @@
+/*
+ * Default CSS style sheet for the ICU4C Open Source readme
+ * Copyright (C) 2016 and later: Unicode, Inc. and others.
+ * License & terms of use: http://www.unicode.org/copyright.html
+ * Copyright (C) 2005-2014, International Business Machines
+ * Corporation and others.  All Rights Reserved.
+ */
+
+/* Global styles */
+
+body,p,li,ol,ul,th,td {
+	font-size: 1em;
+	font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+}
+
+body {
+	margin: 1em;
+}
+
+body.draft {
+	background-image: url(images/draftbg.png);
+}
+
+body .only-milestone,
+body .only-draft,
+body .only-rc {
+    display:  none;
+}
+
+body.milestone .only-milestone {
+    display:  inherit !important;
+}
+
+body.draft .only-draft {
+    display:  inherit !important;
+}
+
+body.rc .only-rc {
+    display:  inherit !important;
+}
+
+
+.mainbody {
+	padding: 1em;
+}
+
+
+h1,h2,h3,h4,h5 {    
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+/*
+ * Customize the headers to have less space around them than usual
+ */
+
+h1 {
+	margin-bottom: .5em;
+	margin-top: .5em;
+	padding-bottom: .5em;
+	padding-top: .5em;
+	font-weight: 700;
+	font-size: 20pt;
+	text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+}
+
+h2 {
+	margin-bottom: 0.5em;
+	padding-left: 4px;
+	margin-top: 12pt;
+	font-weight: 700;
+	font-size: 2em;
+	page-break-before: always;
+}
+
+h2 a {
+	text-decoration: none;
+	color: black;
+}
+
+h2 a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+h3 {
+	margin-bottom: 0pt;
+	padding-left: 0;
+	margin-left: 1em;
+	margin-top: 1em;
+	padding-bottom: 0.2em;
+	font-size: 1.5em;
+}
+
+h3 a {
+	text-decoration: none;
+	color: black;
+}
+
+h3 a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+h4 {
+	margin-left: 1.5em;
+	margin-bottom: 0pt;
+	margin-top: 12pt;
+	font-size: 1.0em;
+	font-weight: bolder;
+}
+
+h4 a {
+	text-decoration: none;
+	color: black;
+}
+
+h4 a:hover {
+	color: blue;
+	text-decoration: underline;
+}
+
+h5, h6 {
+	margin-left: 1.8em;
+	margin-bottom: 0pt;
+	margin-top: 12pt;
+	padding-left: 0.75em;
+	font-size: x-small;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+p,pre,table,ul,ol,dl {
+	margin-left: 2em;
+}
+
+p {
+    margin-top:  0.5em;
+    margin-bottom:  0.5em;
+}
+
+/*
+ * Add a little bit of space above li's
+ */
+li {
+    margin-top:  0.25em;
+}
+
+/*
+ * Navigation sidebar on the left hand of most pages
+ */
+
+td.sidebar1 {
+	background-color: #99CCFF;
+	font-weight: 700;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 1em;
+	padding-left: 0.2em;
+	white-space: nowrap;
+}
+
+td.sidebar2 {
+	background-color: #99CCFF;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left: 1px;
+	padding-right: 0.5em;
+	white-space: nowrap;
+	text-decoration: none;
+	display: block;
+}
+
+td.sidebar2:hover {
+	background-color: #EEEEFF;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left: 1px;
+	padding-right: 0.5em;
+}
+
+a.sidebar2 {
+	text-decoration: none;
+	display: block;
+	width: 100%;
+}
+
+a.sidebar2:link {
+	color: #000099;
+	display: block;
+}
+
+a.sidebar2:hover {
+	background-color: #EEEEFF;
+	display: block;
+}
+
+.underlinehover:hover {
+	background-color: #EEEEFF;
+	text-decoration: underline;
+}
+
+/* This is the faded header at the top */
+
+td.fadedtop {
+	background-color: #006699;
+	background-image: url(http://www.icu-project.org/images/gr100.gif);
+}
+
+/* Related site on the left */
+
+p.relatedsite {
+	color: White;
+	font-weight: 700;
+	font-size: 10pt;
+	margin-top: 1em;
+	margin-bottom: 0;
+	padding-left: 0.2em;
+	white-space: nowrap;
+}
+
+/* Related site on the left */
+
+p.sidebar3 {
+	margin-top: 0.75em;
+	margin-bottom: 0;
+	padding-left: 0.8em;
+}
+
+a.sidebar3 {
+	font-size: 0.9em;
+	text-decoration: none;
+}
+
+a.sidebar3:link {
+	text-decoration: none;
+	color: White;
+}
+
+a.sidebar3:hover {
+	text-decoration: underline;
+}
+
+/* FAQ */
+
+li.faq_contents {
+	font-weight: 500;
+}
+
+p.faq_q {
+	font-weight: 700;
+	margin-bottom: 0px;
+}
+
+p.faq_a {
+	margin-top: 0px;
+}
+
+/* News items */
+
+table.newsItem {
+	padding-left: 1em;
+	padding-right: 1em;
+	border-width: medium;
+}
+
+th.newsItem {
+	background-color: #666666;
+	color: White;
+}
+
+td.newsItem {
+	background-color: #CCCCCC;
+}
+
+td.release-line,th.release-line {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	white-space: nowrap;
+	border: 1px;
+}
+
+.note {
+	font-style: italic;
+	font-size: small;
+	margin-left: 1em;
+}
+
+
+p.note::before {
+    content: 'Note:';
+    font-weight: bold;
+    margin-right:  1em;
+}
+p.note {
+    border:  1px solid gray;
+    padding:  0.5em;
+    background-color: #fdfdd9;
+}
+
+samp {
+	margin-left: 1em;
+	margin-right: 2em;
+	border-style: groove;
+	padding: 1em;
+	display: block;
+	background-color: #EEEEEE
+}
+
+table.rtable caption {
+	margin-left: 2px;
+	margin-right: 2px;
+	padding: 3px;
+	font-weight: bold;
+	background-color: #dee2ff;
+	text-align: left;
+}
+
+table.rtable tr th {
+	background-color: #dee2ff;
+	text-align: left;
+}
+
+table.rtable tr td {
+	background-color: #c0c0fd;
+	padding: 3px;
+}
+
+table.rtable tr.broken td {
+	background-color: #fbb;
+	border: 1px dashed gray;
+	padding: 3px;
+	font-weight: bold;
+}
+
+table.rtable tr.rarely td {
+	background-color: #efe9c2;
+	padding: 3px;
+	font-style: italic;
+}
+
+/*  APIChangeReport specific things */
+
+.row0 {
+	background-color: white;
+}
+
+.row1 {
+	background-color: #dfd;
+}
+
+.verchange {
+	color: red;
+	font-weight: bold;
+	font-size: large;
+}
+
+.stabchange {
+	color: red;
+	font-size: large;
+}
+
+.bigwarn {
+	color: red;
+	background-color: white;
+	font-size: large;
+	margin: 0.5 em;
+}
+
+
+td.bornstable {
+	
+}
+td.bornstable .bigwarn {
+	font-size: small;
+	white-space: nowrap;
+}
+
+table.genTable {
+	border-collapse: collapse;
+	border: 1px solid black;
+}
+
+/* 'everything inc version */
+
+table.gentable td {
+	border: 1px solid gray;
+	padding: 0.25em;
+	font-size: small;
+}
+
+/* not version */
+
+table.genTable td.file,
+table.genTable td.proto {
+	border: none;
+	font-size: medium;
+}
+
+table.genTable td.file {
+	font-family: monospace;
+	font-weight: bold;
+}
+
+div.other .row0 {
+	background-color: white;
+}
+
+div.other .row1 {
+	background-color: #ddf;
+}
+
+table.docTable {
+	border-collapse: collapse;
+	border: 1px solid black;
+}
+
+/* 'everything inc version */
+
+table.docTable td,
+table.docTable th {
+	border: 1px solid gray;
+	padding: 0.25em;
+	font-size: small;
+}
+
+/* not version */
+
+table.docTable td.file,
+table.docTable td.proto {
+	border: none;
+	font-size: medium;
+}
+
+table.docTable td.file {
+	font-family: monospace;
+	font-weight: bold;
+}
+
+abbr {
+	border-bottom: 1px dashed #0B0;
+}
+
+h2.TOC {
+	page-break-before: auto;
+}
+
+body.readme {
+	
+}
+
+caption {
+	font-weight: bold;
+	text-align: left
+}
+
+div.indent {
+	margin-left: 2em
+}
+
+ul.TOC {
+    font-size:  medium;
+}
+
+ul.TOC,
+ul.TOC li,
+ul.TOC li ul, 
+ul.TOC li ul li {
+    margin-left: 0.25em;
+    margin-top: 0.25em;
+}
+
+ul.TOC li {
+    padding-left:  1em;
+    margin-left:  0.25em;
+}
+ul.TOC li li {
+    padding-left:  1em;
+    margin-left:  0.25em;
+}
+
+pre.samp,samp {
+    margin-top:  0.5em;
+    margin-bottom:  0.5em;
+	margin-left: 1em;
+	border-style: groove;
+	padding: 1em;
+	display: block;
+	background-color: #f9fbfa;
+	font-family: "Source Code Pro", "Everson Mono", "Courier New", Courier, mono;
+	border-radius: 12px;
+	border-bottom-color: gray;
+	border-right-color: gray;
+	white-space: pre-wrap;
+}
+
+td.proto {
+	font-size: smaller;
+}
+
+
+
+@media print {
+	div#toc {
+		display: none;
+	}
+	
+	table,tr,td,div {
+		page-break-inside: auto;
+	}
+}

@@ -36,6 +36,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/shader.h"
+#include "scene/resources/text_layout.h"
 #include "scene/resources/texture.h"
 
 class CanvasLayer;

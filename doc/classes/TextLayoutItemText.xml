@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextLayoutItemText" inherits="TextLayoutItem" category="Core" version="3.0-alpha">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_back_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_features" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_font" qualifiers="const">
+			<return type="Font">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_fore_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_invis_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_overline_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_overline_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rise" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_strikeout_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_strikeout_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_string">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_underline_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_underline_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_back_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_features">
+			<return type="void">
+			</return>
+			<argument index="0" name="features" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_font">
+			<return type="void">
+			</return>
+			<argument index="0" name="font" type="Font">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fore_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_invis_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_language">
+			<return type="void">
+			</return>
+			<argument index="0" name="language" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_overline_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_overline_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rise">
+			<return type="void">
+			</return>
+			<argument index="0" name="rise" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_strikeout_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_strikeout_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_underline_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_underline_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="back_color" type="Color" setter="set_back_color" getter="get_back_color">
+		</member>
+		<member name="features" type="String" setter="set_features" getter="get_features">
+		</member>
+		<member name="font" type="Font" setter="set_font" getter="get_font">
+		</member>
+		<member name="fore_color" type="Color" setter="set_fore_color" getter="get_fore_color">
+		</member>
+		<member name="invis_color" type="Color" setter="set_invis_color" getter="get_invis_color">
+		</member>
+		<member name="language" type="String" setter="set_language" getter="get_language">
+		</member>
+		<member name="overline_color" type="Color" setter="set_overline_color" getter="get_overline_color">
+		</member>
+		<member name="overline_width" type="int" setter="set_overline_width" getter="get_overline_width">
+		</member>
+		<member name="rise" type="float" setter="set_rise" getter="get_rise">
+		</member>
+		<member name="strikeout_color" type="Color" setter="set_strikeout_color" getter="get_strikeout_color">
+		</member>
+		<member name="strikeout_width" type="int" setter="set_strikeout_width" getter="get_strikeout_width">
+		</member>
+		<member name="string" type="String" setter="set_string" getter="get_string">
+		</member>
+		<member name="underline_color" type="Color" setter="set_underline_color" getter="get_underline_color">
+		</member>
+		<member name="underline_width" type="int" setter="set_underline_width" getter="get_underline_width">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

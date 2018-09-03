@@ -32,21 +32,31 @@
 #define FONT_H
 
 #include "map.h"
+#include "pair.h"
 #include "resource.h"
 #include "scene/resources/texture.h"
+#include <hb.h>
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+//http://font.gohu.org/ (WTFPL) based 5x7 hex number font for char code box drawing
+static const unsigned char _hex_box_img_data[167] = {
+	0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x50, 0x00, 0x00, 0x00, 0x07, 0x01, 0x03, 0x00, 0x00, 0x00, 0xA5, 0x54, 0x58, 0xA1, 0x00, 0x00, 0x00, 0x06, 0x50, 0x4C, 0x54, 0x45, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xA5, 0xD9, 0x9F, 0xDD, 0x00, 0x00, 0x00, 0x01, 0x74, 0x52, 0x4E, 0x53, 0x00, 0x40, 0xE6, 0xD8, 0x66, 0x00, 0x00, 0x00, 0x4F, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0x28, 0x94, 0x79, 0x58, 0x7B, 0xBF, 0x78, 0xEE, 0xF3, 0xEA, 0xFF, 0x0C, 0xDD, 0xCA, 0xC2, 0x4E, 0x8C, 0x3D, 0xC9, 0x12, 0xC7, 0x04, 0x18, 0xE6, 0x32, 0x89, 0x56, 0x1F, 0x02, 0x32, 0xDD, 0x04, 0x18, 0x56, 0xB2, 0x64, 0xB2, 0x29, 0x15, 0xFF, 0x7F, 0xE1, 0x7E, 0x8F, 0xE1, 0x24, 0x87, 0x7C, 0x9B, 0x4A, 0x07, 0x58, 0xB4, 0x53, 0x50, 0xD0, 0x0D, 0xC4, 0x04, 0xAA, 0x2D, 0xB4, 0x7B, 0x68, 0x79, 0xA4, 0x78, 0xF1, 0xF3, 0xEA, 0x0F, 0x00, 0x5F, 0x2A, 0x1C, 0xFE, 0x51, 0xD4, 0xC9, 0xA3, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+};
+
 class Font : public Resource {
 
 	GDCLASS(Font, Resource);
+
+	static RID hex_tex;
 
 protected:
 	static void _bind_methods();
 
 public:
 	virtual float get_height() const = 0;
+	virtual float get_leading() const = 0;
 
 	virtual float get_ascent() const = 0;
 	virtual float get_descent() const = 0;
@@ -56,11 +66,24 @@ public:
 
 	virtual bool is_distance_field_hint() const = 0;
 
+	virtual hb_font_t *get_hb_font(int p_index) const = 0;
+
+	virtual int get_fallback_count() const = 0;
+
+	virtual bool has_glyph(uint32_t p_glyph, int p_fallback_index) const = 0;
+	virtual void draw_raw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_glyph, int p_fallback_index, const Color &p_modulate = Color(1, 1, 1), const Rect2 &p_clip = Rect2(0, 0, -1, -1)) const = 0;
+	virtual const Pair<uint32_t, int> char_to_glyph(CharType p_char) const = 0;
+
 	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, const Color &p_outline_modulate = Color(1, 1, 1)) const;
 	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
 
 	virtual bool has_outline() const { return false; }
 	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+	void draw_hex_box(RID p_canvas_item, const Point2 &p_pos, uint32_t p_charcode, const Color &p_modulate = Color(1, 1, 1), const Rect2 &p_clip = Rect2(0, 0, -1, -1)) const;
+	Size2 get_hex_box_size(uint32_t p_charcode) const;
+
+	static void initialize_hex_font();
+	static void finish_hex_font();
 
 	void update_changes();
 	Font();
@@ -165,6 +188,7 @@ public:
 
 	void set_height(float p_height);
 	float get_height() const;
+	float get_leading() const;
 
 	void set_ascent(float p_ascent);
 	float get_ascent() const;
@@ -195,6 +219,15 @@ public:
 	bool is_distance_field_hint() const;
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
+	virtual hb_font_t *get_hb_font(int p_index) const {
+		return NULL;
+	};
+
+	virtual int get_fallback_count() const;
+
+	virtual bool has_glyph(uint32_t p_glyph, int p_fallback_index) const;
+	virtual void draw_raw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_glyph, int p_fallback_index, const Color &p_modulate = Color(1, 1, 1), const Rect2 &p_clip = Rect2(0, 0, -1, -1)) const;
+	virtual const Pair<uint32_t, int> char_to_glyph(CharType p_char) const;
 
 	BitmapFont();
 	~BitmapFont();

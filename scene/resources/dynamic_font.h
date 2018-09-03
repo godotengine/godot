@@ -41,6 +41,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <hb-ft.h>
+
 class DynamicFontAtSize;
 class DynamicFont;
 
@@ -114,6 +116,9 @@ class DynamicFontAtSize : public Reference {
 	FT_Face face; /* handle to face object */
 	FT_StreamRec stream;
 
+	hb_font_t *h_font;
+	hb_buffer_t *h_buffer;
+
 	float ascent;
 	float descent;
 	float linegap;
@@ -160,7 +165,7 @@ class DynamicFontAtSize : public Reference {
 	};
 
 	const Pair<const Character *, DynamicFontAtSize *> _find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
-	Character _make_outline_char(CharType p_char);
+	Character _make_outline_glyph(uint32_t p_glyph);
 	float _get_kerning_advance(const DynamicFontAtSize *font, CharType p_char, CharType p_next) const;
 	TexturePosition _find_texture_pos_for_glyph(int p_color_size, Image::Format p_image_format, int p_width, int p_height);
 	Character _bitmap_to_character(FT_Bitmap bitmap, int yofs, int xofs, float advance);
@@ -168,9 +173,10 @@ class DynamicFontAtSize : public Reference {
 	static unsigned long _ft_stream_io(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count);
 	static void _ft_stream_close(FT_Stream stream);
 
-	HashMap<CharType, Character> char_map;
+	HashMap<uint32_t, Character> glyph_map;
 
 	_FORCE_INLINE_ void _update_char(CharType p_char);
+	_FORCE_INLINE_ void _update_glyph(uint32_t p_glyph);
 
 	friend class DynamicFontData;
 	Ref<DynamicFontData> font;
@@ -183,12 +189,20 @@ public:
 	static float font_oversampling;
 
 	float get_height() const;
+	float get_leading() const;
 
 	float get_ascent() const;
 	float get_descent() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
 
+	virtual hb_font_t *get_hb_font() const {
+		return h_font;
+	}
+
+	virtual const Pair<uint32_t, int> char_to_glyph(CharType p_char, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+	virtual bool has_glyph(uint32_t p_glyph) const;
+	void draw_raw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_glyph, const Color &p_modulate, const Rect2 &p_clip) const;
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks, bool p_advance_only = false) const;
 
 	void set_texture_flags(uint32_t p_flags);
@@ -265,11 +279,12 @@ public:
 
 	void add_fallback(const Ref<DynamicFontData> &p_data);
 	void set_fallback(int p_idx, const Ref<DynamicFontData> &p_data);
-	int get_fallback_count() const;
+	virtual int get_fallback_count() const;
 	Ref<DynamicFontData> get_fallback(int p_idx) const;
 	void remove_fallback(int p_idx);
 
 	virtual float get_height() const;
+	virtual float get_leading() const;
 
 	virtual float get_ascent() const;
 	virtual float get_descent() const;
@@ -280,6 +295,26 @@ public:
 
 	virtual bool has_outline() const;
 
+	virtual hb_font_t *get_hb_font(int p_index) const {
+		if (!data_at_size.is_valid())
+			return NULL;
+
+		if (p_index == -1) {
+			return data_at_size->get_hb_font();
+		} else {
+			if ((p_index < 0) || (p_index >= fallbacks.size()))
+				return NULL;
+
+			if (!fallback_data_at_size[p_index].is_valid())
+				return NULL;
+
+			return fallback_data_at_size[p_index]->get_hb_font();
+		}
+	};
+
+	virtual const Pair<uint32_t, int> char_to_glyph(CharType p_char) const;
+	virtual bool has_glyph(uint32_t p_glyph, int p_fallback_index) const;
+	virtual void draw_raw_glyph(RID p_canvas_item, const Point2 &p_pos, uint32_t p_glyph, int p_fallback_index, const Color &p_modulate, const Rect2 &p_clip) const;
 	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
 
 	SelfList<DynamicFont> font_list;

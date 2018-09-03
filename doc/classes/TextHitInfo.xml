@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextHitInfo" inherits="Reference" category="Core" version="3.0-alpha">
+	<brief_description>
+		Represents a cluster position in a [TextLayout]. Used to specify caret and insertion positions within [TextLayout].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_bounds">
+			<return type="Rect2">
+			</return>
+			<description>
+				Returns the bounds of cluster hit.
+			</description>
+		</method>
+		<method name="get_index_end">
+			<return type="int">
+			</return>
+			<description>
+				Returns last character's index of the cluster hit.
+			</description>
+		</method>
+		<method name="get_index_insertion">
+			<return type="int">
+			</return>
+			<description>
+				Returns insertion index (cluster's first character index if the leading half of the character was hit, and one greater than the cluster's last character index if the trailing half was hit).
+			</description>
+		</method>
+		<method name="get_index_start">
+			<return type="int">
+			</return>
+			<description>
+				Returns first character's index of the cluster hit.
+			</description>
+		</method>
+		<method name="get_leading_edge">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns leading edge of cluster hit.
+			</description>
+		</method>
+		<method name="get_trailing_edge">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns trailing edge of cluster hit.
+			</description>
+		</method>
+		<method name="get_type">
+			<return type="int" enum="TextLayoutItemType">
+			</return>
+			<description>
+				Returns type of cluster hit (any of the [code]OBJECT_*[/code] values).
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="OBJECT_TEXT" value="1">
+			Attributed text.
+		</constant>
+		<constant name="OBJECT_IMAGE" value="2">
+			Embedded image.
+		</constant>
+		<constant name="OBJECT_SPAN" value="3">
+			Embedded layout.
+		</constant>
+		<constant name="OBJECT_TABLE" value="4">
+			Embedded table.
+		</constant>
+	</constants>
+</class>

@@ -37,6 +37,10 @@ else:
 # Core dependencies
 SConscript("png/SCsub")
 
+# Harfbuzz and ICU
+SConscript("harfbuzz/SCsub")
+SConscript("icu4c/SCsub")
+
 # Tools override
 # FIXME: Should likely be integrated in the tools/ codebase
 if env['tools']:
