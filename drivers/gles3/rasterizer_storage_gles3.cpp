@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_gles3.h"
-
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "rasterizer_canvas_gles3.h"
@@ -2140,6 +2139,19 @@ Variant RasterizerStorageGLES3::material_get_param(RID p_material, const StringN
 	if (material->params.has(p_param))
 		return material->params[p_param];
 
+	return material_get_param_default(p_material, p_param);
+}
+
+Variant RasterizerStorageGLES3::material_get_param_default(RID p_material, const StringName &p_param) const {
+	const Material *material = material_owner.get(p_material);
+	ERR_FAIL_COND_V(!material, Variant());
+
+	if (material->shader) {
+		if (material->shader->uniforms.has(p_param)) {
+			Vector<ShaderLanguage::ConstantNode::Value> default_value = material->shader->uniforms[p_param].default_value;
+			return ShaderLanguage::constant_value_to_variant(default_value, material->shader->uniforms[p_param].type);
+		}
+	}
 	return Variant();
 }
 
