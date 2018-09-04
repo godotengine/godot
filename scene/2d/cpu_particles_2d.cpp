@@ -30,9 +30,7 @@
 
 #include "cpu_particles_2d.h"
 
-#include "scene/3d/particles.h"
-#include "scene/main/viewport.h"
-#include "scene/resources/surface_tool.h"
+//#include "scene/resources/particles_material.h"
 #include "servers/visual_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {

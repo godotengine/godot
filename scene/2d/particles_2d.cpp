@@ -30,9 +30,12 @@
 
 #include "particles_2d.h"
 
-#include "engine.h"
-#include "scene/3d/particles.h"
+#include "scene/resources/particles_material.h"
 #include "scene/scene_string_names.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/engine.h"
+#endif
 
 void Particles2D::set_emitting(bool p_emitting) {
 
@@ -114,7 +117,7 @@ void Particles2D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	Ref<ParticlesMaterial> pm = p_material;
 	if (pm.is_valid() && !pm->get_flag(ParticlesMaterial::FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
-		//likely a new material, modify it!
+		// Likely a new (3D) material, modify it to match 2D space
 		pm->set_flag(ParticlesMaterial::FLAG_DISABLE_Z, true);
 		pm->set_gravity(Vector3(0, 98, 0));
 	}

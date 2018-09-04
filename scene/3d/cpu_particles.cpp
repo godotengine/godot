@@ -30,10 +30,9 @@
 
 #include "cpu_particles.h"
 
-#include "particles.h"
 #include "scene/3d/camera.h"
-#include "scene/main/viewport.h"
-#include "scene/resources/surface_tool.h"
+#include "scene/3d/particles.h"
+#include "scene/resources/particles_material.h"
 #include "servers/visual_server.h"
 
 AABB CPUParticles::get_aabb() const {

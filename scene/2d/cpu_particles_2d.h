@@ -30,10 +30,10 @@
 
 #ifndef CPU_PARTICLES_2D_H
 #define CPU_PARTICLES_2D_H
+
 #include "rid.h"
 #include "scene/2d/node_2d.h"
-#include "scene/main/timer.h"
-#include "scene/resources/material.h"
+#include "scene/resources/texture.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
