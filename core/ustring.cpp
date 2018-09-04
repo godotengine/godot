@@ -738,7 +738,15 @@ Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p
 
 	while (true) {
 
-		int end = find(p_splitter, from);
+		int end;
+
+		if (p_splitter == "") {
+			// Split on every byte if the divisor is empty
+			end = from + 1;
+		} else {
+			end = find(p_splitter, from);
+		}
+
 		if (end < 0)
 			end = len;
 		if (p_allow_empty || (end > from)) {
@@ -782,7 +790,14 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 			break;
 		}
 
-		int left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
+		int left_edge;
+
+		if (p_splitter == "") {
+			// Split on every byte if the divisor is empty
+			left_edge = remaining_len - p_splitter.length() - 1;
+		} else {
+			left_edge = rfind(p_splitter, remaining_len - p_splitter.length());
+		}
 
 		if (left_edge < 0) {
 			// no more splitters, we're done

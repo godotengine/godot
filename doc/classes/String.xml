@@ -653,9 +653,10 @@
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right.
+				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from the right.
 				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
-				If [code]maxsplit[/code] is specified, then it is number of splits to do, default is 0 which splits all the items.
+				If [code]divisor[/code] is an empty string, then the string is split on every byte.
+				If [code]maxsplit[/code] is given, at most [code]maxsplit[/code] number of splits occur, and the remainder of the string is returned as the first element of the list (thus, the list will have at most [code]maxsplit[/code] + 1 elements).
 			</description>
 		</method>
 		<method name="rstrip">
@@ -701,7 +702,8 @@
 			<description>
 				Splits the string by a divisor string and returns an array of the substrings.
 				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
-				If [code]maxsplit[/code] is given, at most maxsplit number of splits occur, and the remainder of the string is returned as the final element of the list (thus, the list will have at most maxsplit+1 elements)
+				If [code]divisor[/code] is an empty string, then the string is split on every byte.
+				If [code]maxsplit[/code] is given, at most [code]maxsplit[/code] number of splits occur, and the remainder of the string is returned as the last element of the list (thus, the list will have at most [code]maxsplit[/code] + 1 elements).
 			</description>
 		</method>
 		<method name="split_floats">
