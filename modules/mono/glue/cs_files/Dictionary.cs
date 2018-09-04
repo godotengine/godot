@@ -34,48 +34,6 @@ namespace Godot.Collections
         IEnumerable<KeyValuePair<object, object>>,
         IDisposable
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Ctor();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Dtor(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_Dictionary_GetValue(IntPtr ptr, object key);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_SetValue(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Keys(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Dictionary_Values(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Dictionary_Count(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Dictionary_Clear(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_Contains(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_ContainsKey(IntPtr ptr, object key);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_RemoveKey(IntPtr ptr, object key);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_Remove(IntPtr ptr, object key, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Dictionary_TryGetValue(IntPtr ptr, object key, out object value);
-
         DictionarySafeHandle safeHandle;
         bool disposed = false;
 
@@ -240,8 +198,49 @@ namespace Godot.Collections
         {
             return GetEnumerator();
         }
-    }
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr godot_icall_Dictionary_Ctor();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Dictionary_Dtor(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_Dictionary_GetValue(IntPtr ptr, object key);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Dictionary_SetValue(IntPtr ptr, object key, object value);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr godot_icall_Dictionary_Keys(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr godot_icall_Dictionary_Values(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static int godot_icall_Dictionary_Count(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Dictionary_Add(IntPtr ptr, object key, object value);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Dictionary_Clear(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Dictionary_Contains(IntPtr ptr, object key, object value);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Dictionary_ContainsKey(IntPtr ptr, object key);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Dictionary_RemoveKey(IntPtr ptr, object key);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Dictionary_Remove(IntPtr ptr, object key, object value);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Dictionary_TryGetValue(IntPtr ptr, object key, out object value);
+    }
 
     public class Dictionary<TKey, TValue> :
         IDictionary<TKey, TValue>,

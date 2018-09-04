@@ -107,7 +107,7 @@ void CSharpLanguage::init() {
 	gdmono = memnew(GDMono);
 	gdmono->initialize();
 
-#ifdef MONO_GLUE_DISABLED
+#ifndef MONO_GLUE_ENABLED
 	WARN_PRINT("This binary is built with `mono_glue=no` and cannot be used for scripting");
 #endif
 

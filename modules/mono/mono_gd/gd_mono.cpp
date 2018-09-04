@@ -232,7 +232,7 @@ void GDMono::initialize() {
 	_register_internal_calls();
 
 	// The following assemblies are not required at initialization
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 	if (_load_api_assemblies()) {
 		if (!core_api_assembly_out_of_sync && !editor_api_assembly_out_of_sync && GDMonoUtils::mono_cache.godot_api_cache_updated) {
 			// Everything is fine with the api assemblies, load the project assembly
@@ -275,7 +275,7 @@ void GDMono::initialize() {
 	print_verbose("Mono: INITIALIZED");
 }
 
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 namespace GodotSharpBindings {
 
 uint64_t get_core_api_hash();
@@ -290,7 +290,7 @@ void register_generated_icalls();
 #endif
 
 void GDMono::_register_internal_calls() {
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 	GodotSharpBindings::register_generated_icalls();
 #endif
 
@@ -304,7 +304,7 @@ void GDMono::_initialize_and_check_api_hashes() {
 
 	api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
 
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 	if (api_core_hash != GodotSharpBindings::get_core_api_hash()) {
 		ERR_PRINT("Mono: Core API hash mismatch!");
 	}
@@ -313,7 +313,7 @@ void GDMono::_initialize_and_check_api_hashes() {
 #ifdef TOOLS_ENABLED
 	api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 	if (api_editor_hash != GodotSharpBindings::get_editor_api_hash()) {
 		ERR_PRINT("Mono: Editor API hash mismatch!");
 	}
@@ -431,7 +431,7 @@ bool GDMono::_load_core_api_assembly() {
 	bool success = load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
 
 	if (success) {
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(core_api_assembly, APIAssembly::API_CORE);
 		core_api_assembly_out_of_sync = GodotSharpBindings::get_core_api_hash() != api_assembly_ver.godot_api_hash ||
 										GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
@@ -457,7 +457,7 @@ bool GDMono::_load_editor_api_assembly() {
 	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
 
 	if (success) {
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(editor_api_assembly, APIAssembly::API_EDITOR);
 		editor_api_assembly_out_of_sync = GodotSharpBindings::get_editor_api_hash() != api_assembly_ver.godot_api_hash ||
 										  GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
@@ -684,7 +684,7 @@ Error GDMono::reload_scripts_domain() {
 		return err;
 	}
 
-#ifndef MONO_GLUE_DISABLED
+#ifdef MONO_GLUE_ENABLED
 	if (!_load_api_assemblies()) {
 		return ERR_CANT_OPEN;
 	}

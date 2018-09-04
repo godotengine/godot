@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  builtin_types_glue.h                                                 */
+/*  nodepath_glue.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BUILTIN_TYPES_GLUE_H
-#define BUILTIN_TYPES_GLUE_H
+#include "nodepath_glue.h"
 
-#include "core/node_path.h"
-#include "core/rid.h"
+#ifdef MONO_GLUE_ENABLED
 
-#include <mono/metadata/object.h>
+#include "core/ustring.h"
 
-#include "../mono_gd/gd_mono_marshal.h"
+NodePath *godot_icall_NodePath_Ctor(MonoString *p_path) {
+	return memnew(NodePath(GDMonoMarshal::mono_string_to_godot(p_path)));
+}
+
+void godot_icall_NodePath_Dtor(NodePath *p_ptr) {
+	ERR_FAIL_NULL(p_ptr);
+	_GodotSharp::get_singleton()->queue_dispose(p_ptr);
+}
+
+MonoString *godot_icall_NodePath_operator_String(NodePath *p_np) {
+	return GDMonoMarshal::mono_string_from_godot(p_np->operator String());
+}
 
 MonoBoolean godot_icall_NodePath_is_absolute(NodePath *p_ptr) {
 	return (MonoBoolean)p_ptr->is_absolute();
@@ -70,20 +79,18 @@ MonoBoolean godot_icall_NodePath_is_empty(NodePath *p_ptr) {
 	return (MonoBoolean)p_ptr->is_empty();
 }
 
-uint32_t godot_icall_RID_get_id(RID *p_ptr) {
-	return p_ptr->get_id();
+void godot_register_nodepath_icalls() {
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_Ctor", (void *)godot_icall_NodePath_Ctor);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_Dtor", (void *)godot_icall_NodePath_Dtor);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_operator_String", (void *)godot_icall_NodePath_operator_String);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_get_as_property_path", (void *)godot_icall_NodePath_get_as_property_path);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_get_concatenated_subnames", (void *)godot_icall_NodePath_get_concatenated_subnames);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_get_name", (void *)godot_icall_NodePath_get_name);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_get_name_count", (void *)godot_icall_NodePath_get_name_count);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_get_subname", (void *)godot_icall_NodePath_get_subname);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_get_subname_count", (void *)godot_icall_NodePath_get_subname_count);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_is_absolute", (void *)godot_icall_NodePath_is_absolute);
+	mono_add_internal_call("Godot.NodePath::godot_icall_NodePath_is_empty", (void *)godot_icall_NodePath_is_empty);
 }
 
-void godot_register_builtin_type_icalls() {
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_get_as_property_path", (void *)godot_icall_NodePath_get_as_property_path);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_get_concatenated_subnames", (void *)godot_icall_NodePath_get_concatenated_subnames);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_get_name", (void *)godot_icall_NodePath_get_name);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_get_name_count", (void *)godot_icall_NodePath_get_name_count);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_get_subname", (void *)godot_icall_NodePath_get_subname);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_get_subname_count", (void *)godot_icall_NodePath_get_subname_count);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_is_absolute", (void *)godot_icall_NodePath_is_absolute);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_NodePath_is_empty", (void *)godot_icall_NodePath_is_empty);
-	mono_add_internal_call("Godot.NativeCalls::godot_icall_RID_get_id", (void *)godot_icall_RID_get_id);
-}
-
-#endif // BUILTIN_TYPES_GLUE_H
+#endif // MONO_GLUE_ENABLED

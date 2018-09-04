@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  glue_header.h                                                        */
+/*  string_glue.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
-
-#include "base_object_glue.h"
-#include "collections_glue.h"
-#include "gd_glue.h"
-#include "nodepath_glue.h"
-#include "rid_glue.h"
 #include "string_glue.h"
 
-/**
- * Registers internal calls that were not generated. This function is called
- * from the generated GodotSharpBindings::register_generated_icalls() function.
- */
-void godot_register_glue_header_icalls() {
-	godot_register_collections_icalls();
-	godot_register_gd_icalls();
-	godot_register_nodepath_icalls();
-	godot_register_object_icalls();
-	godot_register_rid_icalls();
-	godot_register_string_icalls();
+#ifdef MONO_GLUE_ENABLED
+
+#include "core/ustring.h"
+#include "core/variant.h"
+#include "core/vector.h"
+
+MonoArray *godot_icall_String_md5_buffer(MonoString *p_str) {
+	Vector<uint8_t> ret = GDMonoMarshal::mono_string_to_godot(p_str).md5_buffer();
+	// TODO Check possible Array/Vector<uint8_t> problem?
+	return GDMonoMarshal::Array_to_mono_array(Variant(ret));
 }
 
-// Used by the generated glue
+MonoString *godot_icall_String_md5_text(MonoString *p_str) {
+	String ret = GDMonoMarshal::mono_string_to_godot(p_str).md5_text();
+	return GDMonoMarshal::mono_string_from_godot(ret);
+}
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/dictionary.h"
-#include "core/engine.h"
-#include "core/method_bind.h"
-#include "core/node_path.h"
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/typedefs.h"
-#include "core/ustring.h"
+int godot_icall_String_rfind(MonoString *p_str, MonoString *p_what, int p_from) {
+	String what = GDMonoMarshal::mono_string_to_godot(p_what);
+	return GDMonoMarshal::mono_string_to_godot(p_str).rfind(what, p_from);
+}
 
-#include "../mono_gd/gd_mono_class.h"
-#include "../mono_gd/gd_mono_internals.h"
-#include "../mono_gd/gd_mono_utils.h"
+int godot_icall_String_rfindn(MonoString *p_str, MonoString *p_what, int p_from) {
+	String what = GDMonoMarshal::mono_string_to_godot(p_what);
+	return GDMonoMarshal::mono_string_to_godot(p_str).rfindn(what, p_from);
+}
 
-#define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = NULL;              \
-	if (!ci) {                                         \
-		ci = ClassDB::classes.getptr(m_type);          \
-	}                                                  \
-	Object *m_instance = ci->creation_func();
+MonoArray *godot_icall_String_sha256_buffer(MonoString *p_str) {
+	Vector<uint8_t> ret = GDMonoMarshal::mono_string_to_godot(p_str).sha256_buffer();
+	return GDMonoMarshal::Array_to_mono_array(Variant(ret));
+}
+
+MonoString *godot_icall_String_sha256_text(MonoString *p_str) {
+	String ret = GDMonoMarshal::mono_string_to_godot(p_str).sha256_text();
+	return GDMonoMarshal::mono_string_from_godot(ret);
+}
+
+void godot_register_string_icalls() {
+	mono_add_internal_call("Godot.String::godot_icall_String_md5_buffer", (void *)godot_icall_String_md5_buffer);
+	mono_add_internal_call("Godot.String::godot_icall_String_md5_text", (void *)godot_icall_String_md5_text);
+	mono_add_internal_call("Godot.String::godot_icall_String_rfind", (void *)godot_icall_String_rfind);
+	mono_add_internal_call("Godot.String::godot_icall_String_rfindn", (void *)godot_icall_String_rfindn);
+	mono_add_internal_call("Godot.String::godot_icall_String_sha256_buffer", (void *)godot_icall_String_sha256_buffer);
+	mono_add_internal_call("Godot.String::godot_icall_String_sha256_text", (void *)godot_icall_String_sha256_text);
+}
 
 #endif // MONO_GLUE_ENABLED

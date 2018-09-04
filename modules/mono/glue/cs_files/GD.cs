@@ -1,11 +1,12 @@
 using System;
+using System.Runtime.CompilerServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
 using real_t = System.Single;
 #endif
 
-// TODO: Add comments describing what this class does. It is not obvious. 
+// TODO: Add comments describing what this class does. It is not obvious.
 
 namespace Godot
 {
@@ -13,12 +14,12 @@ namespace Godot
     {
         public static object Bytes2Var(byte[] bytes)
         {
-            return NativeCalls.godot_icall_Godot_bytes2var(bytes);
+            return godot_icall_GD_bytes2var(bytes);
         }
 
         public static object Convert(object what, int type)
         {
-            return NativeCalls.godot_icall_Godot_convert(what, type);
+            return godot_icall_GD_convert(what, type);
         }
 
         public static real_t Db2Linear(real_t db)
@@ -46,12 +47,12 @@ namespace Godot
 
         public static int Hash(object var)
         {
-            return NativeCalls.godot_icall_Godot_hash(var);
+            return godot_icall_GD_hash(var);
         }
 
         public static Object InstanceFromId(int instanceId)
         {
-            return NativeCalls.godot_icall_Godot_instance_from_id(instanceId);
+            return godot_icall_GD_instance_from_id(instanceId);
         }
 
         public static real_t Linear2Db(real_t linear)
@@ -71,7 +72,7 @@ namespace Godot
 
         public static void Print(params object[] what)
         {
-            NativeCalls.godot_icall_Godot_print(what);
+            godot_icall_GD_print(what);
         }
 
         public static void PrintStack()
@@ -81,22 +82,22 @@ namespace Godot
 
         public static void PrintErr(params object[] what)
         {
-            NativeCalls.godot_icall_Godot_printerr(what);
+            godot_icall_GD_printerr(what);
         }
 
         public static void PrintRaw(params object[] what)
         {
-            NativeCalls.godot_icall_Godot_printraw(what);
+            godot_icall_GD_printraw(what);
         }
 
         public static void PrintS(params object[] what)
         {
-            NativeCalls.godot_icall_Godot_prints(what);
+            godot_icall_GD_prints(what);
         }
 
         public static void PrintT(params object[] what)
         {
-            NativeCalls.godot_icall_Godot_printt(what);
+            godot_icall_GD_printt(what);
         }
 
         public static int[] Range(int length)
@@ -165,32 +166,77 @@ namespace Godot
 
         public static void Seed(int seed)
         {
-            NativeCalls.godot_icall_Godot_seed(seed);
+            godot_icall_GD_seed(seed);
         }
 
         public static string Str(params object[] what)
         {
-            return NativeCalls.godot_icall_Godot_str(what);
+            return godot_icall_GD_str(what);
         }
 
         public static object Str2Var(string str)
         {
-            return NativeCalls.godot_icall_Godot_str2var(str);
+            return godot_icall_GD_str2var(str);
         }
 
         public static bool TypeExists(string type)
         {
-            return NativeCalls.godot_icall_Godot_type_exists(type);
+            return godot_icall_GD_type_exists(type);
         }
 
         public static byte[] Var2Bytes(object var)
         {
-            return NativeCalls.godot_icall_Godot_var2bytes(var);
+            return godot_icall_GD_var2bytes(var);
         }
 
         public static string Var2Str(object var)
         {
-            return NativeCalls.godot_icall_Godot_var2str(var);
+            return godot_icall_GD_var2str(var);
         }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_GD_bytes2var(byte[] bytes);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_GD_convert(object what, int type);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static int godot_icall_GD_hash(object var);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static Object godot_icall_GD_instance_from_id(int instance_id);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_print(object[] what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_printerr(object[] what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_printraw(object[] what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_prints(object[] what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_printt(object[] what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_seed(int seed);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_GD_str(object[] what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_GD_str2var(string str);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_GD_type_exists(string type);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static byte[] godot_icall_GD_var2bytes(object what);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_GD_var2str(object var);
     }
 }

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  glue_header.h                                                        */
+/*  string_glue.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef STRING_GLUE_H
+#define STRING_GLUE_H
+
 #ifdef MONO_GLUE_ENABLED
 
-#include "base_object_glue.h"
-#include "collections_glue.h"
-#include "gd_glue.h"
-#include "nodepath_glue.h"
-#include "rid_glue.h"
-#include "string_glue.h"
+#include "../mono_gd/gd_mono_marshal.h"
 
-/**
- * Registers internal calls that were not generated. This function is called
- * from the generated GodotSharpBindings::register_generated_icalls() function.
- */
-void godot_register_glue_header_icalls() {
-	godot_register_collections_icalls();
-	godot_register_gd_icalls();
-	godot_register_nodepath_icalls();
-	godot_register_object_icalls();
-	godot_register_rid_icalls();
-	godot_register_string_icalls();
-}
+MonoArray *godot_icall_String_md5_buffer(MonoString *p_str);
 
-// Used by the generated glue
+MonoString *godot_icall_String_md5_text(MonoString *p_str);
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/dictionary.h"
-#include "core/engine.h"
-#include "core/method_bind.h"
-#include "core/node_path.h"
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/typedefs.h"
-#include "core/ustring.h"
+int godot_icall_String_rfind(MonoString *p_str, MonoString *p_what, int p_from);
 
-#include "../mono_gd/gd_mono_class.h"
-#include "../mono_gd/gd_mono_internals.h"
-#include "../mono_gd/gd_mono_utils.h"
+int godot_icall_String_rfindn(MonoString *p_str, MonoString *p_what, int p_from);
 
-#define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = NULL;              \
-	if (!ci) {                                         \
-		ci = ClassDB::classes.getptr(m_type);          \
-	}                                                  \
-	Object *m_instance = ci->creation_func();
+MonoArray *godot_icall_String_sha256_buffer(MonoString *p_str);
+
+MonoString *godot_icall_String_sha256_text(MonoString *p_str);
+
+// Register internal calls
+
+void godot_register_string_icalls();
 
 #endif // MONO_GLUE_ENABLED
+
+#endif // STRING_GLUE_H

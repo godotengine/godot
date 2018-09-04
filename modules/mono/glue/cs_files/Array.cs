@@ -30,45 +30,6 @@ namespace Godot.Collections
 
     public class Array : IList<object>, ICollection<object>, IEnumerable<object>, IDisposable
     {
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static IntPtr godot_icall_Array_Ctor();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Dtor(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_Array_At(IntPtr ptr, int index);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_SetAt(IntPtr ptr, int index, object value);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Array_Count(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Add(IntPtr ptr, object item);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Clear(IntPtr ptr);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Array_Contains(IntPtr ptr, object item);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_CopyTo(IntPtr ptr, object[] array, int arrayIndex);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static int godot_icall_Array_IndexOf(IntPtr ptr, object item);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Insert(IntPtr ptr, int index, object item);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static bool godot_icall_Array_Remove(IntPtr ptr, object item);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
-
         ArraySafeHandle safeHandle;
         bool disposed = false;
 
@@ -200,6 +161,45 @@ namespace Godot.Collections
         {
             return GetEnumerator();
         }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr godot_icall_Array_Ctor();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_Dtor(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_Array_At(IntPtr ptr, int index);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_SetAt(IntPtr ptr, int index, object value);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static int godot_icall_Array_Count(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_Add(IntPtr ptr, object item);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_Clear(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Array_Contains(IntPtr ptr, object item);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_CopyTo(IntPtr ptr, object[] array, int arrayIndex);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static int godot_icall_Array_IndexOf(IntPtr ptr, object item);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_Insert(IntPtr ptr, int index, object item);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Array_Remove(IntPtr ptr, object item);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
     }
 
     public class Array<T> : IList<T>, ICollection<T>, IEnumerable<T>

@@ -456,10 +456,7 @@ class BindingsGenerator {
 	List<EnumInterface> global_enums;
 	List<ConstantInterface> global_constants;
 
-	Map<StringName, String> extra_members;
-
 	List<InternalCall> method_icalls;
-	List<InternalCall> builtin_method_icalls;
 	Map<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	List<const InternalCall *> generated_icall_funcs;
@@ -518,14 +515,12 @@ class BindingsGenerator {
 
 	String _determine_enum_prefix(const EnumInterface &p_ienum);
 
-	void _generate_header_icalls();
 	void _generate_method_icalls(const TypeInterface &p_itype);
 
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
 	const TypeInterface *_get_type_or_placeholder(const TypeReference &p_typeref);
 
 	void _default_argument_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
-	void _populate_builtin_type(TypeInterface &r_itype, Variant::Type vtype);
 
 	void _populate_object_type_interfaces();
 	void _populate_builtin_type_interfaces();

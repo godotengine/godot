@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  glue_header.h                                                        */
+/*  gd_glue.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef GD_GLUE_H
+#define GD_GLUE_H
+
 #ifdef MONO_GLUE_ENABLED
 
-#include "base_object_glue.h"
-#include "collections_glue.h"
-#include "gd_glue.h"
-#include "nodepath_glue.h"
-#include "rid_glue.h"
-#include "string_glue.h"
+#include "../mono_gd/gd_mono_marshal.h"
 
-/**
- * Registers internal calls that were not generated. This function is called
- * from the generated GodotSharpBindings::register_generated_icalls() function.
- */
-void godot_register_glue_header_icalls() {
-	godot_register_collections_icalls();
-	godot_register_gd_icalls();
-	godot_register_nodepath_icalls();
-	godot_register_object_icalls();
-	godot_register_rid_icalls();
-	godot_register_string_icalls();
-}
+MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes);
 
-// Used by the generated glue
+MonoObject *godot_icall_GD_convert(MonoObject *p_what, int p_type);
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/dictionary.h"
-#include "core/engine.h"
-#include "core/method_bind.h"
-#include "core/node_path.h"
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/typedefs.h"
-#include "core/ustring.h"
+int godot_icall_GD_hash(MonoObject *p_var);
 
-#include "../mono_gd/gd_mono_class.h"
-#include "../mono_gd/gd_mono_internals.h"
-#include "../mono_gd/gd_mono_utils.h"
+MonoObject *godot_icall_GD_instance_from_id(int p_instance_id);
 
-#define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = NULL;              \
-	if (!ci) {                                         \
-		ci = ClassDB::classes.getptr(m_type);          \
-	}                                                  \
-	Object *m_instance = ci->creation_func();
+void godot_icall_GD_print(MonoArray *p_what);
+
+void godot_icall_GD_printerr(MonoArray *p_what);
+
+void godot_icall_GD_printraw(MonoArray *p_what);
+
+void godot_icall_GD_prints(MonoArray *p_what);
+
+void godot_icall_GD_printt(MonoArray *p_what);
+
+void godot_icall_GD_seed(int p_seed);
+
+MonoString *godot_icall_GD_str(MonoArray *p_what);
+
+MonoObject *godot_icall_GD_str2var(MonoString *p_str);
+
+bool godot_icall_GD_type_exists(MonoString *p_type);
+
+MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var);
+
+MonoString *godot_icall_GD_var2str(MonoObject *p_var);
+
+// Register internal calls
+
+void godot_register_gd_icalls();
 
 #endif // MONO_GLUE_ENABLED
+
+#endif // GD_GLUE_H
