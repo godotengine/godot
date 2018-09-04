@@ -148,6 +148,7 @@ public:
 
 	/* complex helpers */
 	String substr(int p_from, int p_chars) const;
+	Array find_occurrences(const String &p_str, bool p_case_sensitive = true, int p_min_amount = -1) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
 	int find(const char *p_str, int p_from) const; ///< return <0 if failed
 	int find_last(const String &p_str) const; ///< return <0 if failed

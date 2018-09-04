@@ -439,6 +439,44 @@ public:
 	ColorRegion _get_color_region(int p_region) const;
 	Map<int, Text::ColorRegionInfo> _get_line_color_region_info(int p_line) const;
 
+	struct Entry {
+		Array occurrences;
+		String word;
+		String input;
+	};
+
+	struct SortEntry {
+
+		bool operator()(Entry p_a, Entry p_b) const {
+
+			//Hack check case for first character
+			String input = p_a.input.substr(0, 1);
+			if (input != p_a.input.substr(0, 1).to_lower()) { //input is upper -> prefere upper results
+				if ((int)((Array)((Array)p_a.occurrences[0])[1])[0] == 0 &&
+						(int)((Array)((Array)p_b.occurrences[0])[1])[0] == 0) {
+					if (p_a.word.substr(0, 1) != p_b.word.substr(0, 1)) {
+						return p_a.word.substr(0, 1) != p_a.word.substr(0, 1).to_lower();
+					}
+				}
+			}
+
+			int min_size = p_a.occurrences.size() < p_b.occurrences.size() ? p_a.occurrences.size() : p_b.occurrences.size();
+
+			for (int i = 0; i < min_size; i++) {
+				if (((Array)((Array)p_a.occurrences[i])[1])[0] < ((Array)((Array)p_b.occurrences[i])[1])[0])
+					return true;
+				else if (((Array)((Array)p_b.occurrences[i])[1])[0] < ((Array)((Array)p_a.occurrences[i])[1])[0])
+					return false;
+				else if (((Array)((Array)p_b.occurrences[i])[1])[1] < ((Array)((Array)p_a.occurrences[i])[1])[1])
+					return true;
+				else if (((Array)((Array)p_a.occurrences[i])[1])[1] < ((Array)((Array)p_b.occurrences[i])[1])[1])
+					return false;
+			}
+
+			return p_a.word.length() < p_b.word.length();
+		}
+	};
+
 	enum MenuItems {
 		MENU_CUT,
 		MENU_COPY,

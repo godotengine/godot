@@ -5761,18 +5761,23 @@ void TextEdit::_update_completion_candidates() {
 	}
 
 	if (completion_options.size() == 0) {
+		List<Entry> entries;
+		//Collect
 		for (int i = 0; i < completion_strings.size(); i++) {
-			if (s.is_subsequence_of(completion_strings[i])) {
-				completion_options.push_back(completion_strings[i]);
+			String curr = completion_strings[i];
+			Entry entry;
+			entry.occurrences = curr.find_occurrences(s, false);
+			entry.word = curr;
+			entry.input = s;
+			if (entry.occurrences.size() > 0) {
+				entries.push_back(entry);
 			}
 		}
-	}
-
-	if (completion_options.size() == 0) {
-		for (int i = 0; i < completion_strings.size(); i++) {
-			if (s.is_subsequence_ofi(completion_strings[i])) {
-				completion_options.push_back(completion_strings[i]);
-			}
+		//Sort
+		entries.sort_custom<TextEdit::SortEntry>();
+		//apply
+		for (int i = 0; i < entries.size(); i++) {
+			completion_options.push_back(entries[i].word);
 		}
 	}
 
