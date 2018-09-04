@@ -2252,6 +2252,7 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		}
 
 		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
