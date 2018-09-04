@@ -11,17 +11,20 @@ def make_cs_files_header(src, dst):
     from compat import byte_to_str
 
     with open(dst, 'w') as header:
-        header.write('/* This is an automatically generated file; DO NOT EDIT! OK THX */\n')
-        header.write('#ifndef _CS_FILES_DATA_H\n')
-        header.write('#define _CS_FILES_DATA_H\n\n')
+        header.write('/* THIS FILE IS GENERATED DO NOT EDIT */\n')
+        header.write('#ifndef CS_COMPRESSED_H\n')
+        header.write('#define CS_COMPRESSED_H\n\n')
+        header.write('#ifdef TOOLS_ENABLED\n\n')
         header.write('#include "map.h"\n')
         header.write('#include "ustring.h"\n')
         inserted_files = ''
         import os
         latest_mtime = 0
+        cs_file_count = 0
         for root, _, files in os.walk(src):
             files = [f for f in files if f.endswith('.cs')]
             for file in files:
+                cs_file_count += 1
                 filepath = os.path.join(root, file)
                 filepath_src_rel = os.path.relpath(filepath, src)
                 mtime = os.path.getmtime(filepath)
@@ -31,8 +34,10 @@ def make_cs_files_header(src, dst):
                     decomp_size = len(buf)
                     import zlib
                     buf = zlib.compress(buf)
-                    name = os.path.splitext(os.path.normpath(filepath_src_rel))[0].strip(os.sep).replace(os.sep, '_').replace('.', '_dotto_')
-                    header.write('\nstatic const int _cs_' + name + '_compressed_size = ' + str(len(buf)) + ';\n')
+                    name = str(cs_file_count)
+                    header.write('\n')
+                    header.write('// ' + filepath_src_rel + '\n')
+                    header.write('static const int _cs_' + name + '_compressed_size = ' + str(len(buf)) + ';\n')
                     header.write('static const int _cs_' + name + '_uncompressed_size = ' + str(decomp_size) + ';\n')
                     header.write('static const unsigned char _cs_' + name + '_compressed[] = { ')
                     for i, buf_idx in enumerate(range(len(buf))):
@@ -53,7 +58,8 @@ def make_cs_files_header(src, dst):
             '\t\tdata = p_data;\n' '\t}\n' '\n\tCompressedFile() {}\n' '};\n'
             '\nvoid get_compressed_files(Map<String, CompressedFile>& r_files)\n' '{\n' + inserted_files + '}\n'
             )
-        header.write('#endif // _CS_FILES_DATA_H')
+        header.write('\n#endif // TOOLS_ENABLED\n')
+        header.write('\n#endif // CS_COMPRESSED_H\n')
 
 
 env_mono.add_source_files(env.modules_sources, '*.cpp')
@@ -63,7 +69,7 @@ env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 
 if env['tools']:
     env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
-    # NOTE: It is safe to generate this file here, since this is still execute serially
+    # NOTE: It is safe to generate this file here, since this is still executed serially
     make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h')
 
 vars = Variables()
