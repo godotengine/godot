@@ -43,6 +43,7 @@
 class ParticlesEditorBase : public Control {
 
 	GDCLASS(ParticlesEditorBase, Control)
+
 protected:
 	Spatial *base_node;
 	Panel *panel;

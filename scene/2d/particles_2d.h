@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_FRAME_H
-#define PARTICLES_FRAME_H
+#ifndef PARTICLES_2D_H
+#define PARTICLES_2D_H
 
+#include "rid.h"
 #include "scene/2d/node_2d.h"
-#include "scene/resources/color_ramp.h"
 #include "scene/resources/texture.h"
 
 class Particles2D : public Node2D {
@@ -132,4 +132,4 @@ public:
 
 VARIANT_ENUM_CAST(Particles2D::DrawOrder)
 
-#endif // PARTICLES_FRAME_H
+#endif // PARTICLES_2D_H

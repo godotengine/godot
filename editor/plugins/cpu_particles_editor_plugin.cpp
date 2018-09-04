@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "cpu_particles_editor_plugin.h"
+
 #include "editor/plugins/spatial_editor_plugin.h"
 
 void CPUParticlesEditor::_node_removed(Node *p_node) {

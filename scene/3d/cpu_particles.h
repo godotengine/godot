@@ -30,10 +30,9 @@
 
 #ifndef CPU_PARTICLES_H
 #define CPU_PARTICLES_H
+
 #include "rid.h"
 #include "scene/3d/visual_instance.h"
-#include "scene/main/timer.h"
-#include "scene/resources/material.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

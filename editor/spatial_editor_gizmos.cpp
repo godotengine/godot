@@ -32,8 +32,27 @@
 
 #include "geometry.h"
 #include "quick_hull.h"
-#include "scene/3d/camera.h"
+#include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/baked_lightmap.h"
+#include "scene/3d/collision_polygon.h"
+#include "scene/3d/collision_shape.h"
+#include "scene/3d/gi_probe.h"
+#include "scene/3d/light.h"
+#include "scene/3d/listener.h"
+#include "scene/3d/mesh_instance.h"
+#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/particles.h"
+#include "scene/3d/physics_joint.h"
+#include "scene/3d/portal.h"
+#include "scene/3d/position_3d.h"
+#include "scene/3d/ray_cast.h"
+#include "scene/3d/reflection_probe.h"
+#include "scene/3d/room_instance.h"
 #include "scene/3d/soft_body.h"
+#include "scene/3d/spring_arm.h"
+#include "scene/3d/sprite_3d.h"
+#include "scene/3d/vehicle_body.h"
+#include "scene/3d/visibility_notifier.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
@@ -43,12 +62,6 @@
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
-
-// Keep small children away from this file.
-// It's so ugly it will eat them alive
-
-// The previous comment is kept only for historical reasons.
-// No children will be harmed by the viewing of this file... hopefully.
 
 #define HANDLE_HALF_SIZE 9.5
 
