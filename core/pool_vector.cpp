@@ -51,12 +51,10 @@ void MemoryPool::setup(uint32_t p_max_allocs) {
 	alloc_count = p_max_allocs;
 	allocs_used = 0;
 
+	free_list = &allocs[0];
 	for (uint32_t i = 0; i < alloc_count - 1; i++) {
-
 		allocs[i].free_list = &allocs[i + 1];
 	}
-
-	free_list = &allocs[0];
 
 	alloc_mutex = Mutex::create();
 }
