@@ -2368,6 +2368,70 @@ String String::substr(int p_from, int p_chars) const {
 	return s;
 }
 
+Array String::find_occurrences(const String &p_str, bool p_case_sensitive, int p_min_amount) const {
+	if (p_str.length() <= 0 || length() <= 0) {
+		return Array();
+	}
+	Array rs;
+	Array range = Array();
+	range.push_back(-1);
+	range.push_back(-1);
+	int s = 0;
+	String curr_str;
+	String curr_char2_ori;
+	String search_char_case = p_str.substr(s, 1);
+	String curr_char2;
+	for (int i = 0; i < length(); i++) {
+		curr_char2_ori = substr(i, 1);
+		if (!p_case_sensitive) {
+			search_char_case = search_char_case.to_lower();
+			curr_char2 = curr_char2_ori.to_lower();
+		} else {
+			curr_char2 = curr_char2_ori;
+		}
+		if (search_char_case == curr_char2) {
+			curr_str += curr_char2_ori;
+			if ((int)range[0] == -1) {
+				range[0] = i;
+			}
+			range[1] = i;
+			s++;
+			if (s < p_str.length()) {
+				search_char_case = p_str.substr(s, 1);
+			}
+		} else {
+			if (s < p_str.length()) {
+				if ((int)range[1] > -1) {
+					Array a = Array();
+					a.push_back(curr_str);
+					a.push_back(range);
+					rs.push_back(a);
+					range = Array();
+					range.push_back(-1);
+					range.push_back(-1);
+					curr_str = String();
+				}
+			} else {
+				break;
+			}
+		}
+	}
+	if (curr_str != String()) {
+		Array a = Array();
+		a.push_back(curr_str);
+		a.push_back(range);
+		rs.push_back(a);
+	}
+	if (p_min_amount == -1) {
+		if (s < p_str.length()) {
+			rs = Array();
+		}
+	} else if (s < p_min_amount) {
+		rs = Array();
+	}
+	return rs;
+}
+
 int String::find_last(const String &p_str) const {
 
 	int pos = -1;

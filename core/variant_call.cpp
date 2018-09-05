@@ -240,6 +240,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM3R(String, count);
 	VCALL_LOCALMEM3R(String, countn);
 	VCALL_LOCALMEM2R(String, substr);
+	VCALL_LOCALMEM3R(String, find_occurrences);
 	VCALL_LOCALMEM2R(String, find);
 	VCALL_LOCALMEM1R(String, find_last);
 	VCALL_LOCALMEM2R(String, findn);
@@ -1504,6 +1505,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, INT, String, length, varray());
 	ADDFUNC2R(STRING, STRING, String, substr, INT, "from", INT, "len", varray(-1));
 
+	ADDFUNC3R(STRING, ARRAY, String, find_occurrences, STRING, "search", BOOL, "case_sensitive", INT, "min_amount", varray(true, -1));
 	ADDFUNC2R(STRING, INT, String, find, STRING, "what", INT, "from", varray(0));
 
 	ADDFUNC3R(STRING, INT, String, count, STRING, "what", INT, "from", INT, "to", varray(0, 0));

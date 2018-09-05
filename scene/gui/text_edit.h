@@ -236,6 +236,12 @@ private:
 		bool chain_backward;
 	};
 
+	struct Entry {
+		Array occurrences;
+		String word;
+		String input;
+	};
+
 	String ime_text;
 	Point2 ime_selection;
 
