@@ -171,8 +171,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="frames" type="Array" setter="_set_frames" getter="_get_frames">
-		</member>
 	</members>
 	<constants>
 	</constants>
