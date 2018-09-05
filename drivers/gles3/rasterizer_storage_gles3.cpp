@@ -1095,7 +1095,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 #else
 
 	ERR_EXPLAIN("Sorry, It's not possible to obtain images back in OpenGL ES");
-	return Ref<Image>();
+	ERR_FAIL_V(Ref<Image>());
 #endif
 }
 
