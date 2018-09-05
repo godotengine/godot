@@ -40,7 +40,7 @@
 */
 
 #ifndef PAD_ALIGN
-#define PAD_ALIGN 16 //must always be greater than this at much
+#define PAD_ALIGN 16 // Must always be greater than this at much
 #endif
 
 class Memory {
@@ -69,10 +69,12 @@ public:
 	_FORCE_INLINE_ static void free(void *p_ptr) { return Memory::free_static(p_ptr, false); }
 };
 
-void *operator new(size_t p_size, const char *p_description); ///< operator new that takes a description and uses MemoryStaticPool
-void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)); ///< operator new that takes a description and uses MemoryStaticPool
+// New operators that take a description and use MemoryStaticPool
+void *operator new(size_t p_size, const char *p_description);
+void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size));
 
-void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description); ///< operator new that takes a description and uses a pointer to the preallocated memory
+// new operator that takes a description and uses a pointer to the preallocated memory
+void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description);
 
 #ifdef _MSC_VER
 // When compiling with VC++ 2017, the above declarations of placement new generate many irrelevant warnings (C4291).
@@ -116,6 +118,7 @@ void memdelete(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
+
 	if (!__has_trivial_destructor(T))
 		p_class->~T();
 
@@ -127,6 +130,7 @@ void memdelete_allocator(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
+
 	if (!__has_trivial_destructor(T))
 		p_class->~T();
 
@@ -145,19 +149,20 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 
 	if (p_elements == 0)
 		return 0;
-	/** overloading operator new[] cannot be done , because it may not return the real allocated address (it may pad the 'element count' before the actual array). Because of that, it must be done by hand. This is the
-	same strategy used by std::vector, and the PoolVector class, so it should be safe.*/
 
-	size_t len = sizeof(T) * p_elements;
-	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
-	T *failptr = 0; //get rid of a warning
+	// Overloading operator new[] cannot be done, because it may not return the real allocated address
+	// (it may pad the 'element count' before the actual array). Because of that, it must be done by hand.
+	// This is the same strategy used by std::vector, and the PoolVector class, so it should be safe.
+	size_t memSize = sizeof(T) * p_elements;
+	uint64_t *mem = (uint64_t *)Memory::alloc_static(memSize, true);
+	T *failptr = 0; // Get rid of a warning
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;
 
 	if (!__has_trivial_constructor(T)) {
 		T *elems = (T *)mem;
 
-		/* call operator new */
+		// Call operator new
 		for (size_t i = 0; i < p_elements; i++) {
 			new (&elems[i], sizeof(T), p_descr) T;
 		}
@@ -166,11 +171,8 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	return (T *)mem;
 }
 
-/**
- * Wonders of having own array functions, you can actually check the length of
- * an allocated-with memnew_arr() array
- */
-
+// Wonders of having own array functions.
+// You can actually check the length of an array allocated-with memnew_arr()
 template <typename T>
 size_t memarr_len(const T *p_class) {
 
