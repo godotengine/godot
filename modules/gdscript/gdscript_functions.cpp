@@ -1853,7 +1853,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case GET_STACK: {
 			MethodInfo mi("get_stack");
-			mi.return_val.type = Variant::NIL;
+			mi.return_val.type = Variant::ARRAY;
 			return mi;
 		} break;
 
