@@ -36,6 +36,12 @@
 
 void InspectorDock::_menu_option(int p_option) {
 	switch (p_option) {
+		case EXPAND_ALL: {
+			_menu_expandall();
+		} break;
+		case COLLAPSE_ALL: {
+			_menu_collapseall();
+		} break;
 		case RESOURCE_MAKE_BUILT_IN: {
 			_unref_resource();
 		} break;
