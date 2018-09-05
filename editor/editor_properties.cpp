@@ -651,6 +651,7 @@ public:
 			int h = bsize * 2 + 1;
 			int vofs = (rect.size.height - h) / 2;
 
+			Color color = get_color("highlight_color", "Editor");
 			for (int i = 0; i < 2; i++) {
 
 				Point2 ofs(4, vofs);
@@ -667,7 +668,8 @@ public:
 					uint32_t idx = i * 10 + j;
 					bool on = value & (1 << idx);
 					Rect2 rect = Rect2(o, Size2(bsize, bsize));
-					draw_rect(rect, Color(0, 0, 0, on ? 0.8 : 0.3));
+					color.a = on ? 0.6 : 0.2;
+					draw_rect(rect, color);
 					flag_rects.push_back(rect);
 				}
 			}
