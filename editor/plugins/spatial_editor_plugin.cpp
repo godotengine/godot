@@ -276,7 +276,7 @@ void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single) {
 	_select(sp, clicked_wants_append, true);
 }
 
-void SpatialEditorViewport::_select(Spatial *p_node, bool p_append, bool p_single) {
+void SpatialEditorViewport::_select(Node *p_node, bool p_append, bool p_single) {
 
 	if (!p_append) {
 		editor_selection->clear();
@@ -342,12 +342,10 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 			continue;
 
 		if (dist < closest_dist) {
-			//make sure that whathever is selected is editable
-			Node *owner = spat->get_owner();
-			if (owner != edited_scene && !edited_scene->is_editable_instance(owner)) {
-				item = owner;
-			} else {
-				item = Object::cast_to<Node>(spat);
+
+			item = Object::cast_to<Node>(spat);
+			while (item->get_owner() && item->get_owner() != edited_scene && !edited_scene->is_editable_instance(item->get_owner())) {
+				item = item->get_owner();
 			}
 
 			closest = item->get_instance_id();
@@ -498,7 +496,7 @@ void SpatialEditorViewport::_select_region() {
 	}
 
 	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world()->get_scenario());
-	Vector<Spatial *> selected;
+	Vector<Node *> selected;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 
@@ -508,12 +506,12 @@ void SpatialEditorViewport::_select_region() {
 		if (!sp)
 			continue;
 
-		Spatial *root_sp = sp;
-		while (root_sp && root_sp != edited_scene && root_sp->get_owner() != edited_scene && !edited_scene->is_editable_instance(root_sp->get_owner())) {
-			root_sp = Object::cast_to<Spatial>(root_sp->get_owner());
+		Node *item = Object::cast_to<Node>(sp);
+		while (item->get_owner() && item->get_owner() != edited_scene && !edited_scene->is_editable_instance(item->get_owner())) {
+			item = item->get_owner();
 		}
 
-		if (selected.find(root_sp) != -1) continue;
+		if (selected.find(item) != -1) continue;
 
 		Ref<EditorSpatialGizmo> seg = sp->get_gizmo();
 
@@ -521,7 +519,7 @@ void SpatialEditorViewport::_select_region() {
 			continue;
 
 		if (seg->intersect_frustum(camera, frustum)) {
-			selected.push_back(root_sp);
+			selected.push_back(item);
 		}
 	}
 
@@ -3913,8 +3911,9 @@ void _update_all_gizmos(Node *p_node) {
 	}
 }
 
-void SpatialEditor::update_all_gizmos() {
-	_update_all_gizmos(SceneTree::get_singleton()->get_root());
+void SpatialEditor::update_all_gizmos(Node *p_node) {
+	if (!p_node) p_node = SceneTree::get_singleton()->get_root();
+	_update_all_gizmos(p_node);
 }
 
 Object *SpatialEditor::_get_editor_data(Object *p_what) {
@@ -5663,7 +5662,7 @@ SpatialEditorPlugin::~SpatialEditorPlugin() {
 
 void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
 
-	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.5));
+	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
 
 	Vector<Ref<SpatialMaterial> > mats;
 
@@ -5705,7 +5704,7 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 
 void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const Ref<Texture> &p_texture, bool p_on_top, const Color &p_albedo) {
 
-	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.5));
+	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
 
 	Vector<Ref<SpatialMaterial> > icons;
 
@@ -5718,7 +5717,7 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 		Color color = instanced ? instanced_color : p_albedo;
 
 		if (!selected) {
-			color.a *= 0.3;
+			color.a *= 0.85;
 		}
 
 		icon->set_albedo(color);
