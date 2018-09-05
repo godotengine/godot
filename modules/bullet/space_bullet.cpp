@@ -642,7 +642,7 @@ void SpaceBullet::destroy_world() {
 void SpaceBullet::check_ghost_overlaps() {
 
 	/// Algorithm support variables
-	btConvexShape *other_body_shape;
+	btCollisionShape *other_body_shape;
 	btConvexShape *area_shape;
 	btGjkPairDetector::ClosestPointInput gjk_input;
 	AreaBullet *area;
@@ -694,20 +694,42 @@ void SpaceBullet::check_ghost_overlaps() {
 				// For each other object shape
 				for (z = otherObject->get_compound_shape()->getNumChildShapes() - 1; 0 <= z; --z) {
 
-					if (!otherObject->get_compound_shape()->getChildShape(z)->isConvex())
-						continue;
-
-					other_body_shape = static_cast<btConvexShape *>(otherObject->get_compound_shape()->getChildShape(z));
+					other_body_shape = static_cast<btCollisionShape *>(otherObject->get_compound_shape()->getChildShape(z));
 					gjk_input.m_transformB = otherObject->get_transform__bullet() * otherObject->get_compound_shape()->getChildTransform(z);
 
-					btPointCollector result;
-					btGjkPairDetector gjk_pair_detector(area_shape, other_body_shape, gjk_simplex_solver, gjk_epa_pen_solver);
-					gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
+					if (other_body_shape->isConvex()) {
 
-					if (0 >= result.m_distance) {
-						hasOverlap = true;
-						goto collision_found;
+						btPointCollector result;
+						btGjkPairDetector gjk_pair_detector(area_shape, static_cast<btConvexShape *>(other_body_shape), gjk_simplex_solver, gjk_epa_pen_solver);
+						gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
+
+						if (0 >= result.m_distance) {
+							hasOverlap = true;
+							goto collision_found;
+						}
+
+					} else {
+
+						btCollisionObjectWrapper obA(NULL, area_shape, area->get_bt_ghost(), gjk_input.m_transformA, -1, y);
+						btCollisionObjectWrapper obB(NULL, other_body_shape, otherObject->get_bt_collision_object(), gjk_input.m_transformB, -1, z);
+
+						btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, NULL, BT_CONTACT_POINT_ALGORITHMS);
+
+						if (!algorithm)
+							continue;
+
+						GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
+						algorithm->processCollision(&obA, &obB, dynamicsWorld->getDispatchInfo(), &contactPointResult);
+
+						algorithm->~btCollisionAlgorithm();
+						dispatcher->freeCollisionAlgorithm(algorithm);
+
+						if (contactPointResult.hasHit()) {
+							hasOverlap = true;
+							goto collision_found;
+						}
 					}
+
 				} // ~For each other object shape
 			} // ~For each area shape
 
