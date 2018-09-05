@@ -117,6 +117,8 @@ public:
 
 	Transform2D get_transform() const;
 
+	virtual String get_configuration_warning() const;
+
 	Node2D();
 };
 
