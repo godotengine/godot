@@ -40,7 +40,7 @@
 */
 
 #ifndef PAD_ALIGN
-#define PAD_ALIGN 16 // Must always be greater than this at much
+#define PAD_ALIGN 16 // Must always be greater than or equal to 16
 #endif
 
 class Memory {
@@ -73,7 +73,7 @@ public:
 void *operator new(size_t p_size, const char *p_description);
 void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size));
 
-// new operator that takes a description and uses a pointer to the preallocated memory
+// New operator that takes a description and uses a pointer to the preallocated memory
 void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description);
 
 #ifdef _MSC_VER
@@ -153,8 +153,8 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	// Overloading operator new[] cannot be done, because it may not return the real allocated address
 	// (it may pad the 'element count' before the actual array). Because of that, it must be done by hand.
 	// This is the same strategy used by std::vector, and the PoolVector class, so it should be safe.
-	size_t memSize = sizeof(T) * p_elements;
-	uint64_t *mem = (uint64_t *)Memory::alloc_static(memSize, true);
+	size_t mem_size = sizeof(T) * p_elements;
+	uint64_t *mem = (uint64_t *)Memory::alloc_static(mem_size, true);
 	T *failptr = 0; // Get rid of a warning
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;

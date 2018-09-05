@@ -38,30 +38,25 @@
 #include <stdlib.h>
 
 void *operator new(size_t p_size, const char *p_description) {
-
 	return Memory::alloc_static(p_size, false);
 }
 
 void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
-
 	return p_allocfunc(p_size);
 }
 
 #ifdef _MSC_VER
 void operator delete(void *p_mem, const char *p_description) {
-
 	ERR_EXPLAINC("Call to placement delete should not happen.");
 	CRASH_NOW();
 }
 
 void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size)) {
-
 	ERR_EXPLAINC("Call to placement delete should not happen.");
 	CRASH_NOW();
 }
 
 void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_description) {
-
 	ERR_EXPLAINC("Call to placement delete should not happen.");
 	CRASH_NOW();
 }
@@ -82,23 +77,20 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	void *mem = malloc(p_bytes + (prepad ? PAD_ALIGN : 0));
-
+	uint8_t *mem = (uint8_t *)malloc(p_bytes + (prepad ? PAD_ALIGN : 0));
 	ERR_FAIL_COND_V(!mem, NULL);
-
 	atomic_increment(&alloc_count);
 
 	if (prepad) {
-		uint64_t *s = (uint64_t *)mem;
-		*s = p_bytes;
-
-		uint8_t *s8 = (uint8_t *)mem;
+		uint64_t *mem64 = (uint64_t *)mem;
+		*mem64 = p_bytes;
 
 #ifdef DEBUG_ENABLED
 		atomic_add(&mem_usage, p_bytes);
 		atomic_exchange_if_greater(&max_usage, mem_usage);
 #endif
-		return s8 + PAD_ALIGN;
+
+		return mem + PAD_ALIGN;
 	} else {
 		return mem;
 	}
@@ -120,14 +112,14 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 
 	if (prepad) {
 		mem -= PAD_ALIGN;
-		uint64_t *s = (uint64_t *)mem;
+		uint64_t *mem64 = (uint64_t *)mem;
 
 #ifdef DEBUG_ENABLED
-		if (p_bytes > *s) {
-			atomic_add(&mem_usage, p_bytes - *s);
+		if (p_bytes > *mem64) {
+			atomic_add(&mem_usage, p_bytes - *mem64);
 			atomic_exchange_if_greater(&max_usage, mem_usage);
 		} else {
-			atomic_sub(&mem_usage, *s - p_bytes);
+			atomic_sub(&mem_usage, *mem64 - p_bytes);
 		}
 #endif
 
@@ -135,23 +127,16 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 			free(mem);
 			return NULL;
 		} else {
-			*s = p_bytes;
-
+			*mem64 = p_bytes;
 			mem = (uint8_t *)realloc(mem, p_bytes + PAD_ALIGN);
 			ERR_FAIL_COND_V(!mem, NULL);
-
-			s = (uint64_t *)mem;
-
-			*s = p_bytes;
 
 			return mem + PAD_ALIGN;
 		}
 	} else {
 
 		mem = (uint8_t *)realloc(mem, p_bytes);
-
 		ERR_FAIL_COND_V(mem == NULL && p_bytes > 0, NULL);
-
 		return mem;
 	}
 }
@@ -161,6 +146,7 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	ERR_FAIL_COND(p_ptr == NULL);
 
 	uint8_t *mem = (uint8_t *)p_ptr;
+	atomic_decrement(&alloc_count);
 
 #ifdef DEBUG_ENABLED
 	bool prepad = true;
@@ -168,19 +154,16 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	atomic_decrement(&alloc_count);
-
 	if (prepad) {
 		mem -= PAD_ALIGN;
 
 #ifdef DEBUG_ENABLED
-		uint64_t *s = (uint64_t *)mem;
-		atomic_sub(&mem_usage, *s);
+		uint64_t *mem64 = (uint64_t *)mem;
+		atomic_sub(&mem_usage, *mem64);
 #endif
 
 		free(mem);
 	} else {
-
 		free(mem);
 	}
 }
