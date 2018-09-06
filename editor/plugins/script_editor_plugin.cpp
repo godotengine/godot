@@ -59,25 +59,10 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
-static bool _can_open_in_editor(Script *p_script) {
-
+static bool _is_built_in_script(Script *p_script) {
 	String path = p_script->get_path();
 
-	if (path.find("::") != -1) {
-		//refuse handling this if it can't be edited
-
-		bool valid = false;
-		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_edited_scene_count(); i++) {
-			if (path.begins_with(EditorNode::get_singleton()->get_editor_data().get_scene_path(i))) {
-				valid = true;
-				break;
-			}
-		}
-
-		return valid;
-	}
-
-	return true;
+	return path.find("::") != -1;
 }
 
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
@@ -2728,7 +2713,7 @@ void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	if (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")))
 		return;
 
-	if (open_dominant && p_script.is_valid() && _can_open_in_editor(p_script.ptr())) {
+	if (open_dominant && p_script.is_valid()) {
 		edit(p_script);
 	}
 }
@@ -3224,7 +3209,17 @@ ScriptEditor::~ScriptEditor() {
 void ScriptEditorPlugin::edit(Object *p_object) {
 
 	if (Object::cast_to<Script>(p_object)) {
-		script_editor->edit(Object::cast_to<Script>(p_object));
+
+		Script *p_script = Object::cast_to<Script>(p_object);
+		String scene_path = p_script->get_path().get_slice("::", 0);
+
+		if (_is_built_in_script(p_script) && !EditorNode::get_singleton()->is_scene_open(scene_path)) {
+			EditorNode::get_singleton()->load_scene(scene_path);
+
+			script_editor->call_deferred("edit", p_script);
+		} else {
+			script_editor->edit(p_script);
+		}
 	}
 
 	if (Object::cast_to<TextFile>(p_object)) {
@@ -3239,13 +3234,7 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 	}
 
 	if (Object::cast_to<Script>(p_object)) {
-
-		bool valid = _can_open_in_editor(Object::cast_to<Script>(p_object));
-
-		if (!valid) { //user tried to open it by clicking
-			EditorNode::get_singleton()->show_warning(TTR("Built-in scripts can only be edited when the scene they belong to is loaded"));
-		}
-		return valid;
+		return true;
 	}
 
 	return p_object->is_class("Script");
