@@ -202,6 +202,8 @@ public:
 	void hide();
 	bool is_visible_in_tree() const;
 
+	void force_update_transform();
+
 	Spatial();
 	~Spatial();
 };

@@ -967,6 +967,17 @@ Vector2 CanvasItem::get_local_mouse_position() const {
 	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
 }
 
+void CanvasItem::force_update_transform() {
+	ERR_FAIL_COND(!is_inside_tree());
+	if (!xform_change.in_list()) {
+		return;
+	}
+
+	get_tree()->xform_change_list.remove(&xform_change);
+
+	notification(NOTIFICATION_TRANSFORM_CHANGED);
+}
+
 void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"), &CanvasItem::_toplevel_raise_self);
@@ -1060,6 +1071,8 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &CanvasItem::set_notify_transform);
 	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &CanvasItem::is_transform_notification_enabled);
+
+	ClassDB::bind_method(D_METHOD("force_update_transform"), &CanvasItem::force_update_transform);
 
 	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
