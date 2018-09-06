@@ -109,6 +109,8 @@ public:
 
 		void set_transform(const Transform &p_transform);
 		void set_transform(const btTransform &p_transform);
+
+		void claim_bt_shape(const btVector3 &body_scale);
 	};
 
 protected:
@@ -207,10 +209,8 @@ public:
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
 protected:
-	/// This is required to combine some shapes together.
-	/// Since Godot allow to have multiple shapes for each body with custom relative location,
-	/// each body will attach the shapes using this class even if there is only one shape.
-	btCompoundShape *compoundShape;
+	/// This could be a compound shape in case multi please collision are found
+	btCollisionShape *mainShape;
 	Vector<ShapeWrapper> shapes;
 
 public:
@@ -231,15 +231,18 @@ public:
 	virtual void on_shape_changed(const ShapeBullet *const p_shape);
 	virtual void on_shapes_changed();
 
-	_FORCE_INLINE_ btCompoundShape *get_compound_shape() const { return compoundShape; }
+	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
+
 	int get_shape_count() const;
 	ShapeBullet *get_shape(int p_index) const;
 	btCollisionShape *get_bt_shape(int p_index) const;
+	const btTransform &get_bt_shape_transform(int p_index) const;
 	Transform get_shape_transform(int p_index) const;
 
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);
 
+	virtual void main_shape_resetted() = 0;
 	virtual void on_body_scale_changed();
 
 private:

@@ -142,6 +142,7 @@ public:
 	_FORCE_INLINE_ void set_spOv_priority(int p_priority) { spOv_priority = p_priority; }
 	_FORCE_INLINE_ int get_spOv_priority() { return spOv_priority; }
 
+	virtual void main_shape_resetted();
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
