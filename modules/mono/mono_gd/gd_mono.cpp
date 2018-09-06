@@ -177,6 +177,30 @@ void GDMono::initialize() {
 
 	mono_set_dirs(assembly_dir.length() ? assembly_dir.get_data() : NULL,
 			config_dir.length() ? config_dir.get_data() : NULL);
+#elif OSX_ENABLED
+	mono_set_dirs(NULL, NULL);
+
+	{
+		const char *assembly_rootdir = mono_assembly_getrootdir();
+		const char *config_dir = mono_get_config_dir();
+
+		if (!assembly_rootdir || !config_dir || !DirAccess::exists(assembly_rootdir) || !DirAccess::exists(config_dir)) {
+			Vector<const char *> locations;
+			locations.push_back("/Library/Frameworks/Mono.framework/Versions/Current/");
+			locations.push_back("/usr/local/var/homebrew/linked/mono/");
+
+			for (int i = 0; i < locations.size(); i++) {
+				String hint_assembly_rootdir = path_join(locations[i], "lib");
+				String hint_mscorlib_path = path_join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
+				String hint_config_dir = path_join(locations[i], "etc");
+
+				if (FileAccess::exists(hint_mscorlib_path) && DirAccess::exists(hint_config_dir)) {
+					mono_set_dirs(hint_assembly_rootdir.utf8().get_data(), hint_config_dir.utf8().get_data());
+					break;
+				}
+			}
+		}
+	}
 #else
 	mono_set_dirs(NULL, NULL);
 #endif
