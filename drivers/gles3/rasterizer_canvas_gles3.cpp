@@ -1591,6 +1591,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					if (!t) {
 						glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 					} else {
+						t = t->get_ptr();
 
 						glBindTexture(t->target, t->tex_id);
 					}
