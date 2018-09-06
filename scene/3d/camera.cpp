@@ -553,11 +553,13 @@ Camera::Projection Camera::get_projection() const {
 void Camera::set_fov(float p_fov) {
 	fov = p_fov;
 	_update_camera_mode();
+	_change_notify("fov");
 }
 
 void Camera::set_size(float p_size) {
 	size = p_size;
 	_update_camera_mode();
+	_change_notify("size");
 }
 
 void Camera::set_znear(float p_znear) {
