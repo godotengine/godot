@@ -42,21 +42,7 @@
 
 bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
 
-	if (colObj1Wrap->m_shape->isCompound()) {
-		const btCompoundShape *cs = static_cast<const btCompoundShape *>(colObj1Wrap->getCollisionShape());
-		for (int i(cs->getNumChildShapes() - 1); 0 <= i; --i) {
-			const btCollisionShape *s = cs->getChildShape(i);
-
-			if (s->getShapeType() == SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE || s->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE) {
-
-				btCollisionObjectWrapper subWrap(colObj1Wrap->m_parent, s, colObj1Wrap->m_collisionObject, colObj1Wrap->getWorldTransform() * cs->getChildTransform(i), partId1, i);
-				btAdjustInternalEdgeContacts(cp, &subWrap, colObj0Wrap, partId1, index1);
-			}
-		}
-	} else {
-		btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
-	}
-
+	btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
 	return true;
 }
 
