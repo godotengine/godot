@@ -17,12 +17,13 @@ subject to the following restrictions:
 #ifndef BT_HASH_MAP_H
 #define BT_HASH_MAP_H
 
+#include <string>
 #include "btAlignedObjectArray.h"
 
 ///very basic hashable string implementation, compatible with btHashMap
 struct btHashString
 {
-	const char* m_string;
+	std::string m_string1;
 	unsigned int	m_hash;
 
 	SIMD_FORCE_INLINE	unsigned int getHash()const
@@ -30,8 +31,13 @@ struct btHashString
 		return m_hash;
 	}
 
+	btHashString()
+	{
+		m_string1="";
+		m_hash=0;
+	}
 	btHashString(const char* name)
-		:m_string(name)
+		:m_string1(name)
 	{
 		/* magic numbers from http://www.isthe.com/chongo/tech/comp/fnv/ */
 		static const unsigned int  InitialFNV = 2166136261u;
@@ -40,36 +46,18 @@ struct btHashString
 		/* Fowler / Noll / Vo (FNV) Hash */
 		unsigned int hash = InitialFNV;
 		
-		for(int i = 0; m_string[i]; i++)
+		for(int i = 0; m_string1.c_str()[i]; i++)
 		{
-			hash = hash ^ (m_string[i]);       /* xor  the low 8 bits */
+			hash = hash ^ (m_string1.c_str()[i]);       /* xor  the low 8 bits */
 			hash = hash * FNVMultiple;  /* multiply by the magic number */
 		}
 		m_hash = hash;
 	}
 
-	int portableStringCompare(const char* src,	const char* dst) const
-	{
-			int ret = 0 ;
-
-			while( ! (ret = *(const unsigned char *)src - *(const unsigned char *)dst) && *dst)
-					++src, ++dst;
-
-			if ( ret < 0 )
-					ret = -1 ;
-			else if ( ret > 0 )
-					ret = 1 ;
-
-			return( ret );
-	}
-
 	bool equals(const btHashString& other) const
 	{
-		return (m_string == other.m_string) ||
-			(0==portableStringCompare(m_string,other.m_string));
-
+		return (m_string1 == other.m_string1);
 	}
-
 };
 
 const int BT_HASH_NULL=0xffffffff;

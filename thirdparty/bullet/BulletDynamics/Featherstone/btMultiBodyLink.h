@@ -182,6 +182,8 @@ btVector3 m_appliedConstraintForce;    // In WORLD frame
 		m_cachedRVector.setValue(0, 0, 0);
 		m_appliedForce.setValue( 0, 0, 0);
 		m_appliedTorque.setValue(0, 0, 0);
+		m_appliedConstraintForce.setValue(0,0,0);
+		m_appliedConstraintTorque.setValue(0,0,0);
 		//		
 		m_jointPos[0] = m_jointPos[1] = m_jointPos[2] = m_jointPos[4] = m_jointPos[5] = m_jointPos[6] = 0.f;
 		m_jointPos[3] = 1.f;			//"quat.w"

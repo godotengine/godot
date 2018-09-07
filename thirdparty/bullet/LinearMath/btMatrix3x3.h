@@ -289,7 +289,7 @@ public:
 	/** @brief Set the matrix from euler angles YPR around ZYX axes
 	* @param eulerX Roll about X axis
 	* @param eulerY Pitch around Y axis
-	* @param eulerZ Yaw aboud Z axis
+	* @param eulerZ Yaw about Z axis
 	* 
 	* These angles are used to produce a rotation matrix. The euler
 	* angles are applied in ZYX order. I.e a vector is first rotated 
@@ -514,7 +514,7 @@ public:
 
 
 	/**@brief Get the matrix represented as euler angles around ZYX
-	* @param yaw Yaw around X axis
+	* @param yaw Yaw around Z axis
 	* @param pitch Pitch around Y axis
 	* @param roll around X axis 
 	* @param solution_number Which solution of two possible solutions ( 1 or 2) are possible values*/	
@@ -649,6 +649,10 @@ public:
 
 	///extractRotation is from "A robust method to extract the rotational part of deformations"
 	///See http://dl.acm.org/citation.cfm?doid=2994258.2994269
+	///decomposes a matrix A in a orthogonal matrix R and a
+	///symmetric matrix S:
+	///A = R*S.
+	///note that R can include both rotation and scaling.
 	SIMD_FORCE_INLINE void extractRotation(btQuaternion &q,btScalar tolerance = 1.0e-9, int maxIter=100)
 	{
 		int iter =0;
@@ -673,25 +677,93 @@ public:
 
 
 
-	/**@brief diagonalizes this matrix
-	* @param rot stores the rotation from the coordinate system in which the matrix is diagonal to the original
-	* coordinate system, i.e., old_this = rot * new_this * rot^T. 
-	* @param threshold See iteration
-	* @param maxIter The iteration stops when we hit the given tolerance or when maxIter have been executed. 
-	*/
-	void diagonalize(btMatrix3x3& rot, btScalar tolerance = 1.0e-9, int maxIter=100)
-	{
-		btQuaternion r;
-		r = btQuaternion::getIdentity();
-		extractRotation(r,tolerance,maxIter);
-		rot.setRotation(r);
-		btMatrix3x3 rotInv = btMatrix3x3(r.inverse());
-		btMatrix3x3 old = *this;
-		setValue(old.tdotx( rotInv[0]), old.tdoty( rotInv[0]), old.tdotz( rotInv[0]),
-		old.tdotx( rotInv[1]), old.tdoty( rotInv[1]), old.tdotz( rotInv[1]),
-		old.tdotx( rotInv[2]), old.tdoty( rotInv[2]), old.tdotz( rotInv[2]));
-	}
 
+	/**@brief diagonalizes this matrix by the Jacobi method.
+	* @param rot stores the rotation from the coordinate system in which the matrix is diagonal to the original
+	* coordinate system, i.e., old_this = rot * new_this * rot^T.
+	* @param threshold See iteration
+	* @param iteration The iteration stops when all off-diagonal elements are less than the threshold multiplied
+	* by the sum of the absolute values of the diagonal, or when maxSteps have been executed.
+	*
+	* Note that this matrix is assumed to be symmetric.
+	*/
+	void diagonalize(btMatrix3x3& rot, btScalar threshold, int maxSteps)
+	{
+		rot.setIdentity();
+		for (int step = maxSteps; step > 0; step--)
+		{
+			// find off-diagonal element [p][q] with largest magnitude
+			int p = 0;
+			int q = 1;
+			int r = 2;
+			btScalar max = btFabs(m_el[0][1]);
+			btScalar v = btFabs(m_el[0][2]);
+			if (v > max)
+			{
+				q = 2;
+				r = 1;
+				max = v;
+			}
+			v = btFabs(m_el[1][2]);
+			if (v > max)
+			{
+				p = 1;
+				q = 2;
+				r = 0;
+				max = v;
+			}
+
+			btScalar t = threshold * (btFabs(m_el[0][0]) + btFabs(m_el[1][1]) + btFabs(m_el[2][2]));
+			if (max <= t)
+			{
+				if (max <= SIMD_EPSILON * t)
+				{
+					return;
+				}
+				step = 1;
+			}
+
+			// compute Jacobi rotation J which leads to a zero for element [p][q] 
+			btScalar mpq = m_el[p][q];
+			btScalar theta = (m_el[q][q] - m_el[p][p]) / (2 * mpq);
+			btScalar theta2 = theta * theta;
+			btScalar cos;
+			btScalar sin;
+			if (theta2 * theta2 < btScalar(10 / SIMD_EPSILON))
+			{
+				t = (theta >= 0) ? 1 / (theta + btSqrt(1 + theta2))
+					: 1 / (theta - btSqrt(1 + theta2));
+				cos = 1 / btSqrt(1 + t * t);
+				sin = cos * t;
+			}
+			else
+			{
+				// approximation for large theta-value, i.e., a nearly diagonal matrix
+				t = 1 / (theta * (2 + btScalar(0.5) / theta2));
+				cos = 1 - btScalar(0.5) * t * t;
+				sin = cos * t;
+			}
+
+			// apply rotation to matrix (this = J^T * this * J)
+			m_el[p][q] = m_el[q][p] = 0;
+			m_el[p][p] -= t * mpq;
+			m_el[q][q] += t * mpq;
+			btScalar mrp = m_el[r][p];
+			btScalar mrq = m_el[r][q];
+			m_el[r][p] = m_el[p][r] = cos * mrp - sin * mrq;
+			m_el[r][q] = m_el[q][r] = cos * mrq + sin * mrp;
+
+			// apply rotation to rot (rot = rot * J)
+			for (int i = 0; i < 3; i++)
+			{
+				btVector3& row = rot[i];
+				mrp = row[p];
+				mrq = row[q];
+				row[p] = cos * mrp - sin * mrq;
+				row[q] = cos * mrq + sin * mrp;
+			}
+		}
+	}
 
 
 

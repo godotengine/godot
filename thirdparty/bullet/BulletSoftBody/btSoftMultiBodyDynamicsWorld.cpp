@@ -157,7 +157,7 @@ void	btSoftMultiBodyDynamicsWorld::removeCollisionObject(btCollisionObject* coll
 
 void	btSoftMultiBodyDynamicsWorld::debugDrawWorld()
 {
-	btDiscreteDynamicsWorld::debugDrawWorld();
+	btMultiBodyDynamicsWorld::debugDrawWorld();
 
 	if (getDebugDrawer())
 	{
@@ -357,9 +357,13 @@ void	btSoftMultiBodyDynamicsWorld::serialize(btSerializer* serializer)
 
 	serializeSoftBodies(serializer);
 
+	serializeMultiBodies(serializer);
+
 	serializeRigidBodies(serializer);
 
 	serializeCollisionObjects(serializer);
+
+	serializeContactManifolds(serializer);
 
 	serializer->finishSerialization();
 }

@@ -19,7 +19,7 @@ comments.
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git (d05ad4b, 2017)
+- Version: git (12409f1118a7c7a266f9071350c70789dfe73bb9, Commits on Sep 6, 2018 )
 - License: zlib
 
 Files extracted from upstream source:

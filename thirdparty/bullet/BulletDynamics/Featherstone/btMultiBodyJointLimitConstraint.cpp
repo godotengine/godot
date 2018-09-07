@@ -53,17 +53,22 @@ btMultiBodyJointLimitConstraint::~btMultiBodyJointLimitConstraint()
 {
 }
 
+
 int btMultiBodyJointLimitConstraint::getIslandIdA() const
 {
-	if(m_bodyA)
+
+	if (m_bodyA)
 	{
-		btMultiBodyLinkCollider* col = m_bodyA->getBaseCollider();
-		if (col)
-			return col->getIslandTag();
-		for (int i=0;i<m_bodyA->getNumLinks();i++)
+		if (m_linkA < 0)
 		{
-			if (m_bodyA->getLink(i).m_collider)
-				return m_bodyA->getLink(i).m_collider->getIslandTag();
+			btMultiBodyLinkCollider* col = m_bodyA->getBaseCollider();
+			if (col)
+				return col->getIslandTag();
+		}
+		else
+		{
+			if (m_bodyA->getLink(m_linkA).m_collider)
+				return m_bodyA->getLink(m_linkA).m_collider->getIslandTag();
 		}
 	}
 	return -1;
@@ -71,17 +76,18 @@ int btMultiBodyJointLimitConstraint::getIslandIdA() const
 
 int btMultiBodyJointLimitConstraint::getIslandIdB() const
 {
-	if(m_bodyB)
+	if (m_bodyB)
 	{
-		btMultiBodyLinkCollider* col = m_bodyB->getBaseCollider();
-		if (col)
-			return col->getIslandTag();
-
-		for (int i=0;i<m_bodyB->getNumLinks();i++)
+		if (m_linkB < 0)
 		{
-			col = m_bodyB->getLink(i).m_collider;
+			btMultiBodyLinkCollider* col = m_bodyB->getBaseCollider();
 			if (col)
 				return col->getIslandTag();
+		}
+		else
+		{
+			if (m_bodyB->getLink(m_linkB).m_collider)
+				return m_bodyB->getLink(m_linkB).m_collider->getIslandTag();
 		}
 	}
 	return -1;

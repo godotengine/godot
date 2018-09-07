@@ -43,12 +43,12 @@ struct btSimplePair
 typedef btAlignedObjectArray<btSimplePair>	btSimplePairArray;
 
 
-
+#ifdef BT_DEBUG_COLLISION_PAIRS
 extern int gOverlappingSimplePairs;
 extern int gRemoveSimplePairs;
 extern int gAddedSimplePairs;
 extern int gFindSimplePairs;
-
+#endif //BT_DEBUG_COLLISION_PAIRS
 
 
 
@@ -75,7 +75,9 @@ public:
 	// no new pair is created and the old one is returned.
 	virtual btSimplePair* 	addOverlappingPair(int indexA,int indexB)
 	{
+#ifdef BT_DEBUG_COLLISION_PAIRS
 		gAddedSimplePairs++;
+#endif
 
 		return internalAddPair(indexA,indexB);
 	}

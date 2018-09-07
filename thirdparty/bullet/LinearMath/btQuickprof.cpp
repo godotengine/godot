@@ -680,56 +680,58 @@ void	CProfileManager::dumpAll()
 	CProfileManager::Release_Iterator(profileIterator);
 }
 
+// clang-format off
+#if defined(_WIN32) && (defined(__MINGW32__) || defined(__MINGW64__))
+  #define BT_HAVE_TLS 1
+#elif __APPLE__ && !TARGET_OS_IPHONE
+  // TODO: Modern versions of iOS support TLS now with updated version checking.
+  #define BT_HAVE_TLS 1
+#elif __linux__
+  #define BT_HAVE_TLS 1
+#endif
 
+// __thread is broken on Andorid clang until r12b. See
+// https://github.com/android-ndk/ndk/issues/8
+#if defined(__ANDROID__) && defined(__clang__)
+  #if __has_include(<android/ndk-version.h>)
+    #include <android/ndk-version.h>
+  #endif  // __has_include(<android/ndk-version.h>)
+  #if defined(__NDK_MAJOR__) && \
+    ((__NDK_MAJOR__ < 12) || ((__NDK_MAJOR__ == 12) && (__NDK_MINOR__ < 1)))
+    #undef BT_HAVE_TLS
+  #endif
+#endif  // defined(__ANDROID__) && defined(__clang__)
+// clang-format on
 
+unsigned int btQuickprofGetCurrentThreadIndex2() {
+  const unsigned int kNullIndex = ~0U;
 
-unsigned int btQuickprofGetCurrentThreadIndex2()
-{
 #if BT_THREADSAFE
-    return btGetCurrentThreadIndex();
-#else // #if BT_THREADSAFE
-	const unsigned int kNullIndex = ~0U;
-#ifdef _WIN32
-    #if defined(__MINGW32__) || defined(__MINGW64__)
-        static __thread unsigned int sThreadIndex = kNullIndex;
-    #else
-        __declspec( thread ) static unsigned int sThreadIndex = kNullIndex;
-    #endif
+  return btGetCurrentThreadIndex();
 #else
-#ifdef __APPLE__
-	#if TARGET_OS_IPHONE
-		unsigned int sThreadIndex = 0;
-		return -1;
-	#else
-		static __thread unsigned int sThreadIndex = kNullIndex;
-	#endif
-#else//__APPLE__
-#if __linux__
-	static __thread unsigned int sThreadIndex = kNullIndex;
+#if defined(BT_HAVE_TLS)
+  static __thread unsigned int sThreadIndex = kNullIndex;
+#elif defined(_WIN32)
+  __declspec(thread) static unsigned int sThreadIndex = kNullIndex;
 #else
-	unsigned int sThreadIndex = 0;
-	return -1;
+  unsigned int sThreadIndex = 0;
+  return -1;
 #endif
-#endif//__APPLE__
-	
-#endif
-	static int gThreadCounter=0;
 
-	if ( sThreadIndex == kNullIndex )
-	{
-		sThreadIndex = gThreadCounter++;
-	}
-	return sThreadIndex;
-#endif // #else // #if BT_THREADSAFE
+  static int gThreadCounter = 0;
+
+  if (sThreadIndex == kNullIndex) {
+    sThreadIndex = gThreadCounter++;
+  }
+  return sThreadIndex;
+#endif //BT_THREADSAFE
 }
 
 void	btEnterProfileZoneDefault(const char* name)
 {
-	CProfileManager::Start_Profile( name ); 
 }
 void	btLeaveProfileZoneDefault()
 {
-	CProfileManager::Stop_Profile(); 
 }
 
 

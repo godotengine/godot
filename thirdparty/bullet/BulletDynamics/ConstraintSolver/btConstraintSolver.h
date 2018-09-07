@@ -34,7 +34,8 @@ enum btConstraintSolverType
 {
 	BT_SEQUENTIAL_IMPULSE_SOLVER=1,
 	BT_MLCP_SOLVER=2,
-	BT_NNCG_SOLVER=4
+	BT_NNCG_SOLVER=4,
+    BT_MULTIBODY_SOLVER=8,
 };
 
 class btConstraintSolver
