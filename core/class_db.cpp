@@ -30,6 +30,7 @@
 
 #include "class_db.h"
 
+#include "engine.h"
 #include "os/mutex.h"
 #include "version.h"
 
@@ -512,7 +513,12 @@ Object *ClassDB::instance(const StringName &p_class) {
 		ERR_FAIL_COND_V(ti->disabled, NULL);
 		ERR_FAIL_COND_V(!ti->creation_func, NULL);
 	}
-
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		ERR_PRINTS("Class '" + String(p_class) + "' can only be instantiated by editor.");
+		return NULL;
+	}
+#endif
 	return ti->creation_func();
 }
 bool ClassDB::can_instance(const StringName &p_class) {
