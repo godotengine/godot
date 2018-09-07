@@ -598,6 +598,7 @@ void SceneTree::finish() {
 
 	if (root) {
 		root->_set_tree(NULL);
+		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
 	}
 }
