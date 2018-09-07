@@ -53,8 +53,15 @@ void CollisionObjectBullet::ShapeWrapper::set_transform(const Transform &p_trans
 	G_TO_B(p_transform, transform);
 	UNSCALE_BT_BASIS(transform);
 }
+
 void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_transform) {
 	transform = p_transform;
+}
+
+void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_scale) {
+	if (!bt_shape) {
+		bt_shape = shape->create_bt_shape(scale * body_scale);
+	}
 }
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
@@ -107,6 +114,7 @@ void CollisionObjectBullet::setupBulletCollisionObject(btCollisionObject *p_coll
 	bt_collision_object->setUserIndex(type);
 	// Force the enabling of collision and avoid problems
 	set_collision_enabled(collisionsEnabled);
+	p_collisionObject->setCollisionFlags(p_collisionObject->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 }
 
 void CollisionObjectBullet::add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject) {
@@ -186,13 +194,14 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
 		CollisionObjectBullet(p_type),
-		compoundShape(bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity))) {
+		mainShape(NULL) {
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	remove_all_shapes(true);
-	bt_collision_object->setCollisionShape(NULL);
-	bulletdelete(compoundShape);
+	if (mainShape && mainShape->isCompound()) {
+		bulletdelete(mainShape);
+	}
 }
 
 /* Not used
@@ -277,6 +286,10 @@ btCollisionShape *RigidCollisionObjectBullet::get_bt_shape(int p_index) const {
 	return shapes[p_index].bt_shape;
 }
 
+const btTransform &RigidCollisionObjectBullet::get_bt_shape_transform(int p_index) const {
+	return shapes[p_index].transform;
+}
+
 Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
 	Transform trs;
 	B_TO_G(shapes[p_index].transform, trs);
@@ -294,33 +307,47 @@ void RigidCollisionObjectBullet::on_shape_changed(const ShapeBullet *const p_sha
 }
 
 void RigidCollisionObjectBullet::on_shapes_changed() {
-	int i;
 
-	// Remove all shapes, reverse order for performance reason (Array resize)
-	for (i = compoundShape->getNumChildShapes() - 1; 0 <= i; --i) {
-		compoundShape->removeChildShapeByIndex(i);
+	if (mainShape && mainShape->isCompound()) {
+		bulletdelete(mainShape);
 	}
+	mainShape = NULL;
 
 	ShapeWrapper *shpWrapper;
-	const int shapes_size = shapes.size();
+	const int shape_count = shapes.size();
 
 	// Reset shape if required
 	if (force_shape_reset) {
-		for (i = 0; i < shapes_size; ++i) {
+		for (int i(0); i < shape_count; ++i) {
 			shpWrapper = &shapes.write[i];
 			bulletdelete(shpWrapper->bt_shape);
 		}
 		force_shape_reset = false;
 	}
 
-	// Insert all shapes
 	btVector3 body_scale(get_bt_body_scale());
-	for (i = 0; i < shapes_size; ++i) {
+
+	if (!shape_count)
+		return;
+
+	// Try to optimize by not using compound
+	if (1 == shape_count) {
+		shpWrapper = &shapes.write[0];
+		if (shpWrapper->active && shpWrapper->transform.getOrigin().isZero() && shpWrapper->transform.getBasis() == shpWrapper->transform.getBasis().getIdentity()) {
+			shpWrapper->claim_bt_shape(body_scale);
+			mainShape = shpWrapper->bt_shape;
+			main_shape_resetted();
+			return;
+		}
+	}
+
+	btCompoundShape *compoundShape = bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity));
+
+	// Insert all shapes into compound
+	for (int i(0); i < shape_count; ++i) {
 		shpWrapper = &shapes.write[i];
 		if (shpWrapper->active) {
-			if (!shpWrapper->bt_shape) {
-				shpWrapper->bt_shape = shpWrapper->shape->create_bt_shape(shpWrapper->scale * body_scale);
-			}
+			shpWrapper->claim_bt_shape(body_scale);
 
 			btTransform scaled_shape_transform(shpWrapper->transform);
 			scaled_shape_transform.getOrigin() *= body_scale;
@@ -331,6 +358,8 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 	}
 
 	compoundShape->recalculateLocalAabb();
+	mainShape = compoundShape;
+	main_shape_resetted();
 }
 
 void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {

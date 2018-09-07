@@ -34,10 +34,18 @@
 #include "bullet_types_converter.h"
 #include "collision_object_bullet.h"
 #include "rigid_body_bullet.h"
+#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
 /**
 	@author AndreaCatania
 */
+
+bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
+	if (!colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound()) {
+		btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
+	}
+	return true;
+}
 
 bool GodotFilterCallback::test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask) {
 	return body0_collision_layer & body1_collision_mask || body1_collision_layer & body0_collision_mask;

@@ -231,6 +231,7 @@ public:
 
 	_FORCE_INLINE_ btRigidBody *get_bt_rigid_body() { return btBody; }
 
+	virtual void main_shape_resetted();
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 

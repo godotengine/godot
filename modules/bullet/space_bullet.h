@@ -65,6 +65,8 @@ class SpaceBullet;
 class SoftBodyBullet;
 class btGjkEpaPenetrationDepthSolver;
 
+extern ContactAddedCallback gContactAddedCallback;
+
 class BulletPhysicsDirectSpaceState : public PhysicsDirectSpaceState {
 	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState)
 private:
