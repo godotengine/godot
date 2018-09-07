@@ -388,7 +388,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				int ret = _parse_expression(codegen, an->elements[i], slevel);
 				if (ret < 0)
 					return ret;
-				if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+				if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 					slevel++;
 					codegen.alloc_stack(slevel);
 				}
@@ -419,7 +419,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				int ret = _parse_expression(codegen, dn->elements[i].key, slevel);
 				if (ret < 0)
 					return ret;
-				if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+				if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 					slevel++;
 					codegen.alloc_stack(slevel);
 				}
@@ -429,7 +429,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				ret = _parse_expression(codegen, dn->elements[i].value, slevel);
 				if (ret < 0)
 					return ret;
-				if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+				if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 					slevel++;
 					codegen.alloc_stack(slevel);
 				}
@@ -545,7 +545,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						int ret = _parse_expression(codegen, on->arguments[i], slevel);
 						if (ret < 0)
 							return ret;
-						if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+						if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 							slevel++;
 							codegen.alloc_stack(slevel);
 						}
@@ -578,7 +578,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							int ret = _parse_expression(codegen, on->arguments[i], slevel);
 							if (ret < 0)
 								return ret;
-							if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+							if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 								slevel++;
 								codegen.alloc_stack(slevel);
 							}
@@ -606,7 +606,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							if (ret < 0)
 								return ret;
 
-							if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+							if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 								slevel++;
 								codegen.alloc_stack(slevel);
 							}
@@ -655,7 +655,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 								ret = _parse_expression(codegen, on->arguments[i], slevel);
 								if (ret < 0)
 									return ret;
-								if (ret & GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS) {
+								if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 									slevel++;
 									codegen.alloc_stack(slevel);
 								}
@@ -681,7 +681,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						int ret = _parse_expression(codegen, on->arguments[i], slevel);
 						if (ret < 0)
 							return ret;
-						if (ret & (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS)) {
+						if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
 							slevel++;
 							codegen.alloc_stack(slevel);
 						}
