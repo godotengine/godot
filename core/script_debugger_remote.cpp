@@ -661,7 +661,7 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			prop.push_back(Variant());
 		} else {
 			prop.push_back(pi.hint);
-			if (res.is_null())
+			if (res.is_null() || res->get_path().empty())
 				prop.push_back(pi.hint_string);
 			else
 				prop.push_back(String("RES:") + res->get_path());
