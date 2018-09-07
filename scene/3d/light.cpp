@@ -312,7 +312,7 @@ Light::Light(VisualServer::LightType p_type) {
 Light::Light() {
 
 	type = VisualServer::LIGHT_DIRECTIONAL;
-	ERR_PRINT("Light shouldn't be instanced dircetly, use the subtypes.");
+	ERR_PRINT("Light should not be instanced directly; use the DirectionalLight, OmniLight or SpotLight subtypes instead.");
 }
 
 Light::~Light() {
