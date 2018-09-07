@@ -19,6 +19,16 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 
 #include "btMultiBody.h"
+#include "LinearMath/btSerializer.h"
+
+#ifdef BT_USE_DOUBLE_PRECISION
+#define btMultiBodyLinkColliderData btMultiBodyLinkColliderDoubleData
+#define btMultiBodyLinkColliderDataName "btMultiBodyLinkColliderDoubleData"
+#else
+#define btMultiBodyLinkColliderData btMultiBodyLinkColliderFloatData
+#define btMultiBodyLinkColliderDataName "btMultiBodyLinkColliderFloatData"
+#endif
+
 
 class btMultiBodyLinkCollider : public btCollisionObject
 {
@@ -119,7 +129,49 @@ public:
 		}
 		return true;
 	}
+
+	virtual	int	calculateSerializeBufferSize()	const;
+
+	///fills the dataBuffer and returns the struct name (and 0 on failure)
+	virtual	const char*	serialize(void* dataBuffer,  class btSerializer* serializer) const;
+
 };
+
+
+struct	btMultiBodyLinkColliderFloatData
+{
+	btCollisionObjectFloatData m_colObjData;
+	btMultiBodyFloatData	*m_multiBody;
+	int			m_link;
+	char		m_padding[4];
+};
+
+struct	btMultiBodyLinkColliderDoubleData
+{
+	btCollisionObjectDoubleData m_colObjData;
+	btMultiBodyDoubleData		*m_multiBody;
+	int			m_link;
+	char		m_padding[4];
+};
+
+SIMD_FORCE_INLINE	int	btMultiBodyLinkCollider::calculateSerializeBufferSize() const
+{
+	return sizeof(btMultiBodyLinkColliderData);
+}
+
+SIMD_FORCE_INLINE	const char*	btMultiBodyLinkCollider::serialize(void* dataBuffer,  class btSerializer* serializer) const
+{
+	btMultiBodyLinkColliderData* dataOut = (btMultiBodyLinkColliderData*)dataBuffer;
+	btCollisionObject::serialize(&dataOut->m_colObjData,serializer);
+	
+	dataOut->m_link = this->m_link;
+	dataOut->m_multiBody = (btMultiBodyData*)serializer->getUniquePointer(m_multiBody);
+
+	// Fill padding with zeros to appease msan.
+	memset(dataOut->m_padding, 0, sizeof(dataOut->m_padding));
+
+	return btMultiBodyLinkColliderDataName;
+}
 
 #endif //BT_FEATHERSTONE_LINK_COLLIDER_H
 

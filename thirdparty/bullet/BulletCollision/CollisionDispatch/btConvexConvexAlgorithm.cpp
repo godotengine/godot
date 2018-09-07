@@ -28,6 +28,7 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btConvexShape.h"
 #include "BulletCollision/CollisionShapes/btCapsuleShape.h"
 #include "BulletCollision/CollisionShapes/btTriangleShape.h"
+#include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
 
 
 
@@ -259,7 +260,7 @@ struct btPerturbedContactResult : public btManifoldResult
 			btVector3 endPtOrg = pointInWorld + normalOnBInWorld*orgDepth;
 			endPt = (m_unPerturbedTransform*m_transformA.inverse())(endPtOrg);
 			newDepth = (endPt -  pointInWorld).dot(normalOnBInWorld);
-			startPt = endPt+normalOnBInWorld*newDepth;
+			startPt = endPt - normalOnBInWorld*newDepth;
 		} else
 		{
 			endPt = pointInWorld + normalOnBInWorld*orgDepth;
@@ -442,10 +443,26 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 
 		struct btDummyResult : public btDiscreteCollisionDetectorInterface::Result
 		{
+			btVector3 m_normalOnBInWorld;
+			btVector3 m_pointInWorld;
+			btScalar m_depth;
+			bool m_hasContact;
+			
+
+			btDummyResult()
+				: m_hasContact(false)
+			{
+			}
+			
+			
 			virtual void setShapeIdentifiersA(int partId0,int index0){}
 			virtual void setShapeIdentifiersB(int partId1,int index1){}
 			virtual void addContactPoint(const btVector3& normalOnBInWorld,const btVector3& pointInWorld,btScalar depth) 
 			{
+				m_hasContact = true;
+				m_normalOnBInWorld = normalOnBInWorld;
+				m_pointInWorld = pointInWorld;
+				m_depth = depth;
 			}
 		};
 
@@ -560,15 +577,18 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 
 		} else
 		{
+
+
 			//we can also deal with convex versus triangle (without connectivity data)
-			if (polyhedronA->getConvexPolyhedron() && polyhedronB->getShapeType()==TRIANGLE_SHAPE_PROXYTYPE)
+			if (dispatchInfo.m_enableSatConvex && polyhedronA->getConvexPolyhedron() && polyhedronB->getShapeType()==TRIANGLE_SHAPE_PROXYTYPE)
 			{
 
-				btVertexArray vertices;
+
+				btVertexArray worldSpaceVertices;
 				btTriangleShape* tri = (btTriangleShape*)polyhedronB;
-				vertices.push_back(	body1Wrap->getWorldTransform()*tri->m_vertices1[0]);
-				vertices.push_back(	body1Wrap->getWorldTransform()*tri->m_vertices1[1]);
-				vertices.push_back(	body1Wrap->getWorldTransform()*tri->m_vertices1[2]);
+				worldSpaceVertices.push_back(	body1Wrap->getWorldTransform()*tri->m_vertices1[0]);
+				worldSpaceVertices.push_back(	body1Wrap->getWorldTransform()*tri->m_vertices1[1]);
+				worldSpaceVertices.push_back(	body1Wrap->getWorldTransform()*tri->m_vertices1[2]);
 				
 				//tri->initializePolyhedralFeatures();
 
@@ -579,17 +599,99 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 				btScalar maxDist = threshold;
 				
 				bool foundSepAxis = false;
-				if (0)
+				bool useSatSepNormal = true;
+
+				if (useSatSepNormal)
 				{
-					polyhedronB->initializePolyhedralFeatures();
+#if 0
+					if (0)
+					{
+						//initializePolyhedralFeatures performs a convex hull computation, not needed for a single triangle
+						polyhedronB->initializePolyhedralFeatures();
+					} else
+#endif
+					{
+
+						btVector3 uniqueEdges[3] = {tri->m_vertices1[1]-tri->m_vertices1[0],
+							tri->m_vertices1[2]-tri->m_vertices1[1],
+							tri->m_vertices1[0]-tri->m_vertices1[2]};
+
+						uniqueEdges[0].normalize();
+						uniqueEdges[1].normalize();
+						uniqueEdges[2].normalize();
+
+						btConvexPolyhedron polyhedron;
+						polyhedron.m_vertices.push_back(tri->m_vertices1[2]);
+						polyhedron.m_vertices.push_back(tri->m_vertices1[0]);
+						polyhedron.m_vertices.push_back(tri->m_vertices1[1]);
+						
+						
+						{
+							btFace combinedFaceA;
+							combinedFaceA.m_indices.push_back(0);
+							combinedFaceA.m_indices.push_back(1);
+							combinedFaceA.m_indices.push_back(2);
+							btVector3 faceNormal = uniqueEdges[0].cross(uniqueEdges[1]);
+							faceNormal.normalize();
+							btScalar planeEq=1e30f;
+							for (int v=0;v<combinedFaceA.m_indices.size();v++)
+							{
+								btScalar eq = tri->m_vertices1[combinedFaceA.m_indices[v]].dot(faceNormal);
+								if (planeEq>eq)
+								{
+									planeEq=eq;
+								}
+							}
+							combinedFaceA.m_plane[0] = faceNormal[0];
+							combinedFaceA.m_plane[1] = faceNormal[1];
+							combinedFaceA.m_plane[2] = faceNormal[2];
+							combinedFaceA.m_plane[3] = -planeEq;
+							polyhedron.m_faces.push_back(combinedFaceA);
+						}
+						{
+							btFace combinedFaceB;
+							combinedFaceB.m_indices.push_back(0);
+							combinedFaceB.m_indices.push_back(2);
+							combinedFaceB.m_indices.push_back(1);
+							btVector3 faceNormal = -uniqueEdges[0].cross(uniqueEdges[1]);
+							faceNormal.normalize();
+							btScalar planeEq=1e30f;
+							for (int v=0;v<combinedFaceB.m_indices.size();v++)
+							{
+								btScalar eq = tri->m_vertices1[combinedFaceB.m_indices[v]].dot(faceNormal);
+								if (planeEq>eq)
+								{
+									planeEq=eq;
+								}
+							}
+
+							combinedFaceB.m_plane[0] = faceNormal[0];
+							combinedFaceB.m_plane[1] = faceNormal[1];
+							combinedFaceB.m_plane[2] = faceNormal[2];
+							combinedFaceB.m_plane[3] = -planeEq;
+							polyhedron.m_faces.push_back(combinedFaceB);
+						}
+
+						
+						polyhedron.m_uniqueEdges.push_back(uniqueEdges[0]);
+						polyhedron.m_uniqueEdges.push_back(uniqueEdges[1]);
+						polyhedron.m_uniqueEdges.push_back(uniqueEdges[2]);
+						polyhedron.initialize2();
+
+						polyhedronB->setPolyhedralFeatures(polyhedron);
+					}
+
+					
+
 					 foundSepAxis = btPolyhedralContactClipping::findSeparatingAxis(
-					*polyhedronA->getConvexPolyhedron(), *polyhedronB->getConvexPolyhedron(),
-					body0Wrap->getWorldTransform(), 
-					body1Wrap->getWorldTransform(),
-					sepNormalWorldSpace,*resultOut);
+						*polyhedronA->getConvexPolyhedron(), *polyhedronB->getConvexPolyhedron(),
+						body0Wrap->getWorldTransform(), 
+						body1Wrap->getWorldTransform(),
+						sepNormalWorldSpace,*resultOut);
 				//	 printf("sepNormalWorldSpace=%f,%f,%f\n",sepNormalWorldSpace.getX(),sepNormalWorldSpace.getY(),sepNormalWorldSpace.getZ());
 
-				} else
+				} 
+				else
 				{
 #ifdef ZERO_MARGIN
 					gjkPairDetector.setIgnoreMargin(true);
@@ -598,6 +700,24 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 					gjkPairDetector.getClosestPoints(input,dummy,dispatchInfo.m_debugDraw);
 #endif//ZERO_MARGIN
 					
+					if (dummy.m_hasContact && dummy.m_depth<0)
+					{
+						
+						if (foundSepAxis)
+						{
+							if (dummy.m_normalOnBInWorld.dot(sepNormalWorldSpace)<0.99)
+							{
+								printf("?\n");
+							}
+						} else
+						{
+							printf("!\n");
+						}
+						sepNormalWorldSpace.setValue(0,0,1);// = dummy.m_normalOnBInWorld;
+						//minDist = dummy.m_depth;
+						foundSepAxis = true;
+					}
+#if 0
 					btScalar l2 = gjkPairDetector.getCachedSeparatingAxis().length2();
 					if (l2>SIMD_EPSILON)
 					{
@@ -607,6 +727,7 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 						minDist = gjkPairDetector.getCachedSeparatingDistance()-min0->getMargin()-min1->getMargin();
 						foundSepAxis = true;
 					}
+#endif
 				}
 
 				
@@ -614,7 +735,7 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 			{
 				worldVertsB2.resize(0);
 				btPolyhedralContactClipping::clipFaceAgainstHull(sepNormalWorldSpace, *polyhedronA->getConvexPolyhedron(), 
-					body0Wrap->getWorldTransform(), vertices, worldVertsB2,minDist-threshold, maxDist, *resultOut);
+					body0Wrap->getWorldTransform(), worldSpaceVertices, worldVertsB2,minDist-threshold, maxDist, *resultOut);
 			}
 				
 				
@@ -625,6 +746,7 @@ void btConvexConvexAlgorithm ::processCollision (const btCollisionObjectWrapper*
 				
 				return;
 			}
+
 			
 		}
 

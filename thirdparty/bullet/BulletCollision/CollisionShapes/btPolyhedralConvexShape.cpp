@@ -39,6 +39,17 @@ btPolyhedralConvexShape::~btPolyhedralConvexShape()
 	}
 }
 
+void btPolyhedralConvexShape::setPolyhedralFeatures(btConvexPolyhedron& polyhedron)
+{
+	if (m_polyhedron)
+	{
+		*m_polyhedron = polyhedron;
+	} else
+	{
+		void* mem = btAlignedAlloc(sizeof(btConvexPolyhedron),16);
+		m_polyhedron = new (mem) btConvexPolyhedron(polyhedron);
+	}
+}
 
 bool	btPolyhedralConvexShape::initializePolyhedralFeatures(int shiftVerticesByMargin)
 {
@@ -87,7 +98,71 @@ bool	btPolyhedralConvexShape::initializePolyhedralFeatures(int shiftVerticesByMa
 		conv.compute(&orgVertices[0].getX(), sizeof(btVector3),orgVertices.size(),0.f,0.f);
 	}
 
+#ifndef BT_RECONSTRUCT_FACES
+	
+	int numVertices = conv.vertices.size();
+	m_polyhedron->m_vertices.resize(numVertices);
+	for (int p=0;p<numVertices;p++)
+	{
+		m_polyhedron->m_vertices[p] = conv.vertices[p];
+	}
 
+	int v0, v1;
+	for (int j = 0; j < conv.faces.size(); j++)
+	{
+		btVector3 edges[3];
+		int numEdges = 0;
+		btFace combinedFace;
+		const btConvexHullComputer::Edge* edge = &conv.edges[conv.faces[j]];
+		v0 = edge->getSourceVertex();
+		int prevVertex=v0;
+		combinedFace.m_indices.push_back(v0);
+		v1 = edge->getTargetVertex();
+		while (v1 != v0)
+		{
+		
+			btVector3 wa = conv.vertices[prevVertex];
+			btVector3 wb = conv.vertices[v1];
+			btVector3 newEdge = wb-wa;
+			newEdge.normalize();
+			if (numEdges<2)
+				edges[numEdges++] = newEdge;
+
+
+			//face->addIndex(v1);
+			combinedFace.m_indices.push_back(v1);
+			edge = edge->getNextEdgeOfFace();
+			prevVertex = v1;
+			int v01 = edge->getSourceVertex();
+			v1 = edge->getTargetVertex();
+
+		}
+		
+		btAssert(combinedFace.m_indices.size() > 2);
+
+		btVector3 faceNormal = edges[0].cross(edges[1]);
+		faceNormal.normalize();
+
+		btScalar planeEq=1e30f;
+
+		for (int v=0;v<combinedFace.m_indices.size();v++)
+		{
+			btScalar eq = m_polyhedron->m_vertices[combinedFace.m_indices[v]].dot(faceNormal);
+			if (planeEq>eq)
+			{
+				planeEq=eq;
+			}
+		}
+		combinedFace.m_plane[0] = faceNormal.getX();
+		combinedFace.m_plane[1] = faceNormal.getY();
+		combinedFace.m_plane[2] = faceNormal.getZ();
+		combinedFace.m_plane[3] = -planeEq;
+		
+		m_polyhedron->m_faces.push_back(combinedFace);
+	}
+
+
+#else//BT_RECONSTRUCT_FACES
 
 	btAlignedObjectArray<btVector3> faceNormals;
 	int numFaces = conv.faces.size();
@@ -311,7 +386,9 @@ bool	btPolyhedralConvexShape::initializePolyhedralFeatures(int shiftVerticesByMa
 
 
 	}
-	
+
+#endif //BT_RECONSTRUCT_FACES
+
 	m_polyhedron->initialize();
 
 	return true;

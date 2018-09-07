@@ -528,6 +528,14 @@ protected:
 		otherArray.copy(0, otherSize, m_data);
 	}
 
+	void removeAtIndex(int index)
+    {
+        if (index<size())
+        {
+            swap( index,size()-1);
+            pop_back();
+        }
+    }
 };
 
 #endif //B3_OBJECT_ARRAY__
