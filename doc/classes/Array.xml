@@ -221,7 +221,7 @@
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array (so first element will now be the last) and return reference to the array.
+				Reverse the order of the elements in the array.
 			</description>
 		</method>
 		<method name="max">
