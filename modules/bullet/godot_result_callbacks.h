@@ -104,7 +104,11 @@ public:
 struct GodotKinClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
 	const RigidBodyBullet *m_self_object;
-	const bool m_infinite_inertia;
+	bool m_infinite_inertia;
+	bool shape_id;
+
+	GodotKinClosestConvexResultCallback() :
+			btCollisionWorld::ClosestConvexResultCallback(btVector3(), btVector3()) { m_closestHitFraction = 1.0; }
 
 	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),

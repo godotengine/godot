@@ -30,6 +30,7 @@
 
 #include "bullet_physics_server.h"
 
+#include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "cone_twist_joint_bullet.h"
 #include "core/class_db.h"
@@ -871,6 +872,73 @@ PhysicsDirectBodyState *BulletPhysicsServer::body_get_direct_state(RID p_body) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
 	return BulletPhysicsDirectBodyState::get_singleton(body);
+}
+
+real_t BulletPhysicsServer::body_test_motion_light(RID p_body, const Transform &p_transform, const Vector3 &p_motion, bool p_infinite_inertia, bool p_use_margin, LightMotionResult &r_result) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body->get_space(), 0);
+
+	btTransform t;
+	G_TO_B(p_transform, t);
+
+	btVector3 motion;
+	G_TO_B(p_motion, motion);
+
+	GodotKinClosestConvexResultCallback btResult;
+
+	body->get_space()->sweep_test_multi_shapes(body, t, motion, p_infinite_inertia, p_use_margin, btResult);
+
+	if (btResult.m_closestHitFraction < (1.0 - FLT_EPSILON)) {
+		const btRigidBody *hit_bt_rigid_body = static_cast<const btRigidBody *>(btResult.m_hitCollisionObject);
+		const CollisionObjectBullet *hit_collision_object = static_cast<const CollisionObjectBullet *>(hit_bt_rigid_body->getUserPointer());
+
+		B_TO_G(btResult.m_hitPointWorld, r_result.collision_point);
+		B_TO_G(btResult.m_hitNormalWorld, r_result.collision_normal);
+		r_result.collision_local_shape = btResult.shape_id;
+		r_result.collider = hit_collision_object->get_self();
+		r_result.collider_id = hit_collision_object->get_instance_id();
+		r_result.collider_shape = 0;
+		return btResult.m_closestHitFraction;
+	} else {
+		return 1.0;
+	}
+}
+
+bool BulletPhysicsServer::body_test_motion_depenetrate(RID p_body, const Transform &p_transform, real_t p_depenetration_scale, bool p_infinite_inertia, real_t p_max_penetration, bool p_use_margin, Vector3 &r_delta_recover_movement, LightMotionResult *r_result) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+	ERR_FAIL_COND_V(!body->get_space(), false);
+
+	btTransform t;
+	G_TO_B(p_transform, t);
+
+	btVector3 recover(0, 0, 0);
+	bool penetrated;
+
+	if (r_result) {
+
+		SpaceBullet::RecoverResult rr;
+
+		penetrated = body->get_space()->recover_from_penetration(body, t, p_depenetration_scale, p_infinite_inertia, p_max_penetration, p_use_margin, recover, &rr);
+
+		const btRigidBody *hit_bt_rigid_body = static_cast<const btRigidBody *>(rr.other_collision_object);
+		const CollisionObjectBullet *hit_collision_object = static_cast<const CollisionObjectBullet *>(hit_bt_rigid_body->getUserPointer());
+
+		B_TO_G(rr.pointWorld, r_result->collision_point);
+		B_TO_G(rr.normal, r_result->collision_normal);
+		r_result->collision_local_shape = rr.local_shape_most_recovered;
+		r_result->collider = hit_collision_object->get_self();
+		r_result->collider_id = hit_collision_object->get_instance_id();
+		r_result->collider_shape = rr.other_compound_shape_index;
+
+	} else {
+		penetrated = body->get_space()->recover_from_penetration(body, t, p_depenetration_scale, p_infinite_inertia, p_max_penetration, p_use_margin, recover, NULL);
+	}
+
+	B_TO_G(recover, r_delta_recover_movement);
+
+	return penetrated;
 }
 
 bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {

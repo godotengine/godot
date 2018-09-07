@@ -237,19 +237,19 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer::SHAPE_CYLINDER:
 			case PhysicsServer::SHAPE_CONVEX_POLYGON:
 			case PhysicsServer::SHAPE_RAY: {
-				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
+				shapes.write[i].shape_with_margin = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
 				WARN_PRINT("This shape is not supported to be kinematic!");
-				shapes.write[i].shape = NULL;
+				shapes.write[i].shape_with_margin = NULL;
 		}
 	}
 }
 
 void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
-		if (shapes[i].shape) {
-			bulletdelete(shapes.write[i].shape);
+		if (shapes[i].shape_with_margin) {
+			bulletdelete(shapes.write[i].shape_with_margin);
 		}
 	}
 	shapes.resize(new_size);

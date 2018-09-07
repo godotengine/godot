@@ -179,11 +179,7 @@ public:
 	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes);
 	int test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, float p_margin);
 
-private:
-	void create_empty_world(bool p_create_soft_world);
-	void destroy_world();
-	void check_ghost_overlaps();
-	void check_body_collision();
+	void sweep_test_multi_shapes(RigidBodyBullet *p_body, const btTransform &p_transform, const btVector3 &p_motion, bool p_infinite_inertia, bool p_use_margin, GodotKinClosestConvexResultCallback &r_lastHitResult);
 
 	struct RecoverResult {
 		bool hasPenetration;
@@ -203,14 +199,20 @@ private:
 				other_collision_object(NULL),
 				local_shape_most_recovered(0) {}
 	};
+	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btScalar p_max_penetration, bool p_use_margin, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = NULL);
 
-	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = NULL);
+private:
+	void create_empty_world(bool p_create_soft_world);
+	void destroy_world();
+	void check_ghost_overlaps();
+	void check_body_collision();
+
 	/// This is an API that recover a kinematic object from penetration
 	/// This allow only Convex Convex test and it always use GJK algorithm, With this API we don't benefit of Bullet special accelerated functions
-	bool RFP_convex_convex_test(const btConvexShape *p_shapeA, const btConvexShape *p_shapeB, btCollisionObject *p_objectB, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = NULL);
+	bool RFP_convex_convex_test(const btConvexShape *p_shapeA, const btConvexShape *p_shapeB, btCollisionObject *p_objectB, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btScalar p_max_penetration, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = NULL);
 	/// This is an API that recover a kinematic object from penetration
 	/// Using this we leave Bullet to select the best algorithm, For example GJK in case we have Convex Convex, or a Bullet accelerated algorithm
-	bool RFP_convex_world_test(const btConvexShape *p_shapeA, const btCollisionShape *p_shapeB, btCollisionObject *p_objectA, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = NULL);
+	bool RFP_convex_world_test(const btConvexShape *p_shapeA, const btCollisionShape *p_shapeB, btCollisionObject *p_objectA, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btScalar p_max_penetration, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = NULL);
 
 	int recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer::SeparationResult *r_results);
 };

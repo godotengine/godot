@@ -46,6 +46,7 @@ class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
 class BulletPhysicsDirectBodyState;
+class btConvexShape;
 
 /// This class could be used in multi thread with few changes but currently
 /// is set to be only in one single thread.
@@ -162,12 +163,12 @@ public:
 
 	/// Used to hold shapes
 	struct KinematicShape {
-		class btConvexShape *shape;
+		btConvexShape *shape_with_margin;
 		btTransform transform;
 
 		KinematicShape() :
-				shape(NULL) {}
-		const bool is_active() const { return shape; }
+				shape_with_margin(NULL) {}
+		const bool is_active() const { return shape_with_margin; }
 	};
 
 	struct KinematicUtilities {
