@@ -90,30 +90,29 @@ public:
 
 	template <class C>
 	void sort_custom() {
-
 		int len = _cowdata.size();
 		if (len == 0)
 			return;
 
-		T *data = ptrw();
+		T *data = _cowdata.ptrw();
 		SortArray<T, C> sorter;
 		sorter.sort(data, len);
 	}
 
 	void sort() {
-
 		sort_custom<_DefaultComparator<T> >();
 	}
 
 	void ordered_insert(const T &p_val) {
-		int i;
-		for (i = 0; i < _cowdata.size(); i++) {
-
+		int len = _cowdata.size();
+		for (int i = 0; i < len; i++) {
 			if (p_val < operator[](i)) {
-				break;
+				insert(i, p_val);
+				return;
 			};
 		};
-		insert(i, p_val);
+
+		insert(len, p_val);
 	}
 
 	_FORCE_INLINE_ Vector() {}
@@ -128,32 +127,34 @@ public:
 
 template <class T>
 void Vector<T>::invert() {
+	int len = _cowdata.size();
+	int half_len = len / 2;
+	T *p = _cowdata.ptrw();
 
-	for (int i = 0; i < size() / 2; i++) {
-		T *p = ptrw();
-		SWAP(p[i], p[size() - i - 1]);
+	for (int i = 0; i < half_len; i++) {
+		SWAP(p[i], p[len - i - 1]);
 	}
 }
 
 template <class T>
 void Vector<T>::append_array(const Vector<T> &p_other) {
-	const int ds = p_other.size();
-	if (ds == 0)
+	const int other_len = p_other._cowdata.size();
+	if (other_len == 0)
 		return;
-	const int bs = size();
-	resize(bs + ds);
-	for (int i = 0; i < ds; ++i)
-		ptrw()[bs + i] = p_other[i];
+
+	const int len = _cowdata.size();
+	resize(len + other_len);
+	for (int i = 0; i < other_len; ++i)
+		_cowdata.ptrw()[len + i] = p_other[i];
 }
 
 template <class T>
 bool Vector<T>::push_back(const T &p_elem) {
-
-	Error err = resize(size() + 1);
+	Error err = resize(_cowdata.size() + 1);
 	ERR_FAIL_COND_V(err, true)
-	set(size() - 1, p_elem);
+	set(_cowdata.size() - 1, p_elem);
 
 	return false;
 }
 
-#endif
+#endif /* VECTOR_H */
