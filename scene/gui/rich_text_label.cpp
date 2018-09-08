@@ -1423,18 +1423,28 @@ bool RichTextLabel::remove_line(const int p_line) {
 	if (p_line >= current_frame->lines.size() || p_line < 0)
 		return false;
 
-	int lines = p_line * 2;
-
-	if (current->subitems[lines]->type != ITEM_NEWLINE)
-		_remove_item(current->subitems[lines], current->subitems[lines]->line, lines);
-
-	_remove_item(current->subitems[lines], current->subitems[lines]->line, lines);
-
-	if (p_line == 0) {
-		main->lines.write[0].from = main;
+	int i = 0;
+	while (i < current->subitems.size() && current->subitems[i]->line < p_line) {
+		i++;
 	}
 
+	bool was_newline = false;
+	while (i < current->subitems.size()) {
+		was_newline = current->subitems[i]->type == ITEM_NEWLINE;
+		_remove_item(current->subitems[i], current->subitems[i]->line, p_line);
+		if (was_newline)
+			break;
+	}
+
+	if (!was_newline) {
+		current_frame->lines.remove(p_line);
+	}
+
+	if (p_line == 0 && current->subitems.size() > 0)
+		main->lines.write[0].from = main;
+
 	main->first_invalid_line = 0;
+
 	return true;
 }
 
