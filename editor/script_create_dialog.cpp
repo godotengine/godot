@@ -443,6 +443,12 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
+	if (p.get_file().get_basename() == "") {
+		_msg_path_valid(false, TTR("Filename is empty"));
+		_update_dialog();
+		return;
+	}
+
 	/* All checks passed */
 
 	is_path_valid = true;
