@@ -121,8 +121,8 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			is_hex_notation = false;
 		}
 
-		// check for dot or underscore or 'x' for hex notation in floating point number
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_') && !in_word && prev_is_number && !is_number) {
+		// check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation
+		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
 			is_number = true;
 			is_symbol = false;
 			is_char = false;
