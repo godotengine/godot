@@ -93,7 +93,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	VisualScriptEditorSignalEdit *signal_editor;
 
 	AcceptDialog *edit_signal_dialog;
-	PropertyEditor *edit_signal_edit;
+	EditorInspector *edit_signal_edit;
 
 	VisualScriptPropertySelector *method_select;
 	VisualScriptPropertySelector *new_connect_node_select;
@@ -102,7 +102,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	VisualScriptEditorVariableEdit *variable_editor;
 
 	AcceptDialog *edit_variable_dialog;
-	PropertyEditor *edit_variable_edit;
+	EditorInspector *edit_variable_edit;
 
 	CustomPropertyEditor *default_value_edit;
 
