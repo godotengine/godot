@@ -3098,40 +3098,6 @@ void RasterizerSceneGLES3::_copy_screen(bool p_invalidate_color, bool p_invalida
 	glBindVertexArray(0);
 }
 
-void RasterizerSceneGLES3::_copy_to_front_buffer(Environment *env) {
-
-	//copy to front buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
-
-	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->buffers.diffuse);
-
-	storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
-
-	if (!env) {
-		//no environment, simply convert from linear to srgb
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, true);
-	} else {
-		/* FIXME: Why are both statements equal? */
-		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, true);
-	}
-
-	storage->shaders.copy.bind();
-
-	_copy_screen();
-
-	//turn off everything used
-	storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, false);
-	storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
-}
-
 void RasterizerSceneGLES3::_copy_texture_to_front_buffer(GLuint p_texture) {
 
 	//copy to front buffer
