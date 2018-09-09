@@ -1375,6 +1375,7 @@ void ArrayMesh::reload_from_file() {
 	VisualServer::get_singleton()->mesh_clear(mesh);
 	surfaces.clear();
 	clear_blend_shapes();
+	clear_cache();
 
 	Resource::reload_from_file();
 
