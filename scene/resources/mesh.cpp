@@ -37,11 +37,6 @@
 
 #include <stdlib.h>
 
-void Mesh::_clear_triangle_mesh() const {
-
-	triangle_mesh.unref();
-}
-
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 	if (triangle_mesh.is_valid())
@@ -111,6 +106,11 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 
+	if (debug_lines.size() > 0) {
+		r_lines = debug_lines;
+		return;
+	}
+
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	if (tm.is_null())
 		return;
@@ -120,23 +120,25 @@ void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 	const int triangles_num = tm->get_triangles().size();
 	PoolVector<Vector3> vertices = tm->get_vertices();
 
-	r_lines.resize(tm->get_triangles().size() * 6); // 3 lines x 2 points each line
+	debug_lines.resize(tm->get_triangles().size() * 6); // 3 lines x 2 points each line
 
 	PoolVector<int>::Read ind_r = triangle_indices.read();
 	PoolVector<Vector3>::Read ver_r = vertices.read();
 	for (int j = 0, x = 0, i = 0; i < triangles_num; j += 6, x += 3, ++i) {
 		// Triangle line 1
-		r_lines.write[j + 0] = ver_r[ind_r[x + 0]];
-		r_lines.write[j + 1] = ver_r[ind_r[x + 1]];
+		debug_lines.write[j + 0] = ver_r[ind_r[x + 0]];
+		debug_lines.write[j + 1] = ver_r[ind_r[x + 1]];
 
 		// Triangle line 2
-		r_lines.write[j + 2] = ver_r[ind_r[x + 1]];
-		r_lines.write[j + 3] = ver_r[ind_r[x + 2]];
+		debug_lines.write[j + 2] = ver_r[ind_r[x + 1]];
+		debug_lines.write[j + 3] = ver_r[ind_r[x + 2]];
 
 		// Triangle line 3
-		r_lines.write[j + 4] = ver_r[ind_r[x + 2]];
-		r_lines.write[j + 5] = ver_r[ind_r[x + 0]];
+		debug_lines.write[j + 4] = ver_r[ind_r[x + 2]];
+		debug_lines.write[j + 5] = ver_r[ind_r[x + 0]];
 	}
+
+	r_lines = debug_lines;
 }
 void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
@@ -536,8 +538,9 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_MAX);
 }
 
-void Mesh::clear_cache() {
-	_clear_triangle_mesh();
+void Mesh::clear_cache() const {
+	triangle_mesh.unref();
+	debug_lines.clear();
 }
 
 Mesh::Mesh() {
@@ -850,7 +853,7 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 		_recompute_aabb();
 	}
 
-	_clear_triangle_mesh();
+	clear_cache();
 	_change_notify();
 	emit_changed();
 }
@@ -929,7 +932,7 @@ void ArrayMesh::surface_remove(int p_idx) {
 	VisualServer::get_singleton()->mesh_remove_surface(mesh, p_idx);
 	surfaces.remove(p_idx);
 
-	_clear_triangle_mesh();
+	clear_cache();
 	_recompute_aabb();
 	_change_notify();
 	emit_changed();
@@ -1035,7 +1038,7 @@ void ArrayMesh::add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data
 	else
 		aabb.merge_with(s.aabb);
 
-	_clear_triangle_mesh();
+	clear_cache();
 
 	surfaces.push_back(s);
 	_change_notify();
