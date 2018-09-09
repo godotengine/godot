@@ -667,7 +667,7 @@ List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool retreive_lock
 	List<CanvasItem *> selection;
 	for (Map<Node *, Object *>::Element *E = editor_selection->get_selection().front(); E; E = E->next()) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
-		if (canvas_item && canvas_item->is_visible_in_tree() && canvas_item->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (!retreive_locked || !canvas_item->has_meta("_edit_lock_"))) {
+		if (canvas_item && canvas_item->is_visible_in_tree() && canvas_item->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retreive_locked || !canvas_item->has_meta("_edit_lock_"))) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			if (se) {
 				selection.push_back(canvas_item);
@@ -1625,7 +1625,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 			if ((b->get_alt() || tool == TOOL_MOVE) && selection.size() > 0) {
-				drag_type = DRAG_ALL;
+				drag_type = DRAG_MOVE;
 				drag_from = transform.affine_inverse().xform(b->get_position());
 				drag_selection = selection;
 				_save_canvas_item_state(drag_selection);
@@ -1634,7 +1634,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (drag_type == DRAG_ALL) {
+	if (drag_type == DRAG_MOVE) {
 		// Move the nodes
 		if (m.is_valid()) {
 			_restore_canvas_item_state(drag_selection, true);
@@ -1674,7 +1674,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirm the move (only if it was moved)
-		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && (drag_type == DRAG_ALL)) {
+		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && (drag_type == DRAG_MOVE)) {
 			if (transform.affine_inverse().xform(b->get_position()) != drag_from) {
 				_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
 			}
@@ -1863,7 +1863,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					// Drag the node(s) if requested
 					List<CanvasItem *> selection = _get_edited_canvas_items();
 
-					drag_type = DRAG_ALL;
+					drag_type = DRAG_MOVE;
 					drag_selection = selection;
 					drag_from = click;
 					_save_canvas_item_state(drag_selection);
@@ -1894,7 +1894,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					// Drag the node(s) if requested
 					List<CanvasItem *> selection = _get_edited_canvas_items();
 
-					drag_type = DRAG_ALL;
+					drag_type = DRAG_MOVE;
 					drag_selection = selection;
 					drag_from = click;
 					_save_canvas_item_state(drag_selection);
@@ -2073,7 +2073,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		case DRAG_BOTTOM_LEFT:
 			c = CURSOR_BDIAGSIZE;
 			break;
-		case DRAG_ALL:
+		case DRAG_MOVE:
 			c = CURSOR_MOVE;
 			break;
 		case DRAG_PAN:
@@ -2317,7 +2317,7 @@ void CanvasItemEditor::_draw_selection() {
 
 		// Draw the previous position if we are dragging the node
 		if (show_helpers &&
-				(drag_type == DRAG_ALL || drag_type == DRAG_ROTATE ||
+				(drag_type == DRAG_MOVE || drag_type == DRAG_ROTATE ||
 						drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT || drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM ||
 						drag_type == DRAG_TOP_LEFT || drag_type == DRAG_TOP_RIGHT || drag_type == DRAG_BOTTOM_LEFT || drag_type == DRAG_BOTTOM_RIGHT)) {
 			const Transform2D pre_drag_xform = transform * se->pre_drag_xform;
@@ -2478,7 +2478,7 @@ void CanvasItemEditor::_draw_selection() {
 						case DRAG_TOP_LEFT:
 						case DRAG_BOTTOM_LEFT:
 							_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
-						case DRAG_ALL:
+						case DRAG_MOVE:
 							start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
 							end = start - Vector2(control->get_margin(MARGIN_LEFT), 0);
 							_draw_margin_at_position(control->get_margin(MARGIN_LEFT), parent_transform.xform((start + end) / 2), MARGIN_TOP);
@@ -2492,7 +2492,7 @@ void CanvasItemEditor::_draw_selection() {
 						case DRAG_TOP_RIGHT:
 						case DRAG_BOTTOM_RIGHT:
 							_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
-						case DRAG_ALL:
+						case DRAG_MOVE:
 							start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
 							end = start - Vector2(control->get_margin(MARGIN_RIGHT), 0);
 							_draw_margin_at_position(control->get_margin(MARGIN_RIGHT), parent_transform.xform((start + end) / 2), MARGIN_BOTTOM);
@@ -2506,7 +2506,7 @@ void CanvasItemEditor::_draw_selection() {
 						case DRAG_TOP_LEFT:
 						case DRAG_TOP_RIGHT:
 							_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2)) + Vector2(5, 0), MARGIN_RIGHT);
-						case DRAG_ALL:
+						case DRAG_MOVE:
 							start = Vector2(Math::lerp(node_pos_in_parent[0], node_pos_in_parent[2], ratio), node_pos_in_parent[1]);
 							end = start - Vector2(0, control->get_margin(MARGIN_TOP));
 							_draw_margin_at_position(control->get_margin(MARGIN_TOP), parent_transform.xform((start + end) / 2), MARGIN_LEFT);
@@ -2520,7 +2520,7 @@ void CanvasItemEditor::_draw_selection() {
 						case DRAG_BOTTOM_LEFT:
 						case DRAG_BOTTOM_RIGHT:
 							_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2) + Vector2(5, 0)), MARGIN_RIGHT);
-						case DRAG_ALL:
+						case DRAG_MOVE:
 							start = Vector2(Math::lerp(node_pos_in_parent[2], node_pos_in_parent[0], ratio), node_pos_in_parent[3]);
 							end = start - Vector2(0, control->get_margin(MARGIN_BOTTOM));
 							_draw_margin_at_position(control->get_margin(MARGIN_BOTTOM), parent_transform.xform((start + end) / 2), MARGIN_RIGHT);
@@ -2540,7 +2540,7 @@ void CanvasItemEditor::_draw_selection() {
 						case DRAG_BOTTOM_RIGHT:
 						case DRAG_BOTTOM:
 						case DRAG_BOTTOM_LEFT:
-						case DRAG_ALL:
+						case DRAG_MOVE:
 							if (control->get_rotation() != 0.0 || control->get_scale() != Vector2(1, 1)) {
 								Rect2 rect = Rect2(Vector2(node_pos_in_parent[0], node_pos_in_parent[1]), control->get_size());
 								viewport->draw_rect(parent_transform.xform(rect), color_base, false);
@@ -2750,7 +2750,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (canvas_item && !canvas_item->_edit_use_rect() && !editor_selection->is_selected(canvas_item)) {
+	if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || canvas_item->get_meta("_edit_lock_"))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
