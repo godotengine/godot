@@ -1125,12 +1125,14 @@ void FileSystemDock::_update_dependencies_after_move(const Map<String, String> &
 void FileSystemDock::_update_project_settings_after_move(const Map<String, String> &p_renames) const {
 
 	// Find all project settings of type FILE and replace them if needed
-	const Map<StringName, PropertyInfo> prop_info = ProjectSettings::get_singleton()->get_custom_property_info();
-	for (const Map<StringName, PropertyInfo>::Element *E = prop_info.front(); E; E = E->next()) {
-		if (E->get().hint == PROPERTY_HINT_FILE) {
-			String old_path = GLOBAL_GET(E->key());
+	List<PropertyInfo> prop_info;
+	ProjectSettings::get_singleton()->get_property_list(&prop_info);
+	for (const List<PropertyInfo>::Element *E = prop_info.front(); E; E = E->next()) {
+		String name = E->get().name;
+		if (E->get().hint == PROPERTY_HINT_FILE || name.find("scene_template/") != -1) {
+			String old_path = GLOBAL_GET(name);
 			if (p_renames.has(old_path)) {
-				ProjectSettings::get_singleton()->set_setting(E->key(), p_renames[old_path]);
+				ProjectSettings::get_singleton()->set_setting(name, p_renames[old_path]);
 			}
 		};
 	}
@@ -1574,7 +1576,21 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 				duplicate_dialog_text->grab_focus();
 			}
 		} break;
-
+		case FILE_SCENE_TEMPLATE: {
+			int idx = files->get_current();
+			if (idx < 0 || idx >= files->get_item_count())
+				break;
+			ProjectSettingsEditor *ps = EditorNode::get_singleton()->get_project_settings();
+			ps->popup_project_settings();
+			TabContainer *tabs = ps->get_tabs();
+			EditorSceneTemplateSettings *scene_templates = Object::cast_to<EditorSceneTemplateSettings>(tabs->get_node(NodePath("SceneTemplates")));
+			if (!scene_templates)
+				return;
+			String path = files->get_item_metadata(idx);
+			tabs->set_current_tab(scene_templates->get_index());
+			scene_templates->set_template_path(path);
+			scene_templates->get_name_line_edit()->grab_focus();
+		} break;
 		case FILE_INFO: {
 
 		} break;
@@ -2013,6 +2029,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		if (all_files_scenes && filenames.size() >= 1) {
 			p_popup->add_item(TTR("Open Scene(s)"), FILE_OPEN);
 			p_popup->add_item(TTR("Instance"), FILE_INSTANCE);
+			if (filenames.size() == 1) {
+				p_popup->add_item(TTR("Create Scene Template..."), FILE_SCENE_TEMPLATE);
+			}
 			p_popup->add_separator();
 		}
 

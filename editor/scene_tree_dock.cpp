@@ -106,6 +106,8 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_MERGE_FROM_SCENE);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
+	} else if (ED_IS_SHORTCUT("scene_tree/create_scene_template", p_event)) {
+		_tool_selected(TOOL_SCENE_CREATE_TEMPLATE);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
@@ -787,9 +789,27 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
-					if (node && node->get_scene_inherited_state().is_valid()) {
+					if (node->get_scene_inherited_state().is_valid()) {
 						scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
 					}
+				}
+			}
+		} break;
+		case TOOL_SCENE_CREATE_TEMPLATE: {
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node) {
+					ProjectSettingsEditor *ps = EditorNode::get_singleton()->get_project_settings();
+					ps->popup_project_settings();
+					TabContainer *tabs = ps->get_tabs();
+					EditorSceneTemplateSettings *scene_templates = Object::cast_to<EditorSceneTemplateSettings>(tabs->get_node(NodePath("SceneTemplates")));
+					if (!scene_templates)
+						return;
+					tabs->set_current_tab(scene_templates->get_index());
+					scene_templates->set_template_path(node->get_filename());
+					scene_templates->get_name_line_edit()->grab_focus();
 				}
 			}
 		} break;
@@ -1664,6 +1684,18 @@ void SceneTreeDock::_create() {
 
 		Object *c = create_dialog->instance_selected();
 
+		String scene_template = create_dialog->get_scene_template_cache();
+		if (!c && scene_template != "") {
+			if (!edited_scene) {
+				EditorNode::get_singleton()->load_scene(scene_template, false, true);
+				return;
+			}
+			Vector<String> scenes;
+			scenes.push_back(scene_template);
+			instance_scenes(scenes, parent);
+			return;
+		}
+
 		ERR_FAIL_COND(!c);
 		Node *child = Object::cast_to<Node>(c);
 		ERR_FAIL_COND(!child);
@@ -2094,13 +2126,15 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 	if (selection.size() == 1) {
 
+		bool is_external = (selection[0]->get_filename() != "");
 		menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
 		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
+		if (is_external)
+			menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/create_scene_template"), TOOL_SCENE_CREATE_TEMPLATE);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("CopyNodePath", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
-		bool is_external = (selection[0]->get_filename() != "");
 		if (is_external) {
 			bool is_inherited = selection[0]->get_scene_inherited_state() != NULL;
 			bool is_top_level = selection[0]->get_owner() == NULL;
@@ -2349,6 +2383,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
+	ED_SHORTCUT("scene_tree/create_scene_template", TTR("Create Scene Template"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);

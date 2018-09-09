@@ -804,6 +804,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	scene_template_settings->update_scene_templates();
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -2022,6 +2023,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
 	tab_container->add_child(plugin_settings);
+
+	scene_template_settings = memnew(EditorSceneTemplateSettings);
+	scene_template_settings->set_name(TTR("SceneTemplates"));
+	tab_container->add_child(scene_template_settings);
+	scene_template_settings->connect("scene_template_changed", this, "_settings_changed");
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);

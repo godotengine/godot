@@ -474,6 +474,14 @@ void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 	always_draw_over_forwarding_list->add_plugin(this);
 }
 
+void EditorPlugin::scene_template_add(const String &p_name, const String &p_path) {
+	EditorNode::get_singleton()->get_project_settings()->get_scene_template_settings()->scene_template_add(p_name, p_path);
+}
+
+void EditorPlugin::scene_template_remove(const String &p_name) {
+	EditorNode::get_singleton()->get_project_settings()->get_scene_template_settings()->scene_template_remove(p_name);
+}
+
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
 	emit_signal("scene_changed", scn_root);
 }
@@ -757,6 +765,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+	ClassDB::bind_method(D_METHOD("scene_template_add", "name", "path"), &EditorPlugin::scene_template_add);
+	ClassDB::bind_method(D_METHOD("scene_template_remove", "name"), &EditorPlugin::scene_template_remove);
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);

@@ -168,6 +168,9 @@ public:
 	void set_force_draw_over_forwarding_enabled();
 	bool is_force_draw_over_forwarding_enabled() { return force_draw_over_forwarding_enabled; }
 
+	void scene_template_add(const String &p_name, const String &p_path);
+	void scene_template_remove(const String &p_name);
+
 	void notify_main_screen_changed(const String &screen_name);
 	void notify_scene_changed(const Node *scn_root);
 	void notify_scene_closed(const String &scene_filepath);

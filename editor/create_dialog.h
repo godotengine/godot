@@ -59,6 +59,7 @@ class CreateDialog : public ConfirmationDialog {
 	EditorHelpBit *help_bit;
 	List<StringName> type_list;
 	Set<StringName> type_blacklist;
+	String _scene_template_cache;
 
 	void _item_selected();
 
@@ -86,6 +87,8 @@ class CreateDialog : public ConfirmationDialog {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	String _get_name_from_text(const String &p_text) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -101,6 +104,8 @@ public:
 
 	void set_preferred_search_result_type(const String &p_preferred_type);
 	String get_preferred_search_result_type();
+
+	String get_scene_template_cache() const { return _scene_template_cache; }
 
 	void popup_create(bool p_dont_clear, bool p_replace_mode = false);
 

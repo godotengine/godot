@@ -3191,6 +3191,33 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		return gui_base->get_icon(p_class, "EditorIcons");
 	}
 
+	EditorSceneTemplateSettings *scene_template_settings = project_settings->get_scene_template_settings();
+	if (scene_template_settings->scene_template_exists(p_class)) {
+		String scene_path = scene_template_settings->scene_template_get_path(p_class);
+		if (scene_path.empty() || !FileAccess::exists(scene_path))
+			return NULL;
+		Ref<PackedScene> scene = ResourceLoader::load(scene_path, "PackedScene");
+		if (scene.is_null())
+			return NULL;
+		Ref<SceneState> state = scene->get_state();
+		if (state.is_null())
+			return NULL;
+		for (int i = 0; i < state->get_node_property_count(0); i++) {
+			String name = state->get_node_property_name(0, i);
+			if ("script" == name) {
+				Ref<Script> script = state->get_node_property_value(0, i);
+				while (script.is_valid()) {
+					String script_name = script->get_language()->get_global_class_name(script->get_path());
+					if (ScriptServer::is_global_class(script_name))
+						return get_class_icon(script_name);
+					script = script->get_base_script();
+				}
+				break;
+			}
+		}
+		return get_class_icon(state->get_node_type(0));
+	}
+
 	if (ScriptServer::is_global_class(p_class)) {
 		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
 		RES icon;

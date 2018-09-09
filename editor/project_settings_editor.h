@@ -35,6 +35,7 @@
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
+#include "editor/editor_scene_template_settings.h"
 #include "editor/editor_sectioned_inspector.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
@@ -110,6 +111,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorAutoloadSettings *autoload_settings;
 
 	EditorPluginSettings *plugin_settings;
+
+	EditorSceneTemplateSettings *scene_template_settings;
 
 	void _item_selected(const String &);
 	void _item_adds(String);
@@ -189,6 +192,7 @@ public:
 	void update_plugins();
 
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
+	EditorSceneTemplateSettings *get_scene_template_settings() { return scene_template_settings; }
 
 	TabContainer *get_tabs();
 
