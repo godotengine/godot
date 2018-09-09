@@ -504,6 +504,13 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 			return;
 		}
 		// if it's a path then its most likely a deleted file not help
+	} else if (path.find("::") != -1) {
+		// built-in script
+		Ref<Script> script = ResourceLoader::load(path);
+		if (script.is_valid()) {
+			edit(script, true);
+			return;
+		}
 	} else if (!path.is_resource_file()) {
 		_help_class_open(path);
 		return;
