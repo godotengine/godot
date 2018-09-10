@@ -279,7 +279,7 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	// Initial properties
 	const btVector3 localInertia(0, 0, 0);
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, NULL, localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, BulletPhysicsServer::get_empty_shape(), localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
 	setupBulletCollisionObject(btBody);
@@ -315,7 +315,10 @@ void RigidBodyBullet::destroy_kinematic_utilities() {
 }
 
 void RigidBodyBullet::main_shape_resetted() {
-	btBody->setCollisionShape(get_main_shape());
+	if (get_main_shape())
+		btBody->setCollisionShape(get_main_shape());
+	else
+		btBody->setCollisionShape(BulletPhysicsServer::get_empty_shape());
 	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }
 
