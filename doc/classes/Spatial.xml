@@ -13,6 +13,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="force_update_transform">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_parent_spatial" qualifiers="const">
 			<return type="Spatial">
 			</return>

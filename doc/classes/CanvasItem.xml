@@ -330,6 +330,12 @@
 				Draws a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
+		<method name="force_update_transform">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID">
 			</return>

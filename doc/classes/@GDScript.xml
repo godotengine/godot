@@ -412,7 +412,7 @@
 			</description>
 		</method>
 		<method name="get_stack">
-			<return type="void">
+			<return type="Array">
 			</return>
 			<description>
 			</description>

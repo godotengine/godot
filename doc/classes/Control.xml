@@ -723,7 +723,7 @@
 			</description>
 		</signal>
 		<signal name="gui_input">
-			<argument index="0" name="ev" type="InputEvent">
+			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
 				Emitted when the node receives an [InputEvent].
