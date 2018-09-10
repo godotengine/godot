@@ -1816,6 +1816,13 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		return;
 	}
 
+	if (EditorNode::get_singleton()->is_scene_open(p_file)) {
+		accept->get_ok()->set_text(TTR("OK"));
+		accept->set_text(TTR("Can't overwrite scene that is still open!"));
+		accept->popup_centered_minsize();
+		return;
+	}
+
 	Node *base = selection.front()->get();
 
 	Map<Node *, Node *> reown;
