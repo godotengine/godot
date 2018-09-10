@@ -51,24 +51,24 @@ namespace Godot
                    src_max.z > dst_max.z;
         }
 
-        public AABB Expand(Vector3 to_point)
+        public AABB Expand(Vector3 point)
         {
             Vector3 begin = _position;
             Vector3 end = _position + _size;
 
-            if (to_point.x < begin.x)
-                begin.x = to_point.x;
-            if (to_point.y < begin.y)
-                begin.y = to_point.y;
-            if (to_point.z < begin.z)
-                begin.z = to_point.z;
+            if (point.x < begin.x)
+                begin.x = point.x;
+            if (point.y < begin.y)
+                begin.y = point.y;
+            if (point.z < begin.z)
+                begin.z = point.z;
 
-            if (to_point.x > end.x)
-                end.x = to_point.x;
-            if (to_point.y > end.y)
-                end.y = to_point.y;
-            if (to_point.z > end.z)
-                end.z = to_point.z;
+            if (point.x > end.x)
+                end.x = point.x;
+            if (point.y > end.y)
+                end.y = point.y;
+            if (point.z > end.z)
+                end.z = point.z;
 
             return new AABB(begin, end - begin);
         }
@@ -347,29 +347,29 @@ namespace Godot
 
             for (int i = 0; i < 3; i++)
             {
-                real_t seg_from = from[i];
-                real_t seg_to = to[i];
-                real_t box_begin = _position[i];
-                real_t box_end = box_begin + _size[i];
+                real_t segFrom = from[i];
+                real_t segTo = to[i];
+                real_t boxBegin = _position[i];
+                real_t boxEnd = boxBegin + _size[i];
                 real_t cmin, cmax;
 
-                if (seg_from < seg_to)
+                if (segFrom < segTo)
                 {
-                    if (seg_from > box_end || seg_to < box_begin)
+                    if (segFrom > boxEnd || segTo < boxBegin)
                         return false;
 
-                    real_t length = seg_to - seg_from;
-                    cmin = seg_from < box_begin ? (box_begin - seg_from) / length : 0f;
-                    cmax = seg_to > box_end ? (box_end - seg_from) / length : 1f;
+                    real_t length = segTo - segFrom;
+                    cmin = segFrom < boxBegin ? (boxBegin - segFrom) / length : 0f;
+                    cmax = segTo > boxEnd ? (boxEnd - segFrom) / length : 1f;
                 }
                 else
                 {
-                    if (seg_to > box_end || seg_from < box_begin)
+                    if (segTo > boxEnd || segFrom < boxBegin)
                         return false;
 
-                    real_t length = seg_to - seg_from;
-                    cmin = seg_from > box_end ? (box_end - seg_from) / length : 0f;
-                    cmax = seg_to < box_begin ? (box_begin - seg_from) / length : 1f;
+                    real_t length = segTo - segFrom;
+                    cmin = segFrom > boxEnd ? (boxEnd - segFrom) / length : 0f;
+                    cmax = segTo < boxBegin ? (boxBegin - segFrom) / length : 1f;
                 }
 
                 if (cmin > min)
@@ -388,21 +388,21 @@ namespace Godot
 
         public AABB Merge(AABB with)
         {
-            Vector3 beg_1 = _position;
-            Vector3 beg_2 = with._position;
-            var end_1 = new Vector3(_size.x, _size.y, _size.z) + beg_1;
-            var end_2 = new Vector3(with._size.x, with._size.y, with._size.z) + beg_2;
+            Vector3 beg1 = _position;
+            Vector3 beg2 = with._position;
+            var end1 = new Vector3(_size.x, _size.y, _size.z) + beg1;
+            var end2 = new Vector3(with._size.x, with._size.y, with._size.z) + beg2;
 
             var min = new Vector3(
-                              beg_1.x < beg_2.x ? beg_1.x : beg_2.x,
-                              beg_1.y < beg_2.y ? beg_1.y : beg_2.y,
-                              beg_1.z < beg_2.z ? beg_1.z : beg_2.z
+                              beg1.x < beg2.x ? beg1.x : beg2.x,
+                              beg1.y < beg2.y ? beg1.y : beg2.y,
+                              beg1.z < beg2.z ? beg1.z : beg2.z
                           );
 
             var max = new Vector3(
-                              end_1.x > end_2.x ? end_1.x : end_2.x,
-                              end_1.y > end_2.y ? end_1.y : end_2.y,
-                              end_1.z > end_2.z ? end_1.z : end_2.z
+                              end1.x > end2.x ? end1.x : end2.x,
+                              end1.y > end2.y ? end1.y : end2.y,
+                              end1.z > end2.z ? end1.z : end2.z
                           );
 
             return new AABB(min, max - min);

@@ -26,7 +26,7 @@ namespace Godot
             return slices;
         }
 
-        private static string GetSlicec(this string instance, char splitter, int slice)
+        private static string GetSliceCharacter(this string instance, char splitter, int slice)
         {
             if (!instance.Empty() && slice >= 0)
             {
@@ -36,11 +36,17 @@ namespace Godot
 
                 while (true)
                 {
-                    if (instance[i] == 0 || instance[i] == splitter)
+                    bool end = instance.Length <= i;
+
+                    if (end || instance[i] == splitter)
                     {
                         if (slice == count)
                         {
                             return instance.Substring(prev, i - prev);
+                        }
+                        else if (end)
+                        {
+                            return string.Empty;
                         }
 
                         count++;
@@ -57,7 +63,7 @@ namespace Godot
         // <summary>
         // If the string is a path to a file, return the path to the file without the extension.
         // </summary>
-        public static string Basename(this string instance)
+        public static string BaseName(this string instance)
         {
             int index = instance.LastIndexOf('.');
 
@@ -144,7 +150,7 @@ namespace Godot
 
             for (int i = 0; i < aux.GetSliceCount(" "); i++)
             {
-                string slice = aux.GetSlicec(' ', i);
+                string slice = aux.GetSliceCharacter(' ', i);
                 if (slice.Length > 0)
                 {
                     slice = char.ToUpper(slice[0]) + slice.Substring(1);
@@ -162,30 +168,59 @@ namespace Godot
         // </summary>
         public static int CasecmpTo(this string instance, string to)
         {
+            return instance.CompareTo(to, true);
+        }
+
+        // <summary>
+        // Perform a comparison to another string, return -1 if less, 0 if equal and +1 if greater.
+        // </summary>
+        public static int CompareTo(this string instance, string to, bool caseSensitive = true)
+        {
             if (instance.Empty())
                 return to.Empty() ? 0 : -1;
 
             if (to.Empty())
                 return 1;
 
-            int instance_idx = 0;
-            int to_idx = 0;
-
-            while (true)
+            int instanceIndex = 0;
+            int toIndex = 0;
+            
+            if (caseSensitive) // Outside while loop to avoid checking multiple times, despite some code duplication.
             {
-                if (to[to_idx] == 0 && instance[instance_idx] == 0)
-                    return 0; // We're equal
-                if (instance[instance_idx] == 0)
-                    return -1; // If this is empty, and the other one is not, then we're less... I think?
-                if (to[to_idx] == 0)
-                    return 1; // Otherwise the other one is smaller...
-                if (instance[instance_idx] < to[to_idx]) // More than
-                    return -1;
-                if (instance[instance_idx] > to[to_idx]) // Less than
-                    return 1;
+                while (true)
+                {
+                    if (to[toIndex] == 0 && instance[instanceIndex] == 0)
+                        return 0; // We're equal
+                    if (instance[instanceIndex] == 0)
+                        return -1; // If this is empty, and the other one is not, then we're less... I think?
+                    if (to[toIndex] == 0)
+                        return 1; // Otherwise the other one is smaller...
+                    if (instance[instanceIndex] < to[toIndex]) // More than
+                        return -1;
+                    if (instance[instanceIndex] > to[toIndex]) // Less than
+                        return 1;
 
-                instance_idx++;
-                to_idx++;
+                    instanceIndex++;
+                    toIndex++;
+                }
+            } else
+            {
+                while (true)
+                {
+                    if (to[toIndex] == 0 && instance[instanceIndex] == 0)
+                        return 0; // We're equal
+                    if (instance[instanceIndex] == 0)
+                        return -1; // If this is empty, and the other one is not, then we're less... I think?
+                    if (to[toIndex] == 0)
+                        return 1; // Otherwise the other one is smaller..
+                    if (char.ToUpper(instance[instanceIndex]) < char.ToUpper(to[toIndex])) // More than
+                        return -1;
+                    if (char.ToUpper(instance[instanceIndex]) > char.ToUpper(to[toIndex])) // Less than
+                        return 1;
+
+                    instanceIndex++;
+                    toIndex++;
+                }
             }
         }
 
@@ -361,7 +396,7 @@ namespace Godot
         // <summary>
         // Check whether this string is a subsequence of the given string.
         // </summary>
-        public static bool IsSubsequenceOf(this string instance, string text, bool case_insensitive)
+        public static bool IsSubsequenceOf(this string instance, string text, bool caseSensitive = true)
         {
             int len = instance.Length;
 
@@ -371,50 +406,42 @@ namespace Godot
             if (len > text.Length)
                 return false;
 
-            int src = 0;
-            int tgt = 0;
+            int source = 0;
+            int target = 0;
 
-            while (instance[src] != 0 && text[tgt] != 0)
+            while (instance[source] != 0 && text[target] != 0)
             {
                 bool match;
 
-                if (case_insensitive)
+                if (!caseSensitive)
                 {
-                    char srcc = char.ToLower(instance[src]);
-                    char tgtc = char.ToLower(text[tgt]);
-                    match = srcc == tgtc;
+                    char sourcec = char.ToLower(instance[source]);
+                    char targetc = char.ToLower(text[target]);
+                    match = sourcec == targetc;
                 }
                 else
                 {
-                    match = instance[src] == text[tgt];
+                    match = instance[source] == text[target];
                 }
                 if (match)
                 {
-                    src++;
-                    if (instance[src] == 0)
+                    source++;
+                    if (instance[source] == 0)
                         return true;
                 }
 
-                tgt++;
+                target++;
             }
 
             return false;
         }
 
         // <summary>
-        // Check whether this string is a subsequence of the given string, considering case.
-        // </summary>
-        public static bool IsSubsequenceOf(this string instance, string text)
-        {
-            return instance.IsSubsequenceOf(text, false);
-        }
-
-        // <summary>
-        // Check whether this string is a subsequence of the given string, without considering case.
+        // Check whether this string is a subsequence of the given string, ignoring case differences.
         // </summary>
         public static bool IsSubsequenceOfI(this string instance, string text)
         {
-            return instance.IsSubsequenceOf(text, true);
+            return instance.IsSubsequenceOf(text, false);
         }
 
         // <summary>
@@ -452,12 +479,12 @@ namespace Godot
                         return false; // Don't start with number plz
                 }
 
-                bool valid_char = instance[i] >= '0' && 
+                bool validChar = instance[i] >= '0' && 
                                   instance[i] <= '9' || instance[i] >= 'a' && 
                                   instance[i] <= 'z' || instance[i] >= 'A' && 
                                   instance[i] <= 'Z' || instance[i] == '_';
 
-                if (!valid_char)
+                if (!validChar)
                     return false;
             }
 
@@ -476,8 +503,9 @@ namespace Godot
         // <summary>
         // Check whether the string contains a valid IP address.
         // </summary>
-        public static bool IsValidIpAddress(this string instance)
+        public static bool IsValidIPAddress(this string instance)
         {
+            // TODO: Support IPv6 addresses
             string[] ip = instance.Split(".");
 
             if (ip.Length != 4)
@@ -500,7 +528,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with special characters escaped using the JSON standard.
         // </summary>
-        public static string JsonEscape(this string instance)
+        public static string JSONEscape(this string instance)
         {
             var sb = new StringBuilder(string.Copy(instance));
 
@@ -563,15 +591,15 @@ namespace Godot
         // <summary>
         // Do a simple case sensitive expression match, using ? and * wildcards (see [method expr_match]).
         // </summary>
-        public static bool Match(this string instance, string expr)
+        public static bool Match(this string instance, string expr, bool caseSensitive = true)
         {
-            return instance.ExprMatch(expr, true);
+            return instance.ExprMatch(expr, caseSensitive);
         }
 
         // <summary>
         // Do a simple case insensitive expression match, using ? and * wildcards (see [method expr_match]).
         // </summary>
-        public static bool Matchn(this string instance, string expr)
+        public static bool MatchN(this string instance, string expr)
         {
             return instance.ExprMatch(expr, false);
         }
@@ -579,7 +607,7 @@ namespace Godot
         // <summary>
         // Return the MD5 hash of the string as an array of bytes.
         // </summary>
-        public static byte[] Md5Buffer(this string instance)
+        public static byte[] MD5Buffer(this string instance)
         {
             return NativeCalls.godot_icall_String_md5_buffer(instance);
         }
@@ -587,7 +615,7 @@ namespace Godot
         // <summary>
         // Return the MD5 hash of the string as a string.
         // </summary>
-        public static string Md5Text(this string instance)
+        public static string MD5Text(this string instance)
         {
             return NativeCalls.godot_icall_String_md5_text(instance);
         }
@@ -597,31 +625,7 @@ namespace Godot
         // </summary>
         public static int NocasecmpTo(this string instance, string to)
         {
-            if (instance.Empty())
-                return to.Empty() ? 0 : -1;
-
-            if (to.Empty())
-                return 1;
-
-            int instance_idx = 0;
-            int to_idx = 0;
-
-            while (true)
-            {
-                if (to[to_idx] == 0 && instance[instance_idx] == 0)
-                    return 0; // We're equal
-                if (instance[instance_idx] == 0)
-                    return -1; // If this is empty, and the other one is not, then we're less... I think?
-                if (to[to_idx] == 0)
-                    return 1; // Otherwise the other one is smaller..
-                if (char.ToUpper(instance[instance_idx]) < char.ToUpper(to[to_idx])) // More than
-                    return -1;
-                if (char.ToUpper(instance[instance_idx]) > char.ToUpper(to[to_idx])) // Less than
-                    return 1;
-
-                instance_idx++;
-                to_idx++;
-            }
+            return instance.CompareTo(to, false);
         }
 
         // <summary>
@@ -738,7 +742,7 @@ namespace Godot
         // <summary>
         // Replace occurrences of a substring for different ones inside the string, but search case-insensitive.
         // </summary>
-        public static string Replacen(this string instance, string what, string forwhat)
+        public static string ReplaceN(this string instance, string what, string forwhat)
         {
             return Regex.Replace(instance, what, forwhat, RegexOptions.IgnoreCase);
         }
@@ -746,7 +750,7 @@ namespace Godot
         // <summary>
         // Perform a search for a substring, but start from the end of the string instead of the beginning.
         // </summary>
-        public static int Rfind(this string instance, string what, int from = -1)
+        public static int RFind(this string instance, string what, int from = -1)
         {
             return NativeCalls.godot_icall_String_rfind(instance, what, from);
         }
@@ -754,7 +758,7 @@ namespace Godot
         // <summary>
         // Perform a search for a substring, but start from the end of the string instead of the beginning. Also search case-insensitive.
         // </summary>
-        public static int Rfindn(this string instance, string what, int from = -1)
+        public static int RFindN(this string instance, string what, int from = -1)
         {
             return NativeCalls.godot_icall_String_rfindn(instance, what, from);
         }
@@ -773,7 +777,7 @@ namespace Godot
             return instance.Substring(pos, instance.Length - pos);
         }
 
-        public static byte[] Sha256Buffer(this string instance)
+        public static byte[] SHA256Buffer(this string instance)
         {
             return NativeCalls.godot_icall_String_sha256_buffer(instance);
         }
@@ -781,7 +785,7 @@ namespace Godot
         // <summary>
         // Return the SHA-256 hash of the string as a string.
         // </summary>
-        public static string Sha256Text(this string instance)
+        public static string SHA256Text(this string instance)
         {
             return NativeCalls.godot_icall_String_sha256_text(instance);
         }
@@ -802,20 +806,20 @@ namespace Godot
                 return 0.0f;
             }
 
-            string[] srcBigrams = instance.Bigrams();
-            string[] tgtBigrams = text.Bigrams();
+            string[] sourceBigrams = instance.Bigrams();
+            string[] targetBigrams = text.Bigrams();
 
-            int src_size = srcBigrams.Length;
-            int tgt_size = tgtBigrams.Length;
+            int sourceSize = sourceBigrams.Length;
+            int targetSize = targetBigrams.Length;
 
-            float sum = src_size + tgt_size;
+            float sum = sourceSize + targetSize;
             float inter = 0;
 
-            for (int i = 0; i < src_size; i++)
+            for (int i = 0; i < sourceSize; i++)
             {
-                for (int j = 0; j < tgt_size; j++)
+                for (int j = 0; j < targetSize; j++)
                 {
-                    if (srcBigrams[i] == tgtBigrams[j])
+                    if (sourceBigrams[i] == targetBigrams[j])
                     {
                         inter++;
                         break;
@@ -829,7 +833,7 @@ namespace Godot
         // <summary>
         // Split the string by a divisor string, return an array of the substrings. Example "One,Two,Three" will return ["One","Two","Three"] if split by ",".
         // </summary>
-        public static string[] Split(this string instance, string divisor, bool allow_empty = true)
+        public static string[] Split(this string instance, string divisor, bool allowEmpty = true)
         {
             return instance.Split(new[] { divisor }, StringSplitOptions.RemoveEmptyEntries);
         }
@@ -837,7 +841,7 @@ namespace Godot
         // <summary>
         // Split the string in floats by using a divisor string, return an array of the substrings. Example "1,2.5,3" will return [1,2.5,3] if split by ",".
         // </summary>
-        public static float[] SplitFloats(this string instance, string divisor, bool allow_empty = true)
+        public static float[] SplitFloats(this string instance, string divisor, bool allowEmpty = true)
         {
             var ret = new List<float>();
             int from = 0;
@@ -848,7 +852,7 @@ namespace Godot
                 int end = instance.Find(divisor, from);
                 if (end < 0)
                     end = len;
-                if (allow_empty || end > from)
+                if (allowEmpty || end > from)
                     ret.Add(float.Parse(instance.Substring(from)));
                 if (end == len)
                     break;
@@ -859,7 +863,7 @@ namespace Godot
             return ret.ToArray();
         }
 
-        private static readonly char[] non_printable = {
+        private static readonly char[] _nonPrintable = {
             (char)00, (char)01, (char)02, (char)03, (char)04, (char)05,
             (char)06, (char)07, (char)08, (char)09, (char)10, (char)11,
             (char)12, (char)13, (char)14, (char)15, (char)16, (char)17,
@@ -876,11 +880,11 @@ namespace Godot
             if (left)
             {
                 if (right)
-                    return instance.Trim(non_printable);
-                return instance.TrimStart(non_printable);
+                    return instance.Trim(_nonPrintable);
+                return instance.TrimStart(_nonPrintable);
             }
 
-            return instance.TrimEnd(non_printable);
+            return instance.TrimEnd(_nonPrintable);
         }
 
         // <summary>
@@ -934,7 +938,7 @@ namespace Godot
         // <summary>
         // Convert the String (which is an array of characters) to PoolByteArray (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
         // </summary>
-        public static byte[] ToUtf8(this string instance)
+        public static byte[] ToUTF8(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
         }
@@ -942,7 +946,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with special characters escaped using the XML standard.
         // </summary>
-        public static string XmlEscape(this string instance)
+        public static string XMLEscape(this string instance)
         {
             return SecurityElement.Escape(instance);
         }
@@ -950,7 +954,7 @@ namespace Godot
         // <summary>
         // Return a copy of the string with escaped characters replaced by their meanings according to the XML standard.
         // </summary>
-        public static string XmlUnescape(this string instance)
+        public static string XMLUnescape(this string instance)
         {
             return SecurityElement.FromString(instance).Text;
         }
