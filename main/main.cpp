@@ -792,6 +792,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Determine if the project manager should be requested
 		project_manager = main_args.size() == 0 && !found_project;
 	}
+
+	if (project_manager) {
+		Engine::get_singleton()->set_editor_hint(true);
+	}
 #endif
 
 	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
