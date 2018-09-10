@@ -55,6 +55,7 @@
 #include "scene/3d/visibility_notifier.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
+#include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/plane_shape.h"
@@ -908,7 +909,6 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(lines, material);
-		p_gizmo->add_collision_segments(lines);
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 	}
 
@@ -939,8 +939,6 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(points, material, true);
-		p_gizmo->add_collision_segments(points);
-
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 
 		Vector<Vector3> handles;
@@ -982,38 +980,14 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		p_gizmo->add_lines(points, material);
 
+		float ra = 16 * Math_PI * 2.0 / 64.0;
+		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
+
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, -r));
-
-		Vector<Vector3> collision_segments;
-
-		for (int i = 0; i < 64; i++) {
-
-			float ra = i * Math_PI * 2.0 / 64.0;
-			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
-			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
-			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
-
-			collision_segments.push_back(Vector3(a.x, a.y, -d));
-			collision_segments.push_back(Vector3(b.x, b.y, -d));
-
-			if (i % 16 == 0) {
-
-				collision_segments.push_back(Vector3(a.x, a.y, -d));
-				collision_segments.push_back(Vector3());
-			}
-
-			if (i == 16) {
-
-				handles.push_back(Vector3(a.x, a.y, -d));
-			}
-		}
-
-		collision_segments.push_back(Vector3(0, 0, -r));
-		collision_segments.push_back(Vector3());
+		handles.push_back(Vector3(a.x, a.y, -d));
 
 		p_gizmo->add_handles(handles, get_material("handles"));
-		p_gizmo->add_collision_segments(collision_segments);
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 	}
 }
@@ -1149,7 +1123,6 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) 
 		}
 
 		p_gizmo->add_lines(points, material);
-		p_gizmo->add_collision_segments(points);
 
 		Vector<Vector3> handles;
 		float ha = Math::deg2rad(player->get_emission_angle());
@@ -1344,7 +1317,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
 
@@ -1387,7 +1359,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(lines, material);
-		p_gizmo->add_collision_segments(lines);
 	}
 }
 
@@ -2123,12 +2094,10 @@ void SoftBodySpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	Vector<Vector3> points;
 	soft_body->get_mesh()->generate_debug_mesh_indices(points);
-	soft_body->get_mesh()->clear_cache();
 
 	Ref<Material> material = get_material("shape_material", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_handles(points, get_material("handles"));
 	p_gizmo->add_collision_triangles(tm);
 }
@@ -2445,7 +2414,6 @@ void ParticlesGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Ref<Material> icon = get_material("particles_icon", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("particles_solid_material", p_gizmo);
@@ -2630,7 +2598,6 @@ void ReflectionProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
-	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
 
@@ -2745,7 +2712,6 @@ void GIProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
 	lines.clear();
 
@@ -2915,7 +2881,6 @@ void BakedIndirectLightGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
 	Vector<Vector3> handles;
 
@@ -3504,6 +3469,14 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				p_gizmo->add_collision_segments(points);
 			}
 		}
+	}
+
+	if (Object::cast_to<ConcavePolygonShape>(*s)) {
+
+		Ref<ConcavePolygonShape> cs = s;
+		Ref<ArrayMesh> mesh = cs->get_debug_mesh()->duplicate();
+		mesh->surface_set_material(0, material);
+		p_gizmo->add_mesh(mesh);
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {

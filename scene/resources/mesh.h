@@ -44,11 +44,10 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Vector3> debug_lines;
 	Size2 lightmap_size_hint;
 
 protected:
-	void _clear_triangle_mesh() const;
-
 	static void _bind_methods();
 
 public:
@@ -146,7 +145,7 @@ public:
 
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
-	void clear_cache();
+	void clear_cache() const;
 
 	Mesh();
 };
