@@ -291,6 +291,8 @@ Dictionary Physics2DDirectSpaceState::_intersect_ray(const Vector2 &p_from, cons
 
 Array Physics2DDirectSpaceState::_intersect_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query, int p_max_results) {
 
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+
 	Vector<ShapeResult> sr;
 	sr.resize(p_max_results);
 	int rc = intersect_shape(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, sr.ptrw(), sr.size(), p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
@@ -311,6 +313,8 @@ Array Physics2DDirectSpaceState::_intersect_shape(const Ref<Physics2DShapeQueryP
 }
 
 Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParameters> &p_shape_query) {
+
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
 	float closest_safe, closest_unsafe;
 	bool res = cast_motion(p_shape_query->shape, p_shape_query->transform, p_shape_query->motion, p_shape_query->margin, closest_safe, closest_unsafe, p_shape_query->exclude, p_shape_query->collision_mask, p_shape_query->collide_with_bodies, p_shape_query->collide_with_areas);
@@ -353,6 +357,8 @@ Array Physics2DDirectSpaceState::_intersect_point(const Vector2 &p_point, int p_
 
 Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query, int p_max_results) {
 
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
+
 	Vector<Vector2> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
@@ -366,6 +372,8 @@ Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryPar
 	return r;
 }
 Dictionary Physics2DDirectSpaceState::_get_rest_info(const Ref<Physics2DShapeQueryParameters> &p_shape_query) {
+
+	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
 
 	ShapeRestInfo sri;
 
@@ -396,7 +404,6 @@ void Physics2DDirectSpaceState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cast_motion", "shape"), &Physics2DDirectSpaceState::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &Physics2DDirectSpaceState::_collide_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("get_rest_info", "shape"), &Physics2DDirectSpaceState::_get_rest_info);
-	//ClassDB::bind_method(D_METHOD("cast_motion","shape","xform","motion","exclude","umask"),&Physics2DDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 }
 
 int Physics2DShapeQueryResult::get_result_count() const {
@@ -434,10 +441,6 @@ void Physics2DShapeQueryResult::_bind_methods() {
 
 ///////////////////////////////
 
-/*bool Physics2DTestMotionResult::is_colliding() const {
-
-	return colliding;
-}*/
 Vector2 Physics2DTestMotionResult::get_motion() const {
 
 	return result.motion;
@@ -479,7 +482,6 @@ int Physics2DTestMotionResult::get_collider_shape() const {
 
 void Physics2DTestMotionResult::_bind_methods() {
 
-	//ClassDB::bind_method(D_METHOD("is_colliding"),&Physics2DTestMotionResult::is_colliding);
 	ClassDB::bind_method(D_METHOD("get_motion"), &Physics2DTestMotionResult::get_motion);
 	ClassDB::bind_method(D_METHOD("get_motion_remainder"), &Physics2DTestMotionResult::get_motion_remainder);
 	ClassDB::bind_method(D_METHOD("get_collision_point"), &Physics2DTestMotionResult::get_collision_point);
@@ -628,7 +630,6 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_add_collision_exception", "body", "excepted_body"), &Physics2DServer::body_add_collision_exception);
 	ClassDB::bind_method(D_METHOD("body_remove_collision_exception", "body", "excepted_body"), &Physics2DServer::body_remove_collision_exception);
-	//virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;
 
 	ClassDB::bind_method(D_METHOD("body_set_max_contacts_reported", "body", "amount"), &Physics2DServer::body_set_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("body_get_max_contacts_reported", "body"), &Physics2DServer::body_get_max_contacts_reported);
@@ -661,11 +662,6 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &Physics2DServer::set_active);
 
 	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &Physics2DServer::get_process_info);
-
-	//ClassDB::bind_method(D_METHOD("init"),&Physics2DServer::init);
-	//ClassDB::bind_method(D_METHOD("step"),&Physics2DServer::step);
-	//ClassDB::bind_method(D_METHOD("sync"),&Physics2DServer::sync);
-	//ClassDB::bind_method(D_METHOD("flush_queries"),&Physics2DServer::flush_queries);
 
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONTACT_RECYCLE_RADIUS);
 	BIND_ENUM_CONSTANT(SPACE_PARAM_CONTACT_MAX_SEPARATION);
@@ -736,9 +732,6 @@ void Physics2DServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_RAY);
 	BIND_ENUM_CONSTANT(CCD_MODE_CAST_SHAPE);
 
-	//BIND_ENUM_CONSTANT( TYPE_BODY );
-	//BIND_ENUM_CONSTANT( TYPE_AREA );
-
 	BIND_ENUM_CONSTANT(AREA_BODY_ADDED);
 	BIND_ENUM_CONSTANT(AREA_BODY_REMOVED);
 
@@ -749,7 +742,6 @@ void Physics2DServer::_bind_methods() {
 
 Physics2DServer::Physics2DServer() {
 
-	//ERR_FAIL_COND( singleton!=NULL );
 	singleton = this;
 }
 
