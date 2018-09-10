@@ -1381,6 +1381,13 @@ void PopupMenu::clear_autohide_areas() {
 	autohide_areas.clear();
 }
 
+void PopupMenu::sort_items_by_id() {
+	items.sort_custom<PopupMenu::SortItems>();
+	for (int i = 0; i < items.size(); i++) {
+		items.write[i].id = i;
+	}
+}
+
 void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &PopupMenu::_gui_input);
@@ -1444,6 +1451,7 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_separator", "label"), &PopupMenu::add_separator, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
+	ClassDB::bind_method(D_METHOD("sort_items_by_id"), &PopupMenu::sort_items_by_id);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &PopupMenu::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &PopupMenu::_get_items);

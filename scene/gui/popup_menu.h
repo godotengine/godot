@@ -77,6 +77,12 @@ class PopupMenu : public Popup {
 		}
 	};
 
+	struct SortItems {
+		bool operator()(Item p_a, Item p_b) const {
+			return p_a.id < p_b.id;
+		}
+	};
+
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
@@ -186,7 +192,7 @@ public:
 	void add_separator(const String &p_text = String());
 
 	void clear();
-
+	void sort_items_by_id();
 	void set_parent_rect(const Rect2 &p_rect);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;

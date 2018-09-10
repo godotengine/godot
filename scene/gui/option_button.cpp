@@ -100,17 +100,53 @@ void OptionButton::pressed() {
 	popup->popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
+bool OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
 
+	if (!allow_duplicates) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			if (p_label == popup->get_item_text(i)) {
+				return false;
+			}
+		}
+	}
+
+	if (p_id == -1) {
+		p_id = popup->get_item_count();
+	} else {
+		p_id -= 1;
+	}
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
+	popup->sort_items_by_id();
+	if (p_id < current) {
+		current += 1;
+	}
 	if (popup->get_item_count() == 1)
 		select(0);
+	return true;
 }
-void OptionButton::add_item(const String &p_label, int p_id) {
+bool OptionButton::add_item(const String &p_label, int p_id) {
 
+	if (!allow_duplicates) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			if (p_label == popup->get_item_text(i)) {
+				return false;
+			}
+		}
+	}
+
+	if (p_id == -1) {
+		p_id = popup->get_item_count();
+	} else {
+		p_id -= 1;
+	}
 	popup->add_radio_check_item(p_label, p_id);
+	popup->sort_items_by_id();
+	if (p_id < current) {
+		current += 1;
+	}
 	if (popup->get_item_count() == 1)
 		select(0);
+	return true;
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
@@ -191,10 +227,21 @@ void OptionButton::clear() {
 
 void OptionButton::_select(int p_which, bool p_emit) {
 
-	if (p_which < 0)
+	if (p_which == -1) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+
+			popup->set_item_checked(i, i == p_which);
+		}
+
+		current = p_which;
+		set_text("");
+		set_icon(NULL);
+
+		if (is_inside_tree() && p_emit) {
+			emit_signal("item_selected", current);
+		}
 		return;
-	if (p_which == current)
-		return;
+	}
 
 	ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
@@ -245,7 +292,20 @@ Variant OptionButton::get_selected_metadata() const {
 
 void OptionButton::remove_item(int p_idx) {
 
+	ERR_FAIL_INDEX(p_idx, popup->get_item_count());
+
+	int next = -1;
+	if (popup->get_item_count() > 1) {
+		if (p_idx < popup->get_item_count() - 1) {
+			next = p_idx;
+		} else if (p_idx == popup->get_item_count() - 1) {
+			next = p_idx - 1;
+		}
+	}
+
 	popup->remove_item(p_idx);
+	popup->sort_items_by_id();
+	_select(next, true);
 }
 
 PopupMenu *OptionButton::get_popup() const {
@@ -288,6 +348,13 @@ void OptionButton::_set_items(const Array &p_items) {
 	}
 }
 
+void OptionButton::set_allow_duplicates(bool p_allow) {
+	allow_duplicates = p_allow;
+}
+
+bool OptionButton::get_allow_duplicates() const {
+	return allow_duplicates;
+}
 void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 
 	popup->get_translatable_strings(p_strings);
@@ -321,6 +388,9 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &OptionButton::remove_item);
 	ClassDB::bind_method(D_METHOD("_select_int"), &OptionButton::_select_int);
 
+	ClassDB::bind_method(D_METHOD("set_allow_duplicates", "allow"), &OptionButton::set_allow_duplicates);
+	ClassDB::bind_method(D_METHOD("get_allow_duplicates"), &OptionButton::get_allow_duplicates);
+
 	ClassDB::bind_method(D_METHOD("get_popup"), &OptionButton::get_popup);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &OptionButton::_set_items);
@@ -329,6 +399,7 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	// "selected" property must come after "items", otherwise GH-10213 occurs
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "Allow Duplicates"), "set_allow_duplicates", "get_allow_duplicates");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "id")));
 }
@@ -336,7 +407,7 @@ void OptionButton::_bind_methods() {
 OptionButton::OptionButton() {
 
 	current = -1;
-	set_toggle_mode(true);
+	allow_duplicates = true;
 	set_text_align(ALIGN_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
