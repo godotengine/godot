@@ -2112,23 +2112,14 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 		script->set_script_path(p_original_path); // script needs this.
 		script->set_path(p_original_path);
 		Error err = script->load_byte_code(p_path);
-
-		if (err != OK) {
-			memdelete(script);
-			ERR_FAIL_COND_V(err != OK, RES());
-		}
+		ERR_FAIL_COND_V(err != OK, RES());
 
 	} else {
 		Error err = script->load_source_code(p_path);
-
-		if (err != OK) {
-			memdelete(script);
-			ERR_FAIL_COND_V(err != OK, RES());
-		}
+		ERR_FAIL_COND_V(err != OK, RES());
 
 		script->set_script_path(p_original_path); // script needs this.
 		script->set_path(p_original_path);
-		//script->set_name(p_path.get_file());
 
 		script->reload();
 	}
