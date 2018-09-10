@@ -75,7 +75,15 @@
 			Number of vertical frames in [code]texture[/code].
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
-			Editor visibility helper.
+		 Visibility Helper
+		 If the visibility_rect is not in view the particles will not be rendered.
+		 Change the size of the Rect with w and h.
+		 Change the position with x and y.
+		 Example: To match a box particle shape of x:100 y:200
+		 visibility_rect would be w:100 h:200 X:-50 Y:-100
+		 Tips: visibility_rect can be automatically generated using the UI:
+		 [Particles > Generate Visibility Rect]
+		 Which appears on the toolbar when a Particles2D node is selected.
 		</member>
 	</members>
 	<constants>
