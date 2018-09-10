@@ -1221,7 +1221,7 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 
 				int def_from = p_context.function->arguments.size() - p_context.function->default_values.size();
 				if (i >= def_from) {
-					int def_idx = def_from - i;
+					int def_idx = i - def_from;
 					if (p_context.function->default_values[def_idx]->type == GDScriptParser::Node::TYPE_OPERATOR) {
 						const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(p_context.function->default_values[def_idx]);
 						if (op->arguments.size() < 2) {
