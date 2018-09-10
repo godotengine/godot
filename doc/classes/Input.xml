@@ -46,6 +46,7 @@
 			</return>
 			<description>
 				If the device has an accelerometer, this will return the acceleration. Otherwise, it returns an empty [Vector3].
+				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
 			</description>
 		</method>
 		<method name="get_action_strength" qualifiers="const">
