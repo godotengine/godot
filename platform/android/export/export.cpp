@@ -1337,7 +1337,7 @@ public:
 		if (!FileAccess::exists(adb)) {
 
 			valid = false;
-			err += "ADB executable not configured in editor settings.\n";
+			err += "ADB executable not configured in the Editor Settings.\n";
 		}
 
 		String js = EditorSettings::get_singleton()->get("export/android/jarsigner");
@@ -1345,7 +1345,7 @@ public:
 		if (!FileAccess::exists(js)) {
 
 			valid = false;
-			err += "OpenJDK 6 jarsigner not configured in editor settings.\n";
+			err += "OpenJDK 8 jarsigner not configured in the Editor Settings.\n";
 		}
 
 		String dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
@@ -1353,7 +1353,7 @@ public:
 		if (!FileAccess::exists(dk)) {
 
 			valid = false;
-			err += "Debug Keystore not configured in editor settings.\n";
+			err += "Debug keystore not configured in the Editor Settings.\n";
 		}
 
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
@@ -1372,7 +1372,7 @@ public:
 			if (apk_expansion_pkey == "") {
 				valid = false;
 
-				err += "Invalid public key for apk expansion.\n";
+				err += "Invalid public key for APK expansion.\n";
 			}
 		}
 
@@ -1680,7 +1680,7 @@ public:
 
 			String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
 			if (!FileAccess::exists(jarsigner)) {
-				EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the editor settings.\nResulting apk is unsigned.");
+				EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
 				return OK;
 			}
 
@@ -1692,14 +1692,14 @@ public:
 				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 
-				ep.step("Signing Debug APK...", 103);
+				ep.step("Signing debug APK...", 103);
 
 			} else {
 				keystore = release_keystore;
 				password = release_password;
 				user = release_username;
 
-				ep.step("Signing Release APK...", 103);
+				ep.step("Signing release APK...", 103);
 			}
 
 			if (!FileAccess::exists(keystore)) {
@@ -1742,7 +1742,7 @@ public:
 
 			OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
 			if (retval) {
-				EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use jarsigner from Java 6.");
+				EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
 				return ERR_CANT_CREATE;
 			}
 		}
