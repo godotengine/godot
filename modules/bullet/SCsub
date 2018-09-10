@@ -68,7 +68,7 @@ if env['builtin_bullet']:
         , "BulletCollision/CollisionShapes/btEmptyShape.cpp"
         , "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.cpp"
         , "BulletCollision/CollisionShapes/btMinkowskiSumShape.cpp"
-	, "BulletCollision/CollisionShapes/btMiniSDF.cpp"
+        , "BulletCollision/CollisionShapes/btMiniSDF.cpp"
         , "BulletCollision/CollisionShapes/btMultimaterialTriangleMeshShape.cpp"
         , "BulletCollision/CollisionShapes/btMultiSphereShape.cpp"
         , "BulletCollision/CollisionShapes/btOptimizedBvh.cpp"
