@@ -77,6 +77,7 @@ class CanvasItemEditor : public VBoxContainer {
 		TOOL_SELECT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
+		TOOL_SCALE,
 		TOOL_ROTATE,
 		TOOL_EDIT_PIVOT,
 		TOOL_PAN,
@@ -189,6 +190,8 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
 		DRAG_MOVE,
+		DRAG_SCALE_X,
+		DRAG_SCALE_Y,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
 		DRAG_V_GUIDE,
@@ -298,16 +301,18 @@ class CanvasItemEditor : public VBoxContainer {
 	List<PoseClipboard> pose_clipboard;
 
 	ToolButton *select_button;
-	ToolButton *list_select_button;
+
 	ToolButton *move_button;
+	ToolButton *scale_button;
 	ToolButton *rotate_button;
+
+	ToolButton *list_select_button;
+	ToolButton *pivot_button;
+	ToolButton *pan_button;
 
 	ToolButton *snap_button;
 	MenuButton *snap_config_menu;
 	PopupMenu *smartsnap_config_popup;
-
-	ToolButton *pivot_button;
-	ToolButton *pan_button;
 
 	ToolButton *lock_button;
 	ToolButton *unlock_button;
@@ -408,6 +413,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
+	void _draw_control_helpers(Control *control);
 	void _draw_selection();
 	void _draw_axis();
 	void _draw_bones();
@@ -420,6 +426,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
+	bool _gui_input_scale(const Ref<InputEvent> &p_event);
 	bool _gui_input_pivot(const Ref<InputEvent> &p_event);
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
