@@ -637,9 +637,21 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 					expr = op;
 				} else {
-
-					_set_error("Static constant  '" + identifier.operator String() + "' not present in built-in type " + Variant::get_type_name(bi_type) + ".");
-					return NULL;
+					// Object is a special case
+					bool valid = false;
+					if (bi_type == Variant::OBJECT) {
+						int object_constant = ClassDB::get_integer_constant("Object", identifier, &valid);
+						if (valid) {
+							ConstantNode *cn = alloc_node<ConstantNode>();
+							cn->value = object_constant;
+							cn->datatype = _type_from_variant(cn->value);
+							expr = cn;
+						}
+					}
+					if (!valid) {
+						_set_error("Static constant  '" + identifier.operator String() + "' not present in built-in type " + Variant::get_type_name(bi_type) + ".");
+						return NULL;
+					}
 				}
 			} else {
 
