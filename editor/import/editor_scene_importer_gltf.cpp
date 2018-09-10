@@ -1876,9 +1876,9 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 			float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
 			T from = p_values[idx * 3 + 1];
-			T c1 = from + p_values[idx * 3 + 0];
-			T to = p_values[idx * 3 + 3];
-			T c2 = to + p_values[idx * 3 + 2];
+			T c1 = from + p_values[idx * 3 + 2];
+			T to = p_values[idx * 3 + 4];
+			T c2 = to + p_values[idx * 3 + 3];
 
 			return interp.bezier(from, c1, c2, to, c);
 
