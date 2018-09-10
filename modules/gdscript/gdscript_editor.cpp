@@ -1376,11 +1376,11 @@ static bool _guess_identifier_type_from_base(const GDScriptCompletionContext &p_
 					for (int i = 0; i < base_type.class_type->variables.size(); i++) {
 						GDScriptParser::ClassNode::Member m = base_type.class_type->variables[i];
 						if (m.identifier == p_identifier) {
-							if (m.data_type.has_type) {
-								r_type.type = m.data_type;
-								return true;
-							}
 							if (m.expression) {
+								if (p_context.line == m.expression->line) {
+									// Variable used in the same expression
+									return false;
+								}
 								if (_guess_expression_type(p_context, m.expression, r_type)) {
 									return true;
 								}
@@ -1388,6 +1388,10 @@ static bool _guess_identifier_type_from_base(const GDScriptCompletionContext &p_
 									r_type.type = m.expression->get_datatype();
 									return true;
 								}
+							}
+							if (m.data_type.has_type) {
+								r_type.type = m.data_type;
+								return true;
 							}
 							return false;
 						}
