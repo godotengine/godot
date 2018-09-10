@@ -1703,6 +1703,7 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		if (project_manager || (script == "" && test == "" && game_path == "" && !editor)) {
 
+			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
