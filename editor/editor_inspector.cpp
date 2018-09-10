@@ -33,6 +33,7 @@
 #include "dictionary_property_edit.h"
 #include "editor_node.h"
 #include "editor_scale.h"
+#include "editor_settings.h"
 #include "multi_node_edit.h"
 #include "scene/resources/packed_scene.h"
 
@@ -175,9 +176,14 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		update(); //need to redraw text
-	}
+	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+		if (show_type_icon != (bool)EditorSettings::get_singleton()->get("docks/property_editor/show_type_icons")) {
+			show_type_icon = EditorSettings::get_singleton()->get("docks/property_editor/show_type_icons");
+			update();
+		}
+	} else if (p_what == NOTIFICATION_DRAW) {
+
 		Ref<Font> font = get_font("font", "Tree");
 		Color dark_color = get_color("dark_color_2", "Editor");
 
@@ -233,6 +239,12 @@ void EditorProperty::_notification(int p_what) {
 		} else {
 			check_rect = Rect2();
 		}
+		if (show_type_icon) {
+			if (!type_icon.is_null())
+				draw_texture(type_icon, Vector2(ofs, (size.height / 2) - (type_icon->get_height() / 2)));
+
+			ofs += 20 * EDSCALE; // Hardcoded value, so there's still a space if there's no icon for the property.
+		}
 
 		if (can_revert) {
 			Ref<Texture> reload_icon = get_icon("ReloadSmall", "EditorIcons");
@@ -252,7 +264,7 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		int v_ofs = (size.height - font->get_height()) / 2;
-		draw_string(font, Point2(ofs, v_ofs + font->get_ascent()), label, color, text_limit);
+		draw_string(font, Point2(ofs, v_ofs + font->get_ascent()), label, color, text_limit - ofs);
 
 		if (keying) {
 			Ref<Texture> key;
@@ -277,6 +289,19 @@ void EditorProperty::_notification(int p_what) {
 			keying_rect = Rect2();
 		}
 	}
+}
+
+void EditorProperty::set_type_icon(const Ref<Texture> &p_icon) {
+	if (type_icon == p_icon)
+		return;
+
+	type_icon = p_icon;
+	if (show_type_icon)
+		update();
+}
+
+Ref<Texture> EditorProperty::get_type_icon() const {
+	return type_icon;
 }
 
 void EditorProperty::set_label(const String &p_label) {
@@ -778,6 +803,9 @@ String EditorProperty::get_tooltip_text() const {
 
 void EditorProperty::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_type_icon", "texture"), &EditorProperty::set_type_icon);
+	ClassDB::bind_method(D_METHOD("get_type_icon"), &EditorProperty::get_type_icon);
+
 	ClassDB::bind_method(D_METHOD("set_label", "text"), &EditorProperty::set_label);
 	ClassDB::bind_method(D_METHOD("get_label"), &EditorProperty::get_label);
 
@@ -809,6 +837,7 @@ void EditorProperty::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("emit_changed", "property", "value", "field", "changing"), &EditorProperty::emit_changed, DEFVAL(StringName()), DEFVAL(false));
 
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_type_icon", "get_type_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "checkable"), "set_checkable", "is_checkable");
@@ -851,6 +880,7 @@ EditorProperty::EditorProperty() {
 	selected_focusable = -1;
 	label_reference = NULL;
 	bottom_editor = NULL;
+	show_type_icon = EditorSettings::get_singleton()->get("docks/property_editor/show_type_icons");
 }
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////

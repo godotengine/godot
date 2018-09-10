@@ -57,6 +57,7 @@ class EditorPropertyText : public EditorProperty {
 	void _text_entered(const String &p_string);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -93,6 +94,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	void _option_selected(int p_which);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -138,6 +140,7 @@ private:
 	void _dialog_created();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -172,6 +175,7 @@ private:
 	void _property_select();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -185,6 +189,7 @@ class EditorPropertyCheck : public EditorProperty {
 	CheckBox *checkbox;
 
 	void _checkbox_pressed();
+	void _notification(int p_what);
 
 protected:
 	static void _bind_methods();
@@ -201,6 +206,7 @@ class EditorPropertyEnum : public EditorProperty {
 	void _option_selected(int p_which);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -266,6 +272,7 @@ class EditorPropertyInteger : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -296,6 +303,7 @@ class EditorPropertyFloat : public EditorProperty {
 	void _value_changed(double p_val);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -496,6 +504,7 @@ class EditorPropertyColor : public EditorProperty {
 	void _picker_created();
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

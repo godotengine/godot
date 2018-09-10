@@ -51,6 +51,7 @@ class EditorProperty : public Container {
 	GDCLASS(EditorProperty, Container);
 
 private:
+	Ref<Texture> type_icon;
 	String label;
 	int text_size;
 	friend class EditorInspector;
@@ -80,6 +81,8 @@ private:
 	bool use_folding;
 	bool draw_top_bg;
 
+	bool show_type_icon;
+
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
@@ -106,6 +109,9 @@ public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
 	virtual Size2 get_minimum_size() const;
+
+	void set_type_icon(const Ref<Texture> &p_icon);
+	Ref<Texture> get_type_icon() const;
 
 	void set_label(const String &p_label);
 	String get_label() const;

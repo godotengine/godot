@@ -77,6 +77,12 @@ void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
 
+void EditorPropertyText::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
+		set_type_icon(get_icon("String", "EditorIcons"));
+	}
+}
+
 void EditorPropertyText::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_text_changed", "txt"), &EditorPropertyText::_text_changed);
@@ -133,11 +139,12 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
+			set_type_icon(get_icon("String", "EditorIcons"));
+
 			Ref<Texture> df = get_icon("DistractionFree", "EditorIcons");
 			open_big_text->set_icon(df);
 			Ref<Font> font = get_font("font", "Label");
 			text->set_custom_minimum_size(Vector2(0, font->get_height() * 6));
-
 		} break;
 	}
 }
@@ -188,6 +195,12 @@ void EditorPropertyTextEnum::update_property() {
 void EditorPropertyTextEnum::setup(const Vector<String> &p_options) {
 	for (int i = 0; i < p_options.size(); i++) {
 		options->add_item(p_options[i], i);
+	}
+}
+
+void EditorPropertyTextEnum::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Enum", "EditorIcons"));
 	}
 }
 
@@ -270,6 +283,8 @@ void EditorPropertyPath::set_save_mode() {
 void EditorPropertyPath::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("File", "EditorIcons"));
+
 		path_edit->set_icon(get_icon("Folder", "EditorIcons"));
 	}
 }
@@ -331,6 +346,12 @@ void EditorPropertyClassName::_dialog_created() {
 	selected_type = dialog->get_selected_type();
 	emit_changed(get_edited_property(), selected_type);
 	update_property();
+}
+
+void EditorPropertyClassName::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("String", "EditorIcons"));
+	}
 }
 
 void EditorPropertyClassName::_bind_methods() {
@@ -442,6 +463,12 @@ void EditorPropertyMember::update_property() {
 	property->set_text(full_path);
 }
 
+void EditorPropertyMember::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
+		set_type_icon(get_icon("String", "EditorIcons"));
+	}
+}
+
 void EditorPropertyMember::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_property_selected"), &EditorPropertyMember::_property_selected);
 	ClassDB::bind_method(D_METHOD("_property_select"), &EditorPropertyMember::_property_select);
@@ -457,6 +484,7 @@ EditorPropertyMember::EditorPropertyMember() {
 }
 
 ///////////////////// CHECK /////////////////////////
+
 void EditorPropertyCheck::_checkbox_pressed() {
 
 	emit_changed(get_edited_property(), checkbox->is_pressed());
@@ -466,6 +494,12 @@ void EditorPropertyCheck::update_property() {
 	bool c = get_edited_object()->get(get_edited_property());
 	checkbox->set_pressed(c);
 	checkbox->set_disabled(is_read_only());
+}
+
+void EditorPropertyCheck::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("bool", "EditorIcons"));
+	}
 }
 
 void EditorPropertyCheck::_bind_methods() {
@@ -516,6 +550,12 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 
 void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
+}
+
+void EditorPropertyEnum::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Enum", "EditorIcons"));
+	}
 }
 
 void EditorPropertyEnum::_bind_methods() {
@@ -816,6 +856,12 @@ void EditorPropertyInteger::update_property() {
 	setting = false;
 }
 
+void EditorPropertyInteger::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("int", "EditorIcons"));
+	}
+}
+
 void EditorPropertyInteger::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_value_changed"), &EditorPropertyInteger::_value_changed);
@@ -891,6 +937,12 @@ void EditorPropertyFloat::update_property() {
 	setting = true;
 	spin->set_value(val);
 	setting = false;
+}
+
+void EditorPropertyFloat::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("float", "EditorIcons"));
+	}
 }
 
 void EditorPropertyFloat::_bind_methods() {
@@ -1046,6 +1098,8 @@ void EditorPropertyEasing::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
+			set_type_icon(get_icon("Curve", "EditorIcons"));
+
 			preset->clear();
 			preset->add_icon_item(get_icon("CurveConstant", "EditorIcons"), "Zero", EASING_ZERO);
 			preset->add_icon_item(get_icon("CurveLinear", "EditorIcons"), "Linear", EASING_LINEAR);
@@ -1121,6 +1175,8 @@ void EditorPropertyVector2::update_property() {
 
 void EditorPropertyVector2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Vector2", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 2; i++) {
 
@@ -1205,6 +1261,8 @@ void EditorPropertyRect2::update_property() {
 }
 void EditorPropertyRect2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Rect2", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 4; i++) {
 
@@ -1287,6 +1345,8 @@ void EditorPropertyVector3::update_property() {
 }
 void EditorPropertyVector3::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Vector3", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
 
@@ -1369,6 +1429,8 @@ void EditorPropertyPlane::update_property() {
 }
 void EditorPropertyPlane::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Plane", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
 
@@ -1453,6 +1515,8 @@ void EditorPropertyQuat::update_property() {
 }
 void EditorPropertyQuat::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Quat", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 3; i++) {
 
@@ -1542,6 +1606,8 @@ void EditorPropertyAABB::update_property() {
 }
 void EditorPropertyAABB::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("AABB", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 6; i++) {
 
@@ -1618,6 +1684,8 @@ void EditorPropertyTransform2D::update_property() {
 }
 void EditorPropertyTransform2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Transform2D", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 6; i++) {
 
@@ -1699,6 +1767,8 @@ void EditorPropertyBasis::update_property() {
 }
 void EditorPropertyBasis::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Basis", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 9; i++) {
 
@@ -1786,6 +1856,8 @@ void EditorPropertyTransform::update_property() {
 }
 void EditorPropertyTransform::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Transform", "EditorIcons"));
+
 		Color base = get_color("accent_color", "Editor");
 		for (int i = 0; i < 12; i++) {
 
@@ -1843,12 +1915,21 @@ void EditorPropertyColor::_popup_closed() {
 }
 
 void EditorPropertyColor::_picker_created() {
-	// get default color picker mode from editor settings
+
+	// Get default color picker mode from editor settings.
 	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
-	if (default_color_mode == 1)
+	if (default_color_mode == 1) {
 		picker->get_picker()->set_hsv_mode(true);
-	else if (default_color_mode == 2)
+	} else if (default_color_mode == 2) {
 		picker->get_picker()->set_raw_mode(true);
+	}
+}
+
+void EditorPropertyColor::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Color", "EditorIcons"));
+	}
 }
 
 void EditorPropertyColor::_bind_methods() {
@@ -1983,6 +2064,8 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 void EditorPropertyNodePath::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("NodePath", "EditorIcons"));
+
 		Ref<Texture> t = get_icon("Clear", "EditorIcons");
 		clear->set_icon(t);
 	}
@@ -2675,6 +2758,16 @@ void EditorPropertyResource::setup(const String &p_base_type) {
 void EditorPropertyResource::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		String type = base_type;
+		if (type != "Resource") {
+			if (type.find(",") != -1)
+				type = base_type.get_slice(",", 0);
+
+			set_type_icon(EditorNode::get_singleton()->get_class_icon(type));
+		} else {
+			set_type_icon(get_icon("Object", "EditorIcons"));
+		}
+
 		Ref<Texture> t = get_icon("select_arrow", "Tree");
 		edit->set_icon(t);
 	}
@@ -2788,6 +2881,7 @@ bool EditorPropertyResource::can_drop_data_fw(const Point2 &p_point, const Varia
 
 	return _is_drop_valid(p_data);
 }
+
 void EditorPropertyResource::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 
 	ERR_FAIL_COND(!_is_drop_valid(p_data));
@@ -3102,8 +3196,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			}
 		} break;
 
-			// math types
-
+		// math types
 		case Variant::VECTOR2: {
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
 			double min = -65535, max = 65535, step = default_float_step;

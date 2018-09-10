@@ -224,18 +224,18 @@ void EditorPropertyArray::update_property() {
 	String arrtype = "";
 	switch (array_type) {
 		case Variant::ARRAY: {
-			arrtype = "Array";
 
+			arrtype = "Array";
 		} break;
 
 		// arrays
 		case Variant::POOL_BYTE_ARRAY: {
-			arrtype = "PoolByteArray";
 
+			arrtype = "PoolByteArray";
 		} break;
 		case Variant::POOL_INT_ARRAY: {
-			arrtype = "PoolIntArray";
 
+			arrtype = "PoolIntArray";
 		} break;
 		case Variant::POOL_REAL_ARRAY: {
 
@@ -250,10 +250,11 @@ void EditorPropertyArray::update_property() {
 			arrtype = "PoolVector2Array";
 		} break;
 		case Variant::POOL_VECTOR3_ARRAY: {
-			arrtype = "PoolVector3Array";
 
+			arrtype = "PoolVector3Array";
 		} break;
 		case Variant::POOL_COLOR_ARRAY: {
+
 			arrtype = "PoolColorArray";
 		} break;
 		default: {
@@ -412,7 +413,47 @@ void EditorPropertyArray::_remove_pressed(int p_index) {
 }
 
 void EditorPropertyArray::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		switch (array_type) {
+			case Variant::ARRAY: {
+
+				set_type_icon(get_icon("Array", "EditorIcons"));
+			} break;
+			case Variant::POOL_INT_ARRAY: {
+
+				set_type_icon(get_icon("PoolIntArray", "EditorIcons"));
+			} break;
+			case Variant::POOL_REAL_ARRAY: {
+
+				set_type_icon(get_icon("PoolRealArray", "EditorIcons"));
+			} break;
+			case Variant::POOL_STRING_ARRAY: {
+
+				set_type_icon(get_icon("PoolStringArray", "EditorIcons"));
+			} break;
+			case Variant::POOL_BYTE_ARRAY: {
+
+				set_type_icon(get_icon("PoolByteArray", "EditorIcons"));
+			} break;
+			case Variant::POOL_VECTOR2_ARRAY: {
+
+				set_type_icon(get_icon("PoolVector2Array", "EditorIcons"));
+			} break;
+			case Variant::POOL_VECTOR3_ARRAY: {
+
+				set_type_icon(get_icon("PoolVector3Array", "EditorIcons"));
+			} break;
+			case Variant::POOL_COLOR_ARRAY: {
+
+				set_type_icon(get_icon("PoolColorArray", "EditorIcons"));
+			} break;
+			default: {
+			}
+		}
+	}
 }
+
 void EditorPropertyArray::_edit_pressed() {
 
 	Variant array = get_edited_object()->get(get_edited_property());
@@ -946,21 +987,23 @@ void EditorPropertyDictionary::update_property() {
 		}
 
 		updating = false;
-
-	} else {
-		if (vbox) {
-			set_bottom_editor(NULL);
-			memdelete(vbox);
-			vbox = NULL;
-		}
+	} else if (vbox) {
+		set_bottom_editor(NULL);
+		memdelete(vbox);
+		vbox = NULL;
 	}
 }
 
 void EditorPropertyDictionary::_object_id_selected(const String &p_property, ObjectID p_id) {
+
 	emit_signal("object_id_selected", p_property, p_id);
 }
 
 void EditorPropertyDictionary::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+		set_type_icon(get_icon("Dictionary", "EditorIcons"));
+	}
 }
 
 void EditorPropertyDictionary::_edit_pressed() {
