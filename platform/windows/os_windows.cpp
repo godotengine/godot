@@ -1711,6 +1711,15 @@ void OS_Windows::set_window_position(const Point2 &p_position) {
 	RECT r;
 	GetWindowRect(hWnd, &r);
 	MoveWindow(hWnd, p_position.x, p_position.y, r.right - r.left, r.bottom - r.top, TRUE);
+
+	// Don't let the mouse leave the window when moved
+	if (mouse_mode == MOUSE_MODE_CONFINED) {
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		ClientToScreen(hWnd, (POINT *)&rect.left);
+		ClientToScreen(hWnd, (POINT *)&rect.right);
+		ClipCursor(&rect);
+	}
 }
 Size2 OS_Windows::get_window_size() const {
 
