@@ -65,7 +65,6 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 #define CAPTURE_BUFFER_CHANNELS 2
 
-static StringName capture_device_id;
 static bool default_render_device_changed = false;
 static bool default_capture_device_changed = false;
 
@@ -128,7 +127,6 @@ public:
 				default_render_device_changed = true;
 			} else if (flow == eCapture) {
 				default_capture_device_changed = true;
-				capture_device_id = String(pwstrDeviceId);
 			}
 		}
 
@@ -659,6 +657,9 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			if (err == OK) {
 				ad->start();
 			}
+
+			avail_frames = 0;
+			write_ofs = 0;
 		}
 
 		if (ad->audio_input.active) {
