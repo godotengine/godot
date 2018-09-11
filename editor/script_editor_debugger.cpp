@@ -396,7 +396,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		dobreak->set_disabled(false);
 		docontinue->set_disabled(true);
 		emit_signal("breaked", false, false, Variant());
-		//tabs->set_current_tab(0);
 		profiler->set_enabled(true);
 		profiler->disable_seeking();
 		inspector->edit(NULL);
@@ -1946,10 +1945,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		stack_dump->connect("cell_selected", this, "_stack_dump_frame_selected");
 		sc->add_child(stack_dump);
 
-		inspector = memnew(PropertyEditor);
+		inspector = memnew(EditorInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
-		inspector->hide_top_label();
-		inspector->get_property_tree()->set_column_title(0, TTR("Variable"));
 		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
@@ -2180,7 +2177,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 ScriptEditorDebugger::~ScriptEditorDebugger() {
 
-	//inspector->edit(NULL);
 	memdelete(variables);
 
 	ppeer->set_stream_peer(Ref<StreamPeer>());

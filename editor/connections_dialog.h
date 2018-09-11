@@ -35,7 +35,7 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "editor/property_editor.h"
+#include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
@@ -62,7 +62,7 @@ class ConnectDialog : public ConfirmationDialog {
 
 	SceneTreeEditor *tree;
 	ConfirmationDialog *error;
-	PropertyEditor *bind_editor;
+	EditorInspector *bind_editor;
 	OptionButton *type_list;
 	CheckButton *deferred;
 	CheckButton *oneshot;

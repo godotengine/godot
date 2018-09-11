@@ -32,9 +32,9 @@
 #define ITEM_LIST_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
@@ -210,7 +210,7 @@ class ItemListEditor : public HBoxContainer {
 	ToolButton *toolbar_button;
 
 	AcceptDialog *dialog;
-	PropertyEditor *property_editor;
+	EditorInspector *property_editor;
 	Tree *tree;
 	Button *add_button;
 	Button *del_button;

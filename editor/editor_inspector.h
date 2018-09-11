@@ -349,9 +349,6 @@ public:
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);
 
-	void set_subsection_selectable(bool p_selectable);
-	void set_property_selectable(bool p_selectable);
-
 	void set_use_folding(bool p_enable);
 	bool is_using_folding();
 
