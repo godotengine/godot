@@ -2759,6 +2759,8 @@ void EditorNode::set_current_scene(int p_idx) {
 	Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
 	_edit_current();
 
+	_update_title();
+
 	call_deferred("_set_main_scene_state", state, get_edited_scene()); //do after everything else is done setting up
 }
 
