@@ -1558,8 +1558,6 @@ void EditorNode::_edit_current() {
 
 				editor_plugin_screen->edit(current_obj);
 			}
-		} else {
-			editor_plugin_screen->edit(current_obj);
 		}
 
 		Vector<EditorPlugin *> sub_plugins = editor_data.get_subeditors(current_obj);
