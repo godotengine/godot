@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "error_macros.h"
+
+#include "core/error_macros.h"
+
 #include "upnp.h"
 #include "upnpdevice.h"
 

@@ -31,7 +31,7 @@
 #ifndef GODOT_UPNPDEVICE_H
 #define GODOT_UPNPDEVICE_H
 
-#include <reference.h>
+#include "core/reference.h"
 
 class UPNPDevice : public Reference {
 

@@ -1,7 +1,7 @@
 #ifndef MINIUPNPCSTRINGS_H_INCLUDED
 #define MINIUPNPCSTRINGS_H_INCLUDED
 
-#include <version.h>
+#include "core/version.h"
 
 #define OS_STRING VERSION_NAME "/1.0"
 #define MINIUPNPC_VERSION_STRING "2.1"
