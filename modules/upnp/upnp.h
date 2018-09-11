@@ -33,8 +33,9 @@
 
 #include "core/reference.h"
 
+#include "upnpdevice.h"
+
 #include <miniupnpc/miniupnpc.h>
-#include <miniupnpc/upnpdevice.h>
 
 class UPNP : public Reference {
 
