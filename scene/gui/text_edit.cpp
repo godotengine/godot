@@ -4174,7 +4174,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		}
 	}
 
-	return CURSOR_IBEAM;
+	return get_default_cursor_shape();
 }
 
 void TextEdit::set_text(String p_text) {
@@ -6256,6 +6256,7 @@ TextEdit::TextEdit() {
 	breakpoint_gutter_width = 0;
 	cache.fold_gutter_width = 0;
 	fold_gutter_width = 0;
+	set_default_cursor_shape(CURSOR_IBEAM);
 
 	indent_size = 4;
 	text.set_indent_size(indent_size);
