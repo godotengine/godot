@@ -38,7 +38,6 @@
 
 // TODO:
 // arrays and dictionary
-// replace property editor in sectionedpropertyeditor
 
 Size2 EditorProperty::get_minimum_size() const {
 
