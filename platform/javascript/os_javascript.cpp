@@ -32,7 +32,6 @@
 
 #include "core/io/file_access_buffered_fa.h"
 #include "gles2/rasterizer_gles2.h"
-#include "gles3/rasterizer_gles3.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 #include "unix/dir_access_unix.h"
@@ -608,21 +607,20 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 
 // Video
 
+enum VideoDriverJavaScript {
+	VIDEO_DRIVER_WEBGL1,
+};
+
 int OS_JavaScript::get_video_driver_count() const {
 
-	return VIDEO_DRIVER_MAX;
+	return 1;
 }
 
 const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-	}
 	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_COND_V(p_driver != VIDEO_DRIVER_WEBGL1, NULL);
+	return "GLES2";
 }
 
 // Audio
@@ -639,7 +637,8 @@ const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 
 // Lifecycle
 int OS_JavaScript::get_current_video_driver() const {
-	return video_driver_index;
+
+	return VIDEO_DRIVER_WEBGL1;
 }
 
 void OS_JavaScript::initialize_core() {
@@ -650,62 +649,21 @@ void OS_JavaScript::initialize_core() {
 
 Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+	ERR_FAIL_COND_V(p_video_driver != VIDEO_DRIVER_WEBGL1, ERR_INVALID_PARAMETER);
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
 	attributes.alpha = false;
 	attributes.antialias = false;
-	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
-
-	bool gles3 = true;
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gles3 = false;
-	}
-
-	bool gl_initialization_error = false;
-
-	while (true) {
-		if (gles3) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				attributes.majorVersion = 2;
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					gles3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				attributes.majorVersion = 1;
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
+	attributes.majorVersion = 1;
+	RasterizerGLES2::register_config();
+	RasterizerGLES2::make_current();
 	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
 	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
-		gl_initialization_error = true;
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your browser does not support any of the supported WebGL versions.\n"
+		OS::get_singleton()->alert("Your browser does not support WebGL.\n"
 								   "Please update your browser version.",
 				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}
-
-	video_driver_index = p_video_driver;
 
 	video_mode = p_desired;
 	// Can't fulfill fullscreen request during start-up due to browser security.

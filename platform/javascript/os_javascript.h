@@ -80,8 +80,6 @@ class OS_JavaScript : public OS_Unix {
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
-	int video_driver_index;
-
 protected:
 	virtual int get_current_video_driver() const;
 
