@@ -1138,7 +1138,6 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 		return;
 
 #ifdef TOOLS_ENABLED
-
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
@@ -1167,7 +1166,6 @@ void EditorInspectorSection::unfold() {
 	_test_unfold();
 
 #ifdef TOOLS_ENABLED
-
 	object->editor_set_section_unfold(section, true);
 	vbox->show();
 	update();
@@ -1180,8 +1178,8 @@ void EditorInspectorSection::fold() {
 
 	if (!vbox_added)
 		return; //kinda pointless
-#ifdef TOOLS_ENABLED
 
+#ifdef TOOLS_ENABLED
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
 	update();
@@ -1202,7 +1200,6 @@ EditorInspectorSection::EditorInspectorSection() {
 	foldable = false;
 	vbox = memnew(VBoxContainer);
 	vbox_added = false;
-	//add_child(vbox);
 }
 
 EditorInspectorSection::~EditorInspectorSection() {
@@ -1607,12 +1604,6 @@ void EditorInspector::update_tree() {
 			doc_hint = descr;
 		}
 
-#if 0
-		if (p.name == selected_property) {
-
-			item->select(1);
-		}
-#endif
 		for (List<Ref<EditorInspectorPlugin> >::Element *E = valid_plugins.front(); E; E = E->next()) {
 			Ref<EditorInspectorPlugin> ped = E->get();
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage);
@@ -1810,12 +1801,6 @@ void EditorInspector::_filter_changed(const String &p_text) {
 
 	_clear();
 	update_tree();
-}
-
-void EditorInspector::set_subsection_selectable(bool p_selectable) {
-}
-
-void EditorInspector::set_property_selectable(bool p_selectable) {
 }
 
 void EditorInspector::set_use_folding(bool p_enable) {

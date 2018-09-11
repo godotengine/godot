@@ -1750,12 +1750,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	globals_editor = memnew(SectionedInspector);
 	props_base->add_child(globals_editor);
 	globals_editor->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
-	globals_editor->get_inspector()->set_property_selectable(true);
-	//globals_editor->hide_top_label();
 	globals_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	globals_editor->register_search_box(search_box);
 	globals_editor->get_inspector()->connect("property_selected", this, "_item_selected");
-	//globals_editor->get_inspector()->connect("property_toggled", this, "_item_checked", varray(), CONNECT_DEFERRED);
 	globals_editor->get_inspector()->connect("property_edited", this, "_settings_prop_edited");
 	globals_editor->get_inspector()->connect("restart_requested", this, "_editor_restart_request");
 

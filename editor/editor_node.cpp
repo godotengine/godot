@@ -5646,10 +5646,6 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(SkeletonIKEditorPlugin(this)));
 	add_editor_plugin(memnew(PhysicalBonePlugin(this)));
 
-	// FIXME: Disabled as (according to reduz) users were complaining that it gets in the way
-	// Waiting for PropertyEditor rewrite (planned for 3.1) to be refactored.
-	//add_editor_plugin(memnew(MaterialEditorPlugin(this)));
-
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++)
 		add_editor_plugin(EditorPlugins::create(i, this));
 
