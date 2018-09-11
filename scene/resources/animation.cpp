@@ -2600,6 +2600,14 @@ void Animation::track_swap(int p_track, int p_with_track) {
 	emit_changed();
 }
 
+void Animation::set_animation_name(const StringName &p_name) {
+	animation_name = p_name;
+}
+
+StringName Animation::get_animation_name() {
+	return animation_name;
+}
+
 void Animation::set_step(float p_step) {
 
 	step = p_step;
@@ -2699,6 +2707,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track", "time", "animation"), &Animation::animation_track_insert_key);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "idx", "key_idx"), &Animation::animation_track_get_key_animation);
+
+	ClassDB::bind_method(D_METHOD("get_animation_name"), &Animation::get_animation_name);
 
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);
@@ -2966,7 +2976,7 @@ void Animation::optimize(float p_allowed_linear_err, float p_allowed_angular_err
 }
 
 Animation::Animation() {
-
+	animation_name = "";
 	step = 0.1;
 	loop = false;
 	length = 1;

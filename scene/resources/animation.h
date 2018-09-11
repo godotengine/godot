@@ -227,6 +227,7 @@ private:
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
 
+	String animation_name;
 	float length;
 	float step;
 	bool loop;
@@ -357,6 +358,9 @@ public:
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
 	void track_get_key_indices_in_range(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
+
+	void set_animation_name(const StringName &p_name);
+	StringName get_animation_name();
 
 	void set_length(float p_length);
 	float get_length() const;
