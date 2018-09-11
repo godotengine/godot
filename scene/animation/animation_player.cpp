@@ -30,8 +30,8 @@
 
 #include "animation_player.h"
 
-#include "engine.h"
-#include "message_queue.h"
+#include "core/engine.h"
+#include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 #ifdef TOOLS_ENABLED

@@ -33,8 +33,8 @@
 
 #ifdef UNIX_ENABLED
 
-#include "io/packet_peer_udp.h"
-#include "ring_buffer.h"
+#include "core/io/packet_peer_udp.h"
+#include "core/ring_buffer.h"
 
 class PacketPeerUDPPosix : public PacketPeerUDP {
 

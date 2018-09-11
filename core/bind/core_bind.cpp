@@ -30,14 +30,14 @@
 
 #include "core_bind.h"
 
+#include "core/io/file_access_compressed.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/io/json.h"
+#include "core/io/marshalls.h"
+#include "core/math/geometry.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "geometry.h"
-#include "io/file_access_compressed.h"
-#include "io/file_access_encrypted.h"
-#include "io/json.h"
-#include "io/marshalls.h"
-#include "os/keyboard.h"
-#include "os/os.h"
 
 #include "thirdparty/misc/base64.h"
 

@@ -30,7 +30,7 @@
 
 #include "image_compress_squish.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 #include <squish.h>
 

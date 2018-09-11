@@ -33,7 +33,7 @@
 #ifndef FREETYPE_ENABLED
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 void DynamicFontData::lock() {
 

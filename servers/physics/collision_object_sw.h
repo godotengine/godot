@@ -32,7 +32,7 @@
 #define COLLISION_OBJECT_SW_H
 
 #include "broad_phase_sw.h"
-#include "self_list.h"
+#include "core/self_list.h"
 #include "servers/physics_server.h"
 #include "shape_sw.h"
 

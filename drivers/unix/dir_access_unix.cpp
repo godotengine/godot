@@ -32,17 +32,18 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#ifndef ANDROID_ENABLED
-#include <sys/statvfs.h>
-#endif
-
 #include "core/list.h"
-#include "os/memory.h"
-#include "print_string.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef ANDROID_ENABLED
+#include <sys/statvfs.h>
+#endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>

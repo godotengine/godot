@@ -31,11 +31,11 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "resource.h"
+#include "core/math/triangle_mesh.h"
+#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape.h"
 #include "servers/visual_server.h"
-#include "triangle_mesh.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

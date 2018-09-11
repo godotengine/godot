@@ -31,7 +31,7 @@
 #ifndef GD_MONO_HEADER_H
 #define GD_MONO_HEADER_H
 
-#include "int_types.h"
+#include "core/int_types.h"
 
 class GDMonoAssembly;
 class GDMonoClass;

@@ -30,16 +30,16 @@
 
 #include "editor_file_system.h"
 
+#include "core/io/resource_import.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/variant_parser.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
-#include "io/resource_import.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "variant_parser.h"
 
 EditorFileSystem *EditorFileSystem::singleton = NULL;
 

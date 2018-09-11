@@ -30,7 +30,7 @@
 
 #include "skeleton.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
 
 #include "core/project_settings.h"
 #include "scene/3d/physics_body.h"

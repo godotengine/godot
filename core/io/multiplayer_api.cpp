@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/io/multiplayer_api.h"
+#include "multiplayer_api.h"
+
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 

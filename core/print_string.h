@@ -31,7 +31,7 @@
 #ifndef PRINT_STRING_H
 #define PRINT_STRING_H
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 extern void (*_print_func)(String);
 

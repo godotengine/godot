@@ -31,10 +31,10 @@
 #ifndef OA_HASH_MAP_H
 #define OA_HASH_MAP_H
 
-#include "hashfuncs.h"
-#include "math_funcs.h"
-#include "os/copymem.h"
-#include "os/memory.h"
+#include "core/hashfuncs.h"
+#include "core/math/math_funcs.h"
+#include "core/os/copymem.h"
+#include "core/os/memory.h"
 
 /**
  * A HashMap implementation that uses open addressing with robinhood hashing.

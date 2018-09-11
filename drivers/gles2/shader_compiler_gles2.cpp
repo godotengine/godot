@@ -27,11 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "shader_compiler_gles2.h"
 
-#include "os/os.h"
-#include "string_buffer.h"
-#include "string_builder.h"
+#include "core/os/os.h"
+#include "core/string_buffer.h"
+#include "core/string_builder.h"
 
 #define SL ShaderLanguage
 

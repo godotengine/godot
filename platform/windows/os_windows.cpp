@@ -30,6 +30,8 @@
 
 #include "os_windows.h"
 
+#include "core/io/marshalls.h"
+#include "core/version_generated.gen.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/windows/dir_access_windows.h"
@@ -41,14 +43,12 @@
 #include "drivers/windows/stream_peer_tcp_winsock.h"
 #include "drivers/windows/tcp_server_winsock.h"
 #include "drivers/windows/thread_windows.h"
-#include "io/marshalls.h"
 #include "joypad.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-#include "version_generated.gen.h"
 #include "windows_terminal_logger.h"
 
 #include <process.h>

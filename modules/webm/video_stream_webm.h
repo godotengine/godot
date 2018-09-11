@@ -31,7 +31,7 @@
 #ifndef VIDEO_STREAM_WEBM_H
 #define VIDEO_STREAM_WEBM_H
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "scene/resources/video_stream.h"
 
 class WebMFrame;

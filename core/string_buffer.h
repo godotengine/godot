@@ -31,8 +31,7 @@
 #ifndef STRING_BUFFER_H
 #define STRING_BUFFER_H
 
-#include "ustring.h"
-#include <string.h>
+#include "core/ustring.h"
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {

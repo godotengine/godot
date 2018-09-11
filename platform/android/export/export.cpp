@@ -30,17 +30,17 @@
 
 #include "export.h"
 
+#include "core/io/marshalls.h"
+#include "core/io/zip_io.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "io/marshalls.h"
-#include "io/zip_io.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "platform/android/logo.gen.h"
 #include "platform/android/run_icon.gen.h"
-#include "project_settings.h"
-#include "version.h"
 
 #include <string.h>
 

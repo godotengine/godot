@@ -31,7 +31,7 @@
 #ifndef PACKED_DATA_CONTAINER_H
 #define PACKED_DATA_CONTAINER_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 class PackedDataContainer : public Resource {
 

@@ -31,9 +31,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "os/file_access.h"
-#include "ustring.h"
-#include "vector.h"
+#include "core/os/file_access.h"
+#include "core/ustring.h"
+#include "core/vector.h"
+
 #include <stdarg.h>
 
 class Logger {

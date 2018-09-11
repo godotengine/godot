@@ -30,8 +30,8 @@
 
 #include "visual_server.h"
 
-#include "method_bind_ext.gen.inc"
-#include "project_settings.h"
+#include "core/method_bind_ext.gen.inc"
+#include "core/project_settings.h"
 
 VisualServer *VisualServer::singleton = NULL;
 VisualServer *(*VisualServer::create_func)() = NULL;

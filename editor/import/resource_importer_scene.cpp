@@ -30,8 +30,8 @@
 
 #include "resource_importer_scene.h"
 
+#include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "io/resource_saver.h"
 #include "scene/resources/packed_scene.h"
 
 #include "scene/3d/collision_shape.h"

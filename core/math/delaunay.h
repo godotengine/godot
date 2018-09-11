@@ -31,7 +31,7 @@
 #ifndef DELAUNAY_H
 #define DELAUNAY_H
 
-#include "rect2.h"
+#include "core/math/rect2.h"
 
 class Delaunay2D {
 public:

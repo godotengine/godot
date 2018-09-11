@@ -31,7 +31,8 @@
 #ifdef WINMIDI_ENABLED
 
 #include "win_midi.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
 
 void MIDIDriverWinMidi::read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
 

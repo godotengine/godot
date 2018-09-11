@@ -33,7 +33,7 @@
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
-#include "os/rw_lock.h"
+#include "core/os/rw_lock.h"
 #include <pthread.h>
 
 class RWLockPosix : public RWLock {

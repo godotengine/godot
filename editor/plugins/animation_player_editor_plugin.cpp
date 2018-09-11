@@ -30,12 +30,12 @@
 
 #include "animation_player_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "editor/animation_track_editor.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
 
 // For onion skinning
 #include "editor/plugins/canvas_item_editor_plugin.h"

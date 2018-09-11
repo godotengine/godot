@@ -31,7 +31,7 @@
 #ifndef INPUT_DEFAULT_H
 #define INPUT_DEFAULT_H
 
-#include "os/input.h"
+#include "core/os/input.h"
 
 class InputDefault : public Input {
 

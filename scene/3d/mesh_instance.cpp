@@ -31,7 +31,7 @@
 #include "mesh_instance.h"
 
 #include "collision_shape.h"
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 #include "physics_body.h"
 #include "scene/resources/material.h"
 #include "scene/scene_string_names.h"

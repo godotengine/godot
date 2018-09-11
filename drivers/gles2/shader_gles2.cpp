@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "shader_gles2.h"
 
-#include "memory.h"
-#include "print_string.h"
-#include "string_builder.h"
-
+#include "core/os/memory.h"
+#include "core/print_string.h"
+#include "core/string_builder.h"
 #include "rasterizer_gles2.h"
 #include "rasterizer_storage_gles2.h"
 

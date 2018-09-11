@@ -30,7 +30,7 @@
 
 #include "light_occluder_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void OccluderPolygon2D::set_polygon(const PoolVector<Vector2> &p_polygon) {
 

@@ -31,10 +31,7 @@
 #ifndef SORT_H
 #define SORT_H
 
-#include "typedefs.h"
-/**
-	@author ,,, <red@lunatea>
-*/
+#include "core/typedefs.h"
 
 #define ERR_BAD_COMPARE(cond)                                         \
 	if (unlikely(cond)) {                                             \

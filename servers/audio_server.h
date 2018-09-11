@@ -31,11 +31,11 @@
 #ifndef AUDIO_SERVER_H
 #define AUDIO_SERVER_H
 
-#include "audio_frame.h"
-#include "object.h"
-#include "os/os.h"
+#include "core/math/audio_frame.h"
+#include "core/object.h"
+#include "core/os/os.h"
+#include "core/variant.h"
 #include "servers/audio/audio_effect.h"
-#include "variant.h"
 
 class AudioDriverDummy;
 class AudioStream;

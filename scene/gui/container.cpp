@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "container.h"
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {

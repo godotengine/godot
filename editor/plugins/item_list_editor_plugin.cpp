@@ -30,7 +30,7 @@
 
 #include "item_list_editor_plugin.h"
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 

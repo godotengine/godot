@@ -31,9 +31,9 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
-#include "object.h"
-#include "os/mutex.h"
-#include "os/thread_safe.h"
+#include "core/object.h"
+#include "core/os/mutex.h"
+#include "core/os/thread_safe.h"
 
 class MessageQueue {
 

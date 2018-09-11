@@ -31,10 +31,10 @@
 #include "tile_map_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "scene/gui/split_container.h"
 
 void TileMapEditor::_notification(int p_what) {

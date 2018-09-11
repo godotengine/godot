@@ -30,6 +30,8 @@
 
 #include "os_uwp.h"
 
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
@@ -41,10 +43,8 @@
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/stream_peer_tcp_winsock.h"
 #include "drivers/windows/tcp_server_winsock.h"
-#include "io/marshalls.h"
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
-#include "project_settings.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "thread_uwp.h"

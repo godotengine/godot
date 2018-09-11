@@ -15,8 +15,8 @@ def make_cs_files_header(src, dst, version_dst):
         header.write('#ifndef CS_COMPRESSED_H\n')
         header.write('#define CS_COMPRESSED_H\n\n')
         header.write('#ifdef TOOLS_ENABLED\n\n')
-        header.write('#include "map.h"\n')
-        header.write('#include "ustring.h"\n')
+        header.write('#include "core/map.h"\n')
+        header.write('#include "core/ustring.h"\n')
         inserted_files = ''
         import os
         latest_mtime = 0

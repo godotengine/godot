@@ -35,11 +35,11 @@
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/mono-gc.h>
 
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "os/thread.h"
-#include "project_settings.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/project_settings.h"
 
 #include "../csharp_script.h"
 #include "../glue/cs_glue_version.gen.h"

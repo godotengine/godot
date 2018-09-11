@@ -30,8 +30,8 @@
 
 #include "audio_driver_jandroid.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "thread_jandroid.h"
 
 #ifndef ANDROID_NATIVE_ACTIVITY

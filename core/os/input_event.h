@@ -31,11 +31,12 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
-#include "os/copymem.h"
-#include "resource.h"
-#include "transform_2d.h"
-#include "typedefs.h"
-#include "ustring.h"
+#include "core/math/transform_2d.h"
+#include "core/os/copymem.h"
+#include "core/resource.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

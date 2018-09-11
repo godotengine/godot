@@ -32,14 +32,13 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/reference.h"
+#include "core/script_language.h"
 #include "gdscript.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
-#include "print_string.h"
-#include "project_settings.h"
-#include "script_language.h"
 
 template <class T>
 T *GDScriptParser::alloc_node() {

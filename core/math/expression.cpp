@@ -30,13 +30,13 @@
 
 #include "expression.h"
 
-#include "class_db.h"
-#include "func_ref.h"
-#include "io/marshalls.h"
-#include "math_funcs.h"
-#include "os/os.h"
-#include "reference.h"
-#include "variant_parser.h"
+#include "core/class_db.h"
+#include "core/func_ref.h"
+#include "core/io/marshalls.h"
+#include "core/math/math_funcs.h"
+#include "core/os/os.h"
+#include "core/reference.h"
+#include "core/variant_parser.h"
 
 const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"sin",

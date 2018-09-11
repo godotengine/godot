@@ -30,12 +30,12 @@
 
 #include "register_types.h"
 
+#include "core/io/file_access_encrypted.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "editor/gdscript_highlighter.h"
 #include "gdscript.h"
 #include "gdscript_tokenizer.h"
-#include "io/file_access_encrypted.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
 
 GDScriptLanguage *script_language_gd = NULL;
 ResourceFormatLoaderGDScript *resource_loader_gd = NULL;

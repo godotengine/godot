@@ -30,8 +30,8 @@
 
 #include "spatial_editor_gizmos.h"
 
-#include "geometry.h"
-#include "quick_hull.h"
+#include "core/math/geometry.h"
+#include "core/math/quick_hull.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon.h"

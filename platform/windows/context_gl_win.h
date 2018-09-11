@@ -35,9 +35,9 @@
 #ifndef CONTEXT_GL_WIN_H
 #define CONTEXT_GL_WIN_H
 
+#include "core/error_list.h"
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "error_list.h"
-#include "os/os.h"
 
 #include <windows.h>
 

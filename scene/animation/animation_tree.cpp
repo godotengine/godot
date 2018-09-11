@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "animation_tree.h"
+
 #include "animation_blend_tree.h"
+#include "core/engine.h"
 #include "core/method_bind_ext.gen.inc"
-#include "engine.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 

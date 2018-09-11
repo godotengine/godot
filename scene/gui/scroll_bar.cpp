@@ -30,9 +30,9 @@
 
 #include "scroll_bar.h"
 
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 bool ScrollBar::focus_by_default = false;
 

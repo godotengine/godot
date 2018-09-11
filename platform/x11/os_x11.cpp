@@ -29,12 +29,12 @@
 /*************************************************************************/
 
 #include "os_x11.h"
+#include "core/os/dir_access.h"
+#include "core/print_string.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
-#include "os/dir_access.h"
-#include "print_string.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 

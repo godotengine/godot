@@ -31,7 +31,7 @@
 #ifndef PARTICLES_H
 #define PARTICLES_H
 
-#include "rid.h"
+#include "core/rid.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/material.h"
 

@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_STB_VORBIS_H
 #define AUDIO_STREAM_STB_VORBIS_H
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "servers/audio/audio_stream.h"
 
 #define STB_VORBIS_HEADER_ONLY

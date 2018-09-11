@@ -33,8 +33,8 @@
 
 #ifndef ANDROID_NATIVE_ACTIVITY
 
+#include "core/os/file_access.h"
 #include "java_glue.h"
-#include "os/file_access.h"
 class FileAccessJAndroid : public FileAccess {
 
 	static jobject io;

@@ -33,8 +33,8 @@
 #ifndef PACKET_PEER_UDP_WINSOCK_H
 #define PACKET_PEER_UDP_WINSOCK_H
 
-#include "io/packet_peer_udp.h"
-#include "ring_buffer.h"
+#include "core/io/packet_peer_udp.h"
+#include "core/ring_buffer.h"
 
 class PacketPeerUDPWinsock : public PacketPeerUDP {
 

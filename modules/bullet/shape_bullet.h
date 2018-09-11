@@ -31,8 +31,8 @@
 #ifndef SHAPE_BULLET_H
 #define SHAPE_BULLET_H
 
+#include "core/math/geometry.h"
 #include "core/variant.h"
-#include "geometry.h"
 #include "rid_bullet.h"
 #include "servers/physics_server.h"
 

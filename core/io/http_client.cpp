@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "http_client.h"
-#include "io/stream_peer_ssl.h"
-#include "version.h"
+
+#include "core/io/stream_peer_ssl.h"
+#include "core/version.h"
 
 const char *HTTPClient::_methods[METHOD_MAX] = {
 	"GET",

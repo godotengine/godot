@@ -31,9 +31,9 @@
 #ifndef GRID_THEME_H
 #define GRID_THEME_H
 
-#include "map.h"
+#include "core/map.h"
+#include "core/resource.h"
 #include "mesh.h"
-#include "resource.h"
 #include "scene/3d/navigation_mesh.h"
 #include "shape.h"
 

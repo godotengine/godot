@@ -30,8 +30,8 @@
 
 #include "particles_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "io/resource_loader.h"
 #include "scene/3d/cpu_particles.h"
 #include "scene/resources/particles_material.h"
 

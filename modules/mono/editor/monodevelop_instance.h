@@ -31,7 +31,7 @@
 #ifndef MONODEVELOP_INSTANCE_H
 #define MONODEVELOP_INSTANCE_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 #include "../mono_gc_handle.h"
 #include "../mono_gd/gd_mono_method.h"

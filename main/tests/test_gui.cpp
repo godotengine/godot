@@ -32,9 +32,9 @@
 
 #include "test_gui.h"
 
-#include "io/image_loader.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/io/image_loader.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "scene/2d/sprite.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"

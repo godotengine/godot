@@ -31,8 +31,8 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "map.h"
-#include "resource.h"
+#include "core/map.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

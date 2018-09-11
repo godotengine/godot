@@ -29,14 +29,14 @@
 /*************************************************************************/
 
 #include "grid_map_editor_plugin.h"
+#include "core/os/input.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "os/input.h"
 #include "scene/3d/camera.h"
 
-#include "geometry.h"
-#include "os/keyboard.h"
+#include "core/math/geometry.h"
+#include "core/os/keyboard.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
 

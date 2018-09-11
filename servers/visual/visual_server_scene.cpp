@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "visual_server_scene.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
 /* CAMERA API */

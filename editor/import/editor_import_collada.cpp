@@ -30,9 +30,9 @@
 
 #include "editor_import_collada.h"
 
+#include "core/os/os.h"
 #include "editor/collada/collada.h"
 #include "editor/editor_node.h"
-#include "os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"

@@ -31,7 +31,7 @@
 #ifndef EDITOR_RUN_H
 #define EDITOR_RUN_H
 
-#include "os/os.h"
+#include "core/os/os.h"
 #include "scene/main/node.h"
 class EditorRun {
 public:

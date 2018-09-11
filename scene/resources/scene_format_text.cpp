@@ -30,15 +30,15 @@
 
 #include "scene_format_text.h"
 #include "core/io/resource_format_binary.h"
-#include "os/dir_access.h"
-#include "project_settings.h"
-#include "version.h"
+#include "core/os/dir_access.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 
 //version 2: changed names for basis, aabb, poolvectors, etc.
 #define FORMAT_VERSION 2
 
-#include "os/dir_access.h"
-#include "version.h"
+#include "core/os/dir_access.h"
+#include "core/version.h"
 
 #define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
 

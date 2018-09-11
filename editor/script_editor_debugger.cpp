@@ -30,11 +30,12 @@
 
 #include "script_editor_debugger.h"
 
+#include "core/project_settings.h"
+#include "core/ustring.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
 #include "main/performance.h"
-#include "project_settings.h"
 #include "property_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
@@ -47,7 +48,6 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/packed_scene.h"
-#include "ustring.h"
 
 class ScriptEditorDebuggerVariables : public Object {
 

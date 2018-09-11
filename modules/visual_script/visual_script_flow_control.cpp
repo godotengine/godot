@@ -30,9 +30,9 @@
 
 #include "visual_script_flow_control.h"
 
-#include "io/resource_loader.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 
 //////////////////////////////////////////
 ////////////////RETURN////////////////////

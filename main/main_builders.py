@@ -69,8 +69,8 @@ def make_default_controller_mappings(target, source, env):
     g = open(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#include \"default_controller_mappings.h\"\n")
-    g.write("#include \"typedefs.h\"\n")
+    g.write("#include \"core/typedefs.h\"\n")
+    g.write("#include \"main/default_controller_mappings.h\"\n")
 
     # ensure mappings have a consistent order
     platform_mappings = OrderedDict()

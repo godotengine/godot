@@ -32,8 +32,8 @@
 
 #ifdef ALSA_ENABLED
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include <errno.h>
 

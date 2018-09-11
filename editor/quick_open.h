@@ -31,8 +31,8 @@
 #ifndef EDITOR_QUICK_OPEN_H
 #define EDITOR_QUICK_OPEN_H
 
+#include "core/pair.h"
 #include "editor_file_system.h"
-#include "pair.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 class EditorQuickOpen : public ConfirmationDialog {

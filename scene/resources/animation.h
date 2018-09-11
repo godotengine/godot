@@ -31,7 +31,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "resource.h"
+#include "core/resource.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

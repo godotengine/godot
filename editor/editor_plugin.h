@@ -31,15 +31,15 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
+#include "core/io/config_file.h"
+#include "core/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
-#include "io/config_file.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "undo_redo.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

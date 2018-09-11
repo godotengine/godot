@@ -30,13 +30,13 @@
 
 #include "editor_resource_preview.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/message_queue.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "message_queue.h"
-#include "os/file_access.h"
-#include "project_settings.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 

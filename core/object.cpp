@@ -30,14 +30,14 @@
 
 #include "object.h"
 
-#include "class_db.h"
-#include "core_string_names.h"
-#include "message_queue.h"
-#include "os/os.h"
-#include "print_string.h"
-#include "resource.h"
-#include "script_language.h"
-#include "translation.h"
+#include "core/class_db.h"
+#include "core/core_string_names.h"
+#include "core/message_queue.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/resource.h"
+#include "core/script_language.h"
+#include "core/translation.h"
 
 #ifdef DEBUG_ENABLED
 

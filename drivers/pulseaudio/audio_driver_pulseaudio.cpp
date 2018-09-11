@@ -32,10 +32,8 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
-#include <pulse/pulseaudio.h>
-
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;

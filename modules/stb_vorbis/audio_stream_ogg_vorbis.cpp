@@ -30,7 +30,7 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"

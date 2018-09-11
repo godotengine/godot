@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "gradient_edit.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
-#include "os/keyboard.h"
 
 #define SPACING (3 * EDSCALE)
 

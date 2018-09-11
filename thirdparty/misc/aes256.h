@@ -21,7 +21,7 @@
 #ifndef AES_256_H
 #define AES_256_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 #ifdef __cplusplus
 extern "C" {

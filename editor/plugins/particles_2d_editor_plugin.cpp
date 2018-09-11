@@ -31,7 +31,7 @@
 #include "particles_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/particles_material.h"
 

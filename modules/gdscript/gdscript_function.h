@@ -31,13 +31,13 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
-#include "os/thread.h"
-#include "pair.h"
-#include "reference.h"
-#include "script_language.h"
-#include "self_list.h"
-#include "string_db.h"
-#include "variant.h"
+#include "core/os/thread.h"
+#include "core/pair.h"
+#include "core/reference.h"
+#include "core/script_language.h"
+#include "core/self_list.h"
+#include "core/string_db.h"
+#include "core/variant.h"
 
 class GDScriptInstance;
 class GDScript;

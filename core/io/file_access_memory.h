@@ -31,7 +31,7 @@
 #ifndef FILE_ACCESS_MEMORY_H
 #define FILE_ACCESS_MEMORY_H
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 class FileAccessMemory : public FileAccess {
 

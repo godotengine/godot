@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "audio_stream_sample.h"
-#include "io/marshalls.h"
-#include "os/file_access.h"
+#include "core/io/marshalls.h"
+#include "core/os/file_access.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 

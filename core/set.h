@@ -31,8 +31,8 @@
 #ifndef SET_H
 #define SET_H
 
-#include "os/memory.h"
-#include "typedefs.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

@@ -30,8 +30,8 @@
 
 #include "resource_import.h"
 
-#include "os/os.h"
-#include "variant_parser.h"
+#include "core/os/os.h"
+#include "core/variant_parser.h"
 
 Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid) const {
 

@@ -30,13 +30,13 @@
 
 #include "script_create_dialog.h"
 
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor_file_system.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "project_settings.h"
-#include "script_language.h"
 
 void ScriptCreateDialog::_notification(int p_what) {
 

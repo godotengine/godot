@@ -37,8 +37,8 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 
+#include "core/undo_redo.h"
 #include "editor/scene_tree_editor.h"
-#include "undo_redo.h"
 
 /**
 @author Blazej Floch

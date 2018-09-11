@@ -30,12 +30,12 @@
 
 #include "create_dialog.h"
 
-#include "class_db.h"
+#include "core/class_db.h"
+#include "core/os/keyboard.h"
+#include "core/print_string.h"
 #include "editor_help.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "os/keyboard.h"
-#include "print_string.h"
 #include "scene/gui/box_container.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {

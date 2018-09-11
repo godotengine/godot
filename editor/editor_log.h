@@ -36,7 +36,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
 //#include "scene/gui/empty_control.h"
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include "pane_drag.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"

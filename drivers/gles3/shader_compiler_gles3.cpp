@@ -30,7 +30,7 @@
 
 #include "shader_compiler_gles3.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 #define SL ShaderLanguage
 

@@ -31,10 +31,10 @@
 #ifndef GDSCRIPT_H
 #define GDSCRIPT_H
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/script_language.h"
 #include "gdscript_function.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "script_language.h"
 
 class GDScriptNativeClass : public Reference {
 

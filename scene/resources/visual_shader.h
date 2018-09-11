@@ -31,8 +31,8 @@
 #ifndef VISUAL_SHADER_H
 #define VISUAL_SHADER_H
 
+#include "core/string_builder.h"
 #include "scene/resources/shader.h"
-#include "string_builder.h"
 
 class VisualShaderNodeUniform;
 class VisualShaderNode;

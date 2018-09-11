@@ -31,16 +31,16 @@
 #include "gdscript.h"
 
 #include "core/engine.h"
+#include "core/global_constants.h"
+#include "core/os/file_access.h"
 #include "editor/editor_settings.h"
 #include "gdscript_compiler.h"
-#include "global_constants.h"
-#include "os/file_access.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/engine.h"
 #include "core/reference.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
-#include "engine.h"
 #endif
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {

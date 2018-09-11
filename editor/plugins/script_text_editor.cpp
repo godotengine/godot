@@ -30,10 +30,10 @@
 
 #include "script_text_editor.h"
 
+#include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/script_editor_debugger.h"
-#include "os/keyboard.h"
 
 Vector<String> ScriptTextEditor::get_functions() {
 

@@ -31,8 +31,8 @@
 #ifndef SIGNAL_AWAITER_UTILS_H
 #define SIGNAL_AWAITER_UTILS_H
 
+#include "core/reference.h"
 #include "mono_gc_handle.h"
-#include "reference.h"
 
 namespace SignalAwaiterUtils {
 

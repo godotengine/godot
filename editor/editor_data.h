@@ -31,12 +31,12 @@
 #ifndef EDITOR_DATA_H
 #define EDITOR_DATA_H
 
+#include "core/list.h"
+#include "core/pair.h"
+#include "core/undo_redo.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
-#include "list.h"
-#include "pair.h"
 #include "scene/resources/texture.h"
-#include "undo_redo.h"
 
 class EditorHistory {
 

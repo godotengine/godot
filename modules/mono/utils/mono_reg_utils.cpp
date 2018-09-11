@@ -32,7 +32,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 // Here, after os/os.h
 #include <windows.h>

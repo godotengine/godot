@@ -31,11 +31,11 @@
 #ifndef AUDIOEFFECTRECORD_H
 #define AUDIOEFFECTRECORD_H
 
+#include "core/io/marshalls.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "core/os/thread.h"
 #include "editor/import/resource_importer_wav.h"
-#include "io/marshalls.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"

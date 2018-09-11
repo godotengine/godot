@@ -30,7 +30,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/helper/math_fieldwise.h"
+#include "math_fieldwise.h"
 
 #define SETUP_TYPE(m_type)    \
 	m_type source = p_source; \

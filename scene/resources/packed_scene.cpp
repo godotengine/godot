@@ -31,9 +31,9 @@
 #include "packed_scene.h"
 
 #include "core/core_string_names.h"
-#include "engine.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
+#include "core/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"

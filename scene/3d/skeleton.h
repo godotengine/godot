@@ -31,7 +31,7 @@
 #ifndef SKELETON_H
 #define SKELETON_H
 
-#include "rid.h"
+#include "core/rid.h"
 #include "scene/3d/spatial.h"
 
 /**

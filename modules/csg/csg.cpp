@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "csg.h"
-#include "face3.h"
-#include "geometry.h"
-#include "os/os.h"
-#include "sort.h"
+#include "core/math/face3.h"
+#include "core/math/geometry.h"
+#include "core/os/os.h"
+#include "core/sort.h"
 #include "thirdparty/misc/triangulator.h"
 
 void CSGBrush::clear() {

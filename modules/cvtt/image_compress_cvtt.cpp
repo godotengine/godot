@@ -30,9 +30,9 @@
 
 #include "image_compress_cvtt.h"
 
-#include "os/os.h"
-#include "os/thread.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/print_string.h"
 
 #include <ConvectionKernels.h>
 

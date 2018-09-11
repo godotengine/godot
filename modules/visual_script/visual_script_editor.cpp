@@ -30,13 +30,13 @@
 
 #include "visual_script_editor.h"
 
+#include "core/object.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "core/script_language.h"
+#include "core/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
-#include "object.h"
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "variant.h"
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"

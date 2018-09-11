@@ -32,9 +32,9 @@
 #define PYTHONSCRIPT_PY_LOADER_H
 
 // Godot imports
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/script_language.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
 
 class PluginScriptLanguage;
 

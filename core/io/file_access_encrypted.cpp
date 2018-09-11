@@ -30,9 +30,9 @@
 
 #include "file_access_encrypted.h"
 
+#include "core/os/copymem.h"
+#include "core/print_string.h"
 #include "core/variant.h"
-#include "os/copymem.h"
-#include "print_string.h"
 
 #include "thirdparty/misc/aes256.h"
 #include "thirdparty/misc/md5.h"

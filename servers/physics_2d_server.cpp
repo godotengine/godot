@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "physics_2d_server.h"
+
 #include "core/method_bind_ext.gen.inc"
+#include "core/print_string.h"
 #include "core/project_settings.h"
-#include "print_string.h"
 
 Physics2DServer *Physics2DServer::singleton = NULL;
 

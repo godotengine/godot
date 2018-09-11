@@ -18,7 +18,7 @@ for x in env.global_defaults:
     gd_inc += '#include "platform/' + x + '/globals/global_defaults.h"\n'
     gd_call += "\tregister_" + x + "_global_defaults();\n"
 
-gd_cpp = '#include "project_settings.h"\n'
+gd_cpp = '#include "core/project_settings.h"\n'
 gd_cpp += gd_inc
 gd_cpp += "void ProjectSettings::register_global_defaults() {\n" + gd_call + "\n}\n"
 
@@ -52,7 +52,7 @@ if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
 
 # NOTE: It is safe to generate this file here, since this is still executed serially
 with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write("#include \"project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
+    f.write("#include \"core/project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
 
 
 # Add required thirdparty code. Header paths are hardcoded, we don't need to append

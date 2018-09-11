@@ -31,7 +31,7 @@
 #ifndef SCENE_RESOURCES_COLOR_RAMP_H_
 #define SCENE_RESOURCES_COLOR_RAMP_H_
 
-#include "resource.h"
+#include "core/resource.h"
 
 class Gradient : public Resource {
 	GDCLASS(Gradient, Resource);

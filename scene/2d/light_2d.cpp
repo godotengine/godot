@@ -30,7 +30,7 @@
 
 #include "light_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "servers/visual_server.h"
 
 Dictionary Light2D::_edit_get_state() const {

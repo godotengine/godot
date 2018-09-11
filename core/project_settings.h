@@ -31,9 +31,10 @@
 #ifndef GLOBAL_CONFIG_H
 #define GLOBAL_CONFIG_H
 
-#include "object.h"
-#include "os/thread_safe.h"
-#include "set.h"
+#include "core/object.h"
+#include "core/os/thread_safe.h"
+#include "core/set.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

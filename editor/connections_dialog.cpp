@@ -30,10 +30,10 @@
 
 #include "connections_dialog.h"
 
+#include "core/print_string.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "plugins/script_editor_plugin.h"
-#include "print_string.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
 

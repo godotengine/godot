@@ -30,9 +30,9 @@
 
 #include "test_gdscript.h"
 
-#include "os/file_access.h"
-#include "os/main_loop.h"
-#include "os/os.h"
+#include "core/os/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
 
 #ifdef GDSCRIPT_ENABLED
 

@@ -34,7 +34,7 @@
 #define FILE_ACCESS_ZIP_H
 
 #include "core/io/file_access_pack.h"
-#include "map.h"
+#include "core/map.h"
 
 #include "thirdparty/minizip/unzip.h"
 

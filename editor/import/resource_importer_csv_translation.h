@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTERCSVTRANSLATION_H
 #define RESOURCEIMPORTERCSVTRANSLATION_H
 
-#include "io/resource_import.h"
+#include "core/io/resource_import.h"
 
 class ResourceImporterCSVTranslation : public ResourceImporter {
 	GDCLASS(ResourceImporterCSVTranslation, ResourceImporter)

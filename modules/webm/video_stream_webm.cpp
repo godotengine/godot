@@ -35,9 +35,9 @@
 
 #include "mkvparser/mkvparser.h"
 
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 

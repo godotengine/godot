@@ -30,7 +30,7 @@
 
 #include "animation.h"
 
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 #define ANIM_MIN_LENGTH 0.001
 

@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_FUNCTIONS_H
 #define GDSCRIPT_FUNCTIONS_H
 
-#include "variant.h"
+#include "core/variant.h"
 
 class GDScriptFunctions {
 public:

@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "button.h"
+#include "core/translation.h"
 #include "servers/visual_server.h"
-#include "translation.h"
 
 Size2 Button::get_minimum_size() const {
 

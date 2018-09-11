@@ -30,9 +30,9 @@
 
 #include "gdscript_function.h"
 
+#include "core/os/os.h"
 #include "gdscript.h"
 #include "gdscript_functions.h"
-#include "os/os.h"
 
 Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const {
 

@@ -30,15 +30,15 @@
 
 #include "image.h"
 
+#include "core/hash_map.h"
 #include "core/io/image_loader.h"
+#include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/os/copymem.h"
-#include "hash_map.h"
-#include "math_funcs.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
-#include "io/resource_loader.h"
-#include "math_funcs.h"
 #include "thirdparty/misc/hq2x.h"
+
 #include <stdio.h>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {

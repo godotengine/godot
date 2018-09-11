@@ -30,9 +30,9 @@
 
 #include "dependency_editor.h"
 
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "editor_node.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_notification(int p_what) {

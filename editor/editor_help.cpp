@@ -30,11 +30,11 @@
 
 #include "editor_help.h"
 
+#include "core/os/keyboard.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "os/keyboard.h"
 
 #define CONTRIBUTE_URL "http://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
 #define CONTRIBUTE2_URL "https://github.com/godotengine/godot-docs"

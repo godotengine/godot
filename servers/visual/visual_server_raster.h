@@ -31,8 +31,8 @@
 #ifndef VISUAL_SERVER_RASTER_H
 #define VISUAL_SERVER_RASTER_H
 
-#include "allocators.h"
-#include "octree.h"
+#include "core/allocators.h"
+#include "core/math/octree.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 #include "visual_server_canvas.h"

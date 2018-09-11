@@ -31,10 +31,10 @@
 #include "image_etc.h"
 #include "Etc.h"
 #include "EtcFilter.h"
-#include "image.h"
-#include "os/copymem.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/image.h"
+#include "core/os/copymem.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 	switch (format) {

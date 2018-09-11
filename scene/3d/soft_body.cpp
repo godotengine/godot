@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "soft_body.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "scene/3d/collision_object.h"
 #include "scene/3d/skeleton.h"
 #include "servers/physics_server.h"

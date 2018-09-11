@@ -38,8 +38,8 @@
 #include "../utils/thread_local.h"
 #include "gd_mono_header.h"
 
-#include "object.h"
-#include "reference.h"
+#include "core/object.h"
+#include "core/reference.h"
 
 #define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
 	if (unlikely(m_exc != NULL)) {                     \

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "error_macros.h"
+#include "core/error_macros.h"
 #include "thirdparty/thekla_atlas/thekla/thekla_atlas.h"
 
 #include <stdio.h>

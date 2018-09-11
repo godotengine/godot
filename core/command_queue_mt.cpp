@@ -30,7 +30,7 @@
 
 #include "command_queue_mt.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 void CommandQueueMT::lock() {
 

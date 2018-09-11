@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "editor_spin_slider.h"
+#include "core/math/expression.h"
+#include "core/os/input.h"
 #include "editor_scale.h"
-#include "math/expression.h"
-#include "os/input.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return rtos(get_value());

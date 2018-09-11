@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "baked_lightmap.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/os.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
 #include "voxel_light_baker.h"
 
 void BakedLightmapData::set_bounds(const AABB &p_bounds) {

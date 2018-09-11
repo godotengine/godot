@@ -30,8 +30,8 @@
 
 #include "input_map.h"
 
-#include "os/keyboard.h"
-#include "project_settings.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 
 InputMap *InputMap::singleton = NULL;
 

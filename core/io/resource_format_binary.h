@@ -31,9 +31,9 @@
 #ifndef RESOURCE_FORMAT_BINARY_H
 #define RESOURCE_FORMAT_BINARY_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 

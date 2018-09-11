@@ -30,7 +30,7 @@
 
 #include "path.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/scene_string_names.h"
 
 void Path::_notification(int p_what) {

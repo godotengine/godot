@@ -31,8 +31,8 @@
 #include "bullet_physics_server.h"
 
 #include "bullet_utilities.h"
-#include "class_db.h"
 #include "cone_twist_joint_bullet.h"
+#include "core/class_db.h"
 #include "core/error_macros.h"
 #include "core/ustring.h"
 #include "generic_6dof_joint_bullet.h"

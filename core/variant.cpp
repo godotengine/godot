@@ -30,14 +30,14 @@
 
 #include "variant.h"
 
-#include "core_string_names.h"
-#include "io/marshalls.h"
-#include "math_funcs.h"
-#include "print_string.h"
-#include "resource.h"
+#include "core/core_string_names.h"
+#include "core/io/marshalls.h"
+#include "core/math/math_funcs.h"
+#include "core/print_string.h"
+#include "core/resource.h"
+#include "core/variant_parser.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
-#include "variant_parser.h"
 
 String Variant::get_type_name(Variant::Type p_type) {
 

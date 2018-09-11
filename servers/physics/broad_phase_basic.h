@@ -32,7 +32,7 @@
 #define BROAD_PHASE_BASIC_H
 
 #include "broad_phase_sw.h"
-#include "map.h"
+#include "core/map.h"
 
 class BroadPhaseBasic : public BroadPhaseSW {
 

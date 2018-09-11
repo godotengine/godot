@@ -30,7 +30,7 @@
 
 #include "collision_solver_2d_sat.h"
 
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 struct _CollectorCallback2D {
 

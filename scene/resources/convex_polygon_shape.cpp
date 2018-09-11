@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "convex_polygon_shape.h"
-#include "quick_hull.h"
+#include "core/math/quick_hull.h"
 #include "servers/physics_server.h"
 
 Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {

@@ -33,12 +33,12 @@
 
 #include "servers/visual/rasterizer.h"
 
-#include "allocators.h"
-#include "geometry.h"
-#include "octree.h"
-#include "os/semaphore.h"
-#include "os/thread.h"
-#include "self_list.h"
+#include "core/allocators.h"
+#include "core/math/geometry.h"
+#include "core/math/octree.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
+#include "core/self_list.h"
 #include "servers/arvr/arvr_interface.h"
 
 class VisualServerScene {

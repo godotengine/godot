@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/ustring.h"
 #include "main/main.h"
 #include "os_iphone.h"
-#include "ustring.h"
 
 #include <stdio.h>
 #include <string.h>

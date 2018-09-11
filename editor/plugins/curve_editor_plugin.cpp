@@ -31,9 +31,9 @@
 #include "curve_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core_string_names.h"
-#include "os/input.h"
-#include "os/keyboard.h"
+#include "core/core_string_names.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 
 CurveEditor::CurveEditor() {
 	_selected_point = -1;

@@ -29,10 +29,12 @@
 /*************************************************************************/
 
 #include "rasterizer_canvas_gles3.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "rasterizer_scene_gles3.h"
 #include "servers/visual/visual_server_raster.h"
+
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif

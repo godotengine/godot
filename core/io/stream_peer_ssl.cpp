@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "stream_peer_ssl.h"
-#include "os/file_access.h"
-#include "project_settings.h"
+
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 
 StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
 
