@@ -557,6 +557,21 @@ void PopupMenu::_notification(int p_what) {
 				mouse_over = -1;
 				update();
 			}
+
+			for (int i = 0; i < items.size(); i++) {
+				if (items[i].submenu == "")
+					continue;
+
+				Node *n = get_node(items[i].submenu);
+				if (!n)
+					continue;
+
+				PopupMenu *pm = Object::cast_to<PopupMenu>(n);
+				if (!pm || !pm->is_visible())
+					continue;
+
+				pm->hide();
+			}
 		} break;
 	}
 }
@@ -1012,8 +1027,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 			code |= KEY_MASK_SHIFT;
 	}
 
-	int il = items.size();
-	for (int i = 0; i < il; i++) {
+	for (int i = 0; i < items.size(); i++) {
 		if (is_item_disabled(i) || items[i].shortcut_is_disabled)
 			continue;
 
