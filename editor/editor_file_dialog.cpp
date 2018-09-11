@@ -198,8 +198,18 @@ void EditorFileDialog::update_dir() {
 
 	dir->set_text(dir_access->get_current_dir());
 
-	// Disable "Open" button only when we in selecting file(s) mode or open dir mode.
+	// Disable "Open" button only when selecting file(s) mode.
 	get_ok()->set_disabled(_is_open_should_be_disabled());
+	switch (mode) {
+
+		case MODE_OPEN_FILE:
+		case MODE_OPEN_FILES:
+			get_ok()->set_text(TTR("Open"));
+			break;
+		case MODE_OPEN_DIR:
+			get_ok()->set_text(TTR("Select Current Folder"));
+			break;
+	}
 }
 
 void EditorFileDialog::_dir_entered(String p_dir) {
@@ -453,6 +463,8 @@ void EditorFileDialog::_item_selected(int p_item) {
 
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+	} else if (mode == MODE_OPEN_DIR) {
+		get_ok()->set_text(TTR("Select This Folder"));
 	}
 
 	get_ok()->set_disabled(_is_open_should_be_disabled());
@@ -637,7 +649,7 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 
 	Vector<int> items = item_list->get_selected_items();
 	if (items.size() == 0)
-		return true;
+		return mode != MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
 
 	for (int i = 0; i < items.size(); i++) {
 
