@@ -312,7 +312,7 @@ def rstize_text(text, cclass):
 def make_type(t):
     global class_names
     if t in class_names:
-        return ':ref:`' + t + '<class_' + t.lower() + '>`'
+        return ':ref:`' + t + '<class_' + t + '>`'
     return t
 
 
@@ -332,7 +332,7 @@ def make_enum(t):
         c = "@GlobalScope"
         e = t
     if c in class_names:
-        return ':ref:`' + e + '<enum_' + c.lower() + '_' + e.lower() + '>`'
+        return ':ref:`' + e + '<enum_' + c + '_' + e + '>`'
     return t
 
 
