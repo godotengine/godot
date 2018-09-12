@@ -52,7 +52,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of the currently opened scenes.
+				Returns an [Array] containing the root nodes of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_resource_filesystem">

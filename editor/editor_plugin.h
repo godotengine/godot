@@ -170,7 +170,7 @@ public:
 
 	void notify_main_screen_changed(const String &screen_name);
 	void notify_scene_changed(const Node *scn_root);
-	void notify_scene_closed(const String &scene_filepath);
+	void notify_scene_closed(const Node *scn_root);
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);

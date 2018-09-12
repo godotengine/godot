@@ -454,14 +454,14 @@
 			<argument index="0" name="scene_root" type="Node">
 			</argument>
 			<description>
-				Emitted when user change scene. The argument is a root node of freshly opened scene.
+				Emitted when the user changes editor scenes. Either from a tab selection or opening a new scene. The argument will contain the root node of the scene that has become active. (Changing to empty scenes will not emit this signal.)
 			</description>
 		</signal>
 		<signal name="scene_closed">
-			<argument index="0" name="filepath" type="String">
+			<argument index="0" name="scene_root" type="Node">
 			</argument>
 			<description>
-				Emitted when user close scene. The argument is file path to a closed scene.
+				Emitted when the user closes a scene. The argument is the root node of the scene being closed, right before it gets deleted.
 			</description>
 		</signal>
 	</signals>

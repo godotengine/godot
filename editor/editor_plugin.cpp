@@ -188,7 +188,7 @@ Array EditorInterface::get_open_scenes() const {
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
 		if (scenes[idx_scn].root == NULL)
 			continue;
-		ret.push_back(scenes[idx_scn].root->get_filename());
+		ret.push_back(scenes[idx_scn].root);
 	}
 	return ret;
 }
@@ -487,8 +487,8 @@ void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
 	last_main_screen_name = screen_name;
 }
 
-void EditorPlugin::notify_scene_closed(const String &scene_filepath) {
-	emit_signal("scene_closed", scene_filepath);
+void EditorPlugin::notify_scene_closed(const Node *scn_root) {
+	emit_signal("scene_closed", scn_root);
 }
 
 void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {

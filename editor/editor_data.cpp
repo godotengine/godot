@@ -565,7 +565,7 @@ void EditorData::remove_scene(int p_idx) {
 	if (edited_scene[p_idx].root) {
 
 		for (int i = 0; i < editor_plugins.size(); i++) {
-			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root->get_filename());
+			editor_plugins[i]->notify_scene_closed(edited_scene[p_idx].root);
 		}
 
 		memdelete(edited_scene[p_idx].root);
