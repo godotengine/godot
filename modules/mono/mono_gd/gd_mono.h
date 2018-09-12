@@ -170,8 +170,7 @@ public:
 	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);
 	GDMonoAssembly **get_loaded_assembly(const String &p_name);
 
-	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized; }
-	_FORCE_INLINE_ bool is_finalizing_scripts_domain() const { return finalizing_scripts_domain; }
+	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */; }
 
 	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
 #ifdef TOOLS_ENABLED
@@ -236,11 +235,10 @@ class _GodotSharp : public Object {
 
 	friend class GDMono;
 
-	void _dispose_object(Object *p_object);
-
 	void _dispose_callback();
 
-	List<Object *> obj_delete_queue;
+	bool _is_domain_finalizing_for_unload(int32_t p_domain_id);
+
 	List<NodePath *> np_delete_queue;
 	List<RID *> rid_delete_queue;
 
@@ -260,10 +258,18 @@ public:
 	void attach_thread();
 	void detach_thread();
 
-	bool is_finalizing_domain();
-	bool is_domain_loaded();
+	int32_t get_domain_id();
+	int32_t get_scripts_domain_id();
 
-	void queue_dispose(MonoObject *p_mono_object, Object *p_object);
+	bool is_scripts_domain_loaded();
+
+	bool is_domain_finalizing_for_unload();
+	bool is_domain_finalizing_for_unload(int32_t p_domain_id);
+	bool is_domain_finalizing_for_unload(MonoDomain *p_domain);
+
+	bool is_runtime_shutting_down();
+	bool is_runtime_initialized();
+
 	void queue_dispose(NodePath *p_node_path);
 	void queue_dispose(RID *p_rid);
 

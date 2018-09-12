@@ -59,11 +59,6 @@ namespace Godot.Collections
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
             if (disposed)
                 return;
 

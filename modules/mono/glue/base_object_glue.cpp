@@ -35,21 +35,78 @@
 #include "core/reference.h"
 #include "core/string_db.h"
 
+#include "../csharp_script.h"
 #include "../mono_gd/gd_mono_internals.h"
 #include "../mono_gd/gd_mono_utils.h"
 #include "../signal_awaiter_utils.h"
 
-Object *godot_icall_Object_Ctor(MonoObject *obj) {
+Object *godot_icall_Object_Ctor(MonoObject *p_obj) {
 	Object *instance = memnew(Object);
-	GDMonoInternals::tie_managed_to_unmanaged(obj, instance);
+	GDMonoInternals::tie_managed_to_unmanaged(p_obj, instance);
 	return instance;
 }
 
-void godot_icall_Object_Dtor(MonoObject *obj, Object *ptr) {
+void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 #ifdef DEBUG_ENABLED
-	CRASH_COND(ptr == NULL);
+	CRASH_COND(p_ptr == NULL);
 #endif
-	_GodotSharp::get_singleton()->queue_dispose(obj, ptr);
+
+	if (p_ptr->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
+		if (cs_instance) {
+			cs_instance->mono_object_disposed(p_obj);
+			p_ptr->set_script_instance(NULL);
+			return;
+		}
+	}
+
+	void *data = p_ptr->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
+
+	if (data) {
+		Ref<MonoGCHandle> &gchandle = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get().gchandle;
+		if (gchandle.is_valid()) {
+			CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+		}
+	}
+}
+
+void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_finalizer) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(p_ptr == NULL);
+	// This is only called with Reference derived classes
+	CRASH_COND(!Object::cast_to<Reference>(p_ptr));
+#endif
+
+	Reference *ref = static_cast<Reference *>(p_ptr);
+
+	if (ref->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(ref->get_script_instance());
+		if (cs_instance) {
+			bool r_owner_deleted;
+			cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, r_owner_deleted);
+			if (!r_owner_deleted && !p_is_finalizer) {
+				// If the native instance is still alive and Dispose() was called
+				// (instead of the finalizer), then we remove the script instance.
+				ref->set_script_instance(NULL);
+			}
+			return;
+		}
+	}
+
+	// Unsafe refcount decrement. The managed instance also counts as a reference.
+	// See: CSharpLanguage::alloc_instance_binding_data(Object *p_object)
+	if (ref->unreference()) {
+		memdelete(ref);
+	} else {
+		void *data = ref->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
+
+		if (data) {
+			Ref<MonoGCHandle> &gchandle = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get().gchandle;
+			if (gchandle.is_valid()) {
+				CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+			}
+		}
+	}
 }
 
 MethodBind *godot_icall_Object_ClassDB_get_method(MonoString *p_type, MonoString *p_method) {
@@ -87,7 +144,8 @@ Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, 
 
 void godot_register_object_icalls() {
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Ctor", (void *)godot_icall_Object_Ctor);
-	mono_add_internal_call("Godot.Object::godot_icall_Object_Dtor", (void *)godot_icall_Object_Dtor);
+	mono_add_internal_call("Godot.Object::godot_icall_Object_Disposed", (void *)godot_icall_Object_Disposed);
+	mono_add_internal_call("Godot.Object::godot_icall_Reference_Disposed", (void *)godot_icall_Reference_Disposed);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_ClassDB_get_method", (void *)godot_icall_Object_ClassDB_get_method);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_weakref", (void *)godot_icall_Object_weakref);
 	mono_add_internal_call("Godot.SignalAwaiter::godot_icall_SignalAwaiter_connect", (void *)godot_icall_SignalAwaiter_connect);

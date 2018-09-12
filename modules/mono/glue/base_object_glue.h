@@ -38,9 +38,11 @@
 
 #include "../mono_gd/gd_mono_marshal.h"
 
-Object *godot_icall_Object_Ctor(MonoObject *obj);
+Object *godot_icall_Object_Ctor(MonoObject *p_obj);
 
-void godot_icall_Object_Dtor(MonoObject *obj, Object *ptr);
+void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr);
+
+void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_finalizer);
 
 MethodBind *godot_icall_Object_ClassDB_get_method(MonoString *p_type, MonoString *p_method);
 
