@@ -54,6 +54,7 @@ private:
 	Ref<Texture> icon;
 	bool clip_text;
 	TextAlign align;
+	bool align_icon;
 	float _internal_margin[4];
 
 protected:
@@ -77,6 +78,9 @@ public:
 
 	void set_clip_text(bool p_clip_text);
 	bool get_clip_text() const;
+
+	void set_align_icon(bool p_align_icon);
+	bool is_align_icon() const;
 
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;

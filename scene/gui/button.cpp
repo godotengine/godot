@@ -166,10 +166,13 @@ void Button::_notification(int p_what) {
 		if (!_icon.is_null()) {
 
 			int valign = size.height - style->get_minimum_size().y;
+			int halign = size.width - style->get_minimum_size().x;
 			if (is_disabled())
 				color_icon.a = 0.4;
 			if (_internal_margin[MARGIN_LEFT] > 0) {
 				_icon->draw(ci, style->get_offset() + Point2(_internal_margin[MARGIN_LEFT] + get_constant("hseparation"), Math::floor((valign - _icon->get_height()) / 2.0)), color_icon);
+			} else if (align_icon) {
+				_icon->draw(ci, Point2(text_ofs.floor().x - _icon->get_width() - style->get_offset().x, Math::floor((valign - _icon->get_height()) / 2.0) + style->get_offset().y), color_icon);
 			} else {
 				_icon->draw(ci, style->get_offset() + Point2(0, Math::floor((valign - _icon->get_height()) / 2.0)), color_icon);
 			}
@@ -242,6 +245,18 @@ Button::TextAlign Button::get_text_align() const {
 	return align;
 }
 
+void Button::set_align_icon(bool p_align_icon) {
+
+	align_icon = p_align_icon;
+	update();
+	_change_notify("align_icon");
+}
+
+bool Button::is_align_icon() const {
+
+	return align_icon;
+}
+
 void Button::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
@@ -251,6 +266,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &Button::set_flat);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enabled"), &Button::set_clip_text);
 	ClassDB::bind_method(D_METHOD("get_clip_text"), &Button::get_clip_text);
+	ClassDB::bind_method(D_METHOD("set_align_icon", "enabled"), &Button::set_align_icon);
+	ClassDB::bind_method(D_METHOD("is_align_icon"), &Button::is_align_icon);
 	ClassDB::bind_method(D_METHOD("set_text_align", "align"), &Button::set_text_align);
 	ClassDB::bind_method(D_METHOD("get_text_align"), &Button::get_text_align);
 	ClassDB::bind_method(D_METHOD("is_flat"), &Button::is_flat);
@@ -263,6 +280,7 @@ void Button::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_button_icon", "get_button_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "align_icon"), "set_align_icon", "is_align_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
 }
 
@@ -270,6 +288,7 @@ Button::Button(const String &p_text) {
 
 	flat = false;
 	clip_text = false;
+	align_icon = false;
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
 	align = ALIGN_CENTER;
