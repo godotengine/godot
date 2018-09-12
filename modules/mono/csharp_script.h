@@ -215,8 +215,8 @@ public:
 	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 
-	bool mono_object_disposed(MonoObject *p_obj);
-	bool mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted);
+	void mono_object_disposed(MonoObject *p_obj);
+	void mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted);
 
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();
