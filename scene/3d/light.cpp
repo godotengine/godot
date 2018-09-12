@@ -30,8 +30,8 @@
 
 #include "light.h"
 
-#include "engine.h"
-#include "project_settings.h"
+#include "core/engine.h"
+#include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"
 
 bool Light::_can_gizmo_scale() const {

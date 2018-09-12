@@ -30,11 +30,11 @@
 
 #include "pvrtc_compress.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "editor_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "scene/resources/texture.h"
 
 static void (*_base_image_compress_pvrtc2_func)(Image *) = NULL;

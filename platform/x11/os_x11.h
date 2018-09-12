@@ -32,9 +32,9 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
+#include "core/os/input.h"
 #include "crash_handler_x11.h"
 #include "drivers/unix/os_unix.h"
-#include "os/input.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"

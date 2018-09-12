@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "shader.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual_server.h"

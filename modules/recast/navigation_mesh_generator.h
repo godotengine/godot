@@ -31,9 +31,9 @@
 #ifndef NAVIGATION_MESH_GENERATOR_H
 #define NAVIGATION_MESH_GENERATOR_H
 
+#include "core/os/thread.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "os/thread.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/resources/shape.h"

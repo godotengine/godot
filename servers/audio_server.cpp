@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "audio_server.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"

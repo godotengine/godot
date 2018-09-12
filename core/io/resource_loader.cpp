@@ -29,14 +29,16 @@
 /*************************************************************************/
 
 #include "resource_loader.h"
-#include "io/resource_import.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "path_remap.h"
-#include "print_string.h"
-#include "project_settings.h"
-#include "translation.h"
-#include "variant_parser.h"
+
+#include "core/io/resource_import.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/path_remap.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
+#include "core/translation.h"
+#include "core/variant_parser.h"
+
 ResourceFormatLoader *ResourceLoader::loader[MAX_LOADERS];
 
 int ResourceLoader::loader_count = 0;

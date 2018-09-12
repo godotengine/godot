@@ -32,20 +32,18 @@
 
 #ifdef UNIX_ENABLED
 
-#include "servers/visual_server.h"
-
 #include "core/os/thread_dummy.h"
-#include "mutex_posix.h"
-#include "rw_lock_posix.h"
-#include "semaphore_posix.h"
-#include "thread_posix.h"
-
-//#include "core/io/file_access_buffered_fa.h"
-#include "dir_access_unix.h"
-#include "file_access_unix.h"
-#include "packet_peer_udp_posix.h"
-#include "stream_peer_tcp_posix.h"
-#include "tcp_server_posix.h"
+#include "core/project_settings.h"
+#include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
+#include "drivers/unix/mutex_posix.h"
+#include "drivers/unix/packet_peer_udp_posix.h"
+#include "drivers/unix/rw_lock_posix.h"
+#include "drivers/unix/semaphore_posix.h"
+#include "drivers/unix/stream_peer_tcp_posix.h"
+#include "drivers/unix/tcp_server_posix.h"
+#include "drivers/unix/thread_posix.h"
+#include "servers/visual_server.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -55,7 +53,7 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
-#include "project_settings.h"
+
 #include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>

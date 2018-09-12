@@ -31,10 +31,10 @@
 #ifndef RASTERIZER_H
 #define RASTERIZER_H
 
-#include "camera_matrix.h"
+#include "core/math/camera_matrix.h"
 #include "servers/visual_server.h"
 
-#include "self_list.h"
+#include "core/self_list.h"
 
 class RasterizerScene {
 public:

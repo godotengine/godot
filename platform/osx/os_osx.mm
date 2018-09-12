@@ -30,15 +30,15 @@
 
 #include "os_osx.h"
 
+#include "core/os/keyboard.h"
+#include "core/print_string.h"
+#include "core/version_generated.gen.h"
 #include "dir_access_osx.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "main/main.h"
-#include "os/keyboard.h"
-#include "print_string.h"
 #include "sem_osx.h"
 #include "servers/visual/visual_server_raster.h"
-#include "version_generated.gen.h"
 
 #include <mach-o/dyld.h>
 

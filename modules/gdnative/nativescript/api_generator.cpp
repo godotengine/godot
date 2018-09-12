@@ -35,8 +35,8 @@
 #include "core/class_db.h"
 #include "core/engine.h"
 #include "core/global_constants.h"
+#include "core/os/file_access.h"
 #include "core/pair.h"
-#include "os/file_access.h"
 
 // helper stuff
 

@@ -30,11 +30,12 @@
 
 #include "resource.h"
 
-#include "core_string_names.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
+#include "core/core_string_names.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/script_language.h"
 #include "scene/main/node.h" //only so casting works
-#include "script_language.h"
+
 #include <stdio.h>
 
 void Resource::emit_changed() {

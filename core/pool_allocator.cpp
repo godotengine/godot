@@ -30,11 +30,11 @@
 
 #include "pool_allocator.h"
 
+#include "core/error_macros.h"
+#include "core/os/copymem.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
-#include "error_macros.h"
-#include "os/copymem.h"
-#include "os/memory.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 #include <assert.h>
 

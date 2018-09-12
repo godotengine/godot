@@ -30,10 +30,10 @@
 
 #include <UnicodeChar.h>
 
+#include "core/os/keyboard.h"
 #include "haiku_direct_window.h"
 #include "key_mapping_haiku.h"
 #include "main/main.h"
-#include "os/keyboard.h"
 
 HaikuDirectWindow::HaikuDirectWindow(BRect p_frame) :
 		BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE) {

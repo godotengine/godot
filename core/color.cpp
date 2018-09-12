@@ -30,10 +30,10 @@
 
 #include "color.h"
 
-#include "color_names.inc"
-#include "map.h"
-#include "math_funcs.h"
-#include "print_string.h"
+#include "core/color_names.inc"
+#include "core/map.h"
+#include "core/math/math_funcs.h"
+#include "core/print_string.h"
 
 uint32_t Color::to_argb32() const {
 

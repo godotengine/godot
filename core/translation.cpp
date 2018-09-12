@@ -30,9 +30,9 @@
 
 #include "translation.h"
 
-#include "io/resource_loader.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 // ISO 639-1 language codes, with the addition of glibc locales with their
 // regional identifiers. This list must match the language names (in English)

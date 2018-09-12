@@ -31,11 +31,11 @@
 #ifndef PHYSICS_BODY__H
 #define PHYSICS_BODY__H
 
+#include "core/vset.h"
 #include "scene/3d/collision_object.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server.h"
 #include "skeleton.h"
-#include "vset.h"
 
 class PhysicsBody : public CollisionObject {
 

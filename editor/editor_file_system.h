@@ -31,11 +31,11 @@
 #ifndef EDITOR_FILE_SYSTEM_H
 #define EDITOR_FILE_SYSTEM_H
 
-#include "os/dir_access.h"
-#include "os/thread.h"
-#include "os/thread_safe.h"
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+#include "core/os/thread_safe.h"
+#include "core/set.h"
 #include "scene/main/node.h"
-#include "set.h"
 class FileAccess;
 
 struct EditorProgressBG;

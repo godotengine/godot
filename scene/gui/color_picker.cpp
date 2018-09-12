@@ -30,9 +30,9 @@
 
 #include "color_picker.h"
 
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "os/os.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 

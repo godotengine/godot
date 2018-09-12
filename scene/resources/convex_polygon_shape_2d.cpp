@@ -30,7 +30,7 @@
 
 #include "convex_polygon_shape_2d.h"
 
-#include "geometry.h"
+#include "core/math/geometry.h"
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
 

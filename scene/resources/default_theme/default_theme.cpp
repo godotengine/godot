@@ -32,7 +32,7 @@
 
 #include "scene/resources/theme.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 #include "theme_data.h"
 
 #include "font_hidpi.inc"

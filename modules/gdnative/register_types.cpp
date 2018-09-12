@@ -33,8 +33,8 @@
 
 #include "gdnative.h"
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 
 #include "arvr/register_types.h"
 #include "nativescript/register_types.h"

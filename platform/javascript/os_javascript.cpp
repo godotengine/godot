@@ -30,9 +30,9 @@
 
 #include "os_javascript.h"
 
+#include "core/io/file_access_buffered_fa.h"
 #include "gles2/rasterizer_gles2.h"
 #include "gles3/rasterizer_gles3.h"
-#include "io/file_access_buffered_fa.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 #include "unix/dir_access_unix.h"

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "texture_loader_dds.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 enum {
 	DDS_MAGIC = 0x20534444,

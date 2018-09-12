@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rid.h"
+#include "core/rid.h"
 #include "scene/resources/material.h"
 
 #ifndef PARTICLES_MATERIAL_H

@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "surface_tool.h"
-#include "method_bind_ext.gen.inc"
+
+#include "core/method_bind_ext.gen.inc"
 
 #define _VERTEX_SNAP 0.0001
 #define EQ_VERTEX_DIST 0.00001

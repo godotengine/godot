@@ -33,8 +33,8 @@
 
 #include <mono/metadata/debug-helpers.h>
 
-#include "map.h"
-#include "ustring.h"
+#include "core/map.h"
+#include "core/ustring.h"
 
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"

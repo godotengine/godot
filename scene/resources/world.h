@@ -31,7 +31,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#include "resource.h"
+#include "core/resource.h"
 #include "scene/resources/environment.h"
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"

@@ -31,7 +31,7 @@
 #ifndef OUTPUT_STRINGS_H
 #define OUTPUT_STRINGS_H
 
-#include "map.h"
+#include "core/map.h"
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
 

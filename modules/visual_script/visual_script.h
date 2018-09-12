@@ -31,8 +31,8 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
-#include "os/thread.h"
-#include "script_language.h"
+#include "core/os/thread.h"
+#include "core/script_language.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;

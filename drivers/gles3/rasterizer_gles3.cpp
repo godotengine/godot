@@ -30,11 +30,9 @@
 
 #include "rasterizer_gles3.h"
 
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "gl_context/context_gl.h"
-#include "os/os.h"
-#include "project_settings.h"
-
-#include <string.h>
 
 RasterizerStorage *RasterizerGLES3::get_storage() {
 

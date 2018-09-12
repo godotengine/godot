@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "voxel_light_baker.h"
-#include "os/os.h"
-#include "os/threaded_array_processor.h"
+#include "core/os/os.h"
+#include "core/os/threaded_array_processor.h"
 
 #include <stdlib.h>
 

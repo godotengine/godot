@@ -31,10 +31,10 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "color.h"
-#include "dvector.h"
-#include "rect2.h"
-#include "resource.h"
+#include "core/color.h"
+#include "core/dvector.h"
+#include "core/math/rect2.h"
+#include "core/resource.h"
 
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>

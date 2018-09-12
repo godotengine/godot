@@ -31,8 +31,8 @@
 #ifndef EDITORRESOURCEPREVIEW_H
 #define EDITORRESOURCEPREVIEW_H
 
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 

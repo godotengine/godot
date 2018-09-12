@@ -32,10 +32,10 @@
 
 #include <mono/metadata/threads.h>
 
-#include "os/file_access.h"
-#include "os/os.h"
-#include "os/thread.h"
-#include "project_settings.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/bindings_generator.h"

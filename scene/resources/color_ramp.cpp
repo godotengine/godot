@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "color_ramp.h"
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 
 //setter and getter names for property serialization
 #define COLOR_RAMP_GET_OFFSETS "get_offsets"

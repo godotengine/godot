@@ -30,8 +30,8 @@
 
 #include "navigation_mesh_editor_plugin.h"
 
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/box_container.h"
 

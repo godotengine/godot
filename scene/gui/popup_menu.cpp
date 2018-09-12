@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "popup_menu.h"
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "print_string.h"
-#include "translation.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
+#include "core/print_string.h"
+#include "core/translation.h"
 
 String PopupMenu::_get_accel_text(int p_item) const {
 

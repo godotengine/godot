@@ -31,13 +31,13 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
+#include "core/os/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/coremidi/core_midi.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
-#include "os/input.h"
 #include "power_osx.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"

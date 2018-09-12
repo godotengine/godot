@@ -30,13 +30,13 @@
 
 #include "gdscript.h"
 
-#include "engine.h"
+#include "core/engine.h"
+#include "core/global_constants.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "gdscript_compiler.h"
-#include "global_constants.h"
-#include "io/file_access_encrypted.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
 
 ///////////////////////////
 

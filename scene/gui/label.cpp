@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "label.h"
-#include "print_string.h"
-#include "project_settings.h"
-#include "translation.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
+#include "core/translation.h"
 
 void Label::set_autowrap(bool p_autowrap) {
 

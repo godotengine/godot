@@ -31,8 +31,8 @@
 #include "physics_body.h"
 
 #include "core/core_string_names.h"
-#include "engine.h"
-#include "method_bind_ext.gen.inc"
+#include "core/engine.h"
+#include "core/method_bind_ext.gen.inc"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED

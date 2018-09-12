@@ -30,12 +30,12 @@
 
 #include "rename_dialog.h"
 
+#include "core/print_string.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
-#include "print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"

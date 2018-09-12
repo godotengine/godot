@@ -30,7 +30,7 @@
 
 #include "base_button.h"
 
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 

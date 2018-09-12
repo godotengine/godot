@@ -30,7 +30,7 @@
 
 #include "node_path.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 void NodePath::_update_hash_cache() const {
 

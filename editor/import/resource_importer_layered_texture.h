@@ -31,8 +31,8 @@
 #ifndef RESOURCE_IMPORTER_LAYERED_TEXTURE_H
 #define RESOURCE_IMPORTER_LAYERED_TEXTURE_H
 
-#include "image.h"
-#include "io/resource_import.h"
+#include "core/image.h"
+#include "core/io/resource_import.h"
 
 class StreamTexture;
 

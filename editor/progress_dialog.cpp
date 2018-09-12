@@ -30,10 +30,10 @@
 
 #include "progress_dialog.h"
 
+#include "core/message_queue.h"
+#include "core/os/os.h"
 #include "editor_scale.h"
 #include "main/main.h"
-#include "message_queue.h"
-#include "os/os.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream_player_3d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/3d/area.h"
 #include "scene/3d/camera.h"
 #include "scene/main/viewport.h"

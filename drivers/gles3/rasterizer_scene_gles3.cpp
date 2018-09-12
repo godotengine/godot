@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "rasterizer_scene_gles3.h"
-#include "math_funcs.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/math/math_funcs.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "rasterizer_canvas_gles3.h"
 #include "servers/visual/visual_server_raster.h"
 

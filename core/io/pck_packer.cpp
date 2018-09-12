@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "pck_packer.h"
+
 #include "core/os/file_access.h"
-#include "version.h"
+#include "core/version.h"
 
 static uint64_t _align(uint64_t p_n, int p_alignment) {
 

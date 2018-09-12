@@ -31,8 +31,8 @@
 #ifndef VISUAL_SERVER_WRAP_MT_H
 #define VISUAL_SERVER_WRAP_MT_H
 
-#include "command_queue_mt.h"
-#include "os/thread.h"
+#include "core/command_queue_mt.h"
+#include "core/os/thread.h"
 #include "servers/visual_server.h"
 
 /**

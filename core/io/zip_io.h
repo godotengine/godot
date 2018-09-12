@@ -31,8 +31,8 @@
 #ifndef ZIP_IO_H
 #define ZIP_IO_H
 
-#include "os/copymem.h"
-#include "os/file_access.h"
+#include "core/os/copymem.h"
+#include "core/os/file_access.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"

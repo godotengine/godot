@@ -29,13 +29,13 @@
 /*************************************************************************/
 
 #include "grid_map.h"
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include "scene/3d/light.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/visual_server.h"
 
-#include "io/marshalls.h"
-#include "os/os.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/scene_string_names.h"
 

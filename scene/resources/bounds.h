@@ -31,8 +31,8 @@
 #ifndef BOUNDS_H
 #define BOUNDS_H
 
-#include "bsp_tree.h"
-#include "resource.h"
+#include "core/math/bsp_tree.h"
+#include "core/resource.h"
 
 class Bounds : public Resource {
 

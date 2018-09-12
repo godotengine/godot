@@ -31,13 +31,13 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+#include "core/io/resource_loader.h"
+#include "core/math/rect2.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
 #include "curve.h"
-#include "io/resource_loader.h"
-#include "os/mutex.h"
-#include "os/rw_lock.h"
-#include "os/thread_safe.h"
-#include "rect2.h"
-#include "resource.h"
 #include "scene/resources/color_ramp.h"
 #include "servers/visual_server.h"
 /**

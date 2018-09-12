@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "compression.h"
-#include "os/copymem.h"
-#include "project_settings.h"
-#include "zip_io.h"
+
+#include "core/io/zip_io.h"
+#include "core/os/copymem.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/fastlz.h"
 

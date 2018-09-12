@@ -30,8 +30,8 @@
 
 #include "message_queue.h"
 
-#include "project_settings.h"
-#include "script_language.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 
 MessageQueue *MessageQueue::singleton = NULL;
 

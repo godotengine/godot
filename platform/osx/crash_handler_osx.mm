@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/project_settings.h"
 #include "main/main.h"
 #include "os_osx.h"
-#include "project_settings.h"
 
 #include <string.h>
 #include <unistd.h>

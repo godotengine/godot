@@ -28,16 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vector3.h"
+// Circular dependency between Vector3 and Basis :/
+#include "core/math/vector3.h"
 
 #ifndef MATRIX3_H
 #define MATRIX3_H
 
-#include "quat.h"
+#include "core/math/quat.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class Basis {
 public:
 	Vector3 elements[3];

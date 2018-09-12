@@ -29,18 +29,18 @@
 /*************************************************************************/
 
 #include "export.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/io/zip_io.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "io/zip_io.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "platform/osx/logo.gen.h"
-#include "project_settings.h"
 #include "string.h"
-#include "version.h"
 #include <sys/stat.h>
 
 class EditorExportPlatformOSX : public EditorExportPlatform {

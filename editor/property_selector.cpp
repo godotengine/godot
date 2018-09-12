@@ -30,8 +30,8 @@
 
 #include "property_selector.h"
 
+#include "core/os/keyboard.h"
 #include "editor_scale.h"
-#include "os/keyboard.h"
 
 void PropertySelector::_text_changed(const String &p_newtext) {
 

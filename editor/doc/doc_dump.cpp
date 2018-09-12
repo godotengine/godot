@@ -30,9 +30,9 @@
 
 #include "doc_dump.h"
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
+#include "core/version.h"
 #include "scene/main/node.h"
-#include "version.h"
 
 static void _write_string(FileAccess *f, int p_tablevel, const String &p_string) {
 

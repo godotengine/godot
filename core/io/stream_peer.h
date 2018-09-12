@@ -31,7 +31,7 @@
 #ifndef STREAM_PEER_H
 #define STREAM_PEER_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 class StreamPeer : public Reference {
 	GDCLASS(StreamPeer, Reference);

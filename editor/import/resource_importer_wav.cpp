@@ -30,9 +30,9 @@
 
 #include "resource_importer_wav.h"
 
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/resources/audio_stream_sample.h"
 
 String ResourceImporterWAV::get_importer_name() const {

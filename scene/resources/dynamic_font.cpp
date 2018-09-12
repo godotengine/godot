@@ -30,8 +30,8 @@
 
 #ifdef FREETYPE_ENABLED
 #include "dynamic_font.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 
 #include FT_STROKER_H
 

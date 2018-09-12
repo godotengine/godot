@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
-#include "io/json.h"
-#include "math_defs.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/io/json.h"
+#include "core/math/math_defs.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"

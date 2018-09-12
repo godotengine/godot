@@ -32,13 +32,13 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
-#include "engine.h"
-#include "global_constants.h"
-#include "io/compression.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "ucaps.h"
+#include "core/engine.h"
+#include "core/global_constants.h"
+#include "core/io/compression.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/ucaps.h"
 
 #include "../glue/cs_compressed.gen.h"
 #include "../glue/cs_glue_version.gen.h"

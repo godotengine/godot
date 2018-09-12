@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "texture.h"
+
 #include "bit_mask.h"
+#include "core/core_string_names.h"
+#include "core/io/image_loader.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
-#include "core_string_names.h"
-#include "io/image_loader.h"
 
 Size2 Texture::get_size() const {
 

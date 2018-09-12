@@ -31,10 +31,10 @@
 #ifndef CSHARP_SCRIPT_H
 #define CSHARP_SCRIPT_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "script_language.h"
-#include "self_list.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/script_language.h"
+#include "core/self_list.h"
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono.h"

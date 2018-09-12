@@ -30,7 +30,7 @@
 
 #include "reference_rect.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void ReferenceRect::_notification(int p_what) {
 

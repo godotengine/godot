@@ -30,7 +30,7 @@
 
 #include "texture_loader_pkm.h"
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include <string.h>
 
 struct ETC1Header {

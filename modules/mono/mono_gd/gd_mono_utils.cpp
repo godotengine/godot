@@ -32,10 +32,10 @@
 
 #include <mono/metadata/exception.h>
 
-#include "os/dir_access.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "reference.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/reference.h"
 
 #include "../csharp_script.h"
 #include "../utils/macros.h"

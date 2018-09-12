@@ -30,12 +30,13 @@
 
 #include "ustring.h"
 
-#include "color.h"
-#include "math_funcs.h"
-#include "os/memory.h"
-#include "print_string.h"
-#include "ucaps.h"
-#include "variant.h"
+#include "core/color.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
+#include "core/translation.h"
+#include "core/ucaps.h"
+#include "core/variant.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
@@ -4203,8 +4204,6 @@ String String::unquote() const {
 
 	return substr(1, length() - 2);
 }
-
-#include "translation.h"
 
 #ifdef TOOLS_ENABLED
 String TTR(const String &p_text) {

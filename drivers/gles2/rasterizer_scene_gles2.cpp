@@ -27,15 +27,16 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "rasterizer_scene_gles2.h"
-#include "math/transform.h"
-#include "math_funcs.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/math/math_funcs.h"
+#include "core/math/transform.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/vmap.h"
 #include "rasterizer_canvas_gles2.h"
 #include "servers/visual/visual_server_raster.h"
-
-#include "vmap.h"
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf

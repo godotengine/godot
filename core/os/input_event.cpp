@@ -30,8 +30,8 @@
 
 #include "input_event.h"
 
-#include "input_map.h"
-#include "os/keyboard.h"
+#include "core/input_map.h"
+#include "core/os/keyboard.h"
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;

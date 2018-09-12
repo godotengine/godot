@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "mutex_posix.h"
-#include "os/memory.h"
+
+#include "core/os/memory.h"
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 

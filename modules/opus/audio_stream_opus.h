@@ -31,8 +31,8 @@
 #ifndef AUDIO_STREAM_OPUS_H
 #define AUDIO_STREAM_OPUS_H
 
-#include "io/resource_loader.h"
-#include "os/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "scene/resources/audio_stream.h"
 
 #include <opus/opusfile.h>

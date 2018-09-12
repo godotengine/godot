@@ -31,10 +31,10 @@
 #include "collision_polygon_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/file_access.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
-#include "os/file_access.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "scene/3d/camera.h"
 #include "spatial_editor_plugin.h"
 

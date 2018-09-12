@@ -31,8 +31,8 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include "math_funcs.h"
-#include "ustring.h"
+#include "core/math/math_funcs.h"
+#include "core/ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

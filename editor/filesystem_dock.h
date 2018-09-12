@@ -44,8 +44,8 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-#include "os/dir_access.h"
-#include "os/thread.h"
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
 
 #include "create_dialog.h"
 

@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RSTRING_H
-#define RSTRING_H
+#ifndef USTRING_H
+#define USTRING_H
 
-#include "array.h"
-#include "cowdata.h"
-#include "typedefs.h"
-#include "vector.h"
+#include "core/array.h"
+#include "core/cowdata.h"
+#include "core/typedefs.h"
+#include "core/vector.h"
 
 /**
-	@author red <red@killy>
+	@author Juan Linietsky <reduzio@gmail.com>
 */
 
 class CharString {
@@ -366,4 +366,4 @@ String RTR(const String &);
 bool is_symbol(CharType c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
 
-#endif
+#endif // USTRING_H

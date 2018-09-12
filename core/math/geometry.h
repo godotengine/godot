@@ -31,14 +31,15 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include "dvector.h"
-#include "face3.h"
-#include "object.h"
-#include "print_string.h"
-#include "rect2.h"
-#include "triangulate.h"
-#include "vector.h"
-#include "vector3.h"
+#include "core/dvector.h"
+#include "core/math/face3.h"
+#include "core/math/rect2.h"
+#include "core/math/triangulate.h"
+#include "core/math/vector3.h"
+#include "core/object.h"
+#include "core/print_string.h"
+#include "core/vector.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

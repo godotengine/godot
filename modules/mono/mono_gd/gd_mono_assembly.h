@@ -34,10 +34,10 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
+#include "core/hash_map.h"
+#include "core/map.h"
+#include "core/ustring.h"
 #include "gd_mono_utils.h"
-#include "hash_map.h"
-#include "map.h"
-#include "ustring.h"
 
 class GDMonoAssembly {
 

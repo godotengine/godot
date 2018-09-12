@@ -31,15 +31,15 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
-#include "image.h"
-#include "io/compression.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/image.h"
+#include "core/io/compression.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);

@@ -31,12 +31,12 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "aabb.h"
-#include "list.h"
-#include "map.h"
-#include "print_string.h"
-#include "variant.h"
-#include "vector3.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/print_string.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

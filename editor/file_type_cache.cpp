@@ -30,8 +30,8 @@
 
 #include "file_type_cache.h"
 
-#include "os/file_access.h"
-#include "project_settings.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 
 FileTypeCache *FileTypeCache::singleton = NULL;
 

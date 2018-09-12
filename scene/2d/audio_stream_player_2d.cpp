@@ -30,7 +30,7 @@
 
 #include "audio_stream_player_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/2d/area_2d.h"
 #include "scene/main/viewport.h"
 

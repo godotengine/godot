@@ -31,10 +31,10 @@
 #ifndef FILE_ACCESS_NETWORK_H
 #define FILE_ACCESS_NETWORK_H
 
-#include "io/stream_peer_tcp.h"
-#include "os/file_access.h"
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/os/file_access.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 class FileAccessNetwork;
 

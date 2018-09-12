@@ -30,8 +30,8 @@
 
 #include "editor_run.h"
 
+#include "core/project_settings.h"
 #include "editor_settings.h"
-#include "project_settings.h"
 
 EditorRun::Status EditorRun::get_status() const {
 

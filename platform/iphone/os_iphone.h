@@ -33,9 +33,9 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
+#include "core/os/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "os/input.h"
 
 #include "game_center.h"
 #include "icloud.h"

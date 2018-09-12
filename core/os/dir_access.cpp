@@ -29,10 +29,11 @@
 /*************************************************************************/
 
 #include "dir_access.h"
-#include "os/file_access.h"
-#include "os/memory.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/os/file_access.h"
+#include "core/os/memory.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 String DirAccess::_get_root_path() const {
 

@@ -31,15 +31,15 @@
 #ifndef CSG_H
 #define CSG_H
 
-#include "aabb.h"
-#include "dvector.h"
-#include "map.h"
-#include "oa_hash_map.h"
-#include "plane.h"
-#include "rect2.h"
+#include "core/dvector.h"
+#include "core/map.h"
+#include "core/math/aabb.h"
+#include "core/math/plane.h"
+#include "core/math/rect2.h"
+#include "core/math/transform.h"
+#include "core/math/vector3.h"
+#include "core/oa_hash_map.h"
 #include "scene/resources/material.h"
-#include "transform.h"
-#include "vector3.h"
 
 struct CSGBrush {
 

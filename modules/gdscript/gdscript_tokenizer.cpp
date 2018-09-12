@@ -30,10 +30,10 @@
 
 #include "gdscript_tokenizer.h"
 
+#include "core/io/marshalls.h"
+#include "core/map.h"
+#include "core/print_string.h"
 #include "gdscript_functions.h"
-#include "io/marshalls.h"
-#include "map.h"
-#include "print_string.h"
 
 const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"Empty",

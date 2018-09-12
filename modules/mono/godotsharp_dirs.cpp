@@ -30,13 +30,13 @@
 
 #include "godotsharp_dirs.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/os/dir_access.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 #include "editor/editor_settings.h"
-#include "os/dir_access.h"
-#include "project_settings.h"
-#include "version.h"
 #endif
 
 namespace GodotSharpDirs {

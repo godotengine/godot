@@ -31,9 +31,9 @@
 #ifndef PHYSICS_2D_SERVER_H
 #define PHYSICS_2D_SERVER_H
 
-#include "object.h"
-#include "reference.h"
-#include "resource.h"
+#include "core/object.h"
+#include "core/reference.h"
+#include "core/resource.h"
 
 class Physics2DDirectSpaceState;
 

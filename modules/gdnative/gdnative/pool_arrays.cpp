@@ -30,9 +30,9 @@
 
 #include "gdnative/pool_arrays.h"
 
-#include "array.h"
+#include "core/array.h"
+#include "core/dvector.h"
 #include "core/variant.h"
-#include "dvector.h"
 
 #include "core/color.h"
 #include "core/math/vector2.h"

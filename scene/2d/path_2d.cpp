@@ -30,7 +30,7 @@
 
 #include "path_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED

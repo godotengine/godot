@@ -32,10 +32,10 @@
 
 #include "resource_importer_texture.h"
 
+#include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "io/config_file.h"
-#include "io/image_loader.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {

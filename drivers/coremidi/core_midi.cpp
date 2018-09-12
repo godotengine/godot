@@ -31,7 +31,8 @@
 #ifdef COREMIDI_ENABLED
 
 #include "core_midi.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
 
 #include <CoreAudio/HostTime.h>
 #include <CoreServices/CoreServices.h>

@@ -31,9 +31,9 @@
 #ifndef GDMONOMARSHAL_H
 #define GDMONOMARSHAL_H
 
+#include "core/variant.h"
 #include "gd_mono.h"
 #include "gd_mono_utils.h"
-#include "variant.h"
 
 namespace GDMonoMarshal {
 

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "main/main.h"
 #include "os_javascript.h"
 

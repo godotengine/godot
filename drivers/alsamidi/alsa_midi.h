@@ -33,13 +33,13 @@
 #ifndef ALSA_MIDI_H
 #define ALSA_MIDI_H
 
-#include <alsa/asoundlib.h>
-#include <stdio.h>
-
+#include "core/os/midi_driver.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/vector.h"
-#include "os/midi_driver.h"
+
+#include <alsa/asoundlib.h>
+#include <stdio.h>
 
 class MIDIDriverALSAMidi : public MIDIDriver {
 

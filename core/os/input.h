@@ -31,9 +31,9 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "object.h"
-#include "os/main_loop.h"
-#include "os/thread_safe.h"
+#include "core/object.h"
+#include "core/os/main_loop.h"
+#include "core/os/thread_safe.h"
 
 class Input : public Object {
 

@@ -31,7 +31,7 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 class Compression {
 

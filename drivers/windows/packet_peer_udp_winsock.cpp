@@ -35,6 +35,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+// Must be included after Windows headers or hell breaks loose
 #include "drivers/unix/socket_helpers.h"
 
 int PacketPeerUDPWinsock::get_available_packet_count() const {

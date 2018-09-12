@@ -31,13 +31,13 @@
 #ifndef BINDINGS_GENERATOR_H
 #define BINDINGS_GENERATOR_H
 
-#include "class_db.h"
+#include "core/class_db.h"
 #include "editor/doc/doc_data.h"
 #include "editor/editor_help.h"
 
 #ifdef DEBUG_METHODS_ENABLED
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 class BindingsGenerator {
 

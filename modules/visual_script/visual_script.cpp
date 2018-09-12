@@ -30,8 +30,8 @@
 
 #include "visual_script.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 

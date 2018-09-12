@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTWAV_H
 #define RESOURCEIMPORTWAV_H
 
-#include "io/resource_import.h"
+#include "core/io/resource_import.h"
 
 class ResourceImporterWAV : public ResourceImporter {
 	GDCLASS(ResourceImporterWAV, ResourceImporter)

@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_PREVIEW_H
 #define AUDIO_STREAM_PREVIEW_H
 
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 

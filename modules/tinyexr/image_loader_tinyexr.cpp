@@ -30,8 +30,8 @@
 
 #include "image_loader_tinyexr.h"
 
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 #include "thirdparty/tinyexr/tinyexr.h"
 

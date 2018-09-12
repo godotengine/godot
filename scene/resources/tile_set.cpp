@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "tile_set.h"
-#include "array.h"
+#include "core/array.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 

@@ -30,9 +30,9 @@
 
 #include "class_db.h"
 
-#include "engine.h"
-#include "os/mutex.h"
-#include "version.h"
+#include "core/engine.h"
+#include "core/os/mutex.h"
+#include "core/version.h"
 
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);

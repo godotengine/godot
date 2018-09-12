@@ -32,7 +32,7 @@
 
 #ifdef MEDIA_KIT_ENABLED
 
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 int32_t *AudioDriverMediaKit::samples_in = NULL;
 

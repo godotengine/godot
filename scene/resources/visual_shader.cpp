@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "visual_shader.h"
+#include "core/vmap.h"
 #include "servers/visual/shader_types.h"
-#include "vmap.h"
 
 void VisualShaderNode::set_output_port_for_preview(int p_index) {
 

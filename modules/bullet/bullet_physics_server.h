@@ -32,8 +32,8 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
+#include "core/rid.h"
 #include "joint_bullet.h"
-#include "rid.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "shape_bullet.h"

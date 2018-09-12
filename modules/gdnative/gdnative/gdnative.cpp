@@ -30,12 +30,12 @@
 
 #include "gdnative/gdnative.h"
 
-#include "class_db.h"
-#include "engine.h"
-#include "error_macros.h"
-#include "global_constants.h"
-#include "os/os.h"
-#include "variant.h"
+#include "core/class_db.h"
+#include "core/engine.h"
+#include "core/error_macros.h"
+#include "core/global_constants.h"
+#include "core/os/os.h"
+#include "core/variant.h"
 
 #include "modules/gdnative/gdnative.h"
 

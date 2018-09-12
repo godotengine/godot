@@ -31,8 +31,8 @@
 #ifndef COWDATA_H_
 #define COWDATA_H_
 
-#include "os/memory.h"
-#include "safe_refcount.h"
+#include "core/os/memory.h"
+#include "core/safe_refcount.h"
 
 template <class T>
 class Vector;

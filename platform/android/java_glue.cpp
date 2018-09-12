@@ -33,16 +33,16 @@
 #include "java_glue.h"
 #include "android/asset_manager_jni.h"
 #include "audio_driver_jandroid.h"
+#include "core/engine.h"
 #include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "dir_access_jandroid.h"
-#include "engine.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
 #include "java_class_wrapper.h"
 #include "main/input_default.h"
 #include "main/main.h"
 #include "os_android.h"
-#include "project_settings.h"
 #include "thread_jandroid.h"
 #include <unistd.h>
 

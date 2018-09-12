@@ -34,9 +34,9 @@
 #include <wrl.h>
 
 #include "EGL/egl.h"
+#include "core/error_list.h"
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "error_list.h"
-#include "os/os.h"
 
 using namespace Windows::UI::Core;
 

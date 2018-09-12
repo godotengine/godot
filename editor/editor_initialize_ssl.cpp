@@ -31,8 +31,8 @@
 #include "editor_initialize_ssl.h"
 
 #include "certs_compressed.gen.h"
-#include "io/compression.h"
-#include "io/stream_peer_ssl.h"
+#include "core/io/compression.h"
+#include "core/io/stream_peer_ssl.h"
 
 void editor_initialize_certificates() {
 

@@ -30,8 +30,8 @@
 
 #include "theme_editor_plugin.h"
 
-#include "os/file_access.h"
-#include "version.h"
+#include "core/os/file_access.h"
+#include "core/version.h"
 
 void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 

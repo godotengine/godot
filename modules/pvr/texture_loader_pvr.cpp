@@ -31,7 +31,7 @@
 #include "texture_loader_pvr.h"
 #include "PvrTcEncoder.h"
 #include "RgbaBitmap.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include <string.h>
 
 static void _pvrtc_decompress(Image *p_img);

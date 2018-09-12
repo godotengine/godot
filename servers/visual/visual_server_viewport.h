@@ -31,8 +31,8 @@
 #ifndef VISUALSERVERVIEWPORT_H
 #define VISUALSERVERVIEWPORT_H
 
+#include "core/self_list.h"
 #include "rasterizer.h"
-#include "self_list.h"
 #include "servers/arvr/arvr_interface.h"
 #include "servers/visual_server.h"
 

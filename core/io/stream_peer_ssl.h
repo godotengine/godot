@@ -31,7 +31,7 @@
 #ifndef STREAM_PEER_SSL_H
 #define STREAM_PEER_SSL_H
 
-#include "io/stream_peer.h"
+#include "core/io/stream_peer.h"
 
 class StreamPeerSSL : public StreamPeer {
 	GDCLASS(StreamPeerSSL, StreamPeer);

@@ -30,7 +30,7 @@
 
 #include "quick_open.h"
 
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
 void EditorQuickOpen::popup(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
 

@@ -31,7 +31,7 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include "vector3.h"
+#include "core/math/vector3.h"
 
 class Plane {
 public:

@@ -30,8 +30,8 @@
 
 #include "navigation_polygon.h"
 
-#include "core_string_names.h"
-#include "engine.h"
+#include "core/core_string_names.h"
+#include "core/engine.h"
 #include "navigation2d.h"
 
 #include "thirdparty/misc/triangulator.h"

@@ -31,9 +31,9 @@
 #ifndef TCP_SERVER_H
 #define TCP_SERVER_H
 
-#include "io/ip.h"
-#include "io/stream_peer.h"
-#include "stream_peer_tcp.h"
+#include "core/io/ip.h"
+#include "core/io/stream_peer.h"
+#include "core/io/stream_peer_tcp.h"
 
 class TCP_Server : public Reference {
 

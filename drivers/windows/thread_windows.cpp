@@ -32,7 +32,7 @@
 
 #if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
 
-#include "os/memory.h"
+#include "core/os/memory.h"
 
 Thread::ID ThreadWindows::get_id() const {
 

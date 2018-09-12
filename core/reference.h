@@ -31,10 +31,10 @@
 #ifndef REFERENCE_H
 #define REFERENCE_H
 
-#include "class_db.h"
-#include "object.h"
-#include "ref_ptr.h"
-#include "safe_refcount.h"
+#include "core/class_db.h"
+#include "core/object.h"
+#include "core/ref_ptr.h"
+#include "core/safe_refcount.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

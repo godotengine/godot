@@ -31,7 +31,7 @@
 #ifndef GODOTSHARP_DIRS_H
 #define GODOTSHARP_DIRS_H
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 namespace GodotSharpDirs {
 

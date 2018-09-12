@@ -31,8 +31,9 @@
 #ifdef COREAUDIO_ENABLED
 
 #include "audio_driver_coreaudio.h"
+
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "os/os.h"
 
 #define kOutputBus 0
 #define kInputBus 1

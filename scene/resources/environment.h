@@ -31,7 +31,7 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "resource.h"
+#include "core/resource.h"
 #include "scene/resources/sky_box.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"

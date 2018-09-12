@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "rich_text_label.h"
-#include "os/keyboard.h"
-#include "os/os.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED

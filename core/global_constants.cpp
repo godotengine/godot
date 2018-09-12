@@ -30,10 +30,10 @@
 
 #include "global_constants.h"
 
-#include "object.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
-#include "variant.h"
+#include "core/object.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
+#include "core/variant.h"
 
 struct _GlobalConstant {
 

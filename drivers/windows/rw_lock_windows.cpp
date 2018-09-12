@@ -32,8 +32,9 @@
 
 #include "rw_lock_windows.h"
 
-#include "error_macros.h"
-#include "os/memory.h"
+#include "core/error_macros.h"
+#include "core/os/memory.h"
+
 #include <stdio.h>
 
 void RWLockWindows::read_lock() {

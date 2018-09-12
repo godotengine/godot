@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "step_2d_sw.h"
-#include "os/os.h"
+#include "core/os/os.h"
 
 void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constraint2DSW **p_constraint_island) {
 

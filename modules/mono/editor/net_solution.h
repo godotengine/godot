@@ -31,8 +31,8 @@
 #ifndef NET_SOLUTION_H
 #define NET_SOLUTION_H
 
-#include "map.h"
-#include "ustring.h"
+#include "core/map.h"
+#include "core/ustring.h"
 
 struct NETSolution {
 	String name;

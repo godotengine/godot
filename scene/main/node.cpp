@@ -31,10 +31,10 @@
 #include "node.h"
 
 #include "core/core_string_names.h"
+#include "core/io/resource_loader.h"
+#include "core/message_queue.h"
+#include "core/print_string.h"
 #include "instance_placeholder.h"
-#include "io/resource_loader.h"
-#include "message_queue.h"
-#include "print_string.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"

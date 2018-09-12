@@ -30,9 +30,9 @@
 
 #include "shape_sw.h"
 
-#include "geometry.h"
-#include "quick_hull.h"
-#include "sort.h"
+#include "core/math/geometry.h"
+#include "core/math/quick_hull.h"
+#include "core/sort.h"
 
 #define _POINT_SNAP 0.001953125
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002

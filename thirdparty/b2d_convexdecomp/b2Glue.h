@@ -19,7 +19,8 @@
 #ifndef B2GLUE_H
 #define B2GLUE_H
 
-#include "vector2.h"
+#include "core/math/vector2.h"
+
 #include <limits.h>
 
 namespace b2ConvexDecomp {

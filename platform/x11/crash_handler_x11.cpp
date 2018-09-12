@@ -33,9 +33,9 @@
 #endif
 
 #include "crash_handler_x11.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "main/main.h"
-#include "os/os.h"
-#include "project_settings.h"
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>

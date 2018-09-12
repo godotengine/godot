@@ -30,8 +30,8 @@
 
 #include "net_solution.h"
 
-#include "os/dir_access.h"
-#include "os/file_access.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 
 #include "../utils/path_utils.h"
 #include "../utils/string_utils.h"

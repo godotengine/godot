@@ -33,9 +33,9 @@
 #ifndef STREAM_PEER_TCP_POSIX_H
 #define STREAM_PEER_TCP_POSIX_H
 
+#include "core/error_list.h"
 #include "core/io/ip_address.h"
 #include "core/io/stream_peer_tcp.h"
-#include "error_list.h"
 
 class StreamPeerTCPPosix : public StreamPeerTCP {
 

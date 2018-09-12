@@ -30,10 +30,10 @@
 
 #include "variant_parser.h"
 
+#include "core/io/resource_loader.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
 #include "core/string_buffer.h"
-#include "io/resource_loader.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
 
 CharType VariantParser::StreamFile::get_char() {
 

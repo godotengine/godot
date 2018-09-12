@@ -31,8 +31,8 @@
 #ifndef PACKET_PEER_UDP_H
 #define PACKET_PEER_UDP_H
 
-#include "io/ip.h"
-#include "io/packet_peer.h"
+#include "core/io/ip.h"
+#include "core/io/packet_peer.h"
 
 class PacketPeerUDP : public PacketPeer {
 	GDCLASS(PacketPeerUDP, PacketPeer);

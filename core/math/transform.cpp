@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "transform.h"
-#include "math_funcs.h"
-#include "os/copymem.h"
-#include "print_string.h"
+
+#include "core/math/math_funcs.h"
+#include "core/os/copymem.h"
+#include "core/print_string.h"
 
 void Transform::affine_invert() {
 

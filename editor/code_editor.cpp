@@ -30,10 +30,10 @@
 
 #include "code_editor.h"
 
+#include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "os/keyboard.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/dynamic_font.h"

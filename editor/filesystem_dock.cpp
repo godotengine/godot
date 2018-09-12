@@ -30,14 +30,14 @@
 
 #include "filesystem_dock.h"
 
+#include "core/io/resource_loader.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/resource_loader.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
 #include "scene/main/viewport.h"
 
 bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths) {

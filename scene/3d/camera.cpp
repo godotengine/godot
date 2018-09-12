@@ -30,9 +30,9 @@
 
 #include "camera.h"
 
-#include "camera_matrix.h"
 #include "collision_object.h"
-#include "engine.h"
+#include "core/engine.h"
+#include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
 void Camera::_update_audio_listener_state() {
