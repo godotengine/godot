@@ -55,6 +55,7 @@
 #define MAX_ZOOM 100
 
 #define RULER_WIDTH 15 * EDSCALE
+#define SCALE_HANDLE_DISTANCE 25
 
 class SnapDialog : public ConfirmationDialog {
 
@@ -335,10 +336,11 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
 
-	if (k->get_control())
-		return;
+	if (k->get_scancode() == KEY_CONTROL || k->get_scancode() == KEY_ALT || k->get_scancode() == KEY_SHIFT) {
+		viewport->update();
+	}
 
-	if (k->is_pressed() && !k->is_echo()) {
+	if (k->is_pressed() && !k->get_control() && !k->is_echo()) {
 		if ((snap_grid || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
 			// Multiply the grid size
 			grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
@@ -1267,7 +1269,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			drag_selection = _get_edited_canvas_items();
-			if (drag_selection.size() > 0 && ((b->get_control() && tool == TOOL_SELECT) || tool == TOOL_ROTATE)) {
+			if (drag_selection.size() > 0 && ((b->get_control() && !b->get_alt() && tool == TOOL_SELECT) || tool == TOOL_ROTATE)) {
 				drag_type = DRAG_ROTATE;
 				drag_from = transform.affine_inverse().xform(b->get_position());
 				CanvasItem *canvas_item = drag_selection[0];
@@ -1615,6 +1617,89 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
+bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseButton> b = p_event;
+	Ref<InputEventMouseMotion> m = p_event;
+
+	// Drag resize handles
+	if (drag_type == DRAG_NONE) {
+		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && ((b->get_alt() && b->get_control()) || tool == TOOL_SCALE)) {
+			List<CanvasItem *> selection = _get_edited_canvas_items();
+			if (selection.size() == 1) {
+				CanvasItem *canvas_item = selection[0];
+
+				Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+				Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
+				Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+				if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+					drag_type = DRAG_SCALE_X;
+				}
+				Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(scale_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+				if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
+					drag_type = DRAG_SCALE_Y;
+				}
+				if (drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+					drag_from = transform.affine_inverse().xform(b->get_position());
+					drag_selection = List<CanvasItem *>();
+					drag_selection.push_back(canvas_item);
+					_save_canvas_item_state(drag_selection);
+					return true;
+				}
+			}
+		}
+	}
+
+	if (drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+		// Resize the node
+		if (m.is_valid()) {
+			_restore_canvas_item_state(drag_selection, true);
+			CanvasItem *canvas_item = drag_selection[0];
+
+			drag_to = transform.affine_inverse().xform(m->get_position());
+
+			bool uniform = m->get_shift();
+			Point2 offset = drag_to - drag_from;
+			Size2 scale = canvas_item->call("get_scale");
+			float ratio = scale.y / scale.x;
+			if (drag_type == DRAG_SCALE_X) {
+				scale.x += offset.x / SCALE_HANDLE_DISTANCE;
+				if (uniform) {
+					scale.y = scale.x * ratio;
+				}
+				canvas_item->call("set_scale", scale);
+
+			} else if (drag_type == DRAG_SCALE_Y) {
+				scale.y -= offset.y / SCALE_HANDLE_DISTANCE;
+				if (uniform) {
+					scale.x = scale.y / ratio;
+				}
+				canvas_item->call("set_scale", scale);
+			}
+		}
+
+		// Confirm resize
+		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
+			_commit_canvas_item_state(drag_selection, TTR("Scale CanvasItem"));
+			drag_type = DRAG_NONE;
+			viewport->update();
+			return true;
+		}
+
+		// Cancel a drag
+		if (b.is_valid() && b->get_button_index() == BUTTON_RIGHT && b->is_pressed()) {
+			_restore_canvas_item_state(drag_selection);
+			drag_type = DRAG_NONE;
+			viewport->update();
+			return true;
+		}
+	}
+	return false;
+}
+
 bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -1624,7 +1709,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		//Start moving the nodes
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
-			if ((b->get_alt() || tool == TOOL_MOVE) && selection.size() > 0) {
+			if (((b->get_alt() && !b->get_control()) || tool == TOOL_MOVE) && selection.size() > 0) {
 				drag_type = DRAG_MOVE;
 				drag_from = transform.affine_inverse().xform(b->get_position());
 				drag_selection = selection;
@@ -2006,6 +2091,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		//printf("Open scene on double click\n");
 	} else if ((accepted = _gui_input_anchors(p_event))) {
 		//printf("Anchors\n");
+	} else if ((accepted = _gui_input_scale(p_event))) {
+		//printf("Set scale\n");
 	} else if ((accepted = _gui_input_pivot(p_event))) {
 		//printf("Set pivot\n");
 	} else if ((accepted = _gui_input_resize(p_event))) {
@@ -2288,6 +2375,188 @@ void CanvasItemEditor::_draw_grid() {
 	}
 }
 
+void CanvasItemEditor::_draw_control_helpers(Control *control) {
+	Transform2D xform = transform * control->get_global_transform_with_canvas();
+	RID ci = viewport->get_canvas_item();
+	if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
+		// Draw the helpers
+		Color color_base = Color(0.8, 0.8, 0.8, 0.5);
+
+		float anchors_values[4];
+		anchors_values[0] = control->get_anchor(MARGIN_LEFT);
+		anchors_values[1] = control->get_anchor(MARGIN_TOP);
+		anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
+		anchors_values[3] = control->get_anchor(MARGIN_BOTTOM);
+
+		// Draw the anchors
+		Vector2 anchors[4];
+		Vector2 anchors_pos[4];
+		for (int i = 0; i < 4; i++) {
+			anchors[i] = Vector2((i % 2 == 0) ? anchors_values[i] : anchors_values[(i + 1) % 4], (i % 2 == 1) ? anchors_values[i] : anchors_values[(i + 1) % 4]);
+			anchors_pos[i] = xform.xform(_anchor_to_position(control, anchors[i]));
+		}
+
+		// Get which anchor is dragged
+		int dragged_anchor = -1;
+		switch (drag_type) {
+			case DRAG_ANCHOR_ALL:
+			case DRAG_ANCHOR_TOP_LEFT:
+				dragged_anchor = 0;
+				break;
+			case DRAG_ANCHOR_TOP_RIGHT:
+				dragged_anchor = 1;
+				break;
+			case DRAG_ANCHOR_BOTTOM_RIGHT:
+				dragged_anchor = 2;
+				break;
+			case DRAG_ANCHOR_BOTTOM_LEFT:
+				dragged_anchor = 3;
+				break;
+			default:
+				break;
+		}
+
+		if (dragged_anchor >= 0) {
+			// Draw the 4 lines when dragged
+			bool snapped;
+			Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
+
+			Vector2 corners_pos[4];
+			for (int i = 0; i < 4; i++) {
+				corners_pos[i] = xform.xform(_anchor_to_position(control, Vector2((i == 0 || i == 3) ? ANCHOR_BEGIN : ANCHOR_END, (i <= 1) ? ANCHOR_BEGIN : ANCHOR_END)));
+			}
+
+			Vector2 line_starts[4];
+			Vector2 line_ends[4];
+			for (int i = 0; i < 4; i++) {
+				float anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
+				line_starts[i] = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
+				line_ends[i] = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
+				snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
+				viewport->draw_line(line_starts[i], line_ends[i], snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
+			}
+
+			// Display the percentages next to the lines
+			float percent_val;
+			percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
+			percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
+			_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 1) % 4]) / 2, (Margin)((dragged_anchor + 1) % 4));
+
+			percent_val = anchors_values[(dragged_anchor + 3) % 4] - anchors_values[(dragged_anchor + 1) % 4];
+			percent_val = ((dragged_anchor + 1) % 4 >= 2) ? -percent_val : percent_val;
+			_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 3) % 4]) / 2, (Margin)(dragged_anchor));
+
+			percent_val = anchors_values[(dragged_anchor + 1) % 4];
+			percent_val = ((dragged_anchor + 1) % 4 >= 2) ? ANCHOR_END - percent_val : percent_val;
+			_draw_percentage_at_position(percent_val, (line_starts[dragged_anchor] + anchors_pos[dragged_anchor]) / 2, (Margin)(dragged_anchor));
+
+			percent_val = anchors_values[dragged_anchor];
+			percent_val = (dragged_anchor >= 2) ? ANCHOR_END - percent_val : percent_val;
+			_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Margin)((dragged_anchor + 1) % 4));
+		}
+
+		Rect2 anchor_rects[4];
+		anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
+		anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
+		anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
+		anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+
+		for (int i = 0; i < 4; i++) {
+			anchor_handle->draw_rect(ci, anchor_rects[i]);
+		}
+
+		// Draw the margin values and the node width/height when dragging control side
+		float ratio = 0.33;
+		Transform2D parent_transform = xform * control->get_transform().affine_inverse();
+		float node_pos_in_parent[4];
+
+		Rect2 parent_rect = control->get_parent_anchorable_rect();
+
+		node_pos_in_parent[0] = control->get_anchor(MARGIN_LEFT) * parent_rect.size.width + control->get_margin(MARGIN_LEFT) + parent_rect.position.x;
+		node_pos_in_parent[1] = control->get_anchor(MARGIN_TOP) * parent_rect.size.height + control->get_margin(MARGIN_TOP) + parent_rect.position.y;
+		node_pos_in_parent[2] = control->get_anchor(MARGIN_RIGHT) * parent_rect.size.width + control->get_margin(MARGIN_RIGHT) + parent_rect.position.x;
+		node_pos_in_parent[3] = control->get_anchor(MARGIN_BOTTOM) * parent_rect.size.height + control->get_margin(MARGIN_BOTTOM) + parent_rect.position.y;
+
+		Point2 start, end;
+		switch (drag_type) {
+			case DRAG_LEFT:
+			case DRAG_TOP_LEFT:
+			case DRAG_BOTTOM_LEFT:
+				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
+			case DRAG_MOVE:
+				start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
+				end = start - Vector2(control->get_margin(MARGIN_LEFT), 0);
+				_draw_margin_at_position(control->get_margin(MARGIN_LEFT), parent_transform.xform((start + end) / 2), MARGIN_TOP);
+				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+				break;
+			default:
+				break;
+		}
+		switch (drag_type) {
+			case DRAG_RIGHT:
+			case DRAG_TOP_RIGHT:
+			case DRAG_BOTTOM_RIGHT:
+				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
+			case DRAG_MOVE:
+				start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
+				end = start - Vector2(control->get_margin(MARGIN_RIGHT), 0);
+				_draw_margin_at_position(control->get_margin(MARGIN_RIGHT), parent_transform.xform((start + end) / 2), MARGIN_BOTTOM);
+				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+				break;
+			default:
+				break;
+		}
+		switch (drag_type) {
+			case DRAG_TOP:
+			case DRAG_TOP_LEFT:
+			case DRAG_TOP_RIGHT:
+				_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2)) + Vector2(5, 0), MARGIN_RIGHT);
+			case DRAG_MOVE:
+				start = Vector2(Math::lerp(node_pos_in_parent[0], node_pos_in_parent[2], ratio), node_pos_in_parent[1]);
+				end = start - Vector2(0, control->get_margin(MARGIN_TOP));
+				_draw_margin_at_position(control->get_margin(MARGIN_TOP), parent_transform.xform((start + end) / 2), MARGIN_LEFT);
+				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+				break;
+			default:
+				break;
+		}
+		switch (drag_type) {
+			case DRAG_BOTTOM:
+			case DRAG_BOTTOM_LEFT:
+			case DRAG_BOTTOM_RIGHT:
+				_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2) + Vector2(5, 0)), MARGIN_RIGHT);
+			case DRAG_MOVE:
+				start = Vector2(Math::lerp(node_pos_in_parent[2], node_pos_in_parent[0], ratio), node_pos_in_parent[3]);
+				end = start - Vector2(0, control->get_margin(MARGIN_BOTTOM));
+				_draw_margin_at_position(control->get_margin(MARGIN_BOTTOM), parent_transform.xform((start + end) / 2), MARGIN_RIGHT);
+				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
+				break;
+			default:
+				break;
+		}
+
+		switch (drag_type) {
+			//Draw the ghost rect if the node if rotated/scaled
+			case DRAG_LEFT:
+			case DRAG_TOP_LEFT:
+			case DRAG_TOP:
+			case DRAG_TOP_RIGHT:
+			case DRAG_RIGHT:
+			case DRAG_BOTTOM_RIGHT:
+			case DRAG_BOTTOM:
+			case DRAG_BOTTOM_LEFT:
+			case DRAG_MOVE:
+				if (control->get_rotation() != 0.0 || control->get_scale() != Vector2(1, 1)) {
+					Rect2 rect = Rect2(Vector2(node_pos_in_parent[0], node_pos_in_parent[1]), control->get_size());
+					viewport->draw_rect(parent_transform.xform(rect), color_base, false);
+				}
+				break;
+			default:
+				break;
+		}
+	}
+}
+
 void CanvasItemEditor::_draw_selection() {
 	Ref<Texture> pivot_icon = get_icon("EditorPivot", "EditorIcons");
 	Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
@@ -2346,199 +2615,26 @@ void CanvasItemEditor::_draw_selection() {
 			}
 		} else {
 
-			Transform2D transform = Transform2D(xform.get_rotation(), xform.get_origin());
-			viewport->draw_set_transform_matrix(transform);
+			Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+			Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+			viewport->draw_set_transform_matrix(simple_xform);
 			viewport->draw_texture(position_icon, -(position_icon->get_size() / 2));
-			viewport->draw_set_transform_matrix(Transform2D());
+			viewport->draw_set_transform_matrix(viewport->get_transform());
 		}
 
-		if (single && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
+		if (single && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
 			// Draw the pivot
 			if (canvas_item->_edit_get_pivot() != Vector2() || drag_type == DRAG_PIVOT || tool == TOOL_EDIT_PIVOT) { // This is not really clean :/
 				viewport->draw_texture(pivot_icon, (xform.xform(canvas_item->_edit_get_pivot()) - (pivot_icon->get_size() / 2)).floor());
 			}
 
+			// Draw control-related helpers
 			Control *control = Object::cast_to<Control>(canvas_item);
 			if (control) {
-				if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
-					// Draw the helpers
-					Color color_base = Color(0.8, 0.8, 0.8, 0.5);
-
-					float anchors_values[4];
-					anchors_values[0] = control->get_anchor(MARGIN_LEFT);
-					anchors_values[1] = control->get_anchor(MARGIN_TOP);
-					anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
-					anchors_values[3] = control->get_anchor(MARGIN_BOTTOM);
-
-					// Draw the anchors
-					Vector2 anchors[4];
-					Vector2 anchors_pos[4];
-					for (int i = 0; i < 4; i++) {
-						anchors[i] = Vector2((i % 2 == 0) ? anchors_values[i] : anchors_values[(i + 1) % 4], (i % 2 == 1) ? anchors_values[i] : anchors_values[(i + 1) % 4]);
-						anchors_pos[i] = xform.xform(_anchor_to_position(control, anchors[i]));
-					}
-
-					// Get which anchor is dragged
-					int dragged_anchor = -1;
-					switch (drag_type) {
-						case DRAG_ANCHOR_ALL:
-						case DRAG_ANCHOR_TOP_LEFT:
-							dragged_anchor = 0;
-							break;
-						case DRAG_ANCHOR_TOP_RIGHT:
-							dragged_anchor = 1;
-							break;
-						case DRAG_ANCHOR_BOTTOM_RIGHT:
-							dragged_anchor = 2;
-							break;
-						case DRAG_ANCHOR_BOTTOM_LEFT:
-							dragged_anchor = 3;
-							break;
-						default:
-							break;
-					}
-
-					if (dragged_anchor >= 0) {
-						// Draw the 4 lines when dragged
-						bool snapped;
-						Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
-
-						Vector2 corners_pos[4];
-						for (int i = 0; i < 4; i++) {
-							corners_pos[i] = xform.xform(_anchor_to_position(control, Vector2((i == 0 || i == 3) ? ANCHOR_BEGIN : ANCHOR_END, (i <= 1) ? ANCHOR_BEGIN : ANCHOR_END)));
-						}
-
-						Vector2 line_starts[4];
-						Vector2 line_ends[4];
-						for (int i = 0; i < 4; i++) {
-							float anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
-							line_starts[i] = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
-							line_ends[i] = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
-							snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
-							viewport->draw_line(line_starts[i], line_ends[i], snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
-						}
-
-						// Display the percentages next to the lines
-						float percent_val;
-						percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
-						percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
-						_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 1) % 4]) / 2, (Margin)((dragged_anchor + 1) % 4));
-
-						percent_val = anchors_values[(dragged_anchor + 3) % 4] - anchors_values[(dragged_anchor + 1) % 4];
-						percent_val = ((dragged_anchor + 1) % 4 >= 2) ? -percent_val : percent_val;
-						_draw_percentage_at_position(percent_val, (anchors_pos[dragged_anchor] + anchors_pos[(dragged_anchor + 3) % 4]) / 2, (Margin)(dragged_anchor));
-
-						percent_val = anchors_values[(dragged_anchor + 1) % 4];
-						percent_val = ((dragged_anchor + 1) % 4 >= 2) ? ANCHOR_END - percent_val : percent_val;
-						_draw_percentage_at_position(percent_val, (line_starts[dragged_anchor] + anchors_pos[dragged_anchor]) / 2, (Margin)(dragged_anchor));
-
-						percent_val = anchors_values[dragged_anchor];
-						percent_val = (dragged_anchor >= 2) ? ANCHOR_END - percent_val : percent_val;
-						_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Margin)((dragged_anchor + 1) % 4));
-					}
-
-					Rect2 anchor_rects[4];
-					anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
-					anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
-					anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
-					anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
-
-					for (int i = 0; i < 4; i++) {
-						anchor_handle->draw_rect(ci, anchor_rects[i]);
-					}
-
-					// Draw the margin values and the node width/height when dragging control side
-					float ratio = 0.33;
-					Transform2D parent_transform = xform * control->get_transform().affine_inverse();
-					float node_pos_in_parent[4];
-
-					Rect2 parent_rect = control->get_parent_anchorable_rect();
-
-					node_pos_in_parent[0] = control->get_anchor(MARGIN_LEFT) * parent_rect.size.width + control->get_margin(MARGIN_LEFT) + parent_rect.position.x;
-					node_pos_in_parent[1] = control->get_anchor(MARGIN_TOP) * parent_rect.size.height + control->get_margin(MARGIN_TOP) + parent_rect.position.y;
-					node_pos_in_parent[2] = control->get_anchor(MARGIN_RIGHT) * parent_rect.size.width + control->get_margin(MARGIN_RIGHT) + parent_rect.position.x;
-					node_pos_in_parent[3] = control->get_anchor(MARGIN_BOTTOM) * parent_rect.size.height + control->get_margin(MARGIN_BOTTOM) + parent_rect.position.y;
-
-					Point2 start, end;
-					switch (drag_type) {
-						case DRAG_LEFT:
-						case DRAG_TOP_LEFT:
-						case DRAG_BOTTOM_LEFT:
-							_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
-						case DRAG_MOVE:
-							start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
-							end = start - Vector2(control->get_margin(MARGIN_LEFT), 0);
-							_draw_margin_at_position(control->get_margin(MARGIN_LEFT), parent_transform.xform((start + end) / 2), MARGIN_TOP);
-							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
-							break;
-						default:
-							break;
-					}
-					switch (drag_type) {
-						case DRAG_RIGHT:
-						case DRAG_TOP_RIGHT:
-						case DRAG_BOTTOM_RIGHT:
-							_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
-						case DRAG_MOVE:
-							start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
-							end = start - Vector2(control->get_margin(MARGIN_RIGHT), 0);
-							_draw_margin_at_position(control->get_margin(MARGIN_RIGHT), parent_transform.xform((start + end) / 2), MARGIN_BOTTOM);
-							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
-							break;
-						default:
-							break;
-					}
-					switch (drag_type) {
-						case DRAG_TOP:
-						case DRAG_TOP_LEFT:
-						case DRAG_TOP_RIGHT:
-							_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2)) + Vector2(5, 0), MARGIN_RIGHT);
-						case DRAG_MOVE:
-							start = Vector2(Math::lerp(node_pos_in_parent[0], node_pos_in_parent[2], ratio), node_pos_in_parent[1]);
-							end = start - Vector2(0, control->get_margin(MARGIN_TOP));
-							_draw_margin_at_position(control->get_margin(MARGIN_TOP), parent_transform.xform((start + end) / 2), MARGIN_LEFT);
-							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
-							break;
-						default:
-							break;
-					}
-					switch (drag_type) {
-						case DRAG_BOTTOM:
-						case DRAG_BOTTOM_LEFT:
-						case DRAG_BOTTOM_RIGHT:
-							_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2) + Vector2(5, 0)), MARGIN_RIGHT);
-						case DRAG_MOVE:
-							start = Vector2(Math::lerp(node_pos_in_parent[2], node_pos_in_parent[0], ratio), node_pos_in_parent[3]);
-							end = start - Vector2(0, control->get_margin(MARGIN_BOTTOM));
-							_draw_margin_at_position(control->get_margin(MARGIN_BOTTOM), parent_transform.xform((start + end) / 2), MARGIN_RIGHT);
-							viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, 1);
-							break;
-						default:
-							break;
-					}
-
-					switch (drag_type) {
-						//Draw the ghost rect if the node if rotated/scaled
-						case DRAG_LEFT:
-						case DRAG_TOP_LEFT:
-						case DRAG_TOP:
-						case DRAG_TOP_RIGHT:
-						case DRAG_RIGHT:
-						case DRAG_BOTTOM_RIGHT:
-						case DRAG_BOTTOM:
-						case DRAG_BOTTOM_LEFT:
-						case DRAG_MOVE:
-							if (control->get_rotation() != 0.0 || control->get_scale() != Vector2(1, 1)) {
-								Rect2 rect = Rect2(Vector2(node_pos_in_parent[0], node_pos_in_parent[1]), control->get_size());
-								viewport->draw_rect(parent_transform.xform(rect), color_base, false);
-							}
-							break;
-						default:
-							break;
-					}
-				}
+				_draw_control_helpers(control);
 			}
 
+			// Draw the resize handles
 			if (tool == TOOL_SELECT && canvas_item->_edit_use_rect()) {
 				Rect2 rect = canvas_item->_edit_get_rect();
 				Vector2 endpoints[4] = {
@@ -2548,7 +2644,6 @@ void CanvasItemEditor::_draw_selection() {
 					xform.xform(rect.position + Vector2(0, rect.size.y))
 				};
 				for (int i = 0; i < 4; i++) {
-					// Draw the resize handles
 					int prev = (i + 3) % 4;
 					int next = (i + 1) % 4;
 
@@ -2562,6 +2657,46 @@ void CanvasItemEditor::_draw_selection() {
 
 					select_handle->draw(ci, (ofs - (select_handle->get_size() / 2)).floor());
 				}
+			}
+
+			// Draw the rescale handles
+			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
+			if ((is_alt && is_ctrl) || tool == TOOL_SCALE || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
+				Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
+				bool uniform = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+				Point2 offset = (simple_xform.affine_inverse().xform(drag_to) - simple_xform.affine_inverse().xform(drag_from)) * zoom;
+
+				if (drag_type == DRAG_SCALE_X) {
+					scale_factor.x += offset.x;
+					if (uniform) {
+						scale_factor.y += offset.x;
+					}
+				} else if (drag_type == DRAG_SCALE_Y) {
+					scale_factor.y -= offset.y;
+					if (uniform) {
+						scale_factor.x -= offset.y;
+					}
+				}
+
+				//scale_factor *= zoom;
+
+				viewport->draw_set_transform_matrix(simple_xform);
+				Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+				Color x_axis_color(1.0, 0.4, 0.4, 0.6);
+				viewport->draw_rect(x_handle_rect, x_axis_color);
+				viewport->draw_line(Point2(), Point2(scale_factor.x * EDSCALE, 0), x_axis_color);
+
+				Rect2 y_handle_rect = Rect2(-5 * EDSCALE, -(scale_factor.y + 10) * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
+				Color y_axis_color(0.4, 1.0, 0.4, 0.6);
+				viewport->draw_rect(y_handle_rect, y_axis_color);
+				viewport->draw_line(Point2(), Point2(0, -scale_factor.y * EDSCALE), y_axis_color);
+
+				viewport->draw_set_transform_matrix(viewport->get_transform());
 			}
 		}
 	}
@@ -2737,15 +2872,16 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || canvas_item->get_meta("_edit_lock_"))) {
+	if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || (canvas_item->has_meta("_edit_lock_") && canvas_item->get_meta("_edit_lock_")))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
 		Ref<Texture> position_icon = get_icon("EditorPositionUnselected", "EditorIcons");
-		Transform2D transform = Transform2D(xform.get_rotation(), xform.get_origin());
-		viewport->draw_set_transform_matrix(transform);
+		Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+		Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+		viewport->draw_set_transform_matrix(simple_xform);
 		viewport->draw_texture(position_icon, -position_icon->get_size() / 2, Color(1.0, 1.0, 1.0, 0.5));
-		viewport->draw_set_transform_matrix(Transform2D());
+		viewport->draw_set_transform_matrix(viewport->get_transform());
 	}
 }
 
@@ -3073,6 +3209,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		select_button->set_icon(get_icon("ToolSelect", "EditorIcons"));
 		list_select_button->set_icon(get_icon("ListSelect", "EditorIcons"));
 		move_button->set_icon(get_icon("ToolMove", "EditorIcons"));
+		scale_button->set_icon(get_icon("ToolScale", "EditorIcons"));
 		rotate_button->set_icon(get_icon("ToolRotate", "EditorIcons"));
 		snap_button->set_icon(get_icon("Snap", "EditorIcons"));
 		snap_config_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
@@ -3381,7 +3518,7 @@ void CanvasItemEditor::_button_toggle_snap(bool p_status) {
 
 void CanvasItemEditor::_button_tool_select(int p_index) {
 
-	ToolButton *tb[TOOL_MAX] = { select_button, list_select_button, move_button, rotate_button, pivot_button, pan_button };
+	ToolButton *tb[TOOL_MAX] = { select_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button };
 	for (int i = 0; i < TOOL_MAX; i++) {
 		tb[i]->set_pressed(i == p_index);
 	}
@@ -4273,12 +4410,21 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), KEY_Q));
 	select_button->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate") + "\n" + TTR("Alt+Drag: Move") + "\n" + TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).") + "\n" + TTR("Alt+RMB: Depth list selection"));
 
+	hb->add_child(memnew(VSeparator));
+
 	move_button = memnew(ToolButton);
 	hb->add_child(move_button);
 	move_button->set_toggle_mode(true);
 	move_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), KEY_W));
 	move_button->set_tooltip(TTR("Move Mode"));
+
+	scale_button = memnew(ToolButton);
+	hb->add_child(scale_button);
+	scale_button->set_toggle_mode(true);
+	scale_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SCALE));
+	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), KEY_S));
+	scale_button->set_tooltip(TTR("Scale Mode"));
 
 	rotate_button = memnew(ToolButton);
 	hb->add_child(rotate_button);
