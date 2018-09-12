@@ -227,65 +227,6 @@ bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	return E->get().loop;
 }
 
-void SpriteFrames::_set_frames(const Array &p_frames) {
-
-	clear_all();
-	Map<StringName, Anim>::Element *E = animations.find(SceneStringNames::get_singleton()->_default);
-	ERR_FAIL_COND(!E);
-
-	E->get().frames.resize(p_frames.size());
-	for (int i = 0; i < E->get().frames.size(); i++)
-		E->get().frames.write[i] = p_frames[i];
-}
-Array SpriteFrames::_get_frames() const {
-
-	return Array();
-}
-
-Array SpriteFrames::_get_animations() const {
-
-	Array anims;
-	for (Map<StringName, Anim>::Element *E = animations.front(); E; E = E->next()) {
-		Dictionary d;
-		d["name"] = E->key();
-		d["speed"] = E->get().speed;
-		d["loop"] = E->get().loop;
-		Array frames;
-		for (int i = 0; i < E->get().frames.size(); i++) {
-			frames.push_back(E->get().frames[i]);
-		}
-		d["frames"] = frames;
-		anims.push_back(d);
-	}
-
-	return anims;
-}
-void SpriteFrames::_set_animations(const Array &p_animations) {
-
-	animations.clear();
-	for (int i = 0; i < p_animations.size(); i++) {
-
-		Dictionary d = p_animations[i];
-
-		ERR_CONTINUE(!d.has("name"));
-		ERR_CONTINUE(!d.has("speed"));
-		ERR_CONTINUE(!d.has("loop"));
-		ERR_CONTINUE(!d.has("frames"));
-
-		Anim anim;
-		anim.speed = d["speed"];
-		anim.loop = d["loop"];
-		Array frames = d["frames"];
-		for (int i = 0; i < frames.size(); i++) {
-
-			RES res = frames[i];
-			anim.frames.push_back(res);
-		}
-
-		animations[d["name"]] = anim;
-	}
-}
-
 void SpriteFrames::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);
@@ -308,16 +249,6 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_frame", "anim", "idx"), &SpriteFrames::remove_frame);
 	ClassDB::bind_method(D_METHOD("clear", "anim"), &SpriteFrames::clear);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SpriteFrames::clear_all);
-
-	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
-	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
-
-	ADD_PROPERTYNZ(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
-
-	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
-	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
-
-	ADD_PROPERTYNZ(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
 }
 
 SpriteFrames::SpriteFrames() {
