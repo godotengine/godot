@@ -41,6 +41,7 @@
 #include "ucaps.h"
 
 #include "../glue/cs_compressed.gen.h"
+#include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_defs.h"
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
@@ -1277,8 +1278,6 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	output.push_back("uint32_t get_bindings_version() { return ");
 	output.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + "; }\n");
-	output.push_back("uint32_t get_cs_glue_version() { return ");
-	output.push_back(String::num_uint64(CS_GLUE_VERSION) + "; }\n");
 
 	output.push_back("\nvoid register_generated_icalls() " OPEN_BLOCK);
 	output.push_back("\tgodot_register_glue_header_icalls();\n");
@@ -1361,10 +1360,6 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 uint32_t BindingsGenerator::get_version() {
 	return BINDINGS_GENERATOR_VERSION;
-}
-
-uint32_t BindingsGenerator::get_cs_glue_version() {
-	return CS_GLUE_VERSION;
 }
 
 Error BindingsGenerator::_save_file(const String &p_path, const List<String> &p_content) {

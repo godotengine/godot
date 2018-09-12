@@ -42,6 +42,7 @@
 #include "project_settings.h"
 
 #include "../csharp_script.h"
+#include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_dirs.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_class.h"
@@ -307,7 +308,6 @@ uint64_t get_core_api_hash();
 uint64_t get_editor_api_hash();
 #endif // TOOLS_ENABLED
 uint32_t get_bindings_version();
-uint32_t get_cs_glue_version();
 
 void register_generated_icalls();
 } // namespace GodotSharpBindings
@@ -459,7 +459,7 @@ bool GDMono::_load_core_api_assembly() {
 		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(core_api_assembly, APIAssembly::API_CORE);
 		core_api_assembly_out_of_sync = GodotSharpBindings::get_core_api_hash() != api_assembly_ver.godot_api_hash ||
 										GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-										GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+										CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
 #endif
 		GDMonoUtils::update_godot_api_cache();
 	}
@@ -485,7 +485,7 @@ bool GDMono::_load_editor_api_assembly() {
 		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(editor_api_assembly, APIAssembly::API_EDITOR);
 		editor_api_assembly_out_of_sync = GodotSharpBindings::get_editor_api_hash() != api_assembly_ver.godot_api_hash ||
 										  GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-										  GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
+										  CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
 #endif
 	}
 
@@ -720,13 +720,15 @@ Error GDMono::reload_scripts_domain() {
 		// so we invalidate the version in the metadata and unload the script domain.
 
 		if (core_api_assembly_out_of_sync) {
+			ERR_PRINT("The loaded Core API assembly is out of sync");
 			metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 		} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
-			ERR_PRINT("Core API assembly is in sync, but the cache update failed");
+			ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
 			metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 		}
 
 		if (editor_api_assembly_out_of_sync) {
+			ERR_PRINT("The loaded Editor API assembly is out of sync");
 			metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 		}
 

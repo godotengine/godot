@@ -552,7 +552,6 @@ public:
 	Error generate_glue(const String &p_output_dir);
 
 	static uint32_t get_version();
-	static uint32_t get_cs_glue_version();
 
 	void initialize();
 

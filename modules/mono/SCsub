@@ -7,7 +7,7 @@ env_mono = env_modules.Clone()
 
 # TODO move functions to their own modules
 
-def make_cs_files_header(src, dst):
+def make_cs_files_header(src, dst, version_dst):
     from compat import byte_to_str
 
     with open(dst, 'w') as header:
@@ -49,8 +49,6 @@ def make_cs_files_header(src, dst):
                                         '_cs_' + name + '_uncompressed_size, ' \
                                         '_cs_' + name + '_compressed));\n'
                     header.write(' };\n')
-        glue_version = int(latest_mtime) # The latest modified time will do for now
-        header.write('\n#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
         header.write('\nstruct CompressedFile\n' '{\n'
             '\tint compressed_size;\n' '\tint uncompressed_size;\n' '\tconst unsigned char* data;\n'
             '\n\tCompressedFile(int p_comp_size, int p_uncomp_size, const unsigned char* p_data)\n'
@@ -61,6 +59,15 @@ def make_cs_files_header(src, dst):
         header.write('\n#endif // TOOLS_ENABLED\n')
         header.write('\n#endif // CS_COMPRESSED_H\n')
 
+        glue_version = int(latest_mtime) # The latest modified time will do for now
+
+        with open(version_dst, 'w') as version_header:
+            version_header.write('/* THIS FILE IS GENERATED DO NOT EDIT */\n')
+            version_header.write('#ifndef CS_GLUE_VERSION_H\n')
+            version_header.write('#define CS_GLUE_VERSION_H\n\n')
+            version_header.write('#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
+            version_header.write('\n#endif // CS_GLUE_VERSION_H\n')
+
 
 env_mono.add_source_files(env.modules_sources, '*.cpp')
 env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
@@ -70,7 +77,7 @@ env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 if env['tools']:
     env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h')
+    make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h', 'glue/cs_glue_version.gen.h')
 
 vars = Variables()
 vars.Add(BoolVariable('mono_glue', 'Build with the mono glue sources', True))

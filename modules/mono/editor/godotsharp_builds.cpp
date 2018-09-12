@@ -33,6 +33,7 @@
 #include "core/vector.h"
 #include "main/main.h"
 
+#include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
@@ -268,7 +269,7 @@ String GodotSharpBuilds::_api_folder_name(APIAssembly::Type p_api_type) {
 								GDMono::get_singleton()->get_api_editor_hash();
 	return String::num_uint64(api_hash) +
 		   "_" + String::num_uint64(BindingsGenerator::get_version()) +
-		   "_" + String::num_uint64(BindingsGenerator::get_cs_glue_version());
+		   "_" + String::num_uint64(CS_GLUE_VERSION);
 }
 
 bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
