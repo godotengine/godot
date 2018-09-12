@@ -53,9 +53,9 @@ void MonoBottomPanel::_update_build_tabs_list() {
 
 			build_tabs_list->add_item(item_name, tab->get_icon_texture());
 
-			String item_tooltip = String("Solution: ") + tab->build_info.solution;
-			item_tooltip += String("\nConfiguration: ") + tab->build_info.configuration;
-			item_tooltip += String("\nStatus: ");
+			String item_tooltip = "Solution: " + tab->build_info.solution;
+			item_tooltip += "\nConfiguration: " + tab->build_info.configuration;
+			item_tooltip += "\nStatus: ";
 
 			if (tab->build_exited) {
 				item_tooltip += tab->build_result == MonoBuildTab::RESULT_SUCCESS ? "Succeeded" : "Errored";

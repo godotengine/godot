@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Godot
 {
@@ -11,7 +12,10 @@ namespace Godot
 
         public static WeakRef WeakRef(Object obj)
         {
-            return NativeCalls.godot_icall_Godot_weakref(Object.GetPtr(obj));
+            return godot_icall_Object_weakref(Object.GetPtr(obj));
         }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static WeakRef godot_icall_Object_weakref(IntPtr obj);
     }
 }

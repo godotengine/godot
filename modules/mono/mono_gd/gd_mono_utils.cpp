@@ -138,6 +138,7 @@ void MonoCache::clear_members() {
 	field_Image_ptr = NULL;
 	field_RID_ptr = NULL;
 
+	methodthunk_GodotObject_Dispose = NULL;
 	methodthunk_Array_GetPtr = NULL;
 	methodthunk_Dictionary_GetPtr = NULL;
 	methodthunk_MarshalUtils_IsArrayGenericType = NULL;
@@ -235,6 +236,7 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(NodePath, ptr, CACHED_CLASS(NodePath)->get_field(BINDINGS_PTR_FIELD));
 	CACHE_FIELD_AND_CHECK(RID, ptr, CACHED_CLASS(RID)->get_field(BINDINGS_PTR_FIELD));
 
+	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, Dispose, (GodotObject_Dispose)CACHED_CLASS(GodotObject)->get_method_thunk("Dispose", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Array)->get_method_thunk("GetPtr", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary)->get_method_thunk("GetPtr", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsArrayGenericType", 1));
@@ -247,7 +249,7 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, (DebugUtils_StackFrameInfo)GODOT_API_CLASS(DebuggingUtils)->get_method_thunk("GetStackFrameInfo", 4));
 #endif
 
-	// TODO Move to CSharpLanguage::init()
+	// TODO Move to CSharpLanguage::init() and do handle disposal
 	MonoObject *task_scheduler = mono_object_new(SCRIPTS_DOMAIN, GODOT_API_CLASS(GodotTaskScheduler)->get_mono_ptr());
 	GDMonoUtils::runtime_object_init(task_scheduler);
 	mono_cache.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
@@ -270,11 +272,48 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 			}
 		}
 
-		// Only called if the owner does not have a CSharpInstance
+		// If the owner does not have a CSharpInstance...
+
 		void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
 		if (data) {
-			return ((Map<Object *, Ref<MonoGCHandle> >::Element *)data)->value()->get_target();
+			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
+
+			Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
+			ERR_FAIL_COND_V(gchandle.is_null(), NULL);
+
+			MonoObject *target = gchandle->get_target();
+
+			if (target)
+				return target;
+
+			CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
+
+			// Create a new one
+
+#ifdef DEBUG_ENABLED
+			CRASH_COND(script_binding.type_name == StringName());
+			CRASH_COND(script_binding.wrapper_class == NULL);
+#endif
+
+			MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(script_binding.wrapper_class, script_binding.type_name, unmanaged);
+			ERR_FAIL_NULL_V(mono_object, NULL);
+
+			gchandle->set_handle(MonoGCHandle::new_strong_handle(mono_object), MonoGCHandle::STRONG_HANDLE);
+
+			// Tie managed to unmanaged
+			Reference *ref = Object::cast_to<Reference>(unmanaged);
+
+			if (ref) {
+				// Unsafe refcount increment. The managed instance also counts as a reference.
+				// This way if the unmanaged world has no references to our owner
+				// but the managed instance is alive, the refcount will be 1 instead of 0.
+				// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+
+				ref->reference();
+			}
+
+			return mono_object;
 		}
 	}
 
@@ -304,6 +343,7 @@ MonoThread *get_current_thread() {
 
 void runtime_object_init(MonoObject *p_this_obj) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	// FIXME: Do not use mono_runtime_object_init, it aborts if an exception is thrown
 	mono_runtime_object_init(p_this_obj);
 	GD_MONO_END_RUNTIME_INVOKE;
 }

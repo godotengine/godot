@@ -31,6 +31,8 @@
 #ifndef COLLECTIONS_GLUE_H
 #define COLLECTIONS_GLUE_H
 
+#ifdef MONO_GLUE_ENABLED
+
 #include "core/array.h"
 
 #include "../mono_gd/gd_mono_marshal.h"
@@ -96,5 +98,7 @@ bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoOb
 // Register internal calls
 
 void godot_register_collections_icalls();
+
+#endif // MONO_GLUE_ENABLED
 
 #endif // COLLECTIONS_GLUE_H

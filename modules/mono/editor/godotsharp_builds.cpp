@@ -30,8 +30,10 @@
 
 #include "godotsharp_builds.h"
 
+#include "core/vector.h"
 #include "main/main.h"
 
+#include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
@@ -50,6 +52,16 @@ void godot_icall_BuildInstance_ExitCallback(MonoString *p_solution, MonoString *
 	GodotSharpBuilds::get_singleton()->build_exit_callback(MonoBuildInfo(solution, config), p_exit_code);
 }
 
+static Vector<const char *> _get_msbuild_hint_dirs() {
+	Vector<const char *> ret;
+#ifdef OSX_ENABLED
+	ret.push_back("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
+	ret.push_back("/usr/local/var/homebrew/linked/mono/bin/");
+#endif
+	ret.push_back("/opt/novell/mono/bin/");
+	return ret;
+}
+
 #ifdef UNIX_ENABLED
 String _find_build_engine_on_unix(const String &p_name) {
 	String ret = path_which(p_name);
@@ -61,15 +73,9 @@ String _find_build_engine_on_unix(const String &p_name) {
 	if (ret_fallback.length())
 		return ret_fallback;
 
-	const char *locations[] = {
-#ifdef OSX_ENABLED
-		"/Library/Frameworks/Mono.framework/Versions/Current/bin/",
-		"/usr/local/var/homebrew/linked/mono/bin/",
-#endif
-		"/opt/novell/mono/bin/"
-	};
+	static Vector<const char *> locations = _get_msbuild_hint_dirs();
 
-	for (int i = 0; i < sizeof(locations) / sizeof(const char *); i++) {
+	for (int i = 0; i < locations.size(); i++) {
 		String hint_path = locations[i] + p_name;
 
 		if (FileAccess::exists(hint_path)) {
@@ -263,7 +269,7 @@ String GodotSharpBuilds::_api_folder_name(APIAssembly::Type p_api_type) {
 								GDMono::get_singleton()->get_api_editor_hash();
 	return String::num_uint64(api_hash) +
 		   "_" + String::num_uint64(BindingsGenerator::get_version()) +
-		   "_" + String::num_uint64(BindingsGenerator::get_cs_glue_version());
+		   "_" + String::num_uint64(CS_GLUE_VERSION);
 }
 
 bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {

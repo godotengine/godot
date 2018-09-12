@@ -30,9 +30,12 @@
 
 #include "collections_glue.h"
 
+#ifdef MONO_GLUE_ENABLED
+
 #include <mono/metadata/exception.h>
 
 #include "../mono_gd/gd_mono_class.h"
+#include "../mono_gd/gd_mono_utils.h"
 
 Array *godot_icall_Array_Ctor() {
 	return memnew(Array);
@@ -238,3 +241,5 @@ void godot_register_collections_icalls() {
 	mono_add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Remove", (void *)godot_icall_Dictionary_Remove);
 	mono_add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_TryGetValue", (void *)godot_icall_Dictionary_TryGetValue);
 }
+
+#endif // MONO_GLUE_ENABLED
