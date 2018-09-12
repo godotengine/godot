@@ -1084,7 +1084,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		max_frame_functions(16),
 		skip_profile_frame(false),
 		reload_all_scripts(false),
-		tcp_client(StreamPeerTCP::create_ref()),
+		tcp_client(Ref<StreamPeerTCP>(memnew(StreamPeerTCP))),
 		packet_peer_stream(Ref<PacketPeerStream>(memnew(PacketPeerStream))),
 		last_perf_time(0),
 		performance(Engine::get_singleton()->get_singleton_object("Performance")),

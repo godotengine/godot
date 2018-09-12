@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_tcp_posix.h                                              */
+/*  net_socket.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,63 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef UNIX_ENABLED
+#ifndef NET_SOCKET_H
+#define NET_SOCKET_H
 
-#ifndef STREAM_PEER_TCP_POSIX_H
-#define STREAM_PEER_TCP_POSIX_H
+#include "core/io/ip.h"
+#include "core/reference.h"
 
-#include "core/error_list.h"
-#include "core/io/ip_address.h"
-#include "core/io/stream_peer_tcp.h"
-
-class StreamPeerTCPPosix : public StreamPeerTCP {
+class NetSocket : public Reference {
 
 protected:
-	mutable Status status;
-
-	IP::Type sock_type;
-	int sockfd;
-
-	Error _block(int p_sockfd, bool p_read, bool p_write) const;
-
-	Error _poll_connection() const;
-
-	IP_Address peer_host;
-	int peer_port;
-
-	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
-	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
-
-	static StreamPeerTCP *_create();
+	static NetSocket *(*_create)();
 
 public:
-	virtual Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
+	static NetSocket *create();
 
-	virtual Error put_data(const uint8_t *p_data, int p_bytes);
-	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	enum PollType {
+		POLL_TYPE_IN,
+		POLL_TYPE_OUT,
+		POLL_TYPE_IN_OUT
+	};
 
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
-	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	enum Type {
+		TYPE_NONE,
+		TYPE_TCP,
+		TYPE_UDP,
+	};
 
-	virtual int get_available_bytes() const;
+	virtual Error open(Type p_type, IP::Type &ip_type) = 0;
+	virtual void close() = 0;
+	virtual Error bind(IP_Address p_addr, uint16_t p_port) = 0;
+	virtual Error listen(int p_max_pending) = 0;
+	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port) = 0;
+	virtual Error poll(PollType p_type, int timeout) const = 0;
+	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
+	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
+	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
+	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
+	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
 
-	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_sock_type);
+	virtual bool is_open() const = 0;
+	virtual int get_available_bytes() const = 0;
 
-	virtual IP_Address get_connected_host() const;
-	virtual uint16_t get_connected_port() const;
-
-	virtual bool is_connected_to_host() const;
-	virtual Status get_status() const;
-	virtual void disconnect_from_host();
-
-	virtual void set_no_delay(bool p_enabled);
-
-	static void make_default();
-
-	StreamPeerTCPPosix();
-	~StreamPeerTCPPosix();
+	virtual void set_broadcasting_enabled(bool p_enabled) = 0;
+	virtual void set_blocking_enabled(bool p_enabled) = 0;
+	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
+	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
+	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
 };
 
-#endif // TCP_CLIENT_POSIX_H
-
-#endif
+#endif // NET_SOCKET_H

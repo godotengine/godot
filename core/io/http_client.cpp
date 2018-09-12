@@ -683,7 +683,7 @@ void HTTPClient::set_read_chunk_size(int p_size) {
 
 HTTPClient::HTTPClient() {
 
-	tcp_connection = StreamPeerTCP::create_ref();
+	tcp_connection.instance();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
 	conn_port = -1;

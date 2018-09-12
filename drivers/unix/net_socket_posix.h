@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  packet_peer_udp_winsock.h                                            */
+/*  net_socket_posix.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,70 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WINDOWS_ENABLED
+#ifndef NET_SOCKET_UNIX_H
+#define NET_SOCKET_UNIX_H
 
-#ifndef PACKET_PEER_UDP_WINSOCK_H
-#define PACKET_PEER_UDP_WINSOCK_H
+#include "core/io/net_socket.h"
 
-#include "core/io/packet_peer_udp.h"
-#include "core/ring_buffer.h"
+#if defined(WINDOWS_ENABLED)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#define SOCKET_TYPE SOCKET
 
-class PacketPeerUDPWinsock : public PacketPeerUDP {
+#else
+#define SOCKET_TYPE int
 
-	enum {
-		PACKET_BUFFER_SIZE = 65536
+#endif
+
+class NetSocketPosix : public NetSocket {
+
+private:
+	SOCKET_TYPE _sock;
+	IP::Type _ip_type;
+	bool _is_stream;
+
+	enum NetError {
+		ERR_NET_WOULD_BLOCK,
+		ERR_NET_IS_CONNECTED,
+		ERR_NET_IN_PROGRESS,
+		ERR_NET_OTHER
 	};
 
-	RingBuffer<uint8_t> rb;
-	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	IP_Address packet_ip;
-	int packet_port;
-	int queue_count;
-	int sockfd;
-	bool sock_blocking;
-	IP::Type sock_type;
+	NetError _get_socket_error();
+	void _set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream);
 
-	IP_Address peer_addr;
-	int peer_port;
+protected:
+	static NetSocket *_create_func();
 
-	_FORCE_INLINE_ int _get_socket();
-
-	static PacketPeerUDP *_create();
-
-	void _set_sock_blocking(bool p_blocking);
-
-	Error _poll(bool p_wait);
+	bool _can_use_ip(const IP_Address p_ip, const bool p_for_bind) const;
 
 public:
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-
-	virtual int get_max_packet_size() const;
-
-	virtual Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
-	virtual void close();
-	virtual Error wait();
-	virtual bool is_listening() const;
-
-	virtual IP_Address get_packet_address() const;
-	virtual int get_packet_port() const;
-
-	virtual void set_dest_address(const IP_Address &p_address, int p_port);
-
 	static void make_default();
-	PacketPeerUDPWinsock();
-	~PacketPeerUDPWinsock();
+
+	virtual Error open(Type p_sock_type, IP::Type &ip_type);
+	virtual void close();
+	virtual Error bind(IP_Address p_addr, uint16_t p_port);
+	virtual Error listen(int p_max_pending);
+	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port);
+	virtual Error poll(PollType p_type, int timeout) const;
+	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
+	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port);
+	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent);
+	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port);
+	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port);
+
+	virtual bool is_open() const;
+	virtual int get_available_bytes() const;
+
+	virtual void set_broadcasting_enabled(bool p_enabled);
+	virtual void set_blocking_enabled(bool p_enabled);
+	virtual void set_ipv6_only_enabled(bool p_enabled);
+	virtual void set_tcp_no_delay_enabled(bool p_enabled);
+	virtual void set_reuse_address_enabled(bool p_enabled);
+	virtual void set_reuse_port_enabled(bool p_enabled);
+
+	NetSocketPosix();
+	~NetSocketPosix();
 };
-#endif // PACKET_PEER_UDP_WINSOCK_H
 
 #endif

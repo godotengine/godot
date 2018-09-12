@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// Must include Winsock before windows.h (included by os_windows.h)
+#include "drivers/unix/net_socket_posix.h"
+
 #include "os_windows.h"
 
 #include "core/io/marshalls.h"
@@ -37,11 +40,8 @@
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
-#include "drivers/windows/packet_peer_udp_winsock.h"
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
-#include "drivers/windows/stream_peer_tcp_winsock.h"
-#include "drivers/windows/tcp_server_winsock.h"
 #include "drivers/windows/thread_windows.h"
 #include "joypad.h"
 #include "lang_table.h"
@@ -219,9 +219,7 @@ void OS_Windows::initialize_core() {
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
-	TCPServerWinsock::make_default();
-	StreamPeerTCPWinsock::make_default();
-	PacketPeerUDPWinsock::make_default();
+	NetSocketPosix::make_default();
 
 	// We need to know how often the clock is updated
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
@@ -1514,9 +1512,6 @@ void OS_Windows::finalize_core() {
 	timeEndPeriod(1);
 
 	memdelete(process_map);
-
-	TCPServerWinsock::cleanup();
-	StreamPeerTCPWinsock::cleanup();
 }
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
