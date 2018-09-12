@@ -43,7 +43,6 @@
 			This setting can be used to set the particle system to render at a fixed FPS. For instance, changing the value to [code]2[/code] will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
-			This can be used to turn Fract Delta on or off.
 		</member>
 		<member name="h_frames" type="int" setter="set_h_frames" getter="get_h_frames">
 			Number of horizontal frames in [code]texture[/code].
