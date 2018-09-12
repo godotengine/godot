@@ -559,7 +559,11 @@ void Tween::_tween_process(float p_delta) {
 		else if (prev_delaying) {
 
 			_apply_tween_value(data, data.initial_val);
-			emit_signal("tween_started", object, NodePath(Vector<StringName>(), data.key, false));
+			Vector<StringName> sub_path = data.key;
+			Vector<StringName> main_path = Vector<StringName>();
+			main_path.push_back(sub_path[0]);
+			sub_path.remove(0);
+			emit_signal("tween_started", object, NodePath(main_path, sub_path, false));
 		}
 
 		if (data.elapsed > (data.delay + data.duration)) {
@@ -607,13 +611,21 @@ void Tween::_tween_process(float p_delta) {
 		} else {
 			Variant result = _run_equation(data);
 			_apply_tween_value(data, result);
-			emit_signal("tween_step", object, NodePath(Vector<StringName>(), data.key, false), data.elapsed, result);
+			Vector<StringName> sub_path = data.key;
+			Vector<StringName> main_path = Vector<StringName>();
+			main_path.push_back(sub_path[0]);
+			sub_path.remove(0);
+			emit_signal("tween_step", object, NodePath(main_path, sub_path, false), data.elapsed, result);
 		}
 
 		if (data.finish) {
 			_apply_tween_value(data, data.final_val);
 			data.elapsed = 0;
-			emit_signal("tween_completed", object, NodePath(Vector<StringName>(), data.key, false));
+			Vector<StringName> sub_path = data.key;
+			Vector<StringName> main_path = Vector<StringName>();
+			main_path.push_back(sub_path[0]);
+			sub_path.remove(0);
+			emit_signal("tween_completed", object, NodePath(main_path, sub_path, false));
 			// not repeat mode, remove completed action
 			if (!repeat)
 				call_deferred("_remove_by_uid", data.uid);
