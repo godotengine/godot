@@ -1456,7 +1456,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	return mono_object;
 }
 
-bool CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
+void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 
 #ifdef DEBUG_ENABLED
 	CRASH_COND(base_ref == true);
@@ -1465,7 +1465,7 @@ bool CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 	CSharpLanguage::get_singleton()->release_script_gchandle(p_obj, gchandle);
 }
 
-bool CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted) {
+void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted) {
 
 #ifdef DEBUG_ENABLED
 	CRASH_COND(base_ref == false);
