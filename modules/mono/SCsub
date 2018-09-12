@@ -77,7 +77,7 @@ env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 if env['tools']:
     env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    make_cs_files_header('glue/cs_files', 'glue/cs_compressed.gen.h', 'glue/cs_glue_version.gen.h')
+    make_cs_files_header('glue/Managed/Files', 'glue/cs_compressed.gen.h', 'glue/cs_glue_version.gen.h')
 
 vars = Variables()
 vars.Add(BoolVariable('mono_glue', 'Build with the mono glue sources', True))
