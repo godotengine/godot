@@ -1800,8 +1800,8 @@ void ScriptEditor::_update_script_names() {
 				new_cur_tab = i;
 			}
 		}
-		tab_container->call_deferred("set_current_tab", new_prev_tab);
-		tab_container->call_deferred("set_current_tab", new_cur_tab);
+		tab_container->set_current_tab(new_prev_tab);
+		tab_container->set_current_tab(new_cur_tab);
 		_sort_list_on_update = false;
 	}
 
@@ -2024,6 +2024,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 		_go_to_tab(tab_container->get_tab_count() - 1);
 	}
 
+	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
 	se->connect("name_changed", this, "_update_script_names");
@@ -2598,6 +2599,7 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 	eh->go_to_class(p_class, 0);
 	eh->connect("go_to_help", this, "_help_class_goto");
 	_add_recent_script(p_class);
+	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
 }
@@ -2627,6 +2629,7 @@ void ScriptEditor::_help_class_goto(const String &p_desc) {
 	eh->go_to_help(p_desc);
 	eh->connect("go_to_help", this, "_help_class_goto");
 	_add_recent_script(eh->get_class());
+	_sort_list_on_update = true;
 	_update_script_names();
 	_save_layout();
 }
