@@ -1082,6 +1082,16 @@ Size2 OS_X11::get_real_window_size() const {
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
+
+	if (current_videomode.width == p_size.width && current_videomode.height == p_size.height)
+		return;
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
+	int old_w = xwa.width;
+	int old_h = xwa.height;
+
 	// If window resizable is disabled we need to update the attributes first
 	if (is_window_resizable() == false) {
 		XSizeHints *xsh;
@@ -1101,6 +1111,16 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	// Update our videomode width and height
 	current_videomode.width = p_size.x;
 	current_videomode.height = p_size.y;
+
+	for (int timeout = 0; timeout < 50; ++timeout) {
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, x11_window, &xwa);
+
+		if (old_w != xwa.width || old_h != xwa.height)
+			break;
+
+		usleep(10000);
+	}
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
