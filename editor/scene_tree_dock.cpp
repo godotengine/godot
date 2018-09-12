@@ -709,21 +709,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				Node *node = e->get();
 				if (node) {
 					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
-					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
-					int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
-					editable = !editable;
 
-					EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, editable);
-
-					menu->set_item_checked(editable_item_idx, editable);
 					if (editable) {
-						node->set_scene_instance_load_placeholder(false);
-						menu->set_item_checked(placeholder_item_idx, false);
+						editable_instance_remove_dialog->set_text(TTR("Disabling \"editable_instance\" will cause all properties of the node to be reverted to their default."));
+						editable_instance_remove_dialog->popup_centered_minsize();
+						break;
 					}
-
-					SpatialEditor::get_singleton()->update_all_gizmos(node);
-
-					scene_tree->update_tree();
+					_toggle_editable_children();
 				}
 			}
 		} break;
@@ -1521,6 +1513,33 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	editor->push_item(p_script.operator->());
 }
 
+void SceneTreeDock::_toggle_editable_children() {
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *>::Element *e = selection.front();
+	if (e) {
+		Node *node = e->get();
+		if (node) {
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+
+			int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
+			int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
+			editable = !editable;
+
+			EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, editable);
+
+			menu->set_item_checked(editable_item_idx, editable);
+			if (editable) {
+				node->set_scene_instance_load_placeholder(false);
+				menu->set_item_checked(placeholder_item_idx, false);
+			}
+
+			SpatialEditor::get_singleton()->update_all_gizmos(node);
+
+			scene_tree->update_tree();
+		}
+	}
+}
+
 void SceneTreeDock::_delete_confirm() {
 
 	List<Node *> remove_list = editor_selection->get_selected_node_list();
@@ -2304,6 +2323,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_input"), &SceneTreeDock::_input);
 	ClassDB::bind_method(D_METHOD("_nodes_drag_begin"), &SceneTreeDock::_nodes_drag_begin);
 	ClassDB::bind_method(D_METHOD("_delete_confirm"), &SceneTreeDock::_delete_confirm);
+	ClassDB::bind_method(D_METHOD("_toggle_editable_children"), &SceneTreeDock::_toggle_editable_children);
 	ClassDB::bind_method(D_METHOD("_node_prerenamed"), &SceneTreeDock::_node_prerenamed);
 	ClassDB::bind_method(D_METHOD("_import_subscene"), &SceneTreeDock::_import_subscene);
 	ClassDB::bind_method(D_METHOD("_selection_changed"), &SceneTreeDock::_selection_changed);
@@ -2469,6 +2489,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);
 	delete_dialog->connect("confirmed", this, "_delete_confirm");
+
+	editable_instance_remove_dialog = memnew(ConfirmationDialog);
+	add_child(editable_instance_remove_dialog);
+	editable_instance_remove_dialog->connect("confirmed", this, "_toggle_editable_children");
 
 	import_subscene_dialog = memnew(EditorSubScene);
 	add_child(import_subscene_dialog);
