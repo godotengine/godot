@@ -1928,6 +1928,10 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
 }
 
 #ifdef TOOLS_ENABLED
+/**
+ * Returns false if there was an error, otherwise true.
+ * If there was an error, r_prop_info and r_exported are not assigned any value.
+ */
 bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
 
 	StringName name = p_member->get_name();
@@ -1953,48 +1957,99 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p
 
 	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type);
 
-	if (p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
-		if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_PROPERTY) {
-			GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
-			if (!property->has_getter() || !property->has_setter()) {
-				ERR_PRINTS("Cannot export property because it does not provide a getter or a setter: " + p_class->get_full_name() + "." + name.operator String());
-				return false;
-			}
-		}
-
-		MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
-
-		PropertyHint hint = PROPERTY_HINT_NONE;
-		String hint_string;
-
-		if (variant_type == Variant::NIL) {
-			ERR_PRINTS("Unknown type of exported member: " + p_class->get_full_name() + "." + name.operator String());
-			return false;
-		} else if (variant_type == Variant::INT && type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(type.type_class->get_mono_ptr())) {
-			variant_type = Variant::INT;
-			hint = PROPERTY_HINT_ENUM;
-
-			Vector<MonoClassField *> fields = type.type_class->get_enum_fields();
-
-			for (int i = 0; i < fields.size(); i++) {
-				if (i > 0)
-					hint_string += ",";
-				hint_string += mono_field_get_name(fields[i]);
-			}
-		} else if (variant_type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(type.type_class)) {
-			hint = PROPERTY_HINT_RESOURCE_TYPE;
-			hint_string = NATIVE_GDMONOCLASS_NAME(type.type_class);
-		} else {
-			hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
-			hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
-		}
-
-		r_prop_info = PropertyInfo(variant_type, name.operator String(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
-		r_exported = true;
-	} else {
+	if (!p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
 		r_prop_info = PropertyInfo(variant_type, name.operator String(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
 		r_exported = false;
+		return true;
 	}
+
+	if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_PROPERTY) {
+		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
+		if (!property->has_getter() || !property->has_setter()) {
+			ERR_PRINTS("Cannot export property because it does not provide a getter or a setter: " + p_class->get_full_name() + "." + name.operator String());
+			return false;
+		}
+	}
+
+	MonoObject *attr = p_member->get_attribute(CACHED_CLASS(ExportAttribute));
+
+	PropertyHint hint = PROPERTY_HINT_NONE;
+	String hint_string;
+
+	if (variant_type == Variant::NIL) {
+		ERR_PRINTS("Unknown type of exported member: " + p_class->get_full_name() + "." + name.operator String());
+		return false;
+	} else if (variant_type == Variant::INT && type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(type.type_class->get_mono_ptr())) {
+		variant_type = Variant::INT;
+		hint = PROPERTY_HINT_ENUM;
+
+		Vector<MonoClassField *> fields = type.type_class->get_enum_fields();
+
+		MonoType *enum_basetype = mono_class_enum_basetype(type.type_class->get_mono_ptr());
+
+		String name_only_hint_string;
+
+		// True: enum Foo { Bar, Baz, Quux }
+		// True: enum Foo { Bar = 0, Baz = 1, Quux = 2 }
+		// False: enum Foo { Bar = 0, Baz = 7, Quux = 5 }
+		bool uses_default_values = true;
+
+		for (int i = 0; i < fields.size(); i++) {
+			MonoClassField *field = fields[i];
+
+			if (i > 0) {
+				hint_string += ",";
+				name_only_hint_string += ",";
+			}
+
+			String enum_field_name = mono_field_get_name(field);
+			hint_string += enum_field_name;
+			name_only_hint_string += enum_field_name;
+
+			// TODO:
+			// Instead of using mono_field_get_value_object, we can do this without boxing. Check the
+			// internal mono functions: ves_icall_System_Enum_GetEnumValuesAndNames and the get_enum_field.
+
+			MonoObject *val_obj = mono_field_get_value_object(mono_domain_get(), field, NULL);
+
+			if (val_obj == NULL) {
+				ERR_PRINTS("Failed to get '" + enum_field_name + "' constant enum value of exported member: " +
+						   p_class->get_full_name() + "." + name.operator String());
+				return false;
+			}
+
+			bool r_error;
+			uint64_t val = GDMonoUtils::unbox_enum_value(val_obj, enum_basetype, r_error);
+			if (r_error) {
+				ERR_PRINTS("Failed to unbox '" + enum_field_name + "' constant enum value of exported member: " +
+						   p_class->get_full_name() + "." + name.operator String());
+				return false;
+			}
+
+			if (val != i) {
+				uses_default_values = false;
+			}
+
+			hint_string += ":";
+			hint_string += String::num_uint64(val);
+		}
+
+		if (uses_default_values) {
+			// If we use the format NAME:VAL, that's what the editor displays.
+			// That's annoying if the user is not using custom values for the enum constants.
+			// This may not be needed in the future if the editor is changed to not display values.
+			hint_string = name_only_hint_string;
+		}
+	} else if (variant_type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(type.type_class)) {
+		hint = PROPERTY_HINT_RESOURCE_TYPE;
+		hint_string = NATIVE_GDMONOCLASS_NAME(type.type_class);
+	} else {
+		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
+		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
+	}
+
+	r_prop_info = PropertyInfo(variant_type, name.operator String(), hint, hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE);
+	r_exported = true;
 
 	return true;
 }

@@ -240,6 +240,8 @@ MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc);
 void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
 MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
 
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error);
+
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoMarshal::mono_string_to_godot((MonoString *)m_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(NULL)))
