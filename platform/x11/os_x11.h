@@ -313,6 +313,7 @@ public:
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
+	void update_real_mouse_position();
 	OS_X11();
 };
 

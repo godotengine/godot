@@ -581,6 +581,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		}
 	}
 
+	update_real_mouse_position();
+
 	return OK;
 }
 
@@ -1050,6 +1052,7 @@ Point2 OS_X11::get_window_position() const {
 
 void OS_X11::set_window_position(const Point2 &p_position) {
 	XMoveWindow(x11_display, x11_window, p_position.x, p_position.y);
+	update_real_mouse_position();
 }
 
 Size2 OS_X11::get_window_size() const {
@@ -2970,6 +2973,25 @@ OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 	}
 
 	return LATIN_KEYBOARD_QWERTY;
+}
+
+void OS_X11::update_real_mouse_position() {
+	Window root_return, child_return;
+	int root_x, root_y, win_x, win_y;
+	unsigned int mask_return;
+
+	Bool xquerypointer_result = XQueryPointer(x11_display, x11_window, &root_return, &child_return, &root_x, &root_y,
+			&win_x, &win_y, &mask_return);
+
+	if (xquerypointer_result) {
+		if (win_x > 0 && win_y > 0 && win_x <= current_videomode.width && win_y <= current_videomode.height) {
+
+			last_mouse_pos.x = win_x;
+			last_mouse_pos.y = win_y;
+			last_mouse_pos_valid = true;
+			input->set_mouse_position(last_mouse_pos);
+		}
+	}
 }
 
 OS_X11::OS_X11() {
