@@ -674,6 +674,10 @@ float Tween::get_speed_scale() const {
 }
 
 bool Tween::start() {
+	if (pending_update != 0) {
+		call_deferred("start");
+		return true;
+	}
 
 	set_active(true);
 	return true;
