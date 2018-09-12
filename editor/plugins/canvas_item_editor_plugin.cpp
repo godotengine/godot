@@ -1858,22 +1858,9 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			// Retrieve the bones
 			_get_bones_at_pos(click, selection);
 
-			for (int i = 0; i < selection.size(); i++) {
-				if (editor_selection->is_selected(selection[i].item)) {
-					// Drag the node(s) if requested
-					List<CanvasItem *> selection = _get_edited_canvas_items();
-
-					drag_type = DRAG_MOVE;
-					drag_selection = selection;
-					drag_from = click;
-					_save_canvas_item_state(drag_selection);
-
-					return true;
-				}
-			}
-
-			if (!selection.empty())
+			if (!selection.empty()) {
 				canvas_item = selection[0].item;
+			}
 
 			if (!canvas_item) {
 				// Start a box selection
