@@ -98,6 +98,10 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			if (path == file_metadata) {
 				file_item->select(0);
 			}
+			Array udata;
+			udata.push_back(tree_update_id);
+			udata.push_back(file_item);
+			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
 		}
 	}
 
@@ -133,6 +137,7 @@ void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_ro
 
 	// Recreate the tree
 	tree->clear();
+	tree_update_id++;
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
 
@@ -496,15 +501,26 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	}
 }
 
-void FileSystemDock::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata) {
+void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
 
 	if ((file_list_vb->is_visible_in_tree() || path == p_path.get_base_dir()) && p_preview.is_valid()) {
-
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
 		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == p_path)
 			files->set_item_icon(idx, p_preview);
+	}
+}
+
+void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
+	if (p_small_preview.is_valid()) {
+		Array uarr = p_udata;
+		if (tree_update_id == (int)uarr[0]) {
+			TreeItem *file_item = Object::cast_to<TreeItem>(uarr[1]);
+			if (file_item) {
+				file_item->set_icon(0, p_small_preview);
+			}
+		}
 	}
 }
 
@@ -707,7 +723,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 				udata.resize(2);
 				udata[0] = item_index;
 				udata[1] = fname;
-				EditorResourcePreview::get_singleton()->queue_resource_preview(fpath, this, "_thumbnail_done", udata);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(fpath, this, "_file_list_thumbnail_done", udata);
 			}
 		} else {
 			files->add_item(fname, type_icon, true);
@@ -792,7 +808,7 @@ void FileSystemDock::_preview_invalidated(const String &p_path) {
 				udata.resize(2);
 				udata[0] = i;
 				udata[1] = files->get_item_text(i);
-				EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", udata);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_file_list_thumbnail_done", udata);
 				break;
 			}
 		}
@@ -2072,7 +2088,8 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_select"), &FileSystemDock::_file_list_rmb_select);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_pressed"), &FileSystemDock::_file_list_rmb_pressed);
 
-	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &FileSystemDock::_thumbnail_done);
+	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);
+	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_file_list_activate_file"), &FileSystemDock::_file_list_activate_file);
 	ClassDB::bind_method(D_METHOD("_tree_activate_file"), &FileSystemDock::_tree_activate_file);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
@@ -2316,6 +2333,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	new_resource_dialog->connect("create", this, "_resource_created");
 
 	updating_tree = false;
+	tree_update_id = 0;
 	initialized = false;
 	import_dock_needs_update = false;
 

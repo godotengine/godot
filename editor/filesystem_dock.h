@@ -164,6 +164,7 @@ private:
 	bool initialized;
 
 	bool updating_tree;
+	int tree_update_id;
 	Tree *tree; //directories
 	ItemList *files;
 	bool import_dock_needs_update;
@@ -250,7 +251,8 @@ private:
 	String _get_drag_target_folder(const Point2 &p_point, Control *p_from) const;
 
 	void _preview_invalidated(const String &p_path);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
+	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+	void _tree_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
 
 	void _update_display_mode();
 
