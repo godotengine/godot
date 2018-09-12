@@ -31,6 +31,7 @@
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles2D.DrawOrder">
 			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values. Default value: [code]DRAW_ORDER_INDEX[/code].
+			This controls the order in which individual particles are drawn. Index means particles are drawn according to their emission order [code](default)[/code]. [code]Lifetime[/code] means they are drawn in order of remaining lifetime.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
 			If [code]true[/code] particles are being emitted. Default value: [code]true[/code].
@@ -39,14 +40,17 @@
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins. Default value: [code]0[/code].
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
+			This setting can be used to set the particle system to render at a fixed FPS. For instance, changing the value to [code]2[/code] will make the particles render at 2 frames per second. Note this does not slow down the particle system itself.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
+			This can be used to turn Fract Delta on or off.
 		</member>
 		<member name="h_frames" type="int" setter="set_h_frames" getter="get_h_frames">
 			Number of horizontal frames in [code]texture[/code].
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
-			Amount of time each particle will exist. Default value: [code]1[/code].
+			Amount of time in seconds each particle will exist. Default value: [code]1[/code].
+			When lifetime ends, a new particle is created to replace it unless using [code]one_shot[/code].
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates">
 			If [code]true[/code] particles use the parent node's coordinate space. If [code]false[/code] they use global coordinates. Default value: [code]true[/code].
@@ -75,7 +79,15 @@
 			Number of vertical frames in [code]texture[/code].
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
-			Editor visibility helper.
+			Visibility Helper
+			The [code]W[/code] and [code]H[/code] values control width and height of the visibility rectangle.
+			The [code]X[/code] and [code]Y[/code] values control the position of the upper-left corner of the visibility rectangle relative to the particle emitter.
+			Example: To match a box particle shape of [code]x:100 y:200[/code]
+			visibility_rect would be [code]w:100 h:200 X:-50 Y:-100[/code]
+			If the [code]visibility_rect[/code] is not in view the particles will not be rendered.
+			Tips: [code]visibility_rect[/code] can be automatically generated using the UI:
+			[Particles > Generate Visibility Rect]
+			Which appears on the toolbar when a [Particles2D] node is selected.
 		</member>
 	</members>
 	<constants>
