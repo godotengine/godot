@@ -663,4 +663,33 @@ MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_param
 	return ret;
 }
 
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error) {
+	r_error = false;
+	switch (mono_type_get_type(p_enum_basetype)) {
+		case MONO_TYPE_BOOLEAN:
+			return (bool)GDMonoMarshal::unbox<MonoBoolean>(p_boxed) ? 1 : 0;
+		case MONO_TYPE_CHAR:
+			return GDMonoMarshal::unbox<uint16_t>(p_boxed);
+		case MONO_TYPE_U1:
+			return GDMonoMarshal::unbox<uint8_t>(p_boxed);
+		case MONO_TYPE_U2:
+			return GDMonoMarshal::unbox<uint16_t>(p_boxed);
+		case MONO_TYPE_U4:
+			return GDMonoMarshal::unbox<uint32_t>(p_boxed);
+		case MONO_TYPE_U8:
+			return GDMonoMarshal::unbox<uint64_t>(p_boxed);
+		case MONO_TYPE_I1:
+			return GDMonoMarshal::unbox<int8_t>(p_boxed);
+		case MONO_TYPE_I2:
+			return GDMonoMarshal::unbox<int16_t>(p_boxed);
+		case MONO_TYPE_I4:
+			return GDMonoMarshal::unbox<int32_t>(p_boxed);
+		case MONO_TYPE_I8:
+			return GDMonoMarshal::unbox<int64_t>(p_boxed);
+		default:
+			r_error = true;
+			return 0;
+	}
+}
+
 } // namespace GDMonoUtils
