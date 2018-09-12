@@ -3280,8 +3280,8 @@ void ScriptEditorPlugin::selected_notify() {
 }
 
 void ScriptEditorPlugin::save_external_data() {
-
-	script_editor->save_all_scripts();
+	if (EDITOR_GET("interface/editor/save_each_scene_on_quit"))
+		script_editor->save_all_scripts();
 }
 
 void ScriptEditorPlugin::apply_changes() {
