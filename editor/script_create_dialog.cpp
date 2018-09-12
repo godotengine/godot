@@ -56,6 +56,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	class_name->deselect();
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
+
 	if (p_base_path != "") {
 		initial_bp = p_base_path.get_basename();
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
@@ -359,10 +360,16 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 
 	is_path_valid = false;
 	is_new_script_created = true;
-	String p = p_path;
+	String p = p_path.strip_edges();
 
 	if (p == "") {
 		_msg_path_valid(false, TTR("Path is empty"));
+		_update_dialog();
+		return;
+	}
+
+	if (p.get_file().get_basename() == "") {
+		_msg_path_valid(false, TTR("Filename is empty"));
 		_update_dialog();
 		return;
 	}
@@ -439,12 +446,6 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
 	if (path_error != "") {
 		_msg_path_valid(false, path_error);
-		_update_dialog();
-		return;
-	}
-
-	if (p.get_file().get_basename() == "") {
-		_msg_path_valid(false, TTR("Filename is empty"));
 		_update_dialog();
 		return;
 	}

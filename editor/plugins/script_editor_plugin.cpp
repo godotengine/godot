@@ -946,7 +946,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case FILE_NEW: {
-			script_create_dialog->config("Node", ".gd");
+			script_create_dialog->config("Node", "new_script");
 			script_create_dialog->popup_centered(Size2(300, 300) * EDSCALE);
 		} break;
 		case FILE_NEW_TEXTFILE: {
@@ -1749,7 +1749,7 @@ void ScriptEditor::_update_script_names() {
 				} break;
 				case DISPLAY_DIR_AND_NAME: {
 					if (!path.get_base_dir().get_file().empty()) {
-						sd.name = path.get_base_dir().get_file() + "/" + name;
+						sd.name = path.get_base_dir().get_file().plus_file(name);
 					} else {
 						sd.name = name;
 					}
@@ -2114,8 +2114,6 @@ void ScriptEditor::_editor_play() {
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_STEP), true);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_BREAK), false);
 	debug_menu->get_popup()->set_item_disabled(debug_menu->get_popup()->get_item_index(DEBUG_CONTINUE), true);
-
-	//debugger_gui->start_listening(Globals::get_singleton()->get("debug/debug_port"));
 }
 
 void ScriptEditor::_editor_pause() {
