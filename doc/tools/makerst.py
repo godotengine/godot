@@ -309,6 +309,37 @@ def rstize_text(text, cclass):
     return text
 
 
+def format_table(f, pp):
+    longest_t = 0
+    longest_s = 0
+    for s in pp:
+        sl = len(s[0])
+        if (sl > longest_s):
+            longest_s = sl
+        tl = len(s[1])
+        if (tl > longest_t):
+            longest_t = tl
+
+    sep = "+"
+    for i in range(longest_s + 2):
+        sep += "-"
+    sep += "+"
+    for i in range(longest_t + 2):
+        sep += "-"
+    sep += "+\n"
+    f.write(sep)
+    for s in pp:
+        rt = s[0]
+        while (len(rt) < longest_s):
+            rt += " "
+        st = s[1]
+        while (len(st) < longest_t):
+            st += " "
+        f.write("| " + rt + " | " + st + " |\n")
+        f.write(sep)
+    f.write('\n')
+
+
 def make_type(t):
     global class_names
     if t in class_names:
@@ -338,10 +369,9 @@ def make_enum(t):
 
 def make_method(
         f,
-        name,
-        m,
-        declare,
         cname,
+        method_data,
+        declare,
         event=False,
         pp=None
 ):
@@ -351,7 +381,7 @@ def make_method(
         t = ""
 
     ret_type = 'void'
-    args = list(m)
+    args = list(method_data)
     mdata = {}
     mdata['argidx'] = []
     for a in args:
@@ -377,9 +407,9 @@ def make_method(
 
     if declare or pp == None:
 
-        s = '**' + m.attrib['name'] + '** '
+        s = '**' + method_data.attrib['name'] + '** '
     else:
-        s = ':ref:`' + m.attrib['name'] + '<class_' + cname + "_" + m.attrib['name'] + '>` '
+        s = ':ref:`' + method_data.attrib['name'] + '<class_' + cname + "_" + method_data.attrib['name'] + '>` '
 
     s += '**(**'
     argfound = False
@@ -406,8 +436,8 @@ def make_method(
 
     s += ' **)**'
 
-    if 'qualifiers' in m.attrib:
-        s += ' ' + m.attrib['qualifiers']
+    if 'qualifiers' in method_data.attrib:
+        s += ' ' + method_data.attrib['qualifiers']
 
     if (not declare):
         if (pp != None):
@@ -416,6 +446,37 @@ def make_method(
             f.write("- " + t + " " + s + "\n")
     else:
         f.write(t + s + "\n")
+
+
+def make_properties(
+        f,
+        cname,
+        prop_data,
+        description=False,
+        pp=None
+):
+    t = ""
+    if 'enum' in prop_data.attrib:
+        t += make_enum(prop_data.attrib['enum'])
+    else:
+        t += make_type(prop_data.attrib['type'])
+
+    if description:
+        s = '**' + prop_data.attrib['name'] + '**'
+        setget = []
+        if 'setter' in prop_data.attrib and prop_data.attrib['setter'] != '' and not prop_data.attrib['setter'].startswith('_'):
+            setget.append(("*Setter*", prop_data.attrib['setter'] + '(value)'))
+        if 'getter' in prop_data.attrib and prop_data.attrib['getter'] != '' and not prop_data.attrib['getter'].startswith('_'):
+            setget.append(('*Getter*', prop_data.attrib['getter'] + '()'))
+    else:
+        s = ':ref:`' + prop_data.attrib['name'] + '<class_' + cname + "_" + prop_data.attrib['name'] + '>`'
+
+    if (pp != None):
+        pp.append((t, s))
+    elif description:
+        f.write('- ' + t + ' ' + s + '\n\n')
+        if len(setget) > 0:
+            format_table(f, setget)
 
 
 def make_heading(title, underline):
@@ -453,7 +514,7 @@ def make_rst_class(node):
                 inh = inode.attrib['inherits'].strip()
             else:
                 inh = None
-        f.write("\n")
+        f.write("\n\n")
 
     # Descendents
     inherited = []
@@ -468,7 +529,7 @@ def make_rst_class(node):
             if (i > 0):
                 f.write(", ")
             f.write(make_type(inherited[i]))
-        f.write("\n")
+        f.write("\n\n")
 
     # Category
     if 'category' in node.attrib:
@@ -481,7 +542,13 @@ def make_rst_class(node):
         f.write(rstize_text(briefd.text.strip(), name) + "\n\n")
 
     # Properties overview
-    # TODO: Implement
+    members = node.find('members')
+    if members != None and len(list(members)) > 0:
+        f.write(make_heading('Properties', '-'))
+        ml = []
+        for m in list(members):
+            make_properties(f, name, m, False, ml)
+        format_table(f, ml)
 
     # Methods overview
     methods = node.find('methods')
@@ -489,54 +556,31 @@ def make_rst_class(node):
         f.write(make_heading('Methods', '-'))
         ml = []
         for m in list(methods):
-            make_method(f, node.attrib['name'], m, False, name, False, ml)
-        longest_t = 0
-        longest_s = 0
-        for s in ml:
-            sl = len(s[0])
-            if (sl > longest_s):
-                longest_s = sl
-            tl = len(s[1])
-            if (tl > longest_t):
-                longest_t = tl
-
-        sep = "+"
-        for i in range(longest_s + 2):
-            sep += "-"
-        sep += "+"
-        for i in range(longest_t + 2):
-            sep += "-"
-        sep += "+\n"
-        f.write(sep)
-        for s in ml:
-            rt = s[0]
-            while (len(rt) < longest_s):
-                rt += " "
-            st = s[1]
-            while (len(st) < longest_t):
-                st += " "
-            f.write("| " + rt + " | " + st + " |\n")
-            f.write(sep)
-        f.write('\n')
+            make_method(f, name, m, False, False, ml)
+        format_table(f, ml)
 
     # Theme properties
-    # TODO: Implement
+    theme_items = node.find('theme_items')
+    if theme_items != None and len(list(theme_items)) > 0:
+        f.write(make_heading('Theme Properties', '-'))
+        ml = []
+        for m in list(theme_items):
+            make_properties(f, name, m, False, ml)
+        format_table(f, ml)
 
     # Signals
     events = node.find('signals')
     if events != None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
         for m in list(events):
-            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
-            make_method(f, node.attrib['name'], m, True, name, True)
+            f.write("  .. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            make_method(f, name, m, True, True)
             f.write('\n')
             d = m.find('description')
             if d == None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
-
-        f.write('\n')
 
     # Constants and enums
     constants = node.find('constants')
@@ -556,7 +600,7 @@ def make_rst_class(node):
         f.write(make_heading('Enumerations', '-'))
         for e in enum_names:
             f.write("  .. _enum_" + name + "_" + e + ":\n\n")
-            f.write("enum **" + e + "**\n\n")
+            f.write("enum **" + e + "**:\n\n")
             for c in enums:
                 if c.attrib['enum'] != e:
                     continue
@@ -568,7 +612,6 @@ def make_rst_class(node):
                     s += ' --- ' + rstize_text(c.text.strip(), name)
                 f.write(s + '\n')
             f.write('\n')
-        f.write('\n')
 
     # Constants
     if len(consts) > 0:
@@ -581,7 +624,6 @@ def make_rst_class(node):
             if c.text.strip() != '':
                 s += ' --- ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n')
-        f.write('\n')
 
     # Class description
     descr = node.find('description')
@@ -614,44 +656,31 @@ def make_rst_class(node):
                 # External link, for example:
                 # `http://enet.bespin.org/usergroup0.html`
                 f.write("- `" + link + " <" + link + ">`_\n")
-        f.write("\n")
 
     # Property descriptions
-    # TODO: Add setter and getter like in-editor help
     members = node.find('members')
     if members != None and len(list(members)) > 0:
         f.write(make_heading('Property Descriptions', '-'))
-
-        for c in list(members):
-            # Leading two spaces necessary to prevent breaking the <ul>
-            f.write("  .. _class_" + name + "_" + c.attrib['name'] + ":\n\n")
-            s = '- '
-            if 'enum' in c.attrib:
-                s += make_enum(c.attrib['enum']) + ' '
-            else:
-                s += make_type(c.attrib['type']) + ' '
-            s += '**' + c.attrib['name'] + '**'
-            if c.text.strip() != '':
-                s += ' - ' + rstize_text(c.text.strip(), name)
-            f.write(s + '\n\n')
-        f.write('\n')
+        for m in list(members):
+            f.write("  .. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            make_properties(f, name, m, True)
+            if m.text.strip() != '':
+                f.write(rstize_text(m.text.strip(), name))
+                f.write('\n\n')
 
     # Method descriptions
     methods = node.find('methods')
     if methods != None and len(list(methods)) > 0:
         f.write(make_heading('Method Descriptions', '-'))
         for m in list(methods):
-            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
-            make_method(f, node.attrib['name'], m, True, name)
+            f.write("  .. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            make_method(f, name, m, True)
             f.write('\n')
             d = m.find('description')
             if d == None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
-        f.write('\n')
-
-    f.close()
 
 
 file_list = []
