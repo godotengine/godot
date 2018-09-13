@@ -44,6 +44,7 @@ Error StreamPeerTCP::_poll_connection() {
 		return OK;
 	}
 
+	disconnect_from_host();
 	status = STATUS_ERROR;
 	return ERR_CONNECTION_ERROR;
 }
@@ -75,17 +76,16 @@ Error StreamPeerTCP::connect_to_host(const IP_Address &p_host, uint16_t p_port) 
 
 	err = _sock->connect_to_host(p_host, p_port);
 
-	if (err != OK) {
-		if (err == ERR_BUSY) {
-			status = STATUS_CONNECTING;
-		} else {
-			ERR_PRINT("Connection to remote host failed!");
-			disconnect_from_host();
-			return FAILED;
-		}
+	if (err == OK) {
+		status = STATUS_CONNECTED;
+	} else if (err == ERR_BUSY) {
+		status = STATUS_CONNECTING;
+	} else {
+		ERR_PRINT("Connection to remote host failed!");
+		disconnect_from_host();
+		return FAILED;
 	}
 
-	status = STATUS_CONNECTED;
 	peer_host = p_host;
 	peer_port = p_port;
 
@@ -163,20 +163,20 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 	if (!is_connected_to_host()) {
 
 		return FAILED;
-	};
+	}
 
 	if (status == STATUS_CONNECTING) {
 
 		if (_poll_connection() != OK) {
 
 			return FAILED;
-		};
+		}
 
 		if (status != STATUS_CONNECTED) {
 			r_received = 0;
 			return OK;
-		};
-	};
+		}
+	}
 
 	Error err;
 	int to_read = p_bytes;
@@ -209,10 +209,7 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 
 		} else if (read == 0) {
 
-			_sock->close();
-			status = STATUS_NONE;
-			peer_port = 0;
-			peer_host = IP_Address();
+			disconnect_from_host();
 			r_received = total_read;
 			return ERR_FILE_EOF;
 
