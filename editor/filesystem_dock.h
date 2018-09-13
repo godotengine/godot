@@ -112,7 +112,6 @@ private:
 	Button *button_file_list_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
-	Button *button_show;
 	LineEdit *current_path;
 	LineEdit *search_box;
 	TextureRect *search_icon;
@@ -227,7 +226,6 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _show_current_scene_file();
 	void _search_changed(const String &p_text);
 
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths);

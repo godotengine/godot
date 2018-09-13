@@ -97,6 +97,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_item->set_metadata(0, file_metadata);
 			if (path == file_metadata) {
 				file_item->select(0);
+				file_item->set_as_cursor(0);
 			}
 			Array udata;
 			udata.push_back(tree_update_id);
@@ -263,7 +264,6 @@ void FileSystemDock::_notification(int p_what) {
 
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
-			button_show->set_icon(get_icon("GuiVisibilityVisible", "EditorIcons"));
 			file_list_popup->connect("id_pressed", this, "_file_list_rmb_option");
 			tree_popup->connect("id_pressed", this, "_tree_rmb_option");
 
@@ -365,15 +365,6 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 	// Update the file list
 	if (!updating_tree && display_mode == DISPLAY_MODE_SPLIT) {
 		_update_files(false);
-	}
-}
-
-void FileSystemDock::_show_current_scene_file() {
-
-	int index = EditorNode::get_editor_data().get_edited_scene();
-	String path = EditorNode::get_editor_data().get_scene_path(index);
-	if (path != String()) {
-		navigate_to_path(path);
 	}
 }
 
@@ -2061,7 +2052,6 @@ void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
 	ClassDB::bind_method(D_METHOD("_rescan"), &FileSystemDock::_rescan);
-	ClassDB::bind_method(D_METHOD("_show_current_scene_file"), &FileSystemDock::_show_current_scene_file);
 	//ClassDB::bind_method(D_METHOD("_instance_pressed"),&ScenesDock::_instance_pressed);
 
 	ClassDB::bind_method(D_METHOD("_tree_rmb_option", "option"), &FileSystemDock::_tree_rmb_option);
@@ -2144,13 +2134,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_reload);
 
 	//toolbar_hbc->add_spacer();
-
-	button_show = memnew(Button);
-	button_show->set_flat(true);
-	button_show->connect("pressed", this, "_show_current_scene_file");
-	toolbar_hbc->add_child(button_show);
-	button_show->set_focus_mode(FOCUS_NONE);
-	button_show->set_tooltip(TTR("Show current scene file."));
 
 	//Control *spacer = memnew( Control);
 

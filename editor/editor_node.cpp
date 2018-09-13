@@ -2045,6 +2045,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			emit_signal("stop_pressed");
 
 		} break;
+
+		case FILE_SHOW_IN_FILESYSTEM: {
+			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
+			if (path != String()) {
+				filesystem_dock->navigate_to_path(path);
+			}
+		} break;
+
 		case RUN_PLAY_SCENE: {
 
 			_save_default_environment();
@@ -3901,6 +3909,7 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), FILE_SAVE_ALL_SCENES);
 			if (scene_tabs->get_hovered_tab() >= 0) {
 				scene_tabs_context_menu->add_separator();
+				scene_tabs_context_menu->add_item(TTR("Show in filesystem"), FILE_SHOW_IN_FILESYSTEM);
 				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
 				scene_tabs_context_menu->add_item(TTR("Close Tab"), FILE_CLOSE);
 			}
