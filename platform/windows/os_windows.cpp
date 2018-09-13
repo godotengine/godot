@@ -1512,6 +1512,7 @@ void OS_Windows::finalize_core() {
 	timeEndPeriod(1);
 
 	memdelete(process_map);
+	NetSocketPosix::cleanup();
 }
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {

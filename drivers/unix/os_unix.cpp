@@ -139,6 +139,8 @@ void OS_Unix::initialize_core() {
 }
 
 void OS_Unix::finalize_core() {
+
+	NetSocketPosix::cleanup();
 }
 
 void OS_Unix::alert(const String &p_alert, const String &p_title) {

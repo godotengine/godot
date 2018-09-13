@@ -406,6 +406,8 @@ void OSUWP::finalize() {
 }
 
 void OSUWP::finalize_core() {
+
+	NetSocketPosix::cleanup();
 }
 
 void OSUWP::alert(const String &p_alert, const String &p_title) {

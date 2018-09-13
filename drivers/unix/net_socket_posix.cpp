@@ -150,7 +150,22 @@ NetSocket *NetSocketPosix::_create_func() {
 }
 
 void NetSocketPosix::make_default() {
+#if defined(WINDOWS_ENABLED)
+	if (_create == NULL) {
+		WSADATA data;
+		WSAStartup(MAKEWORD(2, 2), &data);
+	}
+#endif
 	_create = _create_func;
+}
+
+void NetSocketPosix::cleanup() {
+#if defined(WINDOWS_ENABLED)
+	if (_create != NULL) {
+		WSACleanup();
+	}
+	_create = NULL;
+#endif
 }
 
 NetSocketPosix::NetSocketPosix() {
@@ -169,10 +184,11 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() {
 
 	if (err == WSAEISCONN)
 		return ERR_NET_IS_CONNECTED;
-	if (err == WSAEINPROGRESS || errno == WSAEALREADY)
+	if (err == WSAEINPROGRESS || err == WSAEALREADY)
 		return ERR_NET_IN_PROGRESS;
 	if (err == WSAEWOULDBLOCK)
 		return ERR_NET_WOULD_BLOCK;
+	ERR_PRINTS("Socket error: " + itos(err));
 	return ERR_NET_OTHER;
 #else
 	if (errno == EISCONN)
@@ -181,6 +197,7 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() {
 		return ERR_NET_IN_PROGRESS;
 	if (errno == EAGAIN || errno == EWOULDBLOCK)
 		return ERR_NET_WOULD_BLOCK;
+	ERR_PRINTS("Socket error: " + itos(errno));
 	return ERR_NET_OTHER;
 #endif
 }
