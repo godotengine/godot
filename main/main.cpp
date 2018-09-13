@@ -905,9 +905,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (video_driver_idx < 0) {
 
-		//OS::get_singleton()->alert("Invalid Video Driver: " + video_driver);
+		WARN_PRINTS("Invalid Video Driver \"" + video_driver + "\", using default Video Driver");
 		video_driver_idx = 0;
-		//goto error;
 	}
 
 	if (audio_driver == "") { // specified in project.godot
