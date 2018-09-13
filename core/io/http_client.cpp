@@ -275,7 +275,7 @@ void HTTPClient::close() {
 
 	response_headers.clear();
 	response_str.clear();
-	body_size = 0;
+	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
 	read_until_eof = false;
@@ -404,7 +404,7 @@ Error HTTPClient::poll() {
 					String response;
 					response.parse_utf8((const char *)response_str.ptr());
 					Vector<String> responses = response.split("\n");
-					body_size = 0;
+					body_size = -1;
 					chunked = false;
 					body_left = 0;
 					chunk_left = 0;
@@ -448,7 +448,7 @@ Error HTTPClient::poll() {
 						}
 					}
 
-					if (body_size || chunked) {
+					if (body_size != -1 || chunked) {
 
 						status = STATUS_BODY;
 					} else if (!keep_alive) {
@@ -665,11 +665,24 @@ Error HTTPClient::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received
 
 	if (blocking) {
 
-		Error err = connection->get_data(p_buffer, p_bytes);
-		if (err == OK)
-			r_received = p_bytes;
-		else
-			r_received = 0;
+		// We can't use StreamPeer.get_data, since when reaching EOF we will get an
+		// error without knowing how many bytes we received.
+		Error err = ERR_FILE_EOF;
+		int read;
+		int left = p_bytes;
+		r_received = 0;
+		while (left > 0) {
+			err = connection->get_partial_data(p_buffer, left, read);
+			if (err == OK) {
+				r_received += read;
+			} else if (err == ERR_FILE_EOF) {
+				r_received += read;
+				return err;
+			} else {
+				return err;
+			}
+			left -= read;
+		}
 		return err;
 	} else {
 		return connection->get_partial_data(p_buffer, p_bytes, r_received);
@@ -687,7 +700,7 @@ HTTPClient::HTTPClient() {
 	resolving = IP::RESOLVER_INVALID_ID;
 	status = STATUS_DISCONNECTED;
 	conn_port = -1;
-	body_size = 0;
+	body_size = -1;
 	chunked = false;
 	body_left = 0;
 	read_until_eof = false;
