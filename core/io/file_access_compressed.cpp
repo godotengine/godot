@@ -293,7 +293,6 @@ uint8_t FileAccessCompressed::get_8() const {
 		} else {
 			read_block--;
 			at_end = true;
-			ret = 0;
 		}
 	}
 
