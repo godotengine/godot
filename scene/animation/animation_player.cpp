@@ -966,6 +966,7 @@ Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animati
 		animation_set[p_name] = ad;
 	}
 
+	animation_set[p_name].animation->set_animation_name(p_name);
 	_ref_anim(p_animation);
 	_change_notify();
 	return OK;
@@ -977,6 +978,7 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 
 	stop();
 	_unref_anim(animation_set[p_name].animation);
+	animation_set[p_name].animation->set_animation_name("");
 	animation_set.erase(p_name);
 
 	clear_caches();
