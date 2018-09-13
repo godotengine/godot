@@ -80,6 +80,8 @@ private:
 	enum FileMenu {
 		FILE_OPEN,
 		FILE_INSTANCE,
+		FILE_ADD_FAVORITE,
+		FILE_REMOVE_FAVORITE,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
@@ -106,7 +108,6 @@ private:
 	Set<String> favorites;
 
 	Button *button_reload;
-	Button *button_favorite;
 	Button *button_tree;
 	Button *button_file_list_display_mode;
 	Button *button_hist_next;
@@ -226,7 +227,6 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _favorites_pressed();
 	void _show_current_scene_file();
 	void _search_changed(const String &p_text);
 

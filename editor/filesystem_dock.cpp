@@ -249,7 +249,6 @@ void FileSystemDock::_notification(int p_what) {
 
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
-			button_favorite->set_icon(get_icon("Favorites", ei));
 			//button_instance->set_icon(get_icon("Add", ei));
 			//button_open->set_icon(get_icon("Folder", ei));
 			button_tree->set_icon(get_icon("Filesystem", ei));
@@ -311,7 +310,6 @@ void FileSystemDock::_notification(int p_what) {
 			// Update icons
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
-			button_favorite->set_icon(get_icon("Favorites", ei));
 			button_tree->set_icon(get_icon("Filesystem", ei));
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
@@ -350,26 +348,6 @@ void FileSystemDock::_notification(int p_what) {
 
 void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_selected) {
 
-	// Check if items are all in favorites
-	bool all_favorites = true;
-	Vector<String> favorites = EditorSettings::get_singleton()->get_favorite_dirs();
-	Vector<String> selected = _tree_get_selected();
-	for (int i = 0; i < selected.size(); i++) {
-		int found = -1;
-		for (int j = 0; j < favorites.size(); j++) {
-			if (favorites[j] == selected[i]) {
-				found = j;
-				break;
-			}
-		}
-
-		if (found < 0) {
-			all_favorites = false;
-			break;
-		}
-	}
-	button_favorite->set_pressed(all_favorites);
-
 	// Return if we don't select something new
 	if (!p_selected)
 		return;
@@ -388,49 +366,6 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 	if (!updating_tree && display_mode == DISPLAY_MODE_SPLIT) {
 		_update_files(false);
 	}
-}
-
-void FileSystemDock::_favorites_pressed() {
-
-	// Check items in favorites
-	Vector<String> selected = _tree_get_selected(false);
-	if (selected.empty())
-		return;
-
-	// Check if items are all in favorites
-	bool all_favorites = true;
-	Vector<String> to_add;
-	Vector<String> favorites = EditorSettings::get_singleton()->get_favorite_dirs();
-	for (int i = 0; i < selected.size(); i++) {
-		int found = -1;
-		for (int j = 0; j < favorites.size(); j++) {
-			if (favorites[j] == selected[i]) {
-				found = j;
-				break;
-			}
-		}
-
-		if (found < 0) {
-			to_add.push_back(selected[i]);
-			all_favorites = false;
-		}
-	}
-
-	if (all_favorites) {
-		// Remove all selected
-		for (int i = 0; i < selected.size(); i++) {
-			favorites.erase(selected[i]);
-		}
-	} else {
-		// Add missing ones
-		for (int i = 0; i < to_add.size(); i++) {
-			favorites.push_back(to_add[i]);
-		}
-	}
-
-	// Replace favorites
-	EditorSettings::get_singleton()->set_favorite_dirs(favorites);
-	_update_tree(true);
 }
 
 void FileSystemDock::_show_current_scene_file() {
@@ -1409,6 +1344,28 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 			}
 		} break;
 
+		case FILE_ADD_FAVORITE: {
+			// Add the files from favorites
+			Vector<String> favorites = EditorSettings::get_singleton()->get_favorite_dirs();
+			for (int i = 0; i < p_selected.size(); i++) {
+				if (favorites.find(p_selected[i]) == -1) {
+					favorites.push_back(p_selected[i]);
+				}
+			}
+			EditorSettings::get_singleton()->set_favorite_dirs(favorites);
+			_update_tree(true);
+		} break;
+
+		case FILE_REMOVE_FAVORITE: {
+			// Remove the files from favorites
+			Vector<String> favorites = EditorSettings::get_singleton()->get_favorite_dirs();
+			for (int i = 0; i < p_selected.size(); i++) {
+				favorites.erase(p_selected[i]);
+			}
+			EditorSettings::get_singleton()->set_favorite_dirs(favorites);
+			_update_tree(true);
+		} break;
+
 		case FILE_DEPENDENCIES: {
 			// Checkout the file dependencies
 			if (!p_selected.empty()) {
@@ -1593,7 +1550,6 @@ void FileSystemDock::focus_on_filter() {
 		// Tree mode, switch to files list with search box
 		tree->hide();
 		file_list_vb->show();
-		button_favorite->hide();
 	}
 
 	search_box->grab_focus();
@@ -1840,9 +1796,13 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
+	Vector<String> favorites = EditorSettings::get_singleton()->get_favorite_dirs();
+
 	bool all_files = true;
 	bool all_files_scenes = true;
 	bool all_folders = true;
+	bool all_favorites = true;
+	bool all_not_favorites = true;
 	for (int i = 0; i < p_paths.size(); i++) {
 		String fpath = p_paths[i];
 		if (fpath.ends_with("/")) {
@@ -1852,6 +1812,20 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			filenames.push_back(fpath);
 			all_folders = false;
 			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene");
+		}
+
+		// Check if in favorites
+		bool found = false;
+		for (int j = 0; j < favorites.size(); j++) {
+			if (favorites[j] == fpath) {
+				found = true;
+				break;
+			}
+		}
+		if (found) {
+			all_not_favorites = false;
+		} else {
+			all_favorites = false;
 		}
 	}
 
@@ -1867,7 +1841,19 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_item(TTR("Open"), FILE_OPEN);
 			p_popup->add_separator();
 		}
+	}
 
+	if (p_paths.size() >= 1) {
+		if (!all_favorites) {
+			p_popup->add_item(TTR("Add to favorites"), FILE_ADD_FAVORITE);
+		}
+		if (!all_not_favorites) {
+			p_popup->add_item(TTR("Remove from favorites"), FILE_REMOVE_FAVORITE);
+		}
+		p_popup->add_separator();
+	}
+
+	if (all_files) {
 		if (filenames.size() == 1) {
 			p_popup->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
 			p_popup->add_item(TTR("View Owners..."), FILE_OWNERS);
@@ -2075,7 +2061,6 @@ void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
 	ClassDB::bind_method(D_METHOD("_rescan"), &FileSystemDock::_rescan);
-	ClassDB::bind_method(D_METHOD("_favorites_pressed"), &FileSystemDock::_favorites_pressed);
 	ClassDB::bind_method(D_METHOD("_show_current_scene_file"), &FileSystemDock::_show_current_scene_file);
 	//ClassDB::bind_method(D_METHOD("_instance_pressed"),&ScenesDock::_instance_pressed);
 
@@ -2159,14 +2144,6 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_reload);
 
 	//toolbar_hbc->add_spacer();
-
-	button_favorite = memnew(Button);
-	button_favorite->set_flat(true);
-	button_favorite->set_toggle_mode(true);
-	button_favorite->connect("pressed", this, "_favorites_pressed");
-	button_favorite->set_tooltip(TTR("Toggle folder status as Favorite."));
-	button_favorite->set_focus_mode(FOCUS_NONE);
-	toolbar_hbc->add_child(button_favorite);
 
 	button_show = memnew(Button);
 	button_show->set_flat(true);
