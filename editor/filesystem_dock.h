@@ -113,7 +113,10 @@ private:
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
-	LineEdit *search_box;
+	LineEdit *tree_search_box;
+	LineEdit *file_list_search_box;
+	String searched_string;
+
 	TextureRect *search_icon;
 	HBoxContainer *path_hb;
 
@@ -226,7 +229,7 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _search_changed(const String &p_text);
+	void _search_changed(const String &p_text, const Control *p_from);
 
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths);
 	void _tree_rmb_select(const Vector2 &p_pos);

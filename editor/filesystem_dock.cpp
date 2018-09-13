@@ -53,6 +53,8 @@ Ref<Texture> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_di
 
 bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths) {
 
+	bool parent_should_expand = false;
+
 	// Create a tree item for the subdirectory
 	TreeItem *subdirectory_item = tree->create_item(p_parent);
 	String dname = p_dir->get_name();
@@ -80,15 +82,28 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		}
 		subdirectory_item->set_collapsed(is_collapsed);
 	}
+	if (searched_string.length() > 0 && dname.to_lower().find(searched_string) >= 0) {
+		parent_should_expand = true;
+	}
 
 	// Create items for all subdirectories
 	for (int i = 0; i < p_dir->get_subdir_count(); i++)
-		_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths);
+		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths) || parent_should_expand);
 
 	// Create all items for the files in the subdirectory
 	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 			String file_name = p_dir->get_file(i);
+
+			if (searched_string.length() > 0) {
+				if (file_name.to_lower().find(searched_string) < 0) {
+					// The seached string is not in the file name, we skip it
+					continue;
+				} else {
+					// We expand all parents
+					parent_should_expand = true;
+				}
+			}
 
 			TreeItem *file_item = tree->create_item(subdirectory_item);
 			file_item->set_text(0, file_name);
@@ -106,17 +121,27 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		}
 	}
 
-	return true;
+	if (searched_string.length() > 0) {
+		if (parent_should_expand) {
+			subdirectory_item->set_collapsed(false);
+		} else {
+			subdirectory_item->get_parent()->remove_child(subdirectory_item);
+		}
+	}
+
+	return parent_should_expand;
 }
 
 void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_root) {
 
 	// Register currently collapsed paths
 	Vector<String> uncollapsed_paths;
-	if (keep_collapse_state) {
+	if (searched_string.length() == 0 && keep_collapse_state) {
 		TreeItem *root = tree->get_root();
 		if (root) {
-			TreeItem *resTree = root->get_children()->get_next();
+			TreeItem *resTree = root->get_children();
+			if (resTree != NULL)
+				resTree = resTree->get_next();
 			if (resTree) {
 				Vector<TreeItem *> needs_check;
 				needs_check.push_back(resTree);
@@ -156,27 +181,37 @@ void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_ro
 
 		Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
 
-		TreeItem *ti = tree->create_item(favorites);
+		String text;
+		Ref<Texture> icon;
 		if (fave == "res://") {
-			ti->set_text(0, "/");
-			ti->set_icon(0, folder_icon);
+			text = "/";
+			icon = folder_icon;
 		} else if (fave.ends_with("/")) {
-			ti->set_text(0, fave.substr(0, fave.length() - 1).get_file());
-			ti->set_icon(0, folder_icon);
+			text = fave.substr(0, fave.length() - 1).get_file();
+			icon = folder_icon;
 		} else {
-			ti->set_text(0, fave.get_file());
+			text = fave.get_file();
 			int index;
 			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(fave, &index);
 			if (dir) {
-				ti->set_icon(0, _get_tree_item_icon(dir, index));
+				icon = _get_tree_item_icon(dir, index);
 			} else {
-				ti->set_icon(0, get_icon("File", "EditorIcons"));
+				icon = get_icon("File", "EditorIcons");
 			}
 		}
 
-		ti->set_tooltip(0, fave);
-		ti->set_selectable(0, true);
-		ti->set_metadata(0, fave);
+		if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
+			TreeItem *ti = tree->create_item(favorites);
+			ti->set_text(0, text);
+			ti->set_icon(0, icon);
+			ti->set_tooltip(0, fave);
+			ti->set_selectable(0, true);
+			ti->set_metadata(0, fave);
+		}
+	}
+
+	if (searched_string.length() > 0 && favorites->get_children() == NULL) {
+		root->remove_child(favorites);
 	}
 
 	if (p_uncollapse_root) {
@@ -204,13 +239,19 @@ void FileSystemDock::_update_display_mode() {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				_update_tree(true);
+				if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
+					tree_search_box->show();
+				} else {
+					tree_search_box->hide();
+				}
 
+				_update_tree(true);
 				file_list_vb->hide();
 				break;
 
 			case DISPLAY_MODE_FILE_LIST_ONLY:
 				tree->hide();
+				tree_search_box->hide();
 				button_tree->show();
 
 				file_list_vb->show();
@@ -222,6 +263,7 @@ void FileSystemDock::_update_display_mode() {
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
 				button_tree->hide();
 				tree->ensure_cursor_is_visible();
+				tree_search_box->hide();
 				_update_tree(true);
 
 				file_list_vb->show();
@@ -259,8 +301,10 @@ void FileSystemDock::_notification(int p_what) {
 			files->connect("item_activated", this, "_file_list_activate_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
-			search_box->set_right_icon(get_icon("Search", ei));
-			search_box->set_clear_button_enabled(true);
+			tree_search_box->set_right_icon(get_icon("Search", ei));
+			tree_search_box->set_clear_button_enabled(true);
+			file_list_search_box->set_right_icon(get_icon("Search", ei));
+			file_list_search_box->set_clear_button_enabled(true);
 
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
@@ -314,8 +358,10 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
 
-			search_box->set_right_icon(get_icon("Search", ei));
-			search_box->set_clear_button_enabled(true);
+			tree_search_box->set_right_icon(get_icon("Search", ei));
+			tree_search_box->set_clear_button_enabled(true);
+			file_list_search_box->set_right_icon(get_icon("Search", ei));
+			file_list_search_box->set_clear_button_enabled(true);
 
 			// Update file list display mode
 			int new_file_list_mode = int(EditorSettings::get_singleton()->get("docks/filesystem/files_display_mode"));
@@ -479,12 +525,10 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 		_search(p_path->get_subdir(i), matches, p_max_items);
 	}
 
-	String match = search_box->get_text().to_lower();
-
 	for (int i = 0; i < p_path->get_file_count(); i++) {
 		String file = p_path->get_file(i);
 
-		if (file.to_lower().find(match) != -1) {
+		if (file.to_lower().find(searched_string) != -1) {
 
 			FileInfo fi;
 			fi.name = file;
@@ -537,7 +581,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	Ref<Texture> file_thumbnail_broken;
 
 	bool use_thumbnails = (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS);
-	bool use_folders = search_box->get_text().length() == 0 && ((display_mode == DISPLAY_MODE_FILE_LIST_ONLY || display_mode == DISPLAY_MODE_TREE_ONLY) || always_show_folders);
+	bool use_folders = searched_string.length() == 0 && ((display_mode == DISPLAY_MODE_FILE_LIST_ONLY || display_mode == DISPLAY_MODE_TREE_ONLY) || always_show_folders);
 
 	if (use_thumbnails) {
 
@@ -594,7 +638,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 
 	List<FileInfo> filelist;
 
-	if (search_box->get_text().length() > 0) {
+	if (searched_string.length() > 0) {
 
 		_search(EditorFileSystem::get_singleton()->get_filesystem(), &filelist, 128);
 		filelist.sort();
@@ -722,7 +766,7 @@ void FileSystemDock::_go_to_tree() {
 
 void FileSystemDock::_preview_invalidated(const String &p_path) {
 
-	if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && search_box->get_text() == String() && file_list_vb->is_visible_in_tree()) {
+	if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && searched_string.length() == 0 && file_list_vb->is_visible_in_tree()) {
 
 		for (int i = 0; i < files->get_item_count(); i++) {
 
@@ -1519,10 +1563,26 @@ void FileSystemDock::_resource_created() const {
 	editor->save_resource_as(current_res, fpath);
 }
 
-void FileSystemDock::_search_changed(const String &p_text) {
+void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
+	searched_string = p_text.to_lower();
 
-	if (file_list_vb->is_visible())
-		_update_files(false);
+	if (p_from == tree_search_box)
+		file_list_search_box->set_text(searched_string);
+	else // file_list_search_box
+		tree_search_box->set_text(searched_string);
+
+	switch (display_mode) {
+		case DISPLAY_MODE_FILE_LIST_ONLY: {
+			_update_files(false);
+		} break;
+		case DISPLAY_MODE_TREE_ONLY: {
+			_update_tree(false);
+		} break;
+		case DISPLAY_MODE_SPLIT: {
+			_update_files(false);
+			_update_tree(false);
+		} break;
+	}
 }
 
 void FileSystemDock::_rescan() {
@@ -1543,7 +1603,7 @@ void FileSystemDock::focus_on_filter() {
 		file_list_vb->show();
 	}
 
-	search_box->grab_focus();
+	file_list_search_box->grab_focus();
 }
 
 void FileSystemDock::set_file_list_display_mode(int p_mode) {
@@ -2105,9 +2165,12 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename"));
 
+	VBoxContainer *top_vbc = memnew(VBoxContainer);
+	add_child(top_vbc);
+
 	HBoxContainer *toolbar_hbc = memnew(HBoxContainer);
 	toolbar_hbc->add_constant_override("separation", 0);
-	add_child(toolbar_hbc);
+	top_vbc->add_child(toolbar_hbc);
 
 	button_hist_prev = memnew(ToolButton);
 	button_hist_prev->set_disabled(true);
@@ -2132,6 +2195,16 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
 	toolbar_hbc->add_child(button_reload);
+
+	HBoxContainer *toolbar2_hbc = memnew(HBoxContainer);
+	toolbar2_hbc->add_constant_override("separation", 0);
+	top_vbc->add_child(toolbar2_hbc);
+
+	tree_search_box = memnew(LineEdit);
+	tree_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	tree_search_box->set_placeholder(TTR("Search files"));
+	tree_search_box->connect("text_changed", this, "_search_changed", varray(tree_search_box));
+	toolbar2_hbc->add_child(tree_search_box);
 
 	//toolbar_hbc->add_spacer();
 
@@ -2195,11 +2268,11 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_tree->hide();
 	path_hb->add_child(button_tree);
 
-	search_box = memnew(LineEdit);
-	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTR("Search files"));
-	search_box->connect("text_changed", this, "_search_changed");
-	path_hb->add_child(search_box);
+	file_list_search_box = memnew(LineEdit);
+	file_list_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	file_list_search_box->set_placeholder(TTR("Search files"));
+	file_list_search_box->connect("text_changed", this, "_search_changed", varray(file_list_search_box));
+	path_hb->add_child(file_list_search_box);
 
 	button_file_list_display_mode = memnew(ToolButton);
 	button_file_list_display_mode->set_toggle_mode(true);
