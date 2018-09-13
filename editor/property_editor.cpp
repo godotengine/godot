@@ -34,6 +34,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
+#include "core/math/expression.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/pair.h"
@@ -1531,21 +1532,24 @@ void CustomPropertyEditor::_modified(String p_string) {
 	updating = true;
 	switch (type) {
 		case Variant::INT: {
-
-			if (evaluator)
-				v = evaluator->eval(value_editor[0]->get_text());
-			else
+			String text = value_editor[0]->get_text();
+			Ref<Expression> expr;
+			expr.instance();
+			Error err = expr->parse(text);
+			if (err != OK) {
 				v = value_editor[0]->get_text().to_int();
+				return;
+			} else {
+				v = expr->execute(Array(), NULL, false);
+			}
 			emit_signal("variant_changed");
 
 		} break;
 		case Variant::REAL: {
 
 			if (hint != PROPERTY_HINT_EXP_EASING) {
-				if (evaluator)
-					v = evaluator->eval(value_editor[0]->get_text());
-				else
-					v = value_editor[0]->get_text().to_double();
+				String text = value_editor[0]->get_text();
+				v = _parse_real_expression(text);
 				emit_signal("variant_changed");
 			}
 
@@ -1558,13 +1562,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::VECTOR2: {
 
 			Vector2 vec;
-			if (evaluator) {
-				vec.x = evaluator->eval(value_editor[0]->get_text());
-				vec.y = evaluator->eval(value_editor[1]->get_text());
-			} else {
-				vec.x = value_editor[0]->get_text().to_double();
-				vec.y = value_editor[1]->get_text().to_double();
-			}
+			vec.x = _parse_real_expression(value_editor[0]->get_text());
+			vec.y = _parse_real_expression(value_editor[1]->get_text());
 			v = vec;
 			_emit_changed_whole_or_field();
 
@@ -1572,17 +1571,11 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::RECT2: {
 
 			Rect2 r2;
-			if (evaluator) {
-				r2.position.x = evaluator->eval(value_editor[0]->get_text());
-				r2.position.y = evaluator->eval(value_editor[1]->get_text());
-				r2.size.x = evaluator->eval(value_editor[2]->get_text());
-				r2.size.y = evaluator->eval(value_editor[3]->get_text());
-			} else {
-				r2.position.x = value_editor[0]->get_text().to_double();
-				r2.position.y = value_editor[1]->get_text().to_double();
-				r2.size.x = value_editor[2]->get_text().to_double();
-				r2.size.y = value_editor[3]->get_text().to_double();
-			}
+
+			r2.position.x = _parse_real_expression(value_editor[0]->get_text());
+			r2.position.y = _parse_real_expression(value_editor[1]->get_text());
+			r2.size.x = _parse_real_expression(value_editor[2]->get_text());
+			r2.size.y = _parse_real_expression(value_editor[3]->get_text());
 			v = r2;
 			_emit_changed_whole_or_field();
 
@@ -1591,15 +1584,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::VECTOR3: {
 
 			Vector3 vec;
-			if (evaluator) {
-				vec.x = evaluator->eval(value_editor[0]->get_text());
-				vec.y = evaluator->eval(value_editor[1]->get_text());
-				vec.z = evaluator->eval(value_editor[2]->get_text());
-			} else {
-				vec.x = value_editor[0]->get_text().to_double();
-				vec.y = value_editor[1]->get_text().to_double();
-				vec.z = value_editor[2]->get_text().to_double();
-			}
+			vec.x = _parse_real_expression(value_editor[0]->get_text());
+			vec.y = _parse_real_expression(value_editor[1]->get_text());
+			vec.z = _parse_real_expression(value_editor[2]->get_text());
 			v = vec;
 			_emit_changed_whole_or_field();
 
@@ -1607,17 +1594,10 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::PLANE: {
 
 			Plane pl;
-			if (evaluator) {
-				pl.normal.x = evaluator->eval(value_editor[0]->get_text());
-				pl.normal.y = evaluator->eval(value_editor[1]->get_text());
-				pl.normal.z = evaluator->eval(value_editor[2]->get_text());
-				pl.d = evaluator->eval(value_editor[3]->get_text());
-			} else {
-				pl.normal.x = value_editor[0]->get_text().to_double();
-				pl.normal.y = value_editor[1]->get_text().to_double();
-				pl.normal.z = value_editor[2]->get_text().to_double();
-				pl.d = value_editor[3]->get_text().to_double();
-			}
+			pl.normal.x = _parse_real_expression(value_editor[0]->get_text());
+			pl.normal.y = _parse_real_expression(value_editor[1]->get_text());
+			pl.normal.z = _parse_real_expression(value_editor[2]->get_text());
+			pl.d = _parse_real_expression(value_editor[3]->get_text());
 			v = pl;
 			_emit_changed_whole_or_field();
 
@@ -1625,17 +1605,10 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::QUAT: {
 
 			Quat q;
-			if (evaluator) {
-				q.x = evaluator->eval(value_editor[0]->get_text());
-				q.y = evaluator->eval(value_editor[1]->get_text());
-				q.z = evaluator->eval(value_editor[2]->get_text());
-				q.w = evaluator->eval(value_editor[3]->get_text());
-			} else {
-				q.x = value_editor[0]->get_text().to_double();
-				q.y = value_editor[1]->get_text().to_double();
-				q.z = value_editor[2]->get_text().to_double();
-				q.w = value_editor[3]->get_text().to_double();
-			}
+			q.x = _parse_real_expression(value_editor[0]->get_text());
+			q.y = _parse_real_expression(value_editor[1]->get_text());
+			q.z = _parse_real_expression(value_editor[2]->get_text());
+			q.w = _parse_real_expression(value_editor[3]->get_text());
 			v = q;
 			_emit_changed_whole_or_field();
 
@@ -1645,21 +1618,12 @@ void CustomPropertyEditor::_modified(String p_string) {
 			Vector3 pos;
 			Vector3 size;
 
-			if (evaluator) {
-				pos.x = evaluator->eval(value_editor[0]->get_text());
-				pos.y = evaluator->eval(value_editor[1]->get_text());
-				pos.z = evaluator->eval(value_editor[2]->get_text());
-				size.x = evaluator->eval(value_editor[3]->get_text());
-				size.y = evaluator->eval(value_editor[4]->get_text());
-				size.z = evaluator->eval(value_editor[5]->get_text());
-			} else {
-				pos.x = value_editor[0]->get_text().to_double();
-				pos.y = value_editor[1]->get_text().to_double();
-				pos.z = value_editor[2]->get_text().to_double();
-				size.x = value_editor[3]->get_text().to_double();
-				size.y = value_editor[4]->get_text().to_double();
-				size.z = value_editor[5]->get_text().to_double();
-			}
+			pos.x = _parse_real_expression(value_editor[0]->get_text());
+			pos.y = _parse_real_expression(value_editor[1]->get_text());
+			pos.z = _parse_real_expression(value_editor[2]->get_text());
+			size.x = _parse_real_expression(value_editor[3]->get_text());
+			size.y = _parse_real_expression(value_editor[4]->get_text());
+			size.z = _parse_real_expression(value_editor[5]->get_text());
 			v = AABB(pos, size);
 			_emit_changed_whole_or_field();
 
@@ -1668,11 +1632,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 			Transform2D m;
 			for (int i = 0; i < 6; i++) {
-				if (evaluator) {
-					m.elements[i / 2][i % 2] = evaluator->eval(value_editor[i]->get_text());
-				} else {
-					m.elements[i / 2][i % 2] = value_editor[i]->get_text().to_double();
-				}
+				m.elements[i / 2][i % 2] = _parse_real_expression(value_editor[i]->get_text());
 			}
 
 			v = m;
@@ -1683,12 +1643,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 			Basis m;
 			for (int i = 0; i < 9; i++) {
-
-				if (evaluator) {
-					m.elements[i / 3][i % 3] = evaluator->eval(value_editor[i]->get_text());
-				} else {
-					m.elements[i / 3][i % 3] = value_editor[i]->get_text().to_double();
-				}
+				m.elements[i / 3][i % 3] = _parse_real_expression(value_editor[i]->get_text());
 			}
 
 			v = m;
@@ -1699,25 +1654,14 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 			Basis basis;
 			for (int i = 0; i < 9; i++) {
-
-				if (evaluator) {
-					basis.elements[i / 3][i % 3] = evaluator->eval(value_editor[(i / 3) * 4 + i % 3]->get_text());
-				} else {
-					basis.elements[i / 3][i % 3] = value_editor[(i / 3) * 4 + i % 3]->get_text().to_double();
-				}
+				basis.elements[i / 3][i % 3] = _parse_real_expression(value_editor[(i / 3) * 4 + i % 3]->get_text());
 			}
 
 			Vector3 origin;
 
-			if (evaluator) {
-				origin.x = evaluator->eval(value_editor[3]->get_text());
-				origin.y = evaluator->eval(value_editor[7]->get_text());
-				origin.z = evaluator->eval(value_editor[11]->get_text());
-			} else {
-				origin.x = value_editor[3]->get_text().to_double();
-				origin.y = value_editor[7]->get_text().to_double();
-				origin.z = value_editor[11]->get_text().to_double();
-			}
+			origin.x = _parse_real_expression(value_editor[3]->get_text());
+			origin.y = _parse_real_expression(value_editor[7]->get_text());
+			origin.z = _parse_real_expression(value_editor[11]->get_text());
 
 			v = Transform(basis, origin);
 			_emit_changed_whole_or_field();
@@ -1757,6 +1701,19 @@ void CustomPropertyEditor::_modified(String p_string) {
 	}
 
 	updating = false;
+}
+
+real_t CustomPropertyEditor::_parse_real_expression(String text) {
+	Ref<Expression> expr;
+	expr.instance();
+	Error err = expr->parse(text);
+	real_t out;
+	if (err != OK) {
+		out = value_editor[0]->get_text().to_double();
+	} else {
+		out = expr->execute(Array(), NULL, false);
+	}
+	return out;
 }
 
 void CustomPropertyEditor::_emit_changed_whole_or_field() {

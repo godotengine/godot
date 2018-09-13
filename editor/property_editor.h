@@ -135,6 +135,9 @@ class CustomPropertyEditor : public Popup {
 	void _text_edit_changed();
 	void _file_selected(String p_file);
 	void _modified(String p_string);
+
+	real_t _parse_real_expression(String text);
+
 	void _range_modified(double p_value);
 	void _focus_enter();
 	void _focus_exit();
