@@ -578,6 +578,9 @@ def generate_vs_project(env, num_jobs):
         release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
         release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
         targets = debug_targets + release_targets + release_debug_targets
+        if not env.get('MSVS'):
+            env['MSVS']['PROJECTSUFFIX'] = '.vcxproj'    
+            env['MSVS']['SOLUTIONSUFFIX'] = '.sln'
         env.MSVSProject(
             target=['#godot' + env['MSVSPROJECTSUFFIX']],
             incs=env.vs_incs,
