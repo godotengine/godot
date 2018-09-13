@@ -107,6 +107,7 @@ private:
 	EditorNode *editor;
 	Set<String> favorites;
 
+	Button *button_toggle_display_mode;
 	Button *button_reload;
 	Button *button_tree;
 	Button *button_file_list_display_mode;
@@ -231,6 +232,8 @@ private:
 
 	void _set_scanning_mode();
 	void _rescan();
+
+	void _toggle_split_mode(bool p_active);
 
 	void _search_changed(const String &p_text, const Control *p_from);
 

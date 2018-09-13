@@ -288,12 +288,11 @@ void FileSystemDock::_notification(int p_what) {
 
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
-			//button_instance->set_icon(get_icon("Add", ei));
-			//button_open->set_icon(get_icon("Folder", ei));
+			button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
 			button_tree->set_icon(get_icon("Filesystem", ei));
 			_update_file_list_display_mode_button();
 			button_file_list_display_mode->connect("pressed", this, "_change_file_display");
-			//file_list_popup->set_icon( get_icon("Tools","ei"));
+
 			files->connect("item_activated", this, "_file_list_activate_file");
 			button_hist_next->connect("pressed", this, "_fw_history");
 			button_hist_prev->connect("pressed", this, "_bw_history");
@@ -350,6 +349,7 @@ void FileSystemDock::_notification(int p_what) {
 			// Update icons
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_icon("Reload", ei));
+			button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
 			button_tree->set_icon(get_icon("Filesystem", ei));
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
@@ -371,6 +371,7 @@ void FileSystemDock::_notification(int p_what) {
 			DisplayModeSetting new_display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 			if (new_display_mode_setting != display_mode_setting) {
 				display_mode_setting = new_display_mode_setting;
+				button_toggle_display_mode->set_pressed(DISPLAY_MODE_SETTING_SPLIT ? true : false);
 				_update_tree(_compute_uncollapsed_paths());
 			}
 
@@ -1592,6 +1593,12 @@ void FileSystemDock::_rescan() {
 	EditorFileSystem::get_singleton()->scan();
 }
 
+void FileSystemDock::_toggle_split_mode(bool p_active) {
+	display_mode_setting = p_active ? DISPLAY_MODE_SETTING_SPLIT : DISPLAY_MODE_SETTING_TREE_ONLY;
+	_update_display_mode();
+	EditorSettings::get_singleton()->set("docks/filesystem/display_mode", int(display_mode_setting));
+}
+
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
 	deps_editor->edit(p_for_file);
 }
@@ -2152,7 +2159,8 @@ void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
 	ClassDB::bind_method(D_METHOD("_rescan"), &FileSystemDock::_rescan);
-	//ClassDB::bind_method(D_METHOD("_instance_pressed"),&ScenesDock::_instance_pressed);
+
+	ClassDB::bind_method(D_METHOD("_toggle_split_mode"), &FileSystemDock::_toggle_split_mode);
 
 	ClassDB::bind_method(D_METHOD("_tree_rmb_option", "option"), &FileSystemDock::_tree_rmb_option);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_option", "option"), &FileSystemDock::_file_list_rmb_option);
@@ -2235,6 +2243,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
 	toolbar_hbc->add_child(button_reload);
+
+	button_toggle_display_mode = memnew(Button);
+	button_toggle_display_mode->set_flat(true);
+	button_toggle_display_mode->set_toggle_mode(true);
+	button_toggle_display_mode->connect("toggled", this, "_toggle_split_mode");
+	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
+	button_toggle_display_mode->set_tooltip(TTR("Toggle split mode"));
+	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	HBoxContainer *toolbar2_hbc = memnew(HBoxContainer);
 	toolbar2_hbc->add_constant_override("separation", 0);
@@ -2402,6 +2418,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(new_resource_dialog);
 	new_resource_dialog->set_base_type("Resource");
 	new_resource_dialog->connect("create", this, "_resource_created");
+
+	searched_string = String();
+	uncollapsed_paths_before_search = Vector<String>();
 
 	updating_tree = false;
 	tree_update_id = 0;
