@@ -54,6 +54,12 @@ class SpriteFrames : public Resource {
 
 	Map<StringName, Anim> animations;
 
+	Array _get_frames() const;
+	void _set_frames(const Array &p_frames);
+
+	Array _get_animations() const;
+	void _set_animations(const Array &p_animations);
+
 	Vector<String> _get_animation_list() const;
 
 protected:
