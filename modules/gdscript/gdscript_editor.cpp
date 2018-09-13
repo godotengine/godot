@@ -1189,6 +1189,7 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 				c.line = op->line;
 				c.block = blk;
 				if (_guess_expression_type(p_context, op->arguments[1], r_type)) {
+					r_type.type.is_meta_type = false;
 					return true;
 				}
 			}
