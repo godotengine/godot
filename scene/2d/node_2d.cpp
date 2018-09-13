@@ -167,15 +167,21 @@ void Node2D::set_rotation_degrees(float p_degrees) {
 
 void Node2D::set_scale(const Size2 &p_scale) {
 
+#ifdef DEBUG_ENABLED
+	if (p_scale.x == 0 || p_scale.y == 0) {
+		ERR_PRINT("Spatial scale was set with one or more zero components, this may cause bugs.");
+	}
+#endif
+
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
+
 	_scale = p_scale;
-	if (_scale.x == 0)
-		_scale.x = CMP_EPSILON;
-	if (_scale.y == 0)
-		_scale.y = CMP_EPSILON;
+
 	_update_transform();
 	_change_notify("scale");
+
+	update_configuration_warning();
 }
 
 Point2 Node2D::get_position() const {
@@ -393,6 +399,16 @@ Point2 Node2D::to_local(Point2 p_global) const {
 Point2 Node2D::to_global(Point2 p_local) const {
 
 	return get_global_transform().xform(p_local);
+}
+
+String Node2D::get_configuration_warning() const {
+
+	Vector2 abs_scale = get_scale().abs();
+	if (abs_scale.x < CMP_EPSILON || abs_scale.y < CMP_EPSILON) {
+		return TTR("A Node2D node cannot have a scale with a zero component.");
+	}
+
+	return String();
 }
 
 void Node2D::_bind_methods() {

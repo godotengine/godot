@@ -105,7 +105,6 @@ class Spatial : public Node {
 	void _update_gizmo();
 	void _notify_dirty();
 	void _propagate_transform_changed(Spatial *p_origin);
-
 	void _propagate_visibility_changed();
 
 protected:
@@ -203,6 +202,8 @@ public:
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();
+
+	virtual String get_configuration_warning() const;
 
 	Spatial();
 	~Spatial();

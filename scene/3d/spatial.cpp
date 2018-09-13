@@ -348,6 +348,12 @@ void Spatial::set_rotation_degrees(const Vector3 &p_euler_deg) {
 
 void Spatial::set_scale(const Vector3 &p_scale) {
 
+#ifdef DEBUG_ENABLED
+	if (p_scale.x == 0 || p_scale.y == 0 || p_scale.z == 0) {
+		ERR_PRINT("Spatial scale was set with one or more zero components, this may cause bugs.");
+	}
+#endif
+
 	if (data.dirty & DIRTY_VECTORS) {
 		data.rotation = data.local_transform.basis.get_rotation();
 		data.dirty &= ~DIRTY_VECTORS;
@@ -355,10 +361,13 @@ void Spatial::set_scale(const Vector3 &p_scale) {
 
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
+
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
+
+	update_configuration_warning();
 }
 
 Vector3 Spatial::get_translation() const {
@@ -731,6 +740,16 @@ void Spatial::force_update_transform() {
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
+String Spatial::get_configuration_warning() const {
+
+	Vector3 abs_scale = get_scale().abs();
+	if (abs_scale.x < CMP_EPSILON || abs_scale.y < CMP_EPSILON || abs_scale.z < CMP_EPSILON) {
+		return TTR("A Spatial node cannot have a scale with a zero component.");
+	}
+
+	return String();
+}
+
 void Spatial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Spatial::set_transform);
@@ -798,7 +817,6 @@ void Spatial::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::TRANSFORM, "global_transform", PROPERTY_HINT_NONE, "", 0), "set_global_transform", "get_global_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "translation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_translation", "get_translation");
