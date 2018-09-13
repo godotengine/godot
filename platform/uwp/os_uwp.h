@@ -152,7 +152,7 @@ private:
 	Windows::Devices::Sensors::Magnetometer ^ magnetometer;
 	Windows::Devices::Sensors::Gyrometer ^ gyrometer;
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual int get_video_driver_count() const;
 	virtual int get_current_video_driver() const;

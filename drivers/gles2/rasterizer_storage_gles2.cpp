@@ -1551,7 +1551,7 @@ void RasterizerStorageGLES2::_update_material(Material *p_material) {
 		}
 	}
 
-	// uniforms and other thigns will be set in the use_material method in ShaderGLES2
+	// uniforms and other things will be set in the use_material method in ShaderGLES2
 
 	if (p_material->shader && p_material->shader->texture_count > 0) {
 

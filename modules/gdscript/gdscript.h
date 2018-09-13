@@ -286,7 +286,7 @@ struct GDScriptWarning {
 		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded
 		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes)
-		UNSAFE_METHOD_ACCESS, // Fucntion not found in the detected type (but can be in subtypes)
+		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes)
 		UNSAFE_CAST, // Cast used in an unknown type
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
 		WARNING_MAX,

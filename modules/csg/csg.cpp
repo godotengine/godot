@@ -292,12 +292,12 @@ void CSGBrushOperation::BuildPoly::_clip_segment(const CSGBrush *p_brush, int p_
 		for (int j = 0; j < 2; j++) {
 
 			if (edges[i].points[0] == segment_idx[0] || edges[i].points[1] == segment_idx[1] || edges[i].points[0] == segment_idx[1] || edges[i].points[1] == segment_idx[0]) {
-				edge_valid = false; //segment has this point, cant check against this
+				edge_valid = false; //segment has this point, can't check against this
 				break;
 			}
 		}
 
-		if (!edge_valid) //already hit a point in this edge, so dont test it
+		if (!edge_valid) //already hit a point in this edge, so don't test it
 			continue;
 
 		//see if either points are within the edge isntead of crossing it
@@ -573,7 +573,7 @@ void CSGBrushOperation::_collision_callback(const CSGBrush *A, int p_face_a, Map
 		}
 	}
 
-	//if we are still here, it means they most likely intersect, so create BuildPolys if they dont existy
+	//if we are still here, it means they most likely intersect, so create BuildPolys if they don't exist
 
 	BuildPoly *poly_a = NULL;
 
@@ -896,7 +896,7 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 						Vector2 to = p_poly.points[to_idx].point;
 						with_outline_vertex = l;
 
-						//try agaisnt outline (other points) first
+						//try against outline (other points) first
 
 						valid = true;
 
@@ -915,7 +915,7 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 						if (!valid)
 							continue;
 
-						//try agaisnt all holes including self
+						//try against all holes including self
 
 						for (int m = 0; m < polys[i].holes.size(); m++) {
 

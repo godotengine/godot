@@ -26,7 +26,7 @@
 			The currently selected color.
 		</member>
 		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode">
-			If [code]true[/code] the color will apply only after the user releases the mouse button, otherwise it will apply immediatly even in mouse motion event (which can cause performance issues).
+			If [code]true[/code] the color will apply only after the user releases the mouse button, otherwise it will apply immediately even in mouse motion event (which can cause performance issues).
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
 			If [code]true[/code] shows an alpha channel slider (transparency).

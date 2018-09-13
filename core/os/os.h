@@ -129,7 +129,7 @@ protected:
 
 	RenderThreadMode _render_thread_mode;
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize_core() = 0;

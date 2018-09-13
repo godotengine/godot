@@ -100,8 +100,8 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	host = enet_host_create(&address /* the address to bind the server host to */,
 			p_max_clients /* allow up to 32 clients and/or outgoing connections */,
 			channel_count /* allow up to channel_count to be used */,
-			p_in_bandwidth /* limit incoming bandwith if > 0 */,
-			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+			p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+			p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
@@ -144,14 +144,14 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 		host = enet_host_create(&c_client /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
 				channel_count /* allow up to channel_count to be used */,
-				p_in_bandwidth /* limit incoming bandwith if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 	} else {
 		host = enet_host_create(NULL /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
 				channel_count /* allow up to channel_count to be used */,
-				p_in_bandwidth /* limit incoming bandwith if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 	}
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);

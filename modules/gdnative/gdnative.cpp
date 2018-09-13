@@ -390,7 +390,7 @@ bool GDNative::terminate() {
 	if (library->should_load_once()) {
 		Vector<Ref<GDNative> > *gdnatives = &(*GDNativeLibrary::loaded_libraries)[library->get_current_library_path()];
 		if (gdnatives->size() > 1) {
-			// there are other GDNative's still using this library, so we actually don't terminte
+			// there are other GDNative's still using this library, so we actually don't terminate
 			gdnatives->erase(Ref<GDNative>(this));
 			initialized = false;
 			return true;

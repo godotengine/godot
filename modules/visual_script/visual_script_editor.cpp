@@ -2343,7 +2343,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 	int from_port;
 
 	if (!_get_out_slot(from_node, p_from_slot, from_port, from_seq))
-		return; //can't  connect this, it' s invalid
+		return; //can't connect this, it's invalid
 
 	Ref<VisualScriptNode> to_node = script->get_node(edited_func, p_to.to_int());
 	ERR_FAIL_COND(!to_node.is_valid());
@@ -2352,7 +2352,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 	int to_port;
 
 	if (!_get_in_slot(to_node, p_to_slot, to_port, to_seq))
-		return; //can't  connect this, it' s invalid
+		return; //can't connect this, it's invalid
 
 	ERR_FAIL_COND(from_seq != to_seq);
 
@@ -2363,7 +2363,7 @@ void VisualScriptEditor::_graph_connected(const String &p_from, int p_from_slot,
 		undo_redo->add_undo_method(script.ptr(), "sequence_disconnect", edited_func, p_from.to_int(), from_port, p_to.to_int());
 	} else {
 
-		// disconect current, and connect the new one
+		// disconnect current, and connect the new one
 		if (script->is_input_value_port_connected(edited_func, p_to.to_int(), to_port)) {
 			int conn_from;
 			int conn_port;
@@ -2396,7 +2396,7 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 	int from_port;
 
 	if (!_get_out_slot(from_node, p_from_slot, from_port, from_seq))
-		return; //can't  connect this, it' s invalid
+		return; //can't connect this, it's invalid
 
 	Ref<VisualScriptNode> to_node = script->get_node(edited_func, p_to.to_int());
 	ERR_FAIL_COND(!to_node.is_valid());
@@ -2405,7 +2405,7 @@ void VisualScriptEditor::_graph_disconnected(const String &p_from, int p_from_sl
 	int to_port;
 
 	if (!_get_in_slot(to_node, p_to_slot, to_port, to_seq))
-		return; //can't  connect this, it' s invalid
+		return; //can't connect this, it's invalid
 
 	ERR_FAIL_COND(from_seq != to_seq);
 

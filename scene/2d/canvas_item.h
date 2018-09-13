@@ -348,7 +348,7 @@ public:
 
 	void force_update_transform();
 
-	// Used by control nodes to retreive the parent's anchorable area
+	// Used by control nodes to retrieve the parent's anchorable area
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;

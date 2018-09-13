@@ -78,7 +78,7 @@
 			A status representing a [code]StreamPeerTCP[/code] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A staus representing a [code]StreamPeerTCP[/code] in error state.
+			A status representing a [code]StreamPeerTCP[/code] in error state.
 		</constant>
 	</constants>
 </class>

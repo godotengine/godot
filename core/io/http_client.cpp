@@ -349,7 +349,7 @@ Error HTTPClient::poll() {
 						}
 
 						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
-							// Handshake has been successfull
+							// Handshake has been successful
 							handshaking = false;
 							status = STATUS_CONNECTED;
 							return OK;

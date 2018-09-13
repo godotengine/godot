@@ -849,7 +849,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 	bool wasTheAreaFound = false;
 	for (int i = 0; i < areaWhereIamCount; ++i) {
 		if (p_area == areasWhereIam[i]) {
-			// The area was fount, just shift down all elements
+			// The area was found, just shift down all elements
 			for (int j = i; j < areaWhereIamCount; ++j) {
 				areasWhereIam.write[j] = areasWhereIam[j + 1];
 			}

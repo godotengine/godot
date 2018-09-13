@@ -157,7 +157,7 @@ class OS_Windows : public OS {
 
 	void _update_window_style(bool repaint = true);
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual int get_current_video_driver() const;
 

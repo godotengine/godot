@@ -60,7 +60,7 @@ Error DirAccessUnix::list_dir_begin() {
 
 	//char real_current_dir_name[2048]; //is this enough?!
 	//getcwd(real_current_dir_name,2048);
-	//chdir(curent_path.utf8().get_data());
+	//chdir(current_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());
 	//chdir(real_current_dir_name);
 	if (!dir_stream)

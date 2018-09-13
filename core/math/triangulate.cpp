@@ -186,7 +186,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 			nv--;
 
-			/* resest error detection counter */
+			/* reset error detection counter */
 			count = 2 * nv;
 		}
 	}

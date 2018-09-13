@@ -62,7 +62,7 @@ if env['builtin_freetype']:
             env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
         elif env['platform'] == 'javascript':
             # Forcibly undefine this macro so SIMD is not used in this file,
-            # since currently unsuported in WASM
+            # since currently unsupported in WASM
             sfnt = env.Object(sfnt, CPPFLAGS=['-U__OPTIMIZE__'])
 
     thirdparty_sources += [sfnt]

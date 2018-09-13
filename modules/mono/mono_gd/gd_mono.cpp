@@ -264,7 +264,7 @@ void GDMono::initialize() {
 			_load_project_assembly();
 		} else {
 #ifdef TOOLS_ENABLED
-			// The assembly was successfuly loaded, but the full api could not be cached.
+			// The assembly was successfully loaded, but the full api could not be cached.
 			// This is most likely an outdated assembly loaded because of an invalid version in the metadata,
 			// so we invalidate the version in the metadata and unload the script domain.
 
@@ -715,7 +715,7 @@ Error GDMono::reload_scripts_domain() {
 		// Everything is fine with the api assemblies, load the project assembly
 		_load_project_assembly();
 	} else {
-		// The assembly was successfuly loaded, but the full api could not be cached.
+		// The assembly was successfully loaded, but the full api could not be cached.
 		// This is most likely an outdated assembly loaded because of an invalid version in the metadata,
 		// so we invalidate the version in the metadata and unload the script domain.
 

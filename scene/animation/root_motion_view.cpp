@@ -112,7 +112,7 @@ void RootMotionView::_notification(int p_what) {
 
 		first = false;
 
-		transform.orthonormalize(); //dont want scale, too imprecise
+		transform.orthonormalize(); //don't want scale, too imprecise
 		transform.affine_invert();
 
 		accumulated = transform * accumulated;

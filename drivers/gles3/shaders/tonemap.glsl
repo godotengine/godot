@@ -173,7 +173,7 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 	return tonemap_aces(color, white);
 #endif
 
-	return clamp(color, vec3(0.0f), vec3(1.0f)); // no other seleced -> linear
+	return clamp(color, vec3(0.0f), vec3(1.0f)); // no other selected -> linear
 }
 
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels

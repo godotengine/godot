@@ -294,25 +294,25 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 
 			if (!next_tag.fields.has("from")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'from' field fron connection tag";
+				error_text = "missing 'from' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("to")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'to' field fron connection tag";
+				error_text = "missing 'to' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("signal")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'signal' field fron connection tag";
+				error_text = "missing 'signal' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("method")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'method' field fron connection tag";
+				error_text = "missing 'method' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
@@ -358,7 +358,7 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 
 			if (!next_tag.fields.has("path")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'path' field fron connection tag";
+				error_text = "missing 'path' field from connection tag";
 				_printerr();
 				return Ref<PackedScene>();
 			}

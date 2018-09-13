@@ -497,7 +497,7 @@ void ConnectionsDock::_disconnect(TreeItem &item) {
 }
 
 /*
-Break all conections of currently selected signal.
+Break all connections of currently selected signal.
 Can undo-redo as a single action.
 */
 void ConnectionsDock::_disconnect_all() {

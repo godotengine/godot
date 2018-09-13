@@ -3304,7 +3304,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 						}
 					} else {
 						/*
-						// Because get_integer_constant_enum and get_integer_constant dont work on @GlobalScope
+						// Because get_integer_constant_enum and get_integer_constant don't work on @GlobalScope
 						// We cannot determine the exact nature of the identifier here
 						// Otherwise these codes would work
 						StringName enumName = ClassDB::get_integer_constant_enum("@GlobalScope", p_symbol, true);

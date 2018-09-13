@@ -69,7 +69,7 @@
 			</argument>
 			<description>
 				Discovers local [UPNPDevice]s. Clears the list of previously discovered devices.
-				Filters for IGD (InternetGatewayDevice) type devices by default, as those manage port forwarding. [code]timeout[/code] is the time to wait for responses in miliseconds. [code]ttl[/code] is the time-to-live; only touch this if you know what you're doing.
+				Filters for IGD (InternetGatewayDevice) type devices by default, as those manage port forwarding. [code]timeout[/code] is the time to wait for responses in milliseconds. [code]ttl[/code] is the time-to-live; only touch this if you know what you're doing.
 				See [enum UPNPResult] for possible return values.
 			</description>
 		</method>
