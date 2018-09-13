@@ -1799,23 +1799,11 @@ void CustomPropertyEditor::_focus_enter() {
 }
 
 void CustomPropertyEditor::_focus_exit() {
-	switch (type) {
-		case Variant::REAL:
-		case Variant::STRING:
-		case Variant::VECTOR2:
-		case Variant::RECT2:
-		case Variant::VECTOR3:
-		case Variant::PLANE:
-		case Variant::QUAT:
-		case Variant::AABB:
-		case Variant::TRANSFORM2D:
-		case Variant::BASIS:
-		case Variant::TRANSFORM: {
-			for (int i = 0; i < MAX_VALUE_EDITORS; ++i) {
-				value_editor[i]->select(0, 0);
-			}
-		} break;
-		default: {}
+	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
+		if (value_editor[i]->has_focus()) {
+			_modified(value_editor[i]->get_text());
+			break;
+		}
 	}
 }
 
