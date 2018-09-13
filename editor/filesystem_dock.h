@@ -115,7 +115,9 @@ private:
 	LineEdit *current_path;
 	LineEdit *tree_search_box;
 	LineEdit *file_list_search_box;
+
 	String searched_string;
+	Vector<String> uncollapsed_paths_before_search;
 
 	TextureRect *search_icon;
 	HBoxContainer *path_hb;
@@ -179,7 +181,8 @@ private:
 
 	Ref<Texture> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
-	void _update_tree(bool keep_collapse_state, bool p_uncollapse_root = false);
+	Vector<String> _compute_uncollapsed_paths();
+	void _update_tree(const Vector<String> p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);

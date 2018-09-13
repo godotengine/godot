@@ -124,7 +124,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	if (searched_string.length() > 0) {
 		if (parent_should_expand) {
 			subdirectory_item->set_collapsed(false);
-		} else {
+		} else if (dname != "res://") {
 			subdirectory_item->get_parent()->remove_child(subdirectory_item);
 		}
 	}
@@ -132,34 +132,33 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	return parent_should_expand;
 }
 
-void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_root) {
-
+Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 	// Register currently collapsed paths
 	Vector<String> uncollapsed_paths;
-	if (searched_string.length() == 0 && keep_collapse_state) {
-		TreeItem *root = tree->get_root();
-		if (root) {
-			TreeItem *resTree = root->get_children();
-			if (resTree != NULL)
-				resTree = resTree->get_next();
-			if (resTree) {
-				Vector<TreeItem *> needs_check;
-				needs_check.push_back(resTree);
+	TreeItem *root = tree->get_root();
+	if (root) {
+		TreeItem *resTree = root->get_children()->get_next();
+		if (resTree) {
+			Vector<TreeItem *> needs_check;
+			needs_check.push_back(resTree);
 
-				while (needs_check.size()) {
-					if (!needs_check[0]->is_collapsed()) {
-						uncollapsed_paths.push_back(needs_check[0]->get_metadata(0));
-						TreeItem *child = needs_check[0]->get_children();
-						while (child) {
-							needs_check.push_back(child);
-							child = child->get_next();
-						}
+			while (needs_check.size()) {
+				if (!needs_check[0]->is_collapsed()) {
+					uncollapsed_paths.push_back(needs_check[0]->get_metadata(0));
+					TreeItem *child = needs_check[0]->get_children();
+					while (child) {
+						needs_check.push_back(child);
+						child = child->get_next();
 					}
-					needs_check.remove(0);
 				}
+				needs_check.remove(0);
 			}
 		}
 	}
+	return uncollapsed_paths;
+}
+
+void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool p_uncollapse_root) {
 
 	// Recreate the tree
 	tree->clear();
@@ -210,6 +209,7 @@ void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_ro
 		}
 	}
 
+	Vector<String> uncollapsed_paths = p_uncollapsed_paths;
 	if (p_uncollapse_root) {
 		uncollapsed_paths.push_back("res://");
 	}
@@ -241,7 +241,7 @@ void FileSystemDock::_update_display_mode() {
 					tree_search_box->hide();
 				}
 
-				_update_tree(true);
+				_update_tree(_compute_uncollapsed_paths());
 				file_list_vb->hide();
 				break;
 
@@ -260,7 +260,7 @@ void FileSystemDock::_update_display_mode() {
 				button_tree->hide();
 				tree->ensure_cursor_is_visible();
 				tree_search_box->hide();
-				_update_tree(true);
+				_update_tree(_compute_uncollapsed_paths());
 
 				file_list_vb->show();
 				_update_files(true);
@@ -317,7 +317,7 @@ void FileSystemDock::_notification(int p_what) {
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
 				_set_scanning_mode();
 			} else {
-				_update_tree(false, true);
+				_update_tree(Vector<String>(), true);
 			}
 
 		} break;
@@ -371,7 +371,7 @@ void FileSystemDock::_notification(int p_what) {
 			DisplayModeSetting new_display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 			if (new_display_mode_setting != display_mode_setting) {
 				display_mode_setting = new_display_mode_setting;
-				_update_tree(true);
+				_update_tree(_compute_uncollapsed_paths());
 			}
 
 			// Update allways showfolders
@@ -443,13 +443,13 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	_push_to_history();
 
 	if (display_mode == DISPLAY_MODE_SPLIT) {
-		_update_tree(true);
+		_update_tree(_compute_uncollapsed_paths());
 		_update_files(false);
 	} else if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		if (path.ends_with("/")) {
 			_go_to_file_list();
 		} else {
-			_update_tree(true);
+			_update_tree(_compute_uncollapsed_paths());
 		}
 	} else { // DISPLAY_MODE_FILE_LIST_ONLY
 		_update_files(true);
@@ -787,7 +787,7 @@ void FileSystemDock::_fs_changed() {
 	split_box->show();
 
 	if (tree->is_visible()) {
-		_update_tree(true);
+		_update_tree(_compute_uncollapsed_paths());
 	}
 
 	if (file_list_vb->is_visible()) {
@@ -831,7 +831,7 @@ void FileSystemDock::_update_history() {
 	current_path->set_text(path);
 
 	if (tree->is_visible()) {
-		_update_tree(true);
+		_update_tree(_compute_uncollapsed_paths());
 		tree->grab_focus();
 		tree->ensure_cursor_is_visible();
 	}
@@ -1384,7 +1384,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 				}
 			}
 			EditorSettings::get_singleton()->set_favorite_dirs(favorites);
-			_update_tree(true);
+			_update_tree(_compute_uncollapsed_paths());
 		} break;
 
 		case FILE_REMOVE_FAVORITE: {
@@ -1394,7 +1394,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 				favorites.erase(p_selected[i]);
 			}
 			EditorSettings::get_singleton()->set_favorite_dirs(favorites);
-			_update_tree(true);
+			_update_tree(_compute_uncollapsed_paths());
 		} break;
 
 		case FILE_DEPENDENCIES: {
@@ -1560,6 +1560,11 @@ void FileSystemDock::_resource_created() const {
 }
 
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
+	if (searched_string.length() == 0 && p_text.length() > 0) {
+		// Register the uncollapsed paths before they change
+		uncollapsed_paths_before_search = _compute_uncollapsed_paths();
+	}
+
 	searched_string = p_text.to_lower();
 
 	if (p_from == tree_search_box)
@@ -1572,11 +1577,11 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 			_update_files(false);
 		} break;
 		case DISPLAY_MODE_TREE_ONLY: {
-			_update_tree(false);
+			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>());
 		} break;
 		case DISPLAY_MODE_SPLIT: {
 			_update_files(false);
-			_update_tree(false);
+			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>());
 		} break;
 	}
 }
@@ -1776,7 +1781,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		}
 
 		EditorSettings::get_singleton()->set_favorite_dirs(dirs);
-		_update_tree(true);
+		_update_tree(_compute_uncollapsed_paths());
 		return;
 	}
 
@@ -1814,7 +1819,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			EditorSettings::get_singleton()->set_favorite_dirs(favorites);
-			_update_tree(true);
+			_update_tree(_compute_uncollapsed_paths());
 		}
 	}
 }
@@ -2044,7 +2049,7 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 		if (!fpath.ends_with("/")) {
 			path = fpath;
 			if (display_mode == DISPLAY_MODE_SPLIT) {
-				_update_tree(true);
+				_update_tree(_compute_uncollapsed_paths());
 			}
 		}
 	}
