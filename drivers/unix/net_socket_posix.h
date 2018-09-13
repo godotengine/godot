@@ -67,6 +67,7 @@ protected:
 
 public:
 	static void make_default();
+	static void cleanup();
 
 	virtual Error open(Type p_sock_type, IP::Type &ip_type);
 	virtual void close();
