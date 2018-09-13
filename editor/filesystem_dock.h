@@ -66,10 +66,15 @@ public:
 	};
 
 private:
+	enum DisplayModeSetting {
+		DISPLAY_MODE_SETTING_TREE_ONLY,
+		DISPLAY_MODE_SETTING_SPLIT,
+	};
+
 	enum DisplayMode {
-		DISPLAY_TREE_ONLY,
-		DISPLAY_FILE_LIST_ONLY,
-		DISPLAY_SPLIT,
+		DISPLAY_MODE_TREE_ONLY,
+		DISPLAY_MODE_FILE_LIST_ONLY,
+		DISPLAY_MODE_SPLIT,
 	};
 
 	enum FileMenu {
@@ -134,7 +139,7 @@ private:
 	ScriptCreateDialog *make_script_dialog_text;
 	CreateDialog *new_resource_dialog;
 
-	bool display_files_in_tree;
+	int display_mode_setting;
 
 	bool always_show_folders;
 

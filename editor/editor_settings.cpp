@@ -513,15 +513,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
-	_initial_set("docks/filesystem/disable_split", false);
-	_initial_set("docks/filesystem/split_mode_minimum_height", 600);
-	_initial_set("docks/filesystem/display_files_in_tree", false);
+
 	_initial_set("docks/filesystem/display_mode", 0);
-	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Tree only, Split");
+	_initial_set("docks/filesystem/split_mode_minimum_height", 600);
 	_initial_set("docks/filesystem/thumbnail_size", 64);
 	hints["docks/filesystem/thumbnail_size"] = PropertyInfo(Variant::INT, "docks/filesystem/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
-	_initial_set("docks/filesystem/display_mode", 0);
-	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	_initial_set("docks/filesystem/files_display_mode", 0);
+	hints["docks/filesystem/files_display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/files_display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
 	_initial_set("docks/filesystem/always_show_folders", true);
 
 	_initial_set("editors/animation/autorename_animation_tracks", true);
