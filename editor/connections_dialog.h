@@ -67,6 +67,7 @@ class ConnectDialog : public ConfirmationDialog {
 	CheckButton *deferred;
 	CheckButton *oneshot;
 	CheckButton *make_callback;
+	CheckButton *not_in_editor;
 
 	void ok_pressed();
 	void _cancel_pressed();
@@ -90,6 +91,7 @@ public:
 	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	bool get_deferred() const;
 	bool get_oneshot() const;
+	bool get_not_in_editor() const;
 	bool is_editing() const;
 
 	void init(Connection c, bool bEdit = false);

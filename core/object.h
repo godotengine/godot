@@ -394,6 +394,7 @@ public:
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
 		CONNECT_ONESHOT = 4,
 		CONNECT_REFERENCE_COUNTED = 8,
+		CONNECT_NOT_IN_EDITOR = 16,
 	};
 
 	struct Connection {

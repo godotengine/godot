@@ -249,6 +249,11 @@ bool ConnectDialog::get_oneshot() const {
 	return oneshot->is_pressed();
 }
 
+bool ConnectDialog::get_not_in_editor() const {
+
+	return not_in_editor->is_pressed();
+}
+
 /*
 Returns true if ConnectDialog is being used to edit an existing connection.
 */
@@ -380,6 +385,11 @@ ConnectDialog::ConnectDialog() {
 	oneshot->set_text(TTR("Oneshot"));
 	dstm_hb->add_child(oneshot);
 
+	not_in_editor = memnew(CheckButton);
+	not_in_editor->set_pressed(true);
+	not_in_editor->set_text(TTR("Not In Editor"));
+	dstm_hb->add_child(not_in_editor);
+
 	set_as_toplevel(true);
 
 	cdbinds = memnew(ConnectDialogBinds);
@@ -425,7 +435,8 @@ void ConnectionsDock::_make_or_edit_connection() {
 	cToMake.binds = connect_dialog->get_binds();
 	bool defer = connect_dialog->get_deferred();
 	bool oshot = connect_dialog->get_oneshot();
-	cToMake.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0);
+	bool no_editor = connect_dialog->get_not_in_editor();
+	cToMake.flags = CONNECT_PERSIST | (defer ? CONNECT_DEFERRED : 0) | (oshot ? CONNECT_ONESHOT : 0) | (no_editor ? CONNECT_NOT_IN_EDITOR : 0);
 
 	bool add_script_function = connect_dialog->get_make_callback();
 	PoolStringArray script_function_args;
