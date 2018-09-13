@@ -776,6 +776,7 @@ void EditorHelp::_update_doc() {
 	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
 	String link_color_text = title_color.to_html(false);
 
+	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	class_desc->push_font(doc_title_font);
 	class_desc->push_color(title_color);
@@ -787,17 +788,17 @@ void EditorHelp::_update_doc() {
 	class_desc->pop();
 	class_desc->add_newline();
 
+	// Inheritance tree
+
+	// Ascendents
 	if (cd.inherits != "") {
 
 		class_desc->push_color(title_color);
-		class_desc->push_font(doc_title_font);
+		class_desc->push_font(doc_font);
 		class_desc->add_text(TTR("Inherits:") + " ");
-		class_desc->pop();
 		class_desc->pop();
 
 		String inherits = cd.inherits;
-
-		class_desc->push_font(doc_font);
 
 		while (inherits != "") {
 			_add_type(inherits);
@@ -813,6 +814,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Descendents
 	if (ClassDB::class_exists(cd.name)) {
 
 		bool found = false;
@@ -824,13 +826,10 @@ void EditorHelp::_update_doc() {
 
 				if (!found) {
 					class_desc->push_color(title_color);
-					class_desc->push_font(doc_title_font);
+					class_desc->push_font(doc_font);
 					class_desc->add_text(TTR("Inherited by:") + " ");
 					class_desc->pop();
-					class_desc->pop();
-
 					found = true;
-					class_desc->push_font(doc_font);
 				}
 
 				if (prev) {
@@ -853,6 +852,7 @@ void EditorHelp::_update_doc() {
 	class_desc->add_newline();
 	class_desc->add_newline();
 
+	// Brief description
 	if (cd.brief_description != "") {
 
 		class_desc->push_color(title_color);
@@ -874,15 +874,16 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Properties overview
 	Set<String> skip_methods;
 	bool property_descr = false;
 
 	if (cd.properties.size()) {
 
-		section_line.push_back(Pair<String, int>(TTR("Members"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Properties"), class_desc->get_line_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Members:"));
+		class_desc->add_text(TTR("Properties:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -940,6 +941,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Methods overview
 	bool method_descr = false;
 	bool sort_methods = EditorSettings::get_singleton()->get("text_editor/help/sort_functions_alphabetically");
 
@@ -956,10 +958,10 @@ void EditorHelp::_update_doc() {
 		if (sort_methods)
 			methods.sort();
 
-		section_line.push_back(Pair<String, int>(TTR("Public Methods"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_line_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Public Methods:"));
+		class_desc->add_text(TTR("Methods:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -1024,21 +1026,19 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Theme properties
 	if (cd.theme_properties.size()) {
 
-		section_line.push_back(Pair<String, int>(TTR("GUI Theme Items"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Theme Properties"), class_desc->get_line_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("GUI Theme Items:"));
+		class_desc->add_text(TTR("Theme Properties:"));
 		class_desc->pop();
 		class_desc->pop();
-		// class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, 1);
-
-		//class_desc->add_newline();
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
 
@@ -1076,6 +1076,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Signals
 	if (cd.signals.size()) {
 
 		if (sort_methods) {
@@ -1144,6 +1145,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Constants and enums
 	if (cd.constants.size()) {
 
 		Map<String, Vector<DocData::ConstantDoc> > enums;
@@ -1163,6 +1165,7 @@ void EditorHelp::_update_doc() {
 			}
 		}
 
+		// Enums
 		if (enums.size()) {
 
 			section_line.push_back(Pair<String, int>(TTR("Enumerations"), class_desc->get_line_count() - 2));
@@ -1245,6 +1248,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_newline();
 		}
 
+		// Constants
 		if (constants.size()) {
 
 			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_line_count() - 2));
@@ -1303,13 +1307,14 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
+	// Class description
 	if (cd.description != "") {
 
-		section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Class Description"), class_desc->get_line_count() - 2));
 		description_line = class_desc->get_line_count() - 2;
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Description:"));
+		class_desc->add_text(TTR("Class Description:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -1326,8 +1331,8 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 	}
 
+	// Online tutorials
 	{
-
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Online Tutorials:"));
@@ -1365,12 +1370,14 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
+
+	// Property descriptions
 	if (property_descr) {
 
-		section_line.push_back(Pair<String, int>(TTR("Properties"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_line_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Property Description:"));
+		class_desc->add_text(TTR("Property Descriptions:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -1458,12 +1465,13 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
+	// Method descriptions
 	if (method_descr) {
 
-		section_line.push_back(Pair<String, int>(TTR("Methods"), class_desc->get_line_count() - 2));
+		section_line.push_back(Pair<String, int>(TTR("Method Descriptions"), class_desc->get_line_count() - 2));
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Method Description:"));
+		class_desc->add_text(TTR("Method Descriptions:"));
 		class_desc->pop();
 		class_desc->pop();
 
