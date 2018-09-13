@@ -279,7 +279,6 @@ uint8_t FileAccessCompressed::get_8() const {
 
 	uint8_t ret = read_ptr[read_pos];
 
-	read_pos++;
 	if (read_pos >= read_block_size) {
 		read_block++;
 
@@ -296,6 +295,7 @@ uint8_t FileAccessCompressed::get_8() const {
 			ret = 0;
 		}
 	}
+	read_pos++;
 
 	return ret;
 }
