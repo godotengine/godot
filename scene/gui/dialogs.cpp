@@ -364,6 +364,7 @@ void AcceptDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_MODAL_CLOSE) {
 
+		emit_signal("canceled");
 		cancel_pressed();
 	} else if (p_what == NOTIFICATION_READY) {
 
@@ -388,6 +389,7 @@ void AcceptDialog::_ok_pressed() {
 }
 void AcceptDialog::_close_pressed() {
 
+	emit_signal("canceled");
 	cancel_pressed();
 }
 
@@ -532,6 +534,7 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
+	ADD_SIGNAL(MethodInfo("canceled"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING, "action")));
 
 	ADD_GROUP("Dialog", "dialog");
