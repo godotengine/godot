@@ -208,7 +208,7 @@
 		<member name="audio/output_latency" type="int" setter="" getter="">
 		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
-			Setting to harcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
+			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
 		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="">
 			Default compression level for gzip. Affects compressed scenes and resources.

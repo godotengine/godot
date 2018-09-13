@@ -389,7 +389,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	memdelete(f);
 
-	// Read the md5's from a separate file (so the import parameters aren't dependant on the file version
+	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
 	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
 	if (!md5s) { // No md5's stored for this resource

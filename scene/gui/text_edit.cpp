@@ -1942,7 +1942,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						int to_column = get_selection_to_column();
 
 						if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-							// Right click is outside the seleted text
+							// Right click is outside the selected text
 							deselect();
 						}
 					}

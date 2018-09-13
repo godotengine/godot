@@ -1429,10 +1429,10 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 			break;
 
 		if (parsing_tag && token.type == TK_PERIOD) {
-			r_tag.name += "."; //support tags such as [someprop.Anroid] for specific platforms
+			r_tag.name += "."; //support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else if (parsing_tag && token.type == TK_COLON) {
-			r_tag.name += ":"; //support tags such as [someprop.Anroid] for specific platforms
+			r_tag.name += ":"; //support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else {
 			parsing_tag = false;

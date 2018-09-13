@@ -241,7 +241,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			mb->get_popup()->connect("index_pressed", this, "_anim_selected", varray(options, E->get()), CONNECT_DEFERRED);
 		}
 
-		/* should be no longer necesary, as the boolean works
+		/* should be no longer necessary, as the boolean works
 		Ref<AnimationNodeOneShot> oneshot = agnode;
 		if (oneshot.is_valid()) {
 
@@ -559,7 +559,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			node = base->get_node(accum);
 		}
 		if (!node)
-			continue; //no node, cant edit
+			continue; //no node, can't edit
 
 		if (path.get_subname_count()) {
 

@@ -320,7 +320,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 			}
 
 			if (!_travel(sm, start_request)) {
-				//cant travel, then teleport
+				//can't travel, then teleport
 				path.clear();
 				current = start_request;
 			}

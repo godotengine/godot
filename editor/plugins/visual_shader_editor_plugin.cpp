@@ -629,7 +629,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 			int id = String(graph->get_child(i)->get_name()).to_int();
 			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
 			Ref<VisualShaderNodeOutput> output = node;
-			if (output.is_valid()) //cant duplicate output
+			if (output.is_valid()) //can't duplicate output
 				continue;
 			if (node.is_valid()) {
 				nodes.push_back(id);
@@ -1158,7 +1158,7 @@ bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, Variant::
 		return true;
 	}
 
-	return false; //can be overriden, although it will most likely be last anyway
+	return false; //can be overridden, although it will most likely be last anyway
 }
 
 void EditorInspectorShaderModePlugin::parse_end() {

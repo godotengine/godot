@@ -663,7 +663,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 	transition_lines.clear();
 
-	//draw conecting line for potential new transition
+	//draw connecting line for potential new transition
 	if (connecting) {
 		Vector2 from = (state_machine->get_node_position(connecting_from) * EDSCALE) - state_machine->get_graph_offset() * EDSCALE;
 		Vector2 to;

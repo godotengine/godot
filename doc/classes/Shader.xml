@@ -24,7 +24,7 @@
 			<return type="int" enum="Shader.Mode">
 			</return>
 			<description>
-				Returns the shader mode for the shader, eiter [code]MODE_CANVAS_ITEM[/code], [code]MODE_SPATIAL[/code] or [code]MODE_PARTICLES[/code]
+				Returns the shader mode for the shader, either [code]MODE_CANVAS_ITEM[/code], [code]MODE_SPATIAL[/code] or [code]MODE_PARTICLES[/code]
 			</description>
 		</method>
 		<method name="has_param" qualifiers="const">

@@ -38,7 +38,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-//@ TOOD, excellent candidate for THREAD_SAFE MACRO, should go through all these and add THREAD_SAFE where it applies
+//@ TODO, excellent candidate for THREAD_SAFE MACRO, should go through all these and add THREAD_SAFE where it applies
 class DirAccess {
 public:
 	enum AccessType {

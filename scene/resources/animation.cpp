@@ -1442,7 +1442,7 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_tra
 		case TYPE_BEZIER:
 		case TYPE_AUDIO:
 		case TYPE_ANIMATION: {
-			// they dont use transition
+			// they don't use transition
 		} break;
 	}
 }

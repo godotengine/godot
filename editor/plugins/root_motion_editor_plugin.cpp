@@ -126,7 +126,7 @@ void EditorPropertyRootMotion::_node_assign() {
 			node = base->get_node(accum);
 		}
 		if (!node)
-			continue; //no node, cant edit
+			continue; //no node, can't edit
 
 		if (path.get_subname_count()) {
 
@@ -314,7 +314,7 @@ bool EditorInspectorRootMotionPlugin::parse_property(Object *p_object, Variant::
 		return true;
 	}
 
-	return false; //can be overriden, although it will most likely be last anyway
+	return false; //can be overridden, although it will most likely be last anyway
 }
 
 void EditorInspectorRootMotionPlugin::parse_end() {

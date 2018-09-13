@@ -1515,7 +1515,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 void AnimationPlayerEditor::_start_onion_skinning() {
 
-	// FIXME: Using "idle_frame" makes onion layers update one frame behing the current
+	// FIXME: Using "idle_frame" makes onion layers update one frame behind the current
 	if (!get_tree()->is_connected("idle_frame", this, "call_deferred")) {
 		get_tree()->connect("idle_frame", this, "call_deferred", varray("_prepare_onion_layers_1"));
 	}

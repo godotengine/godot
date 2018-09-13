@@ -293,7 +293,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		}
 	}
 
-	// keep them around during the functino
+	// keep them around during the function
 	CharString code_string;
 	CharString code_string2;
 	CharString code_globals;

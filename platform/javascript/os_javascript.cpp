@@ -708,7 +708,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	video_driver_index = p_video_driver;
 
 	video_mode = p_desired;
-	// Can't fulfil fullscreen request during start-up due to browser security.
+	// Can't fulfill fullscreen request during start-up due to browser security.
 	video_mode.fullscreen = false;
 	/* clang-format off */
 	if (EM_ASM_INT_V({ return Module.resizeCanvasOnStart })) {

@@ -478,7 +478,7 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 					splits++;
 				}
 			} else {
-				/* check againt AABB where child should be */
+				/* check against AABB where child should be */
 
 				AABB aabb = p_octant->aabb;
 				aabb.size *= 0.5;

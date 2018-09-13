@@ -2775,7 +2775,7 @@ void CanvasItemEditor::_draw_hover() {
 		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
 
 		Point2 pos = transform.xform(hovering_results[i].position) - Point2(0, item_size.y) + (Point2(node_icon->get_size().x, -node_icon->get_size().y) / 4);
-		// Rectify the position to avoid overlaping items
+		// Rectify the position to avoid overlapping items
 		for (List<Rect2>::Element *E = previous_rects.front(); E; E = E->next()) {
 			if (E->get().intersects(Rect2(pos, item_size))) {
 				pos.y = E->get().get_position().y - item_size.y;

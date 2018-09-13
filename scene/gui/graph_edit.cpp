@@ -1304,7 +1304,7 @@ GraphEdit::GraphEdit() {
 	add_child(connections_layer);
 	connections_layer->connect("draw", this, "_connections_layer_draw");
 	connections_layer->set_name("CLAYER");
-	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offseted
+	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	h_scroll = memnew(HScrollBar);
