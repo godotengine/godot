@@ -525,3 +525,5 @@ Files extracted from upstream source:
 
 - lib/{common/,compress/,decompress/,zstd.h}
 - LICENSE
+
+- Applied the patch in `thirdparty/zstd/1314.diff` (PR 1314 upstream, already merged). Needed to build on UWP ARM. Can be removed when a new version is released with the patch.
