@@ -1479,12 +1479,16 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		cf.instance();
 		Error err = cf->load(p_file + ".import");
 		if (err == OK) {
-			List<String> sk;
-			cf->get_section_keys("params", &sk);
-			for (List<String>::Element *E = sk.front(); E; E = E->next()) {
-				params[E->get()] = cf->get_value("params", E->get());
+			if (cf->has_section("params")) {
+				List<String> sk;
+				cf->get_section_keys("params", &sk);
+				for (List<String>::Element *E = sk.front(); E; E = E->next()) {
+					params[E->get()] = cf->get_value("params", E->get());
+				}
 			}
-			importer_name = cf->get_value("remap", "importer");
+			if (cf->has_section("remap")) {
+				importer_name = cf->get_value("remap", "importer");
+			}
 		}
 
 	} else {
