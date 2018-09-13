@@ -210,10 +210,6 @@ void FileSystemDock::_update_tree(bool keep_collapse_state, bool p_uncollapse_ro
 		}
 	}
 
-	if (searched_string.length() > 0 && favorites->get_children() == NULL) {
-		root->remove_child(favorites);
-	}
-
 	if (p_uncollapse_root) {
 		uncollapsed_paths.push_back("res://");
 	}
@@ -1689,13 +1685,21 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		// Move resources
-		String to_dir = _get_drag_target_folder(p_point, p_from);
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
 		return !to_dir.empty();
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
 		// Move files or dir
-		String to_dir = _get_drag_target_folder(p_point, p_from);
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
+
+		if (favorite)
+			return true;
+
 		if (to_dir.empty())
 			return false;
 
@@ -1779,7 +1783,9 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
 		// Moving resource
 		Ref<Resource> res = drag_data["resource"];
-		String to_dir = _get_drag_target_folder(p_point, p_from);
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
 		if (res.is_valid() && !to_dir.empty()) {
 			EditorNode::get_singleton()->push_item(res.ptr());
 			EditorNode::get_singleton()->save_resource_as(res, to_dir);
@@ -1787,8 +1793,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	}
 
 	if (drag_data.has("type") && (String(drag_data["type"]) == "files" || String(drag_data["type"]) == "files_and_dirs")) {
-		// Move files
-		String to_dir = _get_drag_target_folder(p_point, p_from);
+		// Move files or add to favorites
+		String to_dir;
+		bool favorite;
+		_get_drag_target_folder(to_dir, favorite, p_point, p_from);
 		if (!to_dir.empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
@@ -1796,48 +1804,75 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
 			}
 			_move_operation_confirm(to_dir);
+		} else if (favorite) {
+			// Add the files from favorites
+			Vector<String> fnames = drag_data["files"];
+			Vector<String> favorites = EditorSettings::get_singleton()->get_favorite_dirs();
+			for (int i = 0; i < fnames.size(); i++) {
+				if (favorites.find(fnames[i]) == -1) {
+					favorites.push_back(fnames[i]);
+				}
+			}
+			EditorSettings::get_singleton()->set_favorite_dirs(favorites);
+			_update_tree(true);
 		}
 	}
 }
 
-String FileSystemDock::_get_drag_target_folder(const Point2 &p_point, Control *p_from) const {
+void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favorites, const Point2 &p_point, Control *p_from) const {
+	target = String();
+	target_favorites = false;
+
 	// In the file list
 	if (p_from == files) {
 		int pos = files->get_item_at_position(p_point, true);
-		if (pos == -1)
-			return path;
+		if (pos == -1) {
+			return;
+		}
 
-		String target = files->get_item_metadata(pos);
-		return target.ends_with("/") ? target : path;
+		String ltarget = files->get_item_metadata(pos);
+		target = ltarget.ends_with("/") ? target : path;
+		return;
 	}
 
 	// In the tree
 	if (p_from == tree) {
 		TreeItem *ti = tree->get_item_at_position(p_point);
-		if (ti && ti != tree->get_root()->get_children()) {
-			int section = tree->get_drop_section_at_position(p_point);
-			String fpath = ti->get_metadata(0);
-			if (section == 0) {
-				if (fpath.ends_with("/")) {
-					// We drop on a folder
-					return fpath;
-				}
+		int section = tree->get_drop_section_at_position(p_point);
+		if (ti) {
+			// Check the favorites first
+			if (ti == tree->get_root()->get_children() && section >= 0) {
+				target_favorites = true;
+				return;
+			} else if (ti->get_parent() == tree->get_root()->get_children()) {
+				target_favorites = true;
+				return;
 			} else {
-				if (ti->get_parent() != tree->get_root()->get_children()) {
-					// Not in the favorite section
-					if (fpath != "res://") {
-						// We drop between two files
-						if (fpath.ends_with("/")) {
-							fpath = fpath.substr(0, fpath.length() - 1);
+				String fpath = ti->get_metadata(0);
+				if (section == 0) {
+					if (fpath.ends_with("/")) {
+						// We drop on a folder
+						target = fpath;
+						return;
+					}
+				} else {
+					if (ti->get_parent() != tree->get_root()->get_children()) {
+						// Not in the favorite section
+						if (fpath != "res://") {
+							// We drop between two files
+							if (fpath.ends_with("/")) {
+								fpath = fpath.substr(0, fpath.length() - 1);
+							}
+							target = fpath.get_base_dir();
+							return;
 						}
-						return fpath.get_base_dir();
 					}
 				}
 			}
 		}
 	}
 
-	return String();
+	return;
 }
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths) {
