@@ -5358,22 +5358,20 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_shortcut(ED_SHORTCUT("editor/play_custom_scene", TTR("Play Custom Scene"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F5));
 #endif
 
+	// Toggle for video driver
 	video_driver = memnew(OptionButton);
 	video_driver->set_flat(true);
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
 	video_driver->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	video_driver->connect("item_selected", this, "_video_driver_selected");
+	menu_hb->add_child(video_driver);
+
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
 	String current_video_driver = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
-	menu_hb->add_child(video_driver);
 	video_driver_current = 0;
 	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {
 		String driver = video_drivers.get_slice(",", i);
-		if (gui_base->has_icon(driver, "EditorIcons")) {
-			video_driver->add_icon_item(gui_base->get_icon(driver, "EditorIcons"), "");
-		} else {
-			video_driver->add_item(driver);
-		}
-
+		video_driver->add_item(driver);
 		video_driver->set_item_metadata(i, driver);
 
 		if (current_video_driver == driver) {
@@ -5382,7 +5380,6 @@ EditorNode::EditorNode() {
 		}
 	}
 
-	video_driver->connect("item_selected", this, "_video_driver_selected");
 	video_restart_dialog = memnew(ConfirmationDialog);
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
 	video_restart_dialog->get_ok()->set_text(TTR("Save & Restart"));
