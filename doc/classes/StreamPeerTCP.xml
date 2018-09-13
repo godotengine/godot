@@ -43,7 +43,7 @@
 				Return the port of this peer.
 			</description>
 		</method>
-		<method name="get_status" qualifiers="const">
+		<method name="get_status">
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
