@@ -2606,7 +2606,7 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		// Save it for a further usage
 		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);
 
-		if (p_shape == CURSOR_ARROW) {
+		if (p_shape == current_cursor) {
 			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
 		}
 
@@ -2618,8 +2618,9 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
 		}
 
+		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
-		set_cursor_shape(p_shape);
+		set_cursor_shape(c);
 	}
 }
 
