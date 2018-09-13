@@ -76,7 +76,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 		SIZE_SHRINK_CENTER = 4, //ignored by expand or fill
-		SIZE_SHRINK_END = 8, //ignored by expand or fil
+		SIZE_SHRINK_END = 8, //ignored by expand or fill
 
 	};
 

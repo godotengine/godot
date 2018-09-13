@@ -181,6 +181,9 @@ class ScriptEditorDebugger : public Control {
 	void _error_activated();
 	void _error_selected();
 
+	void _expand_errors_list();
+	void _collapse_errors_list();
+
 	void _profiler_activate(bool p_enable);
 	void _profiler_seeked();
 
