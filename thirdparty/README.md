@@ -266,6 +266,8 @@ File extracted from upstream source:
 - Also copy `win32helpers/` from `win32port/` inside `thirdparty/libwebsockets`
 - A small fix has been added in `libwebsockets/libwebsockets.h` to `#include <sys/socket.h>` for the BSD family.
   This change has been PRed upstream, and should be merged before the next update. Remember to check and remove this line.
+- Another fix has been added to allow building for 32-bits UWP, replacing `GetFileSize[Ex]` and `CreateFileW` with supported functions.
+  There is a diff for this change in `thirdparty/libwebsockets/uwp_fixes.diff`
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom
 Godot build configurations, check them out when updating.
