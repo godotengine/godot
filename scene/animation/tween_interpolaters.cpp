@@ -28,6 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+ *  Adapted from Penner Easing equations' C++ port.
+ *  Source: https://github.com/jesusgollonet/ofpennereasing
+ *  License: BSD-3-clause
+ */
+
 #include "tween.h"
 
 const real_t pi = 3.1415926535898;
