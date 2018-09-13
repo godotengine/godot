@@ -48,6 +48,13 @@ void Light::set_param(Param p_param, float p_value) {
 
 	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
 		update_gizmo();
+
+		if (p_param == PARAM_SPOT_ANGLE) {
+			_change_notify("spot_angle");
+		} else if (p_param == PARAM_RANGE) {
+			_change_notify("omni_range");
+			_change_notify("spot_range");
+		}
 	}
 }
 
