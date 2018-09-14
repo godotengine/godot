@@ -1423,10 +1423,7 @@ void EditorInspector::update_tree() {
 			category_vbox = NULL; //reset
 
 			String type = p.name;
-			if (has_icon(type, "EditorIcons"))
-				category->icon = get_icon(type, "EditorIcons");
-			else
-				category->icon = get_icon("Object", "EditorIcons");
+			category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
 			category->label = type;
 
 			category->bg_color = get_color("prop_category", "Editor");

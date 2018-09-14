@@ -238,8 +238,7 @@ void ResourcePreloaderEditor::_update_library() {
 		ti->set_text(2, type);
 		ti->set_selectable(2, false);
 
-		if (has_icon(type, "EditorIcons"))
-			ti->set_icon(2, get_icon(type, "EditorIcons"));
+		ti->set_icon(2, EditorNode::get_singleton()->get_class_icon(type, ""));
 	}
 
 	//player->add_resource("default",resource);

@@ -90,12 +90,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 		node->set_metadata(0, path);
 		node->set_tooltip(0, path);
 
-		Ref<Texture> icon;
-		if (p_current->has_meta("_editor_icon")) {
-			icon = p_current->get_meta("_editor_icon");
-		} else {
-			icon = get_icon((has_icon(p_current->get_class(), "EditorIcons") ? p_current->get_class() : String("Object")), "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(p_current, "Node");
 		node->set_icon(0, icon);
 
 		if (!_can_edit(p_current, selected_group)) {

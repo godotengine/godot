@@ -765,10 +765,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		if (!ClassDB::can_instance(E->get()))
 			continue;
 
-		Ref<Texture> icon;
-		if (has_icon(E->get(), "EditorIcons")) {
-			icon = get_icon(E->get(), "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(E->get());
 		String name = E->get().operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
 		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E->get());

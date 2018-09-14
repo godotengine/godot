@@ -399,11 +399,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					const RefPtr empty;
 					editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
 					editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
-
-					if (E->get()->has_meta("_editor_icon")) {
-						editor_data->get_undo_redo().add_do_method(E->get(), "set_meta", "_editor_icon", get_icon(E->get()->get_class(), "EditorIcons"));
-						editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", E->get()->get_meta("_editor_icon"));
-					}
 				}
 			}
 
@@ -1501,19 +1496,6 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		Ref<Script> existing = E->get()->get_script();
 		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script.get_ref_ptr());
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
-
-		String icon_path;
-		String name = p_script->get_language()->get_global_class_name(p_script->get_path(), NULL, &icon_path);
-		if (ScriptServer::is_global_class(name)) {
-			RES icon = ResourceLoader::load(icon_path);
-			editor_data->get_undo_redo().add_do_method(E->get(), "set_meta", "_editor_icon", icon);
-			String existing_name = existing.is_valid() ? existing->get_language()->get_global_class_name(existing->get_path()) : String();
-			if (existing.is_null() || !ScriptServer::is_global_class(existing_name)) {
-				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", get_icon(E->get()->get_class(), "EditorIcons"));
-			} else {
-				editor_data->get_undo_redo().add_undo_method(E->get(), "set_meta", "_editor_icon", editor_data->script_class_get_icon_path(existing_name));
-			}
-		}
 	}
 
 	editor_data->get_undo_redo().commit_action();
@@ -2029,12 +2011,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		if (!obj)
 			continue;
 
-		Ref<Texture> icon;
-
-		if (has_icon(obj->get_class(), "EditorIcons"))
-			icon = get_icon(obj->get_class(), "EditorIcons");
-		else
-			icon = get_icon("Object", "EditorIcons");
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		if (menu->get_item_count() == 0) {
 			menu->add_submenu_item(TTR("Sub-Resources"), "Sub-Resources");
@@ -2264,7 +2241,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 					String name = l.get_slicec(' ', 0);
 					if (ScriptServer::is_global_class(name))
 						name = ScriptServer::get_global_class_base(name);
-					button->set_icon(get_icon(name, "EditorIcons"));
+					button->set_icon(EditorNode::get_singleton()->get_class_icon(name));
 					button->connect("pressed", this, "_favorite_root_selected", make_binds(l));
 				}
 			}

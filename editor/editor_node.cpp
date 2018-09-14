@@ -141,12 +141,7 @@ void EditorNode::_update_scene_tabs() {
 		String type = editor_data.get_scene_type(i);
 		Ref<Texture> icon;
 		if (type != String()) {
-
-			if (!gui_base->has_icon(type, "EditorIcons")) {
-				type = "Node";
-			}
-
-			icon = gui_base->get_icon(type, "EditorIcons");
+			icon = get_class_icon(type, "Node");
 		}
 
 		int current = editor_data.get_edited_scene();
@@ -3126,6 +3121,86 @@ void EditorNode::stop_child_process() {
 	_menu_option_confirm(RUN_STOP, false);
 }
 
+Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
+	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
+
+	Ref<Script> script = p_object->get_script();
+	if (script.is_null() && p_object->is_class("Script")) {
+		script = p_object;
+	}
+
+	StringName name;
+	String icon_path;
+	if (script.is_valid()) {
+		name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+		icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
+		name = script->get_instance_base_type();
+	}
+
+	if (gui_base->has_icon(p_object->get_class(), "EditorIcons"))
+		return gui_base->get_icon(p_object->get_class(), "EditorIcons");
+
+	if (icon_path.length())
+		return ResourceLoader::load(icon_path);
+
+	if (p_object->has_meta("_editor_icon"))
+		return p_object->get_meta("_editor_icon");
+
+	if (name != StringName()) {
+		const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
+		for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
+			const Vector<EditorData::CustomType> &ct = E->value();
+			for (int i = 0; i < ct.size(); ++i) {
+				if (ct[i].name == name && ct[i].icon.is_valid()) {
+					return ct[i].icon;
+				}
+			}
+		}
+	}
+
+	if (p_fallback.length())
+		return gui_base->get_icon(p_fallback, "EditorIcons");
+
+	return NULL;
+}
+
+Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
+	ERR_FAIL_COND_V(p_class.empty(), NULL);
+
+	if (gui_base->has_icon(p_class, "EditorIcons")) {
+		return gui_base->get_icon(p_class, "EditorIcons");
+	}
+
+	if (ScriptServer::is_global_class(p_class)) {
+		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
+		RES icon;
+		if (FileAccess::exists(icon_path)) {
+			icon = ResourceLoader::load(icon_path);
+		}
+		if (!icon.is_valid()) {
+			icon = gui_base->get_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
+		}
+		return icon;
+	}
+
+	const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
+	for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
+		const Vector<EditorData::CustomType> &ct = E->value();
+		for (int i = 0; i < ct.size(); ++i) {
+			if (ct[i].name == p_class) {
+				if (ct[i].icon.is_valid()) {
+					return ct[i].icon;
+				}
+			}
+		}
+	}
+
+	if (p_fallback.length())
+		return gui_base->get_icon(p_fallback, "EditorIcons");
+
+	return NULL;
+}
+
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 
 	singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
@@ -5371,6 +5446,13 @@ EditorNode::EditorNode() {
 	video_driver_current = 0;
 	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {
 		String driver = video_drivers.get_slice(",", i);
+		Ref<Texture> icon = get_class_icon(driver, "");
+		if (icon.is_valid()) {
+			video_driver->add_icon_item(icon, "");
+		} else {
+			video_driver->add_item(driver);
+		}
+
 		video_driver->add_item(driver);
 		video_driver->set_item_metadata(i, driver);
 

@@ -88,10 +88,8 @@ void EditorHelpSearch::IncrementalSearch::phase1(Map<String, DocData::ClassDoc>:
 		TreeItem *item = search_options->create_item(root);
 		item->set_metadata(0, "class_name:" + E->key());
 		item->set_text(0, E->key() + " (Class)");
-		if (search->has_icon(E->key(), "EditorIcons"))
-			item->set_icon(0, search->get_icon(E->key(), "EditorIcons"));
-		else
-			item->set_icon(0, def_icon);
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(E->key(), "Node");
+		item->set_icon(0, icon);
 	}
 }
 
@@ -99,11 +97,7 @@ void EditorHelpSearch::IncrementalSearch::phase2(Map<String, DocData::ClassDoc>:
 
 	DocData::ClassDoc &c = E->get();
 
-	Ref<Texture> cicon;
-	if (search->has_icon(E->key(), "EditorIcons"))
-		cicon = search->get_icon(E->key(), "EditorIcons");
-	else
-		cicon = def_icon;
+	Ref<Texture> cicon = EditorNode::get_singleton()->get_class_icon(E->key(), "Node");
 
 	for (int i = 0; i < c.methods.size(); i++) {
 		if ((term.begins_with(".") && c.methods[i].name.begins_with(term.right(1))) || (term.ends_with("(") && c.methods[i].name.ends_with(term.left(term.length() - 1).strip_edges())) || (term.begins_with(".") && term.ends_with("(") && c.methods[i].name == term.substr(1, term.length() - 2).strip_edges()) || c.methods[i].name.findn(term) != -1) {
@@ -343,10 +337,8 @@ void EditorHelpIndex::add_type(const String &p_type, HashMap<String, TreeItem *>
 	item->set_tooltip(0, EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	item->set_text(0, p_type);
 
-	if (has_icon(p_type, "EditorIcons")) {
-
-		item->set_icon(0, get_icon(p_type, "EditorIcons"));
-	}
+	Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(p_type);
+	item->set_icon(0, icon);
 
 	p_types[p_type] = item;
 }

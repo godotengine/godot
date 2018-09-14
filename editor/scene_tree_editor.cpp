@@ -186,11 +186,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_collapsed(true);
 	}
 
-	Ref<Texture> icon;
-	if (p_node->has_meta("_editor_icon"))
-		icon = p_node->get_meta("_editor_icon");
-	else
-		icon = get_icon((has_icon(p_node->get_class(), "EditorIcons") ? p_node->get_class() : String("Object")), "EditorIcons");
+	Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 

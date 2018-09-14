@@ -231,11 +231,10 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture> icon = get_icon("Object", "EditorIcons");
-		if (has_icon(obj->get_class(), "EditorIcons"))
-			icon = get_icon(obj->get_class(), "EditorIcons");
-		else
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
+		if (icon.is_null()) {
 			icon = base_icon;
+		}
 
 		String text;
 		if (Object::cast_to<Resource>(obj)) {

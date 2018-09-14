@@ -198,12 +198,7 @@ void DependencyEditor::_update_list() {
 		}
 		String name = path.get_file();
 
-		Ref<Texture> icon;
-		if (has_icon(type, "EditorIcons")) {
-			icon = get_icon(type, "EditorIcons");
-		} else {
-			icon = get_icon("Object", "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
 		item->set_text(0, name);
 		item->set_icon(0, icon);
 		item->set_metadata(0, type);
@@ -346,13 +341,7 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 		if (!found)
 			continue;
 
-		Ref<Texture> icon;
-		String type = efsd->get_file_type(i);
-		if (!has_icon(type, "EditorIcons")) {
-			icon = get_icon("Object", "EditorIcons");
-		} else {
-			icon = get_icon(type, "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
 
 		owners->add_item(efsd->get_file_path(i), icon);
 	}
@@ -460,7 +449,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 		}
 
 		//List this file under this dependency
-		Ref<Texture> icon = has_icon(rd.file_type, "EditorIcons") ? get_icon(rd.file_type, "EditorIcons") : get_icon("Object", "EditorIcons");
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
 		TreeItem *file_item = owners->create_item(tree_items[rd.dependency]);
 		file_item->set_text(0, rd.file);
 		file_item->set_icon(0, icon);
@@ -579,12 +568,7 @@ void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> 
 		if (report[i].get_slice_count("::") > 0)
 			type = report[i].get_slice("::", 1);
 
-		Ref<Texture> icon;
-		if (!has_icon(type, "EditorIcons")) {
-			icon = get_icon("Object", "EditorIcons");
-		} else {
-			icon = get_icon(type, "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
 
 		TreeItem *ti = files->create_item(root);
 		ti->set_text(0, dep);
@@ -687,12 +671,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 				String type = efsd->get_file_type(i);
 
-				Ref<Texture> icon;
-				if (has_icon(type, "EditorIcons")) {
-					icon = get_icon(type, "EditorIcons");
-				} else {
-					icon = get_icon("Object", "EditorIcons");
-				}
+				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
 				ti->set_icon(0, icon);
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));

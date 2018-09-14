@@ -706,6 +706,8 @@ public:
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
+	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = "Warning!");
