@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "stream_peer_mbed_tls.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
 #include "mbedtls/platform_util.h"
 
@@ -259,6 +260,12 @@ void StreamPeerMbedTLS::poll() {
 	if (ret < 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 		_print_error(ret);
 		disconnect_from_stream();
+		return;
+	}
+
+	if (static_cast<StreamPeerTCP *>(base.ptr())->get_status() != STATUS_CONNECTED) {
+		disconnect_from_stream();
+		return;
 	}
 }
 
