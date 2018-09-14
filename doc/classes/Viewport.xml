@@ -46,6 +46,13 @@
 				Returns the total transform of the viewport.
 			</description>
 		</method>
+		<method name="get_modal_stack_top" qualifiers="const">
+			<return type="Control">
+			</return>
+			<description>
+				Returns the topmost modal in the stack.
+			</description>
+		</method>
 		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
