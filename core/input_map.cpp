@@ -199,6 +199,10 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 
 	Ref<InputEventAction> input_event_action = p_event;
 	if (input_event_action.is_valid()) {
+		if (p_pressed != NULL)
+			*p_pressed = input_event_action->is_pressed();
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
 		return input_event_action->get_action() == p_action;
 	}
 
