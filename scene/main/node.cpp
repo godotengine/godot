@@ -2116,6 +2116,12 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 		node->set(name, value);
 	}
 
+	List<GroupInfo> groups;
+	get_groups(&groups);
+
+	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next())
+		node->add_to_group(E->get().name, E->get().persistent);
+
 	node->set_name(get_name());
 	p_new_parent->add_child(node);
 
@@ -2209,6 +2215,12 @@ Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 		String name = E->get().name;
 		node->set(name, get(name));
 	}
+
+	List<GroupInfo> groups;
+	get_groups(&groups);
+
+	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next())
+		node->add_to_group(E->get().name, E->get().persistent);
 
 	for (int i = 0; i < get_child_count(); i++) {
 
