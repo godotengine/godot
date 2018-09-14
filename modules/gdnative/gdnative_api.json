@@ -94,6 +94,24 @@
             ["godot_transform *", "r_dest"],
             ["const godot_quat *", "p_quat"]
           ]
+        },
+        {
+          "name": "godot_variant_get_operator_name",
+          "return_type": "godot_string",
+          "arguments": [
+            ["godot_variant_operator", "p_op"]
+          ]
+        },
+        {
+          "name": "godot_variant_evaluate",
+          "return_type": "void",
+          "arguments": [
+            ["godot_variant_operator", "p_op"],
+            ["const godot_variant *", "p_a"],
+            ["const godot_variant *", "p_b"],
+            ["godot_variant *", "r_ret"],
+            ["godot_bool *", "r_valid"]
+          ]
         }
       ]
     },
