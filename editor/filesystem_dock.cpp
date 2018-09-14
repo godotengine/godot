@@ -177,6 +177,8 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 		String fave = favorite_paths[i];
 		if (!fave.begins_with("res://"))
 			continue;
+		if (display_mode_setting == DISPLAY_MODE_SETTING_SPLIT && !fave.ends_with("/"))
+			continue;
 
 		Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
 
@@ -221,17 +223,21 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 }
 
 void FileSystemDock::_update_display_mode() {
-
 	bool compact_mode = get_size().height < int(EditorSettings::get_singleton()->get("docks/filesystem/split_mode_minimum_height"));
-	DisplayMode new_mode;
+
+	// Compute the new display mode
+	DisplayMode new_display_mode;
 	if ((display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) || compact_mode) {
-		new_mode = file_list_view ? DISPLAY_MODE_FILE_LIST_ONLY : DISPLAY_MODE_TREE_ONLY;
+		new_display_mode = file_list_view ? DISPLAY_MODE_FILE_LIST_ONLY : DISPLAY_MODE_TREE_ONLY;
 	} else {
-		new_mode = DISPLAY_MODE_SPLIT;
+		new_display_mode = DISPLAY_MODE_SPLIT;
 	}
 
-	if (new_mode != display_mode) {
-		switch (new_mode) {
+	if (new_display_mode != display_mode || old_display_mode_setting != display_mode_setting) {
+		display_mode = new_display_mode;
+		old_display_mode_setting = display_mode_setting;
+		button_toggle_display_mode->set_pressed(display_mode_setting == DISPLAY_MODE_SETTING_SPLIT ? true : false);
+		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -266,7 +272,6 @@ void FileSystemDock::_update_display_mode() {
 				_update_files(true);
 				break;
 		}
-		display_mode = new_mode;
 	}
 }
 
@@ -359,26 +364,27 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_right_icon(get_icon("Search", ei));
 			file_list_search_box->set_clear_button_enabled(true);
 
+			bool should_update_files = false;
+
 			// Update file list display mode
 			int new_file_list_mode = int(EditorSettings::get_singleton()->get("docks/filesystem/files_display_mode"));
 			if (new_file_list_mode != file_list_display_mode) {
 				set_file_list_display_mode(new_file_list_mode);
 				_update_file_list_display_mode_button();
-				_update_files(true);
+				should_update_files = true;
 			}
 
 			// Update display of files in tree
-			DisplayModeSetting new_display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
-			if (new_display_mode_setting != display_mode_setting) {
-				display_mode_setting = new_display_mode_setting;
-				button_toggle_display_mode->set_pressed(DISPLAY_MODE_SETTING_SPLIT ? true : false);
-				_update_tree(_compute_uncollapsed_paths());
-			}
+			display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 
 			// Update allways showfolders
 			bool new_always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
+				should_update_files = true;
+			}
+
+			if (should_update_files) {
 				_update_files(true);
 			}
 
@@ -486,6 +492,15 @@ void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Textur
 			TreeItem *file_item = Object::cast_to<TreeItem>(uarr[1]);
 			if (file_item) {
 				file_item->set_icon(0, p_small_preview);
+
+				// Update the favorite icon if needed
+				TreeItem *favorite = tree->get_root()->get_children()->get_children();
+				while (favorite) {
+					if (favorite->get_metadata(0) == file_item->get_metadata(0)) {
+						favorite->set_icon(0, p_small_preview);
+					}
+					favorite = favorite->get_next();
+				}
 			}
 		}
 	}
@@ -1595,8 +1610,8 @@ void FileSystemDock::_rescan() {
 
 void FileSystemDock::_toggle_split_mode(bool p_active) {
 	display_mode_setting = p_active ? DISPLAY_MODE_SETTING_SPLIT : DISPLAY_MODE_SETTING_TREE_ONLY;
-	_update_display_mode();
 	EditorSettings::get_singleton()->set("docks/filesystem/display_mode", int(display_mode_setting));
+	_update_display_mode();
 }
 
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
@@ -1679,7 +1694,7 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		int drop_section = tree->get_drop_section_at_position(p_point);
 		TreeItem *favorites_item = tree->get_root()->get_children();
-		;
+
 		TreeItem *resources_item = favorites_item->get_next();
 
 		if (ti == favorites_item) {
@@ -1748,7 +1763,6 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		int drop_position;
 		Vector<String> files = drag_data["files"];
 		TreeItem *favorites_item = tree->get_root()->get_children();
-		;
 		TreeItem *resources_item = favorites_item->get_next();
 
 		if (ti == favorites_item) {
@@ -1771,7 +1785,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		for (int i = 0; i < files.size(); i++) {
 			int to_remove_pos = dirs.find(files[i]);
 			to_remove.push_back(to_remove_pos);
-			if (to_remove_pos <= drop_position) {
+			if (to_remove_pos < drop_position) {
 				offset++;
 			}
 		}
@@ -2434,7 +2448,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	display_mode = DISPLAY_MODE_SPLIT;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
-	display_mode_setting = false;
+	display_mode_setting = DISPLAY_MODE_SETTING_TREE_ONLY;
+	old_display_mode_setting = DISPLAY_MODE_SETTING_TREE_ONLY;
 	always_show_folders = false;
 }
 

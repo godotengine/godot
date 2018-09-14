@@ -125,6 +125,8 @@ private:
 
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
+	DisplayModeSetting display_mode_setting;
+	DisplayModeSetting old_display_mode_setting;
 	bool file_list_view;
 
 	PopupMenu *file_list_popup;
@@ -144,8 +146,6 @@ private:
 	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog_text;
 	CreateDialog *new_resource_dialog;
-
-	int display_mode_setting;
 
 	bool always_show_folders;
 
