@@ -41,7 +41,6 @@
 #include "core/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
-#include "editor_initialize_ssl.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
@@ -2058,8 +2057,6 @@ void ProjectListFilter::_bind_methods() {
 }
 
 ProjectListFilter::ProjectListFilter() {
-
-	editor_initialize_certificates(); //for asset sharing
 
 	_current_filter = FILTER_NAME;
 

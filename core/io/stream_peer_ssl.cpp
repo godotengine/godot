@@ -30,6 +30,8 @@
 
 #include "stream_peer_ssl.h"
 
+#include "core/io/certs_compressed.gen.h"
+#include "core/io/compression.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 
@@ -68,24 +70,32 @@ PoolByteArray StreamPeerSSL::get_project_cert_array() {
 	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificates", PropertyInfo(Variant::STRING, "network/ssl/certificates", PROPERTY_HINT_FILE, "*.crt"));
 
 	if (certs_path != "") {
-
+		// Use certs defined in project settings.
 		FileAccess *f = FileAccess::open(certs_path, FileAccess::READ);
 		if (f) {
 			int flen = f->get_len();
 			out.resize(flen + 1);
-			{
-				PoolByteArray::Write w = out.write();
-				f->get_buffer(w.ptr(), flen);
-				w[flen] = 0; //end f string
-			}
-
+			PoolByteArray::Write w = out.write();
+			f->get_buffer(w.ptr(), flen);
+			w[flen] = 0; // Make sure it ends with string terminator
 			memdelete(f);
-
 #ifdef DEBUG_ENABLED
 			print_verbose(vformat("Loaded certs from '%s'.", certs_path));
 #endif
 		}
 	}
+#ifdef BUILTIN_CERTS_ENABLED
+	else {
+		// Use builtin certs only if user did not override it in project settings.
+		out.resize(_certs_uncompressed_size + 1);
+		PoolByteArray::Write w = out.write();
+		Compression::decompress(w.ptr(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+		w[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+#ifdef DEBUG_ENABLED
+		print_verbose("Loaded builtin certs");
+#endif
+	}
+#endif
 
 	return out;
 }
