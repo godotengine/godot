@@ -5460,34 +5460,38 @@ EditorNode::EditorNode() {
 	filesystem_dock->connect("open", this, "open_request");
 	filesystem_dock->connect("instance", this, "_instance_request");
 
-	// FileSystem: Full height left
-	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(filesystem_dock);
-	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(filesystem_dock->get_index(), TTR("FileSystem"));
+	// Scene: Top left
+	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scene_tree_dock);
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(scene_tree_dock->get_index(), TTR("Scene"));
 
-	// Scene: Top right
-	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(scene_tree_dock);
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(scene_tree_dock->get_index(), TTR("Scene"));
+	// Import: Top left, behind Scene
+	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(import_dock);
+	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(import_dock->get_index(), TTR("Import"));
 
-	// Import: Top right, behind Scene
-	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
-	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(import_dock->get_index(), TTR("Import"));
+	// FileSystem: Bottom left
+	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(filesystem_dock);
+	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(filesystem_dock->get_index(), TTR("FileSystem"));
 
-	// Inspector: Bottom right
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(inspector_dock);
-	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(inspector_dock->get_index(), TTR("Inspector"));
+	// Inspector: Full height right
+	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(inspector_dock);
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(inspector_dock->get_index(), TTR("Inspector"));
 
-	// Node: Bottom right, behind Inspector
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
-	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(node_dock->get_index(), TTR("Node"));
+	// Node: Full height right, behind Inspector
+	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(node_dock->get_index(), TTR("Node"));
 
 	// Hide unused dock slots and vsplits
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();
 	dock_slot[DOCK_SLOT_LEFT_BL]->hide();
-	dock_slot[DOCK_SLOT_LEFT_BR]->hide();
+	dock_slot[DOCK_SLOT_RIGHT_BL]->hide();
 	dock_slot[DOCK_SLOT_RIGHT_UR]->hide();
 	dock_slot[DOCK_SLOT_RIGHT_BR]->hide();
 	left_l_vsplit->hide();
 	right_r_vsplit->hide();
+
+	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize
+	left_r_hsplit->set_split_offset(40 * EDSCALE);
+	main_hsplit->set_split_offset(-40 * EDSCALE);
 
 	// Define corresponding default layout
 
@@ -5495,14 +5499,16 @@ EditorNode::EditorNode() {
 	overridden_default_layout = -1;
 	default_layout.instance();
 	// Dock numbers are based on DockSlot enum value + 1
-	default_layout->set_value(docks_section, "dock_3", "FileSystem");
-	default_layout->set_value(docks_section, "dock_5", "Scene,Import");
-	default_layout->set_value(docks_section, "dock_6", "Inspector,Node");
+	default_layout->set_value(docks_section, "dock_3", "Scene,Import");
+	default_layout->set_value(docks_section, "dock_4", "FileSystem");
+	default_layout->set_value(docks_section, "dock_5", "Inspector,Node");
 
 	for (int i = 0; i < vsplits.size(); i++)
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
-	for (int i = 0; i < hsplits.size(); i++)
-		default_layout->set_value(docks_section, "dock_hsplit_" + itos(i + 1), 0);
+	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
+	default_layout->set_value(docks_section, "dock_hsplit_2", 40 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_3", -40 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();
 
