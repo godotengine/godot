@@ -232,6 +232,12 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
 			_editor_select_prev();
+		} else if (ED_IS_SHORTCUT("editor/resume", p_event)) {
+			if (editor_run.get_status() == EditorRun::STATUS_PLAY) {
+				emit_signal("resumed");
+			} else {
+				_run(false, "");
+			}
 		}
 
 		if (k->get_scancode() == KEY_ESCAPE) {
@@ -4580,6 +4586,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
+	ADD_SIGNAL(MethodInfo("resumed"));
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("request_help_index"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::POOL_STRING_ARRAY, "args")));
@@ -5791,6 +5798,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"));
 	ED_SHORTCUT("editor/editor_next", TTR("Open the next Editor"));
 	ED_SHORTCUT("editor/editor_prev", TTR("Open the previous Editor"));
+	ED_SHORTCUT("editor/resume", TTR("Resume"));
 }
 
 EditorNode::~EditorNode() {

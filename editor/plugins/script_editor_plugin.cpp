@@ -1294,6 +1294,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->connect("stop_pressed", this, "_editor_stop");
 			editor->connect("script_add_function_request", this, "_add_callback");
 			editor->connect("resource_saved", this, "_res_saved_callback");
+			editor->connect("resumed", this, "_editor_resume");
 			script_list->connect("item_selected", this, "_script_selected");
 
 			members_overview->connect("item_selected", this, "_members_overview_selected");
@@ -1333,6 +1334,7 @@ void ScriptEditor::_notification(int p_what) {
 			editor->disconnect("play_pressed", this, "_editor_play");
 			editor->disconnect("pause_pressed", this, "_editor_pause");
 			editor->disconnect("stop_pressed", this, "_editor_stop");
+			editor->disconnect("resumed", this, "_editor_resume");
 		} break;
 
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
@@ -2103,6 +2105,7 @@ void ScriptEditor::_editor_play() {
 
 void ScriptEditor::_editor_pause() {
 }
+
 void ScriptEditor::_editor_stop() {
 
 	debugger->stop();
@@ -2120,6 +2123,13 @@ void ScriptEditor::_editor_stop() {
 		}
 
 		se->set_debugger_active(false);
+	}
+}
+
+void ScriptEditor::_editor_resume() {
+
+	if (debugger) {
+		debugger->debug_continue();
 	}
 }
 
@@ -2844,6 +2854,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_editor_play", &ScriptEditor::_editor_play);
 	ClassDB::bind_method("_editor_pause", &ScriptEditor::_editor_pause);
 	ClassDB::bind_method("_editor_stop", &ScriptEditor::_editor_stop);
+	ClassDB::bind_method("_editor_resume", &ScriptEditor::_editor_resume);
 	ClassDB::bind_method("_add_callback", &ScriptEditor::_add_callback);
 	ClassDB::bind_method("_reload_scripts", &ScriptEditor::_reload_scripts);
 	ClassDB::bind_method("_resave_scripts", &ScriptEditor::_resave_scripts);

@@ -303,6 +303,7 @@ class ScriptEditor : public PanelContainer {
 	void _editor_play();
 	void _editor_pause();
 	void _editor_stop();
+	void _editor_resume();
 
 	int edit_pass;
 
