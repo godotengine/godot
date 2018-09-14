@@ -797,7 +797,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 		if (se) {
 
 			RES edited_res = se->get_edited_resource();
-			if (edited_res.is_valid() && p_for_script != edited_res)
+			if (p_for_script.is_valid() && edited_res.is_valid() && p_for_script != edited_res)
 				continue;
 
 			if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1)
