@@ -454,6 +454,8 @@ public:
 
 	bool gui_has_modal_stack() const;
 
+	void gui_clear_modal_stack();
+
 	Variant gui_get_drag_data() const;
 	Control *get_modal_stack_top() const;
 
