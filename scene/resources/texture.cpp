@@ -1633,15 +1633,16 @@ void GradientTexture::_queue_update() {
 	if (update_pending)
 		return;
 
+	update_pending = true;
 	call_deferred("_update");
 }
 
 void GradientTexture::_update() {
 
+	update_pending = false;
+
 	if (gradient.is_null())
 		return;
-
-	update_pending = false;
 
 	PoolVector<uint8_t> data;
 	data.resize(width * 4);
