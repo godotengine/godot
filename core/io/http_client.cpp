@@ -375,6 +375,18 @@ Error HTTPClient::poll() {
 			}
 		} break;
 		case STATUS_CONNECTED: {
+			// Check if we are still connected
+			if (ssl) {
+				Ref<StreamPeerSSL> tmp = connection;
+				tmp->poll();
+				if (tmp->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+					status = STATUS_CONNECTION_ERROR;
+					return ERR_CONNECTION_ERROR;
+				}
+			} else if (tcp_connection->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+				status = STATUS_CONNECTION_ERROR;
+				return ERR_CONNECTION_ERROR;
+			}
 			// Connection established, requests can now be made
 			return OK;
 		} break;

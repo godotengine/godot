@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "stream_peer_mbed_tls.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
 #include "mbedtls/platform_util.h"
 
@@ -98,12 +99,16 @@ Error StreamPeerMbedTLS::_do_handshake() {
 	int ret = 0;
 	while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+			// An error occurred.
 			ERR_PRINTS("TLS handshake error: " + itos(ret));
 			_print_error(ret);
 			disconnect_from_stream();
 			status = STATUS_ERROR;
 			return FAILED;
-		} else if (!blocking_handshake) {
+		}
+
+		// Handshake is still in progress.
+		if (!blocking_handshake) {
 			// Will retry via poll later
 			return OK;
 		}
@@ -192,7 +197,12 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 
 	int ret = mbedtls_ssl_write(&ssl, p_data, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
-		ret = 0; // non blocking io
+		// Non blocking IO
+		ret = 0;
+	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// Clean close
+		disconnect_from_stream();
+		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
 		_print_error(ret);
 		disconnect_from_stream();
@@ -234,6 +244,10 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 	int ret = mbedtls_ssl_read(&ssl, p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		ret = 0; // non blocking io
+	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// Clean close
+		disconnect_from_stream();
+		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
 		_print_error(ret);
 		disconnect_from_stream();
@@ -256,9 +270,22 @@ void StreamPeerMbedTLS::poll() {
 
 	int ret = mbedtls_ssl_read(&ssl, NULL, 0);
 
-	if (ret < 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+		// Nothing to read/write (non blocking IO)
+	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// Clean close (disconnect)
+		disconnect_from_stream();
+		return;
+	} else if (ret < 0) {
 		_print_error(ret);
 		disconnect_from_stream();
+		return;
+	}
+
+	Ref<StreamPeerTCP> tcp = base;
+	if (tcp.is_valid() && tcp->get_status() != STATUS_CONNECTED) {
+		disconnect_from_stream();
+		return;
 	}
 }
 
@@ -281,6 +308,12 @@ void StreamPeerMbedTLS::disconnect_from_stream() {
 
 	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING)
 		return;
+
+	Ref<StreamPeerTCP> tcp = base;
+	if (tcp.is_valid() && tcp->get_status() == STATUS_CONNECTED) {
+		// We are still connected on the socket, try to send close notity.
+		mbedtls_ssl_close_notify(&ssl);
+	}
 
 	_cleanup();
 }
