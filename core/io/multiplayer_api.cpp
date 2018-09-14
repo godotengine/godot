@@ -45,8 +45,7 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 		} break;
 		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
-		case MultiplayerAPI::RPC_MODE_PUPPETSYNC:
-		case MultiplayerAPI::RPC_MODE_SYNC: {
+		case MultiplayerAPI::RPC_MODE_PUPPETSYNC: {
 			//call it, sync always results in call
 			return true;
 		} break;
@@ -68,11 +67,8 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
 			return false;
 		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTE: {
-			return true;
-		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
-		case MultiplayerAPI::RPC_MODE_SYNC: {
+		case MultiplayerAPI::RPC_MODE_REMOTE:
+		case MultiplayerAPI::RPC_MODE_REMOTESYNC: {
 			return true;
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC:

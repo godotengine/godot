@@ -22,7 +22,6 @@
 		print(noise.get_noise_3d(0.5,3.0,15.0))
 		print(noise.get_noise_3d(0.5,1.9,4.7,0.0))
 		[/codeblock]
-
 	</description>
 	<tutorials>
 	</tutorials>

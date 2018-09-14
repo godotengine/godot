@@ -4476,7 +4476,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				rpc_mode = MultiplayerAPI::RPC_MODE_SYNC;
+				rpc_mode = MultiplayerAPI::RPC_MODE_REMOTESYNC;
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_MASTERSYNC: {
