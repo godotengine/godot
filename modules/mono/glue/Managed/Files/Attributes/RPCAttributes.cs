@@ -12,6 +12,9 @@ namespace Godot
     public class MasterAttribute : Attribute {}
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field)]
+    public class PuppetAttribute : Attribute {}
+
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field)]
     public class SlaveAttribute : Attribute {}
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field)]
@@ -21,5 +24,5 @@ namespace Godot
     public class MasterSyncAttribute : Attribute {}
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Field)]
-    public class SlaveSyncAttribute : Attribute {}
+    public class PuppetSyncAttribute : Attribute {}
 }

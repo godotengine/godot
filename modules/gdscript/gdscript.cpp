@@ -1779,10 +1779,11 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"remote",
 		"sync",
 		"master",
+		"puppet",
 		"slave",
 		"remotesync",
 		"mastersync",
-		"slavesync",
+		"puppetsync",
 		0
 	};
 
