@@ -1840,9 +1840,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->set_column_title(0, TTR("Action"));
 	input_editor->set_column_title(1, TTR("Deadzone"));
 	input_editor->set_column_expand(1, false);
-	input_editor->set_column_min_width(1, 80);
+	input_editor->set_column_min_width(1, 80 * EDSCALE);
 	input_editor->set_column_expand(2, false);
-	input_editor->set_column_min_width(2, 50);
+	input_editor->set_column_min_width(2, 50 * EDSCALE);
 	input_editor->connect("item_edited", this, "_action_edited");
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
