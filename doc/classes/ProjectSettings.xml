@@ -157,6 +157,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="">
+		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
 			Scale the boot splash image to the full window length when engine starts (will leave it as default pixel size otherwise).
 		</member>
@@ -225,6 +227,8 @@
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="">
 		</member>

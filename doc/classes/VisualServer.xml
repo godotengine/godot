@@ -2185,6 +2185,16 @@
 				Returns the value of a certain material's parameter.
 			</description>
 		</method>
+		<method name="material_get_param_default" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="material" type="RID">
+			</argument>
+			<argument index="1" name="parameter" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="material_get_shader" qualifiers="const">
 			<return type="RID">
 			</return>
