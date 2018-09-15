@@ -1348,6 +1348,19 @@ Node *Node::get_parent() const {
 	return data.parent;
 }
 
+Node *Node::find_parent(const String &p_mask) const {
+
+	Node *p = data.parent;
+	while (p) {
+
+		if (p->data.name.operator String().match(p_mask))
+			return p;
+		p = p->data.parent;
+	}
+
+	return NULL;
+}
+
 bool Node::is_a_parent_of(const Node *p_node) const {
 
 	ERR_FAIL_NULL_V(p_node, false);
@@ -2617,6 +2630,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
