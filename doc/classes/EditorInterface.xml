@@ -24,7 +24,7 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the base [Control].
+				Returns the main container of Godot's editor window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
