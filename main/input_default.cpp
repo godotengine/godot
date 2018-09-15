@@ -598,7 +598,13 @@ Input::CursorShape InputDefault::get_default_cursor_shape() {
 
 void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
 	default_shape = p_shape;
-	OS::get_singleton()->set_cursor_shape((OS::CursorShape)p_shape);
+	// The default shape is set in Viewport::_gui_input_event. To instantly
+	// see the shape in the viewport we need to trigger a mouse motion event.
+	Ref<InputEventMouseMotion> mm;
+	mm.instance();
+	mm->set_position(mouse_pos);
+	mm->set_global_position(mouse_pos);
+	parse_input_event(mm);
 }
 
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
