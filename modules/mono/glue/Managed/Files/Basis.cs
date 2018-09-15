@@ -165,6 +165,38 @@ namespace Godot
             );
         }
 
+        internal Quat RotationQuat()
+        {
+            Basis orthonormalizedBasis = Orthonormalized();
+            real_t det = orthonormalizedBasis.Determinant();
+            if (det < 0)
+            {
+                // Ensure that the determinant is 1, such that result is a proper rotation matrix which can be represented by Euler angles.
+                orthonormalizedBasis = orthonormalizedBasis.Scaled(Vector3.NegOne);
+            }
+
+            return orthonormalizedBasis.Quat();
+        }
+
+        internal void SetQuantScale(Quat quat, Vector3 scale)
+        {
+            SetDiagonal(scale);
+            Rotate(quat);
+        }
+
+        private void Rotate(Quat quat)
+        {
+            this *= new Basis(quat);
+        }
+
+        private void SetDiagonal(Vector3 diagonal)
+        {
+            _x = new Vector3(diagonal.x, 0, 0);
+            _y = new Vector3(0, diagonal.y, 0);
+            _z = new Vector3(0, 0, diagonal.z);
+
+        }
+
         public real_t Determinant()
         {
             return this[0, 0] * (this[1, 1] * this[2, 2] - this[2, 1] * this[1, 2]) -

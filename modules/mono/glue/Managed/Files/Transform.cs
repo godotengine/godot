@@ -20,6 +20,25 @@ namespace Godot
             return new Transform(basisInv, basisInv.Xform(-origin));
         }
 
+        public Transform InterpolateWith(Transform transform, real_t c)
+        {
+            /* not sure if very "efficient" but good enough? */
+
+            Vector3 sourceScale = basis.Scale;
+            Quat sourceRotation = basis.RotationQuat();
+            Vector3 sourceLocation = origin;
+
+            Vector3 destinationScale = transform.basis.Scale;
+            Quat destinationRotation = transform.basis.RotationQuat();
+            Vector3 destinationLocation = transform.origin;
+
+            var interpolated = new Transform();
+            interpolated.basis.SetQuantScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.LinearInterpolate(destinationScale, c));
+            interpolated.origin = sourceLocation.LinearInterpolate(destinationLocation, c);
+
+            return interpolated;
+        }
+
         public Transform Inverse()
         {
             Basis basisTr = basis.Transposed();
