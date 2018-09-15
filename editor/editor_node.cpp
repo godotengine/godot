@@ -5446,13 +5446,6 @@ EditorNode::EditorNode() {
 	video_driver_current = 0;
 	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {
 		String driver = video_drivers.get_slice(",", i);
-		Ref<Texture> icon = get_class_icon(driver, "");
-		if (icon.is_valid()) {
-			video_driver->add_icon_item(icon, "");
-		} else {
-			video_driver->add_item(driver);
-		}
-
 		video_driver->add_item(driver);
 		video_driver->set_item_metadata(i, driver);
 
