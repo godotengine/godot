@@ -426,7 +426,7 @@ void ShaderEditor::ensure_select_current() {
 
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
-	if (p_shader.is_null())
+	if (p_shader.is_null() || !p_shader->is_text_shader())
 		return;
 
 	shader = p_shader;
@@ -606,7 +606,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 	Shader *shader = Object::cast_to<Shader>(p_object);
-	return shader != NULL;
+	return shader != NULL && shader->is_text_shader();
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {

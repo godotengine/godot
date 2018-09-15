@@ -414,6 +414,10 @@ Shader::Mode VisualShader::get_mode() const {
 	return shader_mode;
 }
 
+bool VisualShader::is_text_shader() const {
+	return false;
+}
+
 String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &default_tex_params) const {
 
 	Ref<VisualShaderNode> node = get_node(p_type, p_node);
