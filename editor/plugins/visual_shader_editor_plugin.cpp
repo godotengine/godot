@@ -932,7 +932,10 @@ public:
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer)
 public:
-	void _property_changed(const String &prop, const Variant &p_value) {
+	void _property_changed(const String &prop, const Variant &p_value, bool p_changing = false) {
+
+		if (p_changing)
+			return;
 
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
@@ -979,7 +982,7 @@ public:
 	}
 
 	static void _bind_methods() {
-		ClassDB::bind_method("_property_changed", &VisualShaderNodePluginDefaultEditor::_property_changed);
+		ClassDB::bind_method("_property_changed", &VisualShaderNodePluginDefaultEditor::_property_changed, DEFVAL(false));
 		ClassDB::bind_method("_node_changed", &VisualShaderNodePluginDefaultEditor::_node_changed);
 		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request);
 	}
