@@ -54,7 +54,6 @@
 #include "editor/editor_audio_buses.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
-#include "editor/editor_initialize_ssl.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
@@ -4686,7 +4685,6 @@ EditorNode::EditorNode() {
 	SceneState::set_disable_placeholders(true);
 	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
 	ResourceLoader::clear_path_remaps();
-	editor_initialize_certificates(); //for asset sharing
 
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 

@@ -169,9 +169,11 @@ opts.Add(BoolVariable('progress', "Show a progress indicator during compilation"
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
+opts.Add('system_certs_path', "Use this path as SSL certificates default for editor (for package maintainers)", '')
 
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True))
+opts.Add(BoolVariable('builtin_certs', "Bundle default SSL certificates to be used if you don't specify an override in the project settings", True))
 opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the built-in FreeType library", True))
 opts.Add(BoolVariable('builtin_libogg', "Use the built-in libogg library", True))

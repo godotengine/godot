@@ -9,32 +9,6 @@ from platform_methods import subprocess_main
 from compat import encode_utf8, byte_to_str, open_utf8, escape_string
 
 
-def make_certs_header(target, source, env):
-
-    src = source[0]
-    dst = target[0]
-    f = open(src, "rb")
-    g = open_utf8(dst, "w")
-    buf = f.read()
-    decomp_size = len(buf)
-    import zlib
-    buf = zlib.compress(buf)
-
-    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#ifndef _CERTS_RAW_H\n")
-    g.write("#define _CERTS_RAW_H\n")
-    g.write("static const int _certs_compressed_size = " + str(len(buf)) + ";\n")
-    g.write("static const int _certs_uncompressed_size = " + str(decomp_size) + ";\n")
-    g.write("static const unsigned char _certs_compressed[] = {\n")
-    for i in range(len(buf)):
-        g.write("\t" + byte_to_str(buf[i]) + ",\n")
-    g.write("};\n")
-    g.write("#endif")
-
-    g.close()
-    f.close()
-
-
 def make_doc_header(target, source, env):
 
     dst = target[0]
