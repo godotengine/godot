@@ -29,12 +29,13 @@
 /*************************************************************************/
 
 #include "rich_text_label.h"
+
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
 #endif
 
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) {
@@ -2295,7 +2296,7 @@ RichTextLabel::RichTextLabel() {
 
 	vscroll = memnew(VScrollBar);
 	add_child(vscroll);
-	vscroll->set_drag_slave(String(".."));
+	vscroll->set_drag_node(String(".."));
 	vscroll->set_step(1);
 	vscroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
 	vscroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
