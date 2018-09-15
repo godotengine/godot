@@ -582,7 +582,7 @@
 			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
 			<description>
-				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, methods are not exposed to networking (and RPCs). Also see [method rset] and [method rset_config] for properties.
+				Changes the RPC mode for the given [code]method[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, methods are not exposed to networking (and RPCs). Also see [method rset] and [method rset_config] for properties.
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
@@ -635,7 +635,7 @@
 			<argument index="1" name="mode" type="int" enum="MultiplayerAPI.RPCMode">
 			</argument>
 			<description>
-				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]sync[/code], [code]master[/code], [code]slave[/code]). By default, properties are not exposed to networking (and RPCs). Also see [method rpc] and [method rpc_config] for methods.
+				Changes the RPC mode for the given [code]property[/code] to the given [code]mode[/code]. See [enum MultiplayerAPI.RPCMode]. An alternative is annotating methods and properties with the corresponding keywords ([code]remote[/code], [code]master[/code], [code]puppet[/code], [code]remotesync[/code], [code]mastersync[/code], [code]puppetsync[/code]). By default, properties are not exposed to networking (and RPCs). Also see [method rpc] and [method rpc_config] for methods.
 			</description>
 		</method>
 		<method name="rset_id">
@@ -692,7 +692,7 @@
 			<argument index="1" name="recursive" type="bool" default="true">
 			</argument>
 			<description>
-				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]slave[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
+				Sets the node's network master to the peer with the given peer ID. The network master is the peer that has authority over the node on the network. Useful in conjunction with the [code]master[/code] and [code]puppet[/code] keywords. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [code]recursive[/code], the given peer is recursively set as the master for all children of this node.
 			</description>
 		</method>
 		<method name="set_physics_process">

@@ -810,18 +810,16 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rpc_mode(const StringName &p_m
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
 					return MultiplayerAPI::RPC_MODE_REMOTE;
-				case GODOT_METHOD_RPC_MODE_SYNC:
-					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
 					return MultiplayerAPI::RPC_MODE_MASTER;
-				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_PUPPET:
+					return MultiplayerAPI::RPC_MODE_PUPPET;
 				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
 					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
 				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
 					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-				case GODOT_METHOD_RPC_MODE_SLAVESYNC:
-					return MultiplayerAPI::RPC_MODE_SLAVESYNC;
+				case GODOT_METHOD_RPC_MODE_PUPPETSYNC:
+					return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
@@ -846,12 +844,16 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
 					return MultiplayerAPI::RPC_MODE_REMOTE;
-				case GODOT_METHOD_RPC_MODE_SYNC:
-					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
 					return MultiplayerAPI::RPC_MODE_MASTER;
-				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_PUPPET:
+					return MultiplayerAPI::RPC_MODE_PUPPET;
+				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
+					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
+					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				case GODOT_METHOD_RPC_MODE_PUPPETSYNC:
+					return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}

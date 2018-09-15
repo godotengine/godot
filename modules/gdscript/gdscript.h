@@ -289,6 +289,7 @@ struct GDScriptWarning {
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes)
 		UNSAFE_CAST, // Cast used in an unknown type
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
+		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
 		WARNING_MAX,
 	} code;
 	Vector<String> symbols;

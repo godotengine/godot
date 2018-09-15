@@ -1779,10 +1779,11 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"remote",
 		"sync",
 		"master",
+		"puppet",
 		"slave",
 		"remotesync",
 		"mastersync",
-		"slavesync",
+		"puppetsync",
 		0
 	};
 
@@ -1979,6 +1980,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(4);
 			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
 		} break;
+		case DEPRECATED_KEYWORD: {
+			CHECK_SYMBOLS(2);
+			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
+		} break;
 	}
 	ERR_EXPLAIN("Invalid GDScript warning code: " + get_name_from_code(code));
 	ERR_FAIL_V(String());
@@ -2018,6 +2023,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
+		"DEPRECATED_KEYWORD",
 		NULL
 	};
 
