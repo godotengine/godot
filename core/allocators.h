@@ -37,20 +37,17 @@ template <int PREALLOC_COUNT = 64, int MAX_HANDS = 8>
 class BalloonAllocator {
 
 	enum {
-
 		USED_FLAG = (1 << 30),
 		USED_MASK = USED_FLAG - 1
 	};
 
 	struct Balloon {
-
-		Balloon *next;
 		Balloon *prev;
+		Balloon *next;
 		uint32_t hand;
 	};
 
 	struct Hand {
-
 		int used;
 		int allocated;
 		Balloon *first;
@@ -61,106 +58,98 @@ class BalloonAllocator {
 
 public:
 	void *alloc(size_t p_size) {
-
 		size_t max = (1 << MAX_HANDS);
 		ERR_FAIL_COND_V(p_size > max, NULL);
 
-		unsigned int hand = 0;
-
+		uint32_t hand = 0;
 		while (p_size > (size_t)(1 << hand))
 			++hand;
 
 		Hand &h = hands[hand];
+		Balloon *b = h.last;
 
 		if (h.used == h.allocated) {
-
-			for (int i = 0; i < PREALLOC_COUNT; i++) {
-
-				Balloon *b = (Balloon *)memalloc(sizeof(Balloon) + (1 << hand));
+			for (int i = 0; i < PREALLOC_COUNT; ++i) { // Create more unused balloons
+				b = (Balloon *)memalloc(sizeof(Balloon) + (1 << hand));
 				b->hand = hand;
-				if (h.last) {
 
+				if (h.last) {
 					b->prev = h.last;
 					h.last->next = b;
-					h.last = b;
-				} else {
 
+				} else { // Balloon is first
 					b->prev = NULL;
-					h.last = b;
 					h.first = b;
 				}
+
+				h.last = b;
 			}
 
 			h.last->next = NULL;
 			h.allocated += PREALLOC_COUNT;
 		}
 
-		Balloon *pick = h.last;
+		ERR_FAIL_COND_V((b->hand & USED_FLAG), NULL);
 
-		ERR_FAIL_COND_V((pick->hand & USED_FLAG), NULL);
-
-		// remove last
-		h.last = h.last->prev;
+		// Remove last unused balloon, which b is currently pointing at
+		h.last = b->prev;
 		h.last->next = NULL;
 
-		pick->next = h.first;
-		h.first->prev = pick;
-		pick->prev = NULL;
-		h.first = pick;
-		h.used++;
-		pick->hand |= USED_FLAG;
+		// Place balloon first and set used parameters
+		b->prev = NULL;
+		b->next = h.first;
+		h.first->prev = b;
+		h.first = b;
+		++(h.used);
+		b->hand |= USED_FLAG;
 
-		return (void *)(pick + 1);
+		return ++b;
 	}
 
 	void free(void *p_ptr) {
-
-		Balloon *b = (Balloon *)p_ptr;
-		b -= 1;
+		Balloon *b = (Balloon *)p_ptr - 1;
 
 		ERR_FAIL_COND(!(b->hand & USED_FLAG));
 
 		b->hand = b->hand & USED_MASK; // not used
 		int hand = b->hand;
-
 		Hand &h = hands[hand];
 
-		if (b == h.first)
-			h.first = b->next;
-
+		// Remove balloon
 		if (b->prev)
 			b->prev->next = b->next;
+		else
+			h.first = b->next;
+
 		if (b->next)
 			b->next->prev = b->prev;
 
-		if (h.last != b) {
-			h.last->next = b;
+		if (h.last != b) { // Place balloon last, so it can be reused
 			b->prev = h.last;
 			b->next = NULL;
+			h.last->next = b;
 			h.last = b;
 		}
 
-		h.used--;
+		--(h.used);
+		if (h.used <= (h.allocated - (PREALLOC_COUNT * 2))) { // Used to free up memory
 
-		if (h.used <= (h.allocated - (PREALLOC_COUNT * 2))) { // this is done to ensure no alloc/free is done constantly
-
-			for (int i = 0; i < PREALLOC_COUNT; i++) {
+			for (int i = 0; i < PREALLOC_COUNT; ++i) {
 				ERR_CONTINUE(h.last->hand & USED_FLAG);
 
-				Balloon *new_last = h.last->prev;
-				if (new_last)
-					new_last->next = NULL;
+				b = h.last->prev;
+				if (b)
+					b->next = NULL;
 				memfree(h.last);
-				h.last = new_last;
+				h.last = b;
 			}
+
 			h.allocated -= PREALLOC_COUNT;
 		}
 	}
 
 	BalloonAllocator() {
-
-		for (int i = 0; i < MAX_HANDS; i++) {
-
+		for (int i = 0; i < MAX_HANDS; ++i) {
 			hands[i].allocated = 0;
 			hands[i].used = 0;
 			hands[i].first = NULL;
@@ -169,11 +158,8 @@ public:
 	}
 
 	void clear() {
-
-		for (int i = 0; i < MAX_HANDS; i++) {
-
+		for (int i = 0; i < MAX_HANDS; ++i) {
 			while (hands[i].first) {
-
 				Balloon *b = hands[i].first;
 				hands[i].first = b->next;
 				memfree(b);
@@ -187,7 +173,6 @@ public:
 	}
 
 	~BalloonAllocator() {
-
 		clear();
 	}
 };
