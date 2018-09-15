@@ -4412,19 +4412,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), KEY_W));
 	move_button->set_tooltip(TTR("Move Mode"));
 
-	scale_button = memnew(ToolButton);
-	hb->add_child(scale_button);
-	scale_button->set_toggle_mode(true);
-	scale_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SCALE));
-	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), KEY_S));
-	scale_button->set_tooltip(TTR("Scale Mode"));
-
 	rotate_button = memnew(ToolButton);
 	hb->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
 	rotate_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTR("Rotate Mode"), KEY_E));
 	rotate_button->set_tooltip(TTR("Rotate Mode"));
+
+	scale_button = memnew(ToolButton);
+	hb->add_child(scale_button);
+	scale_button->set_toggle_mode(true);
+	scale_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SCALE));
+	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), KEY_S));
+	scale_button->set_tooltip(TTR("Scale Mode"));
 
 	hb->add_child(memnew(VSeparator));
 
