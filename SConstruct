@@ -169,6 +169,7 @@ opts.Add(BoolVariable('progress', "Show a progress indicator during compilation"
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
+opts.Add('system_certs_path', "Use this path as SSL certificates default for editor (for package maintainers)", '')
 
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True))

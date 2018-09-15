@@ -21,6 +21,10 @@ def make_certs_header(target, source, env):
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _CERTS_RAW_H\n")
     g.write("#define _CERTS_RAW_H\n")
+
+    # System certs path. Editor will use them if defined. (for package maintainers)
+    path = env['system_certs_path']
+    g.write("#define _SYSTEM_CERTS_PATH \"%s\"\n" % str(path))
     if env['builtin_certs']:
         # Defined here and not in env so changing it does not trigger a full rebuild.
         g.write("#define BUILTIN_CERTS_ENABLED\n")

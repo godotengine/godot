@@ -317,15 +317,13 @@ void StreamPeerMbedTLS::initialize_ssl() {
 	mbedtls_debug_set_threshold(1);
 #endif
 
-	PoolByteArray cert_array = StreamPeerSSL::get_project_cert_array();
-
-	if (cert_array.size() > 0)
-		_load_certs(cert_array);
-
 	available = true;
 }
 
 void StreamPeerMbedTLS::finalize_ssl() {
 
+	available = false;
+	_create = NULL;
+	load_certs_func = NULL;
 	mbedtls_x509_crt_free(&cacert);
 }

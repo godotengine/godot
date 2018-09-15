@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access_memory.h"
@@ -947,6 +948,10 @@ void EditorSettings::setup_network() {
 
 	_initial_set("network/debug/remote_port", port);
 	add_property_hint(PropertyInfo(Variant::INT, "network/debug/remote_port", PROPERTY_HINT_RANGE, "1,65535,1"));
+
+	// Editor SSL certificates override
+	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
+	add_property_hint(PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
 }
 
 void EditorSettings::save() {
