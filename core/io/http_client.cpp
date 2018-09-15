@@ -668,11 +668,11 @@ Error HTTPClient::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received
 		// We can't use StreamPeer.get_data, since when reaching EOF we will get an
 		// error without knowing how many bytes we received.
 		Error err = ERR_FILE_EOF;
-		int read;
+		int read = 0;
 		int left = p_bytes;
 		r_received = 0;
 		while (left > 0) {
-			err = connection->get_partial_data(p_buffer, left, read);
+			err = connection->get_partial_data(p_buffer + r_received, left, read);
 			if (err == OK) {
 				r_received += read;
 			} else if (err == ERR_FILE_EOF) {
