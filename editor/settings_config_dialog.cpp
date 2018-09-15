@@ -56,11 +56,7 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 
 	String full_name = inspector->get_full_item_path(p_name);
 
-	// Small usability workaround to update the text color settings when the
-	// color theme is changed
-	if (full_name == "text_editor/theme/color_theme") {
-		inspector->get_inspector()->update_tree();
-	} else if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
+	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
 		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
 	} else if (full_name.begins_with("text_editor/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
