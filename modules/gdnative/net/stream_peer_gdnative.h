@@ -55,7 +55,9 @@ public:
 	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
 	Error get_data(uint8_t *p_buffer, int p_bytes);
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	Error poll();
 	int get_available_bytes() const;
+	Status get_status();
 };
 
 #endif // STREAM_PEER_GDNATIVE_H

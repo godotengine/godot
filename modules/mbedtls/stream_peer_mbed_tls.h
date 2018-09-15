@@ -70,10 +70,8 @@ protected:
 	Error _do_handshake();
 
 public:
-	virtual void poll();
 	virtual Error accept_stream(Ref<StreamPeer> p_base);
 	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String());
-	virtual Status get_status() const;
 
 	virtual void disconnect_from_stream();
 
@@ -84,6 +82,8 @@ public:
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 	virtual int get_available_bytes() const;
+	virtual Status get_status();
+	virtual Error poll();
 
 	static void initialize_ssl();
 	static void finalize_ssl();

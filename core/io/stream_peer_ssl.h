@@ -49,21 +49,11 @@ protected:
 	bool blocking_handshake;
 
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
-	};
-
 	void set_blocking_handshake_enabled(bool p_enabled);
 	bool is_blocking_handshake_enabled() const;
 
-	virtual void poll() = 0;
 	virtual Error accept_stream(Ref<StreamPeer> p_base) = 0;
 	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String()) = 0;
-	virtual Status get_status() const = 0;
 
 	virtual void disconnect_from_stream() = 0;
 
@@ -77,7 +67,5 @@ public:
 
 	StreamPeerSSL();
 };
-
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
 
 #endif // STREAM_PEER_SSL_H

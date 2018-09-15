@@ -50,13 +50,23 @@ protected:
 	bool big_endian;
 
 public:
+	enum Status {
+
+		STATUS_CLOSED,
+		STATUS_CONNECTING,
+		STATUS_CONNECTED,
+		STATUS_ERROR,
+	};
+
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
 	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) = 0; ///< put as much data as possible, without blocking.
 
 	virtual Error get_data(uint8_t *p_buffer, int p_bytes) = 0; ///< read p_bytes of data, if p_bytes > available, it will block
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) = 0; ///< read as much data as p_bytes into buffer, if less was read, return in r_received
 
+	virtual Status get_status() = 0; // Return the Status of this stream.
 	virtual int get_available_bytes() const = 0;
+	virtual Error poll() { return OK; } // Poll the stream looking for change in status and available bytes.
 
 	void set_big_endian(bool p_enable);
 	bool is_big_endian_enabled() const;
@@ -108,6 +118,7 @@ public:
 	Error get_data(uint8_t *p_buffer, int p_bytes);
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
+	virtual Status get_status();
 	virtual int get_available_bytes() const;
 
 	void seek(int p_pos);
@@ -124,5 +135,7 @@ public:
 
 	StreamPeerBuffer();
 };
+
+VARIANT_ENUM_CAST(StreamPeer::Status);
 
 #endif // STREAM_PEER_H

@@ -41,15 +41,6 @@ class StreamPeerTCP : public StreamPeer {
 	GDCLASS(StreamPeerTCP, StreamPeer);
 	OBJ_CATEGORY("Networking");
 
-public:
-	enum Status {
-
-		STATUS_NONE,
-		STATUS_CONNECTING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-	};
-
 protected:
 	Ref<NetSocket> _sock;
 	Status status;
@@ -57,7 +48,6 @@ protected:
 	uint16_t peer_port;
 
 	Error _connect(const String &p_address, int p_port);
-	Error _poll_connection();
 	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
 	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
@@ -72,21 +62,20 @@ public:
 	uint16_t get_connected_port() const;
 	void disconnect_from_host();
 
-	int get_available_bytes() const;
-	Status get_status();
-
 	void set_no_delay(bool p_enabled);
 
-	// Read/Write from StreamPeer
+	// StreamPeer
 	Error put_data(const uint8_t *p_data, int p_bytes);
 	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
 	Error get_data(uint8_t *p_buffer, int p_bytes);
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
+	Error poll();
+	Status get_status();
+	int get_available_bytes() const;
+
 	StreamPeerTCP();
 	~StreamPeerTCP();
 };
-
-VARIANT_ENUM_CAST(StreamPeerTCP::Status);
 
 #endif

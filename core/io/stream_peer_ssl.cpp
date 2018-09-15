@@ -117,20 +117,13 @@ PoolByteArray StreamPeerSSL::get_project_cert_array() {
 
 void StreamPeerSSL::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
 	ClassDB::bind_method(D_METHOD("accept_stream", "base"), &StreamPeerSSL::accept_stream);
 	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
 	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
 	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &StreamPeerSSL::set_blocking_handshake_enabled);
 	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &StreamPeerSSL::is_blocking_handshake_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
-
-	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_ERROR);
-	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
 }
 
 StreamPeerSSL::StreamPeerSSL() {

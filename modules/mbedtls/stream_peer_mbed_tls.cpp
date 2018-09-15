@@ -92,7 +92,7 @@ void StreamPeerMbedTLS::_cleanup() {
 	mbedtls_entropy_free(&entropy);
 
 	base = Ref<StreamPeer>();
-	status = STATUS_DISCONNECTED;
+	status = STATUS_CLOSED;
 }
 
 Error StreamPeerMbedTLS::_do_handshake() {
@@ -146,10 +146,9 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 
 	mbedtls_ssl_set_bio(&ssl, this, bio_send, bio_recv, NULL);
 
-	status = STATUS_HANDSHAKING;
+	status = STATUS_CONNECTING;
 
 	if ((ret = _do_handshake()) != OK) {
-		status = STATUS_ERROR_HOSTNAME_MISMATCH;
 		return FAILED;
 	}
 
@@ -245,14 +244,19 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 	return OK;
 }
 
-void StreamPeerMbedTLS::poll() {
+Error StreamPeerMbedTLS::poll() {
 
-	ERR_FAIL_COND(status != STATUS_CONNECTED && status != STATUS_HANDSHAKING);
-	ERR_FAIL_COND(!base.is_valid());
+	if (status != STATUS_CONNECTED && status != STATUS_CONNECTING)
+		return OK; // Nothing to do.
 
-	if (status == STATUS_HANDSHAKING) {
+	ERR_FAIL_COND_V(!base.is_valid(), ERR_BUG);
+
+	if (status == STATUS_CONNECTING) {
 		_do_handshake();
-		return;
+		if (status == STATUS_CONNECTING)
+			return OK;
+		if (status != STATUS_CONNECTED)
+			return FAILED;
 	}
 
 	int ret = mbedtls_ssl_read(&ssl, NULL, 0);
@@ -260,13 +264,15 @@ void StreamPeerMbedTLS::poll() {
 	if (ret < 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 		_print_error(ret);
 		disconnect_from_stream();
-		return;
+		return FAILED;
 	}
 
-	if (static_cast<StreamPeerTCP *>(base.ptr())->get_status() != STATUS_CONNECTED) {
+	if (base->get_status() != STATUS_CONNECTED) {
 		disconnect_from_stream();
-		return;
+		return FAILED;
 	}
+
+	return OK;
 }
 
 int StreamPeerMbedTLS::get_available_bytes() const {
@@ -275,9 +281,15 @@ int StreamPeerMbedTLS::get_available_bytes() const {
 
 	return mbedtls_ssl_get_bytes_avail(&ssl);
 }
+
+StreamPeer::Status StreamPeerMbedTLS::get_status() {
+
+	return status;
+}
+
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
 
-	status = STATUS_DISCONNECTED;
+	status = STATUS_CLOSED;
 }
 
 StreamPeerMbedTLS::~StreamPeerMbedTLS() {
@@ -286,15 +298,10 @@ StreamPeerMbedTLS::~StreamPeerMbedTLS() {
 
 void StreamPeerMbedTLS::disconnect_from_stream() {
 
-	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING)
+	if (status != STATUS_CONNECTED && status != STATUS_CONNECTING)
 		return;
 
 	_cleanup();
-}
-
-StreamPeerMbedTLS::Status StreamPeerMbedTLS::get_status() const {
-
-	return status;
 }
 
 StreamPeerSSL *StreamPeerMbedTLS::_create_func() {

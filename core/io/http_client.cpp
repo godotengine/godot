@@ -262,7 +262,7 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 
 void HTTPClient::close() {
 
-	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE)
+	if (tcp_connection->get_status() != StreamPeer::STATUS_CLOSED)
 		tcp_connection->disconnect_from_host();
 
 	connection.unref();
@@ -321,39 +321,37 @@ Error HTTPClient::poll() {
 		} break;
 		case STATUS_CONNECTING: {
 
-			StreamPeerTCP::Status s = tcp_connection->get_status();
+			StreamPeer::Status s = tcp_connection->get_status();
 			switch (s) {
 
-				case StreamPeerTCP::STATUS_CONNECTING: {
+				case StreamPeer::STATUS_CONNECTING: {
 					return OK;
 				} break;
-				case StreamPeerTCP::STATUS_CONNECTED: {
+				case StreamPeer::STATUS_CONNECTED: {
 					if (ssl) {
-						Ref<StreamPeerSSL> ssl;
 						if (!handshaking) {
 							// Connect the StreamPeerSSL and start handshaking
-							ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
-							ssl->set_blocking_handshake_enabled(false);
-							Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
+							Ref<StreamPeerSSL> ssl_conn = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+							ssl_conn->set_blocking_handshake_enabled(false);
+							Error err = ssl_conn->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
 							if (err != OK) {
 								close();
 								status = STATUS_SSL_HANDSHAKE_ERROR;
 								return ERR_CANT_CONNECT;
 							}
-							connection = ssl;
+							connection = ssl_conn;
 							handshaking = true;
 						} else {
-							// We are already handshaking, which means we can use your already active SSL connection
-							ssl = static_cast<Ref<StreamPeerSSL> >(connection);
-							ssl->poll(); // Try to finish the handshake
+							// We are already handshaking, which means we should poll the active connection to keep trying.
+							connection->poll();
 						}
 
-						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
+						if (connection->get_status() == StreamPeer::STATUS_CONNECTED) {
 							// Handshake has been successful
 							handshaking = false;
 							status = STATUS_CONNECTED;
 							return OK;
-						} else if (ssl->get_status() != StreamPeerSSL::STATUS_HANDSHAKING) {
+						} else if (connection->get_status() != StreamPeer::STATUS_CONNECTING) {
 							// Handshake has failed
 							close();
 							status = STATUS_SSL_HANDSHAKE_ERROR;
@@ -365,8 +363,8 @@ Error HTTPClient::poll() {
 					}
 					return OK;
 				} break;
-				case StreamPeerTCP::STATUS_ERROR:
-				case StreamPeerTCP::STATUS_NONE: {
+				case StreamPeer::STATUS_ERROR:
+				case StreamPeer::STATUS_CLOSED: {
 
 					close();
 					status = STATUS_CANT_CONNECT;
@@ -375,20 +373,19 @@ Error HTTPClient::poll() {
 			}
 		} break;
 		case STATUS_CONNECTED: {
-			// Connection established, requests can now be made
-			if (ssl) {
-				StreamPeerSSL *tmp = static_cast<StreamPeerSSL *>(connection.ptr());
-				tmp->poll();
-				if (tmp->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
-					status = STATUS_CONNECTION_ERROR;
-					return ERR_CONNECTION_ERROR;
-				}
-			} else if (static_cast<StreamPeerTCP *>(connection.ptr())->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+			// Connection established, check if still active.
+			connection->poll();
+			StreamPeer::Status s = connection->get_status();
+			if (s == StreamPeer::STATUS_CLOSED) {
+				// Clean close
+				close();
+				return OK;
+			}
+			if (s != StreamPeer::STATUS_CONNECTED) {
+				close();
 				status = STATUS_CONNECTION_ERROR;
 				return ERR_CONNECTION_ERROR;
 			}
-
-			return OK;
 		} break;
 		case STATUS_REQUESTING: {
 

@@ -44,6 +44,14 @@ void StreamPeerGDNative::set_native_stream_peer(godot_net_stream_peer *p_interfa
 void StreamPeerGDNative::_bind_methods() {
 }
 
+StreamPeer::Status StreamPeerGDNative::get_status() {
+	return (Status)(interface->get_status(interface->data));
+}
+
+Error StreamPeerGDNative::poll() {
+	return (Error)(interface->poll(interface->data));
+}
+
 Error StreamPeerGDNative::put_data(const uint8_t *p_data, int p_bytes) {
 	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
 	return (Error)(interface->put_data(interface->data, p_data, p_bytes));

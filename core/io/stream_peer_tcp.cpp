@@ -30,25 +30,6 @@
 
 #include "stream_peer_tcp.h"
 
-Error StreamPeerTCP::_poll_connection() {
-
-	ERR_FAIL_COND_V(status != STATUS_CONNECTING || !_sock.is_valid() || !_sock->is_open(), FAILED);
-
-	Error err = _sock->connect_to_host(peer_host, peer_port);
-
-	if (err == OK) {
-		status = STATUS_CONNECTED;
-		return OK;
-	} else if (err == ERR_BUSY) {
-		// Still trying to connect
-		return OK;
-	}
-
-	disconnect_from_host();
-	status = STATUS_ERROR;
-	return ERR_CONNECTION_ERROR;
-}
-
 void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port) {
 
 	_sock = p_sock;
@@ -96,14 +77,14 @@ Error StreamPeerTCP::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool
 
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 
-	if (status == STATUS_NONE || status == STATUS_ERROR) {
+	if (status == STATUS_CLOSED || status == STATUS_ERROR) {
 
 		return FAILED;
 	}
 
 	if (status != STATUS_CONNECTED) {
 
-		if (_poll_connection() != OK) {
+		if (poll() != OK) {
 
 			return FAILED;
 		}
@@ -167,7 +148,7 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 
 	if (status == STATUS_CONNECTING) {
 
-		if (_poll_connection() != OK) {
+		if (poll() != OK) {
 
 			return FAILED;
 		}
@@ -233,7 +214,7 @@ void StreamPeerTCP::set_no_delay(bool p_enabled) {
 
 bool StreamPeerTCP::is_connected_to_host() const {
 
-	if (status == STATUS_NONE || status == STATUS_ERROR) {
+	if (status == STATUS_CLOSED || status == STATUS_ERROR) {
 
 		return false;
 	}
@@ -245,28 +226,45 @@ bool StreamPeerTCP::is_connected_to_host() const {
 	return _sock.is_valid() && _sock->is_open();
 }
 
-StreamPeerTCP::Status StreamPeerTCP::get_status() {
+StreamPeer::Status StreamPeerTCP::get_status() {
 
+	poll();
+	return status;
+}
+
+Error StreamPeerTCP::poll() {
 	if (status == STATUS_CONNECTING) {
-		_poll_connection();
-	} else if (status == STATUS_CONNECTED) {
-		Error err;
-		err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
+		Error err = _sock->connect_to_host(peer_host, peer_port);
+
 		if (err == OK) {
-			// FIN received
-			if (_sock->get_available_bytes() == 0)
-				disconnect_from_host();
+			status = STATUS_CONNECTED;
+			return OK;
+		} else if (err == ERR_BUSY) {
+			// Still trying to connect
+			return OK;
 		}
-		// Also poll write
-		err = _sock->poll(NetSocket::POLL_TYPE_IN_OUT, 0);
+
+		disconnect_from_host();
+		status = STATUS_ERROR;
+		return ERR_CONNECTION_ERROR;
+
+	} else if (status == STATUS_CONNECTED) {
+		if (_sock->poll(NetSocket::POLL_TYPE_IN, 0) == OK && _sock->get_available_bytes() == 0) {
+			// EOF, FIN received.
+			disconnect_from_host();
+			return OK;
+		}
+		// Try to poll the socket and see if we get an error.
+		Error err = _sock->poll(NetSocket::POLL_TYPE_IN_OUT, 0);
 		if (err != OK && err != ERR_BUSY) {
 			// Got an error
 			disconnect_from_host();
 			status = STATUS_ERROR;
+			return FAILED;
 		}
 	}
 
-	return status;
+	return OK;
 }
 
 void StreamPeerTCP::disconnect_from_host() {
@@ -274,7 +272,7 @@ void StreamPeerTCP::disconnect_from_host() {
 	if (_sock.is_valid() && _sock->is_open())
 		_sock->close();
 
-	status = STATUS_NONE;
+	status = STATUS_CLOSED;
 	peer_host = IP_Address();
 	peer_port = 0;
 }
@@ -335,22 +333,16 @@ void StreamPeerTCP::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
 	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &StreamPeerTCP::is_connected_to_host);
-	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTCP::get_status);
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);
 	ClassDB::bind_method(D_METHOD("disconnect_from_host"), &StreamPeerTCP::disconnect_from_host);
 	ClassDB::bind_method(D_METHOD("set_no_delay", "enabled"), &StreamPeerTCP::set_no_delay);
-
-	BIND_ENUM_CONSTANT(STATUS_NONE);
-	BIND_ENUM_CONSTANT(STATUS_CONNECTING);
-	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_ERROR);
 }
 
 StreamPeerTCP::StreamPeerTCP() {
 
 	_sock = Ref<NetSocket>(NetSocket::create());
-	status = STATUS_NONE;
+	status = STATUS_CLOSED;
 	peer_host = IP_Address();
 	peer_port = 0;
 }

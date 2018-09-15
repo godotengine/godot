@@ -371,7 +371,9 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data", "bytes"), &StreamPeer::_get_data);
 	ClassDB::bind_method(D_METHOD("get_partial_data", "bytes"), &StreamPeer::_get_partial_data);
 
+	ClassDB::bind_method(D_METHOD("poll"), &StreamPeer::poll);
 	ClassDB::bind_method(D_METHOD("get_available_bytes"), &StreamPeer::get_available_bytes);
+	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeer::get_status);
 
 	ClassDB::bind_method(D_METHOD("set_big_endian", "enable"), &StreamPeer::set_big_endian);
 	ClassDB::bind_method(D_METHOD("is_big_endian_enabled"), &StreamPeer::is_big_endian_enabled);
@@ -404,6 +406,11 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_var"), &StreamPeer::get_var);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");
+
+	BIND_ENUM_CONSTANT(STATUS_CLOSED);
+	BIND_ENUM_CONSTANT(STATUS_CONNECTING);
+	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_ERROR);
 }
 ////////////////////////////////
 
@@ -477,6 +484,11 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 int StreamPeerBuffer::get_available_bytes() const {
 
 	return data.size() - pointer;
+}
+
+StreamPeer::Status StreamPeerBuffer::get_status() {
+
+	return data.size() > 0 ? STATUS_CONNECTED : STATUS_CLOSED;
 }
 
 void StreamPeerBuffer::seek(int p_pos) {

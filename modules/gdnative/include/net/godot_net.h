@@ -55,7 +55,9 @@ typedef struct {
 	godot_error (*put_data)(void *user, const uint8_t *p_data, int p_bytes);
 	godot_error (*put_partial_data)(void *user, const uint8_t *p_data, int p_bytes, int &r_sent);
 
+	godot_error (*poll)(void *user);
 	int (*get_available_bytes)(const void *user);
+	godot_int (*get_status)(void *user);
 
 	void *next; /* For extension? */
 } godot_net_stream_peer;
