@@ -543,7 +543,7 @@
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
-			Canvas item transform has changed. Only received if requested.
+			Canvas item transform has changed. Notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			CanvasItem is requested to draw.
