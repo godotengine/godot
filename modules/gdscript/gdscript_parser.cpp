@@ -81,8 +81,11 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 	}
 	tokenizer->advance();
 
-	if (tokenizer->get_token() != GDScriptTokenizer::TK_NEWLINE) {
+	if (tokenizer->get_token() == GDScriptTokenizer::TK_EOF) {
+		return false;
+	}
 
+	if (tokenizer->get_token() != GDScriptTokenizer::TK_NEWLINE) {
 		// be more python-like
 		int current = tab_level.back()->get();
 		tab_level.push_back(current);
@@ -92,10 +95,11 @@ bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 	}
 
 	while (true) {
-
 		if (tokenizer->get_token() != GDScriptTokenizer::TK_NEWLINE) {
 
 			return false; //wtf
+		} else if (tokenizer->get_token(1) == GDScriptTokenizer::TK_EOF) {
+			return false;
 		} else if (tokenizer->get_token(1) != GDScriptTokenizer::TK_NEWLINE) {
 
 			int indent = tokenizer->get_token_line_indent();
