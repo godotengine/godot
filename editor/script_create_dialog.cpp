@@ -164,7 +164,6 @@ void ScriptCreateDialog::_create_new() {
 	if (script_template != "") {
 		scr = ResourceLoader::load(script_template);
 		if (scr.is_null()) {
-			alert->get_ok()->set_text(TTR("OK"));
 			alert->set_text(vformat(TTR("Error loading template '%s'"), script_template));
 			alert->popup_centered();
 			return;
@@ -201,7 +200,6 @@ void ScriptCreateDialog::_load_exist() {
 	String path = file_path->get_text();
 	RES p_script = ResourceLoader::load(path, "Script");
 	if (p_script.is_null()) {
-		alert->get_ok()->set_text(TTR("OK"));
 		alert->set_text(vformat(TTR("Error loading script from %s"), path));
 		alert->popup_centered();
 		return;
