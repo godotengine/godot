@@ -260,7 +260,12 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_SQRT: {
 			return PropertyInfo(Variant::REAL, "s");
 		} break;
-		case MATH_ATAN2:
+		case MATH_ATAN2: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "y");
+			else
+				return PropertyInfo(Variant::REAL, "x");
+		} break;
 		case MATH_FMOD:
 		case MATH_FPOSMOD: {
 			if (p_idx == 0)
