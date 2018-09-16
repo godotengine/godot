@@ -752,6 +752,8 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 }
 
 void EditorHelp::_update_doc() {
+	if (!doc->class_list.has(edited_class))
+		return;
 
 	scroll_locked = true;
 
