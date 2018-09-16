@@ -164,9 +164,11 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 }
 
 btScalar GodotClosestConvexResultCallback::addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
-	btScalar res = btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
-	m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
-	return res;
+	if (convexResult.m_localShapeInfo)
+		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+	else
+		m_shapeId = 0;
+	return btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
 }
 
 bool GodotAllContactResultCallback::needsCollision(btBroadphaseProxy *proxy0) const {
