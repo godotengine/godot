@@ -134,6 +134,7 @@ def find_msbuild_unix(filename):
 def find_msbuild_windows():
     import mono_reg_utils as monoreg
 
+    mono_root = ''
     bits = env['bits']
 
     if bits == '32':
