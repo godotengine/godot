@@ -126,7 +126,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -141,7 +146,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -156,7 +166,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
