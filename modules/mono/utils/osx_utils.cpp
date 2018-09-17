@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  monodevelop_instance.cpp                                             */
+/*  osx_utils.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,58 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "monodevelop_instance.h"
+#include "osx_utils.h"
 
-#include "../mono_gd/gd_mono.h"
-#include "../mono_gd/gd_mono_class.h"
+#include "core/print_string.h"
 
-void MonoDevelopInstance::execute(const Vector<String> &p_files) {
+#ifdef OSX_ENABLED
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+#include <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
 
-	ERR_FAIL_NULL(execute_method);
-	ERR_FAIL_COND(gc_handle.is_null());
+bool osx_is_app_bundle_installed(const String &p_bundle_id) {
 
-	MonoException *exc = NULL;
+	CFURLRef app_url = NULL;
+	CFStringRef bundle_id = CFStringCreateWithCString(NULL, p_bundle_id.utf8(), kCFStringEncodingUTF8);
+	OSStatus result = LSFindApplicationForInfo(kLSUnknownCreator, bundle_id, NULL, NULL, &app_url);
+	CFRelease(bundle_id);
 
-	Variant files = p_files;
-	const Variant *args[1] = { &files };
-	execute_method->invoke(gc_handle->get_target(), args, &exc);
+	if (app_url)
+		CFRelease(app_url);
 
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL();
-	}
-}
-
-void MonoDevelopInstance::execute(const String &p_file) {
-
-	Vector<String> files;
-	files.push_back(p_file);
-	execute(files);
-}
-
-MonoDevelopInstance::MonoDevelopInstance(const String &p_solution, EditorId p_editor_id) {
-
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
-
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Editor", "MonoDevelopInstance");
-
-	MonoObject *obj = mono_object_new(TOOLS_DOMAIN, klass->get_mono_ptr());
-
-	GDMonoMethod *ctor = klass->get_method(".ctor", 2);
-	MonoException *exc = NULL;
-
-	Variant solution = p_solution;
-	Variant editor_id = p_editor_id;
-	const Variant *args[2] = { &solution, &editor_id };
-	ctor->invoke(obj, args, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_print_unhandled_exception(exc);
-		ERR_FAIL();
+	switch (result) {
+		case noErr:
+			return true;
+		case kLSApplicationNotFoundErr:
+			break;
+		default:
+			break;
 	}
 
-	gc_handle = MonoGCHandle::create_strong(obj);
-	execute_method = klass->get_method("Execute", 1);
+	return false;
 }
+
+#endif

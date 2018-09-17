@@ -40,6 +40,7 @@
     <Compile Include="Project\ProjectGenerator.cs" />
     <Compile Include="Project\ProjectUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\OS.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
