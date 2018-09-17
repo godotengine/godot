@@ -2607,7 +2607,9 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);
 
 		if (p_shape == current_cursor) {
-			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
+			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+				XDefineCursor(x11_display, x11_window, cursors[p_shape]);
+			}
 		}
 
 		memfree(cursor_image->pixels);

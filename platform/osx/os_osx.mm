@@ -1663,7 +1663,9 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		cursors[p_shape] = cursor;
 
 		if (p_shape == cursor_shape) {
-			[cursor set];
+			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+				[cursor set];
+			}
 		}
 
 		[imgrep release];
