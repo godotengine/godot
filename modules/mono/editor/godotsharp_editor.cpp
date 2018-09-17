@@ -38,11 +38,16 @@
 #include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono.h"
+#include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
 #include "bindings_generator.h"
 #include "csharp_project.h"
 #include "godotsharp_export.h"
 #include "net_solution.h"
+
+#ifdef OSX_ENABLED
+#include "../utils/osx_utils.h"
+#endif
 
 #ifdef WINDOWS_ENABLED
 #include "../utils/mono_reg_utils.h"
@@ -169,6 +174,26 @@ void GodotSharpEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_menu_option_pressed", "id"), &GodotSharpEditor::_menu_option_pressed);
 }
 
+MonoBoolean godot_icall_MonoDevelopInstance_IsApplicationBundleInstalled(MonoString *p_bundle_id) {
+#ifdef OSX_ENABLED
+	return (MonoBoolean)osx_is_app_bundle_installed(GDMonoMarshal::mono_string_to_godot(p_bundle_id));
+#else
+	(void)p_bundle_id; // UNUSED
+	ERR_FAIL_V(false);
+#endif
+}
+
+void GodotSharpEditor::register_internal_calls() {
+
+	static bool registered = false;
+	ERR_FAIL_COND(registered);
+	registered = true;
+
+	mono_add_internal_call("GodotSharpTools.Editor.MonoDevelopInstance::IsApplicationBundleInstalled", (void *)godot_icall_MonoDevelopInstance_IsApplicationBundleInstalled);
+
+	GodotSharpBuilds::register_internal_calls();
+}
+
 void GodotSharpEditor::show_error_dialog(const String &p_message, const String &p_title) {
 
 	error_dialog->set_title(p_title);
@@ -181,8 +206,36 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 	ExternalEditor editor = ExternalEditor(int(EditorSettings::get_singleton()->get("mono/editor/external_editor")));
 
 	switch (editor) {
-		case EDITOR_CODE: {
+		case EDITOR_VSCODE: {
+			static String vscode_path;
+
+			if (vscode_path.empty() || !FileAccess::exists(vscode_path)) {
+				// Try to search it again if it wasn't found last time or if it was removed from its location
+				vscode_path = path_which("code");
+			}
+
 			List<String> args;
+
+#ifdef OSX_ENABLED
+			// The package path is '/Applications/Visual Studio Code.app'
+			static const String vscode_bundle_id = "com.microsoft.VSCode";
+			static bool osx_app_bundle_installed = osx_is_app_bundle_installed(vscode_bundle_id);
+
+			if (osx_app_bundle_installed) {
+				args.push_back("-b");
+				args.push_back(vscode_bundle_id);
+
+				// The reusing of existing windows made by the 'open' command might not choose a wubdiw that is
+				// editing our folder. It's better to ask for a new window and let VSCode do the window management.
+				args.push_back("-n");
+
+				// The open process must wait until the application finishes (which is instant in VSCode's case)
+				args.push_back("--wait-apps");
+
+				args.push_back("--args");
+			}
+#endif
+
 			args.push_back(ProjectSettings::get_singleton()->get_resource_path());
 
 			String script_path = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
@@ -194,18 +247,47 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 				args.push_back(script_path);
 			}
 
-			static String program = path_which("code");
+#ifdef OSX_ENABLED
+			ERR_EXPLAIN("Cannot find code editor: VSCode");
+			ERR_FAIL_COND_V(!osx_app_bundle_installed && vscode_path.empty(), ERR_FILE_NOT_FOUND);
 
-			Error err = OS::get_singleton()->execute(program.length() ? program : "code", args, false);
+			String command = osx_app_bundle_installed ? "/usr/bin/open" : vscode_path;
+#else
+			ERR_EXPLAIN("Cannot find code editor: VSCode");
+			ERR_FAIL_COND_V(vscode_path.empty(), ERR_FILE_NOT_FOUND);
+
+			String command = vscode_path;
+#endif
+
+			Error err = OS::get_singleton()->execute(command, args, false);
 
 			if (err != OK) {
-				ERR_PRINT("GodotSharp: Could not execute external editor");
+				ERR_PRINT("Error when trying to execute code editor: VSCode");
 				return err;
 			}
 		} break;
+#ifdef OSX_ENABLED
+		case EDITOR_VISUALSTUDIO_MAC:
+			// [[fallthrough]];
+#endif
 		case EDITOR_MONODEVELOP: {
-			if (!monodevel_instance)
-				monodevel_instance = memnew(MonoDevelopInstance(GodotSharpDirs::get_project_sln_path()));
+#ifdef OSX_ENABLED
+			bool is_visualstudio = editor == EDITOR_VISUALSTUDIO_MAC;
+
+			MonoDevelopInstance **instance = is_visualstudio ?
+													 &visualstudio_mac_instance :
+													 &monodevelop_instance;
+
+			MonoDevelopInstance::EditorId editor_id = is_visualstudio ?
+															  MonoDevelopInstance::VISUALSTUDIO_FOR_MAC :
+															  MonoDevelopInstance::MONODEVELOP;
+#else
+			MonoDevelopInstance **instance = &monodevelop_instance;
+			MonoDevelopInstance::EditorId editor_id = MonoDevelopInstance::MONODEVELOP;
+#endif
+
+			if (!*instance)
+				*instance = memnew(MonoDevelopInstance(GodotSharpDirs::get_project_sln_path(), editor_id));
 
 			String script_path = ProjectSettings::get_singleton()->globalize_path(p_script->get_path());
 
@@ -213,7 +295,7 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 				script_path += ";" + itos(p_line + 1) + ";" + itos(p_col);
 			}
 
-			monodevel_instance->execute(script_path);
+			(*instance)->execute(script_path);
 		} break;
 		default:
 			return ERR_UNAVAILABLE;
@@ -231,7 +313,10 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	singleton = this;
 
-	monodevel_instance = NULL;
+	monodevelop_instance = NULL;
+#ifdef OSX_ENABLED
+	visualstudio_mac_instance = NULL;
+#endif
 
 	editor = p_editor;
 
@@ -314,7 +399,18 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	// External editor settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 	EDITOR_DEF("mono/editor/external_editor", EDITOR_NONE);
-	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, "None,MonoDevelop,Visual Studio Code"));
+
+	String settings_hint_str = "None";
+
+#ifdef WINDOWS_ENABLED
+	settings_hint_str += ",MonoDevelop,Visual Studio Code";
+#elif OSX_ENABLED
+	settings_hint_str += ",Visual Studio,MonoDevelop,Visual Studio Code";
+#elif UNIX_ENABLED
+	settings_hint_str += ",MonoDevelop,Visual Studio Code";
+#endif
+
+	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/editor/external_editor", PROPERTY_HINT_ENUM, settings_hint_str));
 
 	// Export plugin
 	Ref<GodotSharpExport> godotsharp_export;
@@ -328,9 +424,9 @@ GodotSharpEditor::~GodotSharpEditor() {
 
 	memdelete(godotsharp_builds);
 
-	if (monodevel_instance) {
-		memdelete(monodevel_instance);
-		monodevel_instance = NULL;
+	if (monodevelop_instance) {
+		memdelete(monodevelop_instance);
+		monodevelop_instance = NULL;
 	}
 }
 

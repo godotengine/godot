@@ -319,7 +319,7 @@ void GDMono::_register_internal_calls() {
 #endif
 
 #ifdef TOOLS_ENABLED
-	GodotSharpBuilds::_register_internal_calls();
+	GodotSharpEditor::register_internal_calls();
 #endif
 }
 
