@@ -183,6 +183,10 @@ MonoBoolean godot_icall_MonoDevelopInstance_IsApplicationBundleInstalled(MonoStr
 #endif
 }
 
+MonoString *godot_icall_Utils_OS_GetPlatformName() {
+	return GDMonoMarshal::mono_string_from_godot(OS::get_singleton()->get_name());
+}
+
 void GodotSharpEditor::register_internal_calls() {
 
 	static bool registered = false;
@@ -190,6 +194,7 @@ void GodotSharpEditor::register_internal_calls() {
 	registered = true;
 
 	mono_add_internal_call("GodotSharpTools.Editor.MonoDevelopInstance::IsApplicationBundleInstalled", (void *)godot_icall_MonoDevelopInstance_IsApplicationBundleInstalled);
+	mono_add_internal_call("GodotSharpTools.Utils.OS::GetPlatformName", (void *)godot_icall_Utils_OS_GetPlatformName);
 
 	GodotSharpBuilds::register_internal_calls();
 }
