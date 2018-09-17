@@ -282,7 +282,14 @@ def pkgconfig_try_find_mono_version():
 def mono_root_try_find_mono_version(mono_root):
     from compat import decode_utf8
 
-    output = subprocess.check_output([os.path.join(mono_root, 'bin', 'mono'), '--version'])
+    mono_bin = os.path.join(mono_root, 'bin')
+    if os.path.isfile(os.path.join(mono_bin, 'mono')):
+        mono_binary = os.path.join(mono_bin, 'mono')
+    elif os.path.isfile(os.path.join(mono_bin, 'mono.exe')):
+        mono_binary = os.path.join(mono_bin, 'mono.exe')
+    else:
+        return None
+    output = subprocess.check_output([mono_binary, '--version'])
     first_line = decode_utf8(output.splitlines()[0])
     try:
         return LooseVersion(first_line.split()[len('Mono JIT compiler version'.split())])
