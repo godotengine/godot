@@ -513,6 +513,8 @@ public:
 	EditorPropertyNodePath();
 };
 
+class EditorPropertyResourceAssignButton;
+
 class EditorPropertyResource : public EditorProperty {
 	GDCLASS(EditorPropertyResource, EditorProperty)
 
@@ -531,7 +533,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	};
 
-	Button *assign;
+	EditorPropertyResourceAssignButton *assign;
 	TextureRect *preview;
 	Button *edit;
 	PopupMenu *menu;

@@ -1896,6 +1896,26 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 
 ////////////// RESOURCE //////////////////////
 
+class EditorPropertyResourceAssignButton : public Button {
+	GDCLASS(EditorPropertyResourceAssignButton, Button)
+public:
+	bool doubleclicked;
+
+	virtual void _gui_input(Ref<InputEvent> p_event) {
+		Ref<InputEventMouseButton> b = p_event;
+
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == BUTTON_LEFT) {
+			doubleclicked = b->is_doubleclick();
+		}
+
+		Button::_gui_input(p_event);
+	}
+
+	EditorPropertyResourceAssignButton() {
+		doubleclicked = false;
+	}
+};
+
 void EditorPropertyResource::_file_selected(const String &p_path) {
 
 	RES res = ResourceLoader::load(p_path);
@@ -2379,6 +2399,12 @@ void EditorPropertyResource::_resource_selected() {
 
 	if (use_sub_inspector) {
 
+		if (assign->doubleclicked) {
+			get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
+			emit_signal("resource_selected", get_edited_property(), res);
+			return;
+		}
+
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), assign->is_pressed());
 		update_property();
 	} else {
@@ -2567,7 +2593,7 @@ EditorPropertyResource::EditorPropertyResource() {
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
-	assign = memnew(Button);
+	assign = memnew(EditorPropertyResourceAssignButton);
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
