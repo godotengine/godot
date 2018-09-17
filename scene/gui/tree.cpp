@@ -2239,13 +2239,13 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			_go_left();
 		}
 
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !k->get_command()) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
 		_go_up();
 
-	} else if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !k->get_command()) {
 
 		if (!cursor_can_exit_tree) accept_event();
 
