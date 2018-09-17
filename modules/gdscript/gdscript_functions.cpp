@@ -1458,7 +1458,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_ATAN2: {
-			MethodInfo mi("atan2", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("atan2", PropertyInfo(Variant::REAL, "y"), PropertyInfo(Variant::REAL, "x"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
