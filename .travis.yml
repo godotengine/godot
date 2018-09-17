@@ -29,7 +29,7 @@ matrix:
             - clang-format-6.0
             - libstdc++6 # >= 4.9 needed for clang-format-6.0
 
-    - env: GODOT_TARGET=x11 TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no"
+    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no"
       os: linux
       compiler: gcc
       addons:
@@ -49,7 +49,7 @@ matrix:
           build_command: "scons p=x11 -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
-    - env: GODOT_TARGET=x11 TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
+    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang
       os: linux
       compiler: clang
       addons:
@@ -57,19 +57,19 @@ matrix:
           packages:
             - *linux_deps
 
-    - env: GODOT_TARGET=android TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
+    - env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang
       os: linux
       compiler: clang
 
-    - env: GODOT_TARGET=osx TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-clang
+    - env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
       os: osx
       compiler: clang
 
-    - env: GODOT_TARGET=iphone TOOLS=no CACHE_NAME=${GODOT_TARGET}-clang
+    - env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
       os: osx
       compiler: clang
 
-    - env: GODOT_TARGET=server TOOLS=yes CACHE_NAME=${GODOT_TARGET}-tools-gcc
+    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc
       os: linux
       compiler: gcc
       addons:
@@ -83,18 +83,18 @@ before_install:
     fi
 
 install:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       misc/travis/scons-local-osx.sh;
     fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$GODOT_TARGET" = "android" ]; then
+  - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
       misc/travis/android-tools-osx.sh;
     fi
 
 before_script:
-  - if [ "$GODOT_TARGET" = "android" ]; then
+  - if [ "$PLATFORM" = "android" ]; then
       export ANDROID_HOME=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-sdk;
       export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-ndk;
     fi
@@ -103,5 +103,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS $EXTRA_ARGS $OPTIONS;
+      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $EXTRA_ARGS $OPTIONS;
     fi
