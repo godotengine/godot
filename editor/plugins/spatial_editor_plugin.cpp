@@ -4121,29 +4121,8 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 }
 
 void SpatialEditor::edit(Spatial *p_spatial) {
-
-	if (p_spatial != selected) {
-		if (selected) {
-
-			Ref<EditorSpatialGizmo> seg = selected->get_gizmo();
-			if (seg.is_valid()) {
-				seg->set_selected(false);
-				selected->update_gizmo();
-			}
-		}
-
-		selected = p_spatial;
-		over_gizmo_handle = -1;
-
-		if (selected) {
-
-			Ref<EditorSpatialGizmo> seg = selected->get_gizmo();
-			if (seg.is_valid()) {
-				seg->set_selected(true);
-				selected->update_gizmo();
-			}
-		}
-	}
+	editor_selection->clear();
+	editor_selection->add_node(p_spatial);
 }
 
 void SpatialEditor::_xform_dialog_action() {
@@ -5595,7 +5574,6 @@ void SpatialEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 void SpatialEditorPlugin::edit(Object *p_object) {
-
 	spatial_editor->edit(Object::cast_to<Spatial>(p_object));
 }
 
