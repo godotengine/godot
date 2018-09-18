@@ -282,7 +282,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 				"As of Godot 3.1, C# support is not feature-complete and may crash in some situations.\n" +
 				"Bugs and usability issues will be addressed gradually over future 3.x releases, including\n" +
 				"compatibility breaking changes as new features are implemented for a better overall C#\n" +
-				 "experience.\n\n" +
+				"experience.\n\n" +
 				"If you experience issues with this Mono build, please report them on Godot's issue tracker\n" +
 				"with details about your system, Mono version, IDE, etc:\n\n" +
 				"        https://github.com/godotengine/godot/issues\n\n" +
