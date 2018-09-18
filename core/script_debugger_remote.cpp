@@ -662,11 +662,14 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			prop.push_back(Variant());
 		} else {
 			prop.push_back(pi.hint);
-			if (res.is_null() || res->get_path().empty())
-				prop.push_back(pi.hint_string);
-			else
-				prop.push_back(String("RES:") + res->get_path());
+			prop.push_back(pi.hint_string);
 			prop.push_back(pi.usage);
+			if (!res.is_null()) {
+				var = String("PATH") + res->get_path();
+			} else if (var.get_type() == Variant::STRING) {
+				var = String("DATA") + var;
+			}
+
 			prop.push_back(var);
 		}
 		send_props.push_back(prop);
