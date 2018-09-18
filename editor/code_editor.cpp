@@ -374,7 +374,7 @@ void FindReplaceBar::_hide_bar() {
 void FindReplaceBar::_show_search() {
 
 	show();
-	search_text->grab_focus();
+	search_text->call_deferred("grab_focus");
 
 	if (text_edit->is_selection_active() && !selection_only->is_pressed()) {
 		search_text->set_text(text_edit->get_selection_text());
