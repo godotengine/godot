@@ -365,16 +365,19 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 		about_hbc->add_child(about_label);
 		about_label->set_custom_minimum_size(Size2(600, 150) * EDSCALE);
 		about_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		about_label->set_autowrap(true);
+		// about_label->set_autowrap(true);
 		String about_text =
 				String("C# support in Godot Engine is a brand new feature and a work in progress.\n") +
 				"It is currently in an alpha stage and is not suitable for use in production.\n\n" +
-				"As of Godot 3.1, C# support is not feature-complete and may crash in some situations. " +
-				"Bugs and usability issues will be addressed gradually over future 3.x releases, " +
-				"including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
-				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, Mono version, IDE, etc:\n\n" +
+				"As of Godot 3.1, C# support is not feature-complete and may crash in some situations.\n" +
+				"Bugs and usability issues will be addressed gradually over future 3.x releases, including\n" +
+				"compatibility breaking changes as new features are implemented for a better overall C#\n" +
+				"experience.\n\n" +
+				"If you experience issues with this Mono build, please report them on Godot's issue tracker\n" +
+				"with details about your system, Mono version, IDE, etc:\n\n" +
 				"        https://github.com/godotengine/godot/issues\n\n" +
-				"Your critical feedback at this stage will play a great role in shaping the C# support in future releases, so thank you!";
+				"Your critical feedback at this stage will play a great role in shaping the C# support in future\n" +
+				"releases, so thank you!";
 		about_label->set_text(about_text);
 
 		EDITOR_DEF("mono/editor/show_info_on_start", true);
