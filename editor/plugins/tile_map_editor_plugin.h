@@ -168,8 +168,8 @@ class TileMapEditor : public VBoxContainer {
 	void _select(const Point2i &p_from, const Point2i &p_to);
 	void _erase_selection();
 
-	void _draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
-	void _draw_fill_preview(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
+	void _draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
+	void _draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
 	void _clear_bucket_cache();
 
 	void _update_copydata();
@@ -206,7 +206,7 @@ public:
 	HBoxContainer *get_toolbar() const { return toolbar; }
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_viewport(Control *p_overlay);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_tile_map);
 
@@ -225,7 +225,7 @@ protected:
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return tile_map_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_viewport(Control *p_overlay) { tile_map_editor->forward_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { tile_map_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	virtual String get_name() const { return "TileMap"; }
 	bool has_main_screen() const { return false; }

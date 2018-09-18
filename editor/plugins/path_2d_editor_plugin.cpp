@@ -288,7 +288,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void Path2DEditor::forward_draw_over_viewport(Control *p_overlay) {
+void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	if (!node)
 		return;
