@@ -29,6 +29,7 @@
 /*************************************************************************/
 #include "editor_atlas.h"
 #include "print_string.h"
+#include <cfloat>
 
 struct _EditorAtlasWorkRect {
 
@@ -137,24 +138,29 @@ void EditorAtlas::fit(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, 
 		result.max_h = max_h;
 		result.max_w = max_w;
 		results.push_back(result);
-		float efficiency = float(max_w * max_h) / float(next_power_of_2(max_w) * next_power_of_2(max_h));
-		print_line("Processing atlas: width " + itos(w) + " ,height " + itos(max_h) + " ,efficiency " + rtos(efficiency));
+		float perimeter = (next_power_of_2(max_w) + max_h) * 2.f;
+		print_line("Processing atlas: width " + itos(w) + " ,height " + itos(max_h) + " ,perimeter " + rtos(perimeter));
 	}
 
 	//find the result with the most efficiency
 
 	int best = -1;
-	float max_eff = 0;
+	float min_perimeter = FLT_MAX;
 
 	for (int i = 0; i < results.size(); i++) {
 
 		float h = results[i].max_h;
 		float w = results[i].max_w;
-		float efficiency = float(w * h) / float(next_power_of_2(w) * next_power_of_2(h));
-		if (efficiency > max_eff) {
+		float perimeter = (next_power_of_2(w) + h) * 2.f;
+		if (perimeter < min_perimeter) {
 			best = i;
-			max_eff = efficiency;
+			min_perimeter = perimeter;
 		}
+	}
+
+	if (best < 0) {
+		ERR_PRINT("Atlas processing failed!");
+		return;
 	}
 
 	r_result.resize(p_rects.size());
