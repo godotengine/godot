@@ -48,7 +48,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/plugins/editor/import_plugins.html</link>
+		http://docs.godotengine.org/en/3.0/tutorials/plugins/editor/import_plugins.html
 	</tutorials>
 	<demos>
 	</demos>
