@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Vector2i" version="4.0">
+	<brief_description>
+		Vector used for 2D math.
+	</brief_description>
+	<description>
+		2-element structure that can be used to represent 2D grid coordinates or pairs of integers.
+	</description>
+	<tutorials>
+		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="Vector2i">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+				Constructs a new Vector2i from the given x and y.
+			</description>
+		</method>
+		<method name="Vector2i">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="v" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="abs">
+			<return type="Vector2i">
+			</return>
+			<description>
+				Returns a new vector with all components in absolute values (i.e. positive).
+			</description>
+		</method>
+		<method name="aspect">
+			<return type="float">
+			</return>
+			<description>
+				Returns the ratio of x to y.
+			</description>
+		</method>
+		<method name="cross">
+			<return type="int">
+			</return>
+			<argument index="0" name="with" type="Vector2i">
+			</argument>
+			<description>
+				Returns the 2 dimensional analog of the cross product with the given vector.
+			</description>
+		</method>
+		<method name="distance_squared_to">
+			<return type="int">
+			</return>
+			<argument index="0" name="to" type="Vector2i">
+			</argument>
+			<description>
+				Returns the squared distance to vector [code]b[/code]. Prefer this function over [method distance_to] if you need to sort vectors or need the squared distance for some formula.
+			</description>
+		</method>
+		<method name="distance_to">
+			<return type="float">
+			</return>
+			<argument index="0" name="to" type="Vector2i">
+			</argument>
+			<description>
+				Returns the distance to vector [code]b[/code].
+			</description>
+		</method>
+		<method name="dot">
+			<return type="int">
+			</return>
+			<argument index="0" name="with" type="Vector2i">
+			</argument>
+			<description>
+				Returns the dot product with vector [code]b[/code].
+			</description>
+		</method>
+		<method name="length">
+			<return type="float">
+			</return>
+			<description>
+				Returns the vector's length.
+			</description>
+		</method>
+		<method name="length_squared">
+			<return type="int">
+			</return>
+			<description>
+				Returns the vector's length squared. Prefer this function over [member length] if you need to sort vectors or need the squared length for some formula.
+			</description>
+		</method>
+		<method name="max_axis">
+			<return type="int">
+			</return>
+			<description>
+				Returns the vector with each component set to one or negative one, depending on the signs of the components.
+			</description>
+		</method>
+		<method name="min_axis">
+			<return type="int">
+			</return>
+			<description>
+				Returns a perpendicular vector.
+			</description>
+		</method>
+		<method name="tangent">
+			<return type="Vector2i">
+			</return>
+			<description>
+				Returns this Vector2i converted into a Vector2.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="x" type="int" setter="" getter="" default="0">
+			The vector's x component.
+		</member>
+		<member name="y" type="int" setter="" getter="" default="0">
+			The vector's y component.
+		</member>
+	</members>
+	<constants>
+		<constant name="AXIS_X" value="0">
+		</constant>
+		<constant name="AXIS_Y" value="1">
+		</constant>
+		<constant name="ZERO" value="Vector2i( 0, 0 )">
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector2i( 1, 1 )">
+			One vector.
+		</constant>
+		<constant name="LEFT" value="Vector2i( -1, 0 )">
+			Left unit vector.
+		</constant>
+		<constant name="RIGHT" value="Vector2i( 1, 0 )">
+			Right unit vector.
+		</constant>
+		<constant name="UP" value="Vector2i( 0, -1 )">
+			Up unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector2i( 0, 1 )">
+			Down unit vector.
+		</constant>
+	</constants>
+</class>

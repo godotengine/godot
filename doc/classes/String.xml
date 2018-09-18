@@ -49,6 +49,14 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="Rect2">
 			</argument>
 			<description>
@@ -62,6 +70,14 @@
 			</argument>
 			<description>
 				Constructs a new String from the given [Vector3].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="Vector3i">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="String">
@@ -211,10 +227,26 @@
 		<method name="String">
 			<return type="String">
 			</return>
+			<argument index="0" name="from" type="PoolVector2iArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
 			<argument index="0" name="from" type="PoolVector3Array">
 			</argument>
 			<description>
 				Constructs a new String from the given [PoolVector3Array].
+			</description>
+		</method>
+		<method name="String">
+			<return type="String">
+			</return>
+			<argument index="0" name="from" type="PoolVector3iArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="String">

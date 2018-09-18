@@ -31,10 +31,26 @@
 		<method name="Array">
 			<return type="Array">
 			</return>
+			<argument index="0" name="from" type="PoolVector3iArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
 			<argument index="0" name="from" type="PoolVector3Array">
 			</argument>
 			<description>
 				Constructs an array from a [PoolVector3Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PoolVector2iArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="Array">

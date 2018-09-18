@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PoolVector3iArray" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="PoolVector3iArray">
+			<return type="PoolVector3iArray">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="append">
+			<argument index="0" name="vector3i" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="append_array">
+			<argument index="0" name="array" type="PoolVector3iArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vector3i" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="invert">
+			<description>
+			</description>
+		</method>
+		<method name="push_back">
+			<argument index="0" name="vector3i" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="resize">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set">
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="vector3i" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
