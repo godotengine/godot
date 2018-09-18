@@ -2401,7 +2401,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	add_child(create_dialog);
 	create_dialog->connect("create", this, "_create");
 	create_dialog->connect("favorites_updated", this, "_update_create_root_dialog");
-	EditorFileSystem::get_singleton()->connect("script_classes_updated", create_dialog, "_save_and_update_favorite_list");
 
 	rename_dialog = memnew(RenameDialog(scene_tree, &editor_data->get_undo_redo()));
 	add_child(rename_dialog);
