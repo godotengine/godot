@@ -273,7 +273,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 		Label *about_label = memnew(Label);
 		about_hbc->add_child(about_label);
-		about_label->set_custom_minimum_size(Size2(600, 150) * EDSCALE);
+		about_label->set_custom_minimum_size(Size2(600, 320) * EDSCALE);
 		about_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		about_label->set_autowrap(true);
 		String about_text =
