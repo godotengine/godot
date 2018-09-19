@@ -126,10 +126,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		GDScriptLanguage::singleton->lock->unlock();
 #endif
 
-		if (r_error.error != Variant::CallError::CALL_OK) {
-			memdelete(instance);
-			ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, NULL); //error constructing
-		}
+		ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, NULL); //error constructing
 	}
 
 	//@TODO make thread safe
