@@ -44,7 +44,7 @@ class SimplexNoise : public Resource {
 	osn_context contexts[6];
 
 	int seed;
-	float persistance; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.
+	float persistence; // Controls details, value in [0,1]. Higher increases grain, lower increases smoothness.
 	int octaves; // Number of noise layers
 	float period; // Distance above which we start to see similarities. The higher, the longer "hills" will be on a terrain.
 	float lacunarity; // Controls period change across octaves. 2 is usually a good value to address all detail levels.
@@ -64,8 +64,8 @@ public:
 	void set_period(float p_period);
 	float get_period() const { return period; }
 
-	void set_persistance(float p_persistance);
-	float get_persistance() const { return persistance; }
+	void set_persistence(float p_persistence);
+	float get_persistence() const { return persistence; }
 
 	void set_lacunarity(float p_lacunarity);
 	float get_lacunarity() const { return lacunarity; }
