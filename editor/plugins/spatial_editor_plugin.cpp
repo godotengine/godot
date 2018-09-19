@@ -874,6 +874,68 @@ void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	}
 }
 
+static bool is_shortcut_pressed(const String &p_path) {
+	Ref<ShortCut> shortcut = ED_GET_SHORTCUT(p_path);
+	if (shortcut.is_null()) {
+		return false;
+	}
+	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_shortcut().ptr());
+	if (k == NULL) {
+		return false;
+	}
+	const Input &input = *Input::get_singleton();
+	int scancode = k->get_scancode();
+	return input.is_key_pressed(scancode);
+}
+
+void SpatialEditorViewport::_walk_towards_point(const Vector3 &point) {
+	_update_camera(0.0);
+
+	Vector3 up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
+	camera->look_at(point, up);
+
+	Vector3 forward = camera->get_transform().basis.xform(Vector3(0, 0, -1));
+
+	bool speed_modifier = false;
+	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
+		speed_modifier = true;
+	}
+
+	real_t speed = freelook_speed;
+	if (speed_modifier) {
+		real_t modifier_speed_factor = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_modifier_speed_factor");
+		speed *= modifier_speed_factor;
+	}
+
+	Vector3 motion = forward * speed * get_process_delta_time();
+	cursor.pos += motion;
+	cursor.eye_pos += motion;
+}
+
+void SpatialEditorViewport::_walk_away_point(const Vector3 &point) {
+	_update_camera(0.0);
+
+	Vector3 up = camera->get_transform().basis.xform(Vector3(0, 1, 0));
+	camera->look_at(point, up);
+
+	Vector3 forward = camera->get_transform().basis.xform(Vector3(0, 0, 1));
+
+	bool speed_modifier = false;
+	if (is_shortcut_pressed("spatial_editor/freelook_speed_modifier")) {
+		speed_modifier = true;
+	}
+
+	real_t speed = freelook_speed;
+	if (speed_modifier) {
+		real_t modifier_speed_factor = EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_modifier_speed_factor");
+		speed *= modifier_speed_factor;
+	}
+
+	Vector3 motion = forward * speed * get_process_delta_time();
+	cursor.pos += motion;
+	cursor.eye_pos += motion;
+}
+
 void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 	if (previewing)
@@ -905,17 +967,27 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		switch (b->get_button_index()) {
 
 			case BUTTON_WHEEL_UP: {
-				if (is_freelook_active())
+				if (_get_key_modifier(b) == KEY_CONTROL) {
+					_update_camera(0.0);
+					Vector3 point = camera->project_position(b->get_position());
+					_walk_towards_point(point);
+				} else if (is_freelook_active()) {
 					scale_freelook_speed(zoom_factor);
-				else
+				} else {
 					scale_cursor_distance(1.0 / zoom_factor);
+				}
 			} break;
 
 			case BUTTON_WHEEL_DOWN: {
-				if (is_freelook_active())
+				if (_get_key_modifier(b) == KEY_CONTROL) {
+					_update_camera(0.0);
+					Vector3 point = camera->project_position(b->get_position());
+					_walk_away_point(point);
+				} else if (is_freelook_active()) {
 					scale_freelook_speed(1.0 / zoom_factor);
-				else
+				} else {
 					scale_cursor_distance(zoom_factor);
+				}
 			} break;
 
 			case BUTTON_RIGHT: {
@@ -2027,20 +2099,6 @@ Point2i SpatialEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMous
 		relative = p_ev_mouse_motion->get_relative();
 	}
 	return relative;
-}
-
-static bool is_shortcut_pressed(const String &p_path) {
-	Ref<ShortCut> shortcut = ED_GET_SHORTCUT(p_path);
-	if (shortcut.is_null()) {
-		return false;
-	}
-	InputEventKey *k = Object::cast_to<InputEventKey>(shortcut->get_shortcut().ptr());
-	if (k == NULL) {
-		return false;
-	}
-	const Input &input = *Input::get_singleton();
-	int scancode = k->get_scancode();
-	return input.is_key_pressed(scancode);
 }
 
 void SpatialEditorViewport::_update_freelook(real_t delta) {

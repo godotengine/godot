@@ -254,6 +254,9 @@ private:
 	void _nav_orbit(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 	void _nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative);
 
+	void _walk_towards_point(const Vector3 &point);
+	void _walk_away_point(const Vector3 &point);
+
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
