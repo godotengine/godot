@@ -35,7 +35,7 @@
 SimplexNoise::SimplexNoise() {
 
 	seed = 0;
-	persistance = 0.5;
+	persistence = 0.5;
 	octaves = 3;
 	period = 64;
 	lacunarity = 2.0;
@@ -81,9 +81,9 @@ void SimplexNoise::set_period(float p_period) {
 	emit_changed();
 }
 
-void SimplexNoise::set_persistance(float p_persistance) {
-	if (p_persistance == persistance) return;
-	persistance = p_persistance;
+void SimplexNoise::set_persistence(float p_persistence) {
+	if (p_persistence == persistence) return;
+	persistence = p_persistence;
 	emit_changed();
 }
 
@@ -164,8 +164,8 @@ void SimplexNoise::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_period", "period"), &SimplexNoise::set_period);
 	ClassDB::bind_method(D_METHOD("get_period"), &SimplexNoise::get_period);
 
-	ClassDB::bind_method(D_METHOD("set_persistance", "persistance"), &SimplexNoise::set_persistance);
-	ClassDB::bind_method(D_METHOD("get_persistance"), &SimplexNoise::get_persistance);
+	ClassDB::bind_method(D_METHOD("set_persistence", "persistence"), &SimplexNoise::set_persistence);
+	ClassDB::bind_method(D_METHOD("get_persistence"), &SimplexNoise::get_persistence);
 
 	ClassDB::bind_method(D_METHOD("set_lacunarity", "lacunarity"), &SimplexNoise::set_lacunarity);
 	ClassDB::bind_method(D_METHOD("get_lacunarity"), &SimplexNoise::get_lacunarity);
@@ -183,7 +183,7 @@ void SimplexNoise::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, "1,6,1"), "set_octaves", "get_octaves");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "period", PROPERTY_HINT_RANGE, "0.1,256.0,0.1"), "set_period", "get_period");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "persistance", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_persistance", "get_persistance");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "persistence", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_persistence", "get_persistence");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");
 }
 
@@ -200,7 +200,7 @@ float SimplexNoise::get_noise_2d(float x, float y) {
 	while (++i < octaves) {
 		x *= lacunarity;
 		y *= lacunarity;
-		amp *= persistance;
+		amp *= persistence;
 		max += amp;
 		sum += _get_octave_noise_2d(i, x, y) * amp;
 	}
@@ -223,7 +223,7 @@ float SimplexNoise::get_noise_3d(float x, float y, float z) {
 		x *= lacunarity;
 		y *= lacunarity;
 		z *= lacunarity;
-		amp *= persistance;
+		amp *= persistence;
 		max += amp;
 		sum += _get_octave_noise_3d(i, x, y, z) * amp;
 	}
@@ -248,7 +248,7 @@ float SimplexNoise::get_noise_4d(float x, float y, float z, float w) {
 		y *= lacunarity;
 		z *= lacunarity;
 		w *= lacunarity;
-		amp *= persistance;
+		amp *= persistence;
 		max += amp;
 		sum += _get_octave_noise_4d(i, x, y, z, w) * amp;
 	}
