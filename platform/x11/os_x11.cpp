@@ -2524,13 +2524,16 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
-	if (p_shape == current_cursor)
+	if (p_shape == current_cursor) {
 		return;
-	if (mouse_mode == MOUSE_MODE_VISIBLE && mouse_mode != MOUSE_MODE_CONFINED) {
-		if (cursors[p_shape] != None)
+	}
+
+	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (cursors[p_shape] != None) {
 			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
-		else if (cursors[CURSOR_ARROW] != None)
+		} else if (cursors[CURSOR_ARROW] != None) {
 			XDefineCursor(x11_display, x11_window, cursors[CURSOR_ARROW]);
+		}
 	}
 
 	current_cursor = p_shape;
