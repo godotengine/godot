@@ -443,8 +443,12 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 	CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
 
 	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+		if (canvas_item) {
+			if (!canvas_item->is_set_as_toplevel()) {
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+			} else {
+				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, canvas_item->get_transform(), p_canvas_xform);
+			}
 		} else {
 			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_limit, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
@@ -610,8 +614,12 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 
 	if (!lock_children || !editable) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-			if (canvas_item && !canvas_item->is_set_as_toplevel()) {
-				_find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+			if (canvas_item) {
+				if (!canvas_item->is_set_as_toplevel()) {
+					_find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * canvas_item->get_transform(), p_canvas_xform);
+				} else {
+					_find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, canvas_item->get_transform(), p_canvas_xform);
+				}
 			} else {
 				CanvasLayer *canvas_layer = Object::cast_to<CanvasLayer>(p_node);
 				_find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), canvas_layer ? canvas_layer->get_transform() : p_canvas_xform);
