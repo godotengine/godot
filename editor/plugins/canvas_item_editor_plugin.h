@@ -71,8 +71,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
-	EditorNode *editor;
-
+public:
 	enum Tool {
 		TOOL_SELECT,
 		TOOL_LIST_SELECT,
@@ -83,6 +82,9 @@ class CanvasItemEditor : public VBoxContainer {
 		TOOL_PAN,
 		TOOL_MAX
 	};
+
+private:
+	EditorNode *editor;
 
 	enum MenuOption {
 		SNAP_USE,
@@ -534,6 +536,8 @@ public:
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }
+
+	Tool get_current_tool() { return tool; }
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);

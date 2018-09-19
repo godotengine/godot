@@ -275,6 +275,10 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		return (mb.is_valid() && mb->get_button_index() == 1);
 	}
 
+	CanvasItemEditor::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
+	if (tool != CanvasItemEditor::TOOL_SELECT)
+		return false;
+
 	if (mb.is_valid()) {
 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
@@ -283,10 +287,10 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 cpoint = _get_node()->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
-
 			if (mb->get_button_index() == BUTTON_LEFT) {
-
 				if (mb->is_pressed()) {
+					if (mb->get_control() || mb->get_shift() || mb->get_alt())
+						return false;
 
 					const PosVertex insert = closest_edge_point(gpoint);
 
