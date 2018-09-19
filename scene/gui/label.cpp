@@ -295,14 +295,13 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_style = get_stylebox("normal")->get_minimum_size();
 
+	// don't want to mutable everything
+	if (word_cache_dirty)
+		const_cast<Label *>(this)->regenerate_word_cache();
+
 	if (autowrap)
 		return Size2(1, clip ? 1 : minsize.height) + min_style;
 	else {
-
-		// don't want to mutable everything
-		if (word_cache_dirty)
-			const_cast<Label *>(this)->regenerate_word_cache();
-
 		Size2 ms = minsize;
 		if (clip)
 			ms.width = 1;
