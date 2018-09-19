@@ -40,7 +40,6 @@ class ParticlesMaterial : public Material {
 
 public:
 	enum Parameter {
-
 		PARAM_INITIAL_LINEAR_VELOCITY,
 		PARAM_ANGULAR_VELOCITY,
 		PARAM_ORBIT_VELOCITY,
@@ -53,6 +52,9 @@ public:
 		PARAM_HUE_VARIATION,
 		PARAM_ANIM_SPEED,
 		PARAM_ANIM_OFFSET,
+		PARAM_NOISE_SCALE,
+		PARAM_NOISE_STRENGTH,
+		PARAM_NOISE_TIMEFACTOR,
 		PARAM_MAX
 	};
 
@@ -61,6 +63,7 @@ public:
 		FLAG_ROTATE_Y,
 		FLAG_DISABLE_Z,
 		FLAG_ANIM_LOOP,
+		FLAG_NOISE,
 		FLAG_MAX
 	};
 
@@ -72,18 +75,25 @@ public:
 		EMISSION_SHAPE_DIRECTED_POINTS,
 	};
 
+	enum NoiseType {
+		RANDOM_NOISE,
+		SIMPLEX_NOISE,
+		CURL_NOISE
+	};
+
 private:
 	union MaterialKey {
 
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
-			uint32_t flags : 4;
+			uint32_t flags : 5;
 			uint32_t emission_shape : 2;
 			uint32_t trail_size_texture : 1;
 			uint32_t trail_color_texture : 1;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
+			uint32_t noise_type : 1;
 		};
 
 		uint32_t key;
@@ -122,7 +132,7 @@ private:
 		mk.trail_color_texture = trail_color_modifier.is_valid() ? 1 : 0;
 		mk.trail_size_texture = trail_size_modifier.is_valid() ? 1 : 0;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
-
+		mk.noise_type = noise_type;
 		return mk;
 	}
 
@@ -185,6 +195,11 @@ private:
 		StringName trail_color_modifier;
 
 		StringName gravity;
+	
+		StringName noise_scale;
+		StringName noise_strength;
+		StringName noise_timefactor;
+
 	};
 
 	static ShaderNames *shader_names;
@@ -223,6 +238,8 @@ private:
 	Ref<GradientTexture> trail_color_modifier;
 
 	Vector3 gravity;
+
+	NoiseType noise_type;
 
 	//do not save emission points here
 
@@ -282,6 +299,9 @@ public:
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
+	
+	void set_noise_type(NoiseType p_type);
+	NoiseType get_noise_type() const;
 
 	static void init_shaders();
 	static void finish_shaders();
@@ -298,5 +318,6 @@ public:
 VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
 VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
+VARIANT_ENUM_CAST(ParticlesMaterial::NoiseType)
 
 #endif // PARTICLES_MATERIAL_H

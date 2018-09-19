@@ -98,6 +98,11 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->trail_color_modifier = "trail_color_modifier";
 
 	shader_names->gravity = "gravity";
+
+	shader_names->noise_scale = "noise_scale";
+	shader_names->noise_strength = "noise_strength";
+	shader_names->noise_timefactor = "noise_timefactor";
+
 }
 
 void ParticlesMaterial::finish_shaders() {
@@ -166,6 +171,12 @@ void ParticlesMaterial::_update_shader() {
 	code += "uniform float hue_variation_random;\n";
 	code += "uniform float anim_speed_random;\n";
 	code += "uniform float anim_offset_random;\n";
+
+	code += "uniform float noise_scale;\n";
+	code += "uniform float noise_strength;\n";
+	code += "uniform float noise_timefactor;\n";
+	
+
 
 	switch (emission_shape) {
 		case EMISSION_SHAPE_POINT: {
@@ -260,7 +271,183 @@ void ParticlesMaterial::_update_shader() {
 	code += "	return x;\n";
 	code += "}\n";
 	code += "\n";
+	
+	//functions to create simplex noise, curl noise in 3D and 4D 
+	code += "\n\n";
+	code += "vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}\n";
 
+	code += "vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314*r;}\n";
+
+	code += "float permute_float(float x){return floor(mod(((x*34.0)+1.0)*x, 289.0));}\n";
+
+	code += "float taylorInvSqrt_float(float r){return 1.79284291400159 - 0.85373472095314 * r;}\n";
+
+	code += "float snoise3D(vec3 v)\n";
+	code += "  { \n";
+	code += "  vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n";
+	code += "  vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n";
+	code += "  vec3 i  = floor(v + dot(v, vec3(C.y)) );\n";
+	code += "  vec3 x0 =   v - i + dot(i, vec3(C.x)) ;\n";
+	code += "  vec3 g = step(x0.yzx, x0.xyz);\n";
+	code += "  vec3 l = 1.0 - g;\n";
+	code += "  vec3 i1 = min( g.xyz, l.zxy );\n";
+	code += "  vec3 i2 = max( g.xyz, l.zxy );\n";
+	code += "  vec3 x1 = x0 - i1 + vec3(C.x);\n";
+	code += "  vec3 x2 = x0 - i2 + vec3(C.y);\n";
+	code += "  vec3 x3 = x0 - vec3(D.y); \n";
+	code += "  i = mod(i, 289.0); \n";
+	code += "  vec4 p = permute( permute( permute( \n";
+	code += "             i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n";
+	code += "           + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) \n";
+	code += "           + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n";
+	code += "  float n_ = 0.142857142857;\n";
+	code += "  vec3  ns = n_ * D.wyz - D.xzx;\n";
+	code += "  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);\n";
+	code += "  vec4 x_ = floor(j * ns.z);\n";
+	code += "  vec4 y_ = floor(j - 7.0 * x_ );\n";
+	code += "  vec4 x = x_ *ns.x + vec4(ns.y);\n";
+	code += "  vec4 y = y_ *ns.x + vec4(ns.y);\n";
+	code += "  vec4 h = 1.0 - abs(x) - abs(y);\n";
+	code += "  vec4 b0 = vec4( x.xy, y.xy );\n";
+	code += "  vec4 b1 = vec4( x.zw, y.zw );\n";
+	code += "  vec4 s0 = floor(b0)*2.0 + 1.0;\n";
+	code += "  vec4 s1 = floor(b1)*2.0 + 1.0;\n";
+	code += "  vec4 sh = -step(h, vec4(0.0));\n";
+	code += "  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n";
+	code += "  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n";
+	code += "  vec3 p0 = vec3(a0.xy,h.x);\n";
+	code += "  vec3 p1 = vec3(a0.zw,h.y);\n";
+	code += "  vec3 p2 = vec3(a1.xy,h.z);\n";
+	code += "  vec3 p3 = vec3(a1.zw,h.w);\n";
+	code += "  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n";
+	code += "  p0 *= norm.x;\n";
+	code += "  p1 *= norm.y;\n";
+	code += "  p2 *= norm.z;\n";
+	code += "  p3 *= norm.w;\n";
+	code += "  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), vec4(0.0));\n";
+	code += "  m = m * m;\n";
+	code += "  return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),dot(p2,x2), dot(p3,x3) ) );\n";
+	code += " }\n";
+
+	code += "\n\n";	
+	code += "vec4 grad4(float j, vec4 ip){\n";
+	code += "  vec4 ones = vec4(1.0, 1.0, 1.0, -1.0);\n";
+	code += "  vec4 p,s;\n";
+	code += "  p.xyz = floor( fract (vec3(j) * ip.xyz) * 7.0) * ip.z - 1.0;\n";
+	code += "  p.w = 1.5 - dot(abs(p.xyz), ones.xyz);\n";
+	code += "  s = vec4(lessThan(p, vec4(0.0)));\n";
+	code += "  p.xyz = p.xyz + (s.xyz*2.0 - 1.0) * s.www; \n";
+	code += "  return p;\n";
+	code += "}\n";
+
+	code += "\n\n";
+	code += "float snoise4D(vec4 v){\n";
+	code += "  vec2  C = vec2(0.138196601125010504, 0.309016994374947451);\n";
+	code += "  vec4 i  = floor(v + dot(v, vec4(C.y)) );\n";
+	code += "  vec4 x0 = v -   i + dot(i, vec4(C.x));\n";
+	code += "  vec4 i0;\n";
+	code += "  vec3 isX = step(x0.yzw, x0.xxx);\n";
+	code += "  vec3 isYZ = step(x0.zww, x0.yyz);\n";
+	code += "  i0.x = isX.x + isX.y + isX.z;\n";
+	code += "  i0.yzw = 1.0 - isX;\n";
+	code += "  i0.y += isYZ.x + isYZ.y;\n";
+	code += "  i0.zw += 1.0 - isYZ.xy;\n";
+	code += "  i0.z += isYZ.z;\n";
+	code += "  i0.w += 1.0 - isYZ.z;\n";
+	code += "  vec4 i3 = clamp(i0, 0.0, 1.0);\n";
+	code += "  vec4 i2 = clamp(i0-1.0, 0.0, 1.0);\n";
+	code += "  vec4 i1 = clamp(i0-2.0, 0.0, 1.0);\n";
+	code += "  vec4 x1 = x0 - i1 + 1.0*vec4(C.y);\n";
+	code += "  vec4 x2 = x0 - i2 + 2.0*vec4(C.y);\n";
+	code += "  vec4 x3 = x0 - i3 + 3.0*vec4(C.y);\n";
+	code += "  vec4 x4 = x0 - 1.0 + 4.0*vec4(C.y);\n";
+	code += "  i = mod(i, 289.0); \n";
+	code += "  float j0 = permute_float(permute_float(permute_float(permute_float(i.w) + i.z) + i.y) + i.x);\n";
+	code += "  vec4 j1 = permute(permute(permute(permute (\n";
+	code += "             i.w + vec4(i1.w, i2.w, i3.w, 1.0 ))\n";
+	code += "           + i.z + vec4(i1.z, i2.z, i3.z, 1.0 ))\n";
+	code += "           + i.y + vec4(i1.y, i2.y, i3.y, 1.0 ))\n";
+	code += "           + i.x + vec4(i1.x, i2.x, i3.x, 1.0 ));\n";
+	code += "  vec4 ip = vec4(1.0/294.0, 1.0/49.0, 1.0/7.0, 0.0) ;\n";
+	code += "  vec4 p0 = grad4(j0,   ip);\n";
+	code += "  vec4 p1 = grad4(j1.x, ip);\n";
+	code += "  vec4 p2 = grad4(j1.y, ip);\n";
+	code += "  vec4 p3 = grad4(j1.z, ip);\n";
+	code += "  vec4 p4 = grad4(j1.w, ip);\n";
+	code += "  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n";
+	code += "  p0 *= norm.x;\n";
+	code += "  p1 *= norm.y;\n";
+	code += "  p2 *= norm.z;\n";
+	code += "  p3 *= norm.w;\n";
+	code += "  p4 *= taylorInvSqrt_float(dot(p4,p4));\n";
+	code += "  vec3 m0 = max(0.6 - vec3(dot(x0,x0), dot(x1,x1), dot(x2,x2)), vec3(0.0));\n";
+	code += "  vec2 m1 = max(0.6 - vec2(dot(x3,x3), dot(x4,x4)), vec2(0.0));\n";
+	code += "  m0 = m0 * m0;\n";
+	code += "  m1 = m1 * m1;\n";
+	code += "  return 49.0 * ( dot(m0*m0, vec3( dot( p0, x0 ), dot( p1, x1 ), dot( p2, x2 )))\n";
+	code += "               + dot(m1*m1, vec2( dot( p3, x3 ), dot( p4, x4 ) ) ) ) ;\n";
+	code += "}\n";
+
+	code += "\n\n";
+	code += "vec3 snoiseVec3(vec3 p) {\n";
+	code += "	float s  = snoise3D(p);\n";
+	code += "	float s1 = snoise3D(vec3(p.y - 19.1, p.z + 33.4, p.x + 47.2));\n";
+	code += "	float s2 = snoise3D(vec3(p.z + 74.2, p.x - 124.5, p.y + 99.4));\n";
+	code += "	vec3 c = vec3(s, s1, s2);\n";
+	code += "	return c;\n";
+	code += "}\n";
+
+	code += "\n\n";
+	code += "vec3 snoiseVec4(vec4 p) {\n";
+	code += "	float s  = snoise4D(p);\n";
+	code += "	float s1 = snoise4D(vec4(p.xyz + vec3(123.4, 129845.6, -1239.1), p.w));\n";
+	code += "	float s2 = snoise4D(vec4(p.xyz + vec3(-9519.0, 9051.0, -123.0), p.w));\n";
+	code += "	vec3 c = vec3(s, s1, s2);\n";
+	code += "	return c;\n";
+	code += "}\n";
+
+	code += "\n\n";
+	code += "vec3 curl3D(vec3 p ){\n";
+	code += "	float epsilon = 0.001;\n";
+	code += "	vec3 dx = vec3(epsilon, 0.0, 0.0);\n";
+	code += "	vec3 dy = vec3(0.0, epsilon, 0.0);\n";
+	code += "	vec3 dz = vec3(0.0, 0.0, epsilon);\n";
+	code += "	vec3 x0 = snoiseVec3(p - dx).xyz;\n";
+	code += "	vec3 x1 = snoiseVec3(p + dx).xyz;\n";
+	code += "	vec3 y0 = snoiseVec3(p - dy).xyz;\n";
+	code += "	vec3 y1 = snoiseVec3(p + dy).xyz;\n";
+	code += "	vec3 z0 = snoiseVec3(p - dz).xyz;\n";
+	code += "	vec3 z1 = snoiseVec3(p + dz).xyz;\n";
+	code += "	float x = y1.z - y0.z - z1.y + z0.y;\n";
+	code += "	float y = z1.x - z0.x - x1.z + x0.z;\n";
+	code += "	float z = x1.y - x0.y - y1.x + y0.x;\n";
+	code += "	float divisor = 1.0 / (2.0 * epsilon);\n";
+	code += "	return vec3(normalize(vec3(x, y, z) * divisor));\n";
+	code += "}\n";
+	code += "\n";
+
+	code += "\n\n";
+	code += "vec3 curl4D(vec4 p ){\n";
+	code += "	float epsilon = 0.001;\n";
+	code += "	vec4 dx = vec4(epsilon, 0.0, 0.0, 0.0);\n";
+	code += "	vec4 dy = vec4(0.0, epsilon, 0.0, 0.0);\n";
+	code += "	vec4 dz = vec4(0.0, 0.0, epsilon, 0.0);\n";
+	code += "	vec4 dw = vec4(0.0, 0.0, 0.0, epsilon);\n";
+	code += "	vec3 x0 = snoiseVec4(p - dx).xyz;\n";
+	code += "	vec3 x1 = snoiseVec4(p + dx).xyz;\n";
+	code += "	vec3 y0 = snoiseVec4(p - dy).xyz;\n";
+	code += "	vec3 y1 = snoiseVec4(p + dy).xyz;\n";
+	code += "	vec3 z0 = snoiseVec4(p - dz).xyz;\n";
+	code += "	vec3 z1 = snoiseVec4(p + dz).xyz;\n";
+	code += "	float x = y1.z - y0.z - z1.y + z0.y;\n";
+	code += "	float y = z1.x - z0.x - x1.z + x0.z;\n";
+	code += "	float z = x1.y - x0.y - y1.x + y0.x;\n";
+	code += "	float divisor = 1.0 / (2.0 * epsilon);\n";
+	code += "	return vec3(normalize(vec3(x, y, z) * divisor));\n";
+	code += "}\n";
+	code += "\n";
+
+	code += "\n\n";
 	code += "void vertex() {\n";
 	code += "	uint base_number = NUMBER / uint(trail_divisor);\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
@@ -360,6 +547,8 @@ void ParticlesMaterial::_update_shader() {
 	code += "	} else {\n";
 
 	code += "		CUSTOM.y += DELTA / LIFETIME;\n";
+
+
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
 		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(CUSTOM.y, 0.0), 0.0).r;\n";
 	else
@@ -470,6 +659,42 @@ void ParticlesMaterial::_update_shader() {
 		code += "		CUSTOM.z = clamp(CUSTOM.z, 0.0, 1.0);\n"; // 0 to 1 only
 	}
 	code += "	}\n";
+
+	// add noise to velocity
+	if (flags[FLAG_NOISE]) {
+		if (flags[FLAG_DISABLE_Z]) {
+			switch (noise_type) {
+			case RANDOM_NOISE: {
+				code += "uint random_seed = hash(base_number + RANDOM_SEED + uint(int(TIME)));\n";
+				code += "float random_angle = 2.0*3.14*rand_from_seed(random_seed);\n";
+				code += "vec3 noise_direction = vec3(cos(random_angle), sin(random_angle), 0.0);\n";
+			} break;
+			case SIMPLEX_NOISE: {
+				code += "vec3 noise_direction = snoiseVec3(noise_scale*vec3(TRANSFORM[3].xy, noise_timefactor*TIME));\n";
+			} break;
+			case CURL_NOISE: {
+				code += "vec3 noise_direction = curl3D(noise_scale*vec3(TRANSFORM[3].xy, noise_timefactor*TIME));\n";
+			} break;
+			}
+			code += "VELOCITY += noise_strength*noise_direction*DELTA; \n";
+			code += "VELOCITY.z= 0.0; \n";
+		} 
+		else {
+			switch (noise_type) {
+			case RANDOM_NOISE: {
+
+			} break;
+			case SIMPLEX_NOISE: {
+				code += "vec3 noise_direction = snoiseVec4(noise_scale*vec4(TRANSFORM[3].xyz, noise_timefactor*TIME));\n";
+			} break;
+			case CURL_NOISE: {
+				code += "vec3 noise_direction = curl4D(noise_scale*vec4(TRANSFORM[3].xyz, noise_timefactor*TIME));\n";
+			} break;
+			}
+			code += "VELOCITY += noise_strength*noise_direction*DELTA; \n";
+		}
+	}
+	
 	// apply color
 	// apply hue rotation
 	if (tex_parameters[PARAM_SCALE].is_valid())
@@ -567,10 +792,13 @@ void ParticlesMaterial::_update_shader() {
 	code += "	TRANSFORM[0].xyz *= base_scale;\n";
 	code += "	TRANSFORM[1].xyz *= base_scale;\n";
 	code += "	TRANSFORM[2].xyz *= base_scale;\n";
+	
+
 	if (flags[FLAG_DISABLE_Z]) {
 		code += "	VELOCITY.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
+
 	code += "}\n";
 	code += "\n";
 
@@ -691,6 +919,15 @@ void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset, p_value);
 		} break;
+		case PARAM_NOISE_SCALE: {
+			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->noise_scale, p_value);
+		} break;
+		case PARAM_NOISE_STRENGTH: {
+			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->noise_strength, p_value);
+		} break;
+		case PARAM_NOISE_TIMEFACTOR: {
+			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->noise_timefactor, p_value);
+		} break;
 	}
 }
 float ParticlesMaterial::get_param(Parameter p_param) const {
@@ -743,6 +980,7 @@ void ParticlesMaterial::set_param_randomness(Parameter p_param, float p_value) {
 		case PARAM_ANIM_OFFSET: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->anim_offset_random, p_value);
 		} break;
+
 	}
 }
 float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
@@ -1006,6 +1244,18 @@ RID ParticlesMaterial::get_shader_rid() const {
 	return shader_map[current_key].shader;
 }
 
+void ParticlesMaterial::set_noise_type(NoiseType p_type) {
+
+	noise_type = p_type;
+	_change_notify();
+	_queue_shader_change();
+}
+
+ParticlesMaterial::NoiseType ParticlesMaterial::get_noise_type() const {
+
+	return noise_type;
+}
+
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "color" && color_ramp.is_valid()) {
@@ -1101,6 +1351,9 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
 
+	ClassDB::bind_method(D_METHOD("get_noise_type"), &ParticlesMaterial::get_noise_type);
+	ClassDB::bind_method(D_METHOD("set_noise_type", "type"), &ParticlesMaterial::set_noise_type);
+
 	ADD_GROUP("Trail", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_divisor", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_trail_divisor", "get_trail_divisor");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trail_size_modifier", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_trail_size_modifier", "get_trail_size_modifier");
@@ -1174,6 +1427,13 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "anim_loop"), "set_flag", "get_flag", FLAG_ANIM_LOOP);
 
+	ADD_GROUP("Noise", "noise_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "noise_add_noise"), "set_flag", "get_flag", FLAG_NOISE);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "noise_type", PROPERTY_HINT_ENUM, "Random, Simplex, Curl"), "set_noise_type", "get_noise_type");
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "noise_scale", PROPERTY_HINT_RANGE, "0,1,0.001,or_lesser,or_greater"), "set_param", "get_param", PARAM_NOISE_SCALE);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "noise_strength", PROPERTY_HINT_RANGE, "0,1000,1,or_lesser,or_greater"), "set_param", "get_param", PARAM_NOISE_STRENGTH);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "noise_timefactor", PROPERTY_HINT_RANGE, "0,1000,1,or_lesser,or_greater"), "set_param", "get_param", PARAM_NOISE_TIMEFACTOR);
+
 	BIND_ENUM_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_ORBIT_VELOCITY);
@@ -1186,6 +1446,9 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_HUE_VARIATION);
 	BIND_ENUM_CONSTANT(PARAM_ANIM_SPEED);
 	BIND_ENUM_CONSTANT(PARAM_ANIM_OFFSET);
+	BIND_ENUM_CONSTANT(PARAM_NOISE_SCALE);
+	BIND_ENUM_CONSTANT(PARAM_NOISE_STRENGTH);
+	BIND_ENUM_CONSTANT(PARAM_NOISE_TIMEFACTOR);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
@@ -1197,6 +1460,9 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_BOX);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
+
+	BIND_ENUM_CONSTANT(SIMPLEX_NOISE);
+	BIND_ENUM_CONSTANT(CURL_NOISE);
 }
 
 ParticlesMaterial::ParticlesMaterial() :
@@ -1215,12 +1481,16 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_param(PARAM_HUE_VARIATION, 0);
 	set_param(PARAM_ANIM_SPEED, 0);
 	set_param(PARAM_ANIM_OFFSET, 0);
+	set_param(PARAM_NOISE_SCALE, 0.005);
+	set_param(PARAM_NOISE_STRENGTH, 3.0);
+	set_param(PARAM_NOISE_TIMEFACTOR, 1);
 	set_emission_shape(EMISSION_SHAPE_POINT);
 	set_emission_sphere_radius(1);
 	set_emission_box_extents(Vector3(1, 1, 1));
 	set_trail_divisor(1);
 	set_gravity(Vector3(0, -9.8, 0));
 	emission_point_count = 1;
+	set_noise_type(SIMPLEX_NOISE);
 
 	for (int i = 0; i < PARAM_MAX; i++) {
 		set_param_randomness(Parameter(i), 0);
