@@ -178,6 +178,7 @@ PoolVector<int> BitmapFont::_get_kernings() const {
 
 void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
 
+	textures.clear();
 	for (int i = 0; i < p_textures.size(); i++) {
 		Ref<Texture> tex = p_textures[i];
 		ERR_CONTINUE(!tex.is_valid());
