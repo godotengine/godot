@@ -104,6 +104,7 @@ void InspectorDock::_menu_option(int p_option) {
 								res = duplicates[res];
 
 								current->set(E->get().name, res);
+								editor->get_inspector()->update_property(E->get().name);
 							}
 						}
 					}
