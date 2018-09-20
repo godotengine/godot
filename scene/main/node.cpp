@@ -2586,6 +2586,8 @@ bool Node::is_owned_by_parent() const {
 
 void Node::set_display_folded(bool p_folded) {
 	data.display_folded = p_folded;
+
+	_change_notify("display_folded");
 }
 
 bool Node::is_displayed_folded() const {

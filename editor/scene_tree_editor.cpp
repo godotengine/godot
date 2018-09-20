@@ -165,6 +165,8 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		part_of_subscene = p_node != get_scene_node() && get_scene_node()->get_scene_inherited_state().is_valid() && get_scene_node()->get_scene_inherited_state()->find_node_by_path(get_scene_node()->get_path_to(p_node)) >= 0;
 	}
 
+	p_node->add_change_receptor(this);
+
 	TreeItem *item = tree->create_item(p_parent);
 
 	item->set_text(0, p_node->get_name());
@@ -425,6 +427,8 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 		if (p_node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 			p_node->disconnect("visibility_changed", this, "_node_visibility_changed");
 	}
+
+	p_node->remove_change_receptor(this);
 
 	if (p_node == selected) {
 		selected = NULL;
@@ -964,6 +968,14 @@ void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 
 	//should use a timer
 	update_timer->start();
+}
+
+void SceneTreeEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+	if (p_prop == StringName("__meta__") && p_changed->is_class("CanvasItem"))
+		call_deferred("_update_tree");
+
+	if (p_prop == StringName("display_folded"))
+		call_deferred("_update_tree");
 }
 
 void SceneTreeEditor::_editor_settings_changed() {

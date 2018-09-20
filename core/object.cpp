@@ -1077,6 +1077,8 @@ void Object::set_meta(const String &p_name, const Variant &p_value) {
 	};
 
 	metadata[p_name] = p_value;
+
+	_change_notify("__meta__");
 }
 
 Variant Object::get_meta(const String &p_name) const {
