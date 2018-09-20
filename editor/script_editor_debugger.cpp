@@ -573,9 +573,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			PropertyHint h = PROPERTY_HINT_NONE;
 			String hs = String();
 
-			if (n.begins_with("*")) {
-
-				n = n.substr(1, n.length());
+			if (v.get_type() == Variant::OBJECT) {
 				h = PROPERTY_HINT_OBJECT_ID;
 				String s = v;
 				s = s.replace("[", "");
@@ -596,9 +594,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			PropertyHint h = PROPERTY_HINT_NONE;
 			String hs = String();
 
-			if (n.begins_with("*")) {
-
-				n = n.substr(1, n.length());
+			if (v.get_type() == Variant::OBJECT) {
 				h = PROPERTY_HINT_OBJECT_ID;
 				String s = v;
 				s = s.replace("[", "");
@@ -619,9 +615,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			PropertyHint h = PROPERTY_HINT_NONE;
 			String hs = String();
 
-			if (n.begins_with("*")) {
-
-				n = n.substr(1, n.length());
+			if (v.get_type() == Variant::OBJECT) {
 				h = PROPERTY_HINT_OBJECT_ID;
 				String s = v;
 				s = s.replace("[", "");
