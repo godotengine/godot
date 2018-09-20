@@ -77,63 +77,95 @@
 #include "editor/project_manager.h"
 #endif
 
-static ProjectSettings *globals = NULL;
+/* Static members */
+
+// Singletons
+
+// Initialized in setup()
 static Engine *engine = NULL;
+static ProjectSettings *globals = NULL;
 static InputMap *input_map = NULL;
-static bool _start_success = false;
-static ScriptDebugger *script_debugger = NULL;
-AudioServer *audio_server = NULL;
-ARVRServer *arvr_server = NULL;
-PhysicsServer *physics_server = NULL;
-Physics2DServer *physics_2d_server = NULL;
-
-static MessageQueue *message_queue = NULL;
+static TranslationServer *translation_server = NULL;
 static Performance *performance = NULL;
-
 static PackedData *packed_data = NULL;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data = NULL;
 #endif
 static FileAccessNetworkClient *file_access_network_client = NULL;
-static TranslationServer *translation_server = NULL;
+static ScriptDebugger *script_debugger = NULL;
+static MessageQueue *message_queue = NULL;
+
+// Initialized in setup2()
+static AudioServer *audio_server = NULL;
+static ARVRServer *arvr_server = NULL;
+static PhysicsServer *physics_server = NULL;
+static Physics2DServer *physics_2d_server = NULL;
+// We error out if setup2() doesn't turn this true
+static bool _start_success = false;
+
+// Drivers
+
+static int video_driver_idx = -1;
+static int audio_driver_idx = -1;
+
+// Engine config/tools
+
+static bool editor = false;
+static bool project_manager = false;
+static String locale;
+static bool show_help = false;
+static bool auto_build_solutions = false;
+static bool auto_quit = false;
+static OS::ProcessID allow_focus_steal_pid = 0;
+
+// Display
 
 static OS::VideoMode video_mode;
+static int init_screen = -1;
+static bool init_fullscreen = false;
 static bool init_maximized = false;
 static bool init_windowed = false;
-static bool init_fullscreen = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
+static Vector2 init_custom_pos;
+static bool force_lowdpi = false;
+static bool use_vsync = true;
+
+// Debug
+
+static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
 static bool debug_navigation = false;
 #endif
 static int frame_delay = 0;
-static Vector2 init_custom_pos;
-static int video_driver_idx = -1;
-static int audio_driver_idx = -1;
-static String locale;
-static bool use_debug_profiler = false;
-static bool force_lowdpi = false;
-static int init_screen = -1;
-static bool use_vsync = true;
-static bool editor = false;
-static bool show_help = false;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
-static bool auto_build_solutions = false;
-static bool auto_quit = false;
 static bool print_fps = false;
 
-static OS::ProcessID allow_focus_steal_pid = 0;
+/* Helper methods */
 
-static bool project_manager = false;
-
+// Used by Mono module, should likely be registered in Engine singleton instead
+// FIXME: This is also not 100% accurate, `project_manager` is only true when it was requested,
+// but not if e.g. we fail to load and project and fallback to the manager.
 bool Main::is_project_manager() {
 	return project_manager;
 }
 
-void initialize_physics() {
+static String unescape_cmdline(const String &p_str) {
+	return p_str.replace("%20", " ");
+}
 
+static String get_full_version_string() {
+	String hash = String(VERSION_HASH);
+	if (hash.length() != 0)
+		hash = "." + hash.left(7);
+	return String(VERSION_FULL_BUILD) + hash;
+}
+
+// FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
+// to have less code in main.cpp.
+void initialize_physics() {
 	/// 3D Physics Server
 	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));
 	if (!physics_server) {
@@ -159,19 +191,6 @@ void finalize_physics() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-}
-
-static String unescape_cmdline(const String &p_str) {
-
-	return p_str.replace("%20", " ");
-}
-
-static String get_full_version_string() {
-
-	String hash = String(VERSION_HASH);
-	if (hash.length() != 0)
-		hash = "." + hash.left(7);
-	return String(VERSION_FULL_BUILD) + hash;
 }
 
 //#define DEBUG_INIT
@@ -277,6 +296,32 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print(").\n");
 #endif
 }
+
+/* Engine initialization
+ *
+ * Consists of several methods that are called by each platform's specific main(argc, argv).
+ * To fully understand engine init, one should therefore start from the platform's main and
+ * see how it calls into the Main class' methods.
+ *
+ * The initialization is typically done in 3 steps (with the setup2 step triggered either
+ * automatically by setup, or manually in the platform's main).
+ *
+ * - setup(execpath, argc, argv, p_second_phase) is the main entry point for all platforms,
+ *   responsible for the initialization of all low level singletons and core types, and parsing
+ *   command line arguments to configure things accordingly.
+ *   If p_second_phase is true, it will chain into setup2() (default behaviour). This is
+ *   disabled on some platforms (Android, iOS, UWP) which trigger the second step in their
+ *   own time.
+ *
+ * - setup2(p_main_tid_override) registers high level servers and singletons, displays the
+ *   boot splash, then registers higher level types (scene, editor, etc.).
+ *
+ * - start() is the last step and that's where command line tools can run, or the main loop
+ *   can be created eventually and the project settings put into action. That's also where
+ *   the editor node is created, if relevant.
+ *   start() does it own argument parsing for a subset of the command line arguments described
+ *   in help, it's a bit messy and should be globalized with the setup() parsing somehow.
+ */
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
 	RID_OwnerBase::init_rid();
@@ -1003,15 +1048,6 @@ error:
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
 
-	// Note 1: *zip_packed_data live into *packed_data
-	// Note 2: PackedData::~PackedData destroy this.
-	/*
-#ifdef MINIZIP_ENABLED
-	if (zip_packed_data)
-		memdelete( zip_packed_data );
-#endif
-*/
-
 	unregister_core_driver_types();
 	unregister_core_types();
 
@@ -1210,7 +1246,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 }
 
 // everything the main loop needs to know about frame timings
-
 static MainTimerSync main_timer_sync;
 
 bool Main::start() {
@@ -1713,13 +1748,23 @@ bool Main::start() {
 	return true;
 }
 
+/* Main iteration
+ *
+ * This is the iteration of the engine's game loop, advancing the state of physics,
+ * rendering and audio.
+ * It's called directly by the platform's OS::run method, where the loop is created
+ * and monitored.
+ *
+ * The OS implementation can impact its draw step with the Main::force_redraw() method.
+ */
+
 uint64_t Main::last_ticks = 0;
 uint64_t Main::target_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 
-//for performance metrics
+// For performance metrics
 static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
 
@@ -1742,11 +1787,6 @@ bool Main::iteration() {
 	double scaled_step = step * time_scale;
 
 	Engine::get_singleton()->_frame_step = step;
-
-	/*
-	if (time_accum+step < frame_slice)
-		return false;
-	*/
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;
@@ -1891,9 +1931,15 @@ bool Main::iteration() {
 }
 
 void Main::force_redraw() {
-
 	force_redraw_requested = true;
-};
+}
+
+/* Engine deinitialization
+ *
+ * Responsible for freeing all the memory allocated by previous setup steps,
+ * so that the engine closes cleanly without leaking memory or crashing.
+ * The order matters as some of those steps are linked with each other.
+ */
 
 void Main::cleanup() {
 
