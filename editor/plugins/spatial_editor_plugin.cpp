@@ -5586,7 +5586,6 @@ void SpatialEditorPlugin::make_visible(bool p_visible) {
 
 		spatial_editor->show();
 		spatial_editor->set_process(true);
-		spatial_editor->grab_focus();
 
 	} else {
 
