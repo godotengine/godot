@@ -209,7 +209,7 @@ private:
 	String video_driver_request;
 	void _video_driver_selected(int);
 
-	//split
+	// Split containers
 
 	HSplitContainer *left_l_hsplit;
 	VSplitContainer *left_l_vsplit;
@@ -222,7 +222,11 @@ private:
 
 	VSplitContainer *center_split;
 
-	//main tabs
+	// To access those easily by index
+	Vector<VSplitContainer *> vsplits;
+	Vector<HSplitContainer *> hsplits;
+
+	// Main tabs
 
 	Tabs *scene_tabs;
 	PopupMenu *scene_tabs_context_menu;
