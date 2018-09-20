@@ -492,15 +492,17 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			pinfo.usage = PropertyUsageFlags(int(prop[4]));
 			Variant var = prop[5];
 
-			String hint_string = pinfo.hint_string;
-			if (hint_string.begins_with("RES:") && hint_string != "RES:") {
-				String path = hint_string.substr(4, hint_string.length());
-				var = ResourceLoader::load(path);
-			}
-
 			if (is_new_object) {
 				//don't update.. it's the same, instead refresh
 				debugObj->prop_list.push_back(pinfo);
+			}
+
+			if (var.get_type() == Variant::STRING) {
+				String str = var;
+				var = str.substr(4, str.length());
+
+				if (str.begins_with("PATH"))
+					var = ResourceLoader::load(var);
 			}
 
 			debugObj->prop_values[pinfo.name] = var;
