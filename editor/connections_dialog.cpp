@@ -432,6 +432,9 @@ void ConnectionsDock::_make_or_edit_connection() {
 	if (add_script_function) {
 		// pick up args here before "it" is deleted by update_tree
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
+		for (int i = 0; i < cToMake.binds.size(); i++) {
+			script_function_args.append("extra_arg_" + itos(i));
+		}
 	}
 
 	if (connect_dialog->is_editing()) {
