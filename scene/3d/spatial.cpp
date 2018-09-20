@@ -321,6 +321,7 @@ void Spatial::set_translation(const Vector3 &p_translation) {
 
 	data.local_transform.origin = p_translation;
 	_propagate_transform_changed(this);
+	_change_notify("transform");
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
@@ -336,6 +337,7 @@ void Spatial::set_rotation(const Vector3 &p_euler_rad) {
 	data.rotation = p_euler_rad;
 	data.dirty |= DIRTY_LOCAL;
 	_propagate_transform_changed(this);
+	_change_notify("transform");
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
@@ -356,6 +358,7 @@ void Spatial::set_scale(const Vector3 &p_scale) {
 	data.scale = p_scale;
 	data.dirty |= DIRTY_LOCAL;
 	_propagate_transform_changed(this);
+	_change_notify("transform");
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 	}
