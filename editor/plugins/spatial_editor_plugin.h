@@ -510,7 +510,6 @@ private:
 	RID grid[3];
 	RID grid_instance[3];
 	bool grid_visible[3]; //currently visible
-	float last_grid_snap;
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
