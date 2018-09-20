@@ -55,9 +55,9 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
+			String name = l.split(" ")[0];
 
-			if (l != String()) {
-
+			if (ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) {
 				TreeItem *ti = recent->create_item(root);
 				ti->set_text(0, l);
 				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(l, base_type));
