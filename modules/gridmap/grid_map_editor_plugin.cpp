@@ -645,7 +645,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 				}
 				set_items.clear();
 				input_action = INPUT_NONE;
-				return true;
+				return set_items.size() > 0;
 			}
 
 			if (mb->get_button_index() == BUTTON_LEFT && input_action != INPUT_NONE) {
