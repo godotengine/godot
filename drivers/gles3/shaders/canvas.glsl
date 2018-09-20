@@ -120,12 +120,12 @@ void main() {
 	vec4 color = color_attrib;
 
 #ifdef USE_INSTANCING
-	mat4 extra_matrix2 = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
 	color *= instance_color;
 	vec4 instance_custom = instance_custom_data;
 
 #else
-	mat4 extra_matrix2 = extra_matrix;
+	mat4 extra_matrix_instance = extra_matrix;
 	vec4 instance_custom = vec4(0.0);
 #endif
 
@@ -157,7 +157,7 @@ void main() {
 
 #endif
 
-#define extra_matrix extra_matrix2
+#define extra_matrix extra_matrix_instance
 
 	{
 		/* clang-format off */
@@ -246,8 +246,8 @@ VERTEX_SHADER_CODE
 	pos = outvec.xy;
 #endif
 
-	local_rot.xy = normalize((modelview_matrix * (extra_matrix * vec4(1.0, 0.0, 0.0, 0.0))).xy);
-	local_rot.zw = normalize((modelview_matrix * (extra_matrix * vec4(0.0, 1.0, 0.0, 0.0))).xy);
+	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(1.0, 0.0, 0.0, 0.0))).xy);
+	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(0.0, 1.0, 0.0, 0.0))).xy);
 #ifdef USE_TEXTURE_RECT
 	local_rot.xy *= sign(src_rect.z);
 	local_rot.zw *= sign(src_rect.w);
