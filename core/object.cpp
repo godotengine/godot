@@ -1254,7 +1254,10 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			target->call(c.method, args, argc, ce);
 
 			if (ce.error != Variant::CallError::CALL_OK) {
-
+#ifdef DEBUG_ENABLED
+				if (c.flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (script.is_null() || !Ref<Script>(script)->is_tool()))
+					continue;
+#endif
 				if (ce.error == Variant::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
 				} else {
