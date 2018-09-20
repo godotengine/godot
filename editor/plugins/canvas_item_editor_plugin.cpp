@@ -2946,13 +2946,13 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 		float offset = 0;
 
 		Ref<Texture> lock = get_icon("LockViewport", "EditorIcons");
-		if (p_node->has_meta("_edit_lock_")) {
+		if (p_node->has_meta("_edit_lock_") && show_edit_locks) {
 			lock->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			offset += lock->get_size().x;
 		}
 
 		Ref<Texture> group = get_icon("GroupViewport", "EditorIcons");
-		if (canvas_item->has_meta("_edit_group_")) {
+		if (canvas_item->has_meta("_edit_group_") && show_edit_locks) {
 			group->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
 			//offset += group->get_size().x;
 		}
@@ -3549,6 +3549,12 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_viewport = !show_viewport;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
 			view_menu->get_popup()->set_item_checked(idx, show_viewport);
+			viewport->update();
+		} break;
+		case SHOW_EDIT_LOCKS: {
+			show_edit_locks = !show_edit_locks;
+			int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
+			view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
 			viewport->update();
 		} break;
 		case SNAP_USE_NODE_PARENT: {
@@ -4154,6 +4160,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
+	state["show_edit_locks"] = show_edit_locks;
 	state["snap_rotation"] = snap_rotation;
 	state["snap_relative"] = snap_relative;
 	state["snap_pixel"] = snap_pixel;
@@ -4271,6 +4278,12 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_helpers = state["show_helpers"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_HELPERS);
 		view_menu->get_popup()->set_item_checked(idx, show_helpers);
+	}
+
+	if (state.has("show_edit_locks")) {
+		show_edit_locks = state["show_edit_locks"];
+		int idx = view_menu->get_popup()->get_item_index(SHOW_EDIT_LOCKS);
+		view_menu->get_popup()->set_item_checked(idx, show_edit_locks);
 	}
 
 	if (state.has("snap_rotation")) {
@@ -4543,6 +4556,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), KEY_Y), SHOW_GUIDES);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_edit_locks", TTR("Show Group And Lock Icons")), SHOW_EDIT_LOCKS);
+
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
@@ -4633,6 +4648,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	show_helpers = false;
 	show_rulers = true;
 	show_guides = true;
+	show_edit_locks = true;
 	zoom = 1;
 	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
 	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
