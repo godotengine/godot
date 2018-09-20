@@ -3026,6 +3026,7 @@ bool CanvasItemEditor::_build_bones_list(Node *p_node) {
 }
 
 void CanvasItemEditor::_draw_viewport() {
+
 	// Update the transform
 	transform = Transform2D();
 	transform.scale_basis(Size2(zoom, zoom));
@@ -3074,11 +3075,11 @@ void CanvasItemEditor::_draw_viewport() {
 
 	EditorPluginList *over_plugin_list = editor->get_editor_plugins_over();
 	if (!over_plugin_list->empty()) {
-		over_plugin_list->forward_draw_over_viewport(viewport);
+		over_plugin_list->forward_canvas_draw_over_viewport(viewport);
 	}
 	EditorPluginList *force_over_plugin_list = editor->get_editor_plugins_force_over();
 	if (!force_over_plugin_list->empty()) {
-		force_over_plugin_list->forward_force_draw_over_viewport(viewport);
+		force_over_plugin_list->forward_canvas_force_draw_over_viewport(viewport);
 	}
 
 	_draw_bones();

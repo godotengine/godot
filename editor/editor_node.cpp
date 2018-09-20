@@ -5898,17 +5898,31 @@ bool EditorPluginList::forward_spatial_gui_input(Camera *p_camera, const Ref<Inp
 	return discard;
 }
 
-void EditorPluginList::forward_draw_over_viewport(Control *p_overlay) {
+void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_draw_over_viewport(p_overlay);
+		plugins_list[i]->forward_canvas_draw_over_viewport(p_overlay);
 	}
 }
 
-void EditorPluginList::forward_force_draw_over_viewport(Control *p_overlay) {
+void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_force_draw_over_viewport(p_overlay);
+		plugins_list[i]->forward_canvas_force_draw_over_viewport(p_overlay);
+	}
+}
+
+void EditorPluginList::forward_spatial_draw_over_viewport(Control *p_overlay) {
+
+	for (int i = 0; i < plugins_list.size(); i++) {
+		plugins_list[i]->forward_spatial_draw_over_viewport(p_overlay);
+	}
+}
+
+void EditorPluginList::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
+
+	for (int i = 0; i < plugins_list.size(); i++) {
+		plugins_list[i]->forward_spatial_force_draw_over_viewport(p_overlay);
 	}
 }
 

@@ -415,7 +415,7 @@ void CollisionShape2DEditor::_get_current_shape_type() {
 	canvas_item_editor->get_viewport_control()->update();
 }
 
-void CollisionShape2DEditor::forward_draw_over_viewport(Control *p_overlay) {
+void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	if (!node) {
 		return;

@@ -2312,12 +2312,12 @@ void SpatialEditorViewport::_draw() {
 
 	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
 	if (!over_plugin_list->empty()) {
-		over_plugin_list->forward_draw_over_viewport(surface);
+		over_plugin_list->forward_spatial_draw_over_viewport(surface);
 	}
 
 	EditorPluginList *force_over_plugin_list = editor->get_editor_plugins_force_over();
 	if (!force_over_plugin_list->empty()) {
-		force_over_plugin_list->forward_force_draw_over_viewport(surface);
+		force_over_plugin_list->forward_spatial_force_draw_over_viewport(surface);
 	}
 
 	if (surface->has_focus()) {
@@ -2346,7 +2346,6 @@ void SpatialEditorViewport::_draw() {
 		Point2 center = _point_to_screen(_edit.center);
 		VisualServer::get_singleton()->canvas_item_add_line(ci, _edit.mouse_pos, center, Color(0.4, 0.7, 1.0, 0.8));
 	}
-
 	if (previewing) {
 
 		Size2 ss = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));

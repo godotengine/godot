@@ -686,7 +686,7 @@ void TileMapEditor::_erase_selection() {
 	}
 }
 
-void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
+void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
 
 	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
 
@@ -783,19 +783,19 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h
 	modulate.a = 0.5;
 
 	if (r.has_no_area())
-		canvas_item_editor->draw_texture_rect(t, rect, false, modulate, p_transpose);
+		p_viewport->draw_texture_rect(t, rect, false, modulate, p_transpose);
 	else
-		canvas_item_editor->draw_texture_rect_region(t, rect, r, modulate, p_transpose);
+		p_viewport->draw_texture_rect_region(t, rect, r, modulate, p_transpose);
 }
 
-void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
+void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform) {
 
 	PoolVector<Vector2> points = _bucket_fill(p_point, false, true);
 	PoolVector<Vector2>::Read pr = points.read();
 	int len = points.size();
 
 	for (int i = 0; i < len; ++i) {
-		_draw_cell(p_cell, pr[i], p_flip_h, p_flip_v, p_transpose, p_xform);
+		_draw_cell(p_viewport, p_cell, pr[i], p_flip_h, p_flip_v, p_transpose, p_xform);
 	}
 }
 
@@ -1390,17 +1390,17 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
+void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	if (!node)
 		return;
 
 	Transform2D cell_xf = node->get_cell_transform();
 
-	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = p_overlay->get_canvas_transform() * node->get_global_transform();
 	Transform2D xform_inv = xform.affine_inverse();
 
-	Size2 screen_size = canvas_item_editor->get_size();
+	Size2 screen_size = p_overlay->get_size();
 	{
 		Rect2 aabb;
 		aabb.position = node->world_to_map(xform_inv.xform(Vector2()));
@@ -1419,7 +1419,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 				Vector2 to = xform.xform(node->map_to_world(Vector2(i, si.position.y + si.size.y + 1)));
 
 				Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-				canvas_item_editor->draw_line(from, to, col, 1);
+				p_overlay->draw_line(from, to, col, 1);
 				if (max_lines-- == 0)
 					break;
 			}
@@ -1439,7 +1439,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 					Vector2 from = xform.xform(node->map_to_world(Vector2(i, j), true) + ofs);
 					Vector2 to = xform.xform(node->map_to_world(Vector2(i, j + 1), true) + ofs);
 					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-					canvas_item_editor->draw_line(from, to, col, 1);
+					p_overlay->draw_line(from, to, col, 1);
 
 					if (max_lines-- == 0)
 						break;
@@ -1457,7 +1457,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 				Vector2 to = xform.xform(node->map_to_world(Vector2(si.position.x + si.size.x + 1, i)));
 
 				Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-				canvas_item_editor->draw_line(from, to, col, 1);
+				p_overlay->draw_line(from, to, col, 1);
 
 				if (max_lines-- == 0)
 					break;
@@ -1476,7 +1476,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 					Vector2 from = xform.xform(node->map_to_world(Vector2(j, i), true) + ofs);
 					Vector2 to = xform.xform(node->map_to_world(Vector2(j + 1, i), true) + ofs);
 					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
-					canvas_item_editor->draw_line(from, to, col, 1);
+					p_overlay->draw_line(from, to, col, 1);
 
 					if (max_lines-- == 0)
 						break;
@@ -1493,7 +1493,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 		points.push_back(xform.xform(node->map_to_world((rectangle.position + Point2(rectangle.size.x + 1, rectangle.size.y + 1)))));
 		points.push_back(xform.xform(node->map_to_world((rectangle.position + Point2(0, rectangle.size.y + 1)))));
 
-		canvas_item_editor->draw_colored_polygon(points, Color(0.2, 0.8, 1, 0.4));
+		p_overlay->draw_colored_polygon(points, Color(0.2, 0.8, 1, 0.4));
 	}
 
 	if (mouse_over) {
@@ -1519,7 +1519,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 			col = Color(1.0, 0.4, 0.2, 0.8);
 
 		for (int i = 0; i < 4; i++)
-			canvas_item_editor->draw_line(endpoints[i], endpoints[(i + 1) % 4], col, 2);
+			p_overlay->draw_line(endpoints[i], endpoints[(i + 1) % 4], col, 2);
 
 		bool bucket_preview = EditorSettings::get_singleton()->get("editors/tile_map/bucket_fill_preview");
 		if (tool == TOOL_SELECTING || tool == TOOL_PICKING || !bucket_preview) {
@@ -1538,7 +1538,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 
 			for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
 
-				_draw_cell(ids[0], E->key(), flip_h, flip_v, transpose, xform);
+				_draw_cell(p_overlay, ids[0], E->key(), flip_h, flip_v, transpose, xform);
 			}
 
 		} else if (tool == TOOL_RECTANGLE_PAINT) {
@@ -1551,7 +1551,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 			for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 				for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
 
-					_draw_cell(ids[0], Point2i(j, i), flip_h, flip_v, transpose, xform);
+					_draw_cell(p_overlay, ids[0], Point2i(j, i), flip_h, flip_v, transpose, xform);
 				}
 			}
 		} else if (tool == TOOL_PASTING) {
@@ -1573,7 +1573,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 
 				TileData tcd = E->get();
 
-				_draw_cell(tcd.cell, tcd.pos + ofs, tcd.flip_h, tcd.flip_v, tcd.transpose, xform);
+				_draw_cell(p_overlay, tcd.cell, tcd.pos + ofs, tcd.flip_h, tcd.flip_v, tcd.transpose, xform);
 			}
 
 			Rect2i duplicate = rectangle;
@@ -1585,12 +1585,12 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 			points.push_back(xform.xform(node->map_to_world((duplicate.position + Point2(duplicate.size.x + 1, duplicate.size.y + 1)))));
 			points.push_back(xform.xform(node->map_to_world((duplicate.position + Point2(0, duplicate.size.y + 1)))));
 
-			canvas_item_editor->draw_colored_polygon(points, Color(0.2, 1.0, 0.8, 0.2));
+			p_overlay->draw_colored_polygon(points, Color(0.2, 1.0, 0.8, 0.2));
 
 		} else if (tool == TOOL_BUCKET) {
 
 			Vector<int> tiles = get_selected_tiles();
-			_draw_fill_preview(tiles[0], over_tile, flip_h, flip_v, transpose, xform);
+			_draw_fill_preview(p_overlay, tiles[0], over_tile, flip_h, flip_v, transpose, xform);
 
 		} else {
 
@@ -1599,7 +1599,7 @@ void TileMapEditor::forward_draw_over_viewport(Control *p_overlay) {
 			if (st.size() == 1 && st[0] == TileMap::INVALID_CELL)
 				return;
 
-			_draw_cell(st[0], over_tile, flip_h, flip_v, transpose, xform);
+			_draw_cell(p_overlay, st[0], over_tile, flip_h, flip_v, transpose, xform);
 		}
 	}
 }
