@@ -2039,6 +2039,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			emit_signal("stop_pressed");
 
 		} break;
+
+		case FILE_SHOW_IN_FILESYSTEM: {
+			String path = editor_data.get_scene_path(editor_data.get_edited_scene());
+			if (path != String()) {
+				filesystem_dock->navigate_to_path(path);
+			}
+		} break;
+
 		case RUN_PLAY_SCENE: {
 
 			_save_default_environment();
@@ -3975,6 +3983,7 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/save_all_scenes"), FILE_SAVE_ALL_SCENES);
 			if (scene_tabs->get_hovered_tab() >= 0) {
 				scene_tabs_context_menu->add_separator();
+				scene_tabs_context_menu->add_item(TTR("Show in filesystem"), FILE_SHOW_IN_FILESYSTEM);
 				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
 				scene_tabs_context_menu->add_item(TTR("Close Tab"), FILE_CLOSE);
 			}
@@ -3989,7 +3998,7 @@ void EditorNode::_reposition_active_tab(int idx_to) {
 	_update_scene_tabs();
 }
 
-void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata) {
+void EditorNode::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
 	int p_tab = p_udata.operator signed int();
 	if (p_preview.is_valid()) {
 		Rect2 rect = scene_tabs->get_tab_rect(p_tab);
@@ -5514,7 +5523,7 @@ EditorNode::EditorNode() {
 	}
 
 	filesystem_dock = memnew(FileSystemDock(this));
-	filesystem_dock->set_file_list_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
+	filesystem_dock->set_file_list_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/files_display_mode")));
 
 	if (use_single_dock_column) {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(filesystem_dock);

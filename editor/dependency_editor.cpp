@@ -504,7 +504,7 @@ void DependencyRemoveDialog::ok_pressed() {
 	}
 
 	if (dirs_to_delete.size() == 0) {
-		//If we only deleted files we should only need to tell the file system about the files we touched.
+		// If we only deleted files we should only need to tell the file system about the files we touched.
 		for (int i = 0; i < files_to_delete.size(); ++i)
 			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
 	} else {
@@ -518,21 +518,25 @@ void DependencyRemoveDialog::ok_pressed() {
 			}
 		}
 
-		// if some dirs would be deleted, favorite dirs need to be updated
-		Vector<String> previous_favorite_dirs = EditorSettings::get_singleton()->get_favorite_dirs();
-		Vector<String> new_favorite_dirs;
-
-		for (int i = 0; i < previous_favorite_dirs.size(); ++i) {
-			if (dirs_to_delete.find(previous_favorite_dirs[i] + "/") < 0) {
-				new_favorite_dirs.push_back(previous_favorite_dirs[i]);
-			}
-		}
-
-		if (new_favorite_dirs.size() < previous_favorite_dirs.size()) {
-			EditorSettings::get_singleton()->set_favorite_dirs(new_favorite_dirs);
-		}
-
 		EditorFileSystem::get_singleton()->scan_changes();
+	}
+
+	// If some files/dirs would be deleted, favorite dirs need to be updated
+	Vector<String> previous_favorites = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> new_favorites;
+
+	for (int i = 0; i < previous_favorites.size(); ++i) {
+		if (previous_favorites[i].ends_with("/")) {
+			if (dirs_to_delete.find(previous_favorites[i]) < 0)
+				new_favorites.push_back(previous_favorites[i]);
+		} else {
+			if (files_to_delete.find(previous_favorites[i]) < 0)
+				new_favorites.push_back(previous_favorites[i]);
+		}
+	}
+
+	if (new_favorites.size() < previous_favorites.size()) {
+		EditorSettings::get_singleton()->set_favorites(new_favorites);
 	}
 }
 

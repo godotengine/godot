@@ -125,6 +125,7 @@ private:
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_BEFORE_RUN,
 		FILE_SAVE_AND_RUN,
+		FILE_SHOW_IN_FILESYSTEM,
 		FILE_IMPORT_SUBSCENE,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
@@ -535,7 +536,7 @@ private:
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
 	void _reposition_active_tab(int idx_to);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
+	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();

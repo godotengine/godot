@@ -511,17 +511,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/file_dialog/show_hidden_files", false);
 	_initial_set("filesystem/file_dialog/display_mode", 0);
 	hints["filesystem/file_dialog/display_mode"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
 
-	_initial_set("docks/filesystem/disable_split", false);
-	_initial_set("docks/filesystem/split_mode_minimum_height", 600);
 	_initial_set("docks/filesystem/display_mode", 0);
-	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Tree only, Split");
+	_initial_set("docks/filesystem/split_mode_minimum_height", 600);
 	_initial_set("docks/filesystem/thumbnail_size", 64);
 	hints["docks/filesystem/thumbnail_size"] = PropertyInfo(Variant::INT, "docks/filesystem/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
-	_initial_set("docks/filesystem/display_mode", 0);
-	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	_initial_set("docks/filesystem/files_display_mode", 0);
+	hints["docks/filesystem/files_display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/files_display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
 	_initial_set("docks/filesystem/always_show_folders", true);
 
 	_initial_set("editors/animation/autorename_animation_tracks", true);
@@ -1152,20 +1152,20 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 	return cf->get_value(p_section, p_key, p_default);
 }
 
-void EditorSettings::set_favorite_dirs(const Vector<String> &p_favorites_dirs) {
+void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 
-	favorite_dirs = p_favorites_dirs;
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorite_dirs"), FileAccess::WRITE);
+	favorites = p_favorites;
+	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < favorite_dirs.size(); i++)
-			f->store_line(favorite_dirs[i]);
+		for (int i = 0; i < favorites.size(); i++)
+			f->store_line(favorites[i]);
 		memdelete(f);
 	}
 }
 
-Vector<String> EditorSettings::get_favorite_dirs() const {
+Vector<String> EditorSettings::get_favorites() const {
 
-	return favorite_dirs;
+	return favorites;
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
@@ -1186,11 +1186,11 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 
 void EditorSettings::load_favorites() {
 
-	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorite_dirs"), FileAccess::READ);
+	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
 		while (line != "") {
-			favorite_dirs.push_back(line);
+			favorites.push_back(line);
 			line = f->get_line().strip_edges();
 		}
 		memdelete(f);
@@ -1471,8 +1471,8 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
 	ClassDB::bind_method(D_METHOD("get_project_metadata", "section", "key", "default"), &EditorSettings::get_project_metadata, DEFVAL(Variant()));
 
-	ClassDB::bind_method(D_METHOD("set_favorite_dirs", "dirs"), &EditorSettings::set_favorite_dirs);
-	ClassDB::bind_method(D_METHOD("get_favorite_dirs"), &EditorSettings::get_favorite_dirs);
+	ClassDB::bind_method(D_METHOD("set_favorites", "dirs"), &EditorSettings::set_favorites);
+	ClassDB::bind_method(D_METHOD("get_favorites"), &EditorSettings::get_favorites);
 	ClassDB::bind_method(D_METHOD("set_recent_dirs", "dirs"), &EditorSettings::set_recent_dirs);
 	ClassDB::bind_method(D_METHOD("get_recent_dirs"), &EditorSettings::get_recent_dirs);
 
