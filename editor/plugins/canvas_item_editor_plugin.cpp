@@ -715,6 +715,46 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	return (p_control->get_transform().xform(position) - parent_rect.position) / parent_rect.size;
 }
 
+void CanvasItemEditor::_save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state) {
+	if (p_bones_length)
+		*p_bones_length = List<float>();
+	if (p_bones_state)
+		*p_bones_state = List<Dictionary>();
+
+	const Node2D *bone = Object::cast_to<Node2D>(p_canvas_item);
+	if (bone && bone->has_meta("_edit_bone_")) {
+		// Check if we have an IK chain
+		List<const Node2D *> bone_ik_list;
+		bool ik_found = false;
+		bone = Object::cast_to<Node2D>(bone->get_parent());
+		while (bone) {
+			bone_ik_list.push_back(bone);
+			if (bone->has_meta("_edit_ik_")) {
+				ik_found = true;
+				break;
+			} else if (!bone->has_meta("_edit_bone_")) {
+				break;
+			}
+			bone = Object::cast_to<Node2D>(bone->get_parent());
+		}
+
+		//Save the bone state and length if we have an IK chain
+		if (ik_found) {
+			bone = Object::cast_to<Node2D>(p_canvas_item);
+			Transform2D bone_xform = bone->get_global_transform();
+			for (List<const Node2D *>::Element *bone_E = bone_ik_list.front(); bone_E; bone_E = bone_E->next()) {
+				bone_xform = bone_xform * bone->get_transform().affine_inverse();
+				const Node2D *parent_bone = bone_E->get();
+				if (p_bones_length)
+					p_bones_length->push_back(parent_bone->get_global_transform().get_origin().distance_to(bone->get_global_position()));
+				if (p_bones_state)
+					p_bones_state->push_back(parent_bone->_edit_get_state());
+				bone = parent_bone;
+			}
+		}
+	}
+}
+
 void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items, bool save_bones) {
 	for (List<CanvasItem *>::Element *E = p_canvas_items.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = E->get();
@@ -727,41 +767,18 @@ void CanvasItemEditor::_save_canvas_item_state(List<CanvasItem *> p_canvas_items
 			} else {
 				se->pre_drag_rect = Rect2();
 			}
-			se->pre_drag_bones_length = List<float>();
-			se->pre_drag_bones_undo_state = List<Dictionary>();
 
 			// If we have a bone, save the state of all nodes in the IK chain
-			Node2D *bone = Object::cast_to<Node2D>(canvas_item);
-			if (bone && bone->has_meta("_edit_bone_")) {
-				// Check if we have an IK chain
-				List<Node2D *> bone_ik_list;
-				bool ik_found = false;
-				bone = Object::cast_to<Node2D>(bone->get_parent());
-				while (bone) {
-					bone_ik_list.push_back(bone);
-					if (bone->has_meta("_edit_ik_")) {
-						ik_found = true;
-						break;
-					} else if (!bone->has_meta("_edit_bone_")) {
-						break;
-					}
-					bone = Object::cast_to<Node2D>(bone->get_parent());
-				}
-
-				//Save the bone state and length if we have an IK chain
-				if (ik_found) {
-					bone = Object::cast_to<Node2D>(canvas_item);
-					Transform2D bone_xform = bone->get_global_transform();
-					for (List<Node2D *>::Element *bone_E = bone_ik_list.front(); bone_E; bone_E = bone_E->next()) {
-						bone_xform = bone_xform * bone->get_transform().affine_inverse();
-						Node2D *parent_bone = bone_E->get();
-						se->pre_drag_bones_length.push_back(parent_bone->get_global_transform().get_origin().distance_to(bone->get_global_position()));
-						se->pre_drag_bones_undo_state.push_back(parent_bone->_edit_get_state());
-						bone = parent_bone;
-					}
-				}
-			}
+			_save_canvas_item_ik_chain(canvas_item, &(se->pre_drag_bones_length), &(se->pre_drag_bones_undo_state));
 		}
+	}
+}
+
+void CanvasItemEditor::_restore_canvas_item_ik_chain(CanvasItem *p_canvas_item, const List<Dictionary> *p_bones_state) {
+	CanvasItem *canvas_item = p_canvas_item;
+	for (const List<Dictionary>::Element *E = p_bones_state->front(); E; E = E->next()) {
+		canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
+		canvas_item->_edit_set_state(E->get());
 	}
 }
 
@@ -771,10 +788,7 @@ void CanvasItemEditor::_restore_canvas_item_state(List<CanvasItem *> p_canvas_it
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		canvas_item->_edit_set_state(se->undo_state);
 		if (restore_bones) {
-			for (List<Dictionary>::Element *E = se->pre_drag_bones_undo_state.front(); E; E = E->next()) {
-				canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
-				canvas_item->_edit_set_state(E->get());
-			}
+			_restore_canvas_item_ik_chain(canvas_item, &(se->pre_drag_bones_undo_state));
 		}
 	}
 }
@@ -1199,73 +1213,72 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 void CanvasItemEditor::_solve_IK(Node2D *leaf_node, Point2 target_position) {
 	CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(leaf_node);
-	if (se && !se->pre_drag_bones_undo_state.empty()) {
+	if (se) {
+		int nb_bones = se->pre_drag_bones_undo_state.size();
+		if (nb_bones > 0) {
 
-		// Build the node list
-		Point2 leaf_pos = target_position;
+			// Build the node list
+			Point2 leaf_pos = target_position;
 
-		List<Node2D *> joints_list;
-		List<Point2> joints_pos;
-		Node2D *joint = leaf_node;
-		Transform2D joint_transform = leaf_node->get_global_transform_with_canvas();
-		for (int i = 0; i < se->pre_drag_bones_undo_state.size() + 1; i++) {
-			joints_list.push_back(joint);
-			joints_pos.push_back(joint_transform.get_origin());
-			joint_transform = joint_transform * joint->get_transform().affine_inverse();
-			joint = Object::cast_to<Node2D>(joint->get_parent());
-		}
-		Point2 root_pos = joints_list.back()->get()->get_global_transform_with_canvas().get_origin();
+			List<Node2D *> joints_list;
+			List<Point2> joints_pos;
+			Node2D *joint = leaf_node;
+			Transform2D joint_transform = leaf_node->get_global_transform_with_canvas();
+			for (int i = 0; i < nb_bones + 1; i++) {
+				joints_list.push_back(joint);
+				joints_pos.push_back(joint_transform.get_origin());
+				joint_transform = joint_transform * joint->get_transform().affine_inverse();
+				joint = Object::cast_to<Node2D>(joint->get_parent());
+			}
+			Point2 root_pos = joints_list.back()->get()->get_global_transform_with_canvas().get_origin();
 
-		// Restraints the node to a maximum distance is necessary
-		float total_len = 0;
-		for (List<float>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
-			total_len += E->get();
-		}
-		if ((root_pos.distance_to(leaf_pos)) > total_len) {
-			Vector2 rel = leaf_pos - root_pos;
-			rel = rel.normalized() * total_len;
-			leaf_pos = root_pos + rel;
-		}
-		joints_pos[0] = leaf_pos;
-
-		// Run the solver
-		int solver_iterations = 64;
-		float solver_k = 0.3;
-
-		// Build the position list
-		for (int i = 0; i < solver_iterations; i++) {
-			// Handle the leaf joint
-			int node_id = 0;
+			// Restraints the node to a maximum distance is necessary
+			float total_len = 0;
 			for (List<float>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
-				Vector2 direction = (joints_pos[node_id + 1] - joints_pos[node_id]).normalized();
-				int len = E->get();
-				if (E == se->pre_drag_bones_length.front()) {
-					joints_pos[1] = joints_pos[1].linear_interpolate(joints_pos[0] + len * direction, solver_k);
-				} else if (E == se->pre_drag_bones_length.back()) {
-					joints_pos[node_id] = joints_pos[node_id].linear_interpolate(joints_pos[node_id + 1] - len * direction, solver_k);
-				} else {
-					Vector2 center = (joints_pos[node_id + 1] + joints_pos[node_id]) / 2.0;
-					joints_pos[node_id] = joints_pos[node_id].linear_interpolate(center - (direction * len) / 2.0, solver_k);
-					joints_pos[node_id + 1] = joints_pos[node_id + 1].linear_interpolate(center + (direction * len) / 2.0, solver_k);
+				total_len += E->get();
+			}
+			if ((root_pos.distance_to(leaf_pos)) > total_len) {
+				Vector2 rel = leaf_pos - root_pos;
+				rel = rel.normalized() * total_len;
+				leaf_pos = root_pos + rel;
+			}
+			joints_pos[0] = leaf_pos;
+
+			// Run the solver
+			int solver_iterations = 64;
+			float solver_k = 0.3;
+
+			// Build the position list
+			for (int i = 0; i < solver_iterations; i++) {
+				// Handle the leaf joint
+				int node_id = 0;
+				for (List<float>::Element *E = se->pre_drag_bones_length.front(); E; E = E->next()) {
+					Vector2 direction = (joints_pos[node_id + 1] - joints_pos[node_id]).normalized();
+					int len = E->get();
+					if (E == se->pre_drag_bones_length.front()) {
+						joints_pos[1] = joints_pos[1].linear_interpolate(joints_pos[0] + len * direction, solver_k);
+					} else if (E == se->pre_drag_bones_length.back()) {
+						joints_pos[node_id] = joints_pos[node_id].linear_interpolate(joints_pos[node_id + 1] - len * direction, solver_k);
+					} else {
+						Vector2 center = (joints_pos[node_id + 1] + joints_pos[node_id]) / 2.0;
+						joints_pos[node_id] = joints_pos[node_id].linear_interpolate(center - (direction * len) / 2.0, solver_k);
+						joints_pos[node_id + 1] = joints_pos[node_id + 1].linear_interpolate(center + (direction * len) / 2.0, solver_k);
+					}
+					node_id++;
 				}
-				node_id++;
+			}
+
+			// Set the position
+			for (int node_id = joints_list.size() - 1; node_id > 0; node_id--) {
+				Point2 current = (joints_list[node_id - 1]->get_global_position() - joints_list[node_id]->get_global_position()).normalized();
+				Point2 target = (joints_pos[node_id - 1] - joints_list[node_id]->get_global_position()).normalized();
+				float rot = current.angle_to(target);
+				if (joints_list[node_id]->get_global_transform().basis_determinant() < 0) {
+					rot = -rot;
+				}
+				joints_list[node_id]->rotate(rot);
 			}
 		}
-
-		// Set the position
-		float total_rot = 0.0f;
-		for (int node_id = joints_list.size() - 1; node_id > 0; node_id--) {
-			Point2 current = (joints_list[node_id - 1]->get_global_position() - joints_list[node_id]->get_global_position()).normalized();
-			Point2 target = (joints_pos[node_id - 1] - joints_list[node_id]->get_global_position()).normalized();
-			float rot = current.angle_to(target);
-			if (joints_list[node_id]->get_global_transform().basis_determinant() < 0) {
-				rot = -rot;
-			}
-			joints_list[node_id]->rotate(rot);
-			total_rot += rot;
-		}
-
-		joints_list[0]->rotate(-total_rot);
 	}
 }
 
@@ -1664,7 +1677,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 		// Resize the node
 		if (m.is_valid()) {
-			_restore_canvas_item_state(drag_selection, true);
+			_restore_canvas_item_state(drag_selection);
 			CanvasItem *canvas_item = drag_selection[0];
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
@@ -1730,6 +1743,15 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_MOVE) {
 		// Move the nodes
 		if (m.is_valid()) {
+
+			// Save the ik chain for reapplying before IK solve
+			Vector<List<Dictionary> > all_bones_ik_states;
+			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
+				List<Dictionary> bones_ik_states;
+				_save_canvas_item_ik_chain(E->get(), NULL, &bones_ik_states);
+				all_bones_ik_states.push_back(bones_ik_states);
+			}
+
 			_restore_canvas_item_state(drag_selection, true);
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
@@ -1751,6 +1773,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			}
 
 			bool force_no_IK = m->get_alt();
+			int index = 0;
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				CanvasItem *canvas_item = E->get();
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -1758,10 +1781,15 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 				Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
 				if (node2d && se->pre_drag_bones_undo_state.size() > 0 && !force_no_IK) {
+					real_t initial_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+					_restore_canvas_item_ik_chain(node2d, &(all_bones_ik_states[index]));
+					real_t final_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+					node2d->rotate(initial_leaf_node_rotation - final_leaf_node_rotation);
 					_solve_IK(node2d, new_pos);
 				} else {
 					canvas_item->_edit_set_position(canvas_item->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
 				}
+				index++;
 			}
 			return true;
 		}
@@ -1799,6 +1827,14 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 
 		if (drag_selection.size() > 0) {
+
+			// Save the ik chain for reapplying before IK solve
+			Vector<List<Dictionary> > all_bones_ik_states;
+			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
+				List<Dictionary> bones_ik_states;
+				_save_canvas_item_ik_chain(E->get(), NULL, &bones_ik_states);
+				all_bones_ik_states.push_back(bones_ik_states);
+			}
 
 			_restore_canvas_item_state(drag_selection, true);
 
@@ -1845,6 +1881,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				new_pos = previous_pos + (drag_to - drag_from);
 			}
 
+			int index = 0;
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 				CanvasItem *canvas_item = E->get();
 				CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -1852,10 +1889,15 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 				Node2D *node2d = Object::cast_to<Node2D>(canvas_item);
 				if (node2d && se->pre_drag_bones_undo_state.size() > 0) {
+					real_t initial_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+					_restore_canvas_item_ik_chain(node2d, &(all_bones_ik_states[index]));
+					real_t final_leaf_node_rotation = node2d->get_global_transform_with_canvas().get_rotation();
+					node2d->rotate(initial_leaf_node_rotation - final_leaf_node_rotation);
 					_solve_IK(node2d, new_pos);
 				} else {
 					canvas_item->_edit_set_position(canvas_item->_edit_get_position() + xform.xform(new_pos) - xform.xform(previous_pos));
 				}
+				index++;
 			}
 		}
 		return true;
