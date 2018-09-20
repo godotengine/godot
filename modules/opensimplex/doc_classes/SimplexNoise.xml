@@ -20,7 +20,7 @@
 		print("Values:")
 		print(noise.get_noise_2d(1.0, 1.0))
 		print(noise.get_noise_3d(0.5, 3.0, 15.0))
-		print(noise.get_noise_3d(0.5, 1.9, 4.7, 0.0))
+		print(noise.get_noise_4d(0.5, 1.9, 4.7, 0.0))
 		[/codeblock]
 	</description>
 	<tutorials>
