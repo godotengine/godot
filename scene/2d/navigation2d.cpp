@@ -388,10 +388,34 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 			Polygon *p = E->get();
 
 			float cost = p->distance;
+
+#ifdef USE_ENTRY_POINT
+			int es = p->edges.size();
+
+			float shortest_distance = 1e30;
+
+			for (int i = 0; i < es; i++) {
+				Polygon::Edge &e = p->edges.write[i];
+
+				if (!e.C)
+					continue;
+
+				Vector2 edge[2] = {
+					_get_vertex(p->edges[i].point),
+					_get_vertex(p->edges[(i + 1) % es].point)
+				};
+
+				Vector2 edge_point = Geometry::get_closest_point_to_segment_2d(p->entry, edge);
+				float dist = p->entry.distance_to(edge_point);
+				if (dist < shortest_distance)
+					shortest_distance = dist;
+			}
+
+			cost += shortest_distance;
+#else
 			cost += p->center.distance_to(end_point);
-
+#endif
 			if (cost < least_cost) {
-
 				least_cost_poly = E;
 				least_cost = cost;
 			}
