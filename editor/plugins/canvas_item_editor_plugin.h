@@ -105,6 +105,7 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
+		SHOW_EDIT_LOCKS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -225,6 +226,7 @@ private:
 	bool show_origin;
 	bool show_viewport;
 	bool show_helpers;
+	bool show_edit_locks;
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
