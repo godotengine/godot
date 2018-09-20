@@ -830,6 +830,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
 			editor_data->get_undo_redo().commit_action();
 
+			editor->edit_node(new_node);
+
 		} break;
 
 		default: {
