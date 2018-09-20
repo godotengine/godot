@@ -141,6 +141,8 @@ public:
 	void set_mode(Mode p_mode);
 	virtual Mode get_mode() const;
 
+	virtual bool is_text_shader() const;
+
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
