@@ -3437,8 +3437,9 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 					}
 				}
 			} else {
+				ConstantNode::Value value = values[0];
 				for (int i = 1; i < cardinality; i++) {
-					values.push_back(values[0]);
+					values.push_back(value);
 				}
 			}
 		} else if (values.size() != cardinality) {
