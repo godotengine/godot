@@ -83,6 +83,7 @@ void Range::set_value(double p_val) {
 	shared->val = p_val;
 
 	shared->emit_value_changed();
+	shared->emit_changed("value");
 }
 void Range::set_min(double p_min) {
 
@@ -250,7 +251,7 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
 
 	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::REAL, "value")));
-	ADD_SIGNAL(MethodInfo("changed"));
+	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "property")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min_value"), "set_min", "get_min");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_value"), "set_max", "get_max");
