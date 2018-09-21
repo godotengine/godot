@@ -14,7 +14,7 @@
 		noise.seed = randi()
 		noise.octaves = 4
 		noise.period = 20.0
-		noise.persistance = 0.8
+		noise.persistence = 0.8
 
 		# Sample
 		print("Values:")
@@ -118,9 +118,9 @@
 			Period of the base octave.
 			A lower period results in a higher-frequency noise (more value changes across the same distance).
 		</member>
-		<member name="persistance" type="float" setter="set_persistance" getter="get_persistance">
+		<member name="persistence" type="float" setter="set_persistence" getter="get_persistence">
 			Contribution factor of the different octaves.
-			A [code]persistance[/code] value of 1 means all the octaves have the same contribution, a value of 0.5 means each octave contributes half as much as the previous one.
+			A [code]persistence[/code] value of 1 means all the octaves have the same contribution, a value of 0.5 means each octave contributes half as much as the previous one.
 		</member>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed">
 			Seed used to generate random values, different seeds will generate different noise maps.

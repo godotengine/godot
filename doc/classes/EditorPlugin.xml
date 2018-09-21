@@ -165,26 +165,26 @@
 				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
 			</description>
 		</method>
+		<method name="forward_canvas_draw_over_viewport" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="overlay" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="forward_canvas_force_draw_over_viewport" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="overlay" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="forward_canvas_gui_input" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="forward_draw_over_viewport" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="overlay" type="Control">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="forward_force_draw_over_viewport" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="overlay" type="Control">
 			</argument>
 			<description>
 			</description>

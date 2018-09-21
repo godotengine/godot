@@ -609,9 +609,6 @@
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="">
 			Page size used by remote filesystem.
 		</member>
-		<member name="network/ssl/certificates" type="String" setter="" getter="">
-			If your game or application uses HTTPS, a certificates file is needed. It must be set here.
-		</member>
 		<member name="node/name_casing" type="int" setter="" getter="">
 			When creating nodes names automatically, set the type of casing in this project. This is mostly an editor setting.
 		</member>
