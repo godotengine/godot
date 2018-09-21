@@ -673,7 +673,7 @@ def make_rst_class(node):
     if methods != None and len(list(methods)) > 0:
         f.write(make_heading('Method Descriptions', '-'))
         for m in list(methods):
-            f.write("  .. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_method(f, name, m, True)
             f.write('\n')
             d = m.find('description')
