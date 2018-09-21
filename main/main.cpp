@@ -1124,11 +1124,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		boot_logo_path = boot_logo_path.strip_edges();
 
 		if (boot_logo_path != String()) {
-			print_line("Boot splash path: " + boot_logo_path);
+			boot_logo_path = boot_logo_path.trim_prefix("res://");
 			boot_logo.instance();
 			Error err = boot_logo->load(boot_logo_path);
 			if (err)
-				ERR_PRINTS("Non-existing or invalid boot splash at: " + boot_logo_path + ". Loading default splash.");
+				ERR_PRINTS("Non-existing or invalid boot splash at: res://" + boot_logo_path + ". Loading default splash.");
 		}
 
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
@@ -1704,6 +1704,7 @@ bool Main::start() {
 				sml->add_current_scene(scene);
 
 				String iconpath = GLOBAL_DEF("application/config/icon", "Variant()");
+				iconpath = iconpath.trim_prefix("res://");
 				if (iconpath != "") {
 					Ref<Image> icon;
 					icon.instance();
