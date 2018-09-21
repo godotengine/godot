@@ -223,11 +223,9 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 }
 
 void FileSystemDock::_update_display_mode() {
-	bool compact_mode = get_size().height < int(EditorSettings::get_singleton()->get("docks/filesystem/split_mode_minimum_height"));
-
 	// Compute the new display mode
 	DisplayMode new_display_mode;
-	if ((display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) || compact_mode) {
+	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
 		new_display_mode = file_list_view ? DISPLAY_MODE_FILE_LIST_ONLY : DISPLAY_MODE_TREE_ONLY;
 	} else {
 		new_display_mode = DISPLAY_MODE_SPLIT;
