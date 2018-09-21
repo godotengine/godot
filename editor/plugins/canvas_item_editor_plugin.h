@@ -469,6 +469,8 @@ private:
 	void _update_bone_list();
 	void _tree_changed(Node *);
 
+	bool _can_drag_nodes(List<CanvasItem *> nodes);
+
 	friend class CanvasItemEditorPlugin;
 
 protected:

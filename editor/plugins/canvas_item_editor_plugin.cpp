@@ -1142,7 +1142,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			}
 
 			// Start dragging if we still have nodes
-			if (drag_selection.size() > 0) {
+			if (drag_selection.size() > 0 && _can_drag_nodes(drag_selection)) {
 				drag_from = transform.affine_inverse().xform((b.is_valid()) ? b->get_position() : viewport->get_local_mouse_position());
 				Vector2 new_pos;
 				if (drag_selection.size() == 1)
@@ -1277,7 +1277,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			drag_selection = _get_edited_canvas_items();
-			if (drag_selection.size() > 0 && ((b->get_control() && !b->get_alt() && tool == TOOL_SELECT) || tool == TOOL_ROTATE)) {
+			if (drag_selection.size() > 0 && ((b->get_control() && !b->get_alt() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) && _can_drag_nodes(drag_selection)) {
 				drag_type = DRAG_ROTATE;
 				drag_from = transform.affine_inverse().xform(b->get_position());
 				CanvasItem *canvas_item = drag_selection[0];
@@ -1348,7 +1348,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && tool == TOOL_SELECT && show_helpers) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
-			if (selection.size() == 1) {
+			if (selection.size() == 1 && _can_drag_nodes(selection)) {
 				Control *control = Object::cast_to<Control>(selection[0]);
 				if (control && !Object::cast_to<Container>(control->get_parent())) {
 					Vector2 anchor_pos[4];
@@ -1467,7 +1467,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && tool == TOOL_SELECT) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
-			if (selection.size() == 1) {
+			if (selection.size() == 1 && _can_drag_nodes(selection)) {
 				CanvasItem *canvas_item = selection[0];
 				if (canvas_item->_edit_use_rect()) {
 					Rect2 rect = canvas_item->_edit_get_rect();
@@ -1634,7 +1634,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && ((b->get_alt() && b->get_control()) || tool == TOOL_SCALE)) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
-			if (selection.size() == 1) {
+			if (selection.size() == 1 && _can_drag_nodes(selection)) {
 				CanvasItem *canvas_item = selection[0];
 
 				Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
@@ -1708,6 +1708,17 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
+bool CanvasItemEditor::_can_drag_nodes(List<CanvasItem *> nodes) {
+	for (List<CanvasItem *>::Element *E = nodes.front(); E; E = E->next()) {
+		if (ClassDB::is_parent_class(E->get()->get_parent()->get_class_name(), "Container")) {
+			WARN_PRINT("Cannot change transform of children of Containers.");
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -1717,7 +1728,8 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		//Start moving the nodes
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
-			if (((b->get_alt() && !b->get_control()) || tool == TOOL_MOVE) && selection.size() > 0) {
+
+			if (((b->get_alt() && !b->get_control()) || tool == TOOL_MOVE) && selection.size() > 0  && _can_drag_nodes(selection)) {
 				drag_type = DRAG_MOVE;
 				drag_from = transform.affine_inverse().xform(b->get_position());
 				drag_selection = selection;
@@ -1788,7 +1800,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 	// Move the canvas items with the arrow keys
 	if (k.is_valid() && k->is_pressed() && tool == TOOL_SELECT &&
-			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
+			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT) &&
+			_can_drag_nodes(_get_edited_canvas_items())) {
+
 		if (!k->is_echo()) {
 			// Start moving the canvas items with the keyboard
 			drag_selection = _get_edited_canvas_items();
@@ -1970,10 +1984,12 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					// Drag the node(s) if requested
 					List<CanvasItem *> selection = _get_edited_canvas_items();
 
-					drag_type = DRAG_MOVE;
-					drag_selection = selection;
-					drag_from = click;
-					_save_canvas_item_state(drag_selection);
+					if (_can_drag_nodes(selection)) {
+						drag_type = DRAG_MOVE;
+						drag_selection = selection;
+						drag_from = click;
+						_save_canvas_item_state(drag_selection);
+					}
 				}
 				// Select the item
 				return true;
