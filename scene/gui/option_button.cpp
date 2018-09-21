@@ -340,6 +340,7 @@ void OptionButton::_bind_methods() {
 OptionButton::OptionButton() {
 
 	current = -1;
+	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
@@ -350,6 +351,7 @@ OptionButton::OptionButton() {
 	popup->set_pass_on_modal_close_click(false);
 	popup->connect("id_pressed", this, "_selected");
 	popup->connect("id_focused", this, "_focused");
+	popup->connect("popup_hide", this, "set_pressed", varray(false));
 }
 
 OptionButton::~OptionButton() {

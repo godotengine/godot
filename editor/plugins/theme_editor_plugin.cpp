@@ -831,6 +831,7 @@ ThemeEditor::ThemeEditor() {
 	type_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	type_hbc->add_child(type_edit);
 	type_menu = memnew(MenuButton);
+	type_menu->set_flat(false);
 	type_menu->set_text("..");
 	type_hbc->add_child(type_menu);
 
@@ -848,6 +849,7 @@ ThemeEditor::ThemeEditor() {
 	name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	name_hbc->add_child(name_edit);
 	name_menu = memnew(MenuButton);
+	type_menu->set_flat(false);
 	name_menu->set_text("..");
 	name_hbc->add_child(name_menu);
 
