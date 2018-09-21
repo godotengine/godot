@@ -573,7 +573,7 @@ def make_rst_class(node):
     if events != None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
         for m in list(events):
-            f.write("  .. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_method(f, name, m, True, True)
             f.write('\n')
             d = m.find('description')
@@ -599,7 +599,7 @@ def make_rst_class(node):
     if len(enum_names) > 0:
         f.write(make_heading('Enumerations', '-'))
         for e in enum_names:
-            f.write("  .. _enum_" + name + "_" + e + ":\n\n")
+            f.write(".. _enum_" + name + "_" + e + ":\n\n")
             f.write("enum **" + e + "**:\n\n")
             for c in enums:
                 if c.attrib['enum'] != e:
@@ -624,6 +624,7 @@ def make_rst_class(node):
             if c.text.strip() != '':
                 s += ' --- ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n')
+        f.write('\n')
 
     # Class description
     descr = node.find('description')
@@ -644,25 +645,25 @@ def make_rst_class(node):
                 if match.lastindex == 2:
                     # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
                     # `#calling-javascript-from-script in Exporting For Web`
-                    f.write("- `" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n")
+                    f.write("- `" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n\n")
                     # Commented out alternative: Instead just emit:
                     # `Subsection in Exporting For Web`
-                    # f.write("- `Subsection <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n")
+                    # f.write("- `Subsection <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n\n")
                 elif match.lastindex == 1:
                     # Doc reference, for example:
                     # `Math`
-                    f.write("- :doc:`../" + groups[0] + "`\n")
+                    f.write("- :doc:`../" + groups[0] + "`\n\n")
             else:
                 # External link, for example:
                 # `http://enet.bespin.org/usergroup0.html`
-                f.write("- `" + link + " <" + link + ">`_\n")
+                f.write("- `" + link + " <" + link + ">`_\n\n")
 
     # Property descriptions
     members = node.find('members')
     if members != None and len(list(members)) > 0:
         f.write(make_heading('Property Descriptions', '-'))
         for m in list(members):
-            f.write("  .. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_properties(f, name, m, True)
             if m.text.strip() != '':
                 f.write(rstize_text(m.text.strip(), name))
