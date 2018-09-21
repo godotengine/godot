@@ -270,15 +270,13 @@ void ParticlesMaterial::_update_shader() {
 	code += "\n";
 
 	//functions to create simplex noise, curl noise in 3D and 4D
-	code += "\n\n";
 	code += "vec4 permute(vec4 x) {\n";
 	code += "	return mod(((x * 34.0) + 1.0) * x, 289.0);\n";
 	code += "}\n";
 	code += "\n";
 
-	code += "\n\n";
 	code += "vec4 taylor_inv_sqrt(vec4 r) {\n";
-	code += "return 1.79284291400159 - 0.85373472095314 * r;\n";
+	code += "	return 1.79284291400159 - 0.85373472095314 * r;\n";
 	code += "}\n";
 	code += "\n";
 
@@ -286,13 +284,13 @@ void ParticlesMaterial::_update_shader() {
 	code += "float permute_float(float x) {\n";
 	code += "	return floor(mod(((x * 34.0) + 1.0) * x, 289.0));\n";
 	code += "}\n";
+	code += "\n";
 
-	code += "\n\n";
 	code += "float taylor_inv_sqrt_float(float r) {\n";
 	code += "	return 1.79284291400159 - 0.85373472095314 * r;\n";
 	code += "}\n";
+	code += "\n";
 
-	code += "\n\n";
 	code += "float snoise_3d(vec3 v) {\n";
 	code += "	vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0) ;\n";
 	code += "	vec4 D = vec4(0.0, 0.5, 1.0, 2.0);\n";
@@ -304,11 +302,11 @@ void ParticlesMaterial::_update_shader() {
 	code += "	vec3 i2 = max(g.xyz, l.zxy);\n";
 	code += "	vec3 x1 = x0 - i1 + vec3(C.x);\n";
 	code += "	vec3 x2 = x0 - i2 + vec3(C.y);\n";
-	code += "	vec3 x3 = x0 - vec3(D.y); \n";
-	code += "	i = mod(i, 289.0); \n";
-	code += "	vec4 p = permute( permute( permute( \n";
+	code += "	vec3 x3 = x0 - vec3(D.y);\n";
+	code += "	i = mod(i, 289.0);\n";
+	code += "	vec4 p = permute(permute(permute(\n";
 	code += "			i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n";
-	code += "			+ i.y + vec4(0.0, i1.y, i2.y, 1.0 )) \n";
+	code += "			+ i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n";
 	code += "			+ i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n";
 	code += "	float n_ = 0.142857142857;\n";
 	code += "	vec3 ns = n_ * D.wyz - D.xzx;\n";
@@ -338,8 +336,8 @@ void ParticlesMaterial::_update_shader() {
 	code += "	m = m * m;\n";
 	code += "	return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));\n";
 	code += " }\n";
+	code += "\n";
 
-	code += "\n\n";
 	code += "vec4 grad4(float j, vec4 ip) {\n";
 	code += "	vec4 ones = vec4(1.0, 1.0, 1.0, -1.0);\n";
 	code += "	vec4 p,s;\n";
@@ -349,8 +347,8 @@ void ParticlesMaterial::_update_shader() {
 	code += "	p.xyz = p.xyz + (s.xyz * 2.0 - 1.0) * s.www; \n";
 	code += "	return p;\n";
 	code += "}\n";
+	code += "\n";
 
-	code += "\n\n";
 	code += "float snoise_4d(vec4 v) {\n";
 	code += "	vec2 C = vec2(0.138196601125010504, 0.309016994374947451);\n";
 	code += "	vec4 i = floor(v + dot(v, vec4(C.y)));\n";
@@ -397,8 +395,8 @@ void ParticlesMaterial::_update_shader() {
 	code += "	return 49.0 * (dot(m0 * m0, vec3( dot(p0, x0), dot(p1, x1), dot(p2, x2)))\n";
 	code += "			+ dot(m1 * m1, vec2(dot(p3, x3), dot(p4, x4)))) ;\n";
 	code += "}\n";
+	code += "\n";
 
-	code += "\n\n";
 	code += "vec3 snoise_vec3(vec3 p) {\n";
 	code += "	float s = snoise_3d(p);\n";
 	code += "	float s1 = snoise_3d(vec3(p.y - 19.1, p.z + 33.4, p.x + 47.2));\n";
@@ -406,8 +404,9 @@ void ParticlesMaterial::_update_shader() {
 	code += "	vec3 c = vec3(s, s1, s2);\n";
 	code += "	return c;\n";
 	code += "}\n";
+	code += "\n";
 
-	code += "\n\n";
+	code += "\n";
 	code += "vec3 snoise_vec4(vec4 p) {\n";
 	code += "	float s = snoise_4d(p);\n";
 	code += "	float s1 = snoise_4d(vec4(p.xyz + vec3(123.4, 129845.6, -1239.1), p.w));\n";
@@ -415,8 +414,8 @@ void ParticlesMaterial::_update_shader() {
 	code += "	vec3 c = vec3(s, s1, s2);\n";
 	code += "	return c;\n";
 	code += "}\n";
+	code += "\n";
 
-	code += "\n\n";
 	code += "vec3 curl_3d(vec3 p ) {\n";
 	code += "	float epsilon = 0.001;\n";
 	code += "	vec3 dx = vec3(epsilon, 0.0, 0.0);\n";
@@ -436,7 +435,6 @@ void ParticlesMaterial::_update_shader() {
 	code += "}\n";
 	code += "\n";
 
-	code += "\n\n";
 	code += "vec3 curl_4d(vec4 p ) {\n";
 	code += "	float epsilon = 0.001;\n";
 	code += "	vec4 dx = vec4(epsilon, 0.0, 0.0, 0.0);\n";

@@ -195,11 +195,10 @@ private:
 		StringName trail_color_modifier;
 
 		StringName gravity;
-	
+
 		StringName noise_scale;
 		StringName noise_strength;
 		StringName noise_timefactor;
-
 	};
 
 	static ShaderNames *shader_names;
@@ -299,7 +298,7 @@ public:
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
-	
+
 	void set_noise_type(NoiseType p_type);
 	NoiseType get_noise_type() const;
 
