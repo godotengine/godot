@@ -3592,6 +3592,7 @@ void EditorNode::_load_docks() {
 
 	_load_docks_from_config(config, "docks");
 	_load_open_scenes_from_config(config, "EditorNode");
+
 	editor_data.set_plugin_window_layout(config);
 }
 
@@ -3784,6 +3785,23 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const S
 	}
 
 	restoring_scenes = false;
+}
+
+bool EditorNode::has_scenes_in_session() {
+	if (!bool(EDITOR_GET("interface/scene_tabs/restore_scenes_on_load"))) {
+		return false;
+	}
+	Ref<ConfigFile> config;
+	config.instance();
+	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
+	if (err != OK) {
+		return false;
+	}
+	if (!config->has_section("EditorNode") || !config->has_section_key("EditorNode", "open_scenes")) {
+		return false;
+	}
+	Array scenes = config->get_value("EditorNode", "open_scenes");
+	return !scenes.empty();
 }
 
 void EditorNode::_update_layouts_menu() {

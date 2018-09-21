@@ -1681,9 +1681,11 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 			if (editor) {
 
-				Error serr = editor_node->load_scene(local_game_path);
-				if (serr != OK)
-					ERR_PRINT("Failed to load scene");
+				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
+					Error serr = editor_node->load_scene(local_game_path);
+					if (serr != OK)
+						ERR_PRINT("Failed to load scene");
+				}
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 			}
 #endif
