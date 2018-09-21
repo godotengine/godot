@@ -116,15 +116,19 @@ MenuButton::MenuButton() {
 
 	switch_on_hover = false;
 	set_flat(true);
+	set_toggle_mode(true);
 	set_disable_shortcuts(false);
 	set_enabled_focus_mode(FOCUS_NONE);
+	set_process_unhandled_key_input(true);
+	set_action_mode(ACTION_MODE_BUTTON_PRESS);
+
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
 	popup->set_as_toplevel(true);
 	popup->set_pass_on_modal_close_click(false);
-	set_process_unhandled_key_input(true);
-	set_action_mode(ACTION_MODE_BUTTON_PRESS);
+	popup->connect("about_to_show", this, "set_pressed", varray(true)); // For when switching from another MenuButton.
+	popup->connect("popup_hide", this, "set_pressed", varray(false));
 }
 
 MenuButton::~MenuButton() {
