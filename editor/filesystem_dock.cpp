@@ -2248,6 +2248,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	current_path = memnew(LineEdit);
 	current_path->set_h_size_flags(SIZE_EXPAND_FILL);
+	current_path->set_text(path);
 	toolbar_hbc->add_child(current_path);
 
 	button_reload = memnew(Button);
