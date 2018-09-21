@@ -4,9 +4,7 @@
 		Noise generator based on Open Simplex.
 	</brief_description>
 	<description>
-		This resource allows you to configure and sample a fractal noise space.
-
-		Here is a brief usage example that configures a SimplexNoise and gets samples at various positions and dimensions:
+		This resource allows you to configure and sample a fractal noise space. Here is a brief usage example that configures a SimplexNoise and gets samples at various positions and dimensions:
 		[codeblock]
 		var noise = SimplexNoise.new()
 
@@ -102,8 +100,7 @@
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Generate a tileable noise image, based on the current noise parameters.
-				Generated seamless images are always square ([code]size[/code] x [code]size[/code]).
+				Generate a tileable noise image, based on the current noise parameters. Generated seamless images are always square ([code]size[/code] x [code]size[/code]).
 			</description>
 		</method>
 	</methods>
@@ -115,12 +112,10 @@
 			Number of Simplex noise layers that are sampled to get the fractal noise.
 		</member>
 		<member name="period" type="float" setter="set_period" getter="get_period">
-			Period of the base octave.
-			A lower period results in a higher-frequency noise (more value changes across the same distance).
+			Period of the base octave. A lower period results in a higher-frequency noise (more value changes across the same distance).
 		</member>
 		<member name="persistence" type="float" setter="set_persistence" getter="get_persistence">
-			Contribution factor of the different octaves.
-			A [code]persistence[/code] value of 1 means all the octaves have the same contribution, a value of 0.5 means each octave contributes half as much as the previous one.
+			Contribution factor of the different octaves. A [code]persistence[/code] value of 1 means all the octaves have the same contribution, a value of 0.5 means each octave contributes half as much as the previous one.
 		</member>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed">
 			Seed used to generate random values, different seeds will generate different noise maps.

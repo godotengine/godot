@@ -4,44 +4,45 @@
 		Post process scenes after import
 	</brief_description>
 	<description>
-		The imported scene can be automatically modified right after import by specifying a 'custom script' that inherits from this class. The [method post_import]-method receives the imported scene's root-node and returns the modified version of the scene
+		Imported scenes can be automatically modified right after import by setting their [i]Custom Script[/i] Import property to a [code]tool[/code] script that inherits from this class.
+		The [method post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
+		[codeblock]
+		tool # needed so it runs in editor
+		extends EditorScenePostImport
+
+		# This sample changes all node names
+
+		# Called right after the scene is imported and gets the root node
+		func post_import(scene):
+		    # change all node names to "modified_[oldnodename]"
+		    iterate(scene)
+		    return scene # remember to return the imported scene
+
+		func iterate(node):
+		    if node != null:
+		        node.name = "modified_"+node.name
+		        for child in node.get_children():
+		            iterate(child)
+		[/codeblock]
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/learning/workflow/assets/importing_scenes.html?highlight=post%20import</link>
+		<link>http://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
 	</tutorials>
 	<demos>
-		[codeblock]
-tool # needed so it runs in editor
-extends EditorScenePostImport
-
-# This sample changes all node names
-
-# get called right after the scene is imported and gets the root-node
-func post_import(scene):
-	# change all node names to "modified_[oldnodename]"
-    iterate(scene)
-    return scene # remember to return the imported scene
-
-func iterate(node):
-    if node!=null:
-        node.name = "modified_"+node.name
-        for child in node.get_children():
-            iterate(child)	
-[/codeblock]
 	</demos>
 	<methods>
 		<method name="get_source_file" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the source-file-path which got imported (e.g. [code]res://scene.dae[/code] )
+				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
 			</description>
 		</method>
 		<method name="get_source_folder" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the resource-folder the imported scene-file is located in
+				Returns the resource folder the imported scene file is located in.
 			</description>
 		</method>
 		<method name="post_import" qualifiers="virtual">
@@ -50,7 +51,7 @@ func iterate(node):
 			<argument index="0" name="scene" type="Object">
 			</argument>
 			<description>
-				Gets called after the scene got imported and has to return the modified version of the scene
+				Gets called after the scene got imported and has to return the modified version of the scene.
 			</description>
 		</method>
 	</methods>
