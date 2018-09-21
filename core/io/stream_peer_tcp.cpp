@@ -249,6 +249,23 @@ StreamPeerTCP::Status StreamPeerTCP::get_status() {
 
 	if (status == STATUS_CONNECTING) {
 		_poll_connection();
+	} else if (status == STATUS_CONNECTED) {
+		Error err;
+		err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
+		if (err == OK) {
+			// FIN received
+			if (_sock->get_available_bytes() == 0) {
+				disconnect_from_host();
+				return status;
+			}
+		}
+		// Also poll write
+		err = _sock->poll(NetSocket::POLL_TYPE_IN_OUT, 0);
+		if (err != OK && err != ERR_BUSY) {
+			// Got an error
+			disconnect_from_host();
+			status = STATUS_ERROR;
+		}
 	}
 
 	return status;

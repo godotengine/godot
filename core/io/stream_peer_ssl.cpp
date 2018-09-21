@@ -128,6 +128,7 @@ void StreamPeerSSL::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 
 	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
 	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
 	BIND_ENUM_CONSTANT(STATUS_ERROR);
 	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
