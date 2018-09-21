@@ -416,7 +416,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "}\n";
 	code += "\n";
 
-	code += "vec3 curl_3d(vec3 p ) {\n";
+	code += "vec3 curl_3d(vec3 p) {\n";
 	code += "	float epsilon = 0.001;\n";
 	code += "	vec3 dx = vec3(epsilon, 0.0, 0.0);\n";
 	code += "	vec3 dy = vec3(0.0, epsilon, 0.0);\n";
@@ -435,7 +435,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "}\n";
 	code += "\n";
 
-	code += "vec3 curl_4d(vec4 p ) {\n";
+	code += "vec3 curl_4d(vec4 p) {\n";
 	code += "	float epsilon = 0.001;\n";
 	code += "	vec4 dx = vec4(epsilon, 0.0, 0.0, 0.0);\n";
 	code += "	vec4 dy = vec4(0.0, epsilon, 0.0, 0.0);\n";
