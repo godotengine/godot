@@ -314,9 +314,10 @@ void FileSystemDock::_notification(int p_what) {
 			button_tree->connect("pressed", this, "_go_to_tree", varray(), CONNECT_DEFERRED);
 			current_path->connect("text_entered", this, "navigate_to_path");
 
-			_update_display_mode();
-
+			display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
+
+			_update_display_mode();
 
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
 				_set_scanning_mode();
