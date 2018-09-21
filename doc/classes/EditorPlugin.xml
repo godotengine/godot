@@ -4,7 +4,7 @@
 		Used by the editor to extend its functionality.
 	</brief_description>
 	<description>
-		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins.
+		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. Also see [EditorScript] to add functions to the editor.
 	</description>
 	<tutorials>
 		<link>http://docs.godotengine.org/en/3.0/development/plugins/index.html</link>
@@ -31,7 +31,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Add a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_bottom_panel].
+				Add a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [code]queue_free()[/code].
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -44,7 +44,7 @@
 			<description>
 				Add a custom control to a container (see CONTAINER_* enum). There are many locations where custom controls can be added in the editor UI.
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
-				If your plugin is being removed, also make sure to remove your custom controls too.
+				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [code]queue_free()[/code].
 			</description>
 		</method>
 		<method name="add_control_to_dock">
@@ -57,7 +57,7 @@
 			<description>
 				Add the control to a specific dock slot (see DOCK_* enum for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
-				If your plugin is being removed, also make sure to remove your control by calling [method remove_control_from_docks].
+				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [code]queue_free()[/code].
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -74,7 +74,7 @@
 			<description>
 				Add a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
 				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
-				You can use the [method EditorPlugin.handles] to check if your custom object is being edited by checking the script or using 'is' keyword.
+				You can use the virtual method [method handles] to check if your custom object is being edited by checking the script or using 'is' keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
@@ -122,7 +122,7 @@
 			<argument index="3" name="ud" type="Variant" default="null">
 			</argument>
 			<description>
-				Adds a custom menu to 'Project &gt; Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+				Add a custom menu to 'Project &gt; Tools' as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -133,6 +133,7 @@
 			<argument index="1" name="submenu" type="Object">
 			</argument>
 			<description>
+				Like [method add_tool_menu_item] but adds the [code]submenu[/code] item inside the [code]name[/code] menu.
 			</description>
 		</method>
 		<method name="apply_changes" qualifiers="virtual">
@@ -171,6 +172,12 @@
 			<argument index="0" name="overlay" type="Control">
 			</argument>
 			<description>
+				This method is called when there is an input event in the 2D viewport, e.g. the user clicks with the mouse in the 2D space (canvas GUI). Keep in mind that for this method to be called you have to first declare the virtual method [method handles] so the editor knows that you want to work with the workspace:
+				[codeblock]
+				func handles(object):
+				    return true
+				[/codeblock]
+				Also note that the edited scene must have a root node.
 			</description>
 		</method>
 		<method name="forward_canvas_force_draw_over_viewport" qualifiers="virtual">
@@ -197,8 +204,12 @@
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Implement this function if you are interested in 3D view screen input events. It will be called only if currently selected node is handled by your plugin.
-				If you would like to always gets those input events then additionally use [method set_input_forwarding_always_enabled].
+				This method is called when there is an input event in the 3D viewport, e.g. the user clicks with the mouse in the 3D space (spatial GUI). Keep in mind that for this method to be called you have to first declare the virtual method [method handles] so the editor knows that you want to work with the workspace:
+				[codeblock]
+				func handles(object):
+				    return true
+				[/codeblock]
+				Also note that the edited scene must have a root node.
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
@@ -212,6 +223,7 @@
 			<return type="EditorInterface">
 			</return>
 			<description>
+				Return the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
 			</description>
 		</method>
 		<method name="get_plugin_icon" qualifiers="virtual">
@@ -253,7 +265,7 @@
 			<argument index="0" name="layout" type="ConfigFile">
 			</argument>
 			<description>
-				Get the GUI layout of the plugin. This is used to save the project's editor layout when the [method EditorPlugin.queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
+				Get the GUI layout of the plugin. This is used to save the project's editor layout when [method queue_save_layout] is called or the editor layout was changed(For example changing the position of a dock).
 			</description>
 		</method>
 		<method name="handles" qualifiers="virtual">
@@ -262,14 +274,14 @@
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return true, then you will get the functions [method EditorPlugin.edit] and [method EditorPlugin.make_visible] called when the editor requests them.
+				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return true, then you will get the functions [method EditorPlugin.edit] and [method EditorPlugin.make_visible] called when the editor requests them. If you have declared the methods [method forward_canvas_gui_input] and [method forward_spatial_gui_input] these will be called too.
 			</description>
 		</method>
 		<method name="has_main_screen" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if this is a main screen editor plugin (it goes in the main screen selector together with 2D, 3D, Script).
+				Return true if this is a main screen editor plugin (it goes in the workspaces selector together with '2D', '3D', and 'Script').
 			</description>
 		</method>
 		<method name="hide_bottom_panel">
@@ -318,7 +330,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the bottom panel. Don't forget to call this if you added one, so the editor can remove it cleanly.
+				Remove the control from the bottom panel. You have to manually [code]queue_free()[/code] the control.
 			</description>
 		</method>
 		<method name="remove_control_from_container">
@@ -329,7 +341,7 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the specified container. Use it when cleaning up after adding a control with [method add_control_to_container]. Note that you can simply free the control if you won't use it anymore.
+				Remove the control from the specified container. You have to manually [code]queue_free()[/code] the control.
 			</description>
 		</method>
 		<method name="remove_control_from_docks">
@@ -338,7 +350,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Remove the control from the dock. Don't forget to call this if you added one, so the editor can save the layout and remove it cleanly.
+				Remove the control from the dock. You have to manually [code]queue_free()[/code] the control.
 			</description>
 		</method>
 		<method name="remove_custom_type">
@@ -347,7 +359,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Remove a custom type added by [method EditorPlugin.add_custom_type]
+				Remove a custom type added by [method add_custom_type]
 			</description>
 		</method>
 		<method name="remove_export_plugin">
@@ -441,7 +453,7 @@
 			<argument index="0" name="screen_name" type="String">
 			</argument>
 			<description>
-				Emitted when user change main screen view (2D, 3D, Script, AssetLib). Works also with screens which are defined by plugins.
+				Emitted when user change the workspace (2D, 3D, Script, AssetLib). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
 		<signal name="resource_saved">
