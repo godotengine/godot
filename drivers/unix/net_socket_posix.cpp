@@ -400,6 +400,7 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 	int ret = ::poll(&pfd, 1, p_timeout);
 
 	ERR_FAIL_COND_V(ret < 0, FAILED);
+	ERR_FAIL_COND_V(pfd.revents & POLLERR, FAILED);
 
 	if (ret == 0)
 		return ERR_BUSY;
