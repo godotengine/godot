@@ -577,7 +577,7 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 	}
 
 	if (p_create_soft_world) {
-		collisionConfiguration = bulletnew(btSoftBodyRigidBodyCollisionConfiguration);
+		collisionConfiguration = bulletnew(GodotSoftCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
 	} else {
 		collisionConfiguration = bulletnew(GodotCollisionConfiguration(static_cast<btDiscreteDynamicsWorld *>(world_mem)));
 	}
