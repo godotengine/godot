@@ -1602,7 +1602,7 @@ void SceneTree::_live_edit_duplicate_node_func(const NodePath &p_at, const Strin
 			continue;
 		Node *n2 = n->get_node(p_at);
 
-		Node *dup = n2->duplicate(true);
+		Node *dup = n2->duplicate(Node::DUPLICATE_SIGNALS | Node::DUPLICATE_GROUPS | Node::DUPLICATE_SCRIPTS);
 
 		if (!dup)
 			continue;
