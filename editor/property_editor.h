@@ -171,30 +171,9 @@ public:
 
 	void set_read_only(bool p_read_only) { read_only = p_read_only; }
 
-	void set_value_evaluator(PropertyValueEvaluator *p_evaluator) { evaluator = p_evaluator; }
-
 	bool edit(Object *p_owner, const String &p_name, Variant::Type p_type, const Variant &p_variant, int p_hint, String p_hint_text);
 
 	CustomPropertyEditor();
-};
-
-class PropertyValueEvaluator : public ValueEvaluator {
-	GDCLASS(PropertyValueEvaluator, ValueEvaluator);
-
-	Object *obj;
-	ScriptLanguage *script_language;
-	String _build_script(const String &p_text);
-
-	_FORCE_INLINE_ double _default_eval(const String &p_text) {
-		return p_text.to_double();
-	}
-
-public:
-	void edit(Object *p_obj);
-	double eval(const String &p_text);
-
-	PropertyValueEvaluator();
-	~PropertyValueEvaluator();
 };
 
 #endif

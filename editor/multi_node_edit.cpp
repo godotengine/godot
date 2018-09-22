@@ -30,7 +30,7 @@
 
 #include "multi_node_edit.h"
 
-#include "core/helper/math_fieldwise.h"
+#include "core/math/math_fieldwise.h"
 #include "editor_node.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
