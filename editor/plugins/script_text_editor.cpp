@@ -628,82 +628,88 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_resource(p_symbol);
 		}
 
-	} else if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path().get_base_dir(), base, result) == OK) {
+	} else {
+		if (ResourceLoader::exists(p_symbol) && ResourceLoader::get_resource_type(p_symbol).length()) {
 
-		_goto_line(p_row);
+			EditorNode::get_singleton()->load_resource(p_symbol);
+			return;
+		} else if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path().get_base_dir(), base, result) == OK) {
 
-		result.class_name = result.class_name.trim_prefix("_");
+			_goto_line(p_row);
 
-		switch (result.type) {
-			case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
+			result.class_name = result.class_name.trim_prefix("_");
 
-				if (result.script.is_valid()) {
-					emit_signal("request_open_script_at_line", result.script, result.location - 1);
-				} else {
-					emit_signal("request_save_history");
-					_goto_line(result.location - 1);
-				}
-			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS: {
-				emit_signal("go_to_help", "class_name:" + result.class_name);
-			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT: {
+			switch (result.type) {
+				case ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION: {
 
-				StringName cname = result.class_name;
-				bool success;
-				while (true) {
-					ClassDB::get_integer_constant(cname, result.class_member, &success);
-					if (success) {
-						result.class_name = cname;
-						cname = ClassDB::get_parent_class(cname);
+					if (result.script.is_valid()) {
+						emit_signal("request_open_script_at_line", result.script, result.location - 1);
 					} else {
-						break;
+						emit_signal("request_save_history");
+						_goto_line(result.location - 1);
 					}
-				}
+				} break;
+				case ScriptLanguage::LookupResult::RESULT_CLASS: {
+					emit_signal("go_to_help", "class_name:" + result.class_name);
+				} break;
+				case ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT: {
 
-				emit_signal("go_to_help", "class_constant:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY: {
-				emit_signal("go_to_help", "class_property:" + result.class_name + ":" + result.class_member);
-
-			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_METHOD: {
-
-				StringName cname = result.class_name;
-
-				while (true) {
-					if (ClassDB::has_method(cname, result.class_member)) {
-						result.class_name = cname;
-						cname = ClassDB::get_parent_class(cname);
-					} else {
-						break;
+					StringName cname = result.class_name;
+					bool success;
+					while (true) {
+						ClassDB::get_integer_constant(cname, result.class_member, &success);
+						if (success) {
+							result.class_name = cname;
+							cname = ClassDB::get_parent_class(cname);
+						} else {
+							break;
+						}
 					}
-				}
 
-				emit_signal("go_to_help", "class_method:" + result.class_name + ":" + result.class_member);
+					emit_signal("go_to_help", "class_constant:" + result.class_name + ":" + result.class_member);
 
-			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_ENUM: {
+				} break;
+				case ScriptLanguage::LookupResult::RESULT_CLASS_PROPERTY: {
+					emit_signal("go_to_help", "class_property:" + result.class_name + ":" + result.class_member);
 
-				StringName cname = result.class_name;
-				StringName success;
-				while (true) {
-					success = ClassDB::get_integer_constant_enum(cname, result.class_member, true);
-					if (success != StringName()) {
-						result.class_name = cname;
-						cname = ClassDB::get_parent_class(cname);
-					} else {
-						break;
+				} break;
+				case ScriptLanguage::LookupResult::RESULT_CLASS_METHOD: {
+
+					StringName cname = result.class_name;
+
+					while (true) {
+						if (ClassDB::has_method(cname, result.class_member)) {
+							result.class_name = cname;
+							cname = ClassDB::get_parent_class(cname);
+						} else {
+							break;
+						}
 					}
-				}
 
-				emit_signal("go_to_help", "class_enum:" + result.class_name + ":" + result.class_member);
+					emit_signal("go_to_help", "class_method:" + result.class_name + ":" + result.class_member);
 
-			} break;
-			case ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE: {
-				emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
-			} break;
+				} break;
+				case ScriptLanguage::LookupResult::RESULT_CLASS_ENUM: {
+
+					StringName cname = result.class_name;
+					StringName success;
+					while (true) {
+						success = ClassDB::get_integer_constant_enum(cname, result.class_member, true);
+						if (success != StringName()) {
+							result.class_name = cname;
+							cname = ClassDB::get_parent_class(cname);
+						} else {
+							break;
+						}
+					}
+
+					emit_signal("go_to_help", "class_enum:" + result.class_name + ":" + result.class_member);
+
+				} break;
+				case ScriptLanguage::LookupResult::RESULT_CLASS_TBD_GLOBALSCOPE: {
+					emit_signal("go_to_help", "class_global:" + result.class_name + ":" + result.class_member);
+				} break;
+			}
 		}
 	}
 }

@@ -4995,6 +4995,16 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 				}
 				path = base.plus_file(path).simplify_path();
 			}
+
+			//avoid trowing errors in completion/lookup mode since the constant string could be broken by cursor in tokenizer
+			if (!ResourceLoader::exists(path)) {
+				if (!for_completion) {
+					_set_error("Could not resolve relative path for parent class: " + path, p_class->line);
+				}
+
+				return;
+			}
+
 			script = ResourceLoader::load(path);
 			if (script.is_null()) {
 				_set_error("Could not load base class: " + path, p_class->line);
