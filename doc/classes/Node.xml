@@ -266,6 +266,15 @@
 				Returns the parent node of the current node, or an empty [code]Node[/code] if the node lacks a parent.
 			</description>
 		</method>
+		<method name="find_parent" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="mask" type="String">
+			</argument>
+			<description>
+				Finds the first parent of the current node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
+			</description>
+		</method>
 		<method name="get_path" qualifiers="const">
 			<return type="NodePath">
 			</return>
