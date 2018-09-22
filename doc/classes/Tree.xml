@@ -94,7 +94,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				If [member drop_mode_flags] includes [code]DROP_MODE_INBETWEEN[/code], returns -1 if [code]position[/code] is the upper part of a tree item at that position, 1 for the lower part, and additionally 0 for the middle part if [member drop_mode_flags] includes [code]DROP_MODE_ON_ITEM[/code]. 
+				If [member drop_mode_flags] includes [code]DROP_MODE_INBETWEEN[/code], returns -1 if [code]position[/code] is the upper part of a tree item at that position, 1 for the lower part, and additionally 0 for the middle part if [member drop_mode_flags] includes [code]DROP_MODE_ON_ITEM[/code].
 				Otherwise, returns 0. If there are no tree item at [code]position[/code], returns -100.
 			</description>
 		</method>

@@ -55,7 +55,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns the absolute value of parameter [code]s[/code]  (i.e. unsigned value, works for integer and float).
+				Returns the absolute value of parameter [code]s[/code] (i.e. unsigned value, works for integer and float).
 				[codeblock]
 				# a is 1
 				a = abs(-1)
@@ -373,7 +373,7 @@
 			<description>
 				Returns the floating-point remainder of [code]x/y[/code] that wraps equally in positive and negative.
 				[codeblock]
-				var i = -10;
+				var i = -10
 				while i &lt; 0:
 				    prints(i, fposmod(i, 10))
 				    i += 1
