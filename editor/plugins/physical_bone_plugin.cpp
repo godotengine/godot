@@ -70,11 +70,13 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 }
 
 PhysicalBoneEditor::~PhysicalBoneEditor() {
-	// TODO the spatial_editor_hb should be removed from SpatialEditor, but in this moment it's not possible
 	for (int i = spatial_editor_hb->get_child_count() - 1; 0 <= i; --i) {
 		Node *n = spatial_editor_hb->get_child(i);
 		spatial_editor_hb->remove_child(n);
 		memdelete(n);
+	}
+	if (spatial_editor_hb->get_parent()) {
+		spatial_editor_hb->get_parent()->remove_child(spatial_editor_hb);
 	}
 	memdelete(spatial_editor_hb);
 }
