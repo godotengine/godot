@@ -69,17 +69,7 @@ PhysicalBoneEditor::PhysicalBoneEditor(EditorNode *p_editor) :
 	hide();
 }
 
-PhysicalBoneEditor::~PhysicalBoneEditor() {
-	for (int i = spatial_editor_hb->get_child_count() - 1; 0 <= i; --i) {
-		Node *n = spatial_editor_hb->get_child(i);
-		spatial_editor_hb->remove_child(n);
-		memdelete(n);
-	}
-	if (spatial_editor_hb->get_parent()) {
-		spatial_editor_hb->get_parent()->remove_child(spatial_editor_hb);
-	}
-	memdelete(spatial_editor_hb);
-}
+PhysicalBoneEditor::~PhysicalBoneEditor() {}
 
 void PhysicalBoneEditor::set_selected(PhysicalBone *p_pb) {
 
@@ -100,19 +90,17 @@ void PhysicalBoneEditor::show() {
 
 PhysicalBonePlugin::PhysicalBonePlugin(EditorNode *p_editor) :
 		editor(p_editor),
-		selected(NULL) {
-
-	physical_bone_editor = memnew(PhysicalBoneEditor(editor));
-}
+		selected(NULL),
+		physical_bone_editor(editor) {}
 
 void PhysicalBonePlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 
-		physical_bone_editor->show();
+		physical_bone_editor.show();
 	} else {
 
-		physical_bone_editor->hide();
-		physical_bone_editor->set_selected(NULL);
+		physical_bone_editor.hide();
+		physical_bone_editor.set_selected(NULL);
 		selected = NULL;
 	}
 }
@@ -121,5 +109,5 @@ void PhysicalBonePlugin::edit(Object *p_node) {
 	selected = static_cast<PhysicalBone *>(p_node); // Trust it
 	ERR_FAIL_COND(!selected);
 
-	physical_bone_editor->set_selected(selected);
+	physical_bone_editor.set_selected(selected);
 }
