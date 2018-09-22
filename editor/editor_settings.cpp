@@ -1216,18 +1216,25 @@ bool EditorSettings::is_dark_theme() {
 
 void EditorSettings::list_text_editor_themes() {
 	String themes = "Adaptive,Default,Custom";
+
 	DirAccess *d = DirAccess::open(get_text_editor_themes_dir());
 	if (d) {
+		List<String> custom_themes;
 		d->list_dir_begin();
 		String file = d->get_next();
 		while (file != String()) {
 			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default" && file.get_basename().to_lower() != "adaptive" && file.get_basename().to_lower() != "custom") {
-				themes += "," + file.get_basename();
+				custom_themes.push_back(file.get_basename());
 			}
 			file = d->get_next();
 		}
 		d->list_dir_end();
 		memdelete(d);
+
+		custom_themes.sort();
+		for (List<String>::Element *E = custom_themes.front(); E; E = E->next()) {
+			themes += "," + E->get();
+		}
 	}
 	add_property_hint(PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, themes));
 }
