@@ -646,6 +646,24 @@ void EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 		return;
 	}
 
+	static const char *_keywords[] = {
+		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
+		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
+		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
+		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
+		"remotesync", "mastersync", "puppetsync",
+		0
+	};
+
+	const char **kw = _keywords;
+	while (*kw) {
+		if (name == *kw) {
+			EditorNode::get_singleton()->show_warning(TTR("Invalid Name.") + "\n" + TTR("Keyword cannot be used as an autoload name."));
+			return;
+		}
+		kw++;
+	}
+
 	name = "autoload/" + name;
 
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
