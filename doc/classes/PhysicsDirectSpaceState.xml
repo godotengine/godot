@@ -21,7 +21,7 @@
 			</argument>
 			<description>
 				Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [1, 1].
-				If the shape can not move, the array will be empty.
+				If the shape can not move, the returned array will be [0, 0].
 			</description>
 		</method>
 		<method name="collide_shape">
@@ -41,7 +41,7 @@
 			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
 			</argument>
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters] object, against the space. If it collides with more than a shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters] object, against the space. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector3]. If the object is an [Area], the result is [code](0, 0, 0)[/code].
 				[code]normal[/code]: The object's surface normal at the intersection point.
@@ -91,7 +91,7 @@
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				The number of intersections can be limited with the second parameter, to reduce the processing time.
+				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
 			</description>
 		</method>
 	</methods>
