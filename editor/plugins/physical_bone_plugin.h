@@ -64,7 +64,7 @@ class PhysicalBonePlugin : public EditorPlugin {
 
 	EditorNode *editor;
 	PhysicalBone *selected;
-	PhysicalBoneEditor *physical_bone_editor;
+	PhysicalBoneEditor physical_bone_editor;
 
 public:
 	virtual String get_name() const { return "PhysicalBone"; }
