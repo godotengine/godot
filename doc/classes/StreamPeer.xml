@@ -81,10 +81,10 @@
 		<method name="get_string">
 			<return type="String">
 			</return>
-			<argument index="0" name="bytes" type="int">
+			<argument index="0" name="bytes" type="int" default="-1">
 			</argument>
 			<description>
-				Get a string with byte-length "bytes" from the stream.
+				Get a string with byte-length [code]bytes[/code] from the stream. If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_string].
 			</description>
 		</method>
 		<method name="get_u16">
@@ -118,10 +118,10 @@
 		<method name="get_utf8_string">
 			<return type="String">
 			</return>
-			<argument index="0" name="bytes" type="int">
+			<argument index="0" name="bytes" type="int" default="-1">
 			</argument>
 			<description>
-				Get a utf8 string with byte-length "bytes" from the stream (this decodes the string sent as utf8).
+				Get a utf8 string with byte-length [code]bytes[/code] from the stream (this decodes the string sent as utf8). If [code]bytes[/code] is negative (default) the length will be read from the stream using the reverse process of [method put_utf8_string].
 			</description>
 		</method>
 		<method name="get_var">
@@ -203,6 +203,15 @@
 				Send a chunk of data through the connection, if all the data could not be sent at once, only part of it will. This function returns two values, an Error code and an integer, describing how much data was actually sent.
 			</description>
 		</method>
+		<method name="put_string">
+			<return type="void">
+			</return>
+			<argument index="0" name="value" type="String">
+			</argument>
+			<description>
+				Put a zero-terminated ascii string into the stream prepended by a 32 bits unsigned integer representing its size.
+			</description>
+		</method>
 		<method name="put_u16">
 			<return type="void">
 			</return>
@@ -245,7 +254,7 @@
 			<argument index="0" name="value" type="String">
 			</argument>
 			<description>
-				Put a zero-terminated utf8 string into the stream.
+				Put a zero-terminated utf8 string into the stream prepended by a 32 bits unsigned integer representing its size.
 			</description>
 		</method>
 		<method name="put_var">
