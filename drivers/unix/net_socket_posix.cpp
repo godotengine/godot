@@ -74,6 +74,8 @@
 #elif defined(WINDOWS_ENABLED)
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
+#include <mswsock.h>
 // Some custom defines to minimize ifdefs
 #define SOCK_EMPTY INVALID_SOCKET
 #define SOCK_BUF(x) (char *)(x)
@@ -84,6 +86,10 @@
 // Windows doesn't have this flag
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL 0
+#endif
+// Workaround missing flag in MinGW
+#if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
+#define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
 #endif
 
 #endif
@@ -258,6 +264,21 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 	}
 
 	_is_stream = p_sock_type == TYPE_TCP;
+
+#if defined(WINDOWS_ENABLED)
+	if (!_is_stream) {
+		// Disable windows feature/bug reporting WSAECONNRESET/WSAENETRESET when
+		// recv/recvfrom and an ICMP reply was received from a previous send/sendto.
+		unsigned long disable = 0;
+		if (ioctlsocket(_sock, SIO_UDP_CONNRESET, &disable) == SOCKET_ERROR) {
+			print_verbose("Unable to turn off UDP WSAECONNRESET behaviour on Windows");
+		}
+		if (ioctlsocket(_sock, SIO_UDP_NETRESET, &disable) == SOCKET_ERROR) {
+			// This feature seems not to be supported on wine.
+			print_verbose("Unable to turn off UDP WSAENETRESET behaviour on Windows");
+		}
+	}
+#endif
 	return OK;
 }
 
