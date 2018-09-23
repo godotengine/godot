@@ -49,7 +49,7 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "code", "reason"), &WebSocketServer::disconnect_peer, DEFVAL(1000), DEFVAL(""));
 
 	ADD_SIGNAL(MethodInfo("client_close_request", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
-	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("client_disconnected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::BOOL, "was_clean_close")));
 	ADD_SIGNAL(MethodInfo("client_connected", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "protocol")));
 	ADD_SIGNAL(MethodInfo("data_received", PropertyInfo(Variant::INT, "id")));
 }
@@ -86,14 +86,14 @@ void WebSocketServer::_on_connect(int32_t p_peer_id, String p_protocol) {
 	}
 }
 
-void WebSocketServer::_on_disconnect(int32_t p_peer_id) {
+void WebSocketServer::_on_disconnect(int32_t p_peer_id, bool p_was_clean) {
 
 	if (_is_multiplayer) {
 		// Send delete to clients
 		_send_del(p_peer_id);
 		emit_signal("peer_disconnected", p_peer_id);
 	} else {
-		emit_signal("client_disconnected", p_peer_id);
+		emit_signal("client_disconnected", p_peer_id, p_was_clean);
 	}
 }
 

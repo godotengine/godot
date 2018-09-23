@@ -90,6 +90,7 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 
 			peer_data->peer_id = id;
 			peer_data->force_close = false;
+			peer_data->clean_close = false;
 			_on_connect(id, lws_get_protocol(wsi)->name);
 			break;
 		}
@@ -103,6 +104,7 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 				int code;
 				Ref<LWSPeer> peer = _peer_map[id];
 				String reason = peer->get_close_reason(in, len, code);
+				peer_data->clean_close = true;
 				_on_close_request(id, code, reason);
 			}
 			return 0;
@@ -112,11 +114,12 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			if (peer_data == NULL)
 				return 0;
 			int32_t id = peer_data->peer_id;
+			bool clean = peer_data->clean_close;
 			if (_peer_map.has(id)) {
 				_peer_map[id]->close();
 				_peer_map.erase(id);
 			}
-			_on_disconnect(id);
+			_on_disconnect(id, clean);
 			return 0; // we can end here
 		}
 

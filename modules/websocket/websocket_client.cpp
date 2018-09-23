@@ -112,12 +112,12 @@ void WebSocketClient::_on_close_request(int p_code, String p_reason) {
 	emit_signal("server_close_request", p_code, p_reason);
 }
 
-void WebSocketClient::_on_disconnect() {
+void WebSocketClient::_on_disconnect(bool p_was_clean) {
 
 	if (_is_multiplayer) {
 		emit_signal("connection_failed");
 	} else {
-		emit_signal("connection_closed");
+		emit_signal("connection_closed", p_was_clean);
 	}
 }
 
@@ -141,6 +141,6 @@ void WebSocketClient::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("data_received"));
 	ADD_SIGNAL(MethodInfo("connection_established", PropertyInfo(Variant::STRING, "protocol")));
 	ADD_SIGNAL(MethodInfo("server_close_request", PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "reason")));
-	ADD_SIGNAL(MethodInfo("connection_closed"));
+	ADD_SIGNAL(MethodInfo("connection_closed", PropertyInfo(Variant::BOOL, "was_clean_close")));
 	ADD_SIGNAL(MethodInfo("connection_error"));
 }

@@ -60,6 +60,7 @@ public:
 	struct PeerData {
 		uint32_t peer_id;
 		bool force_close;
+		bool clean_close;
 	};
 
 	RingBuffer<uint8_t> rbw;

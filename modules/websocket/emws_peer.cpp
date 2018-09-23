@@ -140,7 +140,7 @@ void EMWSPeer::close(int p_code, String p_reason) {
 			var reason = UTF8ToString($2);
 			sock.close(code, reason);
 			Module.IDHandler.remove($0);
-		}, peer_sock, p_code);
+		}, peer_sock, p_code, p_reason.utf8().get_data());
 		/* clang-format on */
 	}
 	peer_sock = -1;

@@ -216,6 +216,7 @@ void LWSPeer::close(int p_code, String p_reason) {
 		close_reason = p_reason;
 		PeerData *data = ((PeerData *)lws_wsi_user(wsi));
 		data->force_close = true;
+		data->clean_close = true;
 		lws_callback_on_writable(wsi); // Notify that we want to disconnect
 	} else {
 		close_code = -1;

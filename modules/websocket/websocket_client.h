@@ -63,7 +63,7 @@ public:
 	void _on_peer_packet();
 	void _on_connect(String p_protocol);
 	void _on_close_request(int p_code, String p_reason);
-	void _on_disconnect();
+	void _on_disconnect(bool p_was_clean);
 	void _on_error();
 
 	WebSocketClient();
