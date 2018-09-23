@@ -554,8 +554,8 @@ void ParticlesMaterial::_update_shader() {
 		}
 	}
 	//scale by scale
-	code += "	float base_scale = mix(scale * tex_scale, 1.0, scale_random * scale_rand);\n";
-	code += "	if (base_scale == 0.0) {\n";
+	code += "	float base_scale = sqrt(tex_scale) * mix(scale * sqrt(tex_scale), 1.0, scale_random * scale_rand);\n";
+	code += "	if (base_scale < 0.000001) {\n";
 	code += "		base_scale = 0.000001;\n";
 	code += "	}\n";
 	if (trail_size_modifier.is_valid()) {
