@@ -2393,6 +2393,10 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
+	GLOBAL_DEF("rendering/quality/shading/force_lambert_over_burley", false);
+	GLOBAL_DEF("rendering/quality/shading/force_lambert_over_burley.mobile", true);
+	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx", false);
+	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx.mobile", true);
 
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno");

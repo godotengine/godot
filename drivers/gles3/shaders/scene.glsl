@@ -3,6 +3,8 @@
 
 #define M_PI 3.14159265359
 
+#define SHADER_IS_SRGB false
+
 /*
 from VisualServer:
 
@@ -514,6 +516,7 @@ VERTEX_SHADER_CODE
 /* clang-format off */
 [fragment]
 
+
 /* texture unit usage, N is max_texture_unity-N
 
 1-skeleton
@@ -533,6 +536,7 @@ uniform highp mat4 world_transform;
 /* clang-format on */
 
 #define M_PI 3.14159265359
+#define SHADER_IS_SRGB false
 
 /* Varyings */
 
@@ -1020,17 +1024,29 @@ LIGHT_SHADER_CODE
 
 #if defined(SPECULAR_BLINN)
 
+		//normalized blinn
 		vec3 H = normalize(V + L);
 		float cNdotH = max(dot(N, H), 0.0);
-		float intensity = pow(cNdotH, (1.0 - roughness) * 256.0);
+		float cVdotH = max(dot(V, H), 0.0);
+		float cLdotH = max(dot(L, H), 0.0);
+		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
+		float blinn = pow( cNdotH, shininess );
+		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
+		float intensity = ( blinn ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
+
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
 
 #elif defined(SPECULAR_PHONG)
 
 		vec3 R = normalize(-reflect(L, N));
 		float cRdotV = max(0.0, dot(R, V));
-		float intensity = pow(cRdotV, (1.0 - roughness) * 256.0);
+		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
+		float phong = pow( cRdotV, shininess );
+		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
+		float intensity = ( phong ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
+
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
+
 
 #elif defined(SPECULAR_TOON)
 
@@ -1070,11 +1086,11 @@ LIGHT_SHADER_CODE
 		float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
 #endif
 		// F
-		float F0 = 1.0; // FIXME
-		float cLdotH5 = SchlickFresnel(cLdotH);
-		float F = mix(cLdotH5, 1.0, F0);
+		//float F0 = 1.0;
+		//float cLdotH5 = SchlickFresnel(cLdotH);
+		//float F = mix(cLdotH5, 1.0, F0);
 
-		float specular_brdf_NL = cNdotL * D * F * G;
+		float specular_brdf_NL = cNdotL * D /* F */ * G;
 
 		specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 #endif

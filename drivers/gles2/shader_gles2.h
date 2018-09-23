@@ -468,7 +468,8 @@ public:
 	// like forward declared nested classes.
 	void use_material(void *p_material);
 
-	uint32_t get_version() const { return new_conditional_version.version; }
+	_FORCE_INLINE_ uint32_t get_version() const { return new_conditional_version.version; }
+	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
 
 	void set_uniform_camera(int p_idx, const CameraMatrix &p_mat) {
 

@@ -122,6 +122,11 @@ bool ShaderGLES3::bind() {
 
 	ERR_FAIL_COND_V(!version, false);
 
+	if (!version->ok) { //broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
+		glUseProgram(0);
+		return false;
+	}
+
 	glUseProgram(version->id);
 
 	DEBUG_TEST_ERROR("Use Program");

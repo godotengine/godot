@@ -53,12 +53,34 @@
 
 class RasterizerSceneGLES2 : public RasterizerScene {
 public:
+	enum ShadowFilterMode {
+		SHADOW_FILTER_NEAREST,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF13,
+	};
+
+	ShadowFilterMode shadow_filter_mode;
+
 	RID default_material;
 	RID default_material_twosided;
 	RID default_shader;
 	RID default_shader_twosided;
 
+	RID default_worldcoord_material;
+	RID default_worldcoord_material_twosided;
+	RID default_worldcoord_shader;
+	RID default_worldcoord_shader_twosided;
+
+	RID default_overdraw_material;
+	RID default_overdraw_shader;
+
+	uint64_t render_pass;
 	uint64_t scene_pass;
+	uint32_t current_material_index;
+	uint32_t current_geometry_index;
+	uint32_t current_light_index;
+	uint32_t current_refprobe_index;
+	uint32_t current_shader_index;
 
 	RasterizerStorageGLES2 *storage;
 	struct State {
@@ -172,11 +194,16 @@ public:
 		bool cull_front;
 		bool cull_disabled;
 		bool used_sss;
-		bool used_screen_texture;
 		bool using_contact_shadows;
 
 		VS::ViewportDebugDraw debug_draw;
 		*/
+
+		bool used_screen_texture;
+		bool shadow_is_dual_parabolloid;
+		float dual_parbolloid_direction;
+		float dual_parbolloid_zfar;
+
 	} state;
 
 	/* SHADOW ATLAS API */
@@ -373,6 +400,10 @@ public:
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0);
 	virtual void light_instance_mark_visible(RID p_light_instance);
 
+	LightInstance **render_light_instances;
+	int render_directional_lights;
+	int render_light_instance_count;
+
 	/* REFLECTION INSTANCE */
 
 	virtual RID gi_probe_instance_create();
@@ -382,40 +413,18 @@ public:
 
 	/* RENDER LIST */
 
-	struct RenderList {
-		enum {
-			DEFAULT_MAX_ELEMENTS = 65536,
-			SORT_FLAG_SKELETON = 1,
-			SORT_FLAG_INSTANCING = 2,
-			MAX_DIRECTIONAL_LIGHTS = 16,
-			MAX_LIGHTS = 4096,
-			MAX_REFLECTIONS = 1024,
+	enum LightMode {
+		LIGHTMODE_NORMAL,
+		LIGHTMODE_UNSHADED,
+		LIGHTMODE_LIGHTMAP,
+		LIGHTMODE_LIGHTMAP_CAPTURE,
+	};
 
-			SORT_KEY_PRIORITY_SHIFT = 56,
-			SORT_KEY_PRIORITY_MASK = 0xFF,
-			//depth layer for opaque (56-52)
-			SORT_KEY_OPAQUE_DEPTH_LAYER_SHIFT = 52,
-			SORT_KEY_OPAQUE_DEPTH_LAYER_MASK = 0xF,
-//64 bits unsupported in MSVC
-#define SORT_KEY_UNSHADED_FLAG (uint64_t(1) << 49)
-#define SORT_KEY_NO_DIRECTIONAL_FLAG (uint64_t(1) << 48)
-#define SORT_KEY_LIGHTMAP_CAPTURE_FLAG (uint64_t(1) << 47)
-#define SORT_KEY_LIGHTMAP_FLAG (uint64_t(1) << 46)
-#define SORT_KEY_GI_PROBES_FLAG (uint64_t(1) << 45)
-#define SORT_KEY_VERTEX_LIT_FLAG (uint64_t(1) << 44)
-			SORT_KEY_SHADING_SHIFT = 44,
-			SORT_KEY_SHADING_MASK = 63,
-			//44-28 material index
-			SORT_KEY_MATERIAL_INDEX_SHIFT = 28,
-			//28-8 geometry index
-			SORT_KEY_GEOMETRY_INDEX_SHIFT = 8,
-			//bits 5-7 geometry type
-			SORT_KEY_GEOMETRY_TYPE_SHIFT = 5,
-			//bits 0-5 for flags
-			SORT_KEY_OPAQUE_PRE_PASS = 8,
-			SORT_KEY_CULL_DISABLED_FLAG = 4,
-			SORT_KEY_SKELETON_FLAG = 2,
-			SORT_KEY_MIRROR_FLAG = 1
+	struct RenderList {
+
+		enum {
+			MAX_LIGHTS = 255,
+			DEFAULT_MAX_ELEMENTS = 65536
 		};
 
 		int max_elements;
@@ -427,7 +436,38 @@ public:
 			RasterizerStorageGLES2::Material *material;
 			RasterizerStorageGLES2::GeometryOwner *owner;
 
-			uint64_t sort_key;
+			bool use_accum; //is this an add pass for multipass
+			bool *use_accum_ptr;
+
+			union {
+				//TODO: should be endian swapped on big endian
+				struct {
+					int32_t depth_layer : 16;
+					int32_t priority : 16;
+				};
+
+				uint32_t depth_key;
+			};
+
+			union {
+				struct {
+					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
+
+					uint64_t geometry_index : 14;
+					uint64_t instancing : 1;
+					uint64_t skeleton : 1;
+					uint64_t shader_index : 10;
+					uint64_t material_index : 10;
+					uint64_t light_index : 8;
+					uint64_t light_type2 : 1; // if 1==0 : nolight/directional, else omni/spot
+					uint64_t refprobe_1_index : 8;
+					uint64_t refprobe_0_index : 8;
+					uint64_t light_type1 : 1; //no light, directional is 0, omni spot is 1
+					uint64_t light_mode : 2; // LightMode enum
+				};
+
+				uint64_t sort_key;
+			};
 		};
 
 		Element *base_elements;
@@ -445,7 +485,11 @@ public:
 
 		struct SortByKey {
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				return A->sort_key < B->sort_key;
+				if (A->depth_key == B->depth_key) {
+					return A->sort_key < B->sort_key;
+				} else {
+					return A->depth_key < B->depth_key;
+				}
 			}
 		};
 
@@ -469,29 +513,6 @@ public:
 		void sort_by_depth(bool p_alpha) { //used for shadows
 
 			SortArray<Element *, SortByDepth> sorter;
-			if (p_alpha) {
-				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
-			} else {
-				sorter.sort(elements, element_count);
-			}
-		}
-
-		struct SortByReverseDepthAndPriority {
-
-			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
-				uint32_t layer_A = uint32_t(A->sort_key >> SORT_KEY_PRIORITY_SHIFT);
-				uint32_t layer_B = uint32_t(B->sort_key >> SORT_KEY_PRIORITY_SHIFT);
-				if (layer_A == layer_B) {
-					return A->instance->depth > B->instance->depth;
-				} else {
-					return layer_A < layer_B;
-				}
-			}
-		};
-
-		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
-
-			SortArray<Element *, SortByReverseDepthAndPriority> sorter;
 			if (p_alpha) {
 				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
 			} else {
@@ -549,7 +570,6 @@ public:
 
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass);
 	void _render_render_list(RenderList::Element **p_elements, int p_element_count,
-			const RID *p_directional_lights, int p_directional_light_count,
 			const Transform &p_view_transform,
 			const CameraMatrix &p_projection,
 			RID p_shadow_atlas,
@@ -559,14 +579,15 @@ public:
 			float p_shadow_normal_bias,
 			bool p_reverse_cull,
 			bool p_alpha_pass,
-			bool p_shadow,
-			bool p_directional_add);
+			bool p_shadow);
 
 	void _draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy);
 
-	void _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
-	void _setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton);
-	void _render_geometry(RenderList::Element *p_element);
+	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES2::Material *p_material, bool p_reverse_cull, bool p_alpha_pass, Size2i p_skeleton_tex_size = Size2i(0, 0));
+	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton);
+	_FORCE_INLINE_ void _setup_light_type(LightInstance *p_light, ShadowAtlas *shadow_atlas);
+	_FORCE_INLINE_ void _setup_light(LightInstance *p_light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform);
+	_FORCE_INLINE_ void _render_geometry(RenderList::Element *p_element);
 
 	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);

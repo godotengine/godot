@@ -406,6 +406,9 @@ public:
 
 		String path;
 
+		uint32_t index;
+		uint64_t last_pass;
+
 		struct CanvasItem {
 
 			enum BlendMode {
@@ -491,6 +494,7 @@ public:
 			valid = false;
 			custom_code_id = 0;
 			version = 1;
+			last_pass = 0;
 		}
 	};
 

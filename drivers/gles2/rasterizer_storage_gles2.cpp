@@ -52,6 +52,8 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #define _GL_HALF_FLOAT_OES 0x8D61
 #endif
 
+#define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
+
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
@@ -4225,6 +4227,12 @@ void RasterizerStorageGLES2::initialize() {
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+#ifdef GLES_OVER_GL
+	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+#endif
+
+	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 }
 
 void RasterizerStorageGLES2::finalize() {
