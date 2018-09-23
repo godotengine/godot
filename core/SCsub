@@ -117,7 +117,6 @@ SConscript('os/SCsub')
 SConscript('math/SCsub')
 SConscript('io/SCsub')
 SConscript('bind/SCsub')
-SConscript('helper/SCsub')
 
 
 # Build it all as a library
