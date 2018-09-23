@@ -55,6 +55,7 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_error(void *obj) {
 
 EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int was_clean) {
 	EMWSClient *client = static_cast<EMWSClient *>(obj);
+	client->_on_close_request(code, String(reason));
 	client->_is_connecting = false;
 	client->_on_disconnect();
 }
@@ -182,9 +183,9 @@ NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() c
 	return CONNECTION_DISCONNECTED;
 };
 
-void EMWSClient::disconnect_from_host() {
+void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
 
-	_peer->close();
+	_peer->close(p_code, p_reason);
 };
 
 IP_Address EMWSClient::get_connected_host() const {

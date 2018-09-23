@@ -137,6 +137,13 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			destroy_context();
 			return -1; // We should close the connection (would probably happen anyway)
 
+		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
+			int code;
+			String reason = peer->get_close_reason(in, len, code);
+			_on_close_request(code, reason);
+			return 0;
+		}
+
 		case LWS_CALLBACK_CLIENT_CLOSED:
 			peer->close();
 			destroy_context();
@@ -150,8 +157,10 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			break;
 
 		case LWS_CALLBACK_CLIENT_WRITEABLE:
-			if (peer_data->force_close)
+			if (peer_data->force_close) {
+				peer->send_close_status(wsi);
 				return -1;
+			}
 
 			peer->write_wsi();
 			break;
@@ -179,13 +188,12 @@ NetworkedMultiplayerPeer::ConnectionStatus LWSClient::get_connection_status() co
 	return CONNECTION_CONNECTING;
 }
 
-void LWSClient::disconnect_from_host() {
+void LWSClient::disconnect_from_host(int p_code, String p_reason) {
 
 	if (context == NULL)
 		return;
 
-	_peer->close();
-	destroy_context();
+	_peer->close(p_code, p_reason);
 };
 
 IP_Address LWSClient::get_connected_host() const {
@@ -208,6 +216,7 @@ LWSClient::~LWSClient() {
 
 	invalidate_lws_ref(); // We do not want any more callback
 	disconnect_from_host();
+	destroy_context();
 	_peer = Ref<LWSPeer>();
 };
 
