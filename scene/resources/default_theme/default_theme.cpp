@@ -364,6 +364,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
 	theme->set_stylebox("disabled", "CheckBox", cbx_empty);
 	theme->set_stylebox("hover", "CheckBox", cbx_empty);
+	theme->set_stylebox("hover_pressed", "CheckBox", cbx_empty);
 	theme->set_stylebox("focus", "CheckBox", cbx_focus);
 
 	theme->set_icon("checked", "CheckBox", make_icon(checked_png));
@@ -376,6 +377,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "CheckBox", control_font_color);
 	theme->set_color("font_color_pressed", "CheckBox", control_font_color_pressed);
 	theme->set_color("font_color_hover", "CheckBox", control_font_color_hover);
+	theme->set_color("font_color_hover_pressed", "CheckBox", control_font_color_pressed);
 	theme->set_color("font_color_disabled", "CheckBox", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * scale);
@@ -393,6 +395,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed", "CheckButton", cb_empty);
 	theme->set_stylebox("disabled", "CheckButton", cb_empty);
 	theme->set_stylebox("hover", "CheckButton", cb_empty);
+	theme->set_stylebox("hover_pressed", "CheckButton", cb_empty);
 	theme->set_stylebox("focus", "CheckButton", focus);
 
 	theme->set_icon("on", "CheckButton", make_icon(toggle_on_png));
@@ -403,6 +406,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "CheckButton", control_font_color);
 	theme->set_color("font_color_pressed", "CheckButton", control_font_color_pressed);
 	theme->set_color("font_color_hover", "CheckButton", control_font_color_hover);
+	theme->set_color("font_color_hover_pressed", "CheckButton", control_font_color_pressed);
 	theme->set_color("font_color_disabled", "CheckButton", control_font_color_disabled);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * scale);
