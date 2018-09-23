@@ -31,7 +31,6 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include "core/helper/value_evaluator.h"
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup_menu.h"
@@ -504,8 +503,6 @@ private:
 
 	bool hide_folding;
 
-	ValueEvaluator *evaluator;
-
 	int _count_selected_items(TreeItem *p_from) const;
 	void _go_left();
 	void _go_right();
@@ -600,8 +597,6 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
-
-	void set_value_evaluator(ValueEvaluator *p_evaluator);
 
 	Tree();
 	~Tree();

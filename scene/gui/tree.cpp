@@ -159,7 +159,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].text = p_text;
 
-	if (cells[p_column].mode == TreeItem::CELL_MODE_RANGE || cells[p_column].mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
+	if (cells[p_column].mode == TreeItem::CELL_MODE_RANGE) {
 
 		Vector<String> strings = p_text.split(",");
 		cells.write[p_column].min = INT_MAX;
@@ -791,7 +791,6 @@ void TreeItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_MODE_STRING);
 	BIND_ENUM_CONSTANT(CELL_MODE_CHECK);
 	BIND_ENUM_CONSTANT(CELL_MODE_RANGE);
-	BIND_ENUM_CONSTANT(CELL_MODE_RANGE_EXPRESSION);
 	BIND_ENUM_CONSTANT(CELL_MODE_ICON);
 	BIND_ENUM_CONSTANT(CELL_MODE_CUSTOM);
 
@@ -1245,9 +1244,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					//font->draw( ci, text_pos, p_item->cells[i].text, col,item_rect.size.x-check_w );
 
 				} break;
-				case TreeItem::CELL_MODE_RANGE:
-				case TreeItem::CELL_MODE_RANGE_EXPRESSION: {
-
+				case TreeItem::CELL_MODE_RANGE: {
 					if (p_item->cells[i].text != "") {
 
 						if (!p_item->cells[i].editable)
@@ -1821,9 +1818,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				//p_item->edited_signal.call(col);
 
 			} break;
-			case TreeItem::CELL_MODE_RANGE:
-			case TreeItem::CELL_MODE_RANGE_EXPRESSION: {
-
+			case TreeItem::CELL_MODE_RANGE: {
 				if (c.text != "") {
 					//if (x >= (get_column_width(col)-item_h/2)) {
 
@@ -2009,21 +2004,6 @@ void Tree::text_editor_enter(String p_text) {
 				c.val = c.max;
 
 			//popup_edited_item->edited_signal.call( popup_edited_item_col );
-		} break;
-		case TreeItem::CELL_MODE_RANGE_EXPRESSION: {
-
-			if (evaluator)
-				c.val = evaluator->eval(p_text);
-			else
-				c.val = p_text.to_double();
-
-			if (c.step > 0)
-				c.val = Math::stepify(c.val, c.step);
-			if (c.val < c.min)
-				c.val = c.min;
-			else if (c.val > c.max)
-				c.val = c.max;
-
 		} break;
 		default: { ERR_FAIL(); }
 	}
@@ -2453,7 +2433,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			update();
 		}
 
-		if (pressing_for_editor && popup_edited_item && (popup_edited_item->get_cell_mode(popup_edited_item_col) == TreeItem::CELL_MODE_RANGE || popup_edited_item->get_cell_mode(popup_edited_item_col) == TreeItem::CELL_MODE_RANGE_EXPRESSION)) {
+		if (pressing_for_editor && popup_edited_item && (popup_edited_item->get_cell_mode(popup_edited_item_col) == TreeItem::CELL_MODE_RANGE)) {
 			//range drag
 
 			if (!range_drag_enabled) {
@@ -2697,7 +2677,7 @@ bool Tree::edit_selected() {
 		item_edited(col, s);
 
 		return true;
-	} else if ((c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) && c.text != "") {
+	} else if (c.mode == TreeItem::CELL_MODE_RANGE && c.text != "") {
 
 		popup_menu->clear();
 		for (int i = 0; i < c.text.get_slice_count(","); i++) {
@@ -2713,7 +2693,7 @@ bool Tree::edit_selected() {
 		popup_edited_item_col = col;
 		return true;
 
-	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
+	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE) {
 
 		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
 		Point2i textedpos = get_global_position() + rect.position - ofs;
@@ -2723,7 +2703,7 @@ bool Tree::edit_selected() {
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::step_decimals(c.step)));
 		text_editor->select_all();
 
-		if (c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
+		if (c.mode == TreeItem::CELL_MODE_RANGE) {
 
 			value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
 			value_editor->set_size(Size2(rect.size.width, 1));
@@ -3713,10 +3693,6 @@ bool Tree::is_folding_hidden() const {
 	return hide_folding;
 }
 
-void Tree::set_value_evaluator(ValueEvaluator *p_evaluator) {
-	evaluator = p_evaluator;
-}
-
 void Tree::set_drop_mode_flags(int p_flags) {
 	if (drop_mode_flags == p_flags)
 		return;
@@ -3933,8 +3909,6 @@ Tree::Tree() {
 	range_drag_enabled = false;
 
 	hide_folding = false;
-
-	evaluator = NULL;
 
 	drop_mode_flags = 0;
 	drop_mode_over = NULL;
