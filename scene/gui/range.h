@@ -97,6 +97,8 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
+	virtual String get_configuration_warning() const;
+
 	Range();
 	~Range();
 };
