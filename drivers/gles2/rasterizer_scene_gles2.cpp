@@ -1558,7 +1558,7 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 	float sign = light_ptr->negative ? -1 : 1;
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SPECULAR, specular);
-	Color color = light_ptr->color * sign * energy * M_PI;
+	Color color = light_ptr->color * sign * energy * Math_PI;
 	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_COLOR, color);
 
 	//specific parameters

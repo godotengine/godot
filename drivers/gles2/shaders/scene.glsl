@@ -135,7 +135,6 @@ uniform highp sampler2D light_directional_shadow; // texunit:-3
 uniform highp vec4 light_split_offsets;
 #endif
 
-
 uniform highp mat4 light_shadow_matrix;
 varying highp vec4 shadow_coord;
 
@@ -154,7 +153,6 @@ varying highp vec4 shadow_coord4;
 #endif
 
 #endif
-
 
 #if defined(USE_VERTEX_LIGHTING) && defined(USE_LIGHTING)
 
@@ -206,7 +204,6 @@ void light_compute(
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
 
-
 #if defined(DIFFUSE_OREN_NAYAR)
 	vec3 diffuse_brdf_NL;
 #else
@@ -214,7 +211,7 @@ void light_compute(
 #endif
 
 #if defined(DIFFUSE_LAMBERT_WRAP)
-		// energy conserving lambert wrap shader
+	// energy conserving lambert wrap shader
 	diffuse_brdf_NL = max(0.0, (NdotL + roughness) / ((1.0 + roughness) * (1.0 + roughness)));
 
 #elif defined(DIFFUSE_OREN_NAYAR)
@@ -233,15 +230,13 @@ void light_compute(
 		diffuse_brdf_NL = cNdotL * (A + vec3(B) * s / t) * (1.0 / M_PI);
 	}
 #else
-		// lambert by default for everything else
+	// lambert by default for everything else
 	diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
 #endif
 
 	SRGB_APPROX(diffuse_brdf_NL)
 
 	diffuse_interp += light_color * diffuse_brdf_NL * attenuation;
-
-
 
 	if (roughness > 0.0) {
 
@@ -254,17 +249,15 @@ void light_compute(
 		float cNdotH = max(dot(N, H), 0.0);
 		float cVdotH = max(dot(V, H), 0.0);
 		float cLdotH = max(dot(L, H), 0.0);
-		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
-		float blinn = pow( cNdotH, shininess );
+		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
+		float blinn = pow(cNdotH, shininess);
 		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
-		specular_brdf_NL = ( blinn ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
+		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 #endif
 
 		SRGB_APPROX(specular_brdf_NL)
 		specular_interp += specular_brdf_NL * light_color * attenuation;
-
 	}
-
 }
 
 #endif
@@ -364,7 +357,6 @@ void main() {
 	mat4 modelview = camera_matrix * world_matrix;
 	float roughness = 1.0;
 
-
 #define world_transform world_matrix
 
 	{
@@ -434,7 +426,6 @@ VERTEX_SHADER_CODE
 
 #endif //depth
 
-
 //vertex lighting
 #if defined(USE_VERTEX_LIGHTING) && defined(USE_LIGHTING)
 	//vertex shaded version of lighting (more limited)
@@ -450,7 +441,7 @@ VERTEX_SHADER_CODE
 	float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation.w);
 
 	vec3 attenuation = vec3(omni_attenuation);
-	light_att=vec3(omni_attenuation);
+	light_att = vec3(omni_attenuation);
 
 	L = normalize(light_vec);
 
@@ -485,14 +476,14 @@ VERTEX_SHADER_CODE
 
 	diffuse_interp = vec3(0.0);
 	specular_interp = vec3(0.0);
-	light_compute(normal_interp,L,-normalize(vertex_interp),light_color.rgb,light_att,roughness);
+	light_compute(normal_interp, L, -normalize(vertex_interp), light_color.rgb, light_att, roughness);
 
 #endif
 
 //shadows (for both vertex and fragment)
 #if defined(USE_SHADOW) && defined(USE_LIGHTING)
 
-	vec4 vi4 = vec4(vertex_interp,1.0);
+	vec4 vi4 = vec4(vertex_interp, 1.0);
 	shadow_coord = light_shadow_matrix * vi4;
 
 #if defined(LIGHT_USE_PSSM2) || defined(LIGHT_USE_PSSM4)
@@ -616,7 +607,6 @@ uniform highp sampler2D light_directional_shadow; // texunit:-3
 uniform highp vec4 light_split_offsets;
 #endif
 
-
 varying highp vec4 shadow_coord;
 
 #if defined(LIGHT_USE_PSSM2) || defined(LIGHT_USE_PSSM4)
@@ -683,7 +673,6 @@ varying highp float dp_clip;
 #endif
 
 #ifdef USE_LIGHTING
-
 
 // This returns the G_GGX function divided by 2 cos_theta_m, where in practice cos_theta_m is either N.L or N.V.
 // We're dividing this factor off because the overall term we'll end up looks like
@@ -890,21 +879,19 @@ LIGHT_SHADER_CODE
 		float cNdotH = max(dot(N, H), 0.0);
 		float cVdotH = max(dot(V, H), 0.0);
 		float cLdotH = max(dot(L, H), 0.0);
-		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
-		float blinn = pow( cNdotH, shininess );
+		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
+		float blinn = pow(cNdotH, shininess);
 		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
-		specular_brdf_NL = ( blinn ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
+		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_PHONG)
 
 		vec3 R = normalize(-reflect(L, N));
 		float cRdotV = max(0.0, dot(R, V));
-		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
-		float phong = pow( cRdotV, shininess );
+		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
+		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
-		specular_brdf_NL = ( phong ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
-
-
+		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_TOON)
 
@@ -954,7 +941,6 @@ LIGHT_SHADER_CODE
 		SRGB_APPROX(specular_brdf_NL)
 		specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 
-
 #if defined(LIGHT_USE_CLEARCOAT)
 		if (clearcoat_gloss > 0.0) {
 #if !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN)
@@ -976,9 +962,7 @@ LIGHT_SHADER_CODE
 #endif
 	}
 
-
 #endif //defined(USE_LIGHT_SHADER_CODE)
-
 }
 
 #endif
@@ -986,13 +970,12 @@ LIGHT_SHADER_CODE
 
 #ifdef USE_SHADOW
 
-#define SAMPLE_SHADOW_TEXEL(p_shadow,p_pos,p_depth) step(p_depth,texture2D(p_shadow,p_pos).r)
+#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, texture2D(p_shadow, p_pos).r)
 
 float sample_shadow(
 		highp sampler2D shadow,
 		highp vec2 pos,
 		highp float depth) {
-
 
 #ifdef SHADOW_MODE_PCF_13
 
@@ -1027,7 +1010,6 @@ float sample_shadow(
 
 	return SAMPLE_SHADOW_TEXEL(shadow, pos, depth);
 #endif
-
 }
 
 #endif
@@ -1151,7 +1133,7 @@ FRAGMENT_SHADER_CODE
 #ifndef USE_VERTEX_LIGHTING
 	vec3 L;
 #endif
-	vec3 light_att=vec3(1.0);
+	vec3 light_att = vec3(1.0);
 
 #ifdef LIGHT_MODE_OMNI
 
@@ -1163,7 +1145,7 @@ FRAGMENT_SHADER_CODE
 
 	float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation.w);
 
-	light_att=vec3(omni_attenuation);
+	light_att = vec3(omni_attenuation);
 	L = normalize(light_vec);
 
 #endif
@@ -1193,8 +1175,7 @@ FRAGMENT_SHADER_CODE
 
 		float shadow = sample_shadow(light_shadow_atlas, splane.xy, splane.z);
 
-		light_att*=shadow;
-
+		light_att *= shadow;
 	}
 #endif
 
@@ -1318,11 +1299,9 @@ FRAGMENT_SHADER_CODE
 	}
 #endif //use shadow
 
-
 #endif
 
 #ifdef LIGHT_MODE_SPOT
-
 
 	light_att = vec3(1.0);
 
@@ -1358,18 +1337,16 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
-
-
 #endif
 
 #ifdef USE_VERTEX_LIGHTING
-//vertex lighting
+	//vertex lighting
 
 	specular_light += specular_interp * specular * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
 
 #else
-//fragment lighting
+	//fragment lighting
 	light_compute(
 			normal,
 			L,
@@ -1394,7 +1371,7 @@ FRAGMENT_SHADER_CODE
 #endif //vertex lighting
 
 #endif //USE_LIGHTING
-//compute and merge
+	//compute and merge
 
 #ifndef RENDER_DEPTH
 
@@ -1435,7 +1412,5 @@ FRAGMENT_SHADER_CODE
 
 #endif //unshaded
 
-
 #endif // not RENDER_DEPTH
-
 }

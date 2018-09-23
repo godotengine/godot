@@ -1029,10 +1029,10 @@ LIGHT_SHADER_CODE
 		float cNdotH = max(dot(N, H), 0.0);
 		float cVdotH = max(dot(V, H), 0.0);
 		float cLdotH = max(dot(L, H), 0.0);
-		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
-		float blinn = pow( cNdotH, shininess );
+		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
+		float blinn = pow(cNdotH, shininess);
 		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
-		float intensity = ( blinn ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
+		float intensity = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
 
@@ -1040,13 +1040,12 @@ LIGHT_SHADER_CODE
 
 		vec3 R = normalize(-reflect(L, N));
 		float cRdotV = max(0.0, dot(R, V));
-		float shininess = exp2( 15.0 * (1.0 - roughness) + 1.0 ) * 0.25;
-		float phong = pow( cRdotV, shininess );
+		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
+		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
-		float intensity = ( phong ) / max( 4.0 * cNdotV * cNdotL, 0.75 );
+		float intensity = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
-
 
 #elif defined(SPECULAR_TOON)
 
