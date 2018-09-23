@@ -1535,7 +1535,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
 			}
-			make_script_dialog_text->config("Node", fpath + "new_script.gd");
+			make_script_dialog_text->config("Node", fpath + "new_script.gd", false);
 			make_script_dialog_text->popup_centered(Size2(300, 300) * EDSCALE);
 		} break;
 
