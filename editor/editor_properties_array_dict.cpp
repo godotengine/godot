@@ -337,7 +337,7 @@ void EditorPropertyArray::update_property() {
 				} break;
 				case Variant::INT: {
 					EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-					editor->setup(-100000, 100000, true, true);
+					editor->setup(-100000, 100000, 1, true, true);
 					prop = editor;
 
 				} break;
@@ -800,7 +800,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::INT: {
 					EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-					editor->setup(-100000, 100000, true, true);
+					editor->setup(-100000, 100000, 1, true, true);
 					prop = editor;
 
 				} break;

@@ -265,7 +265,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int p_min, int p_max, int p_step, bool p_allow_greater, bool p_allow_lesser);
 	EditorPropertyInteger();
 };
 
