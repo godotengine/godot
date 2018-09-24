@@ -395,6 +395,9 @@ void FileSystemDock::_notification(int p_what) {
 }
 
 void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_selected) {
+	// Update the import dock
+	import_dock_needs_update = true;
+	call_deferred("_update_import_dock");
 
 	// Return if we don't select something new
 	if (!p_selected)
@@ -2122,15 +2125,33 @@ void FileSystemDock::_update_import_dock() {
 	if (!import_dock_needs_update)
 		return;
 
-	//check import
+	// List selected
+	Vector<String> selected;
+	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
+		// Use the tree
+		selected = _tree_get_selected();
+
+	} else {
+		// Use the file list
+		for (int i = 0; i < files->get_item_count(); i++) {
+			if (!files->is_selected(i))
+				continue;
+
+			selected.push_back(files->get_item_metadata(i));
+		}
+	}
+
+	// Check import
 	Vector<String> imports;
 	String import_type;
+	for (int i = 0; i < selected.size(); i++) {
+		String fpath = selected[i];
 
-	for (int i = 0; i < files->get_item_count(); i++) {
-		if (!files->is_selected(i))
-			continue;
+		if (fpath.ends_with("/")) {
+			imports.clear();
+			break;
+		}
 
-		String fpath = files->get_item_metadata(i);
 		if (!FileAccess::exists(fpath + ".import")) {
 			imports.clear();
 			break;
