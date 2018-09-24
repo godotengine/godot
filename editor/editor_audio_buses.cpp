@@ -65,7 +65,7 @@ void EditorAudioBus::_notification(int p_what) {
 
 		if (has_focus()) {
 			draw_style_box(get_stylebox("focus", "Button"), Rect2(Vector2(), get_size()));
-		} else if (is_master) {
+		} else if (is_main) {
 			draw_style_box(get_stylebox("disabled", "Button"), Rect2(Vector2(), get_size()));
 		}
 	}
@@ -146,13 +146,13 @@ void EditorAudioBus::_notification(int p_what) {
 void EditorAudioBus::update_send() {
 
 	send->clear();
-	if (is_master) {
+	if (is_main) {
 		send->set_disabled(true);
 		send->set_text(TTR("Speakers"));
 	} else {
 		send->set_disabled(false);
 		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());
-		int current_send_index = 0; //by default to master
+		int current_send_index = 0; //by default to main
 
 		for (int i = 0; i < get_index(); i++) {
 			StringName send_name = AudioServer::get_singleton()->get_bus_name(i);
@@ -177,7 +177,7 @@ void EditorAudioBus::update_bus() {
 
 	slider->set_value(AudioServer::get_singleton()->get_bus_volume_db(index));
 	track_name->set_text(AudioServer::get_singleton()->get_bus_name(index));
-	if (is_master)
+	if (is_main)
 		track_name->set_editable(false);
 
 	solo->set_pressed(AudioServer::get_singleton()->is_bus_solo(index));
@@ -641,11 +641,11 @@ void EditorAudioBus::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
-EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
+EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_main) {
 
 	buses = p_buses;
 	updating_bus = false;
-	is_master = p_is_master;
+	is_main = p_is_main;
 
 	set_tooltip(TTR("Audio Bus, Drag and Drop to rearrange."));
 
@@ -775,7 +775,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_popup = bus_options->get_popup();
 	bus_popup->add_item(TTR("Duplicate"));
 	bus_popup->add_item(TTR("Delete"));
-	bus_popup->set_item_disabled(1, is_master);
+	bus_popup->set_item_disabled(1, is_main);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
 
@@ -818,8 +818,8 @@ void EditorAudioBuses::_update_buses() {
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 
-		bool is_master = i == 0 ? true : false;
-		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this, is_master));
+		bool is_main = i == 0 ? true : false;
+		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this, is_main));
 		bus_hb->add_child(audio_bus);
 		audio_bus->connect("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);
 		audio_bus->connect("duplicate_request", this, "_duplicate_bus", varray(), CONNECT_DEFERRED);
@@ -905,7 +905,7 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	EditorAudioBus *bus = Object::cast_to<EditorAudioBus>(p_which);
 	int index = bus->get_index();
 	if (index == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("Master bus can't be deleted!"));
+		EditorNode::get_singleton()->show_warning(TTR("Main bus can't be deleted!"));
 		return;
 	}
 
