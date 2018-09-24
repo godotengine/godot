@@ -2317,7 +2317,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_drag_forwarding(this);
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+	tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	split_box->add_child(tree);
 
 	tree->connect("item_edited", this, "_favorite_toggled");
@@ -2356,6 +2356,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->connect("gui_input", this, "_file_list_gui_input");
 	files->connect("multi_selected", this, "_file_multi_selected");
 	files->connect("rmb_clicked", this, "_file_list_rmb_pressed");
+	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
 
