@@ -905,7 +905,7 @@ void EditorAudioBuses::_delete_bus(Object *p_which) {
 	EditorAudioBus *bus = Object::cast_to<EditorAudioBus>(p_which);
 	int index = bus->get_index();
 	if (index == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("main bus can't be deleted!"));
+		EditorNode::get_singleton()->show_warning(TTR("Main bus can't be deleted!"));
 		return;
 	}
 
