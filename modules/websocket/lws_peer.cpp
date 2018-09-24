@@ -178,11 +178,49 @@ bool LWSPeer::is_connected_to_host() const {
 	return wsi != NULL;
 };
 
-void LWSPeer::close() {
+String LWSPeer::get_close_reason(void *in, size_t len, int &r_code) {
+	String s;
+	r_code = 0;
+	if (len < 2) // From docs this should not happen
+		return s;
+
+	const uint8_t *b = (const uint8_t *)in;
+	r_code = b[0] << 8 | b[1];
+
+	if (len > 2) {
+		const char *utf8 = (const char *)&b[2];
+		s.parse_utf8(utf8, len - 2);
+	}
+	return s;
+}
+
+void LWSPeer::send_close_status(struct lws *p_wsi) {
+	if (close_code == -1)
+		return;
+
+	int len = close_reason.size();
+	ERR_FAIL_COND(len > 123); // Maximum allowed reason size in bytes
+
+	lws_close_status code = (lws_close_status)close_code;
+	unsigned char *reason = len > 0 ? (unsigned char *)close_reason.utf8().ptrw() : NULL;
+
+	lws_close_reason(p_wsi, code, reason, len);
+
+	close_code = -1;
+	close_reason = "";
+}
+
+void LWSPeer::close(int p_code, String p_reason) {
 	if (wsi != NULL) {
+		close_code = p_code;
+		close_reason = p_reason;
 		PeerData *data = ((PeerData *)lws_wsi_user(wsi));
 		data->force_close = true;
-		lws_callback_on_writable(wsi); // notify that we want to disconnect
+		data->clean_close = true;
+		lws_callback_on_writable(wsi); // Notify that we want to disconnect
+	} else {
+		close_code = -1;
+		close_reason = "";
 	}
 	wsi = NULL;
 	rbw.resize(0);

@@ -90,20 +90,36 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 
 			peer_data->peer_id = id;
 			peer_data->force_close = false;
-
+			peer_data->clean_close = false;
 			_on_connect(id, lws_get_protocol(wsi)->name);
 			break;
+		}
+
+		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
+			if (peer_data == NULL)
+				return 0;
+
+			int32_t id = peer_data->peer_id;
+			if (_peer_map.has(id)) {
+				int code;
+				Ref<LWSPeer> peer = _peer_map[id];
+				String reason = peer->get_close_reason(in, len, code);
+				peer_data->clean_close = true;
+				_on_close_request(id, code, reason);
+			}
+			return 0;
 		}
 
 		case LWS_CALLBACK_CLOSED: {
 			if (peer_data == NULL)
 				return 0;
 			int32_t id = peer_data->peer_id;
+			bool clean = peer_data->clean_close;
 			if (_peer_map.has(id)) {
 				_peer_map[id]->close();
 				_peer_map.erase(id);
 			}
-			_on_disconnect(id);
+			_on_disconnect(id, clean);
 			return 0; // we can end here
 		}
 
@@ -118,10 +134,15 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 		}
 
 		case LWS_CALLBACK_SERVER_WRITEABLE: {
-			if (peer_data->force_close)
-				return -1;
-
 			int id = peer_data->peer_id;
+			if (peer_data->force_close) {
+				if (_peer_map.has(id)) {
+					Ref<LWSPeer> peer = _peer_map[id];
+					peer->send_close_status(wsi);
+				}
+				return -1;
+			}
+
 			if (_peer_map.has(id))
 				static_cast<Ref<LWSPeer> >(_peer_map[id])->write_wsi();
 			break;
@@ -164,10 +185,10 @@ int LWSServer::get_peer_port(int p_peer_id) const {
 	return _peer_map[p_peer_id]->get_connected_port();
 }
 
-void LWSServer::disconnect_peer(int p_peer_id) {
+void LWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 	ERR_FAIL_COND(!has_peer(p_peer_id));
 
-	get_peer(p_peer_id)->close();
+	get_peer(p_peer_id)->close(p_code, p_reason);
 }
 
 LWSServer::LWSServer() {

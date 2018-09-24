@@ -55,8 +55,9 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_error(void *obj) {
 
 EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int was_clean) {
 	EMWSClient *client = static_cast<EMWSClient *>(obj);
+	client->_on_close_request(code, String(reason));
 	client->_is_connecting = false;
-	client->_on_disconnect();
+	client->_on_disconnect(was_clean != 0);
 }
 }
 
@@ -145,7 +146,7 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 			if (!Module.IDHandler.has($0))
 				return; // Godot Object is gone!
 			var was_clean = 0;
-			if (event.was_clean)
+			if (event.wasClean)
 				was_clean = 1;
 			ccall("_esws_on_close",
 				"void",
@@ -182,9 +183,9 @@ NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() c
 	return CONNECTION_DISCONNECTED;
 };
 
-void EMWSClient::disconnect_from_host() {
+void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
 
-	_peer->close();
+	_peer->close(p_code, p_reason);
 };
 
 IP_Address EMWSClient::get_connected_host() const {

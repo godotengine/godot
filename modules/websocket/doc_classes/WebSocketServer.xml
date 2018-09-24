@@ -18,8 +18,12 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
+			<argument index="1" name="code" type="int" default="1000">
+			</argument>
+			<argument index="2" name="reason" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
-				Disconnects the given peer.
+				Disconnects the peer identified by [code]id[/code] from the server. See [method WebSocketPeer.close] for more info.
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">
@@ -68,7 +72,7 @@
 			<description>
 				Start listening on the given port.
 				You can specify the desired subprotocols via the "protocols" array. If the list empty (default), "binary" will be used.
-				You can use this server as a network peer for [MultiplayerAPI] by passing true as "gd_mp_api". Note: [signal data_received] will not be fired and clients other than Godot will not work in this case.
+				You can use this server as a network peer for [MultiplayerAPI] by passing [code]true[/code] as [code]gd_mp_api[/code]. Note: [signal data_received] will not be fired and clients other than Godot will not work in this case.
 			</description>
 		</method>
 		<method name="stop">
@@ -80,6 +84,17 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="client_close_request">
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="code" type="int">
+			</argument>
+			<argument index="2" name="reason" type="String">
+			</argument>
+			<description>
+				Emitted when a client requests a clean close. You should keep polling until you get a [signal client_disconnected] signal with the same [code]id[/code] to achieve the clean close. See [method WebSocketPeer.close] for more details.
+			</description>
+		</signal>
 		<signal name="client_connected">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -92,8 +107,10 @@
 		<signal name="client_disconnected">
 			<argument index="0" name="id" type="int">
 			</argument>
+			<argument index="1" name="was_clean_close" type="bool">
+			</argument>
 			<description>
-				Emitted when a client disconnects.
+				Emitted when a client disconnects. [code]was_clean_close[/code] will be [code]true[/code] if the connection was shutdown cleanly.
 			</description>
 		</signal>
 		<signal name="data_received">
