@@ -1264,10 +1264,10 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 			menu->set_item_checked(idx, onion.differences_only);
 		} break;
 
-		case ONION_SKINNING_FORCE_WHITE_MODULATE: {
+		case ONION_SKINNING_is_white_MODULATE: {
 
-			onion.force_white_modulate = !onion.force_white_modulate;
-			menu->set_item_checked(idx, onion.force_white_modulate);
+			onion.is_white_modulate = !onion.is_white_modulate;
+			menu->set_item_checked(idx, onion.is_white_modulate);
 		} break;
 
 		case ONION_SKINNING_INCLUDE_GIZMOS: {
@@ -1460,12 +1460,12 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	int step_off_a = onion.past ? -onion.steps : 0;
 	int step_off_b = onion.future ? onion.steps : 0;
 	int cidx = 0;
-	onion.capture.material->set_shader_param("dir_color", onion.force_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
+	onion.capture.material->set_shader_param("dir_color", onion.is_white_modulate ? Color(1, 1, 1) : Color(EDITOR_GET("editors/animation/onion_layers_past_color")));
 	for (int step_off = step_off_a; step_off <= step_off_b; step_off++) {
 
 		if (step_off == 0) {
 			// Skip present step and switch to the color of future
-			if (!onion.force_white_modulate)
+			if (!onion.is_white_modulate)
 				onion.capture.material->set_shader_param("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
 			continue;
 		}
@@ -1722,7 +1722,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion_skinning->get_popup()->add_radio_check_item(TTR("3 steps"), ONION_SKINNING_3_STEPS);
 	onion_skinning->get_popup()->add_separator();
 	onion_skinning->get_popup()->add_check_item(TTR("Differences Only"), ONION_SKINNING_DIFFERENCES_ONLY);
-	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
+	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_is_white_MODULATE);
 	onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
 	hb->add_child(onion_skinning);
 
@@ -1813,7 +1813,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion.future = false;
 	onion.steps = 1;
 	onion.differences_only = false;
-	onion.force_white_modulate = false;
+	onion.is_white_modulate = false;
 	onion.include_gizmos = false;
 
 	onion.last_frame = 0;
