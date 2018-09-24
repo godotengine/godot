@@ -68,8 +68,9 @@ static uint64_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL)
-		return;
+	if (OS::get_singleton() == NULL) {
+		abort();
+	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
@@ -151,6 +152,7 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+	disable();
 }
 
 void CrashHandler::disable() {
