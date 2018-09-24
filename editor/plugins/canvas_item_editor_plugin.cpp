@@ -2815,7 +2815,7 @@ void CanvasItemEditor::_draw_axis() {
 
 		RID ci = viewport->get_canvas_item();
 
-		Color area_axis_color(0.4, 0.4, 1.0, 0.4);
+		Color area_axis_color = EditorSettings::get_singleton()->get("editors/2d/viewport_border_color");
 
 		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
 
