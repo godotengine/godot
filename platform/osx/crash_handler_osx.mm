@@ -27,13 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "main/main.h"
 #include "os_osx.h"
 
 #include <string.h>
 #include <unistd.h>
 
-// Note: Dump backtrace in 32bit mode is getting a bus error on the fgets by the ->execute, so enable only on 64bit
 #if defined(DEBUG_ENABLED) && defined(__x86_64__)
 #define CRASH_HANDLER_ENABLED 1
 #endif
@@ -72,8 +72,9 @@ static uint32_t load_address() {
 }
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL || Globals::get_singleton() == NULL)
-		return;
+	if (OS::get_singleton() == NULL) {
+		abort();
+	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
@@ -82,6 +83,7 @@ static void handle_crash(int sig) {
 
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
+
 	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
 	char **strings = backtrace_symbols(bt_buffer, size);
 	if (strings) {
@@ -155,6 +157,7 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+	disable();
 }
 
 void CrashHandler::disable() {
