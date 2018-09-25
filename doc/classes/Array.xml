@@ -321,7 +321,7 @@
 				    static func sort(a, b):
 				        if a[0] &lt; b[0]:
 				            return true
-				    return false
+				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
 				my_items.sort_custom(MyCustomSorter, "sort")
