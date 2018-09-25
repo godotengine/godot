@@ -297,6 +297,7 @@ bool MobileVRInterface::initialize() {
 		mag_current_min = Vector3(0, 0, 0);
 		mag_current_max = Vector3(0, 0, 0);
 
+#if !defined(SERVER_ENABLED)
 		// build our shader
 		if (lens_shader == NULL) {
 			///@TODO need to switch between GLES2 and GLES3 version, Reduz suggested moving this into our drivers and making this a core shader
@@ -337,6 +338,7 @@ bool MobileVRInterface::initialize() {
 			glBindVertexArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 		}
+#endif
 
 		// reset our orientation
 		orientation = Basis();
@@ -360,6 +362,7 @@ void MobileVRInterface::uninitialize() {
 			arvr_server->clear_primary_interface_if(this);
 		}
 
+#if !defined(SERVER_ENABLED)
 		// cleanup our shader and buffers
 		if (lens_shader != NULL) {
 			glDeleteVertexArrays(1, &half_screen_array);
@@ -368,6 +371,7 @@ void MobileVRInterface::uninitialize() {
 			delete lens_shader;
 			lens_shader = NULL;
 		}
+#endif
 
 		initialized = false;
 	};
@@ -470,6 +474,7 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	// get our render target
 	RID eye_texture = VSG::storage->render_target_get_texture(p_render_target);
 	uint32_t texid = VS::get_singleton()->texture_get_texid(eye_texture);
+#if !defined(SERVER_ENABLED)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texid);
 
@@ -484,6 +489,7 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	glBindVertexArray(half_screen_array);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindVertexArray(0);
+#endif
 };
 
 void MobileVRInterface::process() {

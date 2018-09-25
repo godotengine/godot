@@ -34,7 +34,9 @@
 #include "servers/arvr/arvr_interface.h"
 #include "servers/arvr/arvr_positional_tracker.h"
 
+#if !defined(SERVER_ENABLED)
 #include "shaders/lens_distorted.glsl.gen.h"
+#endif
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
@@ -58,9 +60,13 @@ private:
 	float eye_height;
 	uint64_t last_ticks;
 
+#if !defined(SERVER_ENABLED)
 	LensDistortedShaderGLES3 *lens_shader;
 	GLuint half_screen_quad;
 	GLuint half_screen_array;
+#else
+	void *lens_shader;
+#endif
 
 	real_t intraocular_dist;
 	real_t display_width;
