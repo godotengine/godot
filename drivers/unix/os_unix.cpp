@@ -45,6 +45,7 @@
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
+#include <mach/mach_time.h>
 #endif
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
@@ -63,6 +64,32 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+/// Clock Setup function (used by get_ticks_usec)
+static uint64_t _clock_start = 0;
+#if defined(__APPLE__)
+static double _clock_scale = 0;
+static void _setup_clock() {
+	mach_timebase_info_data_t info;
+	kern_return_t ret = mach_timebase_info(&info);
+	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
+	ERR_FAIL_COND(ret != 0);
+	_clock_scale = (double)info.numer / (double)info.denom;
+	_clock_start = mach_absolute_time() * _clock_scale;
+}
+#else
+#if defined(CLOCK_MONOTONIC_RAW) && !defined(JAVASCRIPT_ENABLED) // This is a better clock on Linux.
+#define GODOT_CLOCK CLOCK_MONOTONIC_RAW
+#else
+#define GODOT_CLOCK CLOCK_MONOTONIC
+#endif
+static void _setup_clock() {
+	struct timespec tv_now = { 0, 0 };
+	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
+	ERR_FAIL_COND(clock_gettime(GODOT_CLOCK, &tv_now) != 0);
+	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+}
+#endif
 
 void OS_Unix::debug_break() {
 
@@ -126,8 +153,7 @@ void OS_Unix::initialize_core() {
 	IP_Unix::make_default();
 #endif
 
-	ticks_start = 0;
-	ticks_start = get_ticks_usec();
+	_setup_clock();
 
 	struct sigaction sa;
 	sa.sa_handler = &handle_sigchld;
@@ -246,11 +272,16 @@ void OS_Unix::delay_usec(uint32_t p_usec) const {
 }
 uint64_t OS_Unix::get_ticks_usec() const {
 
-	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
-
-	uint64_t longtime = (uint64_t)tv_now.tv_usec + (uint64_t)tv_now.tv_sec * 1000000L;
-	longtime -= ticks_start;
+#if defined(__APPLE__)
+	uint64_t longtime = mach_absolute_time() * _clock_scale;
+#else
+	// Unchecked return. Static analyzers might complain.
+	// If _setup_clock() succeded, we assume clock_gettime() works.
+	struct timespec tv_now = { 0, 0 };
+	clock_gettime(GODOT_CLOCK, &tv_now);
+	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+#endif
+	longtime -= _clock_start;
 
 	return longtime;
 }
