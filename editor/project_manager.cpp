@@ -91,6 +91,7 @@ private:
 	TextureRect *install_status_rect;
 	FileDialog *fdialog;
 	FileDialog *fdialog_install;
+	ConfirmationDialog *ask_update_settings;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
@@ -426,6 +427,27 @@ private:
 			set_message(TTR("It would be a good idea to name your project."), MESSAGE_WARNING);
 	}
 
+	struct {
+		ProjectSettings *project_settings;
+		String path;
+		ProjectSettings::CustomMap map;
+	} confirm_update_settings_args;
+
+	void _confirm_update_settings() {
+		switch (mode) {
+			case MODE_RENAME:
+				if (confirm_update_settings_args.project_settings->save_custom(confirm_update_settings_args.path, confirm_update_settings_args.map, Vector<String>(), true) != OK) {
+					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
+				}
+				hide();
+				emit_signal("project_renamed");
+				break;
+
+			default:
+				break;
+		}
+	}
+
 	void ok_pressed() {
 
 		String dir = project_path->get_text();
@@ -443,17 +465,27 @@ private:
 			int err = current->setup(dir, "");
 			if (err != OK) {
 				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
+				hide();
+				emit_signal("project_renamed");
 			} else {
 				ProjectSettings::CustomMap edited_settings;
 				edited_settings["application/config/name"] = project_name->get_text();
 
-				if (current->save_custom(dir.plus_file("/project.godot"), edited_settings, Vector<String>(), true)) {
-					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
+				if (!current->is_settings_text_up_to_date_custom(dir.plus_file("project.godot"))) {
+					confirm_update_settings_args.project_settings = current;
+					confirm_update_settings_args.path = dir.plus_file("project.godot");
+					confirm_update_settings_args.map = edited_settings;
+					ask_update_settings->set_text(vformat(TTR("Do you want to update the project settings file : %s ?\nWarning : you will not be able to open the project with previous versions of Godot anymore."), confirm_update_settings_args.path));
+					ask_update_settings->popup_centered_minsize();
+				} else {
+					if (current->save_custom(dir.plus_file("project.godot"), edited_settings, Vector<String>(), true) != OK) {
+						set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
+					}
+					hide();
+					emit_signal("project_renamed");
 				}
 			}
 
-			hide();
-			emit_signal("project_renamed");
 		} else {
 
 			if (mode == MODE_IMPORT) {
@@ -474,12 +506,12 @@ private:
 					initial_settings["application/config/icon"] = "res://icon.png";
 					initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
 
-					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("/project.godot"), initial_settings, Vector<String>(), false)) {
+					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(dir.plus_file("/icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
+						ResourceSaver::save(dir.plus_file("icon.png"), get_icon("DefaultProjectIcon", "EditorIcons"));
 
-						FileAccess *f = FileAccess::open(dir.plus_file("/default_env.tres"), FileAccess::WRITE);
+						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
 						if (!f) {
 							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
@@ -650,6 +682,7 @@ protected:
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
 		ClassDB::bind_method("_install_path_selected", &ProjectDialog::_install_path_selected);
 		ClassDB::bind_method("_browse_install_path", &ProjectDialog::_browse_install_path);
+		ClassDB::bind_method("_confirm_update_settings", &ProjectDialog::_confirm_update_settings);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("project_renamed"));
 	}
@@ -851,6 +884,11 @@ public:
 		fdialog->connect("file_selected", this, "_file_selected");
 		fdialog_install->connect("dir_selected", this, "_install_path_selected");
 		fdialog_install->connect("file_selected", this, "_install_path_selected");
+
+		ask_update_settings = memnew(ConfirmationDialog);
+		ask_update_settings->get_ok()->connect("pressed", this, "_confirm_update_settings");
+		add_child(ask_update_settings);
+
 		set_hide_on_ok(false);
 		mode = MODE_NEW;
 
@@ -975,7 +1013,7 @@ void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 		_update_project_buttons();
 
 		if (mb->is_doubleclick())
-			_open_project(); //open if doubleclicked
+			_open_selected_projects_ask(); //open if doubleclicked
 	}
 }
 
@@ -997,7 +1035,7 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 			case KEY_ENTER: {
 
-				_open_project();
+				_open_selected_projects_ask();
 			} break;
 			case KEY_HOME: {
 
@@ -1355,7 +1393,7 @@ void ProjectManager::_on_project_created(const String &dir) {
 		_load_recent_projects();
 		_update_scroll_position(dir);
 	}
-	_open_project();
+	_open_selected_projects_ask();
 }
 
 void ProjectManager::_update_scroll_position(const String &dir) {
@@ -1377,14 +1415,29 @@ void ProjectManager::_update_scroll_position(const String &dir) {
 	}
 }
 
-void ProjectManager::_open_project_confirm() {
+void ProjectManager::_confirm_update_settings() {
+	if (confirm_update_settings_args.project_settings->save_custom(confirm_update_settings_args.path) != OK) {
+		ERR_PRINTS(vformat(TTR("Couldn't edit %s."), confirm_update_settings_args.path));
+	}
+	_open_selected_projects();
+}
 
-	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+void ProjectManager::_open_selected_projects() {
+
+	for (const Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 		String conf = path + "/project.godot";
-		if (!FileAccess::exists(conf)) {
+
+		ProjectSettings *current = memnew(ProjectSettings);
+		if (current->setup(path, "") != OK) {
 			dialog_error->set_text(TTR("Can't open project"));
+			dialog_error->popup_centered_minsize();
+			return;
+		}
+
+		if (!current->is_settings_text_up_to_date_custom(conf)) {
+			dialog_error->set_text(TTR("Can't open project : project settings out of date"));
 			dialog_error->popup_centered_minsize();
 			return;
 		}
@@ -1412,7 +1465,7 @@ void ProjectManager::_open_project_confirm() {
 	get_tree()->quit();
 }
 
-void ProjectManager::_open_project() {
+void ProjectManager::_open_selected_projects_ask() {
 
 	if (selected_list.size() < 1) {
 		return;
@@ -1422,7 +1475,28 @@ void ProjectManager::_open_project() {
 		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
 		multi_open_ask->popup_centered_minsize();
 	} else {
-		_open_project_confirm();
+
+		// Update the project settings or don't open
+		String path = EditorSettings::get_singleton()->get("projects/" + selected_list.front()->key());
+		String conf = path + "/project.godot";
+
+		ProjectSettings *current = memnew(ProjectSettings);
+		if (current->setup(path, "") != OK) {
+			dialog_error->set_text(TTR("Can't open project"));
+			dialog_error->popup_centered_minsize();
+			return;
+		}
+
+		if (!current->is_settings_text_up_to_date_custom(conf)) {
+			confirm_update_settings_args.project_settings = current;
+			confirm_update_settings_args.path = conf;
+			ask_update_settings->set_text(vformat(TTR("Do you want to update the project settings file : %s ?\nWarning : you will not be able to open the project with previous versions of Godot anymore."), conf));
+			ask_update_settings->popup_centered_minsize();
+			return;
+		}
+
+		// Open if the project is up-to-date
+		_open_selected_projects();
 	}
 }
 
@@ -1668,8 +1742,8 @@ void ProjectManager::_scan_multiple_folders(PoolStringArray p_files) {
 
 void ProjectManager::_bind_methods() {
 
-	ClassDB::bind_method("_open_project", &ProjectManager::_open_project);
-	ClassDB::bind_method("_open_project_confirm", &ProjectManager::_open_project_confirm);
+	ClassDB::bind_method("_open_selected_projects_ask", &ProjectManager::_open_selected_projects_ask);
+	ClassDB::bind_method("_open_selected_projects", &ProjectManager::_open_selected_projects);
 	ClassDB::bind_method("_run_project", &ProjectManager::_run_project);
 	ClassDB::bind_method("_run_project_confirm", &ProjectManager::_run_project_confirm);
 	ClassDB::bind_method("_show_project", &ProjectManager::_show_project);
@@ -1694,6 +1768,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_install_project", &ProjectManager::_install_project);
 	ClassDB::bind_method("_files_dropped", &ProjectManager::_files_dropped);
 	ClassDB::bind_method("_open_asset_library", &ProjectManager::_open_asset_library);
+	ClassDB::bind_method("_confirm_update_settings", &ProjectManager::_confirm_update_settings);
 	ClassDB::bind_method(D_METHOD("_scan_multiple_folders", "files"), &ProjectManager::_scan_multiple_folders);
 }
 
@@ -1843,7 +1918,7 @@ ProjectManager::ProjectManager() {
 	Button *open = memnew(Button);
 	open->set_text(TTR("Edit"));
 	tree_vb->add_child(open);
-	open->connect("pressed", this, "_open_project");
+	open->connect("pressed", this, "_open_selected_projects_ask");
 	open_btn = open;
 
 	Button *run = memnew(Button);
@@ -1950,31 +2025,30 @@ ProjectManager::ProjectManager() {
 	language_restart_ask->get_ok()->set_text(TTR("Restart Now"));
 	language_restart_ask->get_ok()->connect("pressed", this, "_restart_confirm");
 	language_restart_ask->get_cancel()->set_text(TTR("Continue"));
-
 	gui_base->add_child(language_restart_ask);
 
 	erase_ask = memnew(ConfirmationDialog);
 	erase_ask->get_ok()->set_text(TTR("Remove"));
 	erase_ask->get_ok()->connect("pressed", this, "_erase_project_confirm");
-
 	gui_base->add_child(erase_ask);
 
 	multi_open_ask = memnew(ConfirmationDialog);
 	multi_open_ask->get_ok()->set_text(TTR("Edit"));
-	multi_open_ask->get_ok()->connect("pressed", this, "_open_project_confirm");
-
+	multi_open_ask->get_ok()->connect("pressed", this, "_open_selected_projects");
 	gui_base->add_child(multi_open_ask);
 
 	multi_run_ask = memnew(ConfirmationDialog);
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
 	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
-
 	gui_base->add_child(multi_run_ask);
 
 	multi_scan_ask = memnew(ConfirmationDialog);
 	multi_scan_ask->get_ok()->set_text(TTR("Scan"));
-
 	gui_base->add_child(multi_scan_ask);
+
+	ask_update_settings = memnew(ConfirmationDialog);
+	ask_update_settings->get_ok()->connect("pressed", this, "_confirm_update_settings");
+	gui_base->add_child(ask_update_settings);
 
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 

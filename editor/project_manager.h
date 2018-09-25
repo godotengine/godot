@@ -60,6 +60,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
+	ConfirmationDialog *ask_update_settings;
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
@@ -83,8 +84,8 @@ class ProjectManager : public Control {
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();
-	void _open_project();
-	void _open_project_confirm();
+	void _open_selected_projects();
+	void _open_selected_projects_ask();
 	void _show_project(const String &p_path);
 	void _import_project();
 	void _new_project();
@@ -96,6 +97,12 @@ class ProjectManager : public Control {
 	void _restart_confirm();
 	void _exit_dialog();
 	void _scan_begin(const String &p_base);
+
+	struct {
+		ProjectSettings *project_settings;
+		String path;
+	} confirm_update_settings_args;
+	void _confirm_update_settings();
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);

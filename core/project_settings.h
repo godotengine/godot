@@ -97,7 +97,7 @@ protected:
 
 	static ProjectSettings *singleton;
 
-	Error _load_settings_text(const String p_path);
+	Error _load_settings_text(const String p_path, int *p_retrieve_version = NULL);
 	Error _load_settings_binary(const String p_path);
 	Error _load_settings_text_or_binary(const String p_text_path, const String p_bin_path);
 
@@ -106,7 +106,7 @@ protected:
 
 	Error _save_custom_bnd(const String &p_file);
 
-	void _convert_to_last_version();
+	void _convert_to_last_version(int p_from_version);
 
 	bool _load_resource_pack(const String &p_pack);
 
@@ -138,6 +138,9 @@ public:
 	void set_builtin_order(const String &p_name);
 
 	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+
+	bool is_settings_text_up_to_date();
+	bool is_settings_text_up_to_date_custom(const String &p_path);
 
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
 	Error save();
