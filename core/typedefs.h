@@ -206,7 +206,7 @@ static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
 	size_t num = get_shift_from_power_of_2(sizeof(T)) + 3;
 
 	// If the compiler is smart, it unrolls this loop
-	// If its dumb, this is a bit slow.
+	// If its bad, this is a bit slow.
 	for (size_t i = 0; i < num; i++)
 		x |= x >> (1 << i);
 
