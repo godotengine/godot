@@ -945,6 +945,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
+	float v = MAX(border_size * EDSCALE, 1.0);
+	style_tooltip->set_default_margin(MARGIN_LEFT, v);
+	style_tooltip->set_default_margin(MARGIN_TOP, v);
+	style_tooltip->set_default_margin(MARGIN_RIGHT, v);
+	style_tooltip->set_default_margin(MARGIN_BOTTOM, v);
 	style_tooltip->set_bg_color(Color(mono_color.r, mono_color.g, mono_color.b, 0.9));
 	style_tooltip->set_border_width_all(border_width);
 	style_tooltip->set_border_color_all(mono_color);
