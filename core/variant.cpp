@@ -847,6 +847,210 @@ bool Variant::is_zero() const {
 	return false;
 }
 
+Variant Variant::get_zero(Type p_type) {
+	switch (p_type) {
+		case NIL: {
+			return Variant();
+		} break;
+
+			// atomic types
+		case BOOL: {
+
+			return false;
+		} break;
+		case INT: {
+
+			return 0;
+
+		} break;
+		case REAL: {
+
+			return 0;
+
+		} break;
+		case STRING: {
+
+			return String();
+
+		} break;
+
+			// math types
+		case VECTOR2: {
+
+			return Vector2();
+
+		} break;
+		case RECT2: {
+
+			return Rect2();
+
+		} break;
+		case TRANSFORM2D: {
+
+			return Transform2D();
+
+		} break;
+		case VECTOR3: {
+
+			return Vector3();
+
+		} break;
+		case PLANE: {
+
+			return Plane();
+
+		} break;
+			/*
+			case QUAT: {
+
+
+			} break;*/
+		case AABB: {
+
+			return ::AABB();
+		} break;
+		case QUAT: {
+
+			return Quat();
+
+		} break;
+		case BASIS: {
+
+			return Basis();
+
+		} break;
+		case TRANSFORM: {
+
+			return Transform();
+
+		} break;
+
+			// misc types
+		case COLOR: {
+
+			return Color();
+
+		} break;
+		case _RID: {
+
+			return RID();
+		} break;
+		case OBJECT: {
+
+			return RefPtr();
+		} break;
+		case NODE_PATH: {
+
+			return NodePath();
+
+		} break;
+		case DICTIONARY: {
+
+			return Dictionary();
+
+		} break;
+		case ARRAY: {
+
+			return Array();
+
+		} break;
+
+			// arrays
+		case POOL_BYTE_ARRAY: {
+
+			return PoolByteArray();
+
+		} break;
+		case POOL_INT_ARRAY: {
+
+			return PoolIntArray();
+
+		} break;
+		case POOL_REAL_ARRAY: {
+
+			return PoolRealArray();
+
+		} break;
+		case POOL_STRING_ARRAY: {
+
+			return PoolStringArray();
+
+		} break;
+		case POOL_VECTOR2_ARRAY: {
+
+			return PoolVector2Array();
+
+		} break;
+		case POOL_VECTOR3_ARRAY: {
+
+			return PoolVector3Array();
+
+		} break;
+		case POOL_COLOR_ARRAY: {
+
+			return PoolColorArray();
+
+		} break;
+		default: {}
+	}
+
+	return Variant();
+}
+
+Variant Variant::get_one(Type p_type) {
+	switch (p_type) {
+		case NIL: {
+
+			return Variant();
+		} break;
+
+			// atomic types
+		case BOOL: {
+
+			return true;
+		} break;
+		case INT: {
+
+			return 1;
+
+		} break;
+		case REAL: {
+
+			return 1;
+
+		} break;
+		case VECTOR2: {
+
+			return Vector2(1, 1);
+
+		} break;
+		case RECT2: {
+
+			return Rect2(1, 1, 1, 1);
+
+		} break;
+		case VECTOR3: {
+
+			return Vector3(1, 1, 1);
+
+		} break;
+		case PLANE: {
+
+			return Plane(1, 1, 1, 1);
+
+		} break;
+		case COLOR: {
+
+			return Color(1, 1, 1, 1);
+
+		} break;
+
+		default: {}
+	}
+
+	return Variant();
+}
+
 bool Variant::is_one() const {
 
 	switch (type) {

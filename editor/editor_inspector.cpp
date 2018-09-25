@@ -630,18 +630,25 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (revert_rect.has_point(mb->get_position())) {
 
-			Variant vorig;
+			if (_is_instanced_node_with_original_property_different()) {
+				Variant vorig;
 
-			if (_might_be_in_instance() && _get_instanced_node_original_property(property, vorig)) {
+				if (!_get_instanced_node_original_property(property, vorig)) {
+					if (property_usage & PROPERTY_USAGE_STORE_IF_NONONE)
+						vorig = Variant::get_one(object->get(property).get_type());
 
-				emit_signal("property_changed", property, vorig.duplicate(true));
+					if (property_usage & PROPERTY_USAGE_STORE_IF_NONZERO)
+						vorig = Variant::get_zero(object->get(property).get_type());
+				}
+
+				emit_signal("property_changed", property, vorig.duplicate(true), true);
 				update_property();
 				return;
 			}
 
 			if (object->call("property_can_revert", property).operator bool()) {
 				Variant rev = object->call("property_get_revert", property);
-				emit_signal("property_changed", property, rev);
+				emit_signal("property_changed", property, rev, true);
 				update_property();
 			}
 
@@ -649,7 +656,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				Ref<Script> scr = object->get_script();
 				Variant orig_value;
 				if (scr->get_property_default_value(property, orig_value)) {
-					emit_signal("property_changed", property, orig_value);
+					emit_signal("property_changed", property, orig_value, true);
 					update_property();
 				}
 			}
