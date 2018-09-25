@@ -1993,7 +1993,7 @@ Control *Control::find_prev_valid_focus() const {
 
 				if (!from) {
 
-					ERR_EXPLAIN("Prev focus node is not a control: " + n->get_name());
+					ERR_EXPLAIN("Previous focus node is not a control: " + n->get_name());
 					ERR_FAIL_V(NULL);
 				}
 			} else {
