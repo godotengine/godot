@@ -1654,6 +1654,8 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
 				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
+				drag_type = DRAG_SCALE_BOTH;
+
 				Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
 				Rect2 x_handle_rect = Rect2(scale_factor.x * EDSCALE, -5 * EDSCALE, 10 * EDSCALE, 10 * EDSCALE);
 				if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
@@ -1663,18 +1665,17 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 					drag_type = DRAG_SCALE_Y;
 				}
-				if (drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
-					drag_from = transform.affine_inverse().xform(b->get_position());
-					drag_selection = List<CanvasItem *>();
-					drag_selection.push_back(canvas_item);
-					_save_canvas_item_state(drag_selection);
-					return true;
-				}
+
+				drag_from = transform.affine_inverse().xform(b->get_position());
+				drag_selection = List<CanvasItem *>();
+				drag_selection.push_back(canvas_item);
+				_save_canvas_item_state(drag_selection);
+				return true;
 			}
 		}
 	}
 
-	if (drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
+	if (drag_type == DRAG_SCALE_BOTH || drag_type == DRAG_SCALE_X || drag_type == DRAG_SCALE_Y) {
 		// Resize the node
 		if (m.is_valid()) {
 			_restore_canvas_item_state(drag_selection);
@@ -1682,24 +1683,49 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 			drag_to = transform.affine_inverse().xform(m->get_position());
 
+			Transform2D parent_xform = canvas_item->get_global_transform_with_canvas() * canvas_item->get_transform().affine_inverse();
+			Transform2D unscaled_transform = (transform * parent_xform * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
+
 			bool uniform = m->get_shift();
-			Point2 offset = drag_to - drag_from;
+
+			Point2 drag_from_local = simple_xform.xform(drag_from);
+			Point2 drag_to_local = simple_xform.xform(drag_to);
+			Point2 offset = drag_to_local - drag_from_local;
+
 			Size2 scale = canvas_item->call("get_scale");
 			float ratio = scale.y / scale.x;
-			if (drag_type == DRAG_SCALE_X) {
-				scale.x += offset.x / SCALE_HANDLE_DISTANCE;
+			if (drag_type == DRAG_SCALE_BOTH) {
+				Size2 scale_factor = drag_to_local / drag_from_local;
 				if (uniform) {
-					scale.y = scale.x * ratio;
+					if (ABS(offset.x) > ABS(offset.y)) {
+						scale.x *= scale_factor.x;
+						scale.y = scale.x * ratio;
+					} else {
+						scale.y *= scale_factor.y;
+						scale.x = scale.y / ratio;
+					}
+				} else {
+					scale *= scale_factor;
 				}
-				canvas_item->call("set_scale", scale);
-
-			} else if (drag_type == DRAG_SCALE_Y) {
-				scale.y -= offset.y / SCALE_HANDLE_DISTANCE;
-				if (uniform) {
-					scale.x = scale.y / ratio;
+			} else {
+				Size2 scale_factor = Vector2(offset.x, -offset.y) / SCALE_HANDLE_DISTANCE;
+				Size2 parent_scale = parent_xform.get_scale();
+				scale_factor *= Vector2(1.0 / parent_scale.x, 1.0 / parent_scale.y);
+				if (drag_type == DRAG_SCALE_X) {
+					scale.x += scale_factor.x;
+					if (uniform) {
+						scale.y = scale.x * ratio;
+					}
+				} else if (drag_type == DRAG_SCALE_Y) {
+					scale.y += scale_factor.y;
+					if (uniform) {
+						scale.x = scale.y / ratio;
+					}
 				}
-				canvas_item->call("set_scale", scale);
 			}
+			canvas_item->call("set_scale", scale);
+			return true;
 		}
 
 		// Confirm resize
