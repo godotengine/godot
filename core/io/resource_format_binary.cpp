@@ -48,6 +48,8 @@ enum {
 	VARIANT_INT = 3,
 	VARIANT_REAL = 4,
 	VARIANT_STRING = 5,
+	VARIANT_VECTOR2I = 8,
+	VARIANT_VECTOR3I = 9,
 	VARIANT_VECTOR2 = 10,
 	VARIANT_RECT2 = 11,
 	VARIANT_VECTOR3 = 12,
@@ -71,6 +73,8 @@ enum {
 	VARIANT_VECTOR3_ARRAY = 35,
 	VARIANT_COLOR_ARRAY = 36,
 	VARIANT_VECTOR2_ARRAY = 37,
+	VARIANT_VECTOR2I_ARRAY = 38,
+	VARIANT_VECTOR3I_ARRAY = 39,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
 	OBJECT_EMPTY = 0,
@@ -156,6 +160,14 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = v;
 
 		} break;
+		case VARIANT_VECTOR2I: {
+
+			Vector2i v;
+			v.x = int(f->get_32());
+			v.y = int(f->get_32());
+			r_v = v;
+
+		} break;
 		case VARIANT_RECT2: {
 
 			Rect2 v;
@@ -172,6 +184,14 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			v.x = f->get_real();
 			v.y = f->get_real();
 			v.z = f->get_real();
+			r_v = v;
+		} break;
+		case VARIANT_VECTOR3I: {
+
+			Vector3i v;
+			v.x = int(f->get_32());
+			v.y = int(f->get_32());
+			v.z = int(f->get_32());
 			r_v = v;
 		} break;
 		case VARIANT_PLANE: {
@@ -489,6 +509,33 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = array;
 
 		} break;
+		case VARIANT_VECTOR2I_ARRAY: {
+
+			uint32_t len = f->get_32();
+
+			PoolVector<Vector2i> array;
+			array.resize(len);
+			PoolVector<Vector2i>::Write w = array.write();
+			if (sizeof(Vector2i) == 8) {
+				f->get_buffer((uint8_t *)w.ptr(), len * sizeof(int) * 2);
+#ifdef BIG_ENDIAN_ENABLED
+				{
+					uint32_t *ptr = (uint32_t *)w.ptr();
+					for (int i = 0; i < len * 2; i++) {
+
+						ptr[i] = BSWAP32(ptr[i]);
+					}
+				}
+
+#endif
+
+			} else {
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector2i size is NOT 8!");
+			}
+			w = PoolVector<Vector2i>::Write();
+			r_v = array;
+
+		} break;
 		case VARIANT_VECTOR3_ARRAY: {
 
 			uint32_t len = f->get_32();
@@ -513,6 +560,33 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector3 size is NOT 12!");
 			}
 			w.release();
+			r_v = array;
+
+		} break;
+		case VARIANT_VECTOR3I_ARRAY: {
+
+			uint32_t len = f->get_32();
+
+			PoolVector<Vector3i> array;
+			array.resize(len);
+			PoolVector<Vector3i>::Write w = array.write();
+			if (sizeof(Vector3i) == 12) {
+				f->get_buffer((uint8_t *)w.ptr(), len * sizeof(int) * 3);
+#ifdef BIG_ENDIAN_ENABLED
+				{
+					uint32_t *ptr = (uint32_t *)w.ptr();
+					for (int i = 0; i < len * 3; i++) {
+
+						ptr[i] = BSWAP32(ptr[i]);
+					}
+				}
+
+#endif
+
+			} else {
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector3i size is NOT 12!");
+			}
+			w = PoolVector<Vector3i>::Write();
 			r_v = array;
 
 		} break;
@@ -1278,6 +1352,14 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			f->store_real(val.y);
 
 		} break;
+		case Variant::VECTOR2I: {
+
+			f->store_32(VARIANT_VECTOR2I);
+			Vector2i val = p_property;
+			f->store_32(val.x);
+			f->store_32(val.y);
+
+		} break;
 		case Variant::RECT2: {
 
 			f->store_32(VARIANT_RECT2);
@@ -1295,6 +1377,15 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			f->store_real(val.x);
 			f->store_real(val.y);
 			f->store_real(val.z);
+
+		} break;
+		case Variant::VECTOR3I: {
+
+			f->store_32(VARIANT_VECTOR3I);
+			Vector3i val = p_property;
+			f->store_32(val.x);
+			f->store_32(val.y);
+			f->store_32(val.z);
 
 		} break;
 		case Variant::PLANE: {
@@ -1519,6 +1610,32 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			}
 
 		} break;
+		case Variant::POOL_VECTOR2_ARRAY: {
+
+			f->store_32(VARIANT_VECTOR2_ARRAY);
+			PoolVector<Vector2> arr = p_property;
+			int len = arr.size();
+			f->store_32(len);
+			PoolVector<Vector2>::Read r = arr.read();
+			for (int i = 0; i < len; i++) {
+				f->store_real(r[i].x);
+				f->store_real(r[i].y);
+			}
+
+		} break;
+		case Variant::POOL_VECTOR2I_ARRAY: {
+
+			f->store_32(VARIANT_VECTOR2I_ARRAY);
+			PoolVector<Vector2i> arr = p_property;
+			int len = arr.size();
+			f->store_32(len);
+			PoolVector<Vector2i>::Read r = arr.read();
+			for (int i = 0; i < len; i++) {
+				f->store_32(r[i].x);
+				f->store_32(r[i].y);
+			}
+
+		} break;
 		case Variant::POOL_VECTOR3_ARRAY: {
 
 			f->store_32(VARIANT_VECTOR3_ARRAY);
@@ -1533,16 +1650,17 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			}
 
 		} break;
-		case Variant::POOL_VECTOR2_ARRAY: {
+		case Variant::POOL_VECTOR3I_ARRAY: {
 
-			f->store_32(VARIANT_VECTOR2_ARRAY);
-			PoolVector<Vector2> arr = p_property;
+			f->store_32(VARIANT_VECTOR3I_ARRAY);
+			PoolVector<Vector3i> arr = p_property;
 			int len = arr.size();
 			f->store_32(len);
-			PoolVector<Vector2>::Read r = arr.read();
+			PoolVector<Vector3i>::Read r = arr.read();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
+				f->store_32(r[i].x);
+				f->store_32(r[i].y);
+				f->store_32(r[i].z);
 			}
 
 		} break;
