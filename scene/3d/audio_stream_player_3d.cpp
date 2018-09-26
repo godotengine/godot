@@ -417,7 +417,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					}
 				}
 
-				for (int k = 0; k < cc; k++) {
+				for (unsigned int k = 0; k < cc; k++) {
 					output.vol[k] *= multiplier;
 				}
 

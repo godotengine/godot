@@ -39,6 +39,7 @@
 #include "scene/3d/camera.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/visual_server.h"
+
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 
 	Vector<Ref<Mesh> > meshes;
@@ -522,7 +523,7 @@ int EditorPlugin::update_overlays() const {
 
 	if (SpatialEditor::get_singleton()->is_visible()) {
 		int count = 0;
-		for (int i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
+		for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
 			SpatialEditorViewport *vp = SpatialEditor::get_singleton()->get_editor_viewport(i);
 			if (vp->is_visible()) {
 				vp->update_surface();

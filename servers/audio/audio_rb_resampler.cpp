@@ -153,7 +153,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 		}
 
 		// Fill zeros (silence) for the rest of frames
-		for (uint32_t i = target_todo; i < p_frames; i++) {
+		for (int i = target_todo; i < p_frames; i++) {
 			p_dest[i] = AudioFrame(0, 0);
 		}
 	}

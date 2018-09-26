@@ -982,7 +982,7 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				value.second.resize(default_arg_size);
 
-				for (int i = 0; i < default_arg_size; i++) {
+				for (size_t i = 0; i < default_arg_size; i++) {
 					if (is_float) {
 						value.second.write[i].real = 0.0;
 					} else {

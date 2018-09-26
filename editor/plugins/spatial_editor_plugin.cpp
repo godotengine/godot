@@ -2075,7 +2075,7 @@ void SpatialEditorViewport::set_message(String p_message, float p_time) {
 }
 
 void SpatialEditorPlugin::edited_scene_changed() {
-	for (int i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
+	for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
 		SpatialEditorViewport *viewport = SpatialEditor::get_singleton()->get_editor_viewport(i);
 		if (viewport->is_visible()) {
 			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
@@ -4093,7 +4093,7 @@ void SpatialEditor::set_state(const Dictionary &p_state) {
 		for (int j = 0; j < gizmo_plugins.size(); ++j) {
 			if (!gizmo_plugins[j]->can_be_hidden()) continue;
 			int state = EditorSpatialGizmoPlugin::ON_TOP;
-			for (uint32_t i = 0; i < keys.size(); i++) {
+			for (int i = 0; i < keys.size(); i++) {
 				if (gizmo_plugins.write[j]->get_name() == keys[i]) {
 					state = gizmos_status[keys[i]];
 				}

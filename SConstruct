@@ -333,12 +333,13 @@ if selected_platform in platform_list:
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=['/EHsc'])
     else: # Rest of the world
+        disable_nonessential_warnings = ['-Wno-sign-compare']
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra'])
         elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
-            env.Append(CCFLAGS=['-Wall'])
+            env.Append(CCFLAGS=['-Wall'] + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
-            env.Append(CCFLAGS=['-Wall', '-Wno-unused'])
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
         env.Append(CCFLAGS=['-Werror=return-type'])

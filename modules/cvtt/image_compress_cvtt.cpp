@@ -118,7 +118,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options);
 		}
 
-		int num_real_blocks = ((w - x_start) + 3) / 4;
+		unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
 		if (num_real_blocks > cvtt::NumParallelBlocks) {
 			num_real_blocks = cvtt::NumParallelBlocks;
 		}
@@ -131,7 +131,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 static void _digest_job_queue(void *p_job_queue) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
 
-	for (int next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
+	for (uint32_t next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
 		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
 	}
 }
@@ -335,7 +335,7 @@ void image_decompress_cvtt(Image *p_image) {
 				uint8_t input_blocks[16 * cvtt::NumParallelBlocks];
 				memset(input_blocks, 0, sizeof(input_blocks));
 
-				int num_real_blocks = ((w - x_start) + 3) / 4;
+				unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
 				if (num_real_blocks > cvtt::NumParallelBlocks) {
 					num_real_blocks = cvtt::NumParallelBlocks;
 				}
