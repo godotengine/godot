@@ -97,8 +97,12 @@ _FORCE_INLINE_ MonoString *mono_string_from_godot(const String &p_string) {
 MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type);
 MonoObject *variant_to_mono_object(const Variant *p_var);
 
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(Variant p_var) {
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var) {
 	return variant_to_mono_object(&p_var);
+}
+
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
+	return variant_to_mono_object(&p_var, p_type);
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);

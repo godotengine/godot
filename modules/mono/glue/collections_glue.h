@@ -45,6 +45,8 @@ void godot_icall_Array_Dtor(Array *ptr);
 
 MonoObject *godot_icall_Array_At(Array *ptr, int index);
 
+MonoObject *godot_icall_Array_At_Generic(Array *ptr, int index, uint32_t type_encoding, GDMonoClass *type_class);
+
 void godot_icall_Array_SetAt(Array *ptr, int index, MonoObject *value);
 
 int godot_icall_Array_Count(Array *ptr);
@@ -65,6 +67,8 @@ bool godot_icall_Array_Remove(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_RemoveAt(Array *ptr, int index);
 
+void godot_icall_Array_Generic_GetElementTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
+
 // Dictionary
 
 Dictionary *godot_icall_Dictionary_Ctor();
@@ -72,6 +76,8 @@ Dictionary *godot_icall_Dictionary_Ctor();
 void godot_icall_Dictionary_Dtor(Dictionary *ptr);
 
 MonoObject *godot_icall_Dictionary_GetValue(Dictionary *ptr, MonoObject *key);
+
+MonoObject *godot_icall_Dictionary_GetValue_Generic(Dictionary *ptr, MonoObject *key, uint32_t type_encoding, GDMonoClass *type_class);
 
 void godot_icall_Dictionary_SetValue(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
@@ -94,6 +100,10 @@ bool godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
 bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
 bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value);
+
+bool godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class);
+
+void godot_icall_Dictionary_Generic_GetValueTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
 
 // Register internal calls
 

@@ -44,9 +44,14 @@ struct ManagedType {
 	int type_encoding;
 	GDMonoClass *type_class;
 
-	ManagedType() {
-		type_encoding = 0;
-		type_class = NULL;
+	ManagedType() :
+			type_encoding(0),
+			type_class(NULL) {
+	}
+
+	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :
+			type_encoding(p_type_encoding),
+			type_class(p_type_class) {
 	}
 };
 
