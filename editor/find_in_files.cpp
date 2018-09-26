@@ -302,7 +302,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	set_custom_minimum_size(Size2(400, 190));
 	set_resizable(true);
-	set_title(TTR("Find in files"));
+	set_title(TTR("Find in Files"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 8 * EDSCALE);
