@@ -128,7 +128,7 @@ namespace Godot.Collections
 
             for (int i = 0; i < count; i++)
             {
-                yield return godot_icall_Array_At(GetPtr(), i);
+                yield return this[i];
             }
         }
 
@@ -167,6 +167,9 @@ namespace Godot.Collections
         internal extern static object godot_icall_Array_At(IntPtr ptr, int index);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_Array_At_Generic(IntPtr ptr, int index, int elemTypeEncoding, IntPtr elemTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_SetAt(IntPtr ptr, int index, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -195,11 +198,22 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
     }
 
     public class Array<T> : IList<T>, ICollection<T>, IEnumerable<T>
     {
         Array objectArray;
+
+        internal static int elemTypeEncoding;
+        internal static IntPtr elemTypeClass;
+
+        static Array()
+        {
+            Array.godot_icall_Array_Generic_GetElementTypeInfo(typeof(T), out elemTypeEncoding, out elemTypeClass);
+        }
 
         public Array()
         {
@@ -230,7 +244,7 @@ namespace Godot.Collections
         {
             get
             {
-                return (T)objectArray[index];
+                return (T)Array.godot_icall_Array_At_Generic(GetPtr(), index, elemTypeEncoding, elemTypeClass);
             }
             set
             {
@@ -287,7 +301,7 @@ namespace Godot.Collections
 
             for (int i = 0; i < count; i++)
             {
-                array[arrayIndex] = (T)objectArray[i];
+                array[arrayIndex] = (T)this[i];
                 arrayIndex++;
             }
         }
@@ -298,7 +312,7 @@ namespace Godot.Collections
 
             for (int i = 0; i < count; i++)
             {
-                yield return (T)objectArray[i];
+                yield return (T)this[i];
             }
         }
 

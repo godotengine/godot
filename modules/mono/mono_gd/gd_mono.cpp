@@ -259,14 +259,15 @@ void GDMono::initialize() {
 	// The following assemblies are not required at initialization
 #ifdef MONO_GLUE_ENABLED
 	if (_load_api_assemblies()) {
-		if (!core_api_assembly_out_of_sync && !editor_api_assembly_out_of_sync && GDMonoUtils::mono_cache.godot_api_cache_updated) {
-			// Everything is fine with the api assemblies, load the project assembly
-			_load_project_assembly();
-		} else {
+		// Everything is fine with the api assemblies, load the project assembly
+		_load_project_assembly();
+	} else {
+		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)) ||
+				(editor_api_assembly && editor_api_assembly_out_of_sync)) {
 #ifdef TOOLS_ENABLED
 			// The assembly was successfully loaded, but the full api could not be cached.
-			// This is most likely an outdated assembly loaded because of an invalid version in the metadata,
-			// so we invalidate the version in the metadata and unload the script domain.
+			// This is most likely an outdated assembly loaded because of an invalid version in the
+			// metadata, so we invalidate the version in the metadata and unload the script domain.
 
 			if (core_api_assembly_out_of_sync) {
 				ERR_PRINT("The loaded Core API assembly is out of sync");
@@ -290,12 +291,12 @@ void GDMono::initialize() {
 #else
 			ERR_PRINT("The loaded API assembly is invalid");
 			CRASH_NOW();
-#endif
+#endif // TOOLS_ENABLED
 		}
 	}
 #else
 	print_verbose("Mono: Glue disabled, ignoring script assemblies.");
-#endif
+#endif // MONO_GLUE_ENABLED
 
 	print_verbose("Mono: INITIALIZED");
 }
@@ -448,8 +449,10 @@ bool GDMono::_load_core_api_assembly() {
 		return true;
 
 #ifdef TOOLS_ENABLED
-	if (metadata_is_api_assembly_invalidated(APIAssembly::API_CORE))
+	if (metadata_is_api_assembly_invalidated(APIAssembly::API_CORE)) {
+		print_verbose("Mono: Skipping loading of Core API assembly because it was invalidated");
 		return false;
+	}
 #endif
 
 	bool success = load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
@@ -460,8 +463,12 @@ bool GDMono::_load_core_api_assembly() {
 		core_api_assembly_out_of_sync = GodotSharpBindings::get_core_api_hash() != api_assembly_ver.godot_api_hash ||
 										GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
 										CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
-#endif
+		if (!core_api_assembly_out_of_sync) {
+			GDMonoUtils::update_godot_api_cache();
+		}
+#else
 		GDMonoUtils::update_godot_api_cache();
+#endif
 	}
 
 	return success;
@@ -474,8 +481,10 @@ bool GDMono::_load_editor_api_assembly() {
 		return true;
 
 #ifdef TOOLS_ENABLED
-	if (metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR))
+	if (metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR)) {
+		print_verbose("Mono: Skipping loading of Editor API assembly because it was invalidated");
 		return false;
+	}
 #endif
 
 	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
@@ -533,15 +542,21 @@ bool GDMono::_load_api_assemblies() {
 		if (OS::get_singleton()->is_stdout_verbose())
 			print_error("Mono: Failed to load Core API assembly");
 		return false;
-	} else {
-#ifdef TOOLS_ENABLED
-		if (!_load_editor_api_assembly()) {
-			if (OS::get_singleton()->is_stdout_verbose())
-				print_error("Mono: Failed to load Editor API assembly");
-			return false;
-		}
-#endif
 	}
+
+	if (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)
+		return false;
+
+#ifdef TOOLS_ENABLED
+	if (!_load_editor_api_assembly()) {
+		if (OS::get_singleton()->is_stdout_verbose())
+			print_error("Mono: Failed to load Editor API assembly");
+		return false;
+	}
+
+	if (editor_api_assembly_out_of_sync)
+		return false;
+#endif
 
 	return true;
 }
@@ -708,43 +723,42 @@ Error GDMono::reload_scripts_domain() {
 
 #ifdef MONO_GLUE_ENABLED
 	if (!_load_api_assemblies()) {
-		return ERR_CANT_OPEN;
+		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)) ||
+				(editor_api_assembly && editor_api_assembly_out_of_sync)) {
+			// The assembly was successfully loaded, but the full api could not be cached.
+			// This is most likely an outdated assembly loaded because of an invalid version in the
+			// metadata, so we invalidate the version in the metadata and unload the script domain.
+
+			if (core_api_assembly_out_of_sync) {
+				ERR_PRINT("The loaded Core API assembly is out of sync");
+				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
+			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
+				ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
+				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
+			}
+
+			if (editor_api_assembly_out_of_sync) {
+				ERR_PRINT("The loaded Editor API assembly is out of sync");
+				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
+			}
+
+			Error err = _unload_scripts_domain();
+			if (err != OK) {
+				WARN_PRINT("Mono: Failed to unload scripts domain");
+			}
+
+			return ERR_CANT_RESOLVE;
+		} else {
+			return ERR_CANT_OPEN;
+		}
 	}
 
-	if (!core_api_assembly_out_of_sync && !editor_api_assembly_out_of_sync && GDMonoUtils::mono_cache.godot_api_cache_updated) {
-		// Everything is fine with the api assemblies, load the project assembly
-		_load_project_assembly();
-	} else {
-		// The assembly was successfully loaded, but the full api could not be cached.
-		// This is most likely an outdated assembly loaded because of an invalid version in the metadata,
-		// so we invalidate the version in the metadata and unload the script domain.
-
-		if (core_api_assembly_out_of_sync) {
-			ERR_PRINT("The loaded Core API assembly is out of sync");
-			metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
-		} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
-			ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
-			metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
-		}
-
-		if (editor_api_assembly_out_of_sync) {
-			ERR_PRINT("The loaded Editor API assembly is out of sync");
-			metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
-		}
-
-		Error err = _unload_scripts_domain();
-		if (err != OK) {
-			WARN_PRINT("Mono: Failed to unload scripts domain");
-		}
-
-		return ERR_CANT_RESOLVE;
-	}
-
-	if (!_load_project_assembly())
+	if (!_load_project_assembly()) {
 		return ERR_CANT_OPEN;
+	}
 #else
 	print_verbose("Mono: Glue disabled, ignoring script assemblies.");
-#endif
+#endif // MONO_GLUE_ENABLED
 
 	return OK;
 }

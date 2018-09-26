@@ -204,6 +204,9 @@ namespace Godot.Collections
         internal extern static object godot_icall_Dictionary_GetValue(IntPtr ptr, object key);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static object godot_icall_Dictionary_GetValue_Generic(IntPtr ptr, object key, int valTypeEncoding, IntPtr valTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Dictionary_SetValue(IntPtr ptr, object key, object value);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -235,6 +238,12 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static bool godot_icall_Dictionary_TryGetValue(IntPtr ptr, object key, out object value);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static bool godot_icall_Dictionary_TryGetValue_Generic(IntPtr ptr, object key, out object value, int valTypeEncoding, IntPtr valTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_Dictionary_Generic_GetValueTypeInfo(Type valueType, out int valTypeEncoding, out IntPtr valTypeClass);
     }
 
     public class Dictionary<TKey, TValue> :
@@ -243,6 +252,14 @@ namespace Godot.Collections
         IEnumerable<KeyValuePair<TKey, TValue>>
     {
         Dictionary objectDict;
+
+        internal static int valTypeEncoding;
+        internal static IntPtr valTypeClass;
+
+        static Dictionary()
+        {
+            Dictionary.godot_icall_Dictionary_Generic_GetValueTypeInfo(typeof(TValue), out valTypeEncoding, out valTypeClass);
+        }
 
         public Dictionary()
         {
@@ -273,7 +290,7 @@ namespace Godot.Collections
         {
             get
             {
-                return (TValue)objectDict[key];
+                return (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(objectDict.GetPtr(), key, valTypeEncoding, valTypeClass);
             }
             set
             {
@@ -382,7 +399,7 @@ namespace Godot.Collections
         public bool TryGetValue(TKey key, out TValue value)
         {
             object retValue;
-            bool found = objectDict.TryGetValue(key, out retValue);
+            bool found = Dictionary.godot_icall_Dictionary_TryGetValue_Generic(GetPtr(), key, out retValue, valTypeEncoding, valTypeClass);
             value = found ? (TValue)retValue : default(TValue);
             return found;
         }
