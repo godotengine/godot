@@ -1718,7 +1718,7 @@ void ResourceFormatSaverBinaryInstance::save_unicode_string(FileAccess *f, const
 
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32(utf8.length() + 1 | 0x80000000);
+		f->store_32((utf8.length() + 1) | 0x80000000);
 	} else {
 		f->store_32(utf8.length() + 1);
 	}

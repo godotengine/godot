@@ -2199,7 +2199,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		bool shrink = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
 
-		if (shrink != viewport_container->get_stretch_shrink() > 1) {
+		if (shrink != (viewport_container->get_stretch_shrink() > 1)) {
 			viewport_container->set_stretch_shrink(shrink ? 2 : 1);
 		}
 
@@ -4979,32 +4979,29 @@ void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 			if (!k->is_pressed())
 				return;
 
-			if (ED_IS_SHORTCUT("spatial_editor/tool_select", p_event))
+			if (ED_IS_SHORTCUT("spatial_editor/tool_select", p_event)) {
 				_menu_item_pressed(MENU_TOOL_SELECT);
-
-			else if (ED_IS_SHORTCUT("spatial_editor/tool_move", p_event))
+			} else if (ED_IS_SHORTCUT("spatial_editor/tool_move", p_event)) {
 				_menu_item_pressed(MENU_TOOL_MOVE);
-
-			else if (ED_IS_SHORTCUT("spatial_editor/tool_rotate", p_event))
+			} else if (ED_IS_SHORTCUT("spatial_editor/tool_rotate", p_event)) {
 				_menu_item_pressed(MENU_TOOL_ROTATE);
-
-			else if (ED_IS_SHORTCUT("spatial_editor/tool_scale", p_event))
+			} else if (ED_IS_SHORTCUT("spatial_editor/tool_scale", p_event)) {
 				_menu_item_pressed(MENU_TOOL_SCALE);
-			else if (ED_IS_SHORTCUT("spatial_editor/snap_to_floor", p_event))
+			} else if (ED_IS_SHORTCUT("spatial_editor/snap_to_floor", p_event)) {
 				snap_selected_nodes_to_floor();
-
-			else if (ED_IS_SHORTCUT("spatial_editor/local_coords", p_event))
+			} else if (ED_IS_SHORTCUT("spatial_editor/local_coords", p_event)) {
 				if (are_local_coords_enabled()) {
 					_menu_item_toggled(false, MENU_TOOL_LOCAL_COORDS);
 				} else {
 					_menu_item_toggled(true, MENU_TOOL_LOCAL_COORDS);
 				}
-			else if (ED_IS_SHORTCUT("spatial_editor/snap", p_event))
+			} else if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
 				if (is_snap_enabled()) {
 					_menu_item_toggled(false, MENU_TOOL_USE_SNAP);
 				} else {
 					_menu_item_toggled(true, MENU_TOOL_USE_SNAP);
 				}
+			}
 		}
 	}
 }

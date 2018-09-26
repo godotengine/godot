@@ -1416,7 +1416,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		while (c) {
 
-			if (cache.draw_relationship_lines == 1 && (c->get_parent() != root || c->get_parent() == root && !hide_root)) {
+			if (cache.draw_relationship_lines == 1 && (c->get_parent() != root || !hide_root)) {
 				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
 				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;

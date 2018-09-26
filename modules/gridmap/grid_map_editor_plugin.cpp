@@ -597,29 +597,31 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 			if (mb->get_button_index() == BUTTON_LEFT) {
 
 				if (input_action == INPUT_DUPLICATE) {
-
 					//paste
 					_duplicate_paste();
 					input_action = INPUT_NONE;
 					_update_duplicate_indicator();
 				} else if (mb->get_shift()) {
 					input_action = INPUT_SELECT;
-				} else if (mb->get_command())
+				} else if (mb->get_command()) {
 					input_action = INPUT_COPY;
-				else {
+				} else {
 					input_action = INPUT_PAINT;
 					set_items.clear();
 				}
-			} else if (mb->get_button_index() == BUTTON_RIGHT)
+			} else if (mb->get_button_index() == BUTTON_RIGHT) {
 				if (input_action == INPUT_DUPLICATE) {
-
 					input_action = INPUT_NONE;
 					_update_duplicate_indicator();
 				} else if (mb->get_shift()) {
 					input_action = INPUT_ERASE;
 					set_items.clear();
-				} else
+				} else {
 					return false;
+				}
+			} else {
+				return false;
+			}
 
 			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
 		} else {

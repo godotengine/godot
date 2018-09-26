@@ -190,15 +190,14 @@ void VisualScriptPropertySelector::_update_search() {
 			if (type_filter.size() && type_filter.find(E->get().type) == -1)
 				continue;
 
+			// capitalize() also converts underscore to space, we'll match again both possible styles
 			String get_text_raw = String(vformat(TTR("Get %s"), E->get().name));
 			String get_text = get_text_raw.capitalize();
-
 			String set_text_raw = String(vformat(TTR("Set %s"), E->get().name));
 			String set_text = set_text_raw.capitalize();
 			String input = search_box->get_text().capitalize();
-			if (input == String() ||
-					get_text_raw.findn(input) != -1 ||
-					get_text.findn(input) != -1) {
+
+			if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
 				TreeItem *item = search_options->create_item(category ? category : root);
 				item->set_text(0, get_text);
 				item->set_metadata(0, E->get().name);
@@ -211,9 +210,7 @@ void VisualScriptPropertySelector::_update_search() {
 				item->set_metadata(2, connecting);
 			}
 
-			if (input == String() ||
-					set_text_raw.findn(input) != -1 &&
-							set_text.findn(input) != -1) {
+			if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
 				TreeItem *item = search_options->create_item(category ? category : root);
 				item->set_text(0, set_text);
 				item->set_metadata(0, E->get().name);

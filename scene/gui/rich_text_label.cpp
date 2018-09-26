@@ -421,7 +421,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 								int cw = 0;
 
-								bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - line_descent - line_ascent, line_ascent + line_descent);
+								bool visible = visible_characters < 0 || (p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - line_descent - line_ascent, line_ascent + line_descent));
 								if (visible)
 									line_is_blank = false;
 
@@ -509,7 +509,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 				ENSURE_WIDTH(img->image->get_width());
 
-				bool visible = visible_characters < 0 || p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - font->get_descent() - img->image->get_height(), img->image->get_height());
+				bool visible = visible_characters < 0 || (p_char_count < visible_characters && YRANGE_VISIBLE(y + lh - font->get_descent() - img->image->get_height(), img->image->get_height()));
 				if (visible)
 					line_is_blank = false;
 
