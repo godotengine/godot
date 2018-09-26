@@ -227,6 +227,7 @@ String DirAccess::fix_path(String p_path) const {
 
 			return p_path;
 		} break;
+		case ACCESS_MAX: break; // Can't happen, but silences warning
 	}
 
 	return p_path;

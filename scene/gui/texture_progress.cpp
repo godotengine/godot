@@ -229,6 +229,17 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				first_section_size = topleft.y;
 				last_section_size = bottomright.y;
 			} break;
+			case FILL_BILINEAR_LEFT_AND_RIGHT: {
+				// TODO: Implement
+			} break;
+			case FILL_BILINEAR_TOP_AND_BOTTOM: {
+				// TODO: Implement
+			} break;
+			case FILL_CLOCKWISE:
+			case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE:
+			case FILL_COUNTER_CLOCKWISE: {
+				// Those modes are circular, not relevant for nine patch
+			} break;
 		}
 
 		double width_filled = width_total * p_ratio;
@@ -262,6 +273,17 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.position.y += width_total - width_filled;
 				dst_rect.size.y = width_filled;
 				topleft.y = last_section_size;
+			} break;
+			case FILL_BILINEAR_LEFT_AND_RIGHT: {
+				// TODO: Implement
+			} break;
+			case FILL_BILINEAR_TOP_AND_BOTTOM: {
+				// TODO: Implement
+			} break;
+			case FILL_CLOCKWISE:
+			case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE:
+			case FILL_COUNTER_CLOCKWISE: {
+				// Those modes are circular, not relevant for nine patch
 			} break;
 		}
 	}

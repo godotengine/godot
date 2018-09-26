@@ -535,20 +535,18 @@ void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
 			reload_axis_lock();
 			_internal_set_mass(0);
 			break;
-		case PhysicsServer::BODY_MODE_RIGID: {
+		case PhysicsServer::BODY_MODE_RIGID:
 			mode = PhysicsServer::BODY_MODE_RIGID;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		}
-		case PhysicsServer::BODY_MODE_CHARACTER: {
+		case PhysicsServer::BODY_MODE_CHARACTER:
 			mode = PhysicsServer::BODY_MODE_CHARACTER;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		}
 	}
 
 	btBody->setAngularVelocity(btVector3(0, 0, 0));
@@ -927,10 +925,10 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		}
 
 		switch (currentArea->get_spOv_mode()) {
-			///case PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED:
-			/// This area does not affect gravity/damp. These are generally areas
-			/// that exist only to detect collisions, and objects entering or exiting them.
-			///    break;
+			case PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED:
+				/// This area does not affect gravity/damp. These are generally areas
+				/// that exist only to detect collisions, and objects entering or exiting them.
+				break;
 			case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE:
 				/// This area adds its gravity/damp values to whatever has been
 				/// calculated so far. This way, many overlapping areas can combine

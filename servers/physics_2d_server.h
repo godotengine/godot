@@ -372,7 +372,6 @@ public:
 		BODY_MODE_KINEMATIC,
 		BODY_MODE_RIGID,
 		BODY_MODE_CHARACTER
-		//BODY_MODE_SOFT ??
 	};
 
 	virtual RID body_create() = 0;
@@ -581,9 +580,7 @@ public:
 
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
-		INFO_ISLAND_COUNT,
-		INFO_STEP_TIME,
-		INFO_BROAD_PHASE_TIME
+		INFO_ISLAND_COUNT
 	};
 
 	virtual int get_process_info(ProcessInfo p_info) = 0;

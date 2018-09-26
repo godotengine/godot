@@ -366,6 +366,7 @@ void SliderJointBullet::set_param(PhysicsServer::SliderJointParam p_param, real_
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: setSoftnessOrthoAng(p_value); break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: setRestitutionOrthoAng(p_value); break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: setDampingOrthoAng(p_value); break;
+		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 }
 

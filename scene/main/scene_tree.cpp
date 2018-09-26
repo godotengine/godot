@@ -1197,6 +1197,9 @@ void SceneTree::_update_root_rect() {
 	}
 
 	switch (stretch_mode) {
+		case STRETCH_MODE_DISABLED: {
+			// Already handled above
+		} break;
 		case STRETCH_MODE_2D: {
 
 			root->set_size((screen_size / stretch_shrink).floor());

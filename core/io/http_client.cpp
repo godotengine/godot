@@ -374,6 +374,7 @@ Error HTTPClient::poll() {
 				} break;
 			}
 		} break;
+		case STATUS_BODY:
 		case STATUS_CONNECTED: {
 			// Check if we are still connected
 			if (ssl) {
@@ -480,7 +481,8 @@ Error HTTPClient::poll() {
 		case STATUS_DISCONNECTED: {
 			return ERR_UNCONFIGURED;
 		} break;
-		case STATUS_CONNECTION_ERROR: {
+		case STATUS_CONNECTION_ERROR:
+		case STATUS_SSL_HANDSHAKE_ERROR: {
 			return ERR_CONNECTION_ERROR;
 		} break;
 		case STATUS_CANT_CONNECT: {

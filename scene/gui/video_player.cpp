@@ -102,6 +102,10 @@ void VideoPlayer::_mix_audio() {
 			}
 
 		} break;
+		case AudioServer::SPEAKER_SURROUND_31: {
+
+			// FIXME: Implement
+		} break;
 		case AudioServer::SPEAKER_SURROUND_51: {
 
 			AudioFrame *targets[2] = {

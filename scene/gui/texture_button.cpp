@@ -88,6 +88,9 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 					scale.y = min;
 					ofs -= _texture_region.position / min;
 				} break;
+				default: {
+					// FIXME: Why a switch if we only handle one enum value?
+				}
 			}
 
 			// offset and scale the new point position to adjust it to the bitmask size

@@ -5219,6 +5219,8 @@ String GDScriptParser::DataType::to_string() const {
 			}
 			return class_type->name.operator String();
 		} break;
+		case UNRESOLVED: {
+		} break;
 	}
 
 	return "Unresolved";
@@ -5791,7 +5793,10 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 				expr_native = base->base_type.native_type;
 				expr_script = base->base_type.script_type;
 			}
-		}
+		} break;
+		case DataType::BUILTIN: // Already handled above
+		case DataType::UNRESOLVED: // Not allowed, see above
+			break;
 	}
 
 	switch (p_container.kind) {
@@ -5834,7 +5839,10 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 				expr_class = expr_class->base_type.class_type;
 			}
 			return false;
-		}
+		} break;
+		case DataType::BUILTIN: // Already handled above
+		case DataType::UNRESOLVED: // Not allowed, see above
+			break;
 	}
 
 	return false;
@@ -6228,6 +6236,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::COLOR: {
 										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::STRING;
 									} break;
+									default: {}
 								}
 							}
 							if (error) {
@@ -6345,6 +6354,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 				}
 			}
 		} break;
+		default: {}
 	}
 
 	p_node->set_datatype(_resolve_type(node_type, p_node->line));

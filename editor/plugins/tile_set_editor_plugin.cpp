@@ -795,6 +795,7 @@ void TileSetEditor::_on_workspace_draw() {
 				spin_priority->set_suffix(" / " + String::num(total, 0));
 				draw_highlight_subtile(edited_shape_coord, queue_others);
 			} break;
+			default: {}
 		}
 
 		draw_tile_subdivision(get_current_tile(), Color(0.347214, 0.722656, 0.617063));
@@ -1365,6 +1366,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						}
 					}
 				} break;
+				default: {}
 			}
 		}
 	}
@@ -1434,6 +1436,7 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 						workspace->update();
 					}
 				} break;
+				default: {}
 			}
 		}
 	} else if (p_tool == ZOOM_OUT) {
@@ -1862,6 +1865,7 @@ void TileSetEditor::draw_polygon_shapes() {
 				}
 			}
 		} break;
+		default: {}
 	}
 	if (creating_shape) {
 		for (int j = 0; j < current_shape.size() - 1; j++) {

@@ -88,6 +88,8 @@ public:
 				case CLASS: {
 					return class_type == other.class_type;
 				} break;
+				case UNRESOLVED: {
+				} break;
 			}
 			return false;
 		}

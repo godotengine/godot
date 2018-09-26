@@ -330,6 +330,10 @@ void FileDialog::deselect_items() {
 			case MODE_OPEN_DIR:
 				get_ok()->set_text(RTR("Select Current Folder"));
 				break;
+			case MODE_OPEN_ANY:
+			case MODE_SAVE_FILE:
+				// FIXME: Implement, or refactor to avoid duplication with set_mode
+				break;
 		}
 	}
 }

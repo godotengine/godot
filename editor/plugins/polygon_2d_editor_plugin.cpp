@@ -767,6 +767,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						node->set_polygon(uv_new);
 					}
 				} break;
+				default: {}
 			}
 
 			if (bone_painting) {
