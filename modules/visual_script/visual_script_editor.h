@@ -37,6 +37,7 @@
 #include "scene/gui/graph_edit.h"
 #include "visual_script.h"
 #include "visual_script_property_selector.h"
+
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 
@@ -159,7 +160,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	MemberType member_type;
 	String member_name;
 
-	bool seq_connect = false;
+	bool seq_connect;
 
 	PortAction port_action;
 	int port_action_node;

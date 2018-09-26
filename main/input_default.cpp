@@ -636,6 +636,7 @@ InputDefault::InputDefault() {
 	emulate_mouse_from_touch = false;
 	mouse_from_touch_index = -1;
 	main_loop = NULL;
+	default_shape = CURSOR_ARROW;
 
 	hat_map_default[HAT_UP].type = TYPE_BUTTON;
 	hat_map_default[HAT_UP].index = JOY_DPAD_UP;

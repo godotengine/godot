@@ -721,6 +721,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
+	seq_connect = false;
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
 	help_bit->connect("request_hide", this, "_closed");

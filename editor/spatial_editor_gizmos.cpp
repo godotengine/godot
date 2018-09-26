@@ -715,6 +715,7 @@ EditorSpatialGizmo::EditorSpatialGizmo() {
 	instanced = false;
 	spatial_node = NULL;
 	gizmo_plugin = NULL;
+	selectable_icon_size = -1.0f;
 }
 
 EditorSpatialGizmo::~EditorSpatialGizmo() {

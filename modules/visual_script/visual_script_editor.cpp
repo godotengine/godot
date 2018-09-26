@@ -3496,6 +3496,7 @@ VisualScriptEditor::VisualScriptEditor() {
 		clipboard = memnew(Clipboard);
 	}
 	updating_graph = false;
+	seq_connect = false;
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
