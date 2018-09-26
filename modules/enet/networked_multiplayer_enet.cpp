@@ -293,7 +293,7 @@ void NetworkedMultiplayerENet::poll() {
 							encode_uint32(*id, &packet->data[4]);
 							enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 						}
-					} else if (!server) {
+					} else {
 						emit_signal("server_disconnected");
 						close_connection();
 						return;
