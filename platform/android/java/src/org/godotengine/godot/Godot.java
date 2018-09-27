@@ -184,6 +184,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		protected void onMainActivityResult(int requestCode, int resultCode, Intent data) {
 		}
 
+		protected void onMainRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		}
+
 		protected void onMainPause() {}
 		protected void onMainResume() {}
 		protected void onMainDestroy() {}
@@ -248,6 +251,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		for (int i = 0; i < singleton_count; i++) {
 
 			singletons[i].onMainActivityResult(requestCode, resultCode, data);
+		}
+	};
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		for (int i = 0; i < singleton_count; i++) {
+			singletons[i].onMainRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 	};
 
