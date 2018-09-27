@@ -44,12 +44,19 @@
 Mutex *CanvasItemMaterial::material_mutex = NULL;
 SelfList<CanvasItemMaterial>::List CanvasItemMaterial::dirty_materials;
 Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
+CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = NULL;
 
 void CanvasItemMaterial::init_shaders() {
 
 #ifndef NO_THREADS
 	material_mutex = Mutex::create();
 #endif
+
+	shader_names = memnew(ShaderNames);
+
+	shader_names->particles_anim_h_frames = "particles_anim_h_frames";
+	shader_names->particles_anim_v_frames = "particles_anim_v_frames";
+	shader_names->particles_anim_loop = "particles_anim_loop";
 }
 
 void CanvasItemMaterial::finish_shaders() {
@@ -102,7 +109,37 @@ void CanvasItemMaterial::_update_shader() {
 		case LIGHT_MODE_UNSHADED: code += ",unshaded"; break;
 		case LIGHT_MODE_LIGHT_ONLY: code += ",light_only"; break;
 	}
-	code += ";\n"; //that's it.
+
+	code += ";\n";
+
+	if (particles_animation) {
+
+		code += "uniform int particles_anim_h_frames;\n";
+		code += "uniform int particles_anim_v_frames;\n";
+		code += "uniform bool particles_anim_loop;\n";
+
+		code += "void vertex() {\n";
+
+		code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
+		code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
+
+		code += "\tVERTEX.xy /= TEXTURE_PIXEL_SIZE * vec2(h_frames, v_frames);\n";
+
+		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
+		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
+		code += "\tif (particles_anim_loop) {\n";
+		code += "\t\tframe = abs(frame) % total_frames;\n";
+		code += "\t} else {\n";
+		code += "\t\tframe = clamp(frame, 0, total_frames - 1);\n";
+		code += "\t}\n";
+
+		code += "\tfloat frame_w = 1.0 / h_frames;\n";
+		code += "\tfloat frame_h = 1.0 / v_frames;\n";
+		code += "\tUV.x = UV.x * frame_w + frame_w * float(frame % particles_anim_h_frames);\n";
+		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_v_frames);\n";
+
+		code += "}\n";
+	}
 
 	ShaderData shader_data;
 	shader_data.shader = VS::get_singleton()->shader_create();
@@ -177,7 +214,52 @@ CanvasItemMaterial::LightMode CanvasItemMaterial::get_light_mode() const {
 	return light_mode;
 }
 
+void CanvasItemMaterial::set_particles_animation(bool p_particles_anim) {
+	particles_animation = p_particles_anim;
+	_queue_shader_change();
+	_change_notify();
+}
+
+bool CanvasItemMaterial::get_particles_animation() const {
+	return particles_animation;
+}
+
+void CanvasItemMaterial::set_particles_anim_h_frames(int p_frames) {
+
+	particles_anim_h_frames = p_frames;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_h_frames, p_frames);
+}
+
+int CanvasItemMaterial::get_particles_anim_h_frames() const {
+
+	return particles_anim_h_frames;
+}
+void CanvasItemMaterial::set_particles_anim_v_frames(int p_frames) {
+
+	particles_anim_v_frames = p_frames;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
+}
+
+int CanvasItemMaterial::get_particles_anim_v_frames() const {
+
+	return particles_anim_v_frames;
+}
+
+void CanvasItemMaterial::set_particles_anim_loop(bool p_loop) {
+
+	particles_anim_loop = p_loop;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
+}
+
+bool CanvasItemMaterial::get_particles_anim_loop() const {
+
+	return particles_anim_loop;
+}
+
 void CanvasItemMaterial::_validate_property(PropertyInfo &property) const {
+	if (property.name.begins_with("particles_anim_") && !particles_animation) {
+		property.usage = 0;
+	}
 }
 
 RID CanvasItemMaterial::get_shader_rid() const {
@@ -199,8 +281,25 @@ void CanvasItemMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_light_mode", "light_mode"), &CanvasItemMaterial::set_light_mode);
 	ClassDB::bind_method(D_METHOD("get_light_mode"), &CanvasItemMaterial::get_light_mode);
 
+	ClassDB::bind_method(D_METHOD("set_particles_animation", "particles_anim"), &CanvasItemMaterial::set_particles_animation);
+	ClassDB::bind_method(D_METHOD("get_particles_animation"), &CanvasItemMaterial::get_particles_animation);
+
+	ClassDB::bind_method(D_METHOD("set_particles_anim_h_frames", "frames"), &CanvasItemMaterial::set_particles_anim_h_frames);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_h_frames"), &CanvasItemMaterial::get_particles_anim_h_frames);
+
+	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &CanvasItemMaterial::set_particles_anim_v_frames);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &CanvasItemMaterial::get_particles_anim_v_frames);
+
+	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &CanvasItemMaterial::set_particles_anim_loop);
+	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &CanvasItemMaterial::get_particles_anim_loop);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,Premult Alpha"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mode", PROPERTY_HINT_ENUM, "Normal,Unshaded,Light Only"), "set_light_mode", "get_light_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_animation"), "set_particles_animation", "get_particles_animation");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
 	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
@@ -218,6 +317,11 @@ CanvasItemMaterial::CanvasItemMaterial() :
 
 	blend_mode = BLEND_MODE_MIX;
 	light_mode = LIGHT_MODE_NORMAL;
+	particles_animation = false;
+
+	set_particles_anim_h_frames(1);
+	set_particles_anim_v_frames(1);
+	set_particles_anim_loop(false);
 
 	current_key.key = 0;
 	current_key.invalid_key = 1;

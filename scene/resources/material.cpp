@@ -612,7 +612,7 @@ void SpatialMaterial::_update_shader() {
 			//handle animation
 			code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
 			code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
-			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0.0,particle_total_frames-1.0); else particle_frame=mod(particle_frame,float(particle_total_frames));\n";
+			code += "\tif (!particles_anim_loop) particle_frame=clamp(particle_frame,0.0,particle_total_frames-1.0); else particle_frame=mod(particle_frame,float(particle_total_frames));\n";
 			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
 			code += "\tUV += vec2(mod(particle_frame,float(particles_anim_h_frames)) / float(particles_anim_h_frames), floor(particle_frame / float(particles_anim_h_frames)) / float(particles_anim_v_frames));\n";
 		} break;
@@ -1541,13 +1541,13 @@ int SpatialMaterial::get_particles_anim_v_frames() const {
 	return particles_anim_v_frames;
 }
 
-void SpatialMaterial::set_particles_anim_loop(int p_frames) {
+void SpatialMaterial::set_particles_anim_loop(bool p_loop) {
 
-	particles_anim_loop = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, p_frames);
+	particles_anim_loop = p_loop;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
 }
 
-int SpatialMaterial::get_particles_anim_loop() const {
+bool SpatialMaterial::get_particles_anim_loop() const {
 
 	return particles_anim_loop;
 }
@@ -1898,7 +1898,7 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &SpatialMaterial::set_particles_anim_v_frames);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &SpatialMaterial::get_particles_anim_v_frames);
 
-	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "frames"), &SpatialMaterial::set_particles_anim_loop);
+	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &SpatialMaterial::set_particles_anim_loop);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &SpatialMaterial::get_particles_anim_loop);
 
 	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax", "enable"), &SpatialMaterial::set_depth_deep_parallax);

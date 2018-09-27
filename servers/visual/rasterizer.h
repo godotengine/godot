@@ -800,8 +800,6 @@ public:
 			RID particles;
 			RID texture;
 			RID normal_map;
-			int h_frames;
-			int v_frames;
 			CommandParticles() { type = TYPE_PARTICLES; }
 		};
 
