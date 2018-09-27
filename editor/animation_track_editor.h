@@ -49,6 +49,8 @@
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
+class AnimationTrackEditor;
+
 class AnimationTimelineEdit : public Range {
 	GDCLASS(AnimationTimelineEdit, Range)
 
@@ -86,6 +88,8 @@ class AnimationTimelineEdit : public Range {
 	float dragging_hsize_from;
 	float dragging_hsize_at;
 
+	AnimationTrackEditor *editor;
+
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _track_added(int p_track);
 
@@ -110,14 +114,14 @@ public:
 	float get_play_position() const;
 	void update_play_position();
 
+	void set_editor(AnimationTrackEditor *p_editor);
+
 	void update_values();
 
 	void set_hscroll(HScrollBar *p_hscroll);
 
 	AnimationTimelineEdit();
 };
-
-class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 
@@ -307,6 +311,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	AnimationTimelineEdit *timeline;
 	HSlider *zoom;
 	EditorSpinSlider *step;
+	EditorSpinSlider *fps;
 	TextureRect *zoom_icon;
 	ToolButton *snap;
 
@@ -339,6 +344,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	SceneTreeDialog *pick_track;
 	int adding_track_type;
 	NodePath adding_track_path;
+
+	int animation_fps;
 
 	bool keying;
 
@@ -448,6 +455,10 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _view_group_toggle();
 	ToolButton *view_group;
+	void _frame_mode_toggle();
+	void _fps_changed(float p_value);
+	void _fps_changed_2(float p_value);
+	ToolButton *frame_mode;
 	ToolButton *selected_filter;
 
 	void _selection_changed();
@@ -474,6 +485,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<TrackClipboard> track_clipboard;
 
 	void _insert_animation_key(NodePath p_path, const Variant &p_value);
+
+	bool frame_mode_enabled;
 
 protected:
 	static void _bind_methods();
@@ -505,6 +518,13 @@ public:
 	float get_moving_selection_offset() const;
 	bool is_snap_enabled();
 	float snap_time(float p_value);
+
+	bool is_frame_mode_enabled() const;
+	AnimationTimelineEdit *get_timeline() const;
+	int get_fps() const;
+
+	float to_mode_time(float p_time) const;
+	float to_regular_time(float p_time) const;
 
 	MenuButton *get_edit_menu();
 	AnimationTrackEditor();

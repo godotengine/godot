@@ -58,6 +58,39 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	}
 }
 
+void AnimationPlayerEditor::_frame_mode_toggled() {
+	List<StringName> animlist;
+	if (player)
+		player->get_animation_list(&animlist);
+
+	if (!animlist.empty()) {
+		String animname = player->get_assigned_animation();
+
+		float time = frame->get_value();
+
+		if (player->has_animation(animname) && track_editor->is_frame_mode_enabled()) {
+			Ref<Animation> anim = player->get_animation(animname);
+			if (!anim.is_null()) {
+				frame->set_max(track_editor->to_mode_time(anim->get_length()));
+			}
+		}
+
+		if (track_editor->is_frame_mode_enabled())
+			time *= track_editor->get_fps();
+		else
+			time /= track_editor->get_fps();
+
+		frame->set_value(time);
+
+		if (player->has_animation(animname) && !track_editor->is_frame_mode_enabled()) {
+			Ref<Animation> anim = player->get_animation(animname);
+			if (!anim.is_null()) {
+				frame->set_max(track_editor->to_mode_time(anim->get_length()));
+			}
+		}
+	}
+}
+
 void AnimationPlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
@@ -79,18 +112,18 @@ void AnimationPlayerEditor::_notification(int p_what) {
 						Ref<Animation> anim = player->get_animation(animname);
 						if (!anim.is_null()) {
 
-							frame->set_max(anim->get_length());
+							frame->set_max(track_editor->to_mode_time(anim->get_length()));
 						}
 					}
 				}
-				frame->set_value(player->get_current_animation_position());
-				track_editor->set_anim_pos(player->get_current_animation_position());
+				frame->set_value(track_editor->to_mode_time(player->get_current_animation_position()));
+				track_editor->set_anim_pos(track_editor->to_mode_time(player->get_current_animation_position()));
 				EditorNode::get_singleton()->get_inspector()->refresh();
 
 			} else if (last_active) {
 				//need the last frame after it stopped
 
-				frame->set_value(player->get_current_animation_position());
+				frame->set_value(track_editor->to_mode_time(player->get_current_animation_position()));
 			}
 
 			last_active = player->is_playing();
@@ -221,7 +254,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 		}
 
 		player->play(current);
-		player->seek(time);
+		player->seek(track_editor->to_regular_time(time));
 	}
 
 	//unstop
@@ -1021,18 +1054,18 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = anim->get_length() * (p_value / frame->get_max());
+	float pos = track_editor->to_mode_time(anim->get_length()) * (p_value / frame->get_max());
 	float step = anim->get_step();
 	if (step) {
 		pos = Math::stepify(pos, step);
 		if (pos < 0)
 			pos = 0;
-		if (pos >= anim->get_length())
-			pos = anim->get_length();
+		if (pos >= track_editor->to_mode_time(anim->get_length()))
+			pos = track_editor->to_mode_time(anim->get_length());
 	}
 
 	if (player->is_valid() && !p_set) {
-		float cpos = player->get_current_animation_position();
+		float cpos = track_editor->to_mode_time(player->get_current_animation_position());
 
 		player->seek_delta(pos, pos - cpos);
 	} else {
@@ -1563,6 +1596,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_dialog_action"), &AnimationPlayerEditor::_dialog_action);
 	ClassDB::bind_method(D_METHOD("_seek_value_changed"), &AnimationPlayerEditor::_seek_value_changed, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
+	ClassDB::bind_method(D_METHOD("_frame_mode_toggled"), &AnimationPlayerEditor::_frame_mode_toggled);
 	ClassDB::bind_method(D_METHOD("_blend_edited"), &AnimationPlayerEditor::_blend_edited);
 	//ClassDB::bind_method(D_METHOD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);
 	ClassDB::bind_method(D_METHOD("_scale_changed"), &AnimationPlayerEditor::_scale_changed);
@@ -1798,6 +1832,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	add_child(track_editor);
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	track_editor->connect("frame_mode_toggled", this, "_frame_mode_toggled", Vector<Variant>(), true);
 	track_editor->connect("timeline_changed", this, "_animation_key_editor_seek");
 	track_editor->connect("animation_len_changed", this, "_animation_key_editor_anim_len_changed");
 	track_editor->connect("animation_step_changed", this, "_animation_key_editor_anim_step_changed");
