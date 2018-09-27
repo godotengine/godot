@@ -2378,7 +2378,7 @@ void CanvasItemEditor::_draw_rulers() {
 			if (i % minor_subdivision == 0) {
 				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.33), Point2(position.x, RULER_WIDTH), graduation_color);
 			} else {
-				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.66), Point2(position.x, RULER_WIDTH), graduation_color);
+				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.75), Point2(position.x, RULER_WIDTH), graduation_color);
 			}
 		}
 	}
@@ -2390,12 +2390,17 @@ void CanvasItemEditor::_draw_rulers() {
 		if (i % (major_subdivision * minor_subdivision) == 0) {
 			viewport->draw_line(Point2(0, position.y), Point2(RULER_WIDTH, position.y), graduation_color);
 			float val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).y;
-			viewport->draw_string(font, Point2(2, position.y + 2 + font->get_height()), vformat(((int)val == val) ? "%d" : "%.1f", val), font_color);
+
+			Transform2D text_xform = Transform2D(-Math_PI / 2.0, Point2(font->get_height(), position.y - 2));
+			viewport->draw_set_transform_matrix(viewport->get_transform() * text_xform);
+			viewport->draw_string(font, Point2(), vformat(((int)val == val) ? "%d" : "%.1f", val), font_color);
+			viewport->draw_set_transform_matrix(viewport->get_transform());
+
 		} else {
 			if (i % minor_subdivision == 0) {
 				viewport->draw_line(Point2(RULER_WIDTH * 0.33, position.y), Point2(RULER_WIDTH, position.y), graduation_color);
 			} else {
-				viewport->draw_line(Point2(RULER_WIDTH * 0.66, position.y), Point2(RULER_WIDTH, position.y), graduation_color);
+				viewport->draw_line(Point2(RULER_WIDTH * 0.75, position.y), Point2(RULER_WIDTH, position.y), graduation_color);
 			}
 		}
 	}
