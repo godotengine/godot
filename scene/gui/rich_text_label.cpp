@@ -864,7 +864,6 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 	if (r_click_item)
 		*r_click_item = NULL;
 
-	Size2 size = get_size();
 	Rect2 text_rect = _get_text_rect();
 	int ofs = vscroll->get_value();
 	Color font_color_shadow = get_color("font_color_shadow");

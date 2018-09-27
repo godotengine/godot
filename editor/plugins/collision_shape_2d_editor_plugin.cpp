@@ -323,7 +323,6 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	if (mb.is_valid()) {
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = node->get_global_transform().affine_inverse().xform(canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mb->get_position())));
 
 		if (mb->get_button_index() == BUTTON_LEFT) {
 			if (mb->is_pressed()) {

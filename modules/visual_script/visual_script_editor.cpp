@@ -2518,8 +2518,6 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 	}
 	ofs /= EDSCALE;
 
-	bool seq_connect = false;
-
 	Set<int> vn;
 
 	switch (p_option) {
@@ -2552,7 +2550,6 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			}
 		} break;
 		case CREATE_ACTION: {
-			seq_connect = true;
 			VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
 			PropertyInfo property_info = script->get_node(edited_func, port_action_node)->get_output_value_port_info(port_action_output);
 			if (tg.type == Variant::OBJECT) {
@@ -2656,7 +2653,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 	Ref<VisualScriptNode> vnode;
 
-	seq_connect = false;
 	if (p_category == String("method")) {
 
 		Ref<VisualScriptFunctionCall> n;
@@ -2682,38 +2678,32 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			Ref<VisualScriptCondition> n;
 			n.instance();
 			vnode = n;
-			seq_connect = true;
 		}
 		if (p_text == "VisualScriptSwitch") {
 
 			Ref<VisualScriptSwitch> n;
 			n.instance();
 			vnode = n;
-			seq_connect = true;
 		} else if (p_text == "VisualScriptSequence") {
 
 			Ref<VisualScriptSequence> n;
 			n.instance();
 			vnode = n;
-			seq_connect = true;
 		} else if (p_text == "VisualScriptIterator") {
 
 			Ref<VisualScriptIterator> n;
 			n.instance();
 			vnode = n;
-			seq_connect = true;
 		} else if (p_text == "VisualScriptWhile") {
 
 			Ref<VisualScriptWhile> n;
 			n.instance();
 			vnode = n;
-			seq_connect = true;
 		} else if (p_text == "VisualScriptReturn") {
 
 			Ref<VisualScriptReturn> n;
 			n.instance();
 			vnode = n;
-			seq_connect = true;
 		}
 	}
 
@@ -3489,7 +3479,6 @@ VisualScriptEditor::VisualScriptEditor() {
 		clipboard = memnew(Clipboard);
 	}
 	updating_graph = false;
-	seq_connect = false;
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));

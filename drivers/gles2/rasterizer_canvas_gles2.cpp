@@ -811,8 +811,6 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 	bool rebind_shader = true;
 
-	Size2 rt_size = Size2(storage->frame.current_rt->width, storage->frame.current_rt->height);
-
 	state.current_tex = RID();
 	state.current_tex_ptr = NULL;
 	state.current_normal = RID();

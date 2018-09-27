@@ -4400,7 +4400,7 @@ int TextEdit::_is_line_in_region(int p_line) {
 
 	// if not find the closest line we have
 	int previous_line = p_line - 1;
-	for (previous_line; previous_line > -1; previous_line--) {
+	for (; previous_line > -1; previous_line--) {
 		if (color_region_cache.has(p_line)) {
 			break;
 		}

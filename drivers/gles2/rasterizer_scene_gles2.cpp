@@ -712,10 +712,8 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	bool has_alpha = has_base_alpha || has_blend_alpha;
 
 	bool mirror = p_instance->mirror;
-	bool no_cull = false;
 
 	if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_DISABLED) {
-		no_cull = true;
 		mirror = false;
 	} else if (p_material->shader->spatial.cull_mode == RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_FRONT) {
 		mirror = !mirror;
@@ -738,7 +736,6 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 			//shader does not use discard and does not write a vertex position, use generic material
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED) {
 				p_material = storage->material_owner.getptr(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material_twosided : default_material_twosided);
-				no_cull = true;
 				mirror = false;
 			} else {
 				p_material = storage->material_owner.getptr(!p_shadow_pass && p_material->shader->spatial.uses_world_coordinates ? default_worldcoord_material : default_material);
@@ -2264,7 +2261,6 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	uint32_t y;
 	uint32_t width;
 	uint32_t height;
-	uint32_t vp_height;
 
 	float zfar = 0;
 	bool flip_facing = false;
@@ -2350,14 +2346,12 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		normal_bias = light->param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * bias_mult;
 
 		fbo = directional_shadow.fbo;
-		vp_height = directional_shadow.size;
 	} else {
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 		ERR_FAIL_COND(!shadow_atlas);
 		ERR_FAIL_COND(!shadow_atlas->shadow_owners.has(p_light));
 
 		fbo = shadow_atlas->fbo;
-		vp_height = shadow_atlas->size;
 
 		uint32_t key = shadow_atlas->shadow_owners[p_light];
 
@@ -2666,10 +2660,6 @@ void RasterizerSceneGLES2::initialize() {
 	}
 
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;
-
-	RenderList::Element e;
-	e.sort_key = 0;
-	e.light_type1 = 1;
 }
 
 void RasterizerSceneGLES2::iteration() {

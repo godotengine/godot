@@ -160,8 +160,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	MemberType member_type;
 	String member_name;
 
-	bool seq_connect;
-
 	PortAction port_action;
 	int port_action_node;
 	int port_action_output;

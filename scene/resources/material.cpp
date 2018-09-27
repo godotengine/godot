@@ -427,10 +427,8 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_USE_VERTEX_LIGHTING]) {
 		code += ",vertex_lighting";
 	}
-	bool using_world = false;
 	if (flags[FLAG_TRIPLANAR_USE_WORLD] && (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR])) {
 		code += ",world_vertex_coords";
-		using_world = true;
 	}
 	if (flags[FLAG_DONT_RECEIVE_SHADOWS]) {
 		code += ",shadows_disabled";

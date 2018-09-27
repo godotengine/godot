@@ -563,7 +563,6 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	float closest_point_d = 1e20;
-	NavMesh *closest_navmesh = NULL;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
 
@@ -582,12 +581,10 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 						closest_point = inters;
 						use_collision = true;
 						closest_point_d = p_from.distance_to(inters);
-						closest_navmesh = p.owner;
 					} else if (closest_point_d > inters.distance_to(p_from)) {
 
 						closest_point = inters;
 						closest_point_d = p_from.distance_to(inters);
-						closest_navmesh = p.owner;
 					}
 				}
 			}
@@ -605,7 +602,6 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 
 						closest_point_d = d;
 						closest_point = b;
-						closest_navmesh = p.owner;
 					}
 				}
 			}

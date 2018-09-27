@@ -690,11 +690,6 @@ void ShaderGLES2::use_material(void *p_material) {
 
 	Version *v = version_map.getptr(conditional_version);
 
-	CustomCode *cc = NULL;
-	if (v) {
-		cc = custom_code_map.getptr(v->code_version);
-	}
-
 	// bind uniforms
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
 
@@ -991,8 +986,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				}
 			}
 		}
-
-		// GLint location = get_uniform_location(E->key());
 
 		GLint location;
 		if (v->custom_uniform_locations.has(E->key())) {

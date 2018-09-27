@@ -255,8 +255,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	bool use_gn_headers = EDITOR_DEF("interface/theme/use_graph_node_headers", false);
 
-	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
-
 	Color preset_accent_color;
 	Color preset_base_color;
 	float preset_contrast;
@@ -1064,8 +1062,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float mono_value = mono_color.r;
 	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
 	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
-	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.5);
-	const Color alpha4 = Color(mono_value, mono_value, mono_value, 0.7);
+	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.7);
 
 	// editor main color
 	const Color main_color = Color::html(dark_theme ? "#57b3ff" : "#0480ff");
@@ -1099,9 +1096,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color member_variable_color = main_color.linear_interpolate(mono_color, 0.6);
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color breakpoint_color = error_color;
-	const Color code_folding_color = alpha4;
+	const Color code_folding_color = alpha3;
 	const Color search_result_color = alpha1;
-	const Color search_result_border_color = alpha4;
+	const Color search_result_border_color = alpha3;
 
 	EditorSettings *setting = EditorSettings::get_singleton();
 	String text_editor_color_theme = setting->get("text_editor/theme/color_theme");

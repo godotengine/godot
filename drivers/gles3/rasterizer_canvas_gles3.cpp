@@ -1223,8 +1223,6 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 	bool rebind_shader = true;
 
-	Size2 rt_size = Size2(storage->frame.current_rt->width, storage->frame.current_rt->height);
-
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_DISTANCE_FIELD, false);
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
