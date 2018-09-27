@@ -194,8 +194,8 @@ static const char *android_perms[] = {
 };
 
 struct LauncherIcon {
-	char *option_id;
-	char *export_path;
+	const char *option_id;
+	const char *export_path;
 };
 
 static const LauncherIcon launcher_icons[] = {

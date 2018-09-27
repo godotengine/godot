@@ -386,8 +386,8 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 		Vector<String> path = E->get().split("/");
 		bool is_filter = false;
-		for (Set<String>::Element *E = filter.front(); E; E = E->next()) {
-			if (path.size() >= 2 && path[1].findn(E->get()) != -1) {
+		for (Set<String>::Element *F = filter.front(); F; F = F->next()) {
+			if (path.size() >= 2 && path[1].findn(F->get()) != -1) {
 				is_filter = true;
 				break;
 			}

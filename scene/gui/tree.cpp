@@ -1254,13 +1254,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 						String s = RTR("(Other)");
 						Vector<String> strings = p_item->cells[i].text.split(",");
-						for (int i = 0; i < strings.size(); i++) {
-							int value = i;
-							if (!strings[i].get_slicec(':', 1).empty()) {
-								value = strings[i].get_slicec(':', 1).to_int();
+						for (int j = 0; j < strings.size(); j++) {
+							int value = j;
+							if (!strings[j].get_slicec(':', 1).empty()) {
+								value = strings[j].get_slicec(':', 1).to_int();
 							}
 							if (option == value) {
-								s = strings[i].get_slicec(':', 0);
+								s = strings[j].get_slicec(':', 0);
 								break;
 							}
 						}
