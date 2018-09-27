@@ -101,7 +101,7 @@
 			</argument>
 			<description>
 				Execute the file at the given path with the arguments passed as an array of strings. Platform path resolution will take place. The resolved file must exist and be executable.
-				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-c', '3', 'godotengine.org'])[/code] will resolve to [code]ping -c 3 godotengine.org[/code] in the system's shell.
+				The arguments are used in the given order and separated by a space, so [code]OS.execute('ping', ['-w', '3', 'godotengine.org'], false)[/code] will resolve to [code]ping -w 3 godotengine.org[/code] in the system's shell.
 				This method has slightly different behaviour based on whether the [code]blocking[/code] mode is enabled.
 				When [code]blocking[/code] is enabled, the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				When [code]blocking[/code] is disabled, the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
