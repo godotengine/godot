@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "stream_peer_mbed_tls.h"
+
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
-#include "mbedtls/platform_util.h"
+
+#include <mbedtls/platform_util.h>
 
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
@@ -283,7 +285,7 @@ void StreamPeerMbedTLS::poll() {
 	}
 
 	Ref<StreamPeerTCP> tcp = base;
-	if (tcp.is_valid() && tcp->get_status() != STATUS_CONNECTED) {
+	if (tcp.is_valid() && tcp->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 		disconnect_from_stream();
 		return;
 	}
@@ -310,7 +312,7 @@ void StreamPeerMbedTLS::disconnect_from_stream() {
 		return;
 
 	Ref<StreamPeerTCP> tcp = base;
-	if (tcp.is_valid() && tcp->get_status() == STATUS_CONNECTED) {
+	if (tcp.is_valid() && tcp->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 		// We are still connected on the socket, try to send close notity.
 		mbedtls_ssl_close_notify(&ssl);
 	}
