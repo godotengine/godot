@@ -461,7 +461,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				fi.internal_fa = info.internal_fa;
 				fi.external_fa = info.external_fa;
 
-				int zerr = zipOpenNewFileInZip(dst_pkg_zip,
+				zipOpenNewFileInZip(dst_pkg_zip,
 						file.utf8().get_data(),
 						&fi,
 						NULL,
@@ -472,7 +472,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
-				zerr = zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
+				zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
 				zipCloseFileInZip(dst_pkg_zip);
 			}
 		}

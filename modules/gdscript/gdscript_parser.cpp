@@ -5079,7 +5079,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 				if (found) continue;
 
 				if (p->constant_expressions.has(base)) {
-					if (!p->constant_expressions[base].expression->type == Node::TYPE_CONSTANT) {
+					if (p->constant_expressions[base].expression->type != Node::TYPE_CONSTANT) {
 						_set_error("Could not resolve constant '" + base + "'.", p_class->line);
 						return;
 					}

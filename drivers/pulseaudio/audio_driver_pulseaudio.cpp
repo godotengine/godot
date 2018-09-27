@@ -340,7 +340,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					unsigned int out_idx = 0;
 
 					for (unsigned int i = 0; i < ad->buffer_frames; i++) {
-						for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
+						for (int j = 0; j < ad->pa_map.channels - 1; j++) {
 							ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
 						}
 						uint32_t l = ad->samples_in[in_idx++];

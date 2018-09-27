@@ -701,15 +701,6 @@ void Viewport::set_canvas_transform(const Transform2D &p_transform) {
 
 	canvas_transform = p_transform;
 	VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform);
-
-	Transform2D xform = (global_canvas_transform * canvas_transform).affine_inverse();
-	Size2 ss = get_visible_rect().size;
-	/*SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
-	Vector2 ss2 = ss*xform.get_scale();
-	float panrange = MAX(ss2.x,ss2.y);
-
-	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-*/
 }
 
 Transform2D Viewport::get_canvas_transform() const {
@@ -722,15 +713,6 @@ void Viewport::_update_global_transform() {
 	Transform2D sxform = stretch_transform * global_canvas_transform;
 
 	VisualServer::get_singleton()->viewport_set_global_canvas_transform(viewport, sxform);
-
-	Transform2D xform = (sxform * canvas_transform).affine_inverse();
-	Size2 ss = get_visible_rect().size;
-	/*SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
-	Vector2 ss2 = ss*xform.get_scale();
-	float panrange = MAX(ss2.x,ss2.y);
-
-	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-*/
 }
 
 void Viewport::set_global_canvas_transform(const Transform2D &p_transform) {

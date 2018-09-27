@@ -196,7 +196,7 @@ float SimplexNoise::get_noise_2d(float x, float y) {
 	float max = 1.0;
 	float sum = _get_octave_noise_2d(0, x, y);
 
-	unsigned int i = 0;
+	int i = 0;
 	while (++i < octaves) {
 		x *= lacunarity;
 		y *= lacunarity;
@@ -218,7 +218,7 @@ float SimplexNoise::get_noise_3d(float x, float y, float z) {
 	float max = 1.0;
 	float sum = _get_octave_noise_3d(0, x, y, z);
 
-	unsigned int i = 0;
+	int i = 0;
 	while (++i < octaves) {
 		x *= lacunarity;
 		y *= lacunarity;
@@ -242,7 +242,7 @@ float SimplexNoise::get_noise_4d(float x, float y, float z, float w) {
 	float max = 1.0;
 	float sum = _get_octave_noise_4d(0, x, y, z, w);
 
-	unsigned int i = 0;
+	int i = 0;
 	while (++i < octaves) {
 		x *= lacunarity;
 		y *= lacunarity;

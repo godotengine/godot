@@ -194,8 +194,8 @@ static const char *android_perms[] = {
 };
 
 struct LauncherIcon {
-	char *option_id;
-	char *export_path;
+	const char *option_id;
+	const char *export_path;
 };
 
 static const LauncherIcon launcher_icons[] = {
@@ -577,11 +577,11 @@ class EditorExportAndroid : public EditorExportPlatform {
 		uint32_t ofs = 8;
 
 		uint32_t string_count = 0;
-		uint32_t styles_count = 0;
+		//uint32_t styles_count = 0;
 		uint32_t string_flags = 0;
 		uint32_t string_data_offset = 0;
 
-		uint32_t styles_offset = 0;
+		//uint32_t styles_offset = 0;
 		uint32_t string_table_begins = 0;
 		uint32_t string_table_ends = 0;
 		Vector<uint8_t> stable_extra;
@@ -631,16 +631,16 @@ class EditorExportAndroid : public EditorExportPlatform {
 					int iofs = ofs + 8;
 
 					string_count = decode_uint32(&p_manifest[iofs]);
-					styles_count = decode_uint32(&p_manifest[iofs + 4]);
+					//styles_count = decode_uint32(&p_manifest[iofs + 4]);
 					string_flags = decode_uint32(&p_manifest[iofs + 8]);
 					string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-					styles_offset = decode_uint32(&p_manifest[iofs + 16]);
+					//styles_offset = decode_uint32(&p_manifest[iofs + 16]);
 					/*
 					printf("string count: %i\n",string_count);
 					printf("flags: %i\n",string_flags);
 					printf("sdata ofs: %i\n",string_data_offset);
 					printf("styles ofs: %i\n",styles_offset);
-	*/
+					*/
 					uint32_t st_offset = iofs + 20;
 					string_table.resize(string_count);
 					uint32_t string_end = 0;
@@ -760,7 +760,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 						// save manifest ending so we can restore it
 						Vector<uint8_t> manifest_end;
 						uint32_t manifest_cur_size = p_manifest.size();
-						uint32_t node_size = size;
 
 						manifest_end.resize(p_manifest.size() - ofs);
 						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
@@ -1082,7 +1081,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
 
-		for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+		for (unsigned int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icons[i].option_id, PROPERTY_HINT_FILE, "*.png"), ""));
 		}
 
@@ -1486,7 +1485,7 @@ public:
 
 			if (file == "res/drawable/icon.png") {
 				bool found = false;
-				for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+				for (unsigned int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
 					String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
 					if (icon_path != "" && icon_path.ends_with(".png")) {
 						FileAccess *f = FileAccess::open(icon_path, FileAccess::READ);
@@ -1620,7 +1619,7 @@ public:
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
-			for (int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
+			for (unsigned int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
 				String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();
 				if (icon_path != "" && icon_path.ends_with(".png") && FileAccess::exists(icon_path)) {
 					Vector<uint8_t> data = FileAccess::get_file_as_array(icon_path);

@@ -118,7 +118,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 			cvtt::Kernels::EncodeBC7(output_blocks, input_blocks_ldr, p_job_params.options);
 		}
 
-		int num_real_blocks = ((w - x_start) + 3) / 4;
+		unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
 		if (num_real_blocks > cvtt::NumParallelBlocks) {
 			num_real_blocks = cvtt::NumParallelBlocks;
 		}
@@ -131,7 +131,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 static void _digest_job_queue(void *p_job_queue) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
 
-	for (int next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
+	for (uint32_t next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
 		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
 	}
 }
@@ -228,8 +228,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		uint8_t *out_bytes = &wb[dst_ofs];
 
 		for (int y_start = 0; y_start < h; y_start += 4) {
-			int y_end = y_start + 4;
-
 			CVTTCompressionRowTask row_task;
 			row_task.width = w;
 			row_task.height = h;
@@ -308,7 +306,6 @@ void image_decompress_cvtt(Image *p_image) {
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
-	int shift = Image::get_format_pixel_rshift(target_format);
 
 	PoolVector<uint8_t>::Write wb = data.write();
 
@@ -335,7 +332,7 @@ void image_decompress_cvtt(Image *p_image) {
 				uint8_t input_blocks[16 * cvtt::NumParallelBlocks];
 				memset(input_blocks, 0, sizeof(input_blocks));
 
-				int num_real_blocks = ((w - x_start) + 3) / 4;
+				unsigned int num_real_blocks = ((w - x_start) + 3) / 4;
 				if (num_real_blocks > cvtt::NumParallelBlocks) {
 					num_real_blocks = cvtt::NumParallelBlocks;
 				}

@@ -1072,7 +1072,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 		uint32_t *ptr = (uint32_t *)wb.ptr();
 		uint32_t num_pixels = data_size / 4;
 
-		for (int ofs = 0; ofs < num_pixels; ofs++) {
+		for (uint32_t ofs = 0; ofs < num_pixels; ofs++) {
 			uint32_t px = ptr[ofs];
 			uint32_t a = px >> 30 & 0xFF;
 

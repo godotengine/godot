@@ -46,7 +46,6 @@ bool FileAccess::backup_save = false;
 
 FileAccess *FileAccess::create(AccessType p_access) {
 
-	ERR_FAIL_COND_V(!create_func, 0);
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, 0);
 
 	FileAccess *ret = create_func[p_access]();

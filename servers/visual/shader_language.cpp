@@ -2023,10 +2023,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 
 	StringName name = static_cast<VariableNode *>(p_func->arguments[0])->name.operator String();
 
-	bool all_const = true;
 	for (int i = 1; i < p_func->arguments.size(); i++) {
-		if (p_func->arguments[i]->type != Node::TYPE_CONSTANT)
-			all_const = false;
 		args.push_back(p_func->arguments[i]->get_datatype());
 	}
 

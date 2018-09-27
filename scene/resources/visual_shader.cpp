@@ -796,10 +796,10 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				val.basis.transpose();
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
 				Array values;
-				for (int i = 0; i < 3; i++) {
-					values.push_back(val.basis[i].x);
-					values.push_back(val.basis[i].y);
-					values.push_back(val.basis[i].z);
+				for (int j = 0; j < 3; j++) {
+					values.push_back(val.basis[j].x);
+					values.push_back(val.basis[j].y);
+					values.push_back(val.basis[j].z);
 				}
 				values.push_back(val.origin.x);
 				values.push_back(val.origin.y);

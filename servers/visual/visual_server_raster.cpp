@@ -34,7 +34,6 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/sort.h"
-#include "default_mouse_cursor.xpm"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
 #include "visual_server_scene.h"

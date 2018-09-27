@@ -105,11 +105,11 @@ T *_nullptr() {
 /** Generic ABS function, for math uses please use Math::abs */
 
 #ifndef ABS
-#define ABS(m_v) ((m_v < 0) ? (-(m_v)) : (m_v))
+#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
 #ifndef SGN
-#define SGN(m_v) ((m_v < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
 #endif
 
 #ifndef MIN

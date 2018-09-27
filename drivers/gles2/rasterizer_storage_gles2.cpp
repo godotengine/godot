@@ -356,7 +356,6 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	GLenum type;
 
 	bool compressed = false;
-	bool srgb = false;
 
 	if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		p_flags &= ~VS::TEXTURE_FLAG_MIPMAPS; // no mipies for video
@@ -4090,15 +4089,14 @@ void RasterizerStorageGLES2::initialize() {
 	}
 
 	config.shrink_textures_x2 = false;
-	config.float_texture_supported = config.extensions.find("GL_ARB_texture_float") != NULL || config.extensions.find("GL_OES_texture_float") != NULL;
-	config.s3tc_supported = config.extensions.find("GL_EXT_texture_compression_s3tc") != NULL;
-	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") != NULL;
+	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
+	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc");
+	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 
 	frame.count = 0;
 	frame.delta = 0;
 	frame.current_rt = NULL;
 	frame.clear_request = false;
-	// config.keep_original_textures = false;
 
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);

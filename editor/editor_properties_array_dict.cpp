@@ -744,7 +744,7 @@ void EditorPropertyDictionary::update_property() {
 			page->connect("value_changed", this, "_page_changed");
 		} else {
 			// Queue childs for deletion, delete immediately might cause errors.
-			for (size_t i = 1; i < vbox->get_child_count(); i++) {
+			for (int i = 1; i < vbox->get_child_count(); i++) {
 				vbox->get_child(i)->queue_delete();
 			}
 		}

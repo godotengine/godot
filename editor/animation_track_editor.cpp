@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation_track_editor.h"
+
 #include "animation_track_editor_plugins.h"
 #include "core/os/keyboard.h"
 #include "editor/animation_bezier_editor.h"
@@ -771,9 +772,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		Ref<Texture> hsize_icon = get_icon("Hsize", "EditorIcons");
 		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
 		draw_texture(hsize_icon, hsize_rect.position);
-
-		float keys_from = get_value();
-		float keys_to = keys_from + zoomw / scale;
 
 		{
 			float time_min = 0;

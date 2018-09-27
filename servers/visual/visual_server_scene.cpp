@@ -902,7 +902,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 			_update_instance_lightmap_captures(p_instance);
 		} else {
 			if (!p_instance->lightmap_capture_data.empty()) {
-				!p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
+				p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
 			}
 		}
 	}
@@ -1378,9 +1378,12 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				float y_min = 0.f, y_max = 0.f;
 				float z_min = 0.f, z_max = 0.f;
 
+				// FIXME: z_max_cam is defined, computed, but not used below when setting up
+				// ortho_camera. Commented out for now to fix warnings but should be investigated.
 				float x_min_cam = 0.f, x_max_cam = 0.f;
 				float y_min_cam = 0.f, y_max_cam = 0.f;
-				float z_min_cam = 0.f, z_max_cam = 0.f;
+				float z_min_cam = 0.f;
+				//float z_max_cam = 0.f;
 
 				float bias_scale = 1.0;
 
@@ -1442,7 +1445,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					x_min_cam = x_vec.dot(center) - radius;
 					y_max_cam = y_vec.dot(center) + radius;
 					y_min_cam = y_vec.dot(center) - radius;
-					z_max_cam = z_vec.dot(center) + radius;
+					//z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
 					if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {

@@ -86,7 +86,7 @@ public:
 
 	Vector<Vector3> handles;
 	Vector<Vector3> secondary_handles;
-	float selectable_icon_size = -1.0f;
+	float selectable_icon_size;
 	bool billboard_handle;
 
 	bool valid;

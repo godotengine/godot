@@ -86,10 +86,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
-	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
-	Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 
 	get_text_edit()->add_color_override("background_color", background_color);
 	get_text_edit()->add_color_override("completion_background_color", completion_background_color);
@@ -140,26 +137,9 @@ void ShaderTextEditor::_load_theme_settings() {
 		get_text_edit()->add_keyword_color(E->get(), keyword_color);
 	}
 
-	//colorize core types
-	//Color basetype_color= EDITOR_DEF("text_editor/base_type_color",Color(0.3,0.3,0.0));
-
 	//colorize comments
 	get_text_edit()->add_color_region("/*", "*/", comment_color, false);
 	get_text_edit()->add_color_region("//", "", comment_color, false);
-
-	/*//colorize strings
-	Color string_color = EDITOR_DEF("text_editor/string_color",Color::hex(0x6b6f00ff));
-
-	List<String> strings;
-	shader->get_shader_mode()->get_string_delimiters(&strings);
-
-	for (List<String>::Element *E=strings.front();E;E=E->next()) {
-
-		String string = E->get();
-		String beg = string.get_slice(" ",0);
-		String end = string.get_slice_count(" ")>1?string.get_slice(" ",1):String();
-		get_text_edit()->add_color_region(beg,end,string_color,end=="");
-	}*/
 }
 
 void ShaderTextEditor::_check_shader_mode() {

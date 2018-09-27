@@ -3036,13 +3036,14 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 			reflection_ubo.ambient[3] = rpi->probe_ptr->interior_ambient_probe_contrib;
 		} else {
 			Color ambient_linear;
-			float contrib = 0;
+			// FIXME: contrib was retrieved but never used, is it meant to be set as ambient[3]? (GH-20361)
+			//float contrib = 0;
 			if (p_env) {
 				ambient_linear = p_env->ambient_color.to_linear();
 				ambient_linear.r *= p_env->ambient_energy;
 				ambient_linear.g *= p_env->ambient_energy;
 				ambient_linear.b *= p_env->ambient_energy;
-				contrib = p_env->ambient_sky_contribution;
+				//contrib = p_env->ambient_sky_contribution;
 			}
 
 			reflection_ubo.ambient[0] = ambient_linear.r;
@@ -4501,7 +4502,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	RasterizerStorageGLES3::Light *light = storage->light_owner.getornull(light_instance->light);
 	ERR_FAIL_COND(!light);
 
-	uint32_t x, y, width, height, vp_height;
+	uint32_t x, y, width, height;
 
 	float dp_direction = 0.0;
 	float zfar = 0;
@@ -4583,7 +4584,6 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		bias = light->param[VS::LIGHT_PARAM_SHADOW_BIAS] * bias_mult;
 		normal_bias = light->param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * bias_mult;
 		fbo = directional_shadow.fbo;
-		vp_height = directional_shadow.size;
 
 	} else {
 		//set from shadow atlas
@@ -4593,7 +4593,6 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		ERR_FAIL_COND(!shadow_atlas->shadow_owners.has(p_light));
 
 		fbo = shadow_atlas->fbo;
-		vp_height = shadow_atlas->size;
 
 		uint32_t key = shadow_atlas->shadow_owners[p_light];
 

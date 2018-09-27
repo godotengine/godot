@@ -690,11 +690,6 @@ void ShaderGLES2::use_material(void *p_material) {
 
 	Version *v = version_map.getptr(conditional_version);
 
-	CustomCode *cc = NULL;
-	if (v) {
-		cc = custom_code_map.getptr(v->code_version);
-	}
-
 	// bind uniforms
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
 
@@ -982,7 +977,7 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				value.second.resize(default_arg_size);
 
-				for (int i = 0; i < default_arg_size; i++) {
+				for (size_t i = 0; i < default_arg_size; i++) {
 					if (is_float) {
 						value.second.write[i].real = 0.0;
 					} else {
@@ -991,8 +986,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				}
 			}
 		}
-
-		// GLint location = get_uniform_location(E->key());
 
 		GLint location;
 		if (v->custom_uniform_locations.has(E->key())) {
@@ -1012,8 +1005,6 @@ void ShaderGLES2::use_material(void *p_material) {
 	// bind textures
 	int tc = material->textures.size();
 	Pair<StringName, RID> *textures = material->textures.ptrw();
-
-	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
 
 	for (int i = 0; i < tc; i++) {
 

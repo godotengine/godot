@@ -166,7 +166,7 @@ private:
 		values = memnew_arr(TValue, capacity);
 		hashes = memnew_arr(uint32_t, capacity);
 
-		for (int i = 0; i < capacity; i++) {
+		for (uint32_t i = 0; i < capacity; i++) {
 			hashes[i] = 0;
 		}
 
@@ -311,7 +311,7 @@ public:
 		values = memnew_arr(TValue, p_initial_capacity);
 		hashes = memnew_arr(uint32_t, p_initial_capacity);
 
-		for (int i = 0; i < p_initial_capacity; i++) {
+		for (uint32_t i = 0; i < p_initial_capacity; i++) {
 			hashes[i] = 0;
 		}
 	}

@@ -559,7 +559,7 @@ void NetSocketPosix::set_ipv6_only_enabled(bool p_enabled) {
 
 void NetSocketPosix::set_tcp_no_delay_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
-	ERR_FAIL_COND(_ip_type != TYPE_TCP);
+	ERR_FAIL_COND(!_is_stream); // Not TCP
 
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, IPPROTO_TCP, TCP_NODELAY, SOCK_CBUF(&par), sizeof(int)) < 0) {
