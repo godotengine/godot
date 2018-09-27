@@ -439,7 +439,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				}
 
-				int tr = vorbis_synthesis_read(&vd, ret - to_read);
+				vorbis_synthesis_read(&vd, ret - to_read);
 
 				audio_frames_wrote += ret - to_read;
 

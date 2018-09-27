@@ -760,7 +760,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 						// save manifest ending so we can restore it
 						Vector<uint8_t> manifest_end;
 						uint32_t manifest_cur_size = p_manifest.size();
-						uint32_t node_size = size;
 
 						manifest_end.resize(p_manifest.size() - ofs);
 						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());

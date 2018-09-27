@@ -228,8 +228,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 		uint8_t *out_bytes = &wb[dst_ofs];
 
 		for (int y_start = 0; y_start < h; y_start += 4) {
-			int y_end = y_start + 4;
-
 			CVTTCompressionRowTask row_task;
 			row_task.width = w;
 			row_task.height = h;
@@ -308,7 +306,6 @@ void image_decompress_cvtt(Image *p_image) {
 	int target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
-	int shift = Image::get_format_pixel_rshift(target_format);
 
 	PoolVector<uint8_t>::Write wb = data.write();
 

@@ -1013,8 +1013,6 @@ void ShaderGLES2::use_material(void *p_material) {
 	int tc = material->textures.size();
 	Pair<StringName, RID> *textures = material->textures.ptrw();
 
-	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
-
 	for (int i = 0; i < tc; i++) {
 
 		Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > value;

@@ -104,8 +104,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _filter_toggled();
 	Ref<AnimationNode> _filter_edit;
 
-	void _node_changed(ObjectID p_node);
-
 	void _property_changed(const StringName &p_property, const Variant &p_value);
 	void _removed_from_graph();
 

@@ -129,7 +129,6 @@ static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
 static Vector2 init_custom_pos;
 static bool force_lowdpi = false;
-static bool use_vsync = true;
 
 // Debug
 

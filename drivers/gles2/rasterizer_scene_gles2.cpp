@@ -1136,8 +1136,6 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 								bone_weight[3] = (weight_ptr[3] / (float)0xFFFF);
 							}
 
-							size_t offset = i * 12;
-
 							Transform transform;
 
 							Transform bone_transforms[4] = {
@@ -1202,7 +1200,6 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 		} break;
 
 		case VS::INSTANCE_MULTIMESH: {
-			RasterizerStorageGLES2::MultiMesh *multi_mesh = static_cast<RasterizerStorageGLES2::MultiMesh *>(p_element->owner);
 			RasterizerStorageGLES2::Surface *s = static_cast<RasterizerStorageGLES2::Surface *>(p_element->geometry);
 
 			glBindBuffer(GL_ARRAY_BUFFER, s->vertex_id);

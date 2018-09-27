@@ -847,8 +847,6 @@ void RichTextLabel::_notification(int p_what) {
 			bool use_outline = get_constant("shadow_as_outline");
 			Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
 
-			float x_ofs = 0;
-
 			visible_line_count = 0;
 			while (y < size.height && from_line < main->lines.size()) {
 

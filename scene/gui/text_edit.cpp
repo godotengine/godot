@@ -650,8 +650,6 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_rows() + 1;
 
-			int tab_w = cache.font->get_char_size(' ').width * indent_size;
-
 			Color color = cache.font_color;
 			color.a *= readonly_alpha;
 

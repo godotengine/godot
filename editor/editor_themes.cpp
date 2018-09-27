@@ -36,7 +36,6 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "modules/svg/image_loader_svg.h"
-#include "time.h"
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -199,8 +198,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	exceptions.push_back("StatusWarning");
 	exceptions.push_back("NodeWarning");
 
-	clock_t begin_time = clock();
-
 	ImageLoaderSVG::set_convert_colors(&dark_icon_color_dictionary);
 
 	// generate icons
@@ -235,8 +232,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	}
 
 	ImageLoaderSVG::set_convert_colors(NULL);
-
-	clock_t end_time = clock();
 #else
 	print_line("SVG support disabled, editor icons won't be rendered.");
 #endif

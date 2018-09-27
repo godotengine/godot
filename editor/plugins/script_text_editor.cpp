@@ -1276,7 +1276,6 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				word_at_mouse = tx->get_selection_text();
 
 			bool has_color = (word_at_mouse == "Color");
-			int fold_state = 0;
 			bool foldable = tx->can_fold(row) || tx->is_folded(row);
 			bool open_docs = false;
 			bool goto_definition = false;

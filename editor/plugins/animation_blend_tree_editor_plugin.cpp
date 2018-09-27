@@ -131,10 +131,6 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 		Ref<AnimationNode> agnode = blend_tree->get_node(E->get());
 
-		if (!agnode->is_connected("changed", this, "_node_changed")) {
-			agnode->connect("changed", this, "_node_changed", varray(agnode->get_instance_id()), CONNECT_DEFERRED);
-		}
-
 		node->set_offset(blend_tree->get_node_position(E->get()) * EDSCALE);
 
 		node->set_title(agnode->get_caption());
@@ -721,14 +717,6 @@ void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
 	updating = false;
 }
 
-void AnimationNodeBlendTreeEditor::_node_changed(ObjectID p_node) {
-
-	AnimationNode *an = Object::cast_to<AnimationNode>(ObjectDB::get_instance(p_node));
-	//if (an && an->get_parent() == blend_tree) {
-	_update_graph();
-	//}
-}
-
 void AnimationNodeBlendTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method("_update_graph", &AnimationNodeBlendTreeEditor::_update_graph);
@@ -746,7 +734,6 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_update_filters", &AnimationNodeBlendTreeEditor::_update_filters);
 	ClassDB::bind_method("_filter_edited", &AnimationNodeBlendTreeEditor::_filter_edited);
 	ClassDB::bind_method("_filter_toggled", &AnimationNodeBlendTreeEditor::_filter_toggled);
-	ClassDB::bind_method("_node_changed", &AnimationNodeBlendTreeEditor::_node_changed);
 	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendTreeEditor::_removed_from_graph);
 	ClassDB::bind_method("_property_changed", &AnimationNodeBlendTreeEditor::_property_changed);
 	ClassDB::bind_method("_file_opened", &AnimationNodeBlendTreeEditor::_file_opened);

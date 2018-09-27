@@ -546,19 +546,6 @@ void Mesh::clear_cache() const {
 Mesh::Mesh() {
 }
 
-static const char *_array_name[] = {
-	"vertex_array",
-	"normal_array",
-	"tangent_array",
-	"color_array",
-	"tex_uv_array",
-	"tex_uv2_array",
-	"bone_array",
-	"weights_array",
-	"index_array",
-	NULL
-};
-
 static const ArrayMesh::ArrayType _array_types[] = {
 
 	ArrayMesh::ARRAY_VERTEX,

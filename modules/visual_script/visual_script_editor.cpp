@@ -2603,7 +2603,6 @@ void VisualScriptEditor::connect_data(Ref<VisualScriptNode> vnode_old, Ref<Visua
 	if (port >= value_count) {
 		port = 0;
 	}
-	int count = vnode_old->get_output_value_port_count() + vnode_old->get_output_sequence_port_count();
 	undo_redo->add_do_method(script.ptr(), "data_connect", edited_func, port_action_node, port, new_id, 0);
 	undo_redo->add_undo_method(script.ptr(), "data_disconnect", edited_func, port_action_node, port, new_id, 0);
 	undo_redo->commit_action();
@@ -2826,7 +2825,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 }
 
 void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id) {
-	int seq_count = vnode_old->get_output_sequence_port_count();
 	VisualScriptOperator *vnode_operator = Object::cast_to<VisualScriptOperator>(vnode_new.ptr());
 	if (vnode_operator != NULL && vnode_operator->has_input_sequence_port() == false) {
 		return;
@@ -2841,7 +2839,7 @@ void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<Visual
 	if (vnode_new->has_input_sequence_port() == false) {
 		return;
 	}
-	VisualScriptFunction *vnode_function = Object::cast_to<VisualScriptFunction>(vnode_old.ptr());
+
 	undo_redo->create_action(TTR("Connect Node Sequence"));
 	int pass_port = -vnode_old->get_output_sequence_port_count() + 1;
 	int return_port = port_action_output - 1;
@@ -3367,11 +3365,6 @@ void VisualScriptEditor::_member_option(int p_option) {
 					undo_redo->add_undo_method(script.ptr(), "data_connect", name, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
 				}
 
-				/*
-				for(int i=0;i<script->function_get_argument_count(name);i++) {
-					undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
-				}
-				*/
 				undo_redo->add_do_method(this, "_update_members");
 				undo_redo->add_undo_method(this, "_update_members");
 				undo_redo->add_do_method(this, "_update_graph");

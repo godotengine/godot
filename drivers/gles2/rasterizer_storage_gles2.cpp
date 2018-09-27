@@ -356,7 +356,6 @@ void RasterizerStorageGLES2::texture_allocate(RID p_texture, int p_width, int p_
 	GLenum type;
 
 	bool compressed = false;
-	bool srgb = false;
 
 	if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		p_flags &= ~VS::TEXTURE_FLAG_MIPMAPS; // no mipies for video

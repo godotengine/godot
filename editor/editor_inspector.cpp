@@ -267,11 +267,6 @@ void EditorProperty::_notification(int p_what) {
 		} else {
 			keying_rect = Rect2();
 		}
-
-		//int vs = get_constant("vseparation", "Tree");
-		Color guide_color = get_color("guide_color", "Tree");
-		int vs_height = get_size().height; // vs / 2;
-		//	draw_line(Point2(0, vs_height), Point2(get_size().width, vs_height), guide_color);
 	}
 }
 
