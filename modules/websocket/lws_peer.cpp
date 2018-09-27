@@ -39,7 +39,7 @@
 #include <sys/socket.h>
 #endif
 
-#include "drivers/unix/socket_helpers.h"
+#include "drivers/unix/net_socket_posix.h"
 
 void LWSPeer::set_wsi(struct lws *p_wsi) {
 	ERR_FAIL_COND(wsi != NULL);
@@ -232,7 +232,7 @@ IP_Address LWSPeer::get_connected_host() const {
 	ERR_FAIL_COND_V(!is_connected_to_host(), IP_Address());
 
 	IP_Address ip;
-	int port = 0;
+	uint16_t port = 0;
 
 	struct sockaddr_storage addr;
 	socklen_t len = sizeof(addr);
@@ -243,7 +243,7 @@ IP_Address LWSPeer::get_connected_host() const {
 	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
 	ERR_FAIL_COND_V(ret != 0, IP_Address());
 
-	_set_ip_addr_port(ip, port, &addr);
+	NetSocketPosix::_set_ip_port(&addr, ip, port);
 
 	return ip;
 };
@@ -253,7 +253,7 @@ uint16_t LWSPeer::get_connected_port() const {
 	ERR_FAIL_COND_V(!is_connected_to_host(), 0);
 
 	IP_Address ip;
-	int port = 0;
+	uint16_t port = 0;
 
 	struct sockaddr_storage addr;
 	socklen_t len = sizeof(addr);
@@ -264,7 +264,7 @@ uint16_t LWSPeer::get_connected_port() const {
 	int ret = getpeername(fd, (struct sockaddr *)&addr, &len);
 	ERR_FAIL_COND_V(ret != 0, 0);
 
-	_set_ip_addr_port(ip, port, &addr);
+	NetSocketPosix::_set_ip_port(&addr, ip, port);
 
 	return port;
 };

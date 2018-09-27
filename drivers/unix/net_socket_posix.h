@@ -39,6 +39,7 @@
 #define SOCKET_TYPE SOCKET
 
 #else
+#include <sys/socket.h>
 #define SOCKET_TYPE int
 
 #endif
@@ -68,6 +69,8 @@ protected:
 public:
 	static void make_default();
 	static void cleanup();
+	static void _set_ip_port(struct sockaddr_storage *p_addr, IP_Address &r_ip, uint16_t &r_port);
+	static size_t _set_addr_storage(struct sockaddr_storage *p_addr, const IP_Address &p_ip, uint16_t p_port, IP::Type p_ip_type);
 
 	virtual Error open(Type p_sock_type, IP::Type &ip_type);
 	virtual void close();
