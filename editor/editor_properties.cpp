@@ -108,6 +108,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 	if (!big_text_dialog) {
 		big_text = memnew(TextEdit);
 		big_text->connect("text_changed", this, "_big_text_changed");
+		big_text->set_wrap_enabled(true);
 		big_text_dialog = memnew(AcceptDialog);
 		big_text_dialog->add_child(big_text);
 		big_text_dialog->set_title("Edit Text:");
@@ -152,6 +153,7 @@ EditorPropertyMultilineText::EditorPropertyMultilineText() {
 	set_bottom_editor(hb);
 	text = memnew(TextEdit);
 	text->connect("text_changed", this, "_text_changed");
+	text->set_wrap_enabled(true);
 	add_focusable(text);
 	hb->add_child(text);
 	text->set_h_size_flags(SIZE_EXPAND_FILL);
