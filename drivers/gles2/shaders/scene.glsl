@@ -897,10 +897,11 @@ varying vec2 uv2_interp;
 
 varying vec3 view_interp;
 
-vec3 metallic_to_specular_color(float metallic, float specular, vec3 albedo) {
-	float dielectric = (0.034 * 2.0) * specular;
-	// energy conservation
-	return mix(vec3(dielectric), albedo, metallic); // TODO: reference?
+vec3 F0(float metallic, float specular, vec3 albedo) {
+	float dielectric = 0.16 * specular * specular;
+	// use albedo * metallic as colored specular reflectance at 0 angle for metallic materials;
+	// see https://google.github.io/filament/Filament.md.html
+	return mix(vec3(dielectric), albedo, vec3(metallic));
 }
 
 /* clang-format off */
@@ -995,6 +996,7 @@ void light_compute(
 		float specular_blob_intensity,
 		float roughness,
 		float metallic,
+		float specular,
 		float rim,
 		float rim_tint,
 		float clearcoat,
@@ -1113,8 +1115,6 @@ LIGHT_SHADER_CODE
 
 		// D
 
-		float specular_brdf_NL;
-
 #if defined(SPECULAR_BLINN)
 
 		//normalized blinn
@@ -1125,7 +1125,7 @@ LIGHT_SHADER_CODE
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float blinn = pow(cNdotH, shininess);
 		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
-		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+		float specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_PHONG)
 
@@ -1134,7 +1134,7 @@ LIGHT_SHADER_CODE
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
-		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		float specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_TOON)
 
@@ -1142,11 +1142,11 @@ LIGHT_SHADER_CODE
 		float RdotV = dot(R, V);
 		float mid = 1.0 - roughness;
 		mid *= mid;
-		specular_brdf_NL = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid;
+		float specular_brdf_NL = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid;
 
 #elif defined(SPECULAR_DISABLED)
 		// none..
-		specular_brdf_NL = 0.0;
+		float specular_brdf_NL = 0.0;
 #elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 
@@ -1173,11 +1173,11 @@ LIGHT_SHADER_CODE
 		float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
 #endif
 		// F
-		//float F0 = 1.0;
-		//float cLdotH5 = SchlickFresnel(cLdotH);
-		//float F = mix(cLdotH5, 1.0, F0);
+		vec3 f0 = F0(metallic, specular, diffuse_color);
+		float cLdotH5 = SchlickFresnel(cLdotH);
+		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
 
-		specular_brdf_NL = cNdotL * D /* F */ * G;
+		vec3 specular_brdf_NL = cNdotL * D * F * G;
 
 #endif
 
@@ -1281,6 +1281,11 @@ void main() {
 
 	float alpha = 1.0;
 	float side = 1.0;
+
+	float specular_blob_intensity = 1.0;
+#if defined(SPECULAR_TOON)
+	specular_blob_intensity *= specular * 2.0;
+#endif
 
 #if defined(ENABLE_AO)
 	float ao = 1.0;
@@ -1691,7 +1696,7 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_VERTEX_LIGHTING
 	//vertex lighting
 
-	specular_light += specular_interp * specular * light_att;
+	specular_light += specular_interp * specular_blob_intensity * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
 
 #else
@@ -1706,9 +1711,10 @@ FRAGMENT_SHADER_CODE
 			light_att,
 			albedo,
 			transmission,
-			specular * light_specular,
+			specular_blob_intensity * light_specular,
 			roughness,
 			metallic,
+			specular,
 			rim,
 			rim_tint,
 			clearcoat,
@@ -1755,10 +1761,10 @@ FRAGMENT_SHADER_CODE
 		vec4 r = roughness * c0 + c1;
 		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-		vec2 AB = vec2(-1.04, 1.04) * a004 + r.zw;
+		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
 
-		vec3 specular_color = metallic_to_specular_color(metallic, specular, albedo);
-		specular_light *= AB.x * specular_color + AB.y;
+		vec3 f0 = F0(metallic, specular, albedo);
+		specular_light *= env.x * f0 + env.y;
 #endif
 	}
 
