@@ -3794,7 +3794,7 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 	int tab_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
 
 	while (col < line_text.length()) {
-		char c = line_text[col];
+		CharType c = line_text[col];
 		int w = text.get_char_width(c, line_text[col + 1], px + word_px);
 
 		int indent_ofs = (cur_wrap_index != 0 ? tab_offset_px : 0);
@@ -5864,7 +5864,7 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	if (select_word(s, col, beg, end)) {
 
 		bool inside_quotes = false;
-		char selected_quote = '\0';
+		CharType selected_quote = '\0';
 		int qbegin = 0, qend = 0;
 		for (int i = 0; i < s.length(); i++) {
 			if (s[i] == '"' || s[i] == '\'') {
