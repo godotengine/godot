@@ -375,6 +375,10 @@ Collection of single-file libraries used in Godot components.
 
 ### scene
 
+- `easing_equations.cpp`
+  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
+  * Version: git (af72c14, 2008) + Godot types and style changes
+  * License: BSD-3-Clause
 - `mikktspace.{c,h}`
   * Upstream: https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps
   * Version: 1.0

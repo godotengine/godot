@@ -7,6 +7,8 @@ env.scene_sources = []
 # Thirdparty code
 thirdparty_dir = "#thirdparty/misc/"
 thirdparty_sources = [
+	# C++ sources
+	"easing_equations.cpp",
 	# C sources
 	"mikktspace.c",
 ]
