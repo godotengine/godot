@@ -886,8 +886,10 @@
 			Middle Mouse Button
 		</constant>
 		<constant name="BUTTON_XBUTTON1" value="8" enum="ButtonList">
+			Extra Mouse Button 1
 		</constant>
 		<constant name="BUTTON_XBUTTON2" value="9" enum="ButtonList">
+			Extra Mouse Button 2
 		</constant>
 		<constant name="BUTTON_WHEEL_UP" value="4" enum="ButtonList">
 			Mouse wheel up
@@ -911,8 +913,10 @@
 			Middle Mouse Button Mask
 		</constant>
 		<constant name="BUTTON_MASK_XBUTTON1" value="128" enum="ButtonList">
+			Extra Mouse Button 1 Mask
 		</constant>
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
+			Extra Mouse Button 2 Mask
 		</constant>
 		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
 			Joypad Button 0
