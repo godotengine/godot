@@ -4523,6 +4523,16 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 	}
 }
 
+void EditorNode::_update_video_driver_color() {
+
+	//todo probably should de-harcode this and add to editor settings
+	if (video_driver->get_text() == "GLES2") {
+		video_driver->add_color_override("font_color", Color::hex(0x5586a4ff));
+	} else if (video_driver->get_text() == "GLES3") {
+		video_driver->add_color_override("font_color", Color::hex(0xa5557dff));
+	}
+}
+
 void EditorNode::_video_driver_selected(int p_which) {
 
 	String driver = video_driver->get_item_metadata(p_which);
@@ -4536,6 +4546,7 @@ void EditorNode::_video_driver_selected(int p_which) {
 	video_driver_request = driver;
 	video_restart_dialog->popup_centered_minsize();
 	video_driver->select(video_driver_current);
+	_update_video_driver_color();
 }
 
 void EditorNode::_bind_methods() {
@@ -5398,6 +5409,7 @@ EditorNode::EditorNode() {
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
 	video_driver->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	video_driver->connect("item_selected", this, "_video_driver_selected");
+	video_driver->add_font_override("font", gui_base->get_font("bold", "EditorFonts"));
 	menu_hb->add_child(video_driver);
 
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
@@ -5413,6 +5425,8 @@ EditorNode::EditorNode() {
 			video_driver_current = i;
 		}
 	}
+
+	_update_video_driver_color();
 
 	video_restart_dialog = memnew(ConfirmationDialog);
 	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));

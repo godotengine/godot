@@ -955,6 +955,26 @@ public:
 	virtual uint64_t light_get_version(RID p_light) const;
 
 	/* PROBE API */
+
+	struct ReflectionProbe : Instanciable {
+
+		VS::ReflectionProbeUpdateMode update_mode;
+		float intensity;
+		Color interior_ambient;
+		float interior_ambient_energy;
+		float interior_ambient_probe_contrib;
+		float max_distance;
+		Vector3 extents;
+		Vector3 origin_offset;
+		bool interior;
+		bool box_projection;
+		bool enable_shadows;
+		uint32_t cull_mask;
+		int resolution;
+	};
+
+	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
+
 	virtual RID reflection_probe_create();
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode);
@@ -969,10 +989,13 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
+	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution);
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const;
 	virtual VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const;
+
+	virtual int reflection_probe_get_resolution(RID p_probe) const;
 
 	virtual Vector3 reflection_probe_get_extents(RID p_probe) const;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const;

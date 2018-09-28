@@ -3307,69 +3307,194 @@ AABB RasterizerStorageGLES2::light_get_aabb(RID p_light) const {
 /* PROBE API */
 
 RID RasterizerStorageGLES2::reflection_probe_create() {
-	return RID();
+
+	ReflectionProbe *reflection_probe = memnew(ReflectionProbe);
+
+	reflection_probe->intensity = 1.0;
+	reflection_probe->interior_ambient = Color();
+	reflection_probe->interior_ambient_energy = 1.0;
+	reflection_probe->max_distance = 0;
+	reflection_probe->extents = Vector3(1, 1, 1);
+	reflection_probe->origin_offset = Vector3(0, 0, 0);
+	reflection_probe->interior = false;
+	reflection_probe->box_projection = false;
+	reflection_probe->enable_shadows = false;
+	reflection_probe->cull_mask = (1 << 20) - 1;
+	reflection_probe->update_mode = VS::REFLECTION_PROBE_UPDATE_ONCE;
+	reflection_probe->resolution = 128;
+
+	return reflection_probe_owner.make_rid(reflection_probe);
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->update_mode = p_mode;
+	reflection_probe->instance_change_notify();
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->intensity = p_intensity;
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior_ambient = p_ambient;
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior_ambient_energy = p_energy;
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior_ambient_probe_contrib = p_contrib;
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
-}
 
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->max_distance = p_distance;
+	reflection_probe->instance_change_notify();
+}
 void RasterizerStorageGLES2::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
-}
 
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->extents = p_extents;
+	reflection_probe->instance_change_notify();
+}
 void RasterizerStorageGLES2::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->origin_offset = p_offset;
+	reflection_probe->instance_change_notify();
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
-}
 
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior = p_enable;
+}
 void RasterizerStorageGLES2::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->box_projection = p_enable;
 }
 
 void RasterizerStorageGLES2::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->enable_shadows = p_enable;
+	reflection_probe->instance_change_notify();
+}
+void RasterizerStorageGLES2::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->cull_mask = p_layers;
+	reflection_probe->instance_change_notify();
 }
 
-void RasterizerStorageGLES2::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
+void RasterizerStorageGLES2::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->resolution = p_resolution;
 }
 
 AABB RasterizerStorageGLES2::reflection_probe_get_aabb(RID p_probe) const {
-	return AABB();
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, AABB());
+
+	AABB aabb;
+	aabb.position = -reflection_probe->extents;
+	aabb.size = reflection_probe->extents * 2.0;
+
+	return aabb;
 }
 VS::ReflectionProbeUpdateMode RasterizerStorageGLES2::reflection_probe_get_update_mode(RID p_probe) const {
-	return VS::REFLECTION_PROBE_UPDATE_ALWAYS;
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, VS::REFLECTION_PROBE_UPDATE_ALWAYS);
+
+	return reflection_probe->update_mode;
 }
 
 uint32_t RasterizerStorageGLES2::reflection_probe_get_cull_mask(RID p_probe) const {
-	return 0;
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->cull_mask;
 }
 
 Vector3 RasterizerStorageGLES2::reflection_probe_get_extents(RID p_probe) const {
-	return Vector3();
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, Vector3());
+
+	return reflection_probe->extents;
 }
 Vector3 RasterizerStorageGLES2::reflection_probe_get_origin_offset(RID p_probe) const {
-	return Vector3();
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, Vector3());
+
+	return reflection_probe->origin_offset;
 }
 
 bool RasterizerStorageGLES2::reflection_probe_renders_shadows(RID p_probe) const {
-	return false;
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, false);
+
+	return reflection_probe->enable_shadows;
 }
 
 float RasterizerStorageGLES2::reflection_probe_get_origin_max_distance(RID p_probe) const {
-	return 0;
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->max_distance;
+}
+
+int RasterizerStorageGLES2::reflection_probe_get_resolution(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->resolution;
 }
 
 RID RasterizerStorageGLES2::gi_probe_create() {
@@ -3601,15 +3726,115 @@ void RasterizerStorageGLES2::update_particles() {
 ////////
 
 void RasterizerStorageGLES2::instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND(!skeleton);
+
+	skeleton->instances.insert(p_instance);
 }
 
 void RasterizerStorageGLES2::instance_remove_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND(!skeleton);
+
+	skeleton->instances.erase(p_instance);
 }
 
 void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
+
+	Instanciable *inst = NULL;
+	switch (p_instance->base_type) {
+		case VS::INSTANCE_MESH: {
+			inst = mesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_MULTIMESH: {
+			inst = multimesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_IMMEDIATE: {
+			inst = immediate_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		/*case VS::INSTANCE_PARTICLES: {
+			inst = particles_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;*/
+		case VS::INSTANCE_REFLECTION_PROBE: {
+			inst = reflection_probe_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_LIGHT: {
+			inst = light_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		/*case VS::INSTANCE_GI_PROBE: {
+			inst = gi_probe_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;*/
+		/*case VS::INSTANCE_LIGHTMAP_CAPTURE: {
+			inst = lightmap_capture_data_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;*/
+		default: {
+			if (!inst) {
+				ERR_FAIL();
+			}
+		}
+	}
+
+	inst->instance_list.add(&p_instance->dependency_item);
 }
 
 void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
+
+	Instanciable *inst = NULL;
+
+	switch (p_instance->base_type) {
+		case VS::INSTANCE_MESH: {
+			inst = mesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_MULTIMESH: {
+			inst = multimesh_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_IMMEDIATE: {
+			inst = immediate_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		/*case VS::INSTANCE_PARTICLES: {
+			inst = particles_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;*/
+		case VS::INSTANCE_REFLECTION_PROBE: {
+			inst = reflection_probe_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_LIGHT: {
+			inst = light_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		/*case VS::INSTANCE_GI_PROBE: {
+			inst = gi_probe_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;
+		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
+			inst = lightmap_capture_data_owner.getornull(p_base);
+			ERR_FAIL_COND(!inst);
+		} break;*/
+		default: {
+
+			if (!inst) {
+				ERR_FAIL();
+			}
+		}
+	}
+
+	ERR_FAIL_COND(!inst);
+
+	inst->instance_list.remove(&p_instance->dependency_item);
 }
 
 /* RENDER TARGET */
@@ -3867,6 +4092,8 @@ VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
 		return VS::INSTANCE_MULTIMESH;
 	} else if (immediate_owner.owns(p_rid)) {
 		return VS::INSTANCE_IMMEDIATE;
+	} else if (reflection_probe_owner.owns(p_rid)) {
+		return VS::INSTANCE_REFLECTION_PROBE;
 	} else {
 		return VS::INSTANCE_NONE;
 	}
@@ -4044,6 +4271,17 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		memdelete(light);
 
 		return true;
+	} else if (reflection_probe_owner.owns(p_rid)) {
+
+		// delete the texture
+		ReflectionProbe *reflection_probe = reflection_probe_owner.get(p_rid);
+		reflection_probe->instance_remove_deps();
+
+		reflection_probe_owner.free(p_rid);
+		memdelete(reflection_probe);
+
+		return true;
+
 	} else {
 		return false;
 	}
@@ -4095,6 +4333,7 @@ void RasterizerStorageGLES2::initialize() {
 	}
 
 	config.shrink_textures_x2 = false;
+
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");

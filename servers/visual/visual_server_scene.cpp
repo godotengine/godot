@@ -2141,6 +2141,8 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 	Scenario *scenario = p_instance->scenario;
 	ERR_FAIL_COND_V(!scenario, true);
 
+	VisualServerRaster::redraw_request(); //update, so it updates in editor
+
 	if (p_step == 0) {
 
 		if (!VSG::scene_render->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {

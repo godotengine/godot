@@ -208,6 +208,7 @@ private:
 	int video_driver_current;
 	String video_driver_request;
 	void _video_driver_selected(int);
+	void _update_video_driver_color();
 
 	// Split containers
 

@@ -204,6 +204,9 @@ public:
 		float dual_parbolloid_direction;
 		float dual_parbolloid_zfar;
 
+		bool render_no_shadows;
+
+		Vector2 screen_pixel_size;
 	} state;
 
 	/* SHADOW ATLAS API */
@@ -286,6 +289,37 @@ public:
 	/* REFLECTION CUBEMAPS */
 
 	/* REFLECTION PROBE INSTANCE */
+
+	struct ReflectionProbeInstance : public RID_Data {
+
+		RasterizerStorageGLES2::ReflectionProbe *probe_ptr;
+		RID probe;
+		RID self;
+		RID atlas;
+
+		int reflection_atlas_index;
+
+		int render_step;
+		int reflection_index;
+
+		GLuint fbo[6];
+		GLuint cubemap;
+		GLuint depth;
+
+		GLuint fbo_blur;
+
+		int current_resolution;
+		mutable bool dirty;
+
+		uint64_t last_pass;
+		uint32_t index;
+
+		Transform transform;
+	};
+
+	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
+
+	ReflectionProbeInstance **reflection_probe_instances;
 
 	virtual RID reflection_probe_instance_create(RID p_probe);
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
@@ -424,6 +458,7 @@ public:
 
 		enum {
 			MAX_LIGHTS = 255,
+			MAX_REFLECTION_PROBES = 255,
 			DEFAULT_MAX_ELEMENTS = 65536
 		};
 
@@ -587,6 +622,7 @@ public:
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *p_element, RasterizerStorageGLES2::Skeleton *p_skeleton);
 	_FORCE_INLINE_ void _setup_light_type(LightInstance *p_light, ShadowAtlas *shadow_atlas);
 	_FORCE_INLINE_ void _setup_light(LightInstance *p_light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform);
+	_FORCE_INLINE_ void _setup_refprobes(ReflectionProbeInstance *p_refprobe1, ReflectionProbeInstance *p_refprobe2, const Transform &p_view_transform, Environment *p_env);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *p_element);
 
 	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);

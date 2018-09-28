@@ -517,6 +517,7 @@ public:
 	void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {}
 	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {}
 	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {}
+	void reflection_probe_set_resolution(RID p_probe, int p_resolution) {}
 
 	AABB reflection_probe_get_aabb(RID p_probe) const { return AABB(); }
 	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const { return VisualServer::REFLECTION_PROBE_UPDATE_ONCE; }

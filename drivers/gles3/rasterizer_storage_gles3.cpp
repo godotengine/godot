@@ -5295,6 +5295,9 @@ void RasterizerStorageGLES3::reflection_probe_set_cull_mask(RID p_probe, uint32_
 	reflection_probe->instance_change_notify();
 }
 
+void RasterizerStorageGLES3::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
+}
+
 AABB RasterizerStorageGLES3::reflection_probe_get_aabb(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
