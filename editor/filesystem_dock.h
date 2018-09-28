@@ -188,7 +188,7 @@ private:
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
 
-	void _update_files(bool p_keep_selection);
+	void _update_file_list(bool p_keep_selection);
 	void _update_file_list_display_mode_button();
 	void _change_file_display();
 	void _fs_changed();

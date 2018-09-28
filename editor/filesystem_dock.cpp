@@ -255,7 +255,7 @@ void FileSystemDock::_update_display_mode() {
 				button_tree->show();
 
 				file_list_vb->show();
-				_update_files(true);
+				_update_file_list(true);
 				break;
 
 			case DISPLAY_MODE_SPLIT:
@@ -267,7 +267,7 @@ void FileSystemDock::_update_display_mode() {
 				_update_tree(_compute_uncollapsed_paths());
 
 				file_list_vb->show();
-				_update_files(true);
+				_update_file_list(true);
 				break;
 		}
 	}
@@ -384,7 +384,7 @@ void FileSystemDock::_notification(int p_what) {
 			}
 
 			if (should_update_files) {
-				_update_files(true);
+				_update_file_list(true);
 			}
 
 			// Change full tree mode
@@ -415,7 +415,7 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 
 	// Update the file list
 	if (!updating_tree && display_mode == DISPLAY_MODE_SPLIT) {
-		_update_files(false);
+		_update_file_list(false);
 	}
 }
 
@@ -453,7 +453,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 
 	if (display_mode == DISPLAY_MODE_SPLIT) {
 		_update_tree(_compute_uncollapsed_paths());
-		_update_files(false);
+		_update_file_list(false);
 	} else if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		if (path.ends_with("/")) {
 			_go_to_file_list();
@@ -461,7 +461,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 			_update_tree(_compute_uncollapsed_paths());
 		}
 	} else { // DISPLAY_MODE_FILE_LIST_ONLY
-		_update_files(true);
+		_update_file_list(true);
 	}
 
 	String file_name = p_path.get_file();
@@ -482,8 +482,14 @@ void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<T
 		Array uarr = p_udata;
 		int idx = uarr[0];
 		String file = uarr[1];
-		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == p_path)
-			files->set_item_icon(idx, p_preview);
+		if (idx < files->get_item_count() && files->get_item_text(idx) == file && files->get_item_metadata(idx) == p_path) {
+			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
+				if (p_small_preview.is_valid())
+					files->set_item_icon(idx, p_small_preview);
+			} else {
+				files->set_item_icon(idx, p_preview);
+			}
+		}
 	}
 }
 
@@ -527,7 +533,7 @@ void FileSystemDock::_change_file_display() {
 
 	EditorSettings::get_singleton()->set("docks/filesystem/files_display_mode", file_list_display_mode);
 
-	_update_files(true);
+	_update_file_list(true);
 }
 
 void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items) {
@@ -558,7 +564,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 	}
 }
 
-void FileSystemDock::_update_files(bool p_keep_selection) {
+void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 	// Register the previously selected items
 	Set<String> cselection;
@@ -598,7 +604,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	bool use_folders = searched_string.length() == 0 && ((display_mode == DISPLAY_MODE_FILE_LIST_ONLY || display_mode == DISPLAY_MODE_TREE_ONLY) || always_show_folders);
 
 	if (use_thumbnails) {
-
+		// Thumbnails mode
 		files->set_max_columns(0);
 		files->set_icon_mode(ItemList::ICON_MODE_TOP);
 		files->set_fixed_column_width(thumbnail_size * 3 / 2);
@@ -616,6 +622,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 		}
 	} else {
 
+		// No thumbnails
 		files->set_icon_mode(ItemList::ICON_MODE_LEFT);
 		files->set_max_columns(1);
 		files->set_max_text_lines(1);
@@ -624,6 +631,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	}
 
 	if (use_folders) {
+		// Display folders in the list
 		Ref<Texture> folderIcon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
 
 		if (directory != "res://") {
@@ -651,13 +659,13 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	}
 
 	List<FileInfo> filelist;
-
 	if (searched_string.length() > 0) {
-
+		// Display the search results
 		_search(EditorFileSystem::get_singleton()->get_filesystem(), &filelist, 128);
 		filelist.sort();
 	} else {
 
+		// Display the folder content
 		for (int i = 0; i < efd->get_file_count(); i++) {
 
 			FileInfo fi;
@@ -673,7 +681,6 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	}
 
 	String oi = "Object";
-
 	for (List<FileInfo>::Element *E = filelist.front(); E; E = E->next()) {
 		FileInfo *finfo = &(E->get());
 		String fname = finfo->name;
@@ -685,6 +692,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 
 		String tooltip = fname;
 
+		// Select the icons
 		if (!finfo->import_broken) {
 			type_icon = (has_icon(ftype, ei)) ? get_icon(ftype, ei) : get_icon(oi, ei);
 			big_icon = file_thumbnail;
@@ -694,25 +702,30 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			tooltip += "\n" + TTR("Status: Import of file failed. Please fix file and reimport manually.");
 		}
 
+		// Add the item to the ItemList
 		int item_index;
 		if (use_thumbnails) {
 			files->add_item(fname, big_icon, true);
 			item_index = files->get_item_count() - 1;
 			files->set_item_metadata(item_index, fpath);
 			files->set_item_tag_icon(item_index, type_icon);
-			if (!finfo->import_broken) {
-				Array udata;
-				udata.resize(2);
-				udata[0] = item_index;
-				udata[1] = fname;
-				EditorResourcePreview::get_singleton()->queue_resource_preview(fpath, this, "_file_list_thumbnail_done", udata);
-			}
+
 		} else {
 			files->add_item(fname, type_icon, true);
 			item_index = files->get_item_count() - 1;
 			files->set_item_metadata(item_index, fpath);
 		}
 
+		// Generate the preview
+		if (!finfo->import_broken) {
+			Array udata;
+			udata.resize(2);
+			udata[0] = item_index;
+			udata[1] = fname;
+			EditorResourcePreview::get_singleton()->queue_resource_preview(fpath, this, "_file_list_thumbnail_done", udata);
+		}
+
+		// Select the items
 		if (cselection.has(fname))
 			files->select(item_index, false);
 
@@ -721,6 +734,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			files->ensure_current_is_visible();
 		}
 
+		// Tooltip
 		if (finfo->sources.size()) {
 			for (int j = 0; j < finfo->sources.size(); j++) {
 				tooltip += "\nSource: " + finfo->sources[j];
@@ -766,7 +780,7 @@ void FileSystemDock::_go_to_file_list() {
 	} else {
 		bool collapsed = tree->get_selected()->is_collapsed();
 		tree->get_selected()->set_collapsed(!collapsed);
-		_update_files(false);
+		_update_file_list(false);
 	}
 }
 
@@ -809,7 +823,7 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	if (file_list_vb->is_visible()) {
-		_update_files(true);
+		_update_file_list(true);
 	}
 
 	set_process(false);
@@ -855,7 +869,7 @@ void FileSystemDock::_update_history() {
 	}
 
 	if (file_list_vb->is_visible()) {
-		_update_files(false);
+		_update_file_list(false);
 	}
 
 	button_hist_prev->set_disabled(history_pos == 0);
@@ -1592,13 +1606,13 @@ void FileSystemDock::_search_changed(const String &p_text, const Control *p_from
 
 	switch (display_mode) {
 		case DISPLAY_MODE_FILE_LIST_ONLY: {
-			_update_files(false);
+			_update_file_list(false);
 		} break;
 		case DISPLAY_MODE_TREE_ONLY: {
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>());
 		} break;
 		case DISPLAY_MODE_SPLIT: {
-			_update_files(false);
+			_update_file_list(false);
 			_update_tree(searched_string.length() == 0 ? uncollapsed_paths_before_search : Vector<String>());
 		} break;
 	}
