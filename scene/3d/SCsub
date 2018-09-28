@@ -2,9 +2,7 @@
 
 Import('env')
 
-
 if env['disable_3d']:
-
     env.scene_sources.append("3d/spatial.cpp")
     env.scene_sources.append("3d/skeleton.cpp")
     env.scene_sources.append("3d/particles.cpp")
@@ -12,5 +10,3 @@ if env['disable_3d']:
     env.scene_sources.append("3d/scenario_fx.cpp")
 else:
     env.add_source_files(env.scene_sources, "*.cpp")
-
-Export('env')

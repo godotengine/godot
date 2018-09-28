@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 Import('env')
+
 from platform_methods import run_in_subprocess
 import main_builders
 
@@ -14,8 +15,6 @@ env.Depends("#main/default_controller_mappings.gen.cpp", controller_databases)
 env.CommandNoCache("#main/default_controller_mappings.gen.cpp", controller_databases, run_in_subprocess(main_builders.make_default_controller_mappings))
 
 env.main_sources.append("#main/default_controller_mappings.gen.cpp")
-
-Export('env')
 
 env.Depends("#main/splash.gen.h", "#main/splash.png")
 env.CommandNoCache("#main/splash.gen.h", "#main/splash.png", run_in_subprocess(main_builders.make_splash))

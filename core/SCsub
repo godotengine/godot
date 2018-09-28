@@ -56,6 +56,7 @@ with open("script_encryption_key.gen.cpp", "w") as f:
 
 # Add required thirdparty code.
 env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
 
 # Misc thirdparty code: header paths are hardcoded, we don't need to append
 # to the include path (saves a few chars on the compiler invocation for touchy MSVC...)

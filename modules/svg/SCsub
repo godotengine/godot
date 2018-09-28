@@ -9,11 +9,12 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env.add_source_files(env.modules_sources, thirdparty_sources)
 env.Append(CPPPATH=[thirdparty_dir])
 env.Append(CCFLAGS=["-DSVG_ENABLED"])
 
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
 # Godot's own source files
 env.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env')
