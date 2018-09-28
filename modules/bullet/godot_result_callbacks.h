@@ -87,13 +87,13 @@ struct GodotAllConvexResultCallback : public btCollisionWorld::ConvexResultCallb
 public:
 	PhysicsDirectSpaceState::ShapeResult *m_results;
 	int m_resultMax;
-	int count;
 	const Set<RID> *m_exclude;
+	int count;
 
 	GodotAllConvexResultCallback(PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
 			m_results(p_results),
-			m_exclude(p_exclude),
 			m_resultMax(p_resultMax),
+			m_exclude(p_exclude),
 			count(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
@@ -125,6 +125,7 @@ public:
 	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
 			m_exclude(p_exclude),
+			m_shapeId(0),
 			collide_with_bodies(p_collide_with_bodies),
 			collide_with_areas(p_collide_with_areas) {}
 
@@ -138,8 +139,8 @@ public:
 	const btCollisionObject *m_self_object;
 	PhysicsDirectSpaceState::ShapeResult *m_results;
 	int m_resultMax;
-	int m_count;
 	const Set<RID> *m_exclude;
+	int m_count;
 
 	bool collide_with_bodies;
 	bool collide_with_areas;
@@ -147,8 +148,8 @@ public:
 	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_results(p_results),
-			m_exclude(p_exclude),
 			m_resultMax(p_resultMax),
+			m_exclude(p_exclude),
 			m_count(0),
 			collide_with_bodies(p_collide_with_bodies),
 			collide_with_areas(p_collide_with_areas) {}
@@ -164,8 +165,8 @@ public:
 	const btCollisionObject *m_self_object;
 	Vector3 *m_results;
 	int m_resultMax;
-	int m_count;
 	const Set<RID> *m_exclude;
+	int m_count;
 
 	bool collide_with_bodies;
 	bool collide_with_areas;
@@ -173,8 +174,8 @@ public:
 	GodotContactPairContactResultCallback(btCollisionObject *p_self_object, Vector3 *p_results, int p_resultMax, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_results(p_results),
-			m_exclude(p_exclude),
 			m_resultMax(p_resultMax),
+			m_exclude(p_exclude),
 			m_count(0),
 			collide_with_bodies(p_collide_with_bodies),
 			collide_with_areas(p_collide_with_areas) {}
@@ -188,11 +189,11 @@ struct GodotRestInfoContactResultCallback : public btCollisionWorld::ContactResu
 public:
 	const btCollisionObject *m_self_object;
 	PhysicsDirectSpaceState::ShapeRestInfo *m_result;
+	const Set<RID> *m_exclude;
 	bool m_collided;
 	real_t m_min_distance;
 	const btCollisionObject *m_rest_info_collision_object;
 	btVector3 m_rest_info_bt_point;
-	const Set<RID> *m_exclude;
 	bool collide_with_bodies;
 	bool collide_with_areas;
 

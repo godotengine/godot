@@ -66,13 +66,13 @@ void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_s
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
-		space(NULL),
 		type(p_type),
 		collisionsEnabled(true),
 		m_isStatic(false),
 		bt_collision_object(NULL),
 		body_scale(1., 1., 1.),
-		force_shape_reset(false) {}
+		force_shape_reset(false),
+		space(NULL) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it

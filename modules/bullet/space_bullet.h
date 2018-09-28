@@ -96,9 +96,9 @@ class SpaceBullet : public RIDBullet {
 	btCollisionDispatcher *dispatcher;
 	btConstraintSolver *solver;
 	btDiscreteDynamicsWorld *dynamicsWorld;
+	btSoftBodyWorldInfo *soft_body_world_info;
 	btGhostPairCallback *ghostPairCallback;
 	GodotFilterCallback *godotFilterCallback;
-	btSoftBodyWorldInfo *soft_body_world_info;
 
 	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver;
 	btVoronoiSimplexSolver *gjk_simplex_solver;

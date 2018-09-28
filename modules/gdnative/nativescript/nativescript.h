@@ -70,8 +70,6 @@ struct NativeScriptDesc {
 		String documentation;
 	};
 
-	String documentation;
-
 	Map<StringName, Method> methods;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
@@ -80,6 +78,8 @@ struct NativeScriptDesc {
 	NativeScriptDesc *base_data;
 	godot_instance_create_func create_func;
 	godot_instance_destroy_func destroy_func;
+
+	String documentation;
 
 	const void *type_tag;
 

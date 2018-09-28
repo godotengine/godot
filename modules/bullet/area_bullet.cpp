@@ -46,7 +46,6 @@
 AreaBullet::AreaBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
 		monitorable(true),
-		isScratched(false),
 		spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
 		spOv_gravityPoint(false),
 		spOv_gravityPointDistanceScale(0),
@@ -55,7 +54,8 @@ AreaBullet::AreaBullet() :
 		spOv_gravityMag(10),
 		spOv_linearDump(0.1),
 		spOv_angularDump(1),
-		spOv_priority(0) {
+		spOv_priority(0),
+		isScratched(false) {
 
 	btGhost = bulletnew(btGhostObject);
 	btGhost->setCollisionShape(BulletPhysicsServer::get_empty_shape());

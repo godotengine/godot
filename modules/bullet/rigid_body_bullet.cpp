@@ -259,21 +259,21 @@ RigidBodyBullet::RigidBodyBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY),
 		kinematic_utilities(NULL),
 		locked_axis(0),
-		gravity_scale(1),
 		mass(1),
+		gravity_scale(1),
 		linearDamp(0),
 		angularDamp(0),
 		can_sleep(true),
 		omit_forces_integration(false),
-		force_integration_callback(NULL),
-		isTransformChanged(false),
-		previousActiveState(true),
 		maxCollisionsDetection(0),
 		collisionsCount(0),
 		maxAreasWhereIam(10),
 		areaWhereIamCount(0),
 		countGravityPointSpaces(0),
-		isScratchedSpaceOverrideModificator(false) {
+		isScratchedSpaceOverrideModificator(false),
+		isTransformChanged(false),
+		previousActiveState(true),
+		force_integration_callback(NULL) {
 
 	godotMotionState = bulletnew(GodotMotionState(this));
 
