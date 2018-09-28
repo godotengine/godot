@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+Import('env')
+Import('env_modules')
+
+# Thirdparty sources
+
 libvpx_dir = "#thirdparty/libvpx/"
 
 libvpx_sources = [
@@ -249,12 +254,8 @@ libvpx_sources_arm_neon_armasm_ms = [libvpx_dir + file for file in libvpx_source
 libvpx_sources_arm_neon_gas_apple = [libvpx_dir + file for file in libvpx_sources_arm_neon_gas_apple]
 
 
-Import('env')
-Import('env_webm')
-
-env_webm.Append(CPPPATH=[libvpx_dir])
-
-env_libvpx = env.Clone()
+env_libvpx = env_modules.Clone()
+env_libvpx.disable_warnings()
 env_libvpx.Append(CPPPATH=[libvpx_dir])
 
 webm_multithread = env["platform"] != 'javascript'

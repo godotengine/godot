@@ -54,17 +54,16 @@ if env['builtin_thekla_atlas']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_thekla_unwrap.add_source_files(env.modules_sources, thirdparty_sources)
-    env_thekla_unwrap.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/poshlib", thirdparty_dir + "/nvcore", thirdparty_dir + "/nvmesh"])
+    env_thekla_unwrap.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "poshlib", thirdparty_dir + "nvcore", thirdparty_dir + "nvmesh"])
 
     # upstream uses c++11
-    if (not env_thekla_unwrap.msvc):
-        env_thekla_unwrap.Append(CXXFLAGS="-std=c++11")
+    if (not env.msvc):
+         env_thekla_unwrap.Append(CXXFLAGS="-std=c++11")
 
     if env["platform"] == 'x11':
         # if not specifically one of the *BSD, then use LINUX as default
         if platform.system() == "FreeBSD":
-            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_FREEBSD", "-DPOSH_COMPILER_GCC"])
+		    env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_FREEBSD", "-DPOSH_COMPILER_GCC"])
         elif platform.system() == "OpenBSD":
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_OPENBSD", "-DPOSH_COMPILER_GCC"])
         else:
@@ -77,6 +76,10 @@ if env['builtin_thekla_atlas']:
         else:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC", "-U__STRICT_ANSI__"])
             env.Append(LIBS=["dbghelp"])
+
+    env_thirdparty = env_thekla_unwrap.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_thekla_unwrap.add_source_files(env.modules_sources, "*.cpp")

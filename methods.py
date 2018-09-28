@@ -19,6 +19,14 @@ def add_source_files(self, sources, filetype, lib_env=None, shared=False):
         sources.append(self.Object(path))
 
 
+def disable_warnings(self):
+    # 'self' is the environment
+    if self.msvc:
+        self.Append(CCFLAGS=['/w'])
+    else:
+        self.Append(CCFLAGS=['-w'])
+
+
 def add_module_version_string(self,s):
     self.module_version_string += "." + s
 

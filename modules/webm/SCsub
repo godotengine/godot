@@ -6,17 +6,16 @@ Import('env_modules')
 env_webm = env_modules.Clone()
 
 # Thirdparty source files
-thirdparty_libsimplewebm_dir = "#thirdparty/libsimplewebm/"
-thirdparty_libsimplewebm_sources = [
+thirdparty_dir = "#thirdparty/libsimplewebm/"
+thirdparty_sources = [
     "libwebm/mkvparser/mkvparser.cc",
     "OpusVorbisDecoder.cpp",
     "VPXDecoder.cpp",
     "WebMDemuxer.cpp",
 ]
-thirdparty_libsimplewebm_sources = [thirdparty_libsimplewebm_dir + file for file in thirdparty_libsimplewebm_sources]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_webm.add_source_files(env.modules_sources, thirdparty_libsimplewebm_sources)
-env_webm.Append(CPPPATH=[thirdparty_libsimplewebm_dir, thirdparty_libsimplewebm_dir + "libwebm/"])
+env_webm.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "libwebm/"])
 
 # upstream uses c++11
 if (not env_webm.msvc):
@@ -31,8 +30,12 @@ if env['builtin_opus']:
     env_webm.Append(CPPPATH=["#thirdparty/opus"])
 
 if env['builtin_libvpx']:
-    Export('env_webm')
+    env_webm.Append(CPPPATH=["#thirdparty/libvpx"])
     SConscript("libvpx/SCsub")
+
+env_thirdparty = env_webm.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_webm.add_source_files(env.modules_sources, "*.cpp")

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+Import('env')
+
 import shutil
 from compat import open_utf8
 from distutils.version import LooseVersion
 from detect import get_ndk_version
-
-Import('env')
 
 android_files = [
 
@@ -25,10 +25,6 @@ android_files = [
     'java_class_wrapper.cpp',
 #    'power_android.cpp'
 ]
-
-# env.Depends('#core/math/vector3.h', 'vector3_psp.h')
-
-#obj = env.SharedObject('godot_android.cpp')
 
 env_android = env.Clone()
 if env['target'] == "profile":

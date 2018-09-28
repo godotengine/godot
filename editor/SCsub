@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 Import('env')
+
 env.editor_sources = []
 
 import os
@@ -89,5 +90,3 @@ if env['tools']:
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])
-
-    Export('env')

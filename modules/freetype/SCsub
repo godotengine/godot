@@ -73,6 +73,8 @@ if env['builtin_freetype']:
     if env['builtin_libpng']:
         env.Append(CPPPATH=["#thirdparty/libpng"])
 
+    # FIXME: Find a way to build this in a separate env nevertheless
+    # so that we can disable warnings on thirdparty code
     lib = env.add_library("freetype_builtin", thirdparty_sources)
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack

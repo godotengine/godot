@@ -70,7 +70,6 @@ if env['builtin_libtheora']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_theora.add_source_files(env.modules_sources, thirdparty_sources)
     env_theora.Append(CPPPATH=[thirdparty_dir])
 
     # also requires libogg and libvorbis
@@ -78,6 +77,10 @@ if env['builtin_libtheora']:
         env_theora.Append(CPPPATH=["#thirdparty/libogg"])
     if env['builtin_libvorbis']:
         env_theora.Append(CPPPATH=["#thirdparty/libvorbis"])
+
+    env_thirdparty = env_theora.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_theora.add_source_files(env.modules_sources, "*.cpp")
