@@ -30,6 +30,19 @@
 
 #include "range.h"
 
+String Range::get_configuration_warning() const {
+	String warning = Control::get_configuration_warning();
+
+	if (shared->exp_ratio && shared->min <= 0) {
+		if (warning != String()) {
+			warning += "\n";
+		}
+		warning += TTR("If exp_edit is true min_value must be > 0.");
+	}
+
+	return warning;
+}
+
 void Range::_value_changed_notify() {
 
 	_value_changed(shared->val);
@@ -91,6 +104,8 @@ void Range::set_min(double p_min) {
 	set_value(shared->val);
 
 	shared->emit_changed("min");
+
+	update_configuration_warning();
 }
 void Range::set_max(double p_max) {
 
@@ -278,6 +293,8 @@ bool Range::is_using_rounded_values() const {
 void Range::set_exp_ratio(bool p_enable) {
 
 	shared->exp_ratio = p_enable;
+
+	update_configuration_warning();
 }
 
 bool Range::is_ratio_exp() const {
