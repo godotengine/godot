@@ -278,6 +278,11 @@ Comment: curl
 Copyright: 1998-2012, Daniel Stenberg et al.
 License: curl
 
+Files: ./thirdparty/misc/easing_equations.cpp
+Comment: Robert Penner's Easing Functions
+Copyright: 2001, Robert Penner
+License: BSD-3-clause
+
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
