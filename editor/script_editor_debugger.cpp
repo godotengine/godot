@@ -30,6 +30,7 @@
 
 #include "script_editor_debugger.h"
 
+#include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "editor_node.h"
@@ -577,6 +578,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (v.get_type() == Variant::OBJECT) {
 				h = PROPERTY_HINT_OBJECT_ID;
+				v = ObjectDB::get_instance(Object::cast_to<EncodedObjectAsID>(v)->get_object_id());
 				String s = v;
 				s = s.replace("[", "");
 				hs = s.get_slice(":", 0);
@@ -598,6 +600,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (v.get_type() == Variant::OBJECT) {
 				h = PROPERTY_HINT_OBJECT_ID;
+				v = ObjectDB::get_instance(Object::cast_to<EncodedObjectAsID>(v)->get_object_id());
 				String s = v;
 				s = s.replace("[", "");
 				hs = s.get_slice(":", 0);
@@ -619,6 +622,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			if (v.get_type() == Variant::OBJECT) {
 				h = PROPERTY_HINT_OBJECT_ID;
+				v = ObjectDB::get_instance(Object::cast_to<EncodedObjectAsID>(v)->get_object_id());
 				String s = v;
 				s = s.replace("[", "");
 				hs = s.get_slice(":", 0);
