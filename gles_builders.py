@@ -68,12 +68,9 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
             line = fs.readline()
 
-        if line.find("#ifdef ") != -1 or line.find("#elif defined(") != -1:
+        if line.find("#ifdef ") != -1:
             if line.find("#ifdef ") != -1:
                 ifdefline = line.replace("#ifdef ", "").strip()
-            else:
-                ifdefline = line.replace("#elif defined(", "").strip()
-                ifdefline = ifdefline.replace(")", "").strip()
 
             if line.find("_EN_") != -1:
                 enumbase = ifdefline[:ifdefline.find("_EN_")]

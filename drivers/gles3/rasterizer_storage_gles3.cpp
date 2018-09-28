@@ -1029,7 +1029,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	PoolVector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1 ? -1 : 0);
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1);
 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	PoolVector<uint8_t>::Write wb = data.write();
@@ -7364,7 +7364,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		GIProbeData *gi_probe_data = gi_probe_data_owner.get(p_rid);
 
 		glDeleteTextures(1, &gi_probe_data->tex_id);
-		gi_probe_owner.free(p_rid);
+		gi_probe_data_owner.free(p_rid);
 		memdelete(gi_probe_data);
 	} else if (lightmap_capture_data_owner.owns(p_rid)) {
 
@@ -7372,7 +7372,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		LightmapCapture *lightmap_capture = lightmap_capture_data_owner.get(p_rid);
 		lightmap_capture->instance_remove_deps();
 
-		gi_probe_owner.free(p_rid);
+		lightmap_capture_data_owner.free(p_rid);
 		memdelete(lightmap_capture);
 
 	} else if (canvas_occluder_owner.owns(p_rid)) {

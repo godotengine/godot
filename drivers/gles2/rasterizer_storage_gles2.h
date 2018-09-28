@@ -1046,6 +1046,21 @@ public:
 
 	/* LIGHTMAP */
 
+	struct LightmapCapture : public Instanciable {
+
+		PoolVector<LightmapCaptureOctree> octree;
+		AABB bounds;
+		Transform cell_xform;
+		int cell_subdiv;
+		float energy;
+		LightmapCapture() {
+			energy = 1.0;
+			cell_subdiv = 1;
+		}
+	};
+
+	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
+
 	virtual RID lightmap_capture_create();
 	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds);
 	virtual AABB lightmap_capture_get_bounds(RID p_capture) const;

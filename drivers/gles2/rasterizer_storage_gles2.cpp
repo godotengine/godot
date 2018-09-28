@@ -496,22 +496,6 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 		glTexParameterf(texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
-//set swizle for older format compatibility
-#ifdef GLES_OVER_GL
-	switch (texture->format) {
-
-		case Image::FORMAT_L8: {
-
-		} break;
-		case Image::FORMAT_LA8: {
-
-		} break;
-		default: {
-
-		} break;
-	}
-#endif
-
 	int mipmaps = ((texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && img->has_mipmaps()) ? img->get_mipmap_count() + 1 : 1;
 
 	int w = img->get_width();
@@ -591,7 +575,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 
 	PoolVector<uint8_t> data;
 
-	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1 ? -1 : 0);
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, real_format, texture->mipmaps > 1);
 
 	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
 	PoolVector<uint8_t>::Write wb = data.write();
@@ -3595,46 +3579,100 @@ void RasterizerStorageGLES2::gi_probe_dynamic_data_update(RID p_gi_probe_data, i
 ///////
 
 RID RasterizerStorageGLES2::lightmap_capture_create() {
-	return RID();
+
+	LightmapCapture *capture = memnew(LightmapCapture);
+	return lightmap_capture_data_owner.make_rid(capture);
 }
 
 void RasterizerStorageGLES2::lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {
-}
 
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->bounds = p_bounds;
+	capture->instance_change_notify();
+}
 AABB RasterizerStorageGLES2::lightmap_capture_get_bounds(RID p_capture) const {
-	return AABB();
-}
 
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, AABB());
+	return capture->bounds;
+}
 void RasterizerStorageGLES2::lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {
-}
 
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+
+	ERR_FAIL_COND(p_octree.size() == 0 || (p_octree.size() % sizeof(LightmapCaptureOctree)) != 0);
+
+	capture->octree.resize(p_octree.size() / sizeof(LightmapCaptureOctree));
+	if (p_octree.size()) {
+		PoolVector<LightmapCaptureOctree>::Write w = capture->octree.write();
+		PoolVector<uint8_t>::Read r = p_octree.read();
+		copymem(w.ptr(), r.ptr(), p_octree.size());
+	}
+	capture->instance_change_notify();
+}
 PoolVector<uint8_t> RasterizerStorageGLES2::lightmap_capture_get_octree(RID p_capture) const {
-	return PoolVector<uint8_t>();
+
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
+
+	if (capture->octree.size() == 0)
+		return PoolVector<uint8_t>();
+
+	PoolVector<uint8_t> ret;
+	ret.resize(capture->octree.size() * sizeof(LightmapCaptureOctree));
+	{
+		PoolVector<LightmapCaptureOctree>::Read r = capture->octree.read();
+		PoolVector<uint8_t>::Write w = ret.write();
+		copymem(w.ptr(), r.ptr(), ret.size());
+	}
+
+	return ret;
 }
 
 void RasterizerStorageGLES2::lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->cell_xform = p_xform;
 }
 
 Transform RasterizerStorageGLES2::lightmap_capture_get_octree_cell_transform(RID p_capture) const {
-	return Transform();
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, Transform());
+	return capture->cell_xform;
 }
 
 void RasterizerStorageGLES2::lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) {
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->cell_subdiv = p_subdiv;
 }
 
 int RasterizerStorageGLES2::lightmap_capture_get_octree_cell_subdiv(RID p_capture) const {
-	return 0;
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, 0);
+	return capture->cell_subdiv;
 }
 
 void RasterizerStorageGLES2::lightmap_capture_set_energy(RID p_capture, float p_energy) {
+
+	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND(!capture);
+	capture->energy = p_energy;
 }
 
 float RasterizerStorageGLES2::lightmap_capture_get_energy(RID p_capture) const {
-	return 0.0;
+
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, 0);
+	return capture->energy;
 }
 
 const PoolVector<RasterizerStorage::LightmapCaptureOctree> *RasterizerStorageGLES2::lightmap_capture_get_octree_ptr(RID p_capture) const {
-	return NULL;
+	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
+	ERR_FAIL_COND_V(!capture, NULL);
+	return &capture->octree;
 }
 
 ///////
@@ -3773,10 +3811,10 @@ void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene
 			inst = gi_probe_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
 		} break;*/
-		/*case VS::INSTANCE_LIGHTMAP_CAPTURE: {
+		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
 			inst = lightmap_capture_data_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
-		} break;*/
+		} break;
 		default: {
 			if (!inst) {
 				ERR_FAIL();
@@ -3819,11 +3857,11 @@ void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerSc
 		/*case VS::INSTANCE_GI_PROBE: {
 			inst = gi_probe_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
-		} break;
+		} break; */
 		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
 			inst = lightmap_capture_data_owner.getornull(p_base);
 			ERR_FAIL_COND(!inst);
-		} break;*/
+		} break;
 		default: {
 
 			if (!inst) {
@@ -4094,6 +4132,8 @@ VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
 		return VS::INSTANCE_IMMEDIATE;
 	} else if (reflection_probe_owner.owns(p_rid)) {
 		return VS::INSTANCE_REFLECTION_PROBE;
+	} else if (lightmap_capture_data_owner.owns(p_rid)) {
+		return VS::INSTANCE_LIGHTMAP_CAPTURE;
 	} else {
 		return VS::INSTANCE_NONE;
 	}
@@ -4281,7 +4321,15 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		memdelete(reflection_probe);
 
 		return true;
+	} else if (lightmap_capture_data_owner.owns(p_rid)) {
 
+		// delete the texture
+		LightmapCapture *lightmap_capture = lightmap_capture_data_owner.get(p_rid);
+		lightmap_capture->instance_remove_deps();
+
+		lightmap_capture_data_owner.free(p_rid);
+		memdelete(lightmap_capture);
+		return true;
 	} else {
 		return false;
 	}

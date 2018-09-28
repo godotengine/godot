@@ -27,15 +27,15 @@ attribute vec3 normal_attrib; // attrib:1
 attribute vec4 tangent_attrib; // attrib:2
 #endif
 
-#ifdef ENABLE_COLOR_INTERP
+#if defined(ENABLE_COLOR_INTERP)
 attribute vec4 color_attrib; // attrib:3
 #endif
 
-#ifdef ENABLE_UV_INTERP
+#if defined(ENABLE_UV_INTERP)
 attribute vec2 uv_attrib; // attrib:4
 #endif
 
-#ifdef ENABLE_UV2_INTERP
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 attribute vec2 uv2_attrib; // attrib:5
 #endif
 
@@ -102,15 +102,15 @@ varying vec3 tangent_interp;
 varying vec3 binormal_interp;
 #endif
 
-#ifdef ENABLE_COLOR_INTERP
+#if defined(ENABLE_COLOR_INTERP)
 varying vec4 color_interp;
 #endif
 
-#ifdef ENABLE_UV_INTERP
+#if defined(ENABLE_UV_INTERP)
 varying vec2 uv_interp;
 #endif
 
-#ifdef ENABLE_UV2_INTERP
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 varying vec2 uv2_interp;
 #endif
 
@@ -317,18 +317,18 @@ void main() {
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
-#ifdef ENABLE_COLOR_INTERP
+#if defined(ENABLE_COLOR_INTERP)
 	color_interp = color_attrib;
 #ifdef USE_INSTANCING
 	color_interp *= instance_color;
 #endif
 #endif
 
-#ifdef ENABLE_UV_INTERP
+#if defined(ENABLE_UV_INTERP)
 	uv_interp = uv_attrib;
 #endif
 
-#ifdef ENABLE_UV2_INTERP
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
 #endif
 
@@ -521,7 +521,7 @@ VERTEX_SHADER_CODE
 
 #if defined(LIGHT_USE_PSSM4)
 	shadow_coord3 = light_shadow_matrix3 * vi4;
-	shadow_coord3 = light_shadow_matrix3 * vi4;
+	shadow_coord4 = light_shadow_matrix4 * vi4;
 
 #endif
 
@@ -612,7 +612,7 @@ uniform mat4 world_transform;
 
 uniform highp float time;
 
-#ifdef SCREEN_UV_USED
+#if defined(SCREEN_UV_USED)
 uniform vec2 screen_pixel_size;
 #endif
 
@@ -643,7 +643,7 @@ uniform mat4 refprobe1_local_matrix;
 
 uniform bool refprobe1_exterior;
 
-uniform highp samplerCube reflection_probe1; //texunit:-4
+uniform highp samplerCube reflection_probe1; //texunit:-5
 
 uniform float refprobe1_intensity;
 uniform vec4 refprobe1_ambient;
@@ -670,7 +670,7 @@ uniform mat4 refprobe2_local_matrix;
 
 uniform bool refprobe2_exterior;
 
-uniform highp samplerCube reflection_probe2; //texunit:-5
+uniform highp samplerCube reflection_probe2; //texunit:-6
 
 uniform float refprobe2_intensity;
 uniform vec4 refprobe2_ambient;
@@ -773,7 +773,16 @@ void reflection_process(samplerCube reflection_map,
 
 #endif //use refprobe 1 or 2
 
+#ifdef USE_LIGHTMAP
+uniform mediump sampler2D lightmap; //texunit:-4
+uniform mediump float lightmap_energy;
+#endif
 
+#ifdef USE_LIGHTMAP_CAPTURE
+uniform mediump vec4[12] lightmap_captures;
+uniform bool lightmap_capture_sky;
+
+#endif
 
 #ifdef USE_RADIANCE_MAP
 
@@ -866,15 +875,15 @@ varying vec3 tangent_interp;
 varying vec3 binormal_interp;
 #endif
 
-#ifdef ENABLE_COLOR_INTERP
+#if defined(ENABLE_COLOR_INTERP)
 varying vec4 color_interp;
 #endif
 
-#ifdef ENABLE_UV_INTERP
+#if defined(ENABLE_UV_INTERP)
 varying vec2 uv_interp;
 #endif
 
-#ifdef ENABLE_UV2_INTERP
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 varying vec2 uv2_interp;
 #endif
 
@@ -1285,11 +1294,11 @@ void main() {
 #endif
 	float normaldepth = 1.0;
 
-#ifdef ALPHA_SCISSOR_USED
+#if defined(ALPHA_SCISSOR_USED)
 	float alpha_scissor = 0.5;
 #endif
 
-#ifdef SCREEN_UV_USED
+#if defined(SCREEN_UV_USED)
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #endif
 
@@ -1319,7 +1328,7 @@ FRAGMENT_SHADER_CODE
 
 	vec3 eye_position = -normalize(vertex_interp);
 
-#ifdef ALPHA_SCISSOR_USED
+#if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {
 		discard;
 	}
@@ -1403,6 +1412,47 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #endif //use reflection probe 1
+
+#ifdef USE_LIGHTMAP
+	//ambient light will come entirely from lightmap is lightmap is used
+	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
+#endif
+
+#ifdef USE_LIGHTMAP_CAPTURE
+	{
+		vec3 cone_dirs[12] = vec3[](
+				vec3(0, 0, 1),
+				vec3(0.866025, 0, 0.5),
+				vec3(0.267617, 0.823639, 0.5),
+				vec3(-0.700629, 0.509037, 0.5),
+				vec3(-0.700629, -0.509037, 0.5),
+				vec3(0.267617, -0.823639, 0.5),
+				vec3(0, 0, -1),
+				vec3(0.866025, 0, -0.5),
+				vec3(0.267617, 0.823639, -0.5),
+				vec3(-0.700629, 0.509037, -0.5),
+				vec3(-0.700629, -0.509037, -0.5),
+				vec3(0.267617, -0.823639, -0.5));
+
+		vec3 local_normal = normalize(camera_matrix * vec4(normal, 0.0)).xyz;
+		vec4 captured = vec4(0.0);
+		float sum = 0.0;
+		for (int i = 0; i < 12; i++) {
+			float amount = max(0.0, dot(local_normal, cone_dirs[i])); //not correct, but creates a nice wrap around effect
+			captured += lightmap_captures[i] * amount;
+			sum += amount;
+		}
+
+		captured /= sum;
+
+		if (lightmap_capture_sky) {
+			ambient_light = mix(ambient_light, captured.rgb, captured.a);
+		} else {
+			ambient_light = captured.rgb;
+		}
+	}
+#endif
+
 
 #endif //BASE PASS
 

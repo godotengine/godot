@@ -207,6 +207,9 @@ void ImageTexture::set_flags(uint32_t p_flags) {
 
 	flags=p_flags|cube;	*/
 	flags = p_flags;
+	if (w == 0 || h == 0) {
+		return; //uninitialized, do not set to texture
+	}
 	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
 }
 

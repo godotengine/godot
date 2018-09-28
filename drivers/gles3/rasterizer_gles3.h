@@ -66,6 +66,8 @@ public:
 	static void make_current();
 	static void register_config();
 
+	virtual bool is_low_end() const { return false; }
+
 	RasterizerGLES3();
 	~RasterizerGLES3();
 };

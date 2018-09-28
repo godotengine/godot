@@ -609,6 +609,10 @@ public:
 
 	static void set_use_vsync_callback(bool p_enable);
 
+	virtual bool is_low_end() const {
+		return visual_server->is_low_end();
+	}
+
 	VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread);
 	~VisualServerWrapMT();
 

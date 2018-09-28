@@ -1369,6 +1369,12 @@ void SpatialMaterial::_validate_feature(const String &text, Feature feature, Pro
 	}
 }
 
+void SpatialMaterial::_validate_high_end(const String &text, PropertyInfo &property) const {
+	if (property.name.begins_with(text)) {
+		property.usage |= PROPERTY_USAGE_HIGH_END_GFX;
+	}
+}
+
 void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("normal", FEATURE_NORMAL_MAPPING, property);
 	_validate_feature("emission", FEATURE_EMISSION, property);
@@ -1381,6 +1387,12 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("transmission", FEATURE_TRANSMISSION, property);
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
+
+	_validate_high_end("refraction", property);
+	_validate_high_end("subsurf_scatter", property);
+	_validate_high_end("anisotropy", property);
+	_validate_high_end("clearcoat", property);
+	_validate_high_end("depth", property);
 
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
 		property.usage = 0;

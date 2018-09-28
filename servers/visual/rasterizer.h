@@ -1107,6 +1107,8 @@ public:
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
 
+	virtual bool is_low_end() const = 0;
+
 	virtual ~Rasterizer() {}
 };
 

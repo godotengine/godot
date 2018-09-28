@@ -2028,6 +2028,10 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		glDisable(GL_BLEND);
 	}
 
+	RasterizerStorageGLES2::Texture *prev_lightmap = NULL;
+	float lightmap_energy = 1.0;
+	bool prev_use_lightmap_capture = false;
+
 	for (int i = 0; i < p_element_count; i++) {
 		RenderList::Element *e = p_elements[i];
 
@@ -2039,6 +2043,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		LightInstance *light = NULL;
 		ReflectionProbeInstance *refprobe_1 = NULL;
 		ReflectionProbeInstance *refprobe_2 = NULL;
+		RasterizerStorageGLES2::Texture *lightmap = NULL;
+		bool use_lightmap_capture = false;
 
 		if (!p_shadow) {
 
@@ -2147,12 +2153,41 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_REFLECTION_PROBE1, refprobe_1 != NULL);
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_REFLECTION_PROBE2, refprobe_2 != NULL);
 				if (refprobe_1 != NULL && refprobe_1 != prev_refprobe_1) {
-					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
 					glBindTexture(GL_TEXTURE_CUBE_MAP, refprobe_1->cubemap);
 				}
 				if (refprobe_2 != NULL && refprobe_2 != prev_refprobe_2) {
-					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 5);
+					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
 					glBindTexture(GL_TEXTURE_CUBE_MAP, refprobe_2->cubemap);
+				}
+				rebind = true;
+			}
+
+			use_lightmap_capture = !unshaded && !accum_pass && !e->instance->lightmap_capture_data.empty();
+
+			if (use_lightmap_capture != prev_use_lightmap_capture) {
+
+				state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_CAPTURE, use_lightmap_capture);
+				rebind = true;
+			}
+
+			if (!unshaded && !accum_pass && e->instance->lightmap.is_valid()) {
+
+				lightmap = storage->texture_owner.getornull(e->instance->lightmap);
+				lightmap_energy = 1.0;
+				if (lightmap) {
+					RasterizerStorageGLES2::LightmapCapture *capture = storage->lightmap_capture_data_owner.getornull(e->instance->lightmap_capture->base);
+					if (capture) {
+						lightmap_energy = capture->energy;
+					}
+				}
+			}
+
+			if (lightmap != prev_lightmap) {
+				state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP, lightmap != NULL);
+				if (lightmap != NULL) {
+					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+					glBindTexture(GL_TEXTURE_2D, lightmap->tex_id);
 				}
 				rebind = true;
 			}
@@ -2224,6 +2259,10 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				if (refprobe_1 || refprobe_2) {
 					_setup_refprobes(refprobe_1, refprobe_2, p_view_transform, p_env);
 				}
+
+				if (lightmap) {
+					state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_ENERGY, lightmap_energy);
+				}
 			}
 
 			state.scene_shader.set_uniform(SceneShaderGLES2::CAMERA_MATRIX, view_transform_inverse);
@@ -2239,6 +2278,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		state.scene_shader.set_uniform(SceneShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
 
+		if (use_lightmap_capture) { //this is per instance, must be set always if present
+			glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::LIGHTMAP_CAPTURES), 12, (const GLfloat *)e->instance->lightmap_capture_data.ptr());
+			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_CAPTURE_SKY, false);
+		}
+
 		_render_geometry(e);
 
 		prev_geometry = e->geometry;
@@ -2248,6 +2292,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		prev_light = light;
 		prev_refprobe_1 = refprobe_1;
 		prev_refprobe_2 = refprobe_2;
+		prev_lightmap = lightmap;
+		prev_use_lightmap_capture = use_lightmap_capture;
 	}
 
 	_setup_light_type(NULL, NULL); //clear light stuff
@@ -2260,6 +2306,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_VERTEX_LIGHTING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_REFLECTION_PROBE1, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_REFLECTION_PROBE2, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_CAPTURE, false);
 }
 
 void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy) {
@@ -2818,6 +2866,44 @@ void RasterizerSceneGLES2::set_scene_pass(uint64_t p_pass) {
 }
 
 bool RasterizerSceneGLES2::free(RID p_rid) {
+
+	if (light_instance_owner.owns(p_rid)) {
+
+		LightInstance *light_instance = light_instance_owner.getptr(p_rid);
+
+		//remove from shadow atlases..
+		for (Set<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
+			ShadowAtlas *shadow_atlas = shadow_atlas_owner.get(E->get());
+			ERR_CONTINUE(!shadow_atlas->shadow_owners.has(p_rid));
+			uint32_t key = shadow_atlas->shadow_owners[p_rid];
+			uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
+			uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
+
+			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
+			shadow_atlas->shadow_owners.erase(p_rid);
+		}
+
+		light_instance_owner.free(p_rid);
+		memdelete(light_instance);
+
+	} else if (shadow_atlas_owner.owns(p_rid)) {
+
+		ShadowAtlas *shadow_atlas = shadow_atlas_owner.get(p_rid);
+		shadow_atlas_set_size(p_rid, 0);
+		shadow_atlas_owner.free(p_rid);
+		memdelete(shadow_atlas);
+	} else if (reflection_probe_instance_owner.owns(p_rid)) {
+
+		ReflectionProbeInstance *reflection_instance = reflection_probe_instance_owner.get(p_rid);
+
+		reflection_probe_release_atlas_index(p_rid);
+		reflection_probe_instance_owner.free(p_rid);
+		memdelete(reflection_instance);
+
+	} else {
+		return false;
+	}
+
 	return true;
 }
 
