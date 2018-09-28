@@ -85,6 +85,7 @@ public:
 		DRAW_PRESSED,
 		DRAW_HOVER,
 		DRAW_DISABLED,
+		DRAW_HOVER_PRESSED,
 	};
 
 	DrawMode get_draw_mode() const;
