@@ -1282,6 +1282,8 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
 					// TODO
 				} break;
+
+				default: {}
 			}
 		}
 
@@ -1509,6 +1511,7 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 			}
 
 		} break;
+		default: {}
 	}
 }
 
@@ -1830,6 +1833,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			}
 
 		} break;
+		default: {}
 	}
 }
 
@@ -3210,6 +3214,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				}
 
 			} break;
+			default: {}
 		}
 	}
 }
@@ -4296,7 +4301,6 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	if (env) {
 		switch (env->bg_mode) {
 			case VS::ENV_BG_COLOR_SKY:
-
 			case VS::ENV_BG_SKY:
 
 				sky = storage->sky_owner.getornull(env->sky);
@@ -4334,6 +4338,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_CULL_FACE);
 				break;
+			default: {}
 		}
 	}
 

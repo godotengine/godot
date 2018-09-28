@@ -921,9 +921,7 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 
 			} break;
 
-			default: {
-
-			} break;
+			default: {}
 		}
 	}
 }
@@ -1240,9 +1238,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 		case VS::INSTANCE_IMMEDIATE: {
 		} break;
 
-		default: {
-
-		} break;
+		default: {}
 	}
 }
 
@@ -1465,6 +1461,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 			}
 
 		} break;
+		default: {}
 	}
 }
 
@@ -1767,8 +1764,7 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 			}
 
 		} break;
-
-		default: break;
+		default: {}
 	}
 }
 

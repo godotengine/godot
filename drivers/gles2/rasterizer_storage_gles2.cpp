@@ -1309,8 +1309,13 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 				pi.hint_string = "CubeMap";
 			} break;
 
-			default: {
-
+			case ShaderLanguage::TYPE_SAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_SAMPLER3D:
+			case ShaderLanguage::TYPE_ISAMPLER3D:
+			case ShaderLanguage::TYPE_USAMPLER3D: {
+				// Not implemented in GLES2
 			} break;
 		}
 
@@ -3110,6 +3115,7 @@ void RasterizerStorageGLES2::light_set_param(RID p_light, VS::LightParam p_param
 			light->version++;
 			light->instance_change_notify();
 		} break;
+		default: {}
 	}
 
 	light->param[p_param] = p_value;

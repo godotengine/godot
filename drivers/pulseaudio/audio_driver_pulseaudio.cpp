@@ -43,9 +43,12 @@ void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 		case PA_CONTEXT_FAILED:
 			ad->pa_ready = -1;
 			break;
-
 		case PA_CONTEXT_READY:
 			ad->pa_ready = 1;
+			break;
+		default:
+			// TODO: Check if we want to handle some of the other
+			// PA context states like PA_CONTEXT_UNCONNECTED.
 			break;
 	}
 }

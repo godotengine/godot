@@ -47,13 +47,14 @@ static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 		case Image::DETECTED_RGB:
 			return Image::FORMAT_ETC2_RGB8;
 
-		default:
+		case Image::DETECTED_RGBA:
 			return Image::FORMAT_ETC2_RGBA8;
 
-			// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
+		// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
+		default:
+			// TODO: Kept for compatibility, but should be investigated whether it's correct or if it should error out
+			return Image::FORMAT_ETC2_RGBA8;
 	}
-
-	ERR_FAIL_COND_V(true, Image::FORMAT_MAX);
 }
 
 static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format) {
@@ -81,9 +82,10 @@ static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format)
 
 		case Image::FORMAT_ETC2_RGB8A1:
 			return Etc::Image::Format::RGB8A1;
-	}
 
-	ERR_FAIL_COND_V(true, Etc::Image::Format::UNKNOWN);
+		default:
+			ERR_FAIL_V(Etc::Image::Format::UNKNOWN);
+	}
 }
 
 static void _decompress_etc1(Image *p_img) {

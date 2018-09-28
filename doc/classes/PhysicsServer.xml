@@ -1518,9 +1518,7 @@
 		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
 			Constant for rigid bodies.
 		</constant>
-		<constant name="BODY_MODE_SOFT" value="3" enum="BodyMode">
-		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="4" enum="BodyMode">
+		<constant name="BODY_MODE_CHARACTER" value="3" enum="BodyMode">
 			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">

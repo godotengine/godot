@@ -997,6 +997,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							set_message(TTR("View Plane Transform."), 2);
 
 						} break;
+						case TRANSFORM_YZ:
+						case TRANSFORM_XZ:
+						case TRANSFORM_XY: {
+						} break;
 					}
 				}
 			} break;
@@ -1544,6 +1548,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							case TRANSFORM_Z_AXIS:
 								plane = Plane(_edit.center, spatial_editor->get_gizmo_transform().basis.get_axis(2));
 								axis = Vector3(0, 0, 1);
+								break;
+							case TRANSFORM_YZ:
+							case TRANSFORM_XZ:
+							case TRANSFORM_XY:
 								break;
 						}
 

@@ -2287,6 +2287,8 @@ void PhysicalBone::_reload_joint() {
 			}
 
 		} break;
+		case JOINT_TYPE_NONE: {
+		} break;
 	}
 }
 
@@ -2341,6 +2343,8 @@ void PhysicalBone::set_joint_type(JointType p_joint_type) {
 			break;
 		case JOINT_TYPE_6DOF:
 			joint_data = memnew(SixDOFJointData);
+			break;
+		case JOINT_TYPE_NONE:
 			break;
 	}
 

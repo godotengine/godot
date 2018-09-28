@@ -1110,6 +1110,7 @@ static bool _guess_expression_type(const GDScriptCompletionContext &p_context, c
 				} break;
 			}
 		} break;
+		default: {}
 	}
 
 	// It may have found a null, but that's never useful
@@ -3354,6 +3355,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				return OK;
 			}
 		} break;
+		default: {}
 	}
 
 	return ERR_CANT_RESOLVE;

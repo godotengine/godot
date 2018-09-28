@@ -824,6 +824,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}
 		} break;
+		default: {} // nothing to do at this stage
 	}
 
 	if (buf) {

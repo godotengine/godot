@@ -1451,6 +1451,7 @@ void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 
 		case ANIMATION_PROCESS_PHYSICS: set_physics_process_internal(p_process && active); break;
 		case ANIMATION_PROCESS_IDLE: set_process_internal(p_process && active); break;
+		case ANIMATION_PROCESS_MANUAL: break;
 	}
 
 	processing = p_process;

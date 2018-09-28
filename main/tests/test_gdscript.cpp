@@ -357,6 +357,9 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 						_parser_show_block(cf_node->body, p_indent + 1);
 
 					} break;
+					case GDScriptParser::ControlFlowNode::CF_MATCH: {
+						// FIXME: Implement
+					} break;
 					case GDScriptParser::ControlFlowNode::CF_SWITCH: {
 
 					} break;

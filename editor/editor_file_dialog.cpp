@@ -209,6 +209,10 @@ void EditorFileDialog::update_dir() {
 		case MODE_OPEN_DIR:
 			get_ok()->set_text(TTR("Select Current Folder"));
 			break;
+		case MODE_OPEN_ANY:
+		case MODE_SAVE_FILE:
+			// FIXME: Implement, or refactor to avoid duplication with set_mode
+			break;
 	}
 }
 
@@ -503,6 +507,11 @@ void EditorFileDialog::_items_clear_selection() {
 		case MODE_OPEN_DIR:
 			get_ok()->set_disabled(false);
 			get_ok()->set_text(TTR("Select Current Folder"));
+			break;
+
+		case MODE_OPEN_ANY:
+		case MODE_SAVE_FILE:
+			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;
 	}
 }

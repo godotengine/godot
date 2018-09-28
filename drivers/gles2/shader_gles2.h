@@ -335,6 +335,19 @@ public:
 			case ShaderLanguage::TYPE_SAMPLERCUBE: {
 
 			} break;
+
+			case ShaderLanguage::TYPE_SAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+			case ShaderLanguage::TYPE_SAMPLER3D:
+			case ShaderLanguage::TYPE_ISAMPLER3D:
+			case ShaderLanguage::TYPE_USAMPLER3D: {
+				// Not implemented in GLES2
+			} break;
+
+			case ShaderLanguage::TYPE_VOID: {
+				// Nothing to do?
+			} break;
 		}
 	}
 

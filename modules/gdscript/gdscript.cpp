@@ -1981,6 +1981,7 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(2);
 			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
 		} break;
+		case WARNING_MAX: break; // Can't happen, but silences warning
 	}
 	ERR_EXPLAIN("Invalid GDScript warning code: " + get_name_from_code(code));
 	ERR_FAIL_V(String());

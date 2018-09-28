@@ -165,6 +165,7 @@ String FileAccess::fix_path(const String &p_path) const {
 
 			return r_path;
 		} break;
+		case ACCESS_MAX: break; // Can't happen, but silences warning
 	}
 
 	return r_path;
