@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  simplex_noise.h                                                      */
+/*  open_simplex_noise.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SIMPLEX_NOISE_H
-#define SIMPLEX_NOISE_H
+#ifndef OPEN_SIMPLEX_NOISE_H
+#define OPEN_SIMPLEX_NOISE_H
 
 #include "core/image.h"
 #include "core/reference.h"
@@ -37,9 +37,9 @@
 
 #include "thirdparty/misc/open-simplex-noise.h"
 
-class SimplexNoise : public Resource {
-	GDCLASS(SimplexNoise, Resource)
-	OBJ_SAVE_TYPE(SimplexNoise);
+class OpenSimplexNoise : public Resource {
+	GDCLASS(OpenSimplexNoise, Resource)
+	OBJ_SAVE_TYPE(OpenSimplexNoise);
 
 	osn_context contexts[6];
 
@@ -50,8 +50,8 @@ class SimplexNoise : public Resource {
 	float lacunarity; // Controls period change across octaves. 2 is usually a good value to address all detail levels.
 
 public:
-	SimplexNoise();
-	~SimplexNoise();
+	OpenSimplexNoise();
+	~OpenSimplexNoise();
 
 	void _init_seeds();
 
@@ -90,4 +90,4 @@ protected:
 	static void _bind_methods();
 };
 
-#endif // OPENSIMPLEX_NOISE_H
+#endif // OPEN_SIMPLEX_NOISE_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  simplex_noise.cpp                                                    */
+/*  open_simplex_noise.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "simplex_noise.h"
+#include "open_simplex_noise.h"
 
 #include "core/core_string_names.h"
 
-SimplexNoise::SimplexNoise() {
+OpenSimplexNoise::OpenSimplexNoise() {
 
 	seed = 0;
 	persistence = 0.5;
@@ -43,16 +43,16 @@ SimplexNoise::SimplexNoise() {
 	_init_seeds();
 }
 
-SimplexNoise::~SimplexNoise() {
+OpenSimplexNoise::~OpenSimplexNoise() {
 }
 
-void SimplexNoise::_init_seeds() {
+void OpenSimplexNoise::_init_seeds() {
 	for (int i = 0; i < 6; ++i) {
 		open_simplex_noise(seed + i * 2, &(contexts[i]));
 	}
 }
 
-void SimplexNoise::set_seed(int p_seed) {
+void OpenSimplexNoise::set_seed(int p_seed) {
 
 	if (seed == p_seed)
 		return;
@@ -64,36 +64,36 @@ void SimplexNoise::set_seed(int p_seed) {
 	emit_changed();
 }
 
-int SimplexNoise::get_seed() {
+int OpenSimplexNoise::get_seed() {
 
 	return seed;
 }
 
-void SimplexNoise::set_octaves(int p_octaves) {
+void OpenSimplexNoise::set_octaves(int p_octaves) {
 	if (p_octaves == octaves) return;
 	octaves = CLAMP(p_octaves, 1, 6);
 	emit_changed();
 }
 
-void SimplexNoise::set_period(float p_period) {
+void OpenSimplexNoise::set_period(float p_period) {
 	if (p_period == period) return;
 	period = p_period;
 	emit_changed();
 }
 
-void SimplexNoise::set_persistence(float p_persistence) {
+void OpenSimplexNoise::set_persistence(float p_persistence) {
 	if (p_persistence == persistence) return;
 	persistence = p_persistence;
 	emit_changed();
 }
 
-void SimplexNoise::set_lacunarity(float p_lacunarity) {
+void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 	if (p_lacunarity == lacunarity) return;
 	lacunarity = p_lacunarity;
 	emit_changed();
 }
 
-Ref<Image> SimplexNoise::get_image(int p_width, int p_height) {
+Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 
 	PoolVector<uint8_t> data;
 	data.resize(p_width * p_height * 4);
@@ -116,7 +116,7 @@ Ref<Image> SimplexNoise::get_image(int p_width, int p_height) {
 	return image;
 }
 
-Ref<Image> SimplexNoise::get_seamless_image(int p_size) {
+Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
 
 	PoolVector<uint8_t> data;
 	data.resize(p_size * p_size * 4);
@@ -153,32 +153,32 @@ Ref<Image> SimplexNoise::get_seamless_image(int p_size) {
 	return image;
 }
 
-void SimplexNoise::_bind_methods() {
+void OpenSimplexNoise::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_seed"), &SimplexNoise::get_seed);
-	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &SimplexNoise::set_seed);
+	ClassDB::bind_method(D_METHOD("get_seed"), &OpenSimplexNoise::get_seed);
+	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &OpenSimplexNoise::set_seed);
 
-	ClassDB::bind_method(D_METHOD("set_octaves", "octave_count"), &SimplexNoise::set_octaves);
-	ClassDB::bind_method(D_METHOD("get_octaves"), &SimplexNoise::get_octaves);
+	ClassDB::bind_method(D_METHOD("set_octaves", "octave_count"), &OpenSimplexNoise::set_octaves);
+	ClassDB::bind_method(D_METHOD("get_octaves"), &OpenSimplexNoise::get_octaves);
 
-	ClassDB::bind_method(D_METHOD("set_period", "period"), &SimplexNoise::set_period);
-	ClassDB::bind_method(D_METHOD("get_period"), &SimplexNoise::get_period);
+	ClassDB::bind_method(D_METHOD("set_period", "period"), &OpenSimplexNoise::set_period);
+	ClassDB::bind_method(D_METHOD("get_period"), &OpenSimplexNoise::get_period);
 
-	ClassDB::bind_method(D_METHOD("set_persistence", "persistence"), &SimplexNoise::set_persistence);
-	ClassDB::bind_method(D_METHOD("get_persistence"), &SimplexNoise::get_persistence);
+	ClassDB::bind_method(D_METHOD("set_persistence", "persistence"), &OpenSimplexNoise::set_persistence);
+	ClassDB::bind_method(D_METHOD("get_persistence"), &OpenSimplexNoise::get_persistence);
 
-	ClassDB::bind_method(D_METHOD("set_lacunarity", "lacunarity"), &SimplexNoise::set_lacunarity);
-	ClassDB::bind_method(D_METHOD("get_lacunarity"), &SimplexNoise::get_lacunarity);
+	ClassDB::bind_method(D_METHOD("set_lacunarity", "lacunarity"), &OpenSimplexNoise::set_lacunarity);
+	ClassDB::bind_method(D_METHOD("get_lacunarity"), &OpenSimplexNoise::get_lacunarity);
 
-	ClassDB::bind_method(D_METHOD("get_image", "width", "height"), &SimplexNoise::get_image);
-	ClassDB::bind_method(D_METHOD("get_seamless_image", "size"), &SimplexNoise::get_seamless_image);
+	ClassDB::bind_method(D_METHOD("get_image", "width", "height"), &OpenSimplexNoise::get_image);
+	ClassDB::bind_method(D_METHOD("get_seamless_image", "size"), &OpenSimplexNoise::get_seamless_image);
 
-	ClassDB::bind_method(D_METHOD("get_noise_2d", "x", "y"), &SimplexNoise::get_noise_2d);
-	ClassDB::bind_method(D_METHOD("get_noise_3d", "x", "y", "z"), &SimplexNoise::get_noise_3d);
-	ClassDB::bind_method(D_METHOD("get_noise_4d", "x", "y", "z", "w"), &SimplexNoise::get_noise_4d);
+	ClassDB::bind_method(D_METHOD("get_noise_2d", "x", "y"), &OpenSimplexNoise::get_noise_2d);
+	ClassDB::bind_method(D_METHOD("get_noise_3d", "x", "y", "z"), &OpenSimplexNoise::get_noise_3d);
+	ClassDB::bind_method(D_METHOD("get_noise_4d", "x", "y", "z", "w"), &OpenSimplexNoise::get_noise_4d);
 
-	ClassDB::bind_method(D_METHOD("get_noise_2dv", "pos"), &SimplexNoise::get_noise_2dv);
-	ClassDB::bind_method(D_METHOD("get_noise_3dv", "pos"), &SimplexNoise::get_noise_3dv);
+	ClassDB::bind_method(D_METHOD("get_noise_2dv", "pos"), &OpenSimplexNoise::get_noise_2dv);
+	ClassDB::bind_method(D_METHOD("get_noise_3dv", "pos"), &OpenSimplexNoise::get_noise_3dv);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, "1,6,1"), "set_octaves", "get_octaves");
@@ -187,7 +187,7 @@ void SimplexNoise::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");
 }
 
-float SimplexNoise::get_noise_2d(float x, float y) {
+float OpenSimplexNoise::get_noise_2d(float x, float y) {
 
 	x /= period;
 	y /= period;
@@ -208,7 +208,7 @@ float SimplexNoise::get_noise_2d(float x, float y) {
 	return sum / max;
 }
 
-float SimplexNoise::get_noise_3d(float x, float y, float z) {
+float OpenSimplexNoise::get_noise_3d(float x, float y, float z) {
 
 	x /= period;
 	y /= period;
@@ -231,7 +231,7 @@ float SimplexNoise::get_noise_3d(float x, float y, float z) {
 	return sum / max;
 }
 
-float SimplexNoise::get_noise_4d(float x, float y, float z, float w) {
+float OpenSimplexNoise::get_noise_4d(float x, float y, float z, float w) {
 
 	x /= period;
 	y /= period;

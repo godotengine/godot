@@ -43,7 +43,7 @@ NoiseTexture::NoiseTexture() {
 	as_normalmap = false;
 	flags = FLAGS_DEFAULT;
 
-	noise = Ref<SimplexNoise>();
+	noise = Ref<OpenSimplexNoise>();
 
 	texture = VS::get_singleton()->texture_create();
 
@@ -76,7 +76,7 @@ void NoiseTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normalmap"), "set_as_normalmap", "is_normalmap");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "SimplexNoise"), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "OpenSimplexNoise"), "set_noise", "get_noise");
 }
 
 void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
@@ -159,7 +159,7 @@ void NoiseTexture::_update_texture() {
 	}
 }
 
-void NoiseTexture::set_noise(Ref<SimplexNoise> p_noise) {
+void NoiseTexture::set_noise(Ref<OpenSimplexNoise> p_noise) {
 	if (p_noise == noise)
 		return;
 	if (noise.is_valid()) {
@@ -172,7 +172,7 @@ void NoiseTexture::set_noise(Ref<SimplexNoise> p_noise) {
 	_queue_update();
 }
 
-Ref<SimplexNoise> NoiseTexture::get_noise() {
+Ref<OpenSimplexNoise> NoiseTexture::get_noise() {
 	return noise;
 }
 

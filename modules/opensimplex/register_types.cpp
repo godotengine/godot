@@ -30,11 +30,11 @@
 
 #include "register_types.h"
 #include "noise_texture.h"
-#include "simplex_noise.h"
+#include "open_simplex_noise.h"
 
 void register_opensimplex_types() {
 
-	ClassDB::register_class<SimplexNoise>();
+	ClassDB::register_class<OpenSimplexNoise>();
 	ClassDB::register_class<NoiseTexture>();
 }
 
