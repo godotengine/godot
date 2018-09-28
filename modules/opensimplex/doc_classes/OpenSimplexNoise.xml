@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SimplexNoise" inherits="Resource" category="Core" version="3.1">
+<class name="OpenSimplexNoise" inherits="Resource" category="Core" version="3.1">
 	<brief_description>
 		Noise generator based on Open Simplex.
 	</brief_description>
 	<description>
-		This resource allows you to configure and sample a fractal noise space. Here is a brief usage example that configures a SimplexNoise and gets samples at various positions and dimensions:
+		This resource allows you to configure and sample a fractal noise space. Here is a brief usage example that configures an OpenSimplexNoise and gets samples at various positions and dimensions:
 		[codeblock]
-		var noise = SimplexNoise.new()
+		var noise = OpenSimplexNoise.new()
 
 		# Configure
 		noise.seed = randi()
@@ -109,7 +109,7 @@
 			Difference in period between [member octaves].
 		</member>
 		<member name="octaves" type="int" setter="set_octaves" getter="get_octaves">
-			Number of Simplex noise layers that are sampled to get the fractal noise.
+			Number of OpenSimplex noise layers that are sampled to get the fractal noise.
 		</member>
 		<member name="period" type="float" setter="set_period" getter="get_period">
 			Period of the base octave. A lower period results in a higher-frequency noise (more value changes across the same distance).
