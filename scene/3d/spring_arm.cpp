@@ -36,8 +36,9 @@
 
 SpringArm::SpringArm() :
 		spring_length(1),
-		mask(1),
 		current_spring_length(0),
+		keep_child_basis(false),
+		mask(1),
 		margin(0.01) {}
 
 void SpringArm::_notification(int p_what) {

@@ -301,8 +301,8 @@ struct GDScriptWarning {
 	static Code get_code_from_name(const String &p_name);
 
 	GDScriptWarning() :
-			line(-1),
-			code(WARNING_MAX) {}
+			code(WARNING_MAX),
+			line(-1) {}
 };
 #endif // DEBUG_ENABLED
 

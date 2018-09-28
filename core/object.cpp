@@ -277,8 +277,8 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
 		return_val(p_ret),
+		flags(METHOD_FLAG_NORMAL),
 		id(0) {
 }
 

@@ -39,8 +39,8 @@ class SpringArm : public Spatial {
 	Ref<Shape> shape;
 	Set<RID> excluded_objects;
 	float spring_length;
-	bool keep_child_basis;
 	float current_spring_length;
+	bool keep_child_basis;
 	uint32_t mask;
 	float margin;
 

@@ -418,11 +418,11 @@ void SkeletonIK::_notification(int p_what) {
 SkeletonIK::SkeletonIK() :
 		Node(),
 		interpolation(1),
-		skeleton(NULL),
-		target_node_override(NULL),
 		use_magnet(false),
 		min_distance(0.01),
 		max_iterations(10),
+		skeleton(NULL),
+		target_node_override(NULL),
 		task(NULL) {
 
 	set_process_priority(1);

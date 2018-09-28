@@ -187,11 +187,11 @@ Array convert_property_list(const List<PropertyInfo> *p_list);
 struct MethodInfo {
 
 	String name;
-	List<PropertyInfo> arguments;
-	Vector<Variant> default_arguments;
 	PropertyInfo return_val;
 	uint32_t flags;
 	int id;
+	List<PropertyInfo> arguments;
+	Vector<Variant> default_arguments;
 
 	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
