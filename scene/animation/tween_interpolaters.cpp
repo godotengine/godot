@@ -42,277 +42,277 @@ const real_t pi = 3.1415926535898;
 // linear
 ///////////////////////////////////////////////////////////////////////////
 namespace linear {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c * t / d + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * time / duration + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	return c * t / d + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * time / duration + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	return c * t / d + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * time / duration + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return c * t / d + b;
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * time / duration + beginning;
 }
 }; // namespace linear
 ///////////////////////////////////////////////////////////////////////////
 // sine
 ///////////////////////////////////////////////////////////////////////////
 namespace sine {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return -c * cos(t / d * (pi / 2)) + c + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return -change * cos(time / duration * (pi / 2)) + change + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	return c * sin(t / d * (pi / 2)) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * sin(time / duration * (pi / 2)) + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	return -c / 2 * (cos(pi * t / d) - 1) + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return -change / 2 * (cos(pi * time / duration) - 1) + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace sine
 ///////////////////////////////////////////////////////////////////////////
 // quint
 ///////////////////////////////////////////////////////////////////////////
 namespace quint {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c * pow(t / d, 5) + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * pow(time / duration, 5) + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	return c * (pow(t / d - 1, 5) + 1) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * (pow(time / duration - 1, 5) + 1) + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	t = t / d * 2;
-	if (t < 1) return c / 2 * pow(t, 5) + b;
-	return c / 2 * (pow(t - 2, 5) + 2) + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	time = time / duration * 2;
+	if (time < 1) return change / 2 * pow(time, 5) + beginning;
+	return change / 2 * (pow(time - 2, 5) + 2) + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace quint
 ///////////////////////////////////////////////////////////////////////////
 // quart
 ///////////////////////////////////////////////////////////////////////////
 namespace quart {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c * pow(t / d, 4) + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * pow(time / duration, 4) + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	return -c * (pow(t / d - 1, 4) - 1) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return -change * (pow(time / duration - 1, 4) - 1) + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	t = t / d * 2;
-	if (t < 1) return c / 2 * pow(t, 4) + b;
-	return -c / 2 * (pow(t - 2, 4) - 2) + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	time = time / duration * 2;
+	if (time < 1) return change / 2 * pow(time, 4) + beginning;
+	return -change / 2 * (pow(time - 2, 4) - 2) + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace quart
 ///////////////////////////////////////////////////////////////////////////
 // quad
 ///////////////////////////////////////////////////////////////////////////
 namespace quad {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c * pow(t / d, 2) + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * pow(time / duration, 2) + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	t = t / d;
-	return -c * t * (t - 2) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	time = time / duration;
+	return -change * time * (time - 2) + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	t = t / d * 2;
-	if (t < 1) return c / 2 * pow(t, 2) + b;
-	return -c / 2 * ((t - 1) * (t - 3) - 1) + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	time = time / duration * 2;
+	if (time < 1) return change / 2 * pow(time, 2) + beginning;
+	return -change / 2 * ((time - 1) * (time - 3) - 1) + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace quad
 ///////////////////////////////////////////////////////////////////////////
 // expo
 ///////////////////////////////////////////////////////////////////////////
 namespace expo {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	if (t == 0) return b;
-	return c * pow(2, 10 * (t / d - 1)) + b - c * 0.001;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	if (time == 0) return beginning;
+	return change * pow(2, 10 * (time / duration - 1)) + beginning - change * 0.001;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	if (t == d) return b + c;
-	return c * 1.001 * (-pow(2, -10 * t / d) + 1) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if (time == duration) return beginning + change;
+	return change * 1.001 * (-pow(2, -10 * time / duration) + 1) + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	if (t == 0) return b;
-	if (t == d) return b + c;
-	t = t / d * 2;
-	if (t < 1) return c / 2 * pow(2, 10 * (t - 1)) + b - c * 0.0005;
-	return c / 2 * 1.0005 * (-pow(2, -10 * (t - 1)) + 2) + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if (time == 0) return beginning;
+	if (time == duration) return beginning + change;
+	time = time / duration * 2;
+	if (time < 1) return change / 2 * pow(2, 10 * (time - 1)) + beginning - change * 0.0005;
+	return change / 2 * 1.0005 * (-pow(2, -10 * (time - 1)) + 2) + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace expo
 ///////////////////////////////////////////////////////////////////////////
 // elastic
 ///////////////////////////////////////////////////////////////////////////
 namespace elastic {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	if (t == 0) return b;
-	if ((t /= d) == 1) return b + c;
-	float p = d * 0.3f;
-	float a = c;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	if (time == 0) return beginning;
+	if ((time /= duration) == 1) return beginning + change;
+	float p = duration * 0.3f;
+	float a = change;
 	float s = p / 4;
-	float postFix = a * pow(2, 10 * (t -= 1)); // this is a fix, again, with post-increment operators
-	return -(postFix * sin((t * d - s) * (2 * pi) / p)) + b;
+	float postFix = a * pow(2, 10 * (time -= 1)); // this is a fix, again, with post-increment operators
+	return -(postFix * sin((time * duration - s) * (2 * pi) / p)) + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	if (t == 0) return b;
-	if ((t /= d) == 1) return b + c;
-	float p = d * 0.3f;
-	float a = c;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if (time == 0) return beginning;
+	if ((time /= duration) == 1) return beginning + change;
+	float p = duration * 0.3f;
+	float a = change;
 	float s = p / 4;
-	return (a * pow(2, -10 * t) * sin((t * d - s) * (2 * pi) / p) + c + b);
+	return (a * pow(2, -10 * time) * sin((time * duration - s) * (2 * pi) / p) + change + beginning);
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	if (t == 0) return b;
-	if ((t /= d / 2) == 2) return b + c;
-	float p = d * (0.3f * 1.5f);
-	float a = c;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if (time == 0) return beginning;
+	if ((time /= duration / 2) == 2) return beginning + change;
+	float p = duration * (0.3f * 1.5f);
+	float a = change;
 	float s = p / 4;
 
-	if (t < 1) {
-		float postFix = a * pow(2, 10 * (t -= 1)); // postIncrement is evil
-		return -0.5f * (postFix * sin((t * d - s) * (2 * pi) / p)) + b;
+	if (time < 1) {
+		float postFix = a * pow(2, 10 * (time -= 1)); // postIncrement is evil
+		return -0.5f * (postFix * sin((time * duration - s) * (2 * pi) / p)) + beginning;
 	}
-	float postFix = a * pow(2, -10 * (t -= 1)); // postIncrement is evil
-	return postFix * sin((t * d - s) * (2 * pi) / p) * 0.5f + c + b;
+	float postFix = a * pow(2, -10 * (time -= 1)); // postIncrement is evil
+	return postFix * sin((time * duration - s) * (2 * pi) / p) * 0.5f + change + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace elastic
 ///////////////////////////////////////////////////////////////////////////
 // cubic
 ///////////////////////////////////////////////////////////////////////////
 namespace cubic {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c * (t /= d) * t * t + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * (time /= duration) * time * time + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	t = t / d - 1;
-	return c * (t * t * t + 1) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	time = time / duration - 1;
+	return change * (time * time * time + 1) + beginning;
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
-	return c / 2 * ((t -= 2) * t * t + 2) + b;
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if ((time /= duration / 2) < 1) return change / 2 * time * time * time + beginning;
+	return change / 2 * ((time -= 2) * time * time + 2) + beginning;
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace cubic
 ///////////////////////////////////////////////////////////////////////////
 // circ
 ///////////////////////////////////////////////////////////////////////////
 namespace circ {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return -c * (sqrt(1 - (t /= d) * t) - 1) + b; // TODO: ehrich: operation with t is undefined
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return -change * (sqrt(1 - (time /= duration) * time) - 1) + beginning; // TODO: ehrich: operation with time is undefined
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	return c * sqrt(1 - (t = t / d - 1) * t) + b; // TODO: ehrich: operation with t is undefined
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change * sqrt(1 - (time = time / duration - 1) * time) + beginning; // TODO: ehrich: operation with time is undefined
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	if ((t /= d / 2) < 1) return -c / 2 * (sqrt(1 - t * t) - 1) + b;
-	return c / 2 * (sqrt(1 - t * (t -= 2)) + 1) + b; // TODO: ehrich: operation with t is undefined
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if ((time /= duration / 2) < 1) return -change / 2 * (sqrt(1 - time * time) - 1) + beginning;
+	return change / 2 * (sqrt(1 - time * (time -= 2)) + 1) + beginning; // TODO: ehrich: operation with time is undefined
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace circ
 ///////////////////////////////////////////////////////////////////////////
 // bounce
 ///////////////////////////////////////////////////////////////////////////
 namespace bounce {
-static real_t out(real_t t, real_t b, real_t c, real_t d);
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration);
 
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
-	return c - out(d - t, 0, c, d) + b;
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return change - out(duration - time, 0, change, duration) + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
-	if ((t /= d) < (1 / 2.75f)) {
-		return c * (7.5625f * t * t) + b;
-	} else if (t < (2 / 2.75f)) {
-		float postFix = t -= (1.5f / 2.75f);
-		return c * (7.5625f * (postFix)*t + .75f) + b;
-	} else if (t < (2.5 / 2.75)) {
-		float postFix = t -= (2.25f / 2.75f);
-		return c * (7.5625f * (postFix)*t + .9375f) + b;
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
+	if ((time /= duration) < (1 / 2.75f)) {
+		return change * (7.5625f * time * time) + beginning;
+	} else if (time < (2 / 2.75f)) {
+		float postFix = time -= (1.5f / 2.75f);
+		return change * (7.5625f * (postFix)*time + .75f) + beginning;
+	} else if (time < (2.5 / 2.75)) {
+		float postFix = time -= (2.25f / 2.75f);
+		return change * (7.5625f * (postFix)*time + .9375f) + beginning;
 	} else {
-		float postFix = t -= (2.625f / 2.75f);
-		return c * (7.5625f * (postFix)*t + .984375f) + b;
+		float postFix = time -= (2.625f / 2.75f);
+		return change * (7.5625f * (postFix)*time + .984375f) + beginning;
 	}
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? in(t * 2, b, c / 2, d) : out((t * 2) - d, b + c / 2, c / 2, d);
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? in(time * 2, beginning, change / 2, duration) : out((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace bounce
 ///////////////////////////////////////////////////////////////////////////
 // back
 ///////////////////////////////////////////////////////////////////////////
 namespace back {
-static real_t in(real_t t, real_t b, real_t c, real_t d) {
+static real_t in(real_t time, real_t beginning, real_t change, real_t duration) {
 	float s = 1.70158f;
-	float postFix = t /= d;
-	return c * (postFix)*t * ((s + 1) * t - s) + b;
+	float postFix = time /= duration;
+	return change * (postFix)*time * ((s + 1) * time - s) + beginning;
 }
 
-static real_t out(real_t t, real_t b, real_t c, real_t d) {
+static real_t out(real_t time, real_t beginning, real_t change, real_t duration) {
 	float s = 1.70158f;
-	return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b; // TODO: ehrich: operation with t is undefined
+	return change * ((time = time / duration - 1) * time * ((s + 1) * time + s) + 1) + beginning; // TODO: ehrich: operation with time is undefined
 }
 
-static real_t in_out(real_t t, real_t b, real_t c, real_t d) {
+static real_t in_out(real_t time, real_t beginning, real_t change, real_t duration) {
 	float s = 1.70158f;
-	if ((t /= d / 2) < 1) return c / 2 * (t * t * (((s *= (1.525f)) + 1) * t - s)) + b; // TODO: ehrich: operation with s is undefined
-	float postFix = t -= 2;
-	return c / 2 * ((postFix)*t * (((s *= (1.525f)) + 1) * t + s) + 2) + b; // TODO: ehrich: operation with s is undefined
+	if ((time /= duration / 2) < 1) return change / 2 * (time * time * (((s *= (1.525f)) + 1) * time - s)) + beginning; // TODO: ehrich: operation with s is undefined
+	float postFix = time -= 2;
+	return change / 2 * ((postFix)*time * (((s *= (1.525f)) + 1) * time + s) + 2) + beginning; // TODO: ehrich: operation with s is undefined
 }
 
-static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
-	return (t < d / 2) ? out(t * 2, b, c / 2, d) : in((t * 2) - d, b + c / 2, c / 2, d);
+static real_t out_in(real_t time, real_t beginning, real_t change, real_t duration) {
+	return (time < duration / 2) ? out(time * 2, beginning, change / 2, duration) : in((time * 2) - duration, beginning + change / 2, change / 2, duration);
 }
 }; // namespace back
 
@@ -330,9 +330,8 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] 
 	{ &back::in, &back::out, &back::in_out, &back::out_in },
 };
 
-real_t Tween::_run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d) {
-
+real_t Tween::_run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t time, real_t beginning, real_t change, real_t duration) {
 	interpolater cb = interpolaters[p_trans_type][p_ease_type];
-	ERR_FAIL_COND_V(cb == NULL, b);
-	return cb(t, b, c, d);
+	ERR_FAIL_COND_V(cb == NULL, beginning);
+	return cb(time, beginning, change, duration);
 }
