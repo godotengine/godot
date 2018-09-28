@@ -91,6 +91,7 @@ void LinkButton::_notification(int p_what) {
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
+				case DRAW_HOVER_PRESSED: break; // Not used in this class
 				case DRAW_DISABLED: {
 
 					color = get_color("font_color_disabled");

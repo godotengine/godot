@@ -43,10 +43,6 @@ static bool _is_text_char(CharType c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
-static bool _is_whitespace(CharType c) {
-	return c == '\t' || c == ' ';
-}
-
 static bool _is_char(CharType c) {
 
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
