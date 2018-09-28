@@ -502,8 +502,12 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				String str = var;
 				var = str.substr(4, str.length());
 
-				if (str.begins_with("PATH"))
-					var = ResourceLoader::load(var);
+				if (str.begins_with("PATH")) {
+					if (String(var).empty())
+						var = RES();
+					else
+						var = ResourceLoader::load(var);
+				}
 			}
 
 			debugObj->prop_values[pinfo.name] = var;
