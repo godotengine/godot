@@ -42,8 +42,6 @@
 
 class OS_Unix : public OS {
 
-	uint64_t ticks_start;
-
 protected:
 	// UNIX only handles the core functions.
 	// inheriting platforms under unix (eg. X11) should handle the rest
