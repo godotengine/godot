@@ -1396,8 +1396,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		return;
 
 	Transform2D cell_xf = node->get_cell_transform();
-
-	Transform2D xform = p_overlay->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 	Transform2D xform_inv = xform.affine_inverse();
 
 	Size2 screen_size = p_overlay->get_size();
