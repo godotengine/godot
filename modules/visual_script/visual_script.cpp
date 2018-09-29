@@ -49,8 +49,8 @@ void VisualScriptNode::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
 
-		int dvc = get_input_value_port_count();
-		for (int i = 0; i < dvc; i++) {
+		int input_count = get_input_value_port_count();
+		for (int i = 0; i < input_count; i++) {
 			Variant::Type expected = get_input_value_port_info(i).type;
 			Variant::CallError ce;
 			default_input_values.push_back(Variant::construct(expected, NULL, 0, ce, false));
@@ -63,6 +63,13 @@ void VisualScriptNode::ports_changed_notify() {
 	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
 
 	emit_signal("ports_changed");
+
+	int input_count = get_input_value_port_count();
+	for (int i = 0; i < input_count; i++) {
+		Variant::Type expected = get_input_value_port_info(i).type;
+		Variant::CallError ce;
+		set_default_input_value(i, Variant::construct(expected, NULL, 0, ce, false));
+	}
 }
 
 void VisualScriptNode::set_default_input_value(int p_port, const Variant &p_value) {
