@@ -1981,7 +1981,7 @@ void EditorInspector::_property_keyed(const String &p_path) {
 	if (!object)
 		return;
 
-	emit_signal("property_keyed", p_path, object->get(p_path), false); //second param is deprecated
+	emit_signal("property_keyed", p_path, object->get(p_path), true); //second param is deprecated
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value) {

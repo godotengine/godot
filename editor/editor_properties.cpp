@@ -1761,7 +1761,7 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 
 void EditorPropertyColor::_popup_closed() {
 
-	emit_signal("property_changed", get_edited_property(), picker->get_pick_color(), false);
+	emit_signal("property_changed", get_edited_property(), picker->get_pick_color(), true);
 }
 
 void EditorPropertyColor::_bind_methods() {
