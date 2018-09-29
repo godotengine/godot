@@ -5150,7 +5150,7 @@ bool TextEdit::can_fold(int p_line) const {
 		return false;
 	if (p_line + 1 >= text.size())
 		return false;
-	if (text[p_line].size() == 0)
+	if (text[p_line].strip_edges().size() == 0)
 		return false;
 	if (is_folded(p_line))
 		return false;
@@ -5162,7 +5162,7 @@ bool TextEdit::can_fold(int p_line) const {
 	int start_indent = get_indent_level(p_line);
 
 	for (int i = p_line + 1; i < text.size(); i++) {
-		if (text[i].size() == 0)
+		if (text[i].strip_edges().size() == 0)
 			continue;
 		int next_indent = get_indent_level(i);
 		if (is_line_comment(i)) {
