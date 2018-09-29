@@ -51,12 +51,6 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\"\"\" \"\"\"");
 }
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-#ifdef TOOLS_ENABLED
-	bool th = EDITOR_DEF("text_editor/completion/add_type_hints", false);
-#else
-	bool th = false;
-#endif
-
 	String _template = "extends %BASE%\n"
 					   "\n"
 					   "# Declare member variables here. Examples:\n"

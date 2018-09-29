@@ -88,14 +88,6 @@ static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format)
 	}
 }
 
-static void _decompress_etc1(Image *p_img) {
-	// not implemented, to be removed
-}
-
-static void _decompress_etc2(Image *p_img) {
-	// not implemented, to be removed
-}
-
 static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::CompressSource p_source) {
 	Image::Format img_format = p_img->get_format();
 	Image::DetectChannels detected_channels = p_img->get_detected_channels();
@@ -245,8 +237,5 @@ static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::CompressS
 void _register_etc_compress_func() {
 
 	Image::_image_compress_etc1_func = _compress_etc1;
-	//Image::_image_decompress_etc1 = _decompress_etc1;
-
 	Image::_image_compress_etc2_func = _compress_etc2;
-	//Image::_image_decompress_etc2 = _decompress_etc2;
 }

@@ -36,7 +36,6 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
-#include "core/io/zip_io.h"
 #include "core/message_queue.h"
 #include "core/os/file_access.h"
 #include "core/os/input.h"

@@ -98,36 +98,6 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 	return OK;
 }
 
-static int _ScriptDebuggerRemote_found_id = 0;
-static Object *_ScriptDebuggerRemote_find = NULL;
-static void _ScriptDebuggerRemote_debug_func(Object *p_obj) {
-
-	if (_ScriptDebuggerRemote_find == p_obj) {
-		_ScriptDebuggerRemote_found_id = p_obj->get_instance_id();
-	}
-}
-
-static ObjectID safe_get_instance_id(const Variant &p_v) {
-
-	Object *o = p_v;
-	if (o == NULL)
-		return 0;
-	else {
-
-		REF r = p_v;
-		if (r.is_valid()) {
-
-			return r->get_instance_id();
-		} else {
-
-			_ScriptDebuggerRemote_found_id = 0;
-			_ScriptDebuggerRemote_find = NULL;
-			ObjectDB::debug_objects(_ScriptDebuggerRemote_debug_func);
-			return _ScriptDebuggerRemote_found_id;
-		}
-	}
-}
-
 void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_variable) {
 
 	packet_peer_stream->put_var(p_name);

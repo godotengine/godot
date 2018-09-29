@@ -81,12 +81,6 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
-static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_color) {
-	Ref<StyleBoxFlat> style = p_style->duplicate();
-	style->set_border_color_all(p_color);
-	return style;
-}
-
 Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
 
 	Ref<ImageTexture> icon = memnew(ImageTexture);

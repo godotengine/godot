@@ -34,12 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "servers/audio/audio_stream.h"
 
-#define STB_VORBIS_HEADER_ONLY
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#include "thirdparty/misc/stb_vorbis.c"
-#pragma GCC diagnostic pop
-#undef STB_VORBIS_HEADER_ONLY
+#include "thirdparty/misc/stb_vorbis.h"
 
 class AudioStreamOGGVorbis;
 

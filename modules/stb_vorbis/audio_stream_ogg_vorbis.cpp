@@ -32,11 +32,6 @@
 
 #include "core/os/file_access.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#include "thirdparty/misc/stb_vorbis.c"
-#pragma GCC diagnostic pop
-
 void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	ERR_FAIL_COND(!active);
