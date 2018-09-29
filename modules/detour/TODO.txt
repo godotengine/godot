@@ -1,0 +1,8 @@
+1. Node position fixup at start of loop (before update) (enable only when crowd does not control agents directly)
+2. Fix agent states before update (need setting for that, disable by default)
+3. Implement signal notification of nodes about their state, position, velocity
+4. Implement agent parameters setting
+5. bind agent state constants and allow checking agent state
+6. Implement physics motion.
+7. Implement area tagging
+8. Implement tiled mesh and obstacles.
