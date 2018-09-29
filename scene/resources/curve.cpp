@@ -761,8 +761,7 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve2D");
-		ERR_FAIL_COND_V(pc == 0, Vector2());
+		return Vector2();
 	}
 
 	if (pc == 1)
