@@ -817,7 +817,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
-	if (proximity_fade_enabled) {
+	if (!VisualServer::get_singleton()->is_low_end() && proximity_fade_enabled) {
 		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
 		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
 		code += "\tworld_pos.xyz/=world_pos.w;\n";
@@ -825,42 +825,44 @@ void SpatialMaterial::_update_shader() {
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
-		if (distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER) {
+		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 
-			code += "\t{\n";
-			if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-				code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
+			if (!VisualServer::get_singleton()->is_low_end()) {
+				code += "\t{\n";
+				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
+					code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
 
-			} else {
-				code += "\t\tfloat fade_distance=-VERTEX.z;\n";
+				} else {
+					code += "\t\tfloat fade_distance=-VERTEX.z;\n";
+				}
+
+				code += "\t\tfloat fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
+				code += "\t\tint x = int(FRAGCOORD.x) % 4;\n";
+				code += "\t\tint y = int(FRAGCOORD.y) % 4;\n";
+				code += "\t\tint index = x + y * 4;\n";
+				code += "\t\tfloat limit = 0.0;\n\n";
+				code += "\t\tif (x < 8) {\n";
+				code += "\t\t\tif (index == 0) limit = 0.0625;\n";
+				code += "\t\t\tif (index == 1) limit = 0.5625;\n";
+				code += "\t\t\tif (index == 2) limit = 0.1875;\n";
+				code += "\t\t\tif (index == 3) limit = 0.6875;\n";
+				code += "\t\t\tif (index == 4) limit = 0.8125;\n";
+				code += "\t\t\tif (index == 5) limit = 0.3125;\n";
+				code += "\t\t\tif (index == 6) limit = 0.9375;\n";
+				code += "\t\t\tif (index == 7) limit = 0.4375;\n";
+				code += "\t\t\tif (index == 8) limit = 0.25;\n";
+				code += "\t\t\tif (index == 9) limit = 0.75;\n";
+				code += "\t\t\tif (index == 10) limit = 0.125;\n";
+				code += "\t\t\tif (index == 11) limit = 0.625;\n";
+				code += "\t\t\tif (index == 12) limit = 1.0;\n";
+				code += "\t\t\tif (index == 13) limit = 0.5;\n";
+				code += "\t\t\tif (index == 14) limit = 0.875;\n";
+				code += "\t\t\tif (index == 15) limit = 0.375;\n";
+				code += "\t\t}\n\n";
+				code += "\tif (fade < limit)\n";
+				code += "\t\tdiscard;\n";
+				code += "\t}\n\n";
 			}
-
-			code += "\t\tfloat fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
-			code += "\t\tint x = int(FRAGCOORD.x) % 4;\n";
-			code += "\t\tint y = int(FRAGCOORD.y) % 4;\n";
-			code += "\t\tint index = x + y * 4;\n";
-			code += "\t\tfloat limit = 0.0;\n\n";
-			code += "\t\tif (x < 8) {\n";
-			code += "\t\t\tif (index == 0) limit = 0.0625;\n";
-			code += "\t\t\tif (index == 1) limit = 0.5625;\n";
-			code += "\t\t\tif (index == 2) limit = 0.1875;\n";
-			code += "\t\t\tif (index == 3) limit = 0.6875;\n";
-			code += "\t\t\tif (index == 4) limit = 0.8125;\n";
-			code += "\t\t\tif (index == 5) limit = 0.3125;\n";
-			code += "\t\t\tif (index == 6) limit = 0.9375;\n";
-			code += "\t\t\tif (index == 7) limit = 0.4375;\n";
-			code += "\t\t\tif (index == 8) limit = 0.25;\n";
-			code += "\t\t\tif (index == 9) limit = 0.75;\n";
-			code += "\t\t\tif (index == 10) limit = 0.125;\n";
-			code += "\t\t\tif (index == 11) limit = 0.625;\n";
-			code += "\t\t\tif (index == 12) limit = 1.0;\n";
-			code += "\t\t\tif (index == 13) limit = 0.5;\n";
-			code += "\t\t\tif (index == 14) limit = 0.875;\n";
-			code += "\t\t\tif (index == 15) limit = 0.375;\n";
-			code += "\t\t}\n\n";
-			code += "\tif (fade < limit)\n";
-			code += "\t\tdiscard;\n";
-			code += "\t}\n\n";
 
 		} else {
 			code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";

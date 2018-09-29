@@ -3914,7 +3914,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 	glGenRenderbuffers(1, &rt->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rt->depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, rt->width, rt->height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rt->width, rt->height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

@@ -1804,8 +1804,7 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 			float range = light_ptr->param[VS::LIGHT_PARAM_RANGE];
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_RANGE, range);
 
-			Color attenuation = Color(0.0, 0.0, 0.0, 0.0);
-			attenuation.a = light_ptr->param[VS::LIGHT_PARAM_ATTENUATION];
+			float attenuation = light_ptr->param[VS::LIGHT_PARAM_ATTENUATION];
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_ATTENUATION, attenuation);
 
 			if (!state.render_no_shadows && light_ptr->shadow && shadow_atlas && shadow_atlas->shadow_owners.has(light->self)) {
@@ -1858,8 +1857,7 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 
 			Vector3 direction = p_view_transform.inverse().basis.xform(light->transform.basis.xform(Vector3(0, 0, -1))).normalized();
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_DIRECTION, direction);
-			Color attenuation = Color(0.0, 0.0, 0.0, 0.0);
-			attenuation.a = light_ptr->param[VS::LIGHT_PARAM_ATTENUATION];
+			float attenuation = light_ptr->param[VS::LIGHT_PARAM_ATTENUATION];
 			float range = light_ptr->param[VS::LIGHT_PARAM_RANGE];
 			float spot_attenuation = light_ptr->param[VS::LIGHT_PARAM_SPOT_ATTENUATION];
 			float angle = light_ptr->param[VS::LIGHT_PARAM_SPOT_ANGLE];
@@ -2024,6 +2022,9 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		ReflectionProbeInstance *refprobe_2 = NULL;
 		RasterizerStorageGLES2::Texture *lightmap = NULL;
 		bool use_lightmap_capture = false;
+		bool rebind_light = false;
+		bool rebind_reflection = false;
+		bool rebind_lightmap = false;
 
 		if (!p_shadow) {
 
@@ -2059,6 +2060,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 				_setup_light_type(light, shadow_atlas);
 				rebind = true;
+				rebind_light = true;
 			}
 
 			int blend_mode = p_alpha_pass ? material->shader->spatial.blend_mode : -1; // -1 no blend, no mix
@@ -2142,6 +2144,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					glBindTexture(GL_TEXTURE_CUBE_MAP, refprobe_2->cubemap);
 				}
 				rebind = true;
+				rebind_reflection = true;
 			}
 
 			use_lightmap_capture = !unshaded && !accum_pass && !e->instance->lightmap_capture_data.empty();
@@ -2171,6 +2174,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					glBindTexture(GL_TEXTURE_2D, lightmap->tex_id);
 				}
 				rebind = true;
+				rebind_lightmap = true;
 			}
 		}
 
@@ -2233,17 +2237,10 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, 1.0);
 				}
 
-				if (light) {
-					_setup_light(light, shadow_atlas, p_view_transform);
-				}
-
-				if (refprobe_1 || refprobe_2) {
-					_setup_refprobes(refprobe_1, refprobe_2, p_view_transform, p_env);
-				}
-
-				if (lightmap) {
-					state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_ENERGY, lightmap_energy);
-				}
+				//rebind all these
+				rebind_light = true;
+				rebind_reflection = true;
+				rebind_lightmap = true;
 			}
 
 			state.scene_shader.set_uniform(SceneShaderGLES2::CAMERA_MATRIX, view_transform_inverse);
@@ -2255,6 +2252,18 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			state.scene_shader.set_uniform(SceneShaderGLES2::SCREEN_PIXEL_SIZE, screen_pixel_size);
 			state.scene_shader.set_uniform(SceneShaderGLES2::NORMAL_MULT, 1.0); // TODO mirror?
+		}
+
+		if (rebind_light && light) {
+			_setup_light(light, shadow_atlas, p_view_transform);
+		}
+
+		if (rebind_reflection && (refprobe_1 || refprobe_2)) {
+			_setup_refprobes(refprobe_1, refprobe_2, p_view_transform, p_env);
+		}
+
+		if (rebind_lightmap && lightmap) {
+			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_ENERGY, lightmap_energy);
 		}
 
 		state.scene_shader.set_uniform(SceneShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
