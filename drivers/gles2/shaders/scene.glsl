@@ -755,12 +755,12 @@ void reflection_process(samplerCube reflection_map,
 #endif
 
 	ambient_out.rgb = textureCubeLod(reflection_map, amb_normal, RADIANCE_MAX_LOD).rgb;
-	ambient_out.a = blend;
 	ambient_out.rgb = mix(ref_ambient.rgb, ambient_out.rgb, ref_ambient.a);
 	if (exterior) {
 		ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
 	}
 
+	ambient_out.a = blend;
 	ambient_out.rgb *= blend;
 	ambient_accum += ambient_out;
 
@@ -1357,12 +1357,14 @@ FRAGMENT_SHADER_CODE
 	ambient_light *= ambient_energy;
 
 	
+#if defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
+
 	
-#ifdef USE_REFLECTION_PROBE1
 
 	vec4 ambient_accum = vec4(0.0);
 	vec4 reflection_accum = vec4(0.0);
 
+#ifdef USE_REFLECTION_PROBE1
 
 	reflection_process(reflection_probe1,
 #ifdef USE_VERTEX_LIGHTING
@@ -1378,6 +1380,9 @@ FRAGMENT_SHADER_CODE
 			   refprobe1_exterior,refprobe1_intensity, refprobe1_ambient, roughness,
 			   ambient_light, specular_light, reflection_accum, ambient_accum);
 
+
+
+#endif // USE_REFLECTION_PROBE1
 
 #ifdef USE_REFLECTION_PROBE2
 
@@ -1407,7 +1412,7 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
-#endif //use reflection probe 1
+#endif // defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
 
 #ifdef USE_LIGHTMAP
 	//ambient light will come entirely from lightmap is lightmap is used

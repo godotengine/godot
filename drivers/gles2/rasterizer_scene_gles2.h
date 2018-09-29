@@ -325,6 +325,7 @@ public:
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	ReflectionProbeInstance **reflection_probe_instances;
+	int reflection_probe_count;
 
 	virtual RID reflection_probe_instance_create(RID p_probe);
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
