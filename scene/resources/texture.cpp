@@ -423,6 +423,15 @@ ImageTexture::~ImageTexture() {
 
 //////////////////////////////////////////
 
+void StreamTexture::set_path(const String &p_path, bool p_take_over) {
+
+	if (texture.is_valid()) {
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
+
 void StreamTexture::_requested_3d(void *p_ud) {
 
 	StreamTexture *st = (StreamTexture *)p_ud;
