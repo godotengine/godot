@@ -2624,9 +2624,9 @@ void RasterizerStorageGLES2::update_dirty_multimeshes() {
 
 			if (multimesh->mesh.is_valid()) {
 				mesh_aabb = mesh_get_aabb(multimesh->mesh, RID());
-			} else {
-				mesh_aabb.size += Vector3(0.001, 0.001, 0.001);
 			}
+
+			mesh_aabb.size += Vector3(0.001, 0.001, 0.001); //in case mesh is empty in one of the sides
 
 			int stride = multimesh->color_floats + multimesh->xform_floats + multimesh->custom_data_floats;
 			int count = multimesh->data.size();
@@ -3781,7 +3781,7 @@ void RasterizerStorageGLES2::instance_remove_skeleton(RID p_skeleton, Rasterizer
 
 void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
 
-	Instanciable *inst = NULL;
+	Instantiable *inst = NULL;
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
 			inst = mesh_owner.getornull(p_base);
@@ -3827,7 +3827,7 @@ void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene
 
 void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
 
-	Instanciable *inst = NULL;
+	Instantiable *inst = NULL;
 
 	switch (p_instance->base_type) {
 		case VS::INSTANCE_MESH: {
@@ -4542,6 +4542,7 @@ void RasterizerStorageGLES2::update_dirty_resources() {
 	update_dirty_shaders();
 	update_dirty_materials();
 	update_dirty_skeletons();
+	update_dirty_multimeshes();
 }
 
 RasterizerStorageGLES2::RasterizerStorageGLES2() {

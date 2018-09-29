@@ -1136,8 +1136,9 @@ float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 p
 	avg += textureProj(shadow, vec4(pos + vec2(0.0, shadow_pixel_size.y * 2.0), depth, 1.0));
 	avg += textureProj(shadow, vec4(pos + vec2(0.0, -shadow_pixel_size.y * 2.0), depth, 1.0));
 	return avg * (1.0 / 13.0);
+#endif
 
-#elif defined(SHADOW_MODE_PCF_5)
+#ifdef SHADOW_MODE_PCF_5
 
 	float avg = textureProj(shadow, vec4(pos, depth, 1.0));
 	avg += textureProj(shadow, vec4(pos + vec2(shadow_pixel_size.x, 0.0), depth, 1.0));
@@ -1146,7 +1147,9 @@ float sample_shadow(highp sampler2DShadow shadow, vec2 shadow_pixel_size, vec2 p
 	avg += textureProj(shadow, vec4(pos + vec2(0.0, -shadow_pixel_size.y), depth, 1.0));
 	return avg * (1.0 / 5.0);
 
-#else
+#endif
+
+#if !defined(SHADOW_MODE_PCF_5) || !defined(SHADOW_MODE_PCF_13)
 
 	return textureProj(shadow, vec4(pos, depth, 1.0));
 

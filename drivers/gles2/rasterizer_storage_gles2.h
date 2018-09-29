@@ -157,7 +157,7 @@ public:
 	//////////////////////////////////DATA///////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	struct Instanciable : public RID_Data {
+	struct Instantiable : public RID_Data {
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify() {
@@ -187,15 +187,15 @@ public:
 			}
 		}
 
-		Instanciable() {}
+		Instantiable() {}
 
-		virtual ~Instanciable() {}
+		virtual ~Instantiable() {}
 	};
 
-	struct GeometryOwner : public Instanciable {
+	struct GeometryOwner : public Instantiable {
 	};
 
-	struct Geometry : public Instanciable {
+	struct Geometry : public Instantiable {
 
 		enum Type {
 			GEOMETRY_INVALID,
@@ -893,7 +893,7 @@ public:
 
 	/* Light API */
 
-	struct Light : Instanciable {
+	struct Light : Instantiable {
 		VS::LightType type;
 		float param[VS::LIGHT_PARAM_MAX];
 
@@ -956,7 +956,7 @@ public:
 
 	/* PROBE API */
 
-	struct ReflectionProbe : Instanciable {
+	struct ReflectionProbe : Instantiable {
 
 		VS::ReflectionProbeUpdateMode update_mode;
 		float intensity;
@@ -1046,7 +1046,7 @@ public:
 
 	/* LIGHTMAP */
 
-	struct LightmapCapture : public Instanciable {
+	struct LightmapCapture : public Instantiable {
 
 		PoolVector<LightmapCaptureOctree> octree;
 		AABB bounds;

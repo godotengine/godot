@@ -43,9 +43,9 @@ attribute vec2 uv2_attrib; // attrib:5
 
 #ifdef USE_SKELETON_SOFTWARE
 
-attribute highp vec4 bone_transform_row_0; // attrib:8
-attribute highp vec4 bone_transform_row_1; // attrib:9
-attribute highp vec4 bone_transform_row_2; // attrib:10
+attribute highp vec4 bone_transform_row_0; // attrib:13
+attribute highp vec4 bone_transform_row_1; // attrib:14
+attribute highp vec4 bone_transform_row_2; // attrib:15
 
 #else
 
@@ -129,11 +129,6 @@ uniform highp float shadow_dual_paraboloid_render_side;
 #endif
 
 #if defined(USE_SHADOW) && defined(USE_LIGHTING)
-
-#ifdef LIGHT_MODE_DIRECTIONAL
-uniform highp sampler2D light_directional_shadow; // texunit:-3
-uniform highp vec4 light_split_offsets;
-#endif
 
 uniform highp mat4 light_shadow_matrix;
 varying highp vec4 shadow_coord;
@@ -306,6 +301,7 @@ void main() {
 				vec4(0.0, 0.0, 0.0, 1.0));
 		world_matrix = world_matrix * transpose(m);
 	}
+
 #endif
 
 	vec3 normal = normal_attrib * normal_mult;

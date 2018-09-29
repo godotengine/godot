@@ -913,6 +913,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	e->use_accum = false;
 	e->light_index = RenderList::MAX_LIGHTS;
 	e->use_accum_ptr = &e->use_accum;
+	e->instancing = (e->instance->base_type == VS::INSTANCE_MULTIMESH) ? 1 : 0;
 
 	if (e->geometry->last_pass != render_pass) {
 		e->geometry->last_pass = render_pass;
@@ -1219,7 +1220,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 					glDisableVertexAttribArray(i);
 					switch (i) {
 						case VS::ARRAY_NORMAL: {
-							glVertexAttrib4f(VS::ARRAY_COLOR, 0.0, 0.0, 1, 1);
+							glVertexAttrib4f(VS::ARRAY_NORMAL, 0.0, 0.0, 1, 1);
 						} break;
 						case VS::ARRAY_COLOR: {
 							glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
@@ -1230,7 +1231,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 				}
 			}
 
-			bool clear_skeleton_buffer = !storage->config.float_texture_supported;
+			//bool clear_skeleton_buffer = !storage->config.float_texture_supported;
 
 			if (p_skeleton) {
 
@@ -1342,27 +1343,16 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 					//enable transform buffer and bind it
 					glBindBuffer(GL_ARRAY_BUFFER, storage->resources.skeleton_transform_buffer);
 
-					glEnableVertexAttribArray(VS::ARRAY_MAX + 0);
-					glEnableVertexAttribArray(VS::ARRAY_MAX + 1);
-					glEnableVertexAttribArray(VS::ARRAY_MAX + 2);
+					glEnableVertexAttribArray(INSTANCE_BONE_BASE + 0);
+					glEnableVertexAttribArray(INSTANCE_BONE_BASE + 1);
+					glEnableVertexAttribArray(INSTANCE_BONE_BASE + 2);
 
-					glVertexAttribPointer(VS::ARRAY_MAX + 0, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 12, (const void *)(sizeof(float) * 4 * 0));
-					glVertexAttribPointer(VS::ARRAY_MAX + 1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 12, (const void *)(sizeof(float) * 4 * 1));
-					glVertexAttribPointer(VS::ARRAY_MAX + 2, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 12, (const void *)(sizeof(float) * 4 * 2));
+					glVertexAttribPointer(INSTANCE_BONE_BASE + 0, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 12, (const void *)(sizeof(float) * 4 * 0));
+					glVertexAttribPointer(INSTANCE_BONE_BASE + 1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 12, (const void *)(sizeof(float) * 4 * 1));
+					glVertexAttribPointer(INSTANCE_BONE_BASE + 2, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 12, (const void *)(sizeof(float) * 4 * 2));
 
-					clear_skeleton_buffer = false;
+					//clear_skeleton_buffer = false;
 				}
-			}
-
-			if (clear_skeleton_buffer) {
-				// just to make sure
-				glDisableVertexAttribArray(VS::ARRAY_MAX + 0);
-				glDisableVertexAttribArray(VS::ARRAY_MAX + 1);
-				glDisableVertexAttribArray(VS::ARRAY_MAX + 2);
-
-				glVertexAttrib4f(VS::ARRAY_MAX + 0, 1, 0, 0, 0);
-				glVertexAttrib4f(VS::ARRAY_MAX + 1, 0, 1, 0, 0);
-				glVertexAttrib4f(VS::ARRAY_MAX + 2, 0, 0, 1, 0);
 			}
 
 		} break;
@@ -1384,7 +1374,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 					glDisableVertexAttribArray(i);
 					switch (i) {
 						case VS::ARRAY_NORMAL: {
-							glVertexAttrib4f(VS::ARRAY_COLOR, 0.0, 0.0, 1, 1);
+							glVertexAttrib4f(VS::ARRAY_NORMAL, 0.0, 0.0, 1, 1);
 						} break;
 						case VS::ARRAY_COLOR: {
 							glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
@@ -1395,16 +1385,12 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 				}
 			}
 
-			if (!storage->config.float_texture_supported) {
-				// just to make sure, clear skeleton buffer too
-				glDisableVertexAttribArray(VS::ARRAY_MAX + 0);
-				glDisableVertexAttribArray(VS::ARRAY_MAX + 1);
-				glDisableVertexAttribArray(VS::ARRAY_MAX + 2);
-
-				glVertexAttrib4f(VS::ARRAY_MAX + 0, 1, 0, 0, 0);
-				glVertexAttrib4f(VS::ARRAY_MAX + 1, 0, 1, 0, 0);
-				glVertexAttrib4f(VS::ARRAY_MAX + 2, 0, 0, 1, 0);
-			}
+			// prepare multimesh (disable)
+			glDisableVertexAttribArray(INSTANCE_ATTRIB_BASE + 0);
+			glDisableVertexAttribArray(INSTANCE_ATTRIB_BASE + 1);
+			glDisableVertexAttribArray(INSTANCE_ATTRIB_BASE + 2);
+			glDisableVertexAttribArray(INSTANCE_ATTRIB_BASE + 3);
+			glDisableVertexAttribArray(INSTANCE_ATTRIB_BASE + 4);
 
 		} break;
 
@@ -1430,7 +1416,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 			} else {
 				glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
 			}
-
+			/*
 			if (p_element->instance->skeleton.is_valid() && s->attribs[VS::ARRAY_BONES].enabled && s->attribs[VS::ARRAY_WEIGHTS].enabled) {
 				//clean up after skeleton
 				glBindBuffer(GL_ARRAY_BUFFER, storage->resources.skeleton_transform_buffer);
@@ -1443,7 +1429,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				glVertexAttrib4f(VS::ARRAY_MAX + 1, 0, 1, 0, 0);
 				glVertexAttrib4f(VS::ARRAY_MAX + 2, 0, 0, 1, 0);
 			}
-
+*/
 		} break;
 
 		case VS::INSTANCE_MULTIMESH: {
@@ -1464,53 +1450,33 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 
 			// drawing
 
+			const float *base_buffer = multi_mesh->data.ptr();
+
 			for (int i = 0; i < amount; i++) {
-				float *buffer = &multi_mesh->data.write[i * stride];
+				const float *buffer = base_buffer + i * stride;
 
 				{
-					// inline of multimesh_get_transform since it's such a pain
-					// to get a RID from here...
-					Transform transform;
 
-					transform.basis.elements[0][0] = buffer[0];
-					transform.basis.elements[0][1] = buffer[1];
-					transform.basis.elements[0][2] = buffer[2];
-					transform.origin.x = buffer[3];
-					transform.basis.elements[1][0] = buffer[4];
-					transform.basis.elements[1][1] = buffer[5];
-					transform.basis.elements[1][2] = buffer[6];
-					transform.origin.y = buffer[7];
-					transform.basis.elements[2][0] = buffer[8];
-					transform.basis.elements[2][1] = buffer[9];
-					transform.basis.elements[2][2] = buffer[10];
-					transform.origin.z = buffer[11];
-
-					float row[3][4] = {
-						{ transform.basis[0][0], transform.basis[0][1], transform.basis[0][2], transform.origin[0] },
-						{ transform.basis[1][0], transform.basis[1][1], transform.basis[1][2], transform.origin[1] },
-						{ transform.basis[2][0], transform.basis[2][1], transform.basis[2][2], transform.origin[2] },
-					};
-
-					glVertexAttrib4fv(VS::ARRAY_MAX + 0, row[0]);
-					glVertexAttrib4fv(VS::ARRAY_MAX + 1, row[1]);
-					glVertexAttrib4fv(VS::ARRAY_MAX + 2, row[2]);
+					glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 0, &buffer[0]);
+					glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 1, &buffer[4]);
+					glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 2, &buffer[8]);
 				}
 
 				if (multi_mesh->color_floats) {
 					if (multi_mesh->color_format == VS::MULTIMESH_COLOR_8BIT) {
 						uint8_t *color_data = (uint8_t *)(buffer + color_ofs);
-						glVertexAttrib4f(VS::ARRAY_MAX + 3, color_data[0] / 255.0, color_data[1] / 255.0, color_data[2] / 255.0, color_data[3] / 255.0);
+						glVertexAttrib4f(INSTANCE_ATTRIB_BASE + 3, color_data[0] / 255.0, color_data[1] / 255.0, color_data[2] / 255.0, color_data[3] / 255.0);
 					} else {
-						glVertexAttrib4fv(VS::ARRAY_MAX + 3, buffer + color_ofs);
+						glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 3, buffer + color_ofs);
 					}
 				}
 
 				if (multi_mesh->custom_data_floats) {
 					if (multi_mesh->custom_data_format == VS::MULTIMESH_CUSTOM_DATA_8BIT) {
 						uint8_t *custom_data = (uint8_t *)(buffer + custom_data_ofs);
-						glVertexAttrib4f(VS::ARRAY_MAX + 4, custom_data[0] / 255.0, custom_data[1] / 255.0, custom_data[2] / 255.0, custom_data[3] / 255.0);
+						glVertexAttrib4f(INSTANCE_ATTRIB_BASE + 4, custom_data[0] / 255.0, custom_data[1] / 255.0, custom_data[2] / 255.0, custom_data[3] / 255.0);
 					} else {
-						glVertexAttrib4fv(VS::ARRAY_MAX + 4, buffer + custom_data_ofs);
+						glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 4, buffer + custom_data_ofs);
 					}
 				}
 
@@ -2010,6 +1976,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	RasterizerStorageGLES2::Material *prev_material = NULL;
 	RasterizerStorageGLES2::Geometry *prev_geometry = NULL;
 	RasterizerStorageGLES2::Skeleton *prev_skeleton = NULL;
+	RasterizerStorageGLES2::GeometryOwner *prev_owner = NULL;
 
 	Transform view_transform_inverse = p_view_transform.inverse();
 	CameraMatrix projection_inverse = p_projection.inverse();
@@ -2193,7 +2160,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			}
 		}
 
-		bool instancing = e->instancing;
+		bool instancing = e->instance->base_type == VS::INSTANCE_MULTIMESH;
 
 		if (instancing != prev_instancing) {
 
@@ -2206,7 +2173,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		if (skeleton != prev_skeleton) {
 
 			if (skeleton) {
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, skeleton != NULL);
+				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, true);
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, !storage->config.float_texture_supported);
 			} else {
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
@@ -2216,7 +2183,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			rebind = true;
 		}
 
-		if (e->geometry != prev_geometry || skeleton != prev_skeleton) {
+		if (e->owner != prev_owner || e->geometry != prev_geometry || skeleton != prev_skeleton) {
 			_setup_geometry(e, skeleton);
 		}
 
@@ -2225,7 +2192,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			shader_rebind = _setup_material(material, p_reverse_cull, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
 		}
 
-		if (i == 0 || shader_rebind) { //first time must rebindmakin
+		if (i == 0 || shader_rebind) { //first time must rebind
 
 			if (p_shadow) {
 				state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_BIAS, p_shadow_bias);
@@ -2286,6 +2253,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		_render_geometry(e);
 
 		prev_geometry = e->geometry;
+		prev_owner = e->owner;
 		prev_material = material;
 		prev_skeleton = skeleton;
 		prev_instancing = instancing;
@@ -2297,8 +2265,10 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	}
 
 	_setup_light_type(NULL, NULL); //clear light stuff
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADELESS, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::BASE_PASS, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_INSTANCING, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_RADIANCE_MAP, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_USE_PSSM4, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::LIGHT_USE_PSSM2, false);

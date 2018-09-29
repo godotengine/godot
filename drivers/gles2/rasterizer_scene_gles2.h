@@ -59,6 +59,11 @@ public:
 		SHADOW_FILTER_PCF13,
 	};
 
+	enum {
+		INSTANCE_ATTRIB_BASE = 8,
+		INSTANCE_BONE_BASE = 13,
+	};
+
 	ShadowFilterMode shadow_filter_mode;
 
 	RID default_material;
