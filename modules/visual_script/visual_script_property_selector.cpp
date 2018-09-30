@@ -304,31 +304,36 @@ void VisualScriptPropertySelector::_update_search() {
 			continue;
 
 		MethodInfo mi = E->get();
-		String desc = mi.name.capitalize() + " (";
+		String desc_arguments;
+		if (mi.arguments.size() > 0) {
+			desc_arguments = "(";
+			for (int i = 0; i < mi.arguments.size(); i++) {
+
+				if (i > 0) {
+					desc_arguments += ", ";
+				}
+				if (mi.arguments[i].type == Variant::NIL) {
+					desc_arguments += "var";
+				} else if (mi.arguments[i].name.find(":") != -1) {
+					desc_arguments += mi.arguments[i].name.get_slice(":", 1);
+					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
+				} else {
+					desc_arguments += Variant::get_type_name(mi.arguments[i].type);
+				}
+			}
+			desc_arguments += ")";
+		}
+		String desc_raw = mi.name + desc_arguments;
+		String desc = desc_raw.capitalize().replace("( ", "(");
 
 		if (search_box->get_text() != String() &&
 				name.findn(search_box->get_text()) == -1 &&
-				desc.findn(search_box->get_text()) == -1)
+				desc.findn(search_box->get_text()) == -1 &&
+				desc_raw.findn(search_box->get_text()) == -1) {
 			continue;
-
-		TreeItem *item = search_options->create_item(category ? category : root);
-
-		for (int i = 0; i < mi.arguments.size(); i++) {
-
-			if (i > 0)
-				desc += ", ";
-
-			if (mi.arguments[i].type == Variant::NIL)
-				desc += "var";
-			else if (mi.arguments[i].name.find(":") != -1) {
-				desc += mi.arguments[i].name.get_slice(":", 1);
-				mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
-			} else
-				desc += Variant::get_type_name(mi.arguments[i].type);
 		}
 
-		desc += ")";
-
+		TreeItem *item = search_options->create_item(category ? category : root);
 		item->set_text(0, desc);
 		item->set_icon(0, get_icon("MemberMethod", "EditorIcons"));
 		item->set_metadata(0, name);
@@ -414,11 +419,16 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			String basic_type = Variant::get_type_name(vnode_function_call->get_basic_type());
 			type_name = basic_type.capitalize() + " ";
 		}
-		VisualScriptBuiltinFunc *vnode_builtin_function_call = Object::cast_to<VisualScriptBuiltinFunc>(*VisualScriptLanguage::singleton->create_node_from_name(E->get()));
-		if (vnode_builtin_function_call != NULL) {
-			type_name = "Builtin ";
+
+		Vector<String> desc = path[path.size() - 1].replace("(", "( ").replace(")", " )").replace(",", ", ").split(" ");
+		for (size_t i = 0; i < desc.size(); i++) {
+			desc.write[i] = desc[i].capitalize();
+			if (desc[i].ends_with(",")) {
+				desc.write[i] = desc[i].replace(",", ", ");
+			}
 		}
-		item->set_text(0, type_name + path[path.size() - 1].capitalize());
+
+		item->set_text(0, type_name + String("").join(desc));
 		item->set_icon(0, get_icon("VisualScript", "EditorIcons"));
 		item->set_selectable(0, true);
 		item->set_metadata(0, E->get());

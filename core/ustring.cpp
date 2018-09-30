@@ -586,6 +586,8 @@ String String::camelcase_to_underscore(bool lowercase) const {
 		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
 		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
 		bool are_next_2_lower = false;
+		bool is_next_lower = false;
+		bool is_next_number = false;
 		bool was_precedent_upper = cstr[i - 1] >= A && cstr[i - 1] <= Z;
 		bool was_precedent_number = cstr[i - 1] >= '0' && cstr[i - 1] <= '9';
 
@@ -593,7 +595,18 @@ String String::camelcase_to_underscore(bool lowercase) const {
 			are_next_2_lower = cstr[i + 1] >= a && cstr[i + 1] <= z && cstr[i + 2] >= a && cstr[i + 2] <= z;
 		}
 
-		bool should_split = ((is_upper && !was_precedent_upper && !was_precedent_number) || (was_precedent_upper && is_upper && are_next_2_lower) || (is_number && !was_precedent_number));
+		if (i + 1 < this->size()) {
+			is_next_lower = cstr[i + 1] >= a && cstr[i + 1] <= z;
+			is_next_number = cstr[i + 1] >= '0' && cstr[i + 1] <= '9';
+		}
+
+		const bool a = is_upper && !was_precedent_upper && !was_precedent_number;
+		const bool b = was_precedent_upper && is_upper && are_next_2_lower;
+		const bool c = is_number && !was_precedent_number;
+		const bool can_break_number_letter = is_number && !was_precedent_number && is_next_lower;
+		const bool can_break_letter_number = !is_number && was_precedent_number && (is_next_lower || is_next_number);
+
+		bool should_split = a || b || c || can_break_number_letter || can_break_letter_number;
 		if (should_split) {
 			new_string += this->substr(start_index, i - start_index) + "_";
 			start_index = i;
