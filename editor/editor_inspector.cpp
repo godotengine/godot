@@ -36,9 +36,6 @@
 #include "multi_node_edit.h"
 #include "scene/resources/packed_scene.h"
 
-// TODO:
-// arrays and dictionary
-
 Size2 EditorProperty::get_minimum_size() const {
 
 	Size2 ms;
