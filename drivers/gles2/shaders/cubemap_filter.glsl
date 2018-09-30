@@ -176,7 +176,7 @@ void main() {
 #ifdef USE_SOURCE_PANORAMA
 			vec3 val = texturePanorama(source_panorama, L).rgb;
 #else
-			vec3 val = textureCubeLod(source_cube, L,0.0).rgb;
+			vec3 val = textureCubeLod(source_cube, L, 0.0).rgb;
 #endif
 			//mix using Linear, to approximate high end back-end
 			val = mix(pow((val + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), val * (1.0 / 12.92), vec3(lessThan(val, vec3(0.04045))));

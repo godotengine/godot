@@ -285,7 +285,6 @@ varying mediump vec3 refprobe2_ambient_normal;
 
 #endif //vertex lighting for refprobes
 
-
 void main() {
 
 	highp vec4 vertex = vertex_attrib;
@@ -501,10 +500,10 @@ VERTEX_SHADER_CODE
 
 			light_att = vec3(spot_attenuation);
 		} else {
-			light_att=vec3(0.0);
+			light_att = vec3(0.0);
 		}
 	} else {
-		light_att=vec3(0.0);
+		light_att = vec3(0.0);
 	}
 
 	L = normalize(light_rel_vec);
@@ -546,7 +545,7 @@ VERTEX_SHADER_CODE
 #ifdef USE_REFLECTION_PROBE1
 	{
 		vec3 ref_normal = normalize(reflect(vertex_interp, normal_interp));
-		vec3 local_pos = (refprobe1_local_matrix * vec4(vertex_interp, 1.0)).xyz;		
+		vec3 local_pos = (refprobe1_local_matrix * vec4(vertex_interp, 1.0)).xyz;
 		vec3 inner_pos = abs(local_pos / refprobe1_box_extents);
 		float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
 
@@ -554,7 +553,6 @@ VERTEX_SHADER_CODE
 			vec3 local_ref_vec = (refprobe1_local_matrix * vec4(ref_normal, 0.0)).xyz;
 			refprobe1_reflection_normal_blend.xyz = local_ref_vec;
 			refprobe1_reflection_normal_blend.a = blend;
-
 		}
 #ifndef USE_LIGHTMAP
 
@@ -563,7 +561,6 @@ VERTEX_SHADER_CODE
 	}
 
 #endif //USE_REFLECTION_PROBE1
-
 
 #ifdef USE_REFLECTION_PROBE2
 	{
@@ -576,7 +573,6 @@ VERTEX_SHADER_CODE
 			vec3 local_ref_vec = (refprobe2_local_matrix * vec4(ref_normal, 0.0)).xyz;
 			refprobe2_reflection_normal_blend.xyz = local_ref_vec;
 			refprobe2_reflection_normal_blend.a = blend;
-
 		}
 #ifndef USE_LIGHTMAP
 
@@ -697,18 +693,18 @@ uniform vec4 refprobe2_ambient;
 
 void reflection_process(samplerCube reflection_map,
 #ifdef USE_VERTEX_LIGHTING
-			vec3 ref_normal,
+		vec3 ref_normal,
 #ifndef USE_LIGHTMAP
-			vec3 amb_normal,
+		vec3 amb_normal,
 #endif
-			float ref_blend,
+		float ref_blend,
 
 #else //no vertex lighting
-			vec3 normal, vec3 vertex,
-			mat4 local_matrix,
-			bool use_box_project, vec3 box_extents, vec3 box_offset,
+		vec3 normal, vec3 vertex,
+		mat4 local_matrix,
+		bool use_box_project, vec3 box_extents, vec3 box_offset,
 #endif //vertex lighting
-			bool exterior,float intensity, vec4 ref_ambient, float roughness, vec3 ambient, vec3 skybox, inout highp vec4 reflection_accum, inout highp vec4 ambient_accum) {
+		bool exterior, float intensity, vec4 ref_ambient, float roughness, vec3 ambient, vec3 skybox, inout highp vec4 reflection_accum, inout highp vec4 ambient_accum) {
 
 	vec4 reflection;
 
@@ -763,7 +759,6 @@ void reflection_process(samplerCube reflection_map,
 
 	reflection_accum += reflection;
 
-
 #ifndef USE_LIGHTMAP
 
 	vec4 ambient_out;
@@ -799,7 +794,6 @@ uniform bool lightmap_capture_sky;
 #endif
 
 #ifdef USE_RADIANCE_MAP
-
 
 uniform samplerCube radiance_map; // texunit:-2
 
@@ -908,8 +902,6 @@ vec3 metallic_to_specular_color(float metallic, float specular, vec3 albedo) {
 	// energy conservation
 	return mix(vec3(dielectric), albedo, metallic); // TODO: reference?
 }
-
-
 
 /* clang-format off */
 
@@ -1375,10 +1367,7 @@ FRAGMENT_SHADER_CODE
 
 	ambient_light *= ambient_energy;
 
-	
 #if defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
-
-	
 
 	vec4 ambient_accum = vec4(0.0);
 	vec4 reflection_accum = vec4(0.0);
@@ -1387,19 +1376,17 @@ FRAGMENT_SHADER_CODE
 
 	reflection_process(reflection_probe1,
 #ifdef USE_VERTEX_LIGHTING
-			   refprobe1_reflection_normal_blend.rgb,
-#ifndef USE_LIGHTMAP		
-			   refprobe1_ambient_normal,
-#endif			   
-			   refprobe1_reflection_normal_blend.a,
-#else
-			   normal_interp,vertex_interp,refprobe1_local_matrix,
-			   refprobe1_use_box_project,refprobe1_box_extents,refprobe1_box_offset,
+			refprobe1_reflection_normal_blend.rgb,
+#ifndef USE_LIGHTMAP
+			refprobe1_ambient_normal,
 #endif
-			   refprobe1_exterior,refprobe1_intensity, refprobe1_ambient, roughness,
-			   ambient_light, specular_light, reflection_accum, ambient_accum);
-
-
+			refprobe1_reflection_normal_blend.a,
+#else
+			normal_interp, vertex_interp, refprobe1_local_matrix,
+			refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
+#endif
+			refprobe1_exterior, refprobe1_intensity, refprobe1_ambient, roughness,
+			ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #endif // USE_REFLECTION_PROBE1
 
@@ -1407,17 +1394,17 @@ FRAGMENT_SHADER_CODE
 
 	reflection_process(reflection_probe2,
 #ifdef USE_VERTEX_LIGHTING
-			   refprobe2_reflection_normal_blend.rgb,
+			refprobe2_reflection_normal_blend.rgb,
 #ifndef USE_LIGHTMAP
-			   refprobe2_ambient_normal,
+			refprobe2_ambient_normal,
 #endif
-			   refprobe2_reflection_normal_blend.a,
+			refprobe2_reflection_normal_blend.a,
 #else
-			   normal_interp,vertex_interp,refprobe2_local_matrix,
-			   refprobe2_use_box_project,refprobe2_box_extents,refprobe2_box_offset,
+			normal_interp, vertex_interp, refprobe2_local_matrix,
+			refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
 #endif
-			   refprobe2_exterior,refprobe2_intensity, refprobe2_ambient, roughness,
-			   ambient_light, specular_light, reflection_accum, ambient_accum);
+			refprobe2_exterior, refprobe2_intensity, refprobe2_ambient, roughness,
+			ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #endif // USE_REFLECTION_PROBE2
 
@@ -1472,7 +1459,6 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 #endif
-
 
 #endif //BASE PASS
 
@@ -1757,7 +1743,6 @@ FRAGMENT_SHADER_CODE
 
 	// environment BRDF approximation
 
-
 	{
 
 #if defined(DIFFUSE_TOON)
@@ -1773,7 +1758,7 @@ FRAGMENT_SHADER_CODE
 		vec2 AB = vec2(-1.04, 1.04) * a004 + r.zw;
 
 		vec3 specular_color = metallic_to_specular_color(metallic, specular, albedo);
-		specular_light *= AB.x * specular_color + AB.y;				
+		specular_light *= AB.x * specular_color + AB.y;
 #endif
 	}
 
