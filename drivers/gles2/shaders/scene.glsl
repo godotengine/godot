@@ -934,6 +934,7 @@ varying highp float dp_clip;
 // E. Heitz, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs", J. Comp. Graph. Tech. 3 (2) (2014).
 // Eqns 71-72 and 85-86 (see also Eqns 43 and 80).
 
+/*
 float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// Schlick's approximation
 	// C. Schlick, "An Inexpensive BRDF Model for Physically-based Rendering", Computer Graphics Forum. 13 (3): 233 (1994)
@@ -946,6 +947,15 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// float sin2 = (1.0 - cos2);
 	// return 1.0 / (cos_theta_m + sqrt(cos2 + alpha * alpha * sin2));
 }
+*/
+
+// This approximates G_GGX_2cos(cos_theta_l, alpha) * G_GGX_2cos(cos_theta_v, alpha)
+// See Filament docs, Specular G section.
+float V_GGX(float cos_theta_l, float cos_theta_v, float alpha) {
+	float v = cos_theta_l * (cos_theta_v * (1.0 - alpha) + alpha);
+	float l = cos_theta_v * (cos_theta_l * (1.0 - alpha) + alpha);
+	return 0.5 / (v + l);
+}
 
 float D_GGX(float cos_theta_m, float alpha) {
 	float alpha2 = alpha * alpha;
@@ -953,6 +963,7 @@ float D_GGX(float cos_theta_m, float alpha) {
 	return alpha2 / (M_PI * d * d);
 }
 
+/*
 float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
 	float cos2 = cos_theta_m * cos_theta_m;
 	float sin2 = (1.0 - cos2);
@@ -960,14 +971,30 @@ float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, fl
 	float s_y = alpha_y * sin_phi;
 	return 1.0 / max(cos_theta_m + sqrt(cos2 + (s_x * s_x + s_y * s_y) * sin2), 0.001);
 }
+*/
 
-float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
-	float cos2 = cos_theta_m * cos_theta_m;
+// This approximates G_GGX_anisotropic_2cos(cos_theta_l, ...) * G_GGX_anisotropic_2cos(cos_theta_v, ...)
+// See Filament docs, Anisotropic specular BRDF section.
+float V_GGX_anisotropic(float alpha_x, float alpha_y, float TdotV, float TdotL, float BdotV, float BdotL, float NdotV, float NdotL) {
+	float Lambda_V = NdotL * length(vec3(alpha_x * TdotV, alpha_y * BdotV, NdotV));
+	float Lambda_L = NdotV * length(vec3(alpha_x * TdotL, alpha_y * BdotL, NdotL));
+	return 0.5 / (Lambda_V + Lambda_L);
+}
+
+float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi, float NdotH) {
+	float alpha2 = alpha_x * alpha_y;
+	highp vec3 v = vec3(alpha_y * cos_phi, alpha_x * sin_phi, alpha2 * NdotH);
+	highp float v2 = dot(v, v);
+	float w2 = alpha2 / v2;
+	float D = alpha2 * w2 * w2 * (1.0 / M_PI);
+	return D;
+
+	/* float cos2 = cos_theta_m * cos_theta_m;
 	float sin2 = (1.0 - cos2);
 	float r_x = cos_phi / alpha_x;
 	float r_y = sin_phi / alpha_y;
 	float d = cos2 + sin2 * (r_x * r_x + r_y * r_y);
-	return 1.0 / max(M_PI * alpha_x * alpha_y * d * d, 0.001);
+	return 1.0 / max(M_PI * alpha_x * alpha_y * d * d, 0.001); */
 }
 
 float SchlickFresnel(float u) {
@@ -1113,7 +1140,11 @@ LIGHT_SHADER_CODE
 
 	if (roughness > 0.0) {
 
-		// D
+#if defined(SPECULAR_SCHLICK_GGX)
+		vec3 specular_brdf_NL = vec3(0.0);
+#else
+		float specular_brdf_NL = 0.0;
+#endif
 
 #if defined(SPECULAR_BLINN)
 
@@ -1125,7 +1156,7 @@ LIGHT_SHADER_CODE
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float blinn = pow(cNdotH, shininess);
 		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
-		float specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_PHONG)
 
@@ -1134,7 +1165,7 @@ LIGHT_SHADER_CODE
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
 		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
-		float specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
+		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_TOON)
 
@@ -1142,11 +1173,10 @@ LIGHT_SHADER_CODE
 		float RdotV = dot(R, V);
 		float mid = 1.0 - roughness;
 		mid *= mid;
-		float specular_brdf_NL = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid;
+		specular_brdf_NL = smoothstep(mid - roughness * 0.5, mid + roughness * 0.5, RdotV) * mid;
 
 #elif defined(SPECULAR_DISABLED)
 		// none..
-		float specular_brdf_NL = 0.0;
 #elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 
@@ -1156,28 +1186,28 @@ LIGHT_SHADER_CODE
 		float cLdotH = max(dot(L, H), 0.0);
 
 #if defined(LIGHT_USE_ANISOTROPY)
-
+		float alpha = roughness * roughness;
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
-		float rx = roughness / aspect;
-		float ry = roughness * aspect;
-		float ax = rx * rx;
-		float ay = ry * ry;
-		float XdotH = dot(T, H);
-		float YdotH = dot(B, H);
-		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
-		float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
+		float ax = alpha / aspect;
+		float ay = alpha * aspect;
+		//float XdotH = dot(T, H);
+		//float YdotH = dot(B, H);
+		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH, cNdotH);
+		//float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
+		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL))
 
 #else
 		float alpha = roughness * roughness;
 		float D = D_GGX(cNdotH, alpha);
-		float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
+		//float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
+		float G = V_GGX(cNdotL, cNdotV, alpha);
 #endif
 		// F
 		vec3 f0 = F0(metallic, specular, diffuse_color);
 		float cLdotH5 = SchlickFresnel(cLdotH);
 		vec3 F = mix(vec3(cLdotH5), vec3(1.0), f0);
 
-		vec3 specular_brdf_NL = cNdotL * D * F * G;
+		specular_brdf_NL = cNdotL * D * F * G;
 
 #endif
 
@@ -1196,11 +1226,12 @@ LIGHT_SHADER_CODE
 #endif
 			float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
 			float Fr = mix(.04, 1.0, cLdotH5);
-			float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
+			//float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
+			float Gr = V_GGX(cNdotL, cNdotV, 0.25);
 
-			float specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
+			float clearcoat_specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
 
-			specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
+			specular_light += clearcoat_specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 		}
 #endif
 	}

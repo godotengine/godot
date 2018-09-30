@@ -1070,11 +1070,10 @@ LIGHT_SHADER_CODE
 
 #if defined(LIGHT_USE_ANISOTROPY)
 
+		float alpha = roughness * roughness;
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
-		float rx = roughness / aspect;
-		float ry = roughness * aspect;
-		float ax = rx * rx;
-		float ay = ry * ry;
+		float ax = alpha / aspect;
+		float ay = alpha * aspect;
 		float XdotH = dot(T, H);
 		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
