@@ -478,8 +478,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_bg_color(tab_color);
 
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
-	style_tab_unselected->set_draw_center(false);
-	style_tab_unselected->set_border_width_all(0);
+	style_tab_unselected->set_bg_color(dark_color_1);
+	style_tab_unselected->set_border_color_all(dark_color_2);
 
 	// Editor background
 	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
