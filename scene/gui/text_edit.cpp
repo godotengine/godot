@@ -4547,9 +4547,13 @@ void TextEdit::cut() {
 void TextEdit::copy() {
 
 	if (!selection.active) {
-		String clipboard = _base_get_text(cursor.line, 0, cursor.line, text[cursor.line].length());
-		OS::get_singleton()->set_clipboard(clipboard);
-		cut_copy_line = clipboard;
+
+		if (text[cursor.line].length() != 0) {
+
+			String clipboard = _base_get_text(cursor.line, 0, cursor.line, text[cursor.line].length());
+			OS::get_singleton()->set_clipboard(clipboard);
+			cut_copy_line = clipboard;
+		}
 	} else {
 		String clipboard = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		OS::get_singleton()->set_clipboard(clipboard);
