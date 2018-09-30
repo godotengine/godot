@@ -804,6 +804,8 @@ void TileSetEditor::_on_workspace_draw() {
 	RID current_texture_rid = get_current_texture()->get_rid();
 	List<int> *tiles = new List<int>();
 	tileset->get_tile_list(tiles);
+	int texture_width = get_current_texture()->get_width();
+	int texture_height = get_current_texture()->get_height();
 	for (List<int>::Element *E = tiles->front(); E; E = E->next()) {
 		int t_id = E->get();
 		if (tileset->tile_get_texture(t_id)->get_rid() == current_texture_rid && (t_id != get_current_tile() || edit_mode != EDITMODE_REGION)) {
@@ -818,6 +820,10 @@ void TileSetEditor::_on_workspace_draw() {
 				c = COLOR_ATLAS;
 			draw_tile_subdivision(t_id, Color(0.347214, 0.722656, 0.617063, 0.5));
 			workspace->draw_rect(region, c, false);
+
+			if (region.position.x > texture_width || region.position.y > texture_height) {
+				tileset->remove_tile(t_id);
+			}
 		}
 	}
 	if (edit_mode == EDITMODE_REGION) {
@@ -853,6 +859,10 @@ void TileSetEditor::_on_workspace_draw() {
 			else
 				draw_tile_subdivision(t_id, Color(0.347214, 0.722656, 0.617063, 1));
 			workspace->draw_rect(region, c, false);
+
+			if (region.position.x > texture_width || region.position.y > texture_height) {
+				tileset->remove_tile(t_id);
+			}
 		}
 	}
 	workspace_overlay->update();
