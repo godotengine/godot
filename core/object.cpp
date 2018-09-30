@@ -2014,11 +2014,13 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	ERR_FAIL_COND_V(p_object->get_instance_id() != 0, 0);
 
 	rw_lock->write_lock();
-	instances[++instance_counter] = p_object;
-	instance_checks[p_object] = instance_counter;
+	ObjectID instance_id = ++instance_counter;
+	instances[instance_id] = p_object;
+	instance_checks[p_object] = instance_id;
+
 	rw_lock->write_unlock();
 
-	return instance_counter;
+	return instance_id;
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
@@ -2095,6 +2097,5 @@ void ObjectDB::cleanup() {
 	instances.clear();
 	instance_checks.clear();
 	rw_lock->write_unlock();
-
 	memdelete(rw_lock);
 }
