@@ -1869,6 +1869,39 @@ void RasterizerCanvasGLES3::draw_generic_textured_rect(const Rect2 &p_rect, cons
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void RasterizerCanvasGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
+	Vector2 half_size;
+	if (storage->frame.current_rt) {
+		half_size = Vector2(storage->frame.current_rt->width, storage->frame.current_rt->height);
+	} else {
+		half_size = OS::get_singleton()->get_window_size();
+	}
+	half_size *= 0.5;
+	Vector2 offset((p_rect.position.x - half_size.x) / half_size.x, (p_rect.position.y - half_size.y) / half_size.y);
+	Vector2 scale(p_rect.size.x / half_size.x, p_rect.size.y / half_size.y);
+
+	float aspect_ratio = p_rect.size.x / p_rect.size.y;
+
+	// setup our lens shader
+	state.lens_shader.bind();
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::OFFSET, offset);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::SCALE, scale);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::K1, p_k1);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::K2, p_k2);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::EYE_CENTER, p_eye_center);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::UPSCALE, p_oversample);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES3::ASPECT_RATIO, aspect_ratio);
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, state.canvas_item_ubo);
+	glBindVertexArray(data.canvas_quad_array);
+
+	// and draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glBindVertexArray(0);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
+}
+
 void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_image) {
 
 	Vector2 window_size = OS::get_singleton()->get_window_size();
@@ -2058,6 +2091,7 @@ void RasterizerCanvasGLES3::initialize() {
 	state.canvas_shader.init();
 	state.canvas_shader.set_base_material_tex_index(2);
 	state.canvas_shadow_shader.init();
+	state.lens_shader.init();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 	state.canvas_shadow_shader.set_conditional(CanvasShadowShaderGLES3::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
