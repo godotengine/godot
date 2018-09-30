@@ -568,15 +568,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				return;
 
 			editor_data->get_undo_redo().create_action("Make node as Root");
-			_node_replace_owner(root, node, node, MODE_DO);
 			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
+			editor_data->get_undo_redo().add_do_method(root->get_parent(), "remove_child", root);
+			editor_data->get_undo_redo().add_do_method(node, "add_child", root);
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
 			editor_data->get_undo_redo().add_do_method(node, "set_filename", root->get_filename());
+			editor_data->get_undo_redo().add_do_method(root, "set_filename", String());
+			_node_replace_owner(root, root, node, MODE_DO);
 
+			editor_data->get_undo_redo().add_undo_method(root, "set_filename", root->get_filename());
 			editor_data->get_undo_redo().add_undo_method(node, "set_filename", String());
+			editor_data->get_undo_redo().add_undo_method(node, "remove_child", root);
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", root);
 			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
-			_node_replace_owner(root, node, root, MODE_UNDO);
+			_node_replace_owner(root, root, root, MODE_UNDO);
+
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_undo_reference(root);
@@ -975,24 +981,22 @@ void SceneTreeDock::_notification(int p_what) {
 
 void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode) {
 
-	if (p_base != p_node) {
-		if (p_node->get_owner() == p_base) {
-			UndoRedo *undo_redo = &editor_data->get_undo_redo();
-			switch (p_mode) {
-				case MODE_BIDI: {
-					undo_redo->add_do_method(p_node, "set_owner", p_root);
-					undo_redo->add_undo_method(p_node, "set_owner", p_base);
+	if (p_node->get_owner() == p_base || !p_node->get_owner()) {
+		UndoRedo *undo_redo = &editor_data->get_undo_redo();
+		switch (p_mode) {
+			case MODE_BIDI: {
+				undo_redo->add_do_method(p_node, "set_owner", p_root);
+				undo_redo->add_undo_method(p_node, "set_owner", p_base);
 
-				} break;
-				case MODE_DO: {
-					undo_redo->add_do_method(p_node, "set_owner", p_root);
+			} break;
+			case MODE_DO: {
+				undo_redo->add_do_method(p_node, "set_owner", p_root);
 
-				} break;
-				case MODE_UNDO: {
-					undo_redo->add_undo_method(p_node, "set_owner", p_root);
+			} break;
+			case MODE_UNDO: {
+				undo_redo->add_undo_method(p_node, "set_owner", p_root);
 
-				} break;
-			}
+			} break;
 		}
 	}
 
