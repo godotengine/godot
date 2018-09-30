@@ -26,13 +26,16 @@ def make_doc_header(target, source, env):
     buf = encode_utf8(docbegin + buf + docend)
     decomp_size = len(buf)
     import zlib
+
     buf = zlib.compress(buf)
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _DOC_DATA_RAW_H\n")
     g.write("#define _DOC_DATA_RAW_H\n")
     g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
-    g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
+    g.write(
+        "static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n"
+    )
     g.write("static const unsigned char _doc_data_compressed[] = {\n")
     for i in range(len(buf)):
         g.write("\t" + byte_to_str(buf[i]) + ",\n")
@@ -56,7 +59,7 @@ def make_fonts_header(target, source, env):
     # saving uncompressed, since freetype will reference from memory pointer
     xl_names = []
     for i in range(len(source)):
-        with open(source[i], "rb")as f:
+        with open(source[i], "rb") as f:
             buf = f.read()
 
         name = os.path.splitext(os.path.basename(source[i]))[0]
@@ -86,7 +89,9 @@ def make_translations_header(target, source, env):
     import zlib
     import os.path
 
-    sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])
+    sorted_paths = sorted(
+        source, key=lambda path: os.path.splitext(os.path.basename(path))[0]
+    )
 
     xl_names = []
     for i in range(len(sorted_paths)):
@@ -96,7 +101,9 @@ def make_translations_header(target, source, env):
         buf = zlib.compress(buf)
         name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
 
-        g.write("static const unsigned char _translation_" + name + "_compressed[] = {\n")
+        g.write(
+            "static const unsigned char _translation_" + name + "_compressed[] = {\n"
+        )
         for i in range(len(buf)):
             g.write("\t" + byte_to_str(buf[i]) + ",\n")
 
@@ -112,7 +119,17 @@ def make_translations_header(target, source, env):
     g.write("};\n\n")
     g.write("static EditorTranslationList _editor_translations[] = {\n")
     for x in xl_names:
-        g.write("\t{ \"" + x[0] + "\", " + str(x[1]) + ", " + str(x[2]) + ", _translation_" + x[0] + "_compressed},\n")
+        g.write(
+            '\t{ "'
+            + x[0]
+            + '", '
+            + str(x[1])
+            + ", "
+            + str(x[2])
+            + ", _translation_"
+            + x[0]
+            + "_compressed},\n"
+        )
     g.write("\t{NULL, 0, 0, NULL}\n")
     g.write("};\n")
 
@@ -120,5 +137,6 @@ def make_translations_header(target, source, env):
 
     g.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     subprocess_main(globals())

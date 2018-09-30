@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 stub = True
 
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_opus']:
+if env["builtin_opus"]:
     thirdparty_dir = "#thirdparty/opus/"
 
     thirdparty_sources = [
@@ -98,11 +98,11 @@ if env['builtin_opus']:
         "celt/pitch.c",
         "celt/rate.c",
         "celt/mathops.c",
-        #"celt/arm/armcpu.c",
-        #"celt/arm/celt_neon_intr.c",
-        #"celt/arm/celt_ne10_mdct.c",
-        #"celt/arm/celt_ne10_fft.c",
-        #"celt/arm/arm_celt_map.c",
+        # "celt/arm/armcpu.c",
+        # "celt/arm/celt_neon_intr.c",
+        # "celt/arm/celt_ne10_mdct.c",
+        # "celt/arm/celt_ne10_fft.c",
+        # "celt/arm/arm_celt_map.c",
         "celt/celt_encoder.c",
         "celt/celt.c",
         "celt/bands.c",
@@ -126,12 +126,12 @@ if env['builtin_opus']:
         "opus.c",
         "opus_multistream_encoder.c",
         "http.c",
-        "opus_multistream_decoder.c"
+        "opus_multistream_decoder.c",
     ]
 
     opus_sources_silk = []
 
-    if("opus_fixed_point" in env and env.opus_fixed_point == "yes"):
+    if "opus_fixed_point" in env and env.opus_fixed_point == "yes":
         env_opus.Append(CFLAGS=["-DFIXED_POINT"])
         opus_sources_silk = [
             "silk/fixed/schur64_FIX.c",
@@ -158,7 +158,7 @@ if env['builtin_opus']:
             "silk/fixed/LTP_analysis_filter_FIX.c",
             "silk/fixed/k2a_FIX.c",
             "silk/fixed/burg_modified_FIX.c",
-            "silk/fixed/find_pred_coefs_FIX.c"
+            "silk/fixed/find_pred_coefs_FIX.c",
         ]
     else:
         opus_sources_silk = [
@@ -192,26 +192,23 @@ if env['builtin_opus']:
             "silk/float/scale_copy_vector_FLP.c",
             "silk/float/residual_energy_FLP.c",
             "silk/float/LTP_analysis_filter_FLP.c",
-            "silk/float/prefilter_FLP.c"
+            "silk/float/prefilter_FLP.c",
         ]
 
-    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources + opus_sources_silk]
+    thirdparty_sources = [
+        thirdparty_dir + file for file in thirdparty_sources + opus_sources_silk
+    ]
 
     # also requires libogg
-    if env['builtin_libogg']:
+    if env["builtin_libogg"]:
         env_opus.Append(CPPPATH=["#thirdparty/libogg"])
 
     env_opus.Append(CFLAGS=["-DHAVE_CONFIG_H"])
 
-    thirdparty_include_paths = [
-        "",
-        "celt",
-        "opus",
-        "silk",
-        "silk/fixed",
-        "silk/float",
-    ]
-    env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+    thirdparty_include_paths = ["", "celt", "opus", "silk", "silk/fixed", "silk/float"]
+    env_opus.Append(
+        CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths]
+    )
 
     env_thirdparty = env_opus.Clone()
     env_thirdparty.disable_warnings()

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_mbed_tls = env_modules.Clone()
 
-if env['builtin_mbedtls']:
+if env["builtin_mbedtls"]:
     # Thirdparty source files
     thirdparty_sources = [
         "aes.c",
@@ -86,7 +86,7 @@ if env['builtin_mbedtls']:
         "x509_csr.c",
         "x509write_crt.c",
         "x509write_csr.c",
-        "xtea.c"
+        "xtea.c",
     ]
 
     thirdparty_dir = "#thirdparty/mbedtls/library/"
