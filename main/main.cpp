@@ -34,6 +34,7 @@
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/file_access_zip.h"
+#include "core/io/image_loader.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
 #include "core/io/stream_peer_ssl.h"
@@ -1124,9 +1125,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		boot_logo_path = boot_logo_path.strip_edges();
 
 		if (boot_logo_path != String()) {
-			print_line("Boot splash path: " + boot_logo_path);
 			boot_logo.instance();
-			Error err = boot_logo->load(boot_logo_path);
+			Error err = ImageLoader::load_image(boot_logo_path, boot_logo);
 			if (err)
 				ERR_PRINTS("Non-existing or invalid boot splash at: " + boot_logo_path + ". Loading default splash.");
 		}
@@ -1707,7 +1707,7 @@ bool Main::start() {
 				if (iconpath != "") {
 					Ref<Image> icon;
 					icon.instance();
-					if (icon->load(iconpath) == OK) {
+					if (ImageLoader::load_image(iconpath, icon) == OK) {
 						OS::get_singleton()->set_icon(icon);
 						hasicon = true;
 					}
