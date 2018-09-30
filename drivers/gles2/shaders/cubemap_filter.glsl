@@ -167,23 +167,30 @@ void main() {
 
 		vec3 H = ImportanceSampleGGX(xi, roughness, N);
 		vec3 V = N;
-		vec3 L = normalize(2.0 * dot(V, H) * H - V);
+		vec3 L = (2.0 * dot(V, H) * H - V);
 
 		float NdotL = clamp(dot(N, L), 0.0, 1.0);
 
 		if (NdotL > 0.0) {
 
 #ifdef USE_SOURCE_PANORAMA
-			sum.rgb += texturePanorama(source_panorama, L).rgb * NdotL;
+			vec3 val = texturePanorama(source_panorama, L).rgb;
 #else
-			sum.rgb += textureCubeLod(source_cube, L, 0.0).rgb * NdotL;
+			vec3 val = textureCubeLod(source_cube, L,0.0).rgb;
 #endif
+			//mix using Linear, to approximate high end back-end
+			val = mix(pow((val + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), val * (1.0 / 12.92), vec3(lessThan(val, vec3(0.04045))));
+
+			sum.rgb += val * NdotL;
 
 			sum.a += NdotL;
 		}
 	}
 
 	sum /= sum.a;
+
+	vec3 a = vec3(0.055);
+	sum.rgb = mix((vec3(1.0) + a) * pow(sum.rgb, vec3(1.0 / 2.4)) - a, 12.92 * sum.rgb, vec3(lessThan(sum.rgb, vec3(0.0031308))));
 
 	gl_FragColor = vec4(sum.rgb, 1.0);
 }

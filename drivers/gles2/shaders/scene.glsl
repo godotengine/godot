@@ -1757,8 +1757,14 @@ FRAGMENT_SHADER_CODE
 
 	// environment BRDF approximation
 
-	// TODO shadeless
+
 	{
+
+#if defined(DIFFUSE_TOON)
+		//simplify for toon, as
+		specular_light *= specular * metallic * albedo * 2.0;
+#else
+		//TODO: this curve is not really designed for gammaspace, should be adjusted
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
@@ -1767,10 +1773,16 @@ FRAGMENT_SHADER_CODE
 		vec2 AB = vec2(-1.04, 1.04) * a004 + r.zw;
 
 		vec3 specular_color = metallic_to_specular_color(metallic, specular, albedo);
-		specular_light *= AB.x * specular_color + AB.y;
+		specular_light *= AB.x * specular_color + AB.y;				
+#endif
 	}
 
 	gl_FragColor = vec4(ambient_light + diffuse_light + specular_light, alpha);
+
+	//add emission if in base pass
+#ifdef BASE_PASS
+	gl_FragColor.rgb += emission;
+#endif
 	// gl_FragColor = vec4(normal, 1.0);
 
 #endif //unshaded

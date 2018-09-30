@@ -948,6 +948,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES2::FACE_ID, i);
 
 			float roughness = mm_level ? lod / (float)(mipmaps - 1) : 1;
+			roughness = MIN(1.0, roughness); //keep max at 1
 			shaders.cubemap_filter.set_uniform(CubemapFilterShaderGLES2::ROUGHNESS, roughness);
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -4492,13 +4493,13 @@ void RasterizerStorageGLES2::initialize() {
 
 	// radical inverse vdc cache texture
 	// used for cubemap filtering
-	if (config.float_texture_supported) {
+	if (true /*||config.float_texture_supported*/) { //uint8 is similar and works everywhere
 		glGenTextures(1, &resources.radical_inverse_vdc_cache_tex);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, resources.radical_inverse_vdc_cache_tex);
 
-		float radical_inverse[512];
+		uint8_t radical_inverse[512];
 
 		for (uint32_t i = 0; i < 512; i++) {
 			uint32_t bits = i;
@@ -4510,11 +4511,10 @@ void RasterizerStorageGLES2::initialize() {
 			bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
 
 			float value = float(bits) * 2.3283064365386963e-10;
-
-			radical_inverse[i] = value;
+			radical_inverse[i] = uint8_t(CLAMP(value * 255.0, 0, 255));
 		}
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 512, 1, 0, GL_LUMINANCE, GL_FLOAT, radical_inverse);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 512, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, radical_inverse);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
