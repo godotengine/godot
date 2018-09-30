@@ -38,7 +38,9 @@ def make_splash_editor(target, source, env):
         g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
         g.write("#ifndef BOOT_SPLASH_EDITOR_H\n")
         g.write("#define BOOT_SPLASH_EDITOR_H\n")
-        g.write('static const Color boot_splash_editor_bg_color = Color::html("#232323");\n')
+        g.write(
+            'static const Color boot_splash_editor_bg_color = Color::html("#232323");\n'
+        )
         g.write("static const unsigned char boot_splash_editor_png[] = {\n")
         for i in range(len(buf)):
             g.write(byte_to_str(buf[i]) + ",\n")
@@ -69,8 +71,8 @@ def make_default_controller_mappings(target, source, env):
     g = open(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#include \"core/typedefs.h\"\n")
-    g.write("#include \"main/default_controller_mappings.h\"\n")
+    g.write('#include "core/typedefs.h"\n')
+    g.write('#include "main/default_controller_mappings.h"\n')
 
     # ensure mappings have a consistent order
     platform_mappings = OrderedDict()
@@ -94,11 +96,21 @@ def make_default_controller_mappings(target, source, env):
                 line_parts = line.split(",")
                 guid = line_parts[0]
                 if guid in platform_mappings[current_platform]:
-                    g.write("// WARNING - DATABASE {} OVERWROTE PRIOR MAPPING: {} {}\n".format(src_path, current_platform, platform_mappings[current_platform][guid]))
+                    g.write(
+                        "// WARNING - DATABASE {} OVERWROTE PRIOR MAPPING: {} {}\n".format(
+                            src_path,
+                            current_platform,
+                            platform_mappings[current_platform][guid],
+                        )
+                    )
                 valid_mapping = True
                 for input_map in line_parts[2:]:
                     if "+" in input_map or "-" in input_map or "~" in input_map:
-                        g.write("// WARNING - DISCARDED UNSUPPORTED MAPPING TYPE FROM DATABASE {}: {} {}\n".format(src_path, current_platform, line))
+                        g.write(
+                            "// WARNING - DISCARDED UNSUPPORTED MAPPING TYPE FROM DATABASE {}: {} {}\n".format(
+                                src_path, current_platform, line
+                            )
+                        )
                         valid_mapping = False
                         break
                 if valid_mapping:
@@ -119,12 +131,12 @@ def make_default_controller_mappings(target, source, env):
         variable = platform_variables[platform]
         g.write("{}\n".format(variable))
         for mapping in mappings.values():
-            g.write("\t\"{}\",\n".format(mapping))
+            g.write('\t"{}",\n'.format(mapping))
         g.write("#endif\n")
 
     g.write("\tNULL\n};\n")
     g.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     subprocess_main(globals())

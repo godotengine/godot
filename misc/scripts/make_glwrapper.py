@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import sys
 
-if (len(sys.argv) < 2):
+if len(sys.argv) < 2:
     print("usage: make_glwrapper.py <headers>")
     sys.exit(255)
 
@@ -16,11 +16,12 @@ READ_CONSTANTS = 2
 
 read_what = READ_TYPES
 
+
 def read_file(f):
-    while(True):
+    while True:
 
         line = f.readline()
-        if (line == ""):
+        if line == "":
             break
 
         line = line.replace("\n", "").strip()
@@ -36,27 +37,37 @@ def read_file(f):
       continue
      """
 
-        if (line.find("#define") != -1):
-            if (line.find("0x") == -1 and line.find("GL_VERSION") == -1):
+        if line.find("#define") != -1:
+            if line.find("0x") == -1 and line.find("GL_VERSION") == -1:
                 continue
             constants.append(line)
-        elif (line.find("typedef") != -1):
-            if (line.find("(") != -1 or line.find(")") != -1 or line.find("ARB") != -1 or line.find("EXT") != -1 or line.find("GL") == -1):
+        elif line.find("typedef") != -1:
+            if (
+                line.find("(") != -1
+                or line.find(")") != -1
+                or line.find("ARB") != -1
+                or line.find("EXT") != -1
+                or line.find("GL") == -1
+            ):
                 continue
             types.append(line)
-        elif (line.find("APIENTRY") != -1 and line.find("GLAPI") != -1):
+        elif line.find("APIENTRY") != -1 and line.find("GLAPI") != -1:
 
-            if (line.find("ARB") != -1 or line.find("EXT") != -1 or line.find("NV") != -1):
+            if (
+                line.find("ARB") != -1
+                or line.find("EXT") != -1
+                or line.find("NV") != -1
+            ):
                 continue
 
             line = line.replace("APIENTRY", "")
             line = line.replace("GLAPI", "")
 
             glpos = line.find(" gl")
-            if (glpos == -1):
+            if glpos == -1:
 
                 glpos = line.find("\tgl")
-                if (glpos == -1):
+                if glpos == -1:
                     continue
 
             ret = line[:glpos].strip()
@@ -64,14 +75,14 @@ def read_file(f):
             line = line[glpos:].strip()
             namepos = line.find("(")
 
-            if (namepos == -1):
+            if namepos == -1:
                 continue
 
             name = line[:namepos].strip()
             line = line[namepos:]
 
             argpos = line.rfind(")")
-            if (argpos == -1):
+            if argpos == -1:
                 continue
 
             args = line[1:argpos]
@@ -83,6 +94,7 @@ def read_file(f):
 
             functions.append(funcdata)
             print(funcdata)
+
 
 for path in sys.argv[1:]:
     with open(path, "r") as f:
@@ -130,7 +142,7 @@ f.write("#include <stddef.h>\n\n\n")
 
 f.write(header_code)
 
-f.write("#ifdef __cplusplus\nextern \"C\" {\n#endif\n\n\n")
+f.write('#ifdef __cplusplus\nextern "C" {\n#endif\n\n\n')
 f.write("#if defined(_WIN32) && !defined(__CYGWIN__)\n")
 f.write("#define GLWRP_APIENTRY __stdcall\n")
 f.write("#else\n")
@@ -147,7 +159,15 @@ for x in constants:
 f.write("\n\n")
 
 for x in functions:
-    f.write("extern " + x["ret"] + " GLWRP_APIENTRY (*__wrapper_" + x["name"] + ")(" + x["args"] + ");\n")
+    f.write(
+        "extern "
+        + x["ret"]
+        + " GLWRP_APIENTRY (*__wrapper_"
+        + x["name"]
+        + ")("
+        + x["args"]
+        + ");\n"
+    )
     f.write("#define " + x["name"] + " __wrapper_" + x["name"] + "\n")
 
 f.write("\n\n")
@@ -162,18 +182,35 @@ f.close()
 f = open("glwrapper.c", "w")
 
 f.write("\n\n")
-f.write("#include \"glwrapper.h\"\n")
+f.write('#include "glwrapper.h"\n')
 f.write("\n\n")
 
 for x in functions:
-    f.write(x["ret"] + " GLWRP_APIENTRY (*__wrapper_" + x["name"] + ")(" + x["args"] + ")=NULL;\n")
+    f.write(
+        x["ret"]
+        + " GLWRP_APIENTRY (*__wrapper_"
+        + x["name"]
+        + ")("
+        + x["args"]
+        + ")=NULL;\n"
+    )
 
 f.write("\n\n")
 f.write("void glWrapperInit( GLWrapperFuncPtr (*wrapperFunc)(const char*) )  {\n")
 f.write("\n")
 
 for x in functions:
-    f.write("\t__wrapper_" + x["name"] + "=(" + x["ret"] + " GLWRP_APIENTRY (*)(" + x["args"] + "))wrapperFunc(\"" + x["name"] + "\");\n")
+    f.write(
+        "\t__wrapper_"
+        + x["name"]
+        + "=("
+        + x["ret"]
+        + " GLWRP_APIENTRY (*)("
+        + x["args"]
+        + '))wrapperFunc("'
+        + x["name"]
+        + '");\n'
+    )
 
 f.write("\n\n")
 f.write("}\n")

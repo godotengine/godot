@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_regex = env_modules.Clone()
 
-if env['builtin_pcre2']:
-    jit_blacklist = ['javascript', 'uwp']
+if env["builtin_pcre2"]:
+    jit_blacklist = ["javascript", "uwp"]
 
-    thirdparty_dir = '#thirdparty/pcre2/src/'
-    thirdparty_flags = ['-DPCRE2_STATIC', '-DHAVE_CONFIG_H']
+    thirdparty_dir = "#thirdparty/pcre2/src/"
+    thirdparty_flags = ["-DPCRE2_STATIC", "-DHAVE_CONFIG_H"]
 
-    if 'platform' in env and env['platform'] not in jit_blacklist:
-        thirdparty_flags.append('-DSUPPORT_JIT')
+    if "platform" in env and env["platform"] not in jit_blacklist:
+        thirdparty_flags.append("-DSUPPORT_JIT")
 
     thirdparty_sources = [
         "pcre2_auto_possess.c",
@@ -26,7 +26,7 @@ if env['builtin_pcre2']:
         "pcre2_extuni.c",
         "pcre2_find_bracket.c",
         "pcre2_jit_compile.c",
-        #"pcre2_jit_match.c", "pcre2_jit_misc.c", # these files are included in pcre2_jit_compile.c.
+        # "pcre2_jit_match.c", "pcre2_jit_misc.c", # these files are included in pcre2_jit_compile.c.
         "pcre2_maketables.c",
         "pcre2_match.c",
         "pcre2_match_data.c",
