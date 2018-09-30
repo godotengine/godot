@@ -74,7 +74,7 @@ static void _setup_clock() {
 	kern_return_t ret = mach_timebase_info(&info);
 	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
 	ERR_FAIL_COND(ret != 0);
-	_clock_scale = (double)info.numer / (double)info.denom;
+	_clock_scale = ((double)info.numer / (double)info.denom) / 1000.0;
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
 #else
