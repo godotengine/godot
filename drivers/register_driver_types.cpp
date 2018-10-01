@@ -31,11 +31,11 @@
 #include "register_driver_types.h"
 
 #include "core/math/geometry.h"
-#include "png/image_loader_png.h"
-#include "png/resource_saver_png.h"
+#include "drivers/png/image_loader_png.h"
+#include "drivers/png/resource_saver_png.h"
 
 #ifdef TOOLS_ENABLED
-#include "convex_decomp/b2d_decompose.h"
+#include "drivers/convex_decomp/b2d_decompose.h"
 #endif
 
 #ifdef TOOLS_ENABLED
