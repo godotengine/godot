@@ -756,6 +756,10 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 
 ////////
 
+static bool _is_number(CharType c) {
+	return (c >= '0' && c <= '9');
+}
+
 Error Expression::_get_token(Token &r_token) {
 
 	while (true) {
@@ -813,17 +817,12 @@ Error Expression::_get_token(Token &r_token) {
 				r_token.type = TK_COLON;
 				return OK;
 			};
-			case '.': {
-
-				r_token.type = TK_PERIOD;
-				return OK;
-			};
 			case '$': {
 
 				r_token.type = TK_INPUT;
 				int index = 0;
 				do {
-					if (expression[str_ofs] < '0' || expression[str_ofs] > '9') {
+					if (!_is_number(expression[str_ofs])) {
 						_set_error("Expected number after '$'");
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
@@ -832,7 +831,7 @@ Error Expression::_get_token(Token &r_token) {
 					index += expression[str_ofs] - '0';
 					str_ofs++;
 
-				} while (expression[str_ofs] >= '0' && expression[str_ofs] <= '9');
+				} while (_is_number(expression[str_ofs]));
 
 				r_token.value = index;
 				return OK;
@@ -979,14 +978,14 @@ Error Expression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!(_is_number(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
 
 										_set_error("Malformed hex constant in string");
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
 									CharType v;
-									if (c >= '0' && c <= '9') {
+									if (_is_number(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -1032,7 +1031,8 @@ Error Expression::_get_token(Token &r_token) {
 					break;
 				}
 
-				if (cchar >= '0' && cchar <= '9') {
+				CharType next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
+				if (_is_number(cchar) || (cchar == '.' && _is_number(next_char))) {
 					//a number
 
 					String num;
@@ -1053,7 +1053,7 @@ Error Expression::_get_token(Token &r_token) {
 						switch (reading) {
 							case READING_INT: {
 
-								if (c >= '0' && c <= '9') {
+								if (_is_number(c)) {
 									//pass
 								} else if (c == '.') {
 									reading = READING_DEC;
@@ -1067,7 +1067,7 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 							case READING_DEC: {
 
-								if (c >= '0' && c <= '9') {
+								if (_is_number(c)) {
 
 								} else if (c == 'e') {
 									reading = READING_EXP;
@@ -1079,7 +1079,7 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 							case READING_EXP: {
 
-								if (c >= '0' && c <= '9') {
+								if (_is_number(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
@@ -1114,7 +1114,7 @@ Error Expression::_get_token(Token &r_token) {
 					String id;
 					bool first = true;
 
-					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && cchar >= '0' && cchar <= '9')) {
+					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && _is_number(cchar))) {
 
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
@@ -1176,6 +1176,12 @@ Error Expression::_get_token(Token &r_token) {
 					}
 
 					return OK;
+
+				} else if (cchar == '.') {
+					// Handled down there as we support '.[0-9]' as numbers above
+					r_token.type = TK_PERIOD;
+					return OK;
+
 				} else {
 					_set_error("Unexpected character.");
 					r_token.type = TK_ERROR;
@@ -1183,6 +1189,7 @@ Error Expression::_get_token(Token &r_token) {
 				}
 			}
 		}
+#undef GET_CHAR
 	}
 
 	r_token.type = TK_ERROR;
