@@ -14,16 +14,22 @@
 	</methods>
 	<members>
 		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+			If [code]true[/code] [RigidBody2D] nodes will be paused.
 		</member>
 		<member name="pause_animated_sprites" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+			If [code]true[/code] [AnimatedSprite] nodes will be paused.
 		</member>
 		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+			If [code]true[/code] [AnimationPlayer] nodes will be paused.
 		</member>
 		<member name="pause_particles" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+			If [code]true[/code] [Particles2D] nodes will be paused.
 		</member>
 		<member name="physics_process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+			If [code]true[/code] the parent's [method Node._physics_process] will be stopped.
 		</member>
 		<member name="process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+			If [code]true[/code] the parent's [method Node._process] will be stopped.
 		</member>
 	</members>
 	<constants>
