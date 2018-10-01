@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 stub = True
 
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_opus']:
+if env["builtin_opus"]:
     thirdparty_dir = "#thirdparty/opus/"
 
     thirdparty_sources = [
@@ -98,11 +98,11 @@ if env['builtin_opus']:
         "celt/pitch.c",
         "celt/rate.c",
         "celt/mathops.c",
-        #"celt/arm/armcpu.c",
-        #"celt/arm/celt_neon_intr.c",
-        #"celt/arm/celt_ne10_mdct.c",
-        #"celt/arm/celt_ne10_fft.c",
-        #"celt/arm/arm_celt_map.c",
+        # "celt/arm/armcpu.c",
+        # "celt/arm/celt_neon_intr.c",
+        # "celt/arm/celt_ne10_mdct.c",
+        # "celt/arm/celt_ne10_fft.c",
+        # "celt/arm/arm_celt_map.c",
         "celt/celt_encoder.c",
         "celt/celt.c",
         "celt/bands.c",
@@ -126,40 +126,14 @@ if env['builtin_opus']:
         "opus.c",
         "opus_multistream_encoder.c",
         "http.c",
-        "opus_multistream_decoder.c"
+        "opus_multistream_decoder.c",
     ]
 
     opus_sources_silk = []
 
-    if("opus_fixed_point" in env and env.opus_fixed_point == "yes"):
+    if "opus_fixed_point" in env and env.opus_fixed_point == "yes":
         env_opus.Append(CFLAGS=["-DFIXED_POINT"])
-        opus_sources_silk = [
-            "silk/fixed/schur64_FIX.c",
-            "silk/fixed/residual_energy16_FIX.c",
-            "silk/fixed/encode_frame_FIX.c",
-            "silk/fixed/regularize_correlations_FIX.c",
-            "silk/fixed/apply_sine_window_FIX.c",
-            "silk/fixed/solve_LS_FIX.c",
-            "silk/fixed/schur_FIX.c",
-            "silk/fixed/pitch_analysis_core_FIX.c",
-            "silk/fixed/noise_shape_analysis_FIX.c",
-            "silk/fixed/find_LTP_FIX.c",
-            "silk/fixed/vector_ops_FIX.c",
-            "silk/fixed/autocorr_FIX.c",
-            "silk/fixed/warped_autocorrelation_FIX.c",
-            "silk/fixed/find_pitch_lags_FIX.c",
-            "silk/fixed/k2a_Q16_FIX.c",
-            "silk/fixed/LTP_scale_ctrl_FIX.c",
-            "silk/fixed/corrMatrix_FIX.c",
-            "silk/fixed/prefilter_FIX.c",
-            "silk/fixed/find_LPC_FIX.c",
-            "silk/fixed/residual_energy_FIX.c",
-            "silk/fixed/process_gains_FIX.c",
-            "silk/fixed/LTP_analysis_filter_FIX.c",
-            "silk/fixed/k2a_FIX.c",
-            "silk/fixed/burg_modified_FIX.c",
-            "silk/fixed/find_pred_coefs_FIX.c"
-        ]
+        opus_sources_silk = ["silk/fixed/schur64_FIX.c", "silk/fixed/residual_energy16_FIX.c", "silk/fixed/encode_frame_FIX.c", "silk/fixed/regularize_correlations_FIX.c", "silk/fixed/apply_sine_window_FIX.c", "silk/fixed/solve_LS_FIX.c", "silk/fixed/schur_FIX.c", "silk/fixed/pitch_analysis_core_FIX.c", "silk/fixed/noise_shape_analysis_FIX.c", "silk/fixed/find_LTP_FIX.c", "silk/fixed/vector_ops_FIX.c", "silk/fixed/autocorr_FIX.c", "silk/fixed/warped_autocorrelation_FIX.c", "silk/fixed/find_pitch_lags_FIX.c", "silk/fixed/k2a_Q16_FIX.c", "silk/fixed/LTP_scale_ctrl_FIX.c", "silk/fixed/corrMatrix_FIX.c", "silk/fixed/prefilter_FIX.c", "silk/fixed/find_LPC_FIX.c", "silk/fixed/residual_energy_FIX.c", "silk/fixed/process_gains_FIX.c", "silk/fixed/LTP_analysis_filter_FIX.c", "silk/fixed/k2a_FIX.c", "silk/fixed/burg_modified_FIX.c", "silk/fixed/find_pred_coefs_FIX.c"]
     else:
         opus_sources_silk = [
             "silk/float/LTP_scale_ctrl_FLP.c",
@@ -192,25 +166,18 @@ if env['builtin_opus']:
             "silk/float/scale_copy_vector_FLP.c",
             "silk/float/residual_energy_FLP.c",
             "silk/float/LTP_analysis_filter_FLP.c",
-            "silk/float/prefilter_FLP.c"
+            "silk/float/prefilter_FLP.c",
         ]
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources + opus_sources_silk]
 
     # also requires libogg
-    if env['builtin_libogg']:
+    if env["builtin_libogg"]:
         env_opus.Append(CPPPATH=["#thirdparty/libogg"])
 
     env_opus.Append(CFLAGS=["-DHAVE_CONFIG_H"])
 
-    thirdparty_include_paths = [
-        "",
-        "celt",
-        "opus",
-        "silk",
-        "silk/fixed",
-        "silk/float",
-    ]
+    thirdparty_include_paths = ["", "celt", "opus", "silk", "silk/fixed", "silk/float"]
     env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
     env_thirdparty = env_opus.Clone()

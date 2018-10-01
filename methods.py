@@ -12,7 +12,7 @@ from compat import iteritems, isbasestring
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 
     if isbasestring(filetype):
-        dir_path = self.Dir('.').abspath
+        dir_path = self.Dir(".").abspath
         filetype = sorted(glob.glob(dir_path + "/" + filetype))
 
     for path in filetype:
@@ -22,12 +22,12 @@ def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 def disable_warnings(self):
     # 'self' is the environment
     if self.msvc:
-        self.Append(CCFLAGS=['/w'])
+        self.Append(CCFLAGS=["/w"])
     else:
-        self.Append(CCFLAGS=['-w'])
+        self.Append(CCFLAGS=["-w"])
 
 
-def add_module_version_string(self,s):
+def add_module_version_string(self, s):
     self.module_version_string += "." + s
 
 
@@ -42,15 +42,15 @@ def update_version(module_version_string=""):
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     f = open("core/version_generated.gen.h", "w")
-    f.write("#define VERSION_SHORT_NAME \"" + str(version.short_name) + "\"\n")
-    f.write("#define VERSION_NAME \"" + str(version.name) + "\"\n")
+    f.write('#define VERSION_SHORT_NAME "' + str(version.short_name) + '"\n')
+    f.write('#define VERSION_NAME "' + str(version.name) + '"\n')
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
     f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    if hasattr(version, 'patch'):
+    if hasattr(version, "patch"):
         f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
-    f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
-    f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
-    f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
+    f.write('#define VERSION_STATUS "' + str(version.status) + '"\n')
+    f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
+    f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(2018) + "\n")
     f.close()
 
@@ -65,7 +65,7 @@ def update_version(module_version_string=""):
                 githash = open(head, "r").readline().strip()
         else:
             githash = head
-    fhash.write("#define VERSION_HASH \"" + githash + "\"")
+    fhash.write('#define VERSION_HASH "' + githash + '"')
     fhash.close()
 
 
@@ -122,29 +122,37 @@ def detect_modules():
         try:
             with open("modules/" + x + "/register_types.h"):
                 includes_cpp += '#include "modules/' + x + '/register_types.h"\n'
-                register_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
-                register_cpp += '\tregister_' + x + '_types();\n'
-                register_cpp += '#endif\n'
-                unregister_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
-                unregister_cpp += '\tunregister_' + x + '_types();\n'
-                unregister_cpp += '#endif\n'
+                register_cpp += "#ifdef MODULE_" + x.upper() + "_ENABLED\n"
+                register_cpp += "\tregister_" + x + "_types();\n"
+                register_cpp += "#endif\n"
+                unregister_cpp += "#ifdef MODULE_" + x.upper() + "_ENABLED\n"
+                unregister_cpp += "\tunregister_" + x + "_types();\n"
+                unregister_cpp += "#endif\n"
         except IOError:
             pass
 
-    modules_cpp = """
+    modules_cpp = (
+        """
 // modules.cpp - THIS FILE IS GENERATED, DO NOT EDIT!!!!!!!
 #include "register_module_types.h"
 
-""" + includes_cpp + """
+"""
+        + includes_cpp
+        + """
 
 void register_module_types() {
-""" + register_cpp + """
+"""
+        + register_cpp
+        + """
 }
 
 void unregister_module_types() {
-""" + unregister_cpp + """
+"""
+        + unregister_cpp
+        + """
 }
 """
+    )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:
@@ -155,14 +163,14 @@ void unregister_module_types() {
 
 def win32_spawn(sh, escape, cmd, args, env):
     import subprocess
-    newargs = ' '.join(args[1:])
+
+    newargs = " ".join(args[1:])
     cmdline = cmd + " " + newargs
     startupinfo = subprocess.STARTUPINFO()
     for e in env:
         if type(env[e]) != type(""):
             env[e] = str(env[e])
-    proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
+    proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
     data, err = proc.communicate()
     rv = proc.wait()
     if rv:
@@ -170,6 +178,7 @@ def win32_spawn(sh, escape, cmd, args, env):
         print(err)
         print("=====")
     return rv
+
 
 """
 def win32_spawn(sh, escape, cmd, args, spawnenv):
@@ -200,76 +209,92 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
+
 def android_add_flat_dir(self, dir):
-    if (dir not in self.android_flat_dirs):
+    if dir not in self.android_flat_dirs:
         self.android_flat_dirs.append(dir)
 
+
 def android_add_maven_repository(self, url):
-    if (url not in self.android_maven_repos):
+    if url not in self.android_maven_repos:
         self.android_maven_repos.append(url)
 
+
 def android_add_dependency(self, depline):
-    if (depline not in self.android_dependencies):
+    if depline not in self.android_dependencies:
         self.android_dependencies.append(depline)
+
 
 def android_add_java_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_java_dirs):
+    if base_path not in self.android_java_dirs:
         self.android_java_dirs.append(base_path)
+
 
 def android_add_res_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_res_dirs):
+    if base_path not in self.android_res_dirs:
         self.android_res_dirs.append(base_path)
+
 
 def android_add_asset_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_asset_dirs):
+    if base_path not in self.android_asset_dirs:
         self.android_asset_dirs.append(base_path)
+
 
 def android_add_aidl_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_aidl_dirs):
+    if base_path not in self.android_aidl_dirs:
         self.android_aidl_dirs.append(base_path)
+
 
 def android_add_jni_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_jni_dirs):
+    if base_path not in self.android_jni_dirs:
         self.android_jni_dirs.append(base_path)
 
+
 def android_add_gradle_plugin(self, plugin):
-    if (plugin not in self.android_gradle_plugins):
+    if plugin not in self.android_gradle_plugins:
         self.android_gradle_plugins.append(plugin)
 
+
 def android_add_gradle_classpath(self, classpath):
-    if (classpath not in self.android_gradle_classpath):
+    if classpath not in self.android_gradle_classpath:
         self.android_gradle_classpath.append(classpath)
 
+
 def android_add_default_config(self, config):
-    if (config not in self.android_default_config):
+    if config not in self.android_default_config:
         self.android_default_config.append(config)
+
 
 def android_add_to_manifest(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     with open(base_path, "r") as f:
         self.android_manifest_chunk += f.read()
 
+
 def android_add_to_permissions(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     with open(base_path, "r") as f:
         self.android_permission_chunk += f.read()
+
 
 def android_add_to_attributes(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     with open(base_path, "r") as f:
         self.android_appattributes_chunk += f.read()
 
+
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
+
 def use_windows_spawn_fix(self, platform=None):
 
-    if (os.name != "nt"):
+    if os.name != "nt":
         return  # not needed, only for windows
 
     # On Windows, due to the limited command line length, when creating a static library
@@ -280,14 +305,13 @@ def use_windows_spawn_fix(self, platform=None):
     # got built correctly regardless the invocation strategy.
     # Furthermore, since SCons will rebuild the library from scratch when an object file
     # changes, no multiple versions of the same object file will be present.
-    self.Replace(ARFLAGS='q')
+    self.Replace(ARFLAGS="q")
 
     def mySubProcess(cmdline, env):
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
+        proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo, shell=False, env=env)
         data, err = proc.communicate()
         rv = proc.wait()
         if rv:
@@ -298,7 +322,7 @@ def use_windows_spawn_fix(self, platform=None):
 
     def mySpawn(sh, escape, cmd, args, env):
 
-        newargs = ' '.join(args[1:])
+        newargs = " ".join(args[1:])
         cmdline = cmd + " " + newargs
 
         rv = 0
@@ -314,10 +338,10 @@ def use_windows_spawn_fix(self, platform=None):
 
         return rv
 
-    self['SPAWN'] = mySpawn
+    self["SPAWN"] = mySpawn
 
 
-def split_lib(self, libname, src_list = None, env_lib = None):
+def split_lib(self, libname, src_list=None, env_lib=None):
     env = self
 
     num = 0
@@ -353,8 +377,8 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     lib_list.append(lib)
 
     if len(lib_list) > 0:
-        if os.name == 'posix' and sys.platform == 'msys':
-            env.Replace(ARFLAGS=['rcsT'])
+        if os.name == "posix" and sys.platform == "msys":
+            env.Replace(ARFLAGS=["rcsT"])
             lib = env_lib.add_library(libname + "_collated", lib_list)
             lib_list = [lib]
 
@@ -369,9 +393,9 @@ def split_lib(self, libname, src_list = None, env_lib = None):
 def save_active_platforms(apnames, ap):
 
     for x in ap:
-        names = ['logo']
+        names = ["logo"]
         if os.path.isfile(x + "/run_icon.png"):
-            names.append('run_icon')
+            names.append("run_icon")
 
         for name in names:
             pngf = open(x + "/" + name + ".png", "rb")
@@ -381,7 +405,7 @@ def save_active_platforms(apnames, ap):
             while len(b) == 1:
                 str += hex(ord(b))
                 b = pngf.read(1)
-                if (len(b) == 1):
+                if len(b) == 1:
                     str += ","
 
             str += "};\n"
@@ -401,30 +425,30 @@ def no_verbose(sys, env):
     # Colors are disabled in non-TTY environments such as pipes. This means
     # that if output is redirected to a file, it will not contain color codes
     if sys.stdout.isatty():
-        colors['cyan'] = '\033[96m'
-        colors['purple'] = '\033[95m'
-        colors['blue'] = '\033[94m'
-        colors['green'] = '\033[92m'
-        colors['yellow'] = '\033[93m'
-        colors['red'] = '\033[91m'
-        colors['end'] = '\033[0m'
+        colors["cyan"] = "\033[96m"
+        colors["purple"] = "\033[95m"
+        colors["blue"] = "\033[94m"
+        colors["green"] = "\033[92m"
+        colors["yellow"] = "\033[93m"
+        colors["red"] = "\033[91m"
+        colors["end"] = "\033[0m"
     else:
-        colors['cyan'] = ''
-        colors['purple'] = ''
-        colors['blue'] = ''
-        colors['green'] = ''
-        colors['yellow'] = ''
-        colors['red'] = ''
-        colors['end'] = ''
+        colors["cyan"] = ""
+        colors["purple"] = ""
+        colors["blue"] = ""
+        colors["green"] = ""
+        colors["yellow"] = ""
+        colors["red"] = ""
+        colors["end"] = ""
 
-    compile_source_message = '%sCompiling %s==> %s$SOURCE%s' % (colors['blue'], colors['purple'], colors['yellow'], colors['end'])
-    java_compile_source_message = '%sCompiling %s==> %s$SOURCE%s' % (colors['blue'], colors['purple'], colors['yellow'], colors['end'])
-    compile_shared_source_message = '%sCompiling shared %s==> %s$SOURCE%s' % (colors['blue'], colors['purple'], colors['yellow'], colors['end'])
-    link_program_message = '%sLinking Program        %s==> %s$TARGET%s' % (colors['red'], colors['purple'], colors['yellow'], colors['end'])
-    link_library_message = '%sLinking Static Library %s==> %s$TARGET%s' % (colors['red'], colors['purple'], colors['yellow'], colors['end'])
-    ranlib_library_message = '%sRanlib Library         %s==> %s$TARGET%s' % (colors['red'], colors['purple'], colors['yellow'], colors['end'])
-    link_shared_library_message = '%sLinking Shared Library %s==> %s$TARGET%s' % (colors['red'], colors['purple'], colors['yellow'], colors['end'])
-    java_library_message = '%sCreating Java Archive  %s==> %s$TARGET%s' % (colors['red'], colors['purple'], colors['yellow'], colors['end'])
+    compile_source_message = "%sCompiling %s==> %s$SOURCE%s" % (colors["blue"], colors["purple"], colors["yellow"], colors["end"])
+    java_compile_source_message = "%sCompiling %s==> %s$SOURCE%s" % (colors["blue"], colors["purple"], colors["yellow"], colors["end"])
+    compile_shared_source_message = "%sCompiling shared %s==> %s$SOURCE%s" % (colors["blue"], colors["purple"], colors["yellow"], colors["end"])
+    link_program_message = "%sLinking Program        %s==> %s$TARGET%s" % (colors["red"], colors["purple"], colors["yellow"], colors["end"])
+    link_library_message = "%sLinking Static Library %s==> %s$TARGET%s" % (colors["red"], colors["purple"], colors["yellow"], colors["end"])
+    ranlib_library_message = "%sRanlib Library         %s==> %s$TARGET%s" % (colors["red"], colors["purple"], colors["yellow"], colors["end"])
+    link_shared_library_message = "%sLinking Shared Library %s==> %s$TARGET%s" % (colors["red"], colors["purple"], colors["yellow"], colors["end"])
+    java_library_message = "%sCreating Java Archive  %s==> %s$TARGET%s" % (colors["red"], colors["purple"], colors["yellow"], colors["end"])
 
     env.Append(CXXCOMSTR=[compile_source_message])
     env.Append(CCCOMSTR=[compile_source_message])
@@ -465,76 +489,66 @@ def detect_visual_c_compiler_version(tools_env):
     vc_chosen_compiler_str = ""
 
     # Start with Pre VS 2017 checks which uses VCINSTALLDIR:
-    if 'VCINSTALLDIR' in tools_env:
+    if "VCINSTALLDIR" in tools_env:
         # print("Checking VCINSTALLDIR")
 
         # find() works with -1 so big ifs below are needed... the simplest solution, in fact
         # First test if amd64 and amd64_x86 compilers are present in the path
         vc_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64;")
-        if(vc_amd64_compiler_detection_index > -1):
+        if vc_amd64_compiler_detection_index > -1:
             vc_chosen_compiler_index = vc_amd64_compiler_detection_index
             vc_chosen_compiler_str = "amd64"
 
         vc_amd64_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\amd64_x86;")
-        if(vc_amd64_x86_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
+        if vc_amd64_x86_compiler_detection_index > -1 and (vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index):
             vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
             vc_chosen_compiler_str = "amd64_x86"
 
         # Now check the 32 bit compilers
         vc_x86_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN;")
-        if(vc_x86_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
+        if vc_x86_compiler_detection_index > -1 and (vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_compiler_detection_index):
             vc_chosen_compiler_index = vc_x86_compiler_detection_index
             vc_chosen_compiler_str = "x86"
 
-        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env['VCINSTALLDIR'] + "BIN\\x86_amd64;")
-        if(vc_x86_amd64_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
+        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].find(tools_env["VCINSTALLDIR"] + "BIN\\x86_amd64;")
+        if vc_x86_amd64_compiler_detection_index > -1 and (vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index):
             vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
     # and for VS 2017 and newer we check VCTOOLSINSTALLDIR:
-    if 'VCTOOLSINSTALLDIR' in tools_env:
+    if "VCTOOLSINSTALLDIR" in tools_env:
 
         # Newer versions have a different path available
-        vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X64;")
-        if(vc_amd64_compiler_detection_index > -1):
+        vc_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env["VCTOOLSINSTALLDIR"].upper() + "BIN\\HOSTX64\\X64;")
+        if vc_amd64_compiler_detection_index > -1:
             vc_chosen_compiler_index = vc_amd64_compiler_detection_index
             vc_chosen_compiler_str = "amd64"
 
-        vc_amd64_x86_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX64\\X86;")
-        if(vc_amd64_x86_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index)):
+        vc_amd64_x86_compiler_detection_index = tools_env["PATH"].upper().find(tools_env["VCTOOLSINSTALLDIR"].upper() + "BIN\\HOSTX64\\X86;")
+        if vc_amd64_x86_compiler_detection_index > -1 and (vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_amd64_x86_compiler_detection_index):
             vc_chosen_compiler_index = vc_amd64_x86_compiler_detection_index
             vc_chosen_compiler_str = "amd64_x86"
 
-        vc_x86_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX86\\X86;")
-        if(vc_x86_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_x86_compiler_detection_index)):
+        vc_x86_compiler_detection_index = tools_env["PATH"].upper().find(tools_env["VCTOOLSINSTALLDIR"].upper() + "BIN\\HOSTX86\\X86;")
+        if vc_x86_compiler_detection_index > -1 and (vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_compiler_detection_index):
             vc_chosen_compiler_index = vc_x86_compiler_detection_index
             vc_chosen_compiler_str = "x86"
 
-        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env['VCTOOLSINSTALLDIR'].upper() + "BIN\\HOSTX86\\X64;")
-        if(vc_x86_amd64_compiler_detection_index > -1
-           and (vc_chosen_compiler_index == -1
-                or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index)):
+        vc_x86_amd64_compiler_detection_index = tools_env["PATH"].upper().find(tools_env["VCTOOLSINSTALLDIR"].upper() + "BIN\\HOSTX86\\X64;")
+        if vc_x86_amd64_compiler_detection_index > -1 and (vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index):
             vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
     return vc_chosen_compiler_str
 
+
 def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import get_default_version, get_host_target, find_batch_file
 
     version = get_default_version(env)
-    (host_platform, target_platform,req_target_platform) = get_host_target(env)
+    (host_platform, target_platform, req_target_platform) = get_host_target(env)
     return find_batch_file(env, version, host_platform, target_platform)[0]
+
 
 def generate_cpp_hint_file(filename):
     if os.path.isfile(filename):
@@ -547,15 +561,13 @@ def generate_cpp_hint_file(filename):
         except IOError:
             print("Could not write cpp.hint file.")
 
+
 def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
     if batch_file:
+
         def build_commandline(commands):
-            common_build_prefix = ['cmd /V /C set "plat=$(PlatformTarget)"',
-                                    '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
-                                    'set "tools=yes"',
-                                    '(if "$(Configuration)"=="release" (set "tools=no"))',
-                                    'call "' + batch_file + '" !plat!']
+            common_build_prefix = ['cmd /V /C set "plat=$(PlatformTarget)"', '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))', 'set "tools=yes"', '(if "$(Configuration)"=="release" (set "tools=no"))', 'call "' + batch_file + '" !plat!']
 
             result = " ^& ".join(common_build_prefix + [commands])
             return result
@@ -571,54 +583,52 @@ def generate_vs_project(env, num_jobs):
         # to double quote off the directory. However, the path ends
         # in a backslash, so we need to remove this, lest it escape the
         # last double quote off, confusing MSBuild
-        env['MSVSBUILDCOM'] = build_commandline('scons --directory="$(ProjectDir.TrimEnd(\'\\\'))" platform=windows progress=no target=$(Configuration) tools=!tools! -j' + str(num_jobs))
-        env['MSVSREBUILDCOM'] = build_commandline('scons --directory="$(ProjectDir.TrimEnd(\'\\\'))" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes -j' + str(num_jobs))
-        env['MSVSCLEANCOM'] = build_commandline('scons --directory="$(ProjectDir.TrimEnd(\'\\\'))" --clean platform=windows progress=no target=$(Configuration) tools=!tools! -j' + str(num_jobs))
+        env["MSVSBUILDCOM"] = build_commandline("scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! -j" + str(num_jobs))
+        env["MSVSREBUILDCOM"] = build_commandline("scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes -j" + str(num_jobs))
+        env["MSVSCLEANCOM"] = build_commandline("scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! -j" + str(num_jobs))
 
         # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
         # required for Visual Studio to understand that it needs to generate an NMAKE
         # project. Do not modify without knowing what you are doing.
-        debug_variants = ['debug|Win32'] + ['debug|x64']
-        release_variants = ['release|Win32'] + ['release|x64']
-        release_debug_variants = ['release_debug|Win32'] + ['release_debug|x64']
+        debug_variants = ["debug|Win32"] + ["debug|x64"]
+        release_variants = ["release|Win32"] + ["release|x64"]
+        release_debug_variants = ["release_debug|Win32"] + ["release_debug|x64"]
         variants = debug_variants + release_variants + release_debug_variants
-        debug_targets = ['bin\\godot.windows.tools.32.exe'] + ['bin\\godot.windows.tools.64.exe']
-        release_targets = ['bin\\godot.windows.opt.32.exe'] + ['bin\\godot.windows.opt.64.exe']
-        release_debug_targets = ['bin\\godot.windows.opt.tools.32.exe'] + ['bin\\godot.windows.opt.tools.64.exe']
+        debug_targets = ["bin\\godot.windows.tools.32.exe"] + ["bin\\godot.windows.tools.64.exe"]
+        release_targets = ["bin\\godot.windows.opt.32.exe"] + ["bin\\godot.windows.opt.64.exe"]
+        release_debug_targets = ["bin\\godot.windows.opt.tools.32.exe"] + ["bin\\godot.windows.opt.tools.64.exe"]
         targets = debug_targets + release_targets + release_debug_targets
-        if not env.get('MSVS'):
-            env['MSVS']['PROJECTSUFFIX'] = '.vcxproj'    
-            env['MSVS']['SOLUTIONSUFFIX'] = '.sln'
-        env.MSVSProject(
-            target=['#godot' + env['MSVSPROJECTSUFFIX']],
-            incs=env.vs_incs,
-            srcs=env.vs_srcs,
-            runfile=targets,
-            buildtarget=targets,
-            auto_build_solution=1,
-            variant=variants)
+        if not env.get("MSVS"):
+            env["MSVS"]["PROJECTSUFFIX"] = ".vcxproj"
+            env["MSVS"]["SOLUTIONSUFFIX"] = ".sln"
+        env.MSVSProject(target=["#godot" + env["MSVSPROJECTSUFFIX"]], incs=env.vs_incs, srcs=env.vs_srcs, runfile=targets, buildtarget=targets, auto_build_solution=1, variant=variants)
     else:
         print("Could not locate Visual Studio batch file for setting up the build environment. Not generating VS project.")
+
 
 def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
     env.Precious(program)
     return program
 
+
 def add_shared_library(env, name, sources, **args):
     library = env.SharedLibrary(name, sources, **args)
     env.NoCache(library)
     return library
+
 
 def add_library(env, name, sources, **args):
     library = env.Library(name, sources, **args)
     env.NoCache(library)
     return library
 
+
 def add_program(env, name, sources, **args):
     program = env.Program(name, sources, **args)
     env.NoCache(program)
     return program
+
 
 def CommandNoCache(env, target, sources, command, **args):
     result = env.Command(target, sources, command, **args)

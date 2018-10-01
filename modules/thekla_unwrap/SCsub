@@ -2,13 +2,13 @@
 
 import platform
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_thekla_unwrap = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_thekla_atlas']:
+if env["builtin_thekla_atlas"]:
     thirdparty_dir = "#thirdparty/thekla_atlas/"
     thirdparty_sources = [
         "nvcore/Memory.cpp",
@@ -50,17 +50,17 @@ if env['builtin_thekla_atlas']:
         "nvmesh/param/Util.cpp",
         "nvmesh/weld/VertexWeld.cpp",
         "nvmesh/weld/Snap.cpp",
-        "thekla/thekla_atlas.cpp"
+        "thekla/thekla_atlas.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_thekla_unwrap.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "poshlib", thirdparty_dir + "nvcore", thirdparty_dir + "nvmesh"])
 
     # upstream uses c++11
-    if (not env.msvc):
+    if not env.msvc:
         env_thekla_unwrap.Append(CXXFLAGS="-std=c++11")
 
-    if env["platform"] == 'x11':
+    if env["platform"] == "x11":
         # if not specifically one of the *BSD, then use LINUX as default
         if platform.system() == "FreeBSD":
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_FREEBSD", "-DPOSH_COMPILER_GCC"])
@@ -68,11 +68,11 @@ if env['builtin_thekla_atlas']:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_OPENBSD", "-DPOSH_COMPILER_GCC"])
         else:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_LINUX", "-DPOSH_COMPILER_GCC"])
-    elif env["platform"] == 'osx':
+    elif env["platform"] == "osx":
         env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_DARWIN", "-DPOSH_COMPILER_GCC"])
-    elif env["platform"] == 'windows':
+    elif env["platform"] == "windows":
         if env.msvc:
-            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32", "-DNV_CC_MSVC", "-DPOSH_COMPILER_MSVC" ])
+            env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_WIN32", "-DNV_CC_MSVC", "-DPOSH_COMPILER_MSVC"])
         else:
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_MINGW", "-DNV_CC_GNUC", "-DPOSH_COMPILER_GCC", "-U__STRICT_ANSI__"])
             env.Append(LIBS=["dbghelp"])

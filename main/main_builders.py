@@ -69,8 +69,8 @@ def make_default_controller_mappings(target, source, env):
     g = open(dst, "w")
 
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    g.write("#include \"core/typedefs.h\"\n")
-    g.write("#include \"main/default_controller_mappings.h\"\n")
+    g.write('#include "core/typedefs.h"\n')
+    g.write('#include "main/default_controller_mappings.h"\n')
 
     # ensure mappings have a consistent order
     platform_mappings = OrderedDict()
@@ -104,27 +104,19 @@ def make_default_controller_mappings(target, source, env):
                 if valid_mapping:
                     platform_mappings[current_platform][guid] = line
 
-    platform_variables = {
-        "Linux": "#if X11_ENABLED",
-        "Windows": "#ifdef WINDOWS_ENABLED",
-        "Mac OS X": "#ifdef OSX_ENABLED",
-        "Android": "#if defined(__ANDROID__)",
-        "iOS": "#ifdef IPHONE_ENABLED",
-        "Javascript": "#ifdef JAVASCRIPT_ENABLED",
-        "UWP": "#ifdef UWP_ENABLED",
-    }
+    platform_variables = {"Linux": "#if X11_ENABLED", "Windows": "#ifdef WINDOWS_ENABLED", "Mac OS X": "#ifdef OSX_ENABLED", "Android": "#if defined(__ANDROID__)", "iOS": "#ifdef IPHONE_ENABLED", "Javascript": "#ifdef JAVASCRIPT_ENABLED", "UWP": "#ifdef UWP_ENABLED"}
 
     g.write("const char* DefaultControllerMappings::mappings[] = {\n")
     for platform, mappings in platform_mappings.items():
         variable = platform_variables[platform]
         g.write("{}\n".format(variable))
         for mapping in mappings.values():
-            g.write("\t\"{}\",\n".format(mapping))
+            g.write('\t"{}",\n'.format(mapping))
         g.write("#endif\n")
 
     g.write("\tNULL\n};\n")
     g.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     subprocess_main(globals())

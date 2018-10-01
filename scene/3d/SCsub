@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
-if env['disable_3d']:
+if env["disable_3d"]:
     env.scene_sources.append("3d/spatial.cpp")
     env.scene_sources.append("3d/skeleton.cpp")
     env.scene_sources.append("3d/particles.cpp")

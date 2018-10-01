@@ -1,9 +1,8 @@
-
 import sys
 
 arg = "memdump.txt"
 
-if (len(sys.argv) > 1):
+if len(sys.argv) > 1:
     arg = sys.argv[1]
 
 f = open(arg, "rb")
@@ -16,12 +15,12 @@ sum = {}
 cnt = {}
 
 
-while(l != ""):
+while l != "":
 
     s = l.split("-")
     amount = int(s[1])
     what = s[2]
-    if (what in sum):
+    if what in sum:
         sum[what] += amount
         cnt[what] += 1
     else:
