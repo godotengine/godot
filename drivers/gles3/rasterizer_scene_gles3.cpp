@@ -1182,7 +1182,7 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 		glActiveTexture(GL_TEXTURE0 + i);
 
-		GLenum target;
+		GLenum target = GL_TEXTURE_2D;
 		GLuint tex = 0;
 
 		RasterizerStorageGLES3::Texture *t = storage->texture_owner.getptr(textures[i]);

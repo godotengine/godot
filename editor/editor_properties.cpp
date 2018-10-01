@@ -2638,7 +2638,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_2D_RENDER || p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
 
-				EditorPropertyLayers::LayerType lt;
+				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
 						lt = EditorPropertyLayers::LAYER_RENDER_2D;
