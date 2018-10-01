@@ -815,7 +815,12 @@ Error Expression::_get_token(Token &r_token) {
 			};
 			case '.': {
 
-				r_token.type = TK_PERIOD;
+				if (expression[str_ofs - 1] < '0' || expression[str_ofs - 1] > '9') {
+					expression = expression.insert(str_ofs - 1, "0");
+					str_ofs--;
+					_get_token(r_token);
+				} else
+					r_token.type = TK_PERIOD;
 				return OK;
 			};
 			case '$': {
@@ -2098,6 +2103,12 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	input_names = p_input_names;
 
 	expression = p_expression;
+	if (expression.length() > 1 && expression[0] == '.') {
+		bool is_number = p_expression[1] >= '0' && p_expression[1] <= '9';
+		if (is_number)
+			expression = expression.insert(0, "0");
+	}
+
 	root = _parse_expression();
 
 	if (error_set) {
