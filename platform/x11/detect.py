@@ -250,7 +250,8 @@ def configure(env):
     if (os.system("pkg-config --exists alsa") == 0): # 0 means found
         print("Enabling ALSA")
         env.Append(CPPFLAGS=["-DALSA_ENABLED", "-DALSAMIDI_ENABLED"])
-        env.ParseConfig('pkg-config alsa --cflags --libs')
+	# Don't parse --cflags, we don't need to add /usr/include/alsa to include path
+        env.ParseConfig('pkg-config alsa --libs')
     else:
         print("ALSA libraries not found, disabling driver")
 
@@ -278,7 +279,7 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Append(CPPPATH=['#platform/x11'])
-    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_GL'])
+    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
     env.Append(LIBS=['GL', 'pthread'])
 
     if (platform.system() == "Linux"):

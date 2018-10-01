@@ -157,7 +157,6 @@ opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
 opts.Add(BoolVariable('gdscript', "Enable GDScript support", True))
 opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
-opts.Add(BoolVariable('xml', "Enable XML format support for resources", True))
 
 # Advanced options
 opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
@@ -228,14 +227,14 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#editor', '#drivers', '#'])
+env_base.Append(CPPPATH=['#editor', '#'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
 if (env_base['target'] == 'debug'):
-    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC', 'SCI_NAMESPACE'])
+    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC'])
 
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
@@ -444,8 +443,6 @@ if selected_platform in platform_list:
             env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
-    if env['xml']:
-        env.Append(CPPDEFINES=['XML_ENABLED'])
 
     if not env['verbose']:
         methods.no_verbose(sys, env)
