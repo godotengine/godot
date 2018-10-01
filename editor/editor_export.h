@@ -37,10 +37,10 @@
 #include "scene/main/timer.h"
 #include "scene/resources/texture.h"
 
-class EditorProgress;
 class FileAccess;
 class EditorExportPlatform;
 class EditorFileSystemDirectory;
+struct EditorProgress;
 
 class EditorExportPreset : public Reference {
 

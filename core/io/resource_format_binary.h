@@ -119,7 +119,6 @@ class ResourceFormatSaverBinaryInstance {
 	bool skip_editor;
 	bool big_endian;
 	bool takeover_paths;
-	int bin_meta_idx;
 	FileAccess *f;
 	String magic;
 	Set<RES> resource_set;

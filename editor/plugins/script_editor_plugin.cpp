@@ -1414,21 +1414,6 @@ void ScriptEditor::notify_script_changed(const Ref<Script> &p_script) {
 	emit_signal("editor_script_changed", p_script);
 }
 
-static const Node *_find_node_with_script(const Node *p_node, const RefPtr &p_script) {
-
-	if (p_node->get_script() == p_script)
-		return p_node;
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-
-		const Node *result = _find_node_with_script(p_node->get_child(i), p_script);
-		if (result)
-			return result;
-	}
-
-	return NULL;
-}
-
 void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 
 	for (int i = 0; i < tab_container->get_child_count(); i++) {

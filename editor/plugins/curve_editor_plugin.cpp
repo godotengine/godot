@@ -205,13 +205,13 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 						curve.set_point_left_tangent(_selected_point, tangent);
 
 						// Note: if a tangent is set to linear, it shouldn't be linked to the other
-						if (link && _selected_point != curve.get_point_count() - 1 && !curve.get_point_right_mode(_selected_point) != Curve::TANGENT_FREE)
+						if (link && _selected_point != (curve.get_point_count() - 1) && curve.get_point_right_mode(_selected_point) != Curve::TANGENT_LINEAR)
 							curve.set_point_right_tangent(_selected_point, tangent);
 
 					} else {
 						curve.set_point_right_tangent(_selected_point, tangent);
 
-						if (link && _selected_point != 0 && !curve.get_point_left_mode(_selected_point) != Curve::TANGENT_FREE)
+						if (link && _selected_point != 0 && curve.get_point_left_mode(_selected_point) != Curve::TANGENT_LINEAR)
 							curve.set_point_left_tangent(_selected_point, tangent);
 					}
 				}
