@@ -35,9 +35,9 @@
 #include "core/resource.h"
 #include "servers/physics_2d_server.h"
 
-class SpatialIndexer2D;
 class VisibilityNotifier2D;
 class Viewport;
+struct SpatialIndexer2D;
 
 class World2D : public Resource {
 

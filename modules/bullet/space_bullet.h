@@ -57,7 +57,7 @@ class btDiscreteDynamicsWorld;
 class btEmptyShape;
 class btGhostPairCallback;
 class btSoftRigidDynamicsWorld;
-class btSoftBodyWorldInfo;
+struct btSoftBodyWorldInfo;
 class ConstraintBullet;
 class CollisionObjectBullet;
 class RigidBodyBullet;

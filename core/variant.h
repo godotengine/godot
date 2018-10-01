@@ -116,7 +116,7 @@ public:
 	};
 
 private:
-	friend class _VariantCall;
+	friend struct _VariantCall;
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 

@@ -34,7 +34,7 @@
 #include "core/os/memory.h"
 #include "core/typedefs.h"
 
-class ReverbParamsSW;
+struct ReverbParamsSW;
 
 class ReverbSW {
 public:

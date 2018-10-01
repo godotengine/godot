@@ -227,7 +227,7 @@ public:
 
 	void init_kinematic_utilities();
 	void destroy_kinematic_utilities();
-	_FORCE_INLINE_ class KinematicUtilities *get_kinematic_utilities() const { return kinematic_utilities; }
+	_FORCE_INLINE_ KinematicUtilities *get_kinematic_utilities() const { return kinematic_utilities; }
 
 	_FORCE_INLINE_ btRigidBody *get_bt_rigid_body() { return btBody; }
 
