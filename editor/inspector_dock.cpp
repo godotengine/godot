@@ -259,6 +259,8 @@ void InspectorDock::_prepare_history() {
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
+
+	editor_path->update_path();
 }
 
 void InspectorDock::_select_history(int p_idx) const {
