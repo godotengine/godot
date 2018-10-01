@@ -95,6 +95,7 @@
 			<argument index="0" name="axis" type="String">
 			</argument>
 			<description>
+				Returns the index of the provided axis name.
 			</description>
 		</method>
 		<method name="get_joy_axis_string">
@@ -103,6 +104,7 @@
 			<argument index="0" name="axis_index" type="int">
 			</argument>
 			<description>
+				Receives a [code]JOY_AXIS_*[/code] Enum and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_button_index_from_string">
@@ -111,6 +113,7 @@
 			<argument index="0" name="button" type="String">
 			</argument>
 			<description>
+				Returns the index of the provided button name.
 			</description>
 		</method>
 		<method name="get_joy_button_string">
@@ -119,6 +122,7 @@
 			<argument index="0" name="button_index" type="int">
 			</argument>
 			<description>
+				Receives a [code]JOY_BUTTON_*[/code] Enum and returns it's equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
