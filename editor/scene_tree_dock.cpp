@@ -1591,6 +1591,10 @@ void SceneTreeDock::_selection_changed() {
 	if (selection_size > 1) {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
+	} else if (selection_size == 1) {
+		editor->push_item(EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()[0]);
+	} else {
+		editor->push_item(NULL);
 	}
 	_update_script_button();
 }
