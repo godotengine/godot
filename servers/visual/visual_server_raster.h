@@ -59,7 +59,6 @@ class VisualServerRaster : public VisualServer {
 	};
 
 	static int changes;
-	bool draw_extra_frame;
 	RID test_cube;
 
 	int black_margin[4];

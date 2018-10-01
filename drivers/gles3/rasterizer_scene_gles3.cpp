@@ -51,26 +51,6 @@ static const GLenum _cube_side_enum[6] = {
 
 };
 
-static _FORCE_INLINE_ void store_transform2d(const Transform2D &p_mtx, float *p_array) {
-
-	p_array[0] = p_mtx.elements[0][0];
-	p_array[1] = p_mtx.elements[0][1];
-	p_array[2] = 0;
-	p_array[3] = 0;
-	p_array[4] = p_mtx.elements[1][0];
-	p_array[5] = p_mtx.elements[1][1];
-	p_array[6] = 0;
-	p_array[7] = 0;
-	p_array[8] = 0;
-	p_array[9] = 0;
-	p_array[10] = 1;
-	p_array[11] = 0;
-	p_array[12] = p_mtx.elements[2][0];
-	p_array[13] = p_mtx.elements[2][1];
-	p_array[14] = 0;
-	p_array[15] = 1;
-}
-
 static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
 	p_array[0] = p_mtx.basis.elements[0][0];
 	p_array[1] = p_mtx.basis.elements[1][0];

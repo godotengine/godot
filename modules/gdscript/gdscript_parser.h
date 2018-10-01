@@ -555,7 +555,6 @@ private:
 
 	CompletionType completion_type;
 	StringName completion_cursor;
-	bool completion_static;
 	Variant::Type completion_built_in_constant;
 	Node *completion_node;
 	ClassNode *completion_class;

@@ -1856,32 +1856,6 @@ static bool _has_visible_children(Node *p_node) {
 	return false;
 }
 
-static Node *_find_last_visible(Node *p_node) {
-
-	Node *last = NULL;
-
-	bool collapsed = p_node->is_displayed_folded();
-
-	if (!collapsed) {
-		for (int i = 0; i < p_node->get_child_count(); i++) {
-			if (_is_node_visible(p_node->get_child(i))) {
-				last = p_node->get_child(i);
-			}
-		}
-	}
-
-	if (last) {
-		Node *lastc = _find_last_visible(last);
-		if (lastc)
-			last = lastc;
-
-	} else {
-		last = p_node;
-	}
-
-	return last;
-}
-
 void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 
 	to_pos = -1;
