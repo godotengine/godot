@@ -1054,7 +1054,12 @@ public:
 		if (api == 0)
 			r_features->push_back("etc");
 		else*/
-		r_features->push_back("etc2");
+		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+		if (driver == "GLES2") {
+			r_features->push_back("etc");
+		} else {
+			r_features->push_back("etc2");
+		}
 
 		Vector<String> abis = get_enabled_abis(p_preset);
 		for (int i = 0; i < abis.size(); ++i) {
