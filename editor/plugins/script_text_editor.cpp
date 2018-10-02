@@ -915,6 +915,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case SEARCH_FIND: {
 
+			search_menu->get_popup()->hide();
 			code_editor->get_find_replace_bar()->popup_search();
 		} break;
 		case SEARCH_FIND_NEXT: {
