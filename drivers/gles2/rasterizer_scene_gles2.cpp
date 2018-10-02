@@ -2169,7 +2169,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			}
 
 			//condition to enable vertex lighting on this object
-			bool vertex_lit = light && (material->shader->spatial.uses_vertex_lighting || storage->config.force_vertex_shading) && !unshaded;
+			bool vertex_lit = (material->shader->spatial.uses_vertex_lighting || storage->config.force_vertex_shading) && ((!unshaded && light) || using_fog); //fog forces vertex lighting because it still applies even if unshaded or no fog
 
 			if (vertex_lit != prev_vertex_lit) {
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_VERTEX_LIGHTING, vertex_lit);

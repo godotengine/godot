@@ -286,6 +286,33 @@ varying mediump vec3 refprobe2_ambient_normal;
 
 #endif //vertex lighting for refprobes
 
+#if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+varying vec4 fog_interp;
+
+uniform mediump vec4 fog_color_base;
+#ifdef LIGHT_MODE_DIRECTIONAL
+uniform mediump vec4 fog_sun_color_amount;
+#endif
+
+uniform bool fog_transmit_enabled;
+uniform mediump float fog_transmit_curve;
+
+#ifdef FOG_DEPTH_ENABLED
+uniform highp float fog_depth_begin;
+uniform mediump float fog_depth_curve;
+uniform mediump float fog_max_distance;
+#endif
+
+#ifdef FOG_HEIGHT_ENABLED
+uniform highp float fog_height_min;
+uniform highp float fog_height_max;
+uniform mediump float fog_height_curve;
+#endif
+
+
+#endif //fog
+
 void main() {
 
 	highp vec4 vertex = vertex_attrib;
@@ -582,6 +609,37 @@ VERTEX_SHADER_CODE
 	}
 
 #endif //USE_REFLECTION_PROBE2
+
+#if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+	float fog_amount = 0.0;
+
+#ifdef LIGHT_MODE_DIRECTIONAL
+
+	vec3 fog_color = mix(fog_color_base.rgb, fog_sun_color_amount.rgb, fog_sun_color_amount.a * pow(max(dot(normalize(vertex_interp), light_direction), 0.0), 8.0));
+#else
+	vec3 fog_color = fog_color_base.rgb;
+#endif
+
+#ifdef FOG_DEPTH_ENABLED
+
+	{
+
+	    float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
+
+	    fog_amount = pow(fog_z, fog_depth_curve);
+	}
+#endif
+
+#ifdef FOG_HEIGHT_ENABLED
+	{
+	    float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
+	    fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
+	}
+#endif
+	fog_interp = vec4(fog_color,fog_amount);
+
+#endif //fog
 
 #endif //use vertex lighting
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
@@ -1300,6 +1358,11 @@ float sample_shadow(
 
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
+#if defined(USE_VERTEX_LIGHTING)
+
+varying vec4 fog_interp;
+
+#else
 uniform mediump vec4 fog_color_base;
 #ifdef LIGHT_MODE_DIRECTIONAL
 uniform mediump vec4 fog_sun_color_amount;
@@ -1320,7 +1383,8 @@ uniform highp float fog_height_max;
 uniform mediump float fog_height_curve;
 #endif
 
-#endif
+#endif //vertex lit
+#endif //fog
 
 void main() {
 
@@ -1955,6 +2019,10 @@ FRAGMENT_SHADER_CODE
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
+#if defined(USE_VERTEX_LIGHTING)
+
+	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_interp.rgb,fog_interp.a);
+#else	//pixel based fog
 	float fog_amount = 0.0;
 
 #ifdef LIGHT_MODE_DIRECTIONAL
@@ -1989,6 +2057,7 @@ FRAGMENT_SHADER_CODE
 
 	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_color,fog_amount);
 
+#endif //use vertex lit
 
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
