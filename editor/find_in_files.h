@@ -91,8 +91,8 @@ class CheckBox;
 class FileDialog;
 
 // Prompts search parameters
-class FindInFilesDialog : public WindowDialog {
-	GDCLASS(FindInFilesDialog, WindowDialog)
+class FindInFilesDialog : public AcceptDialog {
+	GDCLASS(FindInFilesDialog, AcceptDialog)
 public:
 	static const char *SIGNAL_FIND_REQUESTED;
 	static const char *SIGNAL_REPLACE_REQUESTED;
@@ -111,11 +111,10 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+	void custom_action(const String &p_action);
 
 private:
 	void _on_folder_button_pressed();
-	void _on_find_button_pressed();
-	void _on_replace_button_pressed();
 	void _on_folder_selected(String path);
 	void _on_search_text_modified(String text);
 	void _on_search_text_entered(String text);
