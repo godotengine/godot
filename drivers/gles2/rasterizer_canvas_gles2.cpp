@@ -1185,7 +1185,6 @@ void RasterizerCanvasGLES2::initialize() {
 			_EIDX(1, 1), _EIDX(1, 2), _EIDX(2, 2),
 			_EIDX(2, 2), _EIDX(2, 1), _EIDX(1, 1)
 		};
-		;
 #undef _EIDX
 
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), elems, GL_STATIC_DRAW);
@@ -1200,6 +1199,8 @@ void RasterizerCanvasGLES2::initialize() {
 	state.canvas_shader.bind();
 
 	state.lens_shader.init();
+
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
 }
 
 void RasterizerCanvasGLES2::finalize() {

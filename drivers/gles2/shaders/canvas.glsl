@@ -96,6 +96,10 @@ VERTEX_SHADER_CODE
 
 	color_interp = color;
 
+#ifdef USE_PIXEL_SNAP
+	outvec.xy = floor(outvec + 0.5).xy;
+#endif
+
 	gl_Position = projection_matrix * outvec;
 }
 
