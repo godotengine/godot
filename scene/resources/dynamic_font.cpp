@@ -1083,8 +1083,19 @@ void DynamicFont::update_oversampling() {
 				E->self()->outline_data_at_size->update_oversampling();
 			}
 
+			for (int i = 0; i < E->self()->fallback_data_at_size.size(); i++) {
+				if (E->self()->fallback_data_at_size[i].is_valid()) {
+					E->self()->fallback_data_at_size.write[i]->update_oversampling();
+
+					if (E->self()->has_outline() && E->self()->fallback_outline_data_at_size[i].is_valid()) {
+						E->self()->fallback_outline_data_at_size.write[i]->update_oversampling();
+					}
+				}
+			}
+
 			changed.push_back(Ref<DynamicFont>(E->self()));
 		}
+
 		E = E->next();
 	}
 
