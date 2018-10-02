@@ -76,6 +76,9 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 
+	void set_align(LineEdit::Align p_align);
+	LineEdit::Align get_align() const;
+
 	void set_editable(bool p_editable);
 	bool is_editable() const;
 
