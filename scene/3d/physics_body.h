@@ -389,6 +389,8 @@ public:
 		virtual bool _set(const StringName &p_name, const Variant &p_value, RID j = RID());
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
+
+		virtual ~JointData() {}
 	};
 
 	struct PinJointData : public JointData {

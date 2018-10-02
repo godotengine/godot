@@ -782,12 +782,13 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 	return p_type == "Curve";
 }
 
-Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from) {
+Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
 	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());
 	Curve &curve = **curve_ref;
 
+	// FIXME: Should be ported to use p_size as done in b2633a97
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size *= EDSCALE;
 	Ref<Image> img_ref;

@@ -69,7 +69,7 @@ public:
 	virtual bool is_using_vsync() const;
 
 	ContextGL_Win(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Win();
+	virtual ~ContextGL_Win();
 };
 
 #endif

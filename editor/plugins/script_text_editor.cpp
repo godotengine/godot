@@ -940,7 +940,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 
-			quick_open->popup(get_functions());
+			quick_open->popup_dialog(get_functions());
 			quick_open->set_title(TTR("Go to Function"));
 		} break;
 		case SEARCH_GOTO_LINE: {

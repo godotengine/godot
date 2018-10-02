@@ -67,7 +67,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void popup(const Vector<String> &p_functions, bool p_dontclear = false);
+	void popup_dialog(const Vector<String> &p_functions, bool p_dontclear = false);
 	ScriptEditorQuickOpen();
 };
 
