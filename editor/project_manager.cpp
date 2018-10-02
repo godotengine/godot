@@ -999,6 +999,10 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 				_open_project();
 			} break;
+			case KEY_DELETE: {
+
+				_erase_project();
+			} break;
 			case KEY_HOME: {
 
 				for (int i = 0; i < scroll_children->get_child_count(); i++) {
