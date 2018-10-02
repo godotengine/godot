@@ -13,6 +13,7 @@ __XINPUT_DEVICE__,XInput Gamepad,a:b12,b:b13,x:b14,y:b15,start:b4,back:b5,leftst
 03000000fd0500002a26000000010000,3dfx InterAct HammerHead FX,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:b5,rightshoulder:b7,rightx:a2,start:b11,righty:a3,dpleft:h0.8,lefttrigger:b8,x:b0,dpup:h0.1,back:b10,leftstick:b2,leftshoulder:b6,y:b1,a:b3,dpright:h0.2,righttrigger:b9,b:b4,platform:Linux,
 030000006f0e00002801000011010000,PDP Rock Candy Wireless Controller for PS3,leftx:a0,lefty:a1,dpdown:h0.4,rightstick:b11,rightshoulder:b5,rightx:a2,start:b9,righty:a3,dpleft:h0.8,lefttrigger:b6,x:b0,dpup:h0.1,back:b8,leftstick:b10,leftshoulder:b4,y:b3,a:b1,dpright:h0.2,righttrigger:b7,b:b2,platform:Linux,
 030000000d0f00004d00000011010000,HORI Gem Pad 3,x:b0,a:b1,b:b2,y:b3,back:b8,guide:b12,start:b9,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,platform:Linux,
+030000005e040000ea02000001030000,Xbox One Wireless Controller,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,platform:Linux,
 
 # Android
 4f5559412047616d6520436f6e74726f,OUYA Game Controller,leftx:a1,lefty:a3,dpdown:b12,rightstick:b8,rightshoulder:b10,rightx:a6,start:b-86,righty:a7,dpleft:b13,lefttrigger:b15,x:b2,dpup:b11,leftstick:b7,leftshoulder:b9,y:b3,a:b0,dpright:b14,righttrigger:b16,b:b1,platform:Android,
