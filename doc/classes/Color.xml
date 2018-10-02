@@ -4,7 +4,7 @@
 		Color in RGBA format with some support for ARGB format.
 	</brief_description>
 	<description>
-		A color is represented by red, green, and blue [code](r, g, b)[/code] components. Additionally, [code]a[/code] represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1.  Some properties (such as [member CanvasItem.modulate] ) may accept values &gt; 1.
+		A color is represented by red, green, and blue [code](r, g, b)[/code] components. Additionally, [code]a[/code] represents the alpha component, often used for transparency. Values are in floating point and usually range from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may accept values &gt; 1.
 		You can also create a color from standardized color names by using [method @GDScript.ColorN].
 	</description>
 	<tutorials>
