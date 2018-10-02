@@ -2244,8 +2244,8 @@ void BindingsGenerator::_populate_global_constants() {
 			String constant_name = GlobalConstants::get_global_constant_name(i);
 
 			const DocData::ConstantDoc *const_doc = NULL;
-			for (int i = 0; i < global_scope_doc.constants.size(); i++) {
-				const DocData::ConstantDoc &curr_const_doc = global_scope_doc.constants[i];
+			for (int j = 0; j < global_scope_doc.constants.size(); j++) {
+				const DocData::ConstantDoc &curr_const_doc = global_scope_doc.constants[j];
 
 				if (curr_const_doc.name == constant_name) {
 					const_doc = &curr_const_doc;
