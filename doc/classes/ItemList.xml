@@ -33,7 +33,7 @@
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
 			<description>
-				Adds an item to the item list with specified text.  Specify an icon of null for a list item with no icon.
+				Adds an item to the item list with specified text. Specify an icon of null for a list item with no icon.
 				If selectable is true the list item will be selectable.
 			</description>
 		</method>
@@ -222,7 +222,7 @@
 			</argument>
 			<description>
 				Select the item at the specified index.
-				Note:  This method does not trigger the item selection signal.
+				Note: This method does not trigger the item selection signal.
 			</description>
 		</method>
 		<method name="set_item_custom_bg_color">
