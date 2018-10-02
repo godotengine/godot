@@ -297,49 +297,6 @@ bool MobileVRInterface::initialize() {
 		mag_current_min = Vector3(0, 0, 0);
 		mag_current_max = Vector3(0, 0, 0);
 
-#if !defined(SERVER_ENABLED)
-		// build our shader
-		if (lens_shader == NULL) {
-			///@TODO need to switch between GLES2 and GLES3 version, Reduz suggested moving this into our drivers and making this a core shader
-			// create a shader
-			lens_shader = new LensDistortedShaderGLES3();
-
-			// create our shader stuff
-			lens_shader->init();
-
-			glGenBuffers(1, &half_screen_quad);
-			glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
-			{
-				/* clang-format off */
-				const float qv[16] = {
-					0, -1,
-					-1, -1,
-					0, 1,
-					-1, 1,
-					1, 1,
-					1, 1,
-					1, -1,
-					1, -1,
-				};
-				/* clang-format on */
-
-				glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
-			}
-
-			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-
-			glGenVertexArrays(1, &half_screen_array);
-			glBindVertexArray(half_screen_array);
-			glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
-			glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, ((uint8_t *)NULL) + 8);
-			glEnableVertexAttribArray(4);
-			glBindVertexArray(0);
-			glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-		}
-#endif
-
 		// reset our orientation
 		orientation = Basis();
 
@@ -361,17 +318,6 @@ void MobileVRInterface::uninitialize() {
 			// no longer our primary interface
 			arvr_server->clear_primary_interface_if(this);
 		}
-
-#if !defined(SERVER_ENABLED)
-		// cleanup our shader and buffers
-		if (lens_shader != NULL) {
-			glDeleteVertexArrays(1, &half_screen_array);
-			glDeleteBuffers(1, &half_screen_quad);
-
-			delete lens_shader;
-			lens_shader = NULL;
-		}
-#endif
 
 		initialized = false;
 	};
@@ -448,48 +394,30 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	// We must have a valid render target
 	ERR_FAIL_COND(!p_render_target.is_valid());
 
-	// We must have an initialised shader
-	ERR_FAIL_COND(lens_shader != NULL);
-
 	// Because we are rendering to our device we must use our main viewport!
 	ERR_FAIL_COND(p_screen_rect == Rect2());
 
-	float offset_x = 0.0;
+	Rect2 dest = p_screen_rect;
 	float aspect_ratio = 0.5 * p_screen_rect.size.x / p_screen_rect.size.y;
 	Vector2 eye_center;
 
+	// we output half a screen
+	dest.size.x *= 0.5;
+
 	if (p_eye == ARVRInterface::EYE_LEFT) {
-		offset_x = -1.0;
 		eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
 	} else if (p_eye == ARVRInterface::EYE_RIGHT) {
+		dest.position.x = dest.size.x;
 		eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	}
+	// we don't offset the eye center vertically (yet)
+	eye_center.y = 0.0;
 
 	// unset our render target so we are outputting to our main screen by making RasterizerStorageGLES3::system_fbo our current FBO
 	VSG::rasterizer->set_current_render_target(RID());
 
-	// now output to screen
-	//	VSG::rasterizer->blit_render_target_to_screen(p_render_target, screen_rect, 0);
-
-	// get our render target
-	RID eye_texture = VSG::storage->render_target_get_texture(p_render_target);
-	uint32_t texid = VS::get_singleton()->texture_get_texid(eye_texture);
-#if !defined(SERVER_ENABLED)
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texid);
-
-	lens_shader->bind();
-	lens_shader->set_uniform(LensDistortedShaderGLES3::OFFSET_X, offset_x);
-	lens_shader->set_uniform(LensDistortedShaderGLES3::K1, k1);
-	lens_shader->set_uniform(LensDistortedShaderGLES3::K2, k2);
-	lens_shader->set_uniform(LensDistortedShaderGLES3::EYE_CENTER, eye_center);
-	lens_shader->set_uniform(LensDistortedShaderGLES3::UPSCALE, oversample);
-	lens_shader->set_uniform(LensDistortedShaderGLES3::ASPECT_RATIO, aspect_ratio);
-
-	glBindVertexArray(half_screen_array);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glBindVertexArray(0);
-#endif
+	// and output
+	VSG::rasterizer->output_lens_distorted_to_screen(p_render_target, dest, k1, k2, eye_center, oversample);
 };
 
 void MobileVRInterface::process() {
@@ -512,8 +440,6 @@ MobileVRInterface::MobileVRInterface() {
 	k1 = 0.215;
 	k2 = 0.215;
 	last_ticks = 0;
-
-	lens_shader = NULL;
 };
 
 MobileVRInterface::~MobileVRInterface() {
