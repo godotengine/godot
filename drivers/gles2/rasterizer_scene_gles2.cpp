@@ -42,8 +42,6 @@
 #define glClearDepth glClearDepthf
 #endif
 
-#define _DEPTH_COMPONENT24_OES 0x81A6
-
 static const GLenum _cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -463,8 +461,7 @@ RID RasterizerSceneGLES2::reflection_probe_instance_create(RID p_probe) {
 
 	glGenFramebuffers(1, &rpi->fbo_blur);
 	glGenRenderbuffers(1, &rpi->depth);
-	rpi->cubemap = 0;
-	//glGenTextures(1, &rpi->cubemap);
+	glGenTextures(1, &rpi->cubemap);
 
 	return rpi->self;
 }
@@ -505,37 +502,14 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 		int size = rpi->probe_ptr->resolution;
 		rpi->current_resolution = size;
 
-		GLenum internal_format = GL_RGB;
-		GLenum format = GL_RGB;
+		int lod = 0;
+
+		GLenum internal_format = GL_RGBA;
+		GLenum format = GL_RGBA;
 		GLenum type = GL_UNSIGNED_BYTE;
 
 		glActiveTexture(GL_TEXTURE0);
-		if (rpi->cubemap != 0) {
-			glDeleteTextures(1, &rpi->cubemap);
-		}
-		glGenTextures(1, &rpi->cubemap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, rpi->cubemap);
-#if 1
-		//Mobile hardware (PowerVR specially) prefers this approach, the other one kills the game
-		for (int i = 0; i < 6; i++) {
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, NULL);
-		}
-
-		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
-		glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth); //resize depth buffer
-		glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, size, size);
-
-		for (int i = 0; i < 6; i++) {
-			glBindFramebuffer(GL_FRAMEBUFFER, rpi->fbo[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _cube_side_enum[i], rpi->cubemap, 0);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rpi->depth);
-		}
-
-#else
-		int lod = 0;
-
-		//the approach below is fatal for powervr
 
 		// Set the initial (empty) mipmaps, all need to be set for this to work in GLES2, even if later wont be used.
 		while (size >= 1) {
@@ -547,7 +521,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 					glBindFramebuffer(GL_FRAMEBUFFER, rpi->fbo[i]);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _cube_side_enum[i], rpi->cubemap, 0);
 					glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth);
-					glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, size, size);
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size, size);
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rpi->depth);
 
 #ifdef DEBUG_ENABLED
@@ -561,7 +535,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 
 			size >>= 1;
 		}
-#endif
+
 		glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -2619,6 +2593,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, false, true, false);
 
+	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
 
 	//#define GLES2_SHADOW_ATLAS_DEBUG_VIEW
@@ -3062,7 +3037,7 @@ void RasterizerSceneGLES2::initialize() {
 			glBindTexture(GL_TEXTURE_CUBE_MAP, cube.cubemap);
 
 			for (int i = 0; i < 6; i++) {
-				glTexImage2D(_cube_side_enum[i], 0, GL_DEPTH_COMPONENT, cube_size, cube_size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+				glTexImage2D(_cube_side_enum[i], 0, GL_DEPTH_COMPONENT, cube_size, cube_size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
 			}
 
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

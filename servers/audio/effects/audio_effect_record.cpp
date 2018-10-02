@@ -44,7 +44,7 @@ void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFra
 	}
 }
 
-bool AudioEffectRecordInstance::process_silence() const {
+bool AudioEffectRecordInstance::process_silence() {
 	return true;
 }
 

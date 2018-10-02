@@ -32,6 +32,7 @@
 #define MESSAGE_QUEUE_H
 
 #include "core/object.h"
+#include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
 
 class MessageQueue {
@@ -42,6 +43,8 @@ class MessageQueue {
 
 		DEFAULT_QUEUE_SIZE_KB = 1024
 	};
+
+	Mutex *mutex;
 
 	enum {
 		TYPE_CALL,

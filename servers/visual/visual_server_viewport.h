@@ -194,7 +194,6 @@ public:
 	bool free(RID p_rid);
 
 	VisualServerViewport();
-	virtual ~VisualServerViewport() {}
 };
 
 #endif // VISUALSERVERVIEWPORT_H

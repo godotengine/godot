@@ -89,18 +89,9 @@ VERTEX_SHADER_CODE
 		/* clang-format on */
 	}
 
-#if !defined(SKIP_TRANSFORM_USED)
-	outvec = extra_matrix * outvec;
-	outvec = modelview_matrix * outvec;
-#endif
-
 	color_interp = color;
 
-#ifdef USE_PIXEL_SNAP
-	outvec.xy = floor(outvec + 0.5).xy;
-#endif
-
-	gl_Position = projection_matrix * outvec;
+	gl_Position = projection_matrix * modelview_matrix * outvec;
 }
 
 /* clang-format off */

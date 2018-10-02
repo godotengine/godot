@@ -544,7 +544,7 @@ public:
 	bool free(RID p_rid);
 
 	VisualServerScene();
-	virtual ~VisualServerScene();
+	~VisualServerScene();
 };
 
 #endif // VISUALSERVERSCENE_H

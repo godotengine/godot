@@ -90,6 +90,8 @@ class FileAccessZip : public FileAccess {
 
 	mutable bool at_eof;
 
+	ZipArchive *archive;
+
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
 	virtual void close(); ///< close a file

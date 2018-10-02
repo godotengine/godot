@@ -1185,39 +1185,21 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyRect2::EditorPropertyRect2() {
-
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
-
-	BoxContainer *bc;
-
-	if (horizontal) {
-		bc = memnew(HBoxContainer);
-		add_child(bc);
-		set_bottom_editor(bc);
-	} else {
-		bc = memnew(VBoxContainer);
-		add_child(bc);
-	}
-
+	VBoxContainer *vb = memnew(VBoxContainer);
+	add_child(vb);
 	static const char *desc[4] = { "x", "y", "w", "h" };
 	for (int i = 0; i < 4; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
 		spin[i]->set_flat(true);
-		bc->add_child(spin[i]);
+
+		vb->add_child(spin[i]);
 		add_focusable(spin[i]);
 		spin[i]->connect("value_changed", this, "_value_changed");
-		if (horizontal) {
-			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
-		}
 	}
-
-	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
-	}
+	set_label_reference(spin[0]); //show text and buttons around this
 	setting = false;
 }
-
 ///////////////////// VECTOR3 /////////////////////////
 
 void EditorPropertyVector3::_value_changed(double val) {
@@ -1265,7 +1247,7 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector3::EditorPropertyVector3() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector3_editing");
 
 	BoxContainer *bc;
 
@@ -1346,7 +1328,7 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 
 EditorPropertyPlane::EditorPropertyPlane() {
 
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector3_editing");
 
 	BoxContainer *bc;
 
@@ -1427,7 +1409,7 @@ void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p
 }
 
 EditorPropertyQuat::EditorPropertyQuat() {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector3_editing");
 
 	BoxContainer *bc;
 
@@ -2656,7 +2638,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 			} else if (p_hint == PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_2D_RENDER || p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint == PROPERTY_HINT_LAYERS_3D_RENDER) {
 
-				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
+				EditorPropertyLayers::LayerType lt;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
 						lt = EditorPropertyLayers::LAYER_RENDER_2D;

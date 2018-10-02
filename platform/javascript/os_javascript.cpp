@@ -121,14 +121,14 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 			emscripten_exit_soft_fullscreen();
 			window_maximized = false;
 		}
-		emscripten_set_canvas_element_size(NULL, p_size.x, p_size.y);
+		emscripten_set_canvas_size(p_size.x, p_size.y);
 	}
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
-	int canvas[2];
-	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
+	int canvas[3];
+	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
 	return Size2(canvas[0], canvas[1]);
 }
 
@@ -378,13 +378,15 @@ static void set_css_cursor(const char *p_cursor) {
 	/* clang-format on */
 }
 
-static bool is_css_cursor_hidden() {
+static const char *get_css_cursor() {
 
+	char cursor[16];
 	/* clang-format off */
-	return EM_ASM_INT({
-		return Module.canvas.style.cursor === 'none';
-	});
+	EM_ASM_INT({
+		stringToUTF8(Module.canvas.style.cursor ? Module.canvas.style.cursor : 'auto', $0, 16);
+	}, cursor);
 	/* clang-format on */
+	return cursor;
 }
 
 void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
@@ -428,7 +430,7 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
 OS::MouseMode OS_JavaScript::get_mouse_mode() const {
 
-	if (is_css_cursor_hidden())
+	if (String::utf8(get_css_cursor()) == "none")
 		return MOUSE_MODE_HIDDEN;
 
 	EmscriptenPointerlockChangeEvent ev;
@@ -833,13 +835,13 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.canvasResizedCallback = NULL;
 			emscripten_enter_soft_fullscreen(NULL, &strategy);
 		} else {
-			emscripten_set_canvas_element_size(NULL, windowed_size.width, windowed_size.height);
+			emscripten_set_canvas_size(windowed_size.width, windowed_size.height);
 		}
 		just_exited_fullscreen = false;
 	}
 
-	int canvas[2];
-	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
+	int canvas[3];
+	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
 	video_mode.width = canvas[0];
 	video_mode.height = canvas[1];
 	if (!window_maximized && !video_mode.fullscreen && !just_exited_fullscreen && !entering_fullscreen) {

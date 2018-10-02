@@ -807,7 +807,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		case Variant::INT: {
 			int64_t val = p_variant;
-			if (val > (int64_t)INT_MAX || val < (int64_t)INT_MIN) {
+			if (val > 0x7FFFFFFF || val < -0x80000000) {
 				flags |= ENCODE_FLAG_64;
 			}
 		} break;
@@ -851,7 +851,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		case Variant::INT: {
 
 			int64_t val = p_variant;
-			if (flags & ENCODE_FLAG_64) {
+			if (val > 0x7FFFFFFF || val < -0x80000000) {
 				//64 bits
 				if (buf) {
 					encode_uint64(val, buf);
@@ -870,7 +870,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			double d = p_variant;
 			float f = d;
-			if (flags & ENCODE_FLAG_64) {
+			if (double(f) != d) {
 				if (buf) {
 					encode_double(p_variant.operator double(), buf);
 				}
