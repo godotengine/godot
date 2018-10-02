@@ -179,6 +179,10 @@ void CanvasItemEditor::_snap_if_closer_float(float p_value, float p_target_snap,
 	}
 }
 
+bool CanvasItemEditor::_is_node_editable(const Node *p_node) {
+	return (!(p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_")) && !(ClassDB::is_parent_class(p_node->get_parent()->get_class_name(), "Container") && ClassDB::is_parent_class(p_node->get_class_name(), "Control")));
+}
+
 void CanvasItemEditor::_snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation, float p_radius) {
 	Transform2D rot_trans = Transform2D(rotation, Point2());
 	p_value = rot_trans.inverse().xform(p_value);
@@ -411,7 +415,7 @@ void CanvasItemEditor::_expand_encompassing_rect_using_children(Rect2 &r_rect, c
 		}
 	}
 
-	if (canvas_item && canvas_item->is_visible_in_tree() && (include_locked_nodes || !canvas_item->has_meta("_edit_lock_"))) {
+	if (canvas_item && canvas_item->is_visible_in_tree() && (include_locked_nodes || !_is_node_editable(canvas_item))) {
 		Transform2D xform = p_parent_xform * p_canvas_xform * canvas_item->get_transform();
 		Rect2 rect = canvas_item->_edit_get_rect();
 		if (r_first) {
@@ -509,7 +513,7 @@ void CanvasItemEditor::_get_canvas_items_at_pos(const Point2 &p_pos, Vector<_Sel
 		}
 
 		//Remove the item if invalid
-		if (!canvas_item || duplicate || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner())) || (canvas_item->has_meta("_edit_lock_") && canvas_item->get_meta("_edit_lock_"))) {
+		if (!canvas_item || duplicate || (canvas_item != scene && canvas_item->get_owner() != scene && !scene->is_editable_instance(canvas_item->get_owner())) || !_is_node_editable(canvas_item)) {
 			r_items.remove(i);
 			i--;
 		} else {
@@ -610,7 +614,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 
 	bool editable = p_node == scene || p_node->get_owner() == scene || scene->is_editable_instance(p_node->get_owner());
 	bool lock_children = p_node->has_meta("_edit_group_") && p_node->get_meta("_edit_group_");
-	bool locked = p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+	bool locked = !_is_node_editable(p_node);
 
 	if (!lock_children || !editable) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
@@ -677,7 +681,7 @@ List<CanvasItem *> CanvasItemEditor::_get_edited_canvas_items(bool retreive_lock
 	List<CanvasItem *> selection;
 	for (Map<Node *, Object *>::Element *E = editor_selection->get_selection().front(); E; E = E->next()) {
 		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
-		if (canvas_item && canvas_item->is_visible_in_tree() && canvas_item->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retreive_locked || !canvas_item->has_meta("_edit_lock_"))) {
+		if (canvas_item && canvas_item->is_visible_in_tree() && canvas_item->get_viewport() == EditorNode::get_singleton()->get_scene_root() && (retreive_locked || _is_node_editable(canvas_item))) {
 			CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			if (se) {
 				selection.push_back(canvas_item);
@@ -2946,7 +2950,7 @@ void CanvasItemEditor::_draw_invisible_nodes_positions(Node *p_node, const Trans
 		_draw_invisible_nodes_positions(p_node->get_child(i), parent_xform, canvas_xform);
 	}
 
-	if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || (canvas_item->has_meta("_edit_lock_") && canvas_item->get_meta("_edit_lock_")))) {
+	if (canvas_item && !canvas_item->_edit_use_rect() && (!editor_selection->is_selected(canvas_item) || !_is_node_editable(canvas_item))) {
 		Transform2D xform = transform * canvas_xform * parent_xform;
 
 		// Draw the node's position
