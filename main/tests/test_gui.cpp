@@ -60,6 +60,8 @@ namespace TestGUI {
 
 class TestMainLoop : public SceneTree {
 
+	Control *control;
+
 public:
 	virtual void request_quit() {
 

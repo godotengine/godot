@@ -691,7 +691,7 @@ public:
 		}
 	};
 
-	struct MultiMesh;
+	class MultiMesh;
 
 	struct Mesh : public GeometryOwner {
 

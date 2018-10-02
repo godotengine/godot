@@ -79,7 +79,7 @@ public:
 	virtual bool is_using_vsync() const;
 
 	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	virtual ~ContextGL_X11();
+	~ContextGL_X11();
 };
 
 #endif

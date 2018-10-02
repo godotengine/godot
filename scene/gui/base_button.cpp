@@ -315,14 +315,6 @@ void BaseButton::set_disabled(bool p_disabled) {
 		return;
 
 	status.disabled = p_disabled;
-	if (p_disabled) {
-		if (!toggle_mode) {
-			status.pressed = false;
-		}
-		status.press_attempt = false;
-		status.pressing_inside = false;
-		status.pressing_button = 0;
-	}
 	update();
 	_change_notify("disabled");
 }

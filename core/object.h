@@ -422,7 +422,7 @@ private:
 	};
 
 #ifdef DEBUG_ENABLED
-	friend struct _ObjectDebugLock;
+	friend class _ObjectDebugLock;
 #endif
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);

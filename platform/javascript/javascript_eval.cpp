@@ -140,9 +140,8 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 		case Variant::POOL_BYTE_ARRAY:
 			arr_write = PoolByteArray::Write();
 			return arr;
-		default:
-			return Variant();
 	}
+	return Variant();
 }
 
 #endif // JAVASCRIPT_EVAL_ENABLED
