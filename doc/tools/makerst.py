@@ -610,8 +610,7 @@ def make_rst_class(node):
                     s += ' = **' + c.attrib['value'] + '**'
                 if c.text.strip() != '':
                     s += ' --- ' + rstize_text(c.text.strip(), name)
-                f.write(s + '\n')
-            f.write('\n')
+                f.write(s + '\n\n')
 
     # Constants
     if len(consts) > 0:
@@ -623,8 +622,7 @@ def make_rst_class(node):
                 s += ' = **' + c.attrib['value'] + '**'
             if c.text.strip() != '':
                 s += ' --- ' + rstize_text(c.text.strip(), name)
-            f.write(s + '\n')
-        f.write('\n')
+            f.write(s + '\n\n')
 
     # Class description
     descr = node.find('description')
