@@ -379,7 +379,7 @@ void main() {
 
 #endif
 
-	mat4 modelview = camera_matrix * world_matrix;
+	mat4 modelview = camera_inverse_matrix * world_matrix;
 	float roughness = 1.0;
 
 #define world_transform world_matrix
@@ -406,11 +406,11 @@ VERTEX_SHADER_CODE
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-	vertex = camera_matrix * vertex;
-	normal = normalize((camera_matrix * vec4(normal, 0.0)).xyz);
+	vertex = camera_inverse_matrix * vertex;
+	normal = normalize((camera_inverse_matrix * vec4(normal, 0.0)).xyz);
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
-	tangent = normalize((camera_matrix * vec4(tangent, 0.0)).xyz);
-	binormal = normalize((camera_matrix * vec4(binormal, 0.0)).xyz);
+	tangent = normalize((camera_inverse_matrix * vec4(tangent, 0.0)).xyz);
+	binormal = normalize((camera_inverse_matrix * vec4(binormal, 0.0)).xyz);
 #endif
 #endif
 
@@ -815,6 +815,8 @@ uniform float ambient_energy;
 //get from vertex
 varying highp vec3 diffuse_interp;
 varying highp vec3 specular_interp;
+
+uniform vec3 light_direction; //may be used by fog, so leave here
 
 #else
 //done in fragment
@@ -1293,6 +1295,30 @@ float sample_shadow(
 	return SAMPLE_SHADOW_TEXEL_PROJ(shadow, spos);
 #endif
 }
+
+#endif
+
+#if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+uniform mediump vec4 fog_color_base;
+#ifdef LIGHT_MODE_DIRECTIONAL
+uniform mediump vec4 fog_sun_color_amount;
+#endif
+
+uniform bool fog_transmit_enabled;
+uniform mediump float fog_transmit_curve;
+
+#ifdef FOG_DEPTH_ENABLED
+uniform highp float fog_depth_begin;
+uniform mediump float fog_depth_curve;
+uniform mediump float fog_max_distance;
+#endif
+
+#ifdef FOG_HEIGHT_ENABLED
+uniform highp float fog_height_min;
+uniform highp float fog_height_max;
+uniform mediump float fog_height_curve;
+#endif
 
 #endif
 
@@ -1925,6 +1951,46 @@ FRAGMENT_SHADER_CODE
 	// gl_FragColor = vec4(normal, 1.0);
 
 #endif //unshaded
+
+//apply fog
+#if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
+
+	float fog_amount = 0.0;
+
+#ifdef LIGHT_MODE_DIRECTIONAL
+
+	vec3 fog_color = mix(fog_color_base.rgb, fog_sun_color_amount.rgb, fog_sun_color_amount.a * pow(max(dot(eye_position, light_direction), 0.0), 8.0));
+#else
+	vec3 fog_color = fog_color_base.rgb;
+#endif
+
+#ifdef FOG_DEPTH_ENABLED
+
+	{
+
+	    float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
+
+	    fog_amount = pow(fog_z, fog_depth_curve);
+
+	    if (fog_transmit_enabled) {
+		vec3 total_light = gl_FragColor.rgb;
+		float transmit = pow(fog_z, fog_transmit_curve);
+		fog_color = mix(max(total_light, fog_color), fog_color, transmit);
+	    }
+	}
+#endif
+
+#ifdef FOG_HEIGHT_ENABLED
+	{
+	    float y = (camera_matrix * vec4(vertex, 1.0)).y;
+	    fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
+	}
+#endif
+
+	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_color,fog_amount);
+
+
+#endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
 #endif // not RENDER_DEPTH
 }

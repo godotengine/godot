@@ -742,20 +742,38 @@ void RasterizerSceneGLES2::environment_set_adjustment(RID p_env, bool p_enable, 
 }
 
 void RasterizerSceneGLES2::environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {
+
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
+
+	env->fog_enabled = p_enable;
+	env->fog_color = p_color;
+	env->fog_sun_color = p_sun_color;
+	env->fog_sun_amount = p_sun_amount;
 }
 
 void RasterizerSceneGLES2::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
+
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
+
+	env->fog_depth_enabled = p_enable;
+	env->fog_depth_begin = p_depth_begin;
+	env->fog_depth_curve = p_depth_curve;
+	env->fog_transmit_enabled = p_transmit;
+	env->fog_transmit_curve = p_transmit_curve;
 }
 
 void RasterizerSceneGLES2::environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {
+
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
-}
 
+	env->fog_height_enabled = p_enable;
+	env->fog_height_min = p_min_height;
+	env->fog_height_max = p_max_height;
+	env->fog_height_curve = p_height_curve;
+}
 bool RasterizerSceneGLES2::is_environment(RID p_env) {
 	return environment_owner.owns(p_env);
 }
@@ -2031,6 +2049,15 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		glDisable(GL_BLEND);
 	}
 
+	float fog_max_distance = 0;
+	bool using_fog = false;
+	if (p_env && !p_shadow && p_env->fog_enabled && (p_env->fog_depth_enabled || p_env->fog_height_enabled)) {
+		state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, p_env->fog_depth_enabled);
+		state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, p_env->fog_height_enabled);
+		fog_max_distance = p_projection.get_z_far();
+		using_fog = true;
+	}
+
 	RasterizerStorageGLES2::Texture *prev_lightmap = NULL;
 	float lightmap_energy = 1.0;
 	bool prev_use_lightmap_capture = false;
@@ -2268,10 +2295,34 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				rebind_light = true;
 				rebind_reflection = true;
 				rebind_lightmap = true;
+
+				if (using_fog) {
+
+					state.scene_shader.set_uniform(SceneShaderGLES2::FOG_COLOR_BASE, p_env->fog_color);
+					Color sun_color_amount = p_env->fog_sun_color;
+					sun_color_amount.a = p_env->fog_sun_amount;
+
+					state.scene_shader.set_uniform(SceneShaderGLES2::FOG_SUN_COLOR_AMOUNT, sun_color_amount);
+					state.scene_shader.set_uniform(SceneShaderGLES2::FOG_TRANSMIT_ENABLED, p_env->fog_transmit_enabled);
+					state.scene_shader.set_uniform(SceneShaderGLES2::FOG_TRANSMIT_CURVE, p_env->fog_transmit_curve);
+
+					if (p_env->fog_depth_enabled) {
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_DEPTH_BEGIN, p_env->fog_depth_begin);
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_DEPTH_CURVE, p_env->fog_depth_curve);
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_MAX_DISTANCE, fog_max_distance);
+					}
+
+					if (p_env->fog_height_enabled) {
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_HEIGHT_MIN, p_env->fog_height_min);
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_HEIGHT_MAX, p_env->fog_height_max);
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_HEIGHT_MAX, p_env->fog_height_max);
+						state.scene_shader.set_uniform(SceneShaderGLES2::FOG_HEIGHT_CURVE, p_env->fog_height_curve);
+					}
+				}
 			}
 
-			state.scene_shader.set_uniform(SceneShaderGLES2::CAMERA_MATRIX, view_transform_inverse);
-			state.scene_shader.set_uniform(SceneShaderGLES2::CAMERA_INVERSE_MATRIX, p_view_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES2::CAMERA_MATRIX, p_view_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES2::CAMERA_INVERSE_MATRIX, view_transform_inverse);
 			state.scene_shader.set_uniform(SceneShaderGLES2::PROJECTION_MATRIX, p_projection);
 			state.scene_shader.set_uniform(SceneShaderGLES2::PROJECTION_INVERSE_MATRIX, projection_inverse);
 
@@ -2328,6 +2379,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_REFLECTION_PROBE2, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_CAPTURE, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, false);
 }
 
 void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy) {
