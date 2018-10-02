@@ -915,7 +915,14 @@ void EditorFileDialog::clear_filters() {
 }
 void EditorFileDialog::add_filter(const String &p_filter) {
 
-	filters.push_back(p_filter);
+	if (p_filter.begins_with("*.")) {
+		filters.push_back(p_filter);
+	} else if (p_filter.begins_with(".")) {
+		filters.push_back("*" + p_filter);
+	} else {
+		filters.push_back("*." + p_filter);
+	}
+
 	update_filters();
 	invalidate();
 }
