@@ -76,7 +76,10 @@ void PluginConfigDialog::_on_confirmed() {
 					"extends EditorPlugin\n"
 					"\n"
 					"func _enter_tree():\n"
-					"\tpass");
+					"\tpass\n"
+					"\n"
+					"func _exit_tree():\n"
+					"\tpass\n");
 			String script_path = path.plus_file(script_edit->get_text());
 			gdscript->set_path(script_path);
 			ResourceSaver::save(script_path, gdscript);
@@ -84,7 +87,7 @@ void PluginConfigDialog::_on_confirmed() {
 		}
 		//TODO: other languages
 
-		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? name_edit->get_text() : "");
+		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? subfolder_edit->get_text() : "");
 	} else {
 		EditorNode::get_singleton()->get_project_settings()->update_plugins();
 	}
