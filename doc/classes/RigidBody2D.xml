@@ -29,6 +29,7 @@
 			<argument index="0" name="force" type="Vector2">
 			</argument>
 			<description>
+				Adds a constant directional force without affecting rotation.
 			</description>
 		</method>
 		<method name="add_force">
@@ -48,6 +49,7 @@
 			<argument index="0" name="torque" type="float">
 			</argument>
 			<description>
+				Adds a constant rotational force.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -56,6 +58,7 @@
 			<argument index="0" name="impulse" type="Vector2">
 			</argument>
 			<description>
+				Applies a directional impulse without affecting rotation.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -75,6 +78,7 @@
 			<argument index="0" name="torque" type="float">
 			</argument>
 			<description>
+				Applies a rotational impulse to the body.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
