@@ -734,7 +734,8 @@ void VoxelLightBaker::_check_init_light() {
 		leaf_voxel_count = 0;
 		_fixup_plot(0, 0); //pre fixup, so normal, albedo, emission, etc. work for lighting.
 		bake_light.resize(bake_cells.size());
-		zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
+		print_line("bake light size: " + itos(bake_light.size()));
+		//zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
 		first_leaf = -1;
 		_init_light_plot(0, 0, 0, 0, 0, CHILD_EMPTY);
 	}

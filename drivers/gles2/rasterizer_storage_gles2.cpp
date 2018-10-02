@@ -901,26 +901,27 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	// attachements for it, so we can fill them by issuing draw calls.
 	GLuint tmp_fb;
 
-	glGenFramebuffers(1, &tmp_fb);
-	glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
-
 	int size = p_radiance_size;
 
 	int lod = 0;
-
-	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_SOURCE_PANORAMA, texture->target == GL_TEXTURE_2D);
-
-	shaders.cubemap_filter.bind();
 
 	int mipmaps = 6;
 
 	int mm_level = mipmaps;
 
-	GLenum internal_format = GL_RGBA;
-	GLenum format = GL_RGBA;
-	GLenum type = GL_UNSIGNED_BYTE; // This is suboptimal... TODO other format for FBO?
+	GLenum internal_format = GL_RGB;
+	GLenum format = GL_RGB;
+	GLenum type = GL_UNSIGNED_BYTE;
 
 	// Set the initial (empty) mipmaps
+#if 1
+	//Mobile hardware (PowerVR specially) prefers this approach, the other one kills the game
+	for (int i = 0; i < 6; i++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, size, size, 0, format, type, NULL);
+	}
+
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+#else
 	while (size >= 1) {
 
 		for (int i = 0; i < 6; i++) {
@@ -931,7 +932,14 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		size >>= 1;
 	}
+#endif
+	//framebuffer
+	glGenFramebuffers(1, &tmp_fb);
+	glBindFramebuffer(GL_FRAMEBUFFER, tmp_fb);
 
+	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_SOURCE_PANORAMA, texture->target == GL_TEXTURE_2D);
+
+	shaders.cubemap_filter.bind();
 	lod = 0;
 	mm_level = mipmaps;
 
