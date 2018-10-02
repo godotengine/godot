@@ -475,14 +475,14 @@ void MonoBuildTab::_bind_methods() {
 }
 
 MonoBuildTab::MonoBuildTab(const MonoBuildInfo &p_build_info, const String &p_logs_dir) :
-		build_info(p_build_info),
-		logs_dir(p_logs_dir),
 		build_exited(false),
 		issues_list(memnew(ItemList)),
 		error_count(0),
 		warning_count(0),
 		errors_visible(true),
-		warnings_visible(true) {
+		warnings_visible(true),
+		logs_dir(p_logs_dir),
+		build_info(p_build_info) {
 	issues_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	issues_list->connect("item_activated", this, "_issue_activated");
 	add_child(issues_list);

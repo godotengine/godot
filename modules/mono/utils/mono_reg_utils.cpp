@@ -228,4 +228,4 @@ cleanup:
 }
 } // namespace MonoRegUtils
 
-#endif WINDOWS_ENABLED
+#endif // WINDOWS_ENABLED
