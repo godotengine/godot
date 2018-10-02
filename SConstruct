@@ -164,7 +164,7 @@ opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D GUI nodes and
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
 opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
-opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
+opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
 opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
 opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
@@ -318,15 +318,12 @@ if selected_platform in platform_list:
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
 
-    if (env["warnings"] == 'yes'):
-        print("WARNING: warnings=yes is deprecated; assuming warnings=all")
-
     if env.msvc:
         # Truncations, narrowing conversions, signed/unsigned comparisons...
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4018', '/wd4800']
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
-        elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
+        elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['/W3'] + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
             env.Append(CCFLAGS=['/W2'] + disable_nonessential_warnings)
@@ -338,7 +335,7 @@ if selected_platform in platform_list:
         disable_nonessential_warnings = ['-Wno-sign-compare']
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra'])
-        elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
+        elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
             env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + disable_nonessential_warnings)
