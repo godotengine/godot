@@ -1218,11 +1218,11 @@ LIGHT_SHADER_CODE
 #define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, texture2DProj(p_shadow, p_pos).r)
 
 float sample_shadow(
-		highp sampler2D shadow,highp vec4 spos) {
+		highp sampler2D shadow, highp vec4 spos) {
 
 #ifdef SHADOW_MODE_PCF_13
 
-	spos.xyz/=spos.w;
+	spos.xyz /= spos.w;
 	vec2 pos = spos.xy;
 	float depth = spos.z;
 
@@ -1244,7 +1244,7 @@ float sample_shadow(
 
 #ifdef SHADOW_MODE_PCF_5
 
-	spos.xyz/=spos.w;
+	spos.xyz /= spos.w;
 	vec2 pos = spos.xy;
 	float depth = spos.z;
 
@@ -1541,9 +1541,8 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_SHADOW
 
-
 #ifdef USE_VERTEX_LIGHTING
-//compute shadows in a mobile friendly way
+	//compute shadows in a mobile friendly way
 
 #ifdef LIGHT_USE_PSSM4
 	//take advantage of prefetch
@@ -1551,7 +1550,6 @@ FRAGMENT_SHADER_CODE
 	float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
 	float shadow3 = sample_shadow(light_directional_shadow, shadow_coord3);
 	float shadow4 = sample_shadow(light_directional_shadow, shadow_coord4);
-
 
 	if (depth_z < light_split_offsets.w) {
 		float pssm_fade = 0.0;
@@ -1605,7 +1603,6 @@ FRAGMENT_SHADER_CODE
 		}
 #endif
 		light_att *= shadow_att;
-
 	}
 
 #endif //LIGHT_USE_PSSM4
@@ -1615,8 +1612,6 @@ FRAGMENT_SHADER_CODE
 	//take advantage of prefetch
 	float shadow1 = sample_shadow(light_directional_shadow, shadow_coord);
 	float shadow2 = sample_shadow(light_directional_shadow, shadow_coord2);
-
-
 
 	if (depth_z < light_split_offsets.y) {
 		float shadow_att = 1.0;
@@ -1680,12 +1675,11 @@ FRAGMENT_SHADER_CODE
 
 #ifdef LIGHT_USE_PSSM4
 
-
 			if (depth_z < light_split_offsets.y) {
-				if (depth_z < light_split_offsets.x) {			
+				if (depth_z < light_split_offsets.x) {
 					pssm_coord = shadow_coord;
 
-#ifdef LIGHT_USE_PSSM_BLEND					
+#ifdef LIGHT_USE_PSSM_BLEND
 					pssm_coord2 = shadow_coord2;
 
 					pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
