@@ -47,7 +47,7 @@ public:
 	bool setting;
 	bool hidden;
 
-	bool _hide_script_from_inspector() {
+	bool _hide_object_properties_from_inspector() {
 		return true;
 	}
 
@@ -55,7 +55,7 @@ public:
 
 		ClassDB::bind_method("_update_obj", &AnimationTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
-		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
+		ClassDB::bind_method("_hide_object_properties_from_inspector", &AnimationTrackKeyEdit::_hide_object_properties_from_inspector);
 		ClassDB::bind_method("get_root_path", &AnimationTrackKeyEdit::get_root_path);
 	}
 
