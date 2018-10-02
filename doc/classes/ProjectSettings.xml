@@ -83,6 +83,8 @@
 			<argument index="0" name="pack" type="String">
 			</argument>
 			<description>
+				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem (res://). Returns true on success.
+				Note: If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
@@ -100,6 +102,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			  	Returns true if the specified property exists and its initial value differs from the current value.
 			</description>
 		</method>
 		<method name="property_get_revert">
@@ -108,12 +111,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+			  	Returns the initial value of the specified property. Returns null if the property does not exist.
 			</description>
 		</method>
 		<method name="save">
 			<return type="int" enum="Error">
 			</return>
 			<description>
+			  	Saves the configuration to the project.godot file.
 			</description>
 		</method>
 		<method name="save_custom">
@@ -122,6 +127,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+			  	Saves the configuration to a custom file.
 			</description>
 		</method>
 		<method name="set_initial_value">
