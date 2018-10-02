@@ -60,8 +60,8 @@
 			<argument index="0" name="impulse" type="Vector3">
 			</argument>
 			<description>
-				Applies a single directional impulse without affecting rotation.
-				This is equivalent to ``apply_impulse(Vector3(0,0,0), impulse)``.
+				Applies a directional impulse without affecting rotation.
+				This is equivalent to [code]apply_impulse(Vector3(0,0,0), impulse)[/code].
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -72,7 +72,7 @@
 			<argument index="1" name="impulse" type="Vector3">
 			</argument>
 			<description>
-				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the position are in global coordinates, and the position is relative to the object's origin.
+				Applies a positioned impulse which will be affected by the body mass and shape. This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the position are in global coordinates, and the position is relative to the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -81,14 +81,14 @@
 			<argument index="0" name="impulse" type="Vector3">
 			</argument>
 			<description>
-				Apply a torque impulse (which will be affected by the body mass and shape). This will rotate the body around the passed in vector.
+				Applies a torque impulse which will be affected by the body mass and shape. This will rotate the body around the passed in vector.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it. Note that the result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it.  Note that the result of this test is not immediate after moving objects. For performance, list of collisions is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -97,7 +97,7 @@
 			<argument index="0" name="axis_velocity" type="Vector3">
 			</argument>
 			<description>
-				Set an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
+				Sets an axis velocity. The velocity in the given vector axis will be set as the given vector length. This is useful for jumping behavior.
 			</description>
 		</method>
 	</methods>
@@ -109,16 +109,22 @@
 			RigidBody's rotational velocity.
 		</member>
 		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's rotation in the x-axis.
 		</member>
 		<member name="axis_lock_angular_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's rotation in the y-axis.
 		</member>
 		<member name="axis_lock_angular_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's rotation in the z-axis.
 		</member>
 		<member name="axis_lock_linear_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the x-axis.
 		</member>
 		<member name="axis_lock_linear_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the x-axis.
 		</member>
 		<member name="axis_lock_linear_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the x-axis.
 		</member>
 		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
 			RigidBody's bounciness.
@@ -127,7 +133,7 @@
 			If [code]true[/code] the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
-			If true, the RigidBody will emit signals when it collides with another RigidBody.
+			If [code]true[/code] the RigidBody will emit signals when it collides with another RigidBody.
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
 			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
@@ -140,19 +146,19 @@
 			If [code]true[/code] internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
-			The body friction, from 0 (frictionless) to 1 (max friction).
+			The body's friction, from 0 (frictionless) to 1 (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale">
 			This is multiplied by the global 3D gravity setting found in "Project &gt; Project Settings &gt; Physics &gt; 3d" to produce RigidBody's gravity. E.g. a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
-			RigidBody's linear damp. Default value: -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
+			The body's linear damp. Default value: -1, cannot be less than -1. If this value is different from -1, any linear damp derived from the world or areas will be overridden.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
-			RigidBody's linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
+			The body's linear velocity. Can be used sporadically, but [b]DON'T SET THIS IN EVERY FRAME[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass">
-			RigidBody's mass.
+			The body's mass.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody.Mode">
 			The body mode from the MODE_* enum. Modes include: MODE_STATIC, MODE_KINEMATIC, MODE_RIGID, and MODE_CHARACTER.
@@ -160,10 +166,10 @@
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
-			If [code]true[/code] RigidBody is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
+			If [code]true[/code] the body is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
-			RigidBody's weight based on its mass and the global 3D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 3d".
+			The body's weight based on its mass and the global 3D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 3d".
 		</member>
 	</members>
 	<signals>
@@ -217,16 +223,16 @@
 	</signals>
 	<constants>
 		<constant name="MODE_RIGID" value="0" enum="Mode">
-			Rigid body. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
+			Rigid body mode. This is the "natural" state of a rigid body. It is affected by forces, and can move, rotate, and be affected by user code.
 		</constant>
 		<constant name="MODE_STATIC" value="1" enum="Mode">
 			Static mode. The body behaves like a [StaticBody], and can only move by user code.
 		</constant>
 		<constant name="MODE_CHARACTER" value="2" enum="Mode">
-			Character body. This behaves like a rigid body, but can not rotate.
+			Character body mode. This behaves like a rigid body, but can not rotate.
 		</constant>
 		<constant name="MODE_KINEMATIC" value="3" enum="Mode">
-			Kinematic body. The body behaves like a [KinematicBody], and can only move by user code.
+			Kinematic body mode. The body behaves like a [KinematicBody], and can only move by user code.
 		</constant>
 	</constants>
 </class>
