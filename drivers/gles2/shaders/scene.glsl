@@ -1191,8 +1191,8 @@ LIGHT_SHADER_CODE
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
 		float ax = alpha / aspect;
 		float ay = alpha * aspect;
-		//float XdotH = dot(T, H);
-		//float YdotH = dot(B, H);
+		float XdotH = dot(T, H);
+		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH, cNdotH);
 		//float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
 		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL))
