@@ -41,6 +41,72 @@
 
 class AudioDriverPulseAudio : public AudioDriver {
 
+	typedef pa_channel_map *(*pa_channel_map_init_stereo_t)(pa_channel_map *);
+	typedef int (*pa_context_connect_t)(pa_context *, const char *, pa_context_flags_t, const pa_spawn_api *);
+	typedef void (*pa_context_disconnect_t)(pa_context *);
+	typedef int (*pa_context_errno_t)(pa_context *);
+	typedef pa_operation *(*pa_context_get_server_info_t)(pa_context *, pa_server_info_cb_t, void *);
+	typedef pa_operation *(*pa_context_get_sink_info_list_t)(pa_context *, pa_sink_info_cb_t, void *);
+	typedef pa_operation *(*pa_context_get_sink_info_by_name_t)(pa_context *, const char *, pa_sink_info_cb_t cb, void *);
+	typedef pa_operation *(*pa_context_get_source_info_list_t)(pa_context *, pa_source_info_cb_t, void *);
+	typedef pa_operation *(*pa_context_get_source_info_by_name_t)(pa_context *, const char *, pa_source_info_cb_t, void *);
+	typedef pa_context_state_t (*pa_context_get_state_t)(pa_context *);
+	typedef pa_context *(*pa_context_new_t)(pa_mainloop_api *, const char *);
+	typedef void (*pa_context_set_state_callback_t)(pa_context *, pa_context_notify_cb_t, void *);
+	typedef void (*pa_context_unref_t)(pa_context *);
+	typedef void (*pa_mainloop_free_t)(pa_mainloop *);
+	typedef int (*pa_mainloop_iterate_t)(pa_mainloop *, int, int *);
+	typedef pa_mainloop *(*pa_mainloop_new_t)(void);
+	typedef pa_mainloop_api *(*pa_mainloop_get_api_t)(pa_mainloop *);
+	typedef void (*pa_operation_unref_t)(pa_operation *);
+	typedef const char *(*pa_strerror_t)(int);
+	typedef int (*pa_stream_connect_playback_t)(pa_stream *, const char *, const pa_buffer_attr *, pa_stream_flags_t, const pa_cvolume *, pa_stream *);
+	typedef int (*pa_stream_connect_record_t)(pa_stream *, const char *, const pa_buffer_attr *, pa_stream_flags_t);
+	typedef int (*pa_stream_disconnect_t)(pa_stream *);
+	typedef int (*pa_stream_drop_t)(pa_stream *);
+	typedef int (*pa_stream_get_latency_t)(pa_stream *, pa_usec_t *, int *);
+	typedef pa_stream_state_t (*pa_stream_get_state_t)(pa_stream *);
+	typedef pa_stream *(*pa_stream_new_t)(pa_context *, const char *, const pa_sample_spec *, const pa_channel_map *);
+	typedef int (*pa_stream_peek_t)(pa_stream *, const void **, size_t *);
+	typedef size_t (*pa_stream_readable_size_t)(pa_stream *);
+	typedef void (*pa_stream_unref_t)(pa_stream *);
+	typedef int (*pa_stream_write_t)(pa_stream *, const void *, size_t, pa_free_cb_t, int64_t, pa_seek_mode_t);
+	typedef size_t (*pa_stream_writable_size_t)(pa_stream *);
+
+	pa_channel_map_init_stereo_t libpulse_pa_channel_map_init_stereo;
+	pa_context_connect_t libpulse_pa_context_connect;
+	pa_context_disconnect_t libpulse_pa_context_disconnect;
+	pa_context_errno_t libpulse_pa_context_errno;
+	pa_context_get_server_info_t libpulse_pa_context_get_server_info;
+	pa_context_get_sink_info_list_t libpulse_pa_context_get_sink_info_list;
+	pa_context_get_sink_info_by_name_t libpulse_pa_context_get_sink_info_by_name;
+	pa_context_get_source_info_list_t libpulse_pa_context_get_source_info_list;
+	pa_context_get_source_info_by_name_t libpulse_pa_context_get_source_info_by_name;
+	pa_context_get_state_t libpulse_pa_context_get_state;
+	pa_context_new_t libpulse_pa_context_new;
+	pa_context_set_state_callback_t libpulse_pa_context_set_state_callback;
+	pa_context_unref_t libpulse_pa_context_unref;
+	pa_mainloop_free_t libpulse_pa_mainloop_free;
+	pa_mainloop_iterate_t libpulse_pa_mainloop_iterate;
+	pa_mainloop_new_t libpulse_pa_mainloop_new;
+	pa_mainloop_get_api_t libpulse_pa_mainloop_get_api;
+	pa_operation_unref_t libpulse_pa_operation_unref;
+	pa_strerror_t libpulse_pa_strerror;
+	pa_stream_connect_playback_t libpulse_pa_stream_connect_playback;
+	pa_stream_connect_record_t libpulse_pa_stream_connect_record;
+	pa_stream_disconnect_t libpulse_pa_stream_disconnect;
+	pa_stream_drop_t libpulse_pa_stream_drop;
+	pa_stream_get_latency_t libpulse_pa_stream_get_latency;
+	pa_stream_get_state_t libpulse_pa_stream_get_state;
+	pa_stream_new_t libpulse_pa_stream_new;
+	pa_stream_peek_t libpulse_pa_stream_peek;
+	pa_stream_readable_size_t libpulse_pa_stream_readable_size;
+	pa_stream_write_t libpulse_pa_stream_write;
+	pa_stream_writable_size_t libpulse_pa_stream_writable_size;
+	pa_stream_unref_t libpulse_pa_stream_unref;
+
+	void *libpulse;
+
 	Thread *thread;
 	Mutex *mutex;
 
