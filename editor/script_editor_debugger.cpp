@@ -726,9 +726,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String source(err[5]);
 		bool source_is_project_file = source.begins_with("res://");
 		if (source_is_project_file)
-			source = source.get_file();
+			txt = source.get_file() + ":" + String(err[6]);
+		else
+			txt = source + ":" + String(err[6]);
 
-		txt = source + ":" + String(err[6]);
 		String method = err[4];
 		if (method.length() > 0)
 			txt += " @ " + method + "()";
