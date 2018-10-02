@@ -400,6 +400,7 @@
 			</argument>
 			<description>
 				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
+				The [code]callback[/code] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
 		<method name="set_editable">

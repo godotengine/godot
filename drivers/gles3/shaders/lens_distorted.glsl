@@ -3,16 +3,18 @@
 
 layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
-layout(location = 4) in vec2 uv_in;
 
-uniform float offset_x;
+uniform vec2 offset;
+uniform vec2 scale;
 
 out vec2 uv_interp;
 
 void main() {
 
-	uv_interp = uv_in;
-	gl_Position = vec4(vertex_attrib.x + offset_x, vertex_attrib.y, 0.0, 1.0);
+	uv_interp = vertex_attrib.xy * 2.0 - 1.0;
+
+	vec2 v = vertex_attrib.xy * scale + offset;
+	gl_Position = vec4(v, 0.0, 1.0);
 }
 
 /* clang-format off */

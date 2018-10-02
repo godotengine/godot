@@ -406,11 +406,8 @@ FindInFilesDialog::FindInFilesDialog() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		hbc->set_alignment(HBoxContainer::ALIGN_CENTER);
 
-		_find_button = memnew(Button);
-		_find_button->set_text(TTR("Find..."));
-		_find_button->connect("pressed", this, "_on_find_button_pressed");
+		_find_button = add_button(TTR("Find..."), false, "find");
 		_find_button->set_disabled(true);
-		hbc->add_child(_find_button);
 
 		{
 			Control *placeholder = memnew(Control);
@@ -418,11 +415,8 @@ FindInFilesDialog::FindInFilesDialog() {
 			hbc->add_child(placeholder);
 		}
 
-		_replace_button = memnew(Button);
-		_replace_button->set_text(TTR("Replace..."));
-		_replace_button->connect("pressed", this, "_on_replace_button_pressed");
+		_replace_button = add_button(TTR("Replace..."), false, "replace");
 		_replace_button->set_disabled(true);
-		hbc->add_child(_replace_button);
 
 		{
 			Control *placeholder = memnew(Control);
@@ -430,10 +424,8 @@ FindInFilesDialog::FindInFilesDialog() {
 			hbc->add_child(placeholder);
 		}
 
-		Button *cancel_button = memnew(Button);
+		Button *cancel_button = get_ok();
 		cancel_button->set_text(TTR("Cancel"));
-		cancel_button->connect("pressed", this, "hide");
-		hbc->add_child(cancel_button);
 
 		vbc->add_child(hbc);
 	}
@@ -487,14 +479,14 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 	_folder_dialog->popup_centered_ratio();
 }
 
-void FindInFilesDialog::_on_find_button_pressed() {
-	emit_signal(SIGNAL_FIND_REQUESTED);
-	hide();
-}
-
-void FindInFilesDialog::_on_replace_button_pressed() {
-	emit_signal(SIGNAL_REPLACE_REQUESTED);
-	hide();
+void FindInFilesDialog::custom_action(const String &p_action) {
+	if (p_action == "find") {
+		emit_signal(SIGNAL_FIND_REQUESTED);
+		hide();
+	} else if (p_action == "replace") {
+		emit_signal(SIGNAL_REPLACE_REQUESTED);
+		hide();
+	}
 }
 
 void FindInFilesDialog::_on_search_text_modified(String text) {
@@ -509,7 +501,7 @@ void FindInFilesDialog::_on_search_text_modified(String text) {
 void FindInFilesDialog::_on_search_text_entered(String text) {
 	// This allows to trigger a global search without leaving the keyboard
 	if (!_find_button->is_disabled())
-		_on_find_button_pressed();
+		custom_action("find");
 }
 
 void FindInFilesDialog::_on_folder_selected(String path) {
@@ -522,8 +514,6 @@ void FindInFilesDialog::_on_folder_selected(String path) {
 void FindInFilesDialog::_bind_methods() {
 
 	ClassDB::bind_method("_on_folder_button_pressed", &FindInFilesDialog::_on_folder_button_pressed);
-	ClassDB::bind_method("_on_find_button_pressed", &FindInFilesDialog::_on_find_button_pressed);
-	ClassDB::bind_method("_on_replace_button_pressed", &FindInFilesDialog::_on_replace_button_pressed);
 	ClassDB::bind_method("_on_folder_selected", &FindInFilesDialog::_on_folder_selected);
 	ClassDB::bind_method("_on_search_text_modified", &FindInFilesDialog::_on_search_text_modified);
 	ClassDB::bind_method("_on_search_text_entered", &FindInFilesDialog::_on_search_text_entered);

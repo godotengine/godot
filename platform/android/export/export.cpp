@@ -1085,6 +1085,7 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/opengl_debug"), false));
 
 		for (unsigned int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icons[i].option_id, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -1438,6 +1439,7 @@ public:
 
 		bool use_32_fb = p_preset->get("graphics/32_bits_framebuffer");
 		bool immersive = p_preset->get("screen/immersive_mode");
+		bool debug_opengl = p_preset->get("screen/opengl_debug");
 
 		bool _signed = p_preset->get("package/signed");
 
@@ -1638,6 +1640,9 @@ public:
 
 		if (immersive)
 			cl.push_back("--use_immersive");
+
+		if (debug_opengl)
+			cl.push_back("--debug_opengl");
 
 		if (cl.size()) {
 			//add comandline

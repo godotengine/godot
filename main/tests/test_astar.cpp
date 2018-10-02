@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reverb_sw.h                                                          */
+/*  test_astar.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,90 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REVERB_SW_H
-#define REVERB_SW_H
+#include "test_astar.h"
 
-#include "core/os/memory.h"
-#include "core/typedefs.h"
+#include "core/math/a_star.h"
+#include "core/os/os.h"
 
-struct ReverbParamsSW;
+#include <stdio.h>
 
-class ReverbSW {
+namespace TestAStar {
+
+class ABCX : public AStar {
 public:
-	enum ReverbMode {
-		REVERB_MODE_ROOM,
-		REVERB_MODE_STUDIO_SMALL,
-		REVERB_MODE_STUDIO_MEDIUM,
-		REVERB_MODE_STUDIO_LARGE,
-		REVERB_MODE_HALL,
-		REVERB_MODE_SPACE_ECHO,
-		REVERB_MODE_ECHO,
-		REVERB_MODE_DELAY,
-		REVERB_MODE_HALF_ECHO
-	};
+	enum { A,
+		B,
+		C,
+		X };
 
-private:
-	struct State {
-		int lwl;
-		int lwr;
-		int rwl;
-		int rwr;
-		unsigned int Offset;
-		void reset() {
-			lwl = 0;
-			lwr = 0;
-			rwl = 0;
-			rwr = 0;
-			Offset = 0;
+	ABCX() {
+		add_point(A, Vector3(0, 0, 0));
+		add_point(B, Vector3(1, 0, 0));
+		add_point(C, Vector3(0, 1, 0));
+		add_point(X, Vector3(0, 0, 1));
+		connect_points(A, B);
+		connect_points(A, C);
+		connect_points(B, C);
+		connect_points(X, A);
+	}
+
+	// Disable heuristic completely
+	float _compute_cost(int p_from, int p_to) {
+		if (p_from == A && p_to == C) {
+			return 1000;
 		}
-		State() { reset(); }
-	} state;
-
-	ReverbParamsSW *current_params;
-
-	int *reverb_buffer;
-	unsigned int reverb_buffer_size;
-	ReverbMode mode;
-	int mix_rate;
-
-	void adjust_current_params();
-
-public:
-	void set_mode(ReverbMode p_mode);
-	bool process(int *p_input, int *p_output, int p_frames, int p_stereo_stride = 1); // return tru if audio was created
-	void set_mix_rate(int p_mix_rate);
-
-	ReverbSW();
-	~ReverbSW();
+		return 100;
+	}
 };
 
-#endif
+bool test_abc() {
+	ABCX abcx;
+	PoolVector<int> path = abcx.get_id_path(ABCX::A, ABCX::C);
+	bool ok = path.size() == 3;
+	int i = 0;
+	ok = ok && path[i++] == ABCX::A;
+	ok = ok && path[i++] == ABCX::B;
+	ok = ok && path[i++] == ABCX::C;
+	return ok;
+}
+
+bool test_abcx() {
+	ABCX abcx;
+	PoolVector<int> path = abcx.get_id_path(ABCX::X, ABCX::C);
+	bool ok = path.size() == 4;
+	int i = 0;
+	ok = ok && path[i++] == ABCX::X;
+	ok = ok && path[i++] == ABCX::A;
+	ok = ok && path[i++] == ABCX::B;
+	ok = ok && path[i++] == ABCX::C;
+	return ok;
+}
+
+typedef bool (*TestFunc)(void);
+
+TestFunc test_funcs[] = {
+	test_abc,
+	test_abcx,
+	NULL
+};
+
+MainLoop *test() {
+	int count = 0;
+	int passed = 0;
+
+	while (true) {
+		if (!test_funcs[count])
+			break;
+		bool pass = test_funcs[count]();
+		if (pass)
+			passed++;
+		OS::get_singleton()->print("\t%s\n", pass ? "PASS" : "FAILED");
+
+		count++;
+	}
+	OS::get_singleton()->print("\n");
+	OS::get_singleton()->print("Passed %i of %i tests\n", passed, count);
+	return NULL;
+}
+
+} // namespace TestAStar

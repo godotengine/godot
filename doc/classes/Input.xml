@@ -95,6 +95,7 @@
 			<argument index="0" name="axis" type="String">
 			</argument>
 			<description>
+				Returns the index of the provided axis name.
 			</description>
 		</method>
 		<method name="get_joy_axis_string">
@@ -103,6 +104,7 @@
 			<argument index="0" name="axis_index" type="int">
 			</argument>
 			<description>
+				Receives a [code]JOY_AXIS_*[/code] Enum and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_button_index_from_string">
@@ -111,6 +113,7 @@
 			<argument index="0" name="button" type="String">
 			</argument>
 			<description>
+				Returns the index of the provided button name.
 			</description>
 		</method>
 		<method name="get_joy_button_string">
@@ -119,6 +122,7 @@
 			<argument index="0" name="button_index" type="int">
 			</argument>
 			<description>
+				Receives a [code]JOY_BUTTON_*[/code] Enum and returns it's equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -386,7 +390,7 @@
 			Pointing hand cursor. Usually used to indicate the pointer is over a link or other interactable item.
 		</constant>
 		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
-			Cross cursor. Typically appears over regions in which a drawing operation can be performance or for selections.
+			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
 			Wait cursor. Indicates that the application is busy performing an operation.

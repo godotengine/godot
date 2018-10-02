@@ -969,7 +969,7 @@ void EditorPropertyDictionary::update_property() {
 				pc->add_child(add_vbox);
 			}
 			prop->set_object_and_property(object.ptr(), prop_name);
-			int change_index;
+			int change_index = 0;
 
 			if (i < amount) {
 				String cs = key.get_construct_string();

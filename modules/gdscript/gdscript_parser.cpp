@@ -7835,7 +7835,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							// Figure out function name for warning
 							String func_name = _find_function_name(op);
 							if (func_name.empty()) {
-								func_name == "<undetected name>";
+								func_name = "<undetected name>";
 							}
 							_add_warning(GDScriptWarning::RETURN_VALUE_DISCARDED, op->line, func_name);
 						}

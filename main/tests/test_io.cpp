@@ -50,7 +50,7 @@ class TestMainLoop : public MainLoop {
 	bool quit;
 
 public:
-	virtual void input_event(const InputEvent &p_event) {
+	virtual void input_event(const Ref<InputEvent> &p_event) {
 	}
 	virtual bool idle(float p_time) {
 		return false;

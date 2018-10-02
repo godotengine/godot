@@ -47,8 +47,6 @@ class FileAccessNetworkClient {
 		int size;
 	};
 
-	int ml;
-
 	List<BlockRequest> block_requests;
 
 	Semaphore *sem;

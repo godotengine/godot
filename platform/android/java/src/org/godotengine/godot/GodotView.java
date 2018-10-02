@@ -81,16 +81,18 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	private static boolean firsttime = true;
 	private static boolean use_gl3 = false;
 	private static boolean use_32 = false;
+	private static boolean use_debug_opengl = false;
 
 	private Godot activity;
 
 	private InputManagerCompat mInputManager;
-	public GodotView(Context context, GodotIO p_io, boolean p_use_gl3, boolean p_use_32_bits, Godot p_activity) {
+	public GodotView(Context context, GodotIO p_io, boolean p_use_gl3, boolean p_use_32_bits, boolean p_use_debug_opengl,Godot p_activity) {
 		super(context);
 		ctx = context;
 		io = p_io;
 		use_gl3 = p_use_gl3;
 		use_32 = p_use_32_bits;
+		use_debug_opengl = p_use_debug_opengl;
 
 		activity = p_activity;
 
@@ -406,6 +408,9 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		setRenderer(new Renderer());
 	}
 
+	private static final int  _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
+	private static final int  _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR= 0x00000001;
+	
 	private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
 		private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 		public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
@@ -415,9 +420,16 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 				Log.w(TAG, "creating OpenGL ES 2.0 context :");
 
 			checkEglError("Before eglCreateContext", egl);
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
-			int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
-			EGLContext context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl3 ? attrib_list3 : attrib_list2);
+			EGLContext context;
+			if (use_debug_opengl) {
+				int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2,_EGL_CONTEXT_FLAGS_KHR,_EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+				int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3,_EGL_CONTEXT_FLAGS_KHR,_EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+				context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl3 ? attrib_list3 : attrib_list2);			
+			} else {
+				int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
+				int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+				context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl3 ? attrib_list3 : attrib_list2);
+			}
 			checkEglError("After eglCreateContext", egl);
 			return context;
 		}

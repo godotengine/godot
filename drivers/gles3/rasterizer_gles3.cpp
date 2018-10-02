@@ -359,6 +359,26 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 #endif
 }
 
+void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
+	ERR_FAIL_COND(storage->frame.current_rt);
+
+	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	glDisable(GL_BLEND);
+
+	// render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+	// output our texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rt->color);
+
+	canvas->draw_lens_distortion_rect(p_screen_rect, p_k1, p_k2, p_eye_center, p_oversample);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 
 	if (OS::get_singleton()->is_layered_allowed()) {

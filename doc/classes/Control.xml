@@ -229,9 +229,9 @@
 				extends Control
 
 				func get_drag_data(position):
-					var mydata = make_data()
-					set_drag_preview(make_preview(mydata))
-					return mydata
+				    var mydata = make_data()
+				    set_drag_preview(make_preview(mydata))
+				    return mydata
 				[/codeblock]
 			</description>
 		</method>

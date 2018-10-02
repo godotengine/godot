@@ -404,6 +404,7 @@ public:
 			AcceptDialog *p_accept);
 
 	Viewport *get_viewport_node() { return viewport; }
+	Camera *get_camera() { return camera; } // return the default camera object.
 
 	SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
 };
@@ -442,6 +443,9 @@ private:
 	bool mouseover;
 	float ratio_h;
 	float ratio_v;
+
+	bool hovering_v;
+	bool hovering_h;
 
 	bool dragging_v;
 	bool dragging_h;
@@ -707,7 +711,6 @@ public:
 
 	void register_gizmo_plugin(Ref<EditorSpatialGizmoPlugin> ref);
 
-	Camera *get_camera() { return NULL; }
 	void edit(Spatial *p_spatial);
 	void clear();
 

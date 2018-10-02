@@ -125,6 +125,7 @@ public:
 	String get_license_text() const;
 
 	Engine();
+	virtual ~Engine() {}
 };
 
 #endif // ENGINE_H

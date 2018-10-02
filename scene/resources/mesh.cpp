@@ -546,33 +546,6 @@ void Mesh::clear_cache() const {
 Mesh::Mesh() {
 }
 
-static const ArrayMesh::ArrayType _array_types[] = {
-
-	ArrayMesh::ARRAY_VERTEX,
-	ArrayMesh::ARRAY_NORMAL,
-	ArrayMesh::ARRAY_TANGENT,
-	ArrayMesh::ARRAY_COLOR,
-	ArrayMesh::ARRAY_TEX_UV,
-	ArrayMesh::ARRAY_TEX_UV2,
-	ArrayMesh::ARRAY_BONES,
-	ArrayMesh::ARRAY_WEIGHTS,
-	ArrayMesh::ARRAY_INDEX
-};
-
-/* compatibility */
-static const int _format_translate[] = {
-
-	ArrayMesh::ARRAY_FORMAT_VERTEX,
-	ArrayMesh::ARRAY_FORMAT_NORMAL,
-	ArrayMesh::ARRAY_FORMAT_TANGENT,
-	ArrayMesh::ARRAY_FORMAT_COLOR,
-	ArrayMesh::ARRAY_FORMAT_TEX_UV,
-	ArrayMesh::ARRAY_FORMAT_TEX_UV2,
-	ArrayMesh::ARRAY_FORMAT_BONES,
-	ArrayMesh::ARRAY_FORMAT_WEIGHTS,
-	ArrayMesh::ARRAY_FORMAT_INDEX,
-};
-
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 	String sname = p_name;

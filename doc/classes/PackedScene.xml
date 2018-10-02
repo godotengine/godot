@@ -11,7 +11,7 @@
 		var scene = PackedScene.new()
 		var result = scene.pack(child)
 		if result == OK:
-		    ResourceSaver.save("res://path/name.scn", scene) // or user://...
+		    ResourceSaver.save("res://path/name.scn", scene) # or user://...
 		[/codeblock]
 	</description>
 	<tutorials>

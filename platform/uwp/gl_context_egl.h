@@ -71,8 +71,8 @@ public:
 	virtual int get_window_height();
 	virtual void swap_buffers();
 
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
+	virtual void set_use_vsync(bool use) { vsync = use; }
+	virtual bool is_using_vsync() const { return vsync; }
 
 	virtual Error initialize();
 	void reset();
@@ -80,7 +80,7 @@ public:
 	void cleanup();
 
 	ContextEGL(CoreWindow ^ p_window, Driver p_driver);
-	~ContextEGL();
+	virtual ~ContextEGL();
 };
 
 #endif
