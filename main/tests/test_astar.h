@@ -31,7 +31,7 @@
 #ifndef TEST_ASTAR_H
 #define TEST_ASTAR_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestAStar {
 

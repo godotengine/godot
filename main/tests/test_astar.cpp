@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "a_star.h"
-#include "os/os.h"
-#include <stdio.h>
-
 #include "test_astar.h"
+
+#include "core/math/a_star.h"
+#include "core/os/os.h"
+
+#include <stdio.h>
 
 namespace TestAStar {
 
