@@ -66,7 +66,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 public:
 	void init();
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
-	virtual bool process_silence();
+	virtual bool process_silence() const;
 
 	AudioEffectRecordInstance() :
 			thread_active(false) {}

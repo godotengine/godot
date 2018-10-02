@@ -48,7 +48,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	friend class SpatialIndexer;
+	friend struct SpatialIndexer;
 
 	void _enter_camera(Camera *p_camera);
 	void _exit_camera(Camera *p_camera);

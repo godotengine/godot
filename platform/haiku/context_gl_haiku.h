@@ -46,9 +46,6 @@ private:
 	bool use_vsync;
 
 public:
-	ContextGL_Haiku(HaikuDirectWindow *p_window);
-	~ContextGL_Haiku();
-
 	virtual Error initialize();
 	virtual void release_current();
 	virtual void make_current();
@@ -58,6 +55,9 @@ public:
 
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
+
+	ContextGL_Haiku(HaikuDirectWindow *p_window);
+	virtual ~ContextGL_Haiku();
 };
 
 #endif

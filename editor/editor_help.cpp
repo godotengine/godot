@@ -40,7 +40,7 @@
 #define CONTRIBUTE2_URL "https://github.com/godotengine/godot-docs"
 #define REQUEST_URL "https://github.com/godotengine/godot-docs/issues/new"
 
-void EditorHelpSearch::popup() {
+void EditorHelpSearch::popup_dialog() {
 
 	popup_centered(Size2(700, 600) * EDSCALE);
 	if (search_box->get_text() != "") {
@@ -50,15 +50,16 @@ void EditorHelpSearch::popup() {
 	search_box->grab_focus();
 }
 
-void EditorHelpSearch::popup(const String &p_term) {
+void EditorHelpSearch::popup_dialog(const String &p_term) {
 
 	popup_centered(Size2(700, 600) * EDSCALE);
 	if (p_term != "") {
 		search_box->set_text(p_term);
 		search_box->select_all();
 		_update_search();
-	} else
+	} else {
 		search_box->clear();
+	}
 	search_box->grab_focus();
 }
 
@@ -362,7 +363,7 @@ void EditorHelpIndex::select_class(const String &p_class) {
 	class_list->ensure_cursor_is_visible();
 }
 
-void EditorHelpIndex::popup() {
+void EditorHelpIndex::popup_dialog() {
 
 	popup_centered(Size2(500, 600) * EDSCALE);
 
