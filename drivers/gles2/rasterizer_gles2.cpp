@@ -64,14 +64,14 @@
 #define GLAPIENTRY
 #endif
 
-#ifndef GLES_OVER_GL
+#if !defined(GLES_OVER_GL) && !defined(IPHONE_ENABLED)
+// Used for debugging on mobile, but not iOS as EGL is not available
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-
 #endif
 
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
@@ -189,7 +189,7 @@ Error RasterizerGLES2::is_viable() {
 			return ERR_UNAVAILABLE;
 		}
 	}
-#endif
+#endif // GLES_OVER_GL
 
 #endif // GLAD_ENABLED
 
@@ -228,6 +228,7 @@ void RasterizerGLES2::initialize() {
 		*/
 	}
 #else
+#ifndef IPHONE_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
 		if (!callback) {
@@ -242,8 +243,8 @@ void RasterizerGLES2::initialize() {
 			glEnable(_EXT_DEBUG_OUTPUT);
 		}
 	}
-
-#endif
+#endif // !IPHONE_ENABLED
+#endif // GLES_OVER_GL
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
