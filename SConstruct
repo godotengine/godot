@@ -234,7 +234,8 @@ env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
 if (env_base['target'] == 'debug'):
-    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC'])
+    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
+    
 
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
