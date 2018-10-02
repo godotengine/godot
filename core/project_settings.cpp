@@ -1185,6 +1185,10 @@ ProjectSettings::ProjectSettings() {
 	Compression::gzip_level = GLOBAL_DEF("compression/formats/gzip/compression_level", Z_DEFAULT_COMPRESSION);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
+	// this is only for android but needs a place, setting sensor precision
+	GLOBAL_DEF("input_devices/sensors/sensor_delay", "Game");
+	set_custom_property_info("input_devices/sensors/sensor_delay", PropertyInfo(Variant::STRING, "input_devices/sensors/sensor_delay", PROPERTY_HINT_ENUM, "Fastest,Game,Normal,UI"));
+
 	using_datapack = false;
 }
 
