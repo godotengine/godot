@@ -2737,7 +2737,7 @@ void OS_Windows::run() {
 	while (!force_quit) {
 
 		process_events(); // get rid of pending events
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 

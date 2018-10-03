@@ -408,7 +408,7 @@ static void engine_draw_frame(struct engine *engine) {
 	// Just fill the screen with a color.
 	//glClearColor(0,1,0,1);
 	//glClear(GL_COLOR_BUFFER_BIT);
-	if (engine->os && engine->os->main_loop_iterate() == true) {
+	if (engine->os && engine->os->main_loop_iterate()) {
 
 		engine->requested_quit = true;
 		return; //should exit instead

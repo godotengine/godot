@@ -222,7 +222,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 		Constraint2DSW *prev_ci = NULL;
 		while (ci) {
 
-			if (_setup_island(ci, p_delta) == true) {
+			if (_setup_island(ci, p_delta)) {
 
 				//removed the root from the island graph because it is not to be processed
 

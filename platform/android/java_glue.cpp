@@ -974,7 +974,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 
 	os_android->process_gyroscope(gyroscope);
 
-	if (os_android->main_loop_iterate() == true) {
+	if (os_android->main_loop_iterate()) {
 
 		jclass cls = env->FindClass("org/godotengine/godot/Godot");
 		jmethodID _finish = env->GetMethodID(cls, "forceQuit", "()V");

@@ -858,7 +858,7 @@ bool Variant::is_one() const {
 		// atomic types
 		case BOOL: {
 
-			return _data._bool == true;
+			return _data._bool;
 		} break;
 		case INT: {
 

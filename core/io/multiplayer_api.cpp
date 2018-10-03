@@ -578,7 +578,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 			network_peer->set_target_peer(E->get()); // To this one specifically.
 
-			if (F->get() == true) {
+			if (F->get()) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc->id, &(packet_cache.write[1]));
 				network_peer->put_packet(packet_cache.ptr(), ofs);

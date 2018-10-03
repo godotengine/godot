@@ -2814,7 +2814,7 @@ void OS_X11::run() {
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 

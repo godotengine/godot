@@ -228,7 +228,7 @@ void VisualScriptPropertySelector::_update_search() {
 		}
 	}
 
-	if (seq_connect == true && visual_script_generic == false) {
+	if (seq_connect && visual_script_generic == false) {
 		String text = search_box->get_text();
 		create_visualscript_item(String("VisualScriptCondition"), root, text, String("Condition"));
 		create_visualscript_item(String("VisualScriptSwitch"), root, text, String("Switch"));
@@ -392,7 +392,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 				break;
 			}
 		}
-		if (is_filter == true) {
+		if (is_filter) {
 			continue;
 		}
 

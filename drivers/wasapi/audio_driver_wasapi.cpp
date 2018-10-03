@@ -808,7 +808,7 @@ Error AudioDriverWASAPI::capture_start() {
 
 Error AudioDriverWASAPI::capture_stop() {
 
-	if (audio_input.active == true) {
+	if (audio_input.active) {
 		audio_input.audio_client->Stop();
 		audio_input.active = false;
 
