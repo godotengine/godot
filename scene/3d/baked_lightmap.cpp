@@ -365,7 +365,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	{
 		bake_bounds = AABB(-extents, extents * 2.0);
 		int subdiv = nearest_power_of_2_templated(int(bake_bounds.get_longest_axis_size() / bake_cell_size));
-		bake_bounds.size[bake_bounds.get_longest_axis_size()] = subdiv * bake_cell_size;
+		bake_bounds.size[bake_bounds.get_longest_axis_index()] = subdiv * bake_cell_size;
 		bake_subdiv = nearest_shift(subdiv) + 1;
 
 		capture_subdiv = bake_subdiv;
