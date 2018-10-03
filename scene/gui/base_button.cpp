@@ -187,6 +187,57 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 		if (p_event->is_action("ui_accept")) {
 
+			if (action_mode == ACTION_MODE_BUTTON_PRESS) {
+
+				if (p_event->is_pressed()) {
+
+					emit_signal("button_down");
+
+					if (!toggle_mode) {
+
+						status.pressing_button++;
+						status.press_attempt = true;
+						status.pressing_inside = true;
+
+						pressed();
+						if (get_script_instance()) {
+							Variant::CallError ce;
+							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed, NULL, 0, ce);
+						}
+
+						emit_signal("pressed");
+						_unpress_group();
+
+					} else {
+
+						status.pressed = !status.pressed;
+						pressed();
+
+						emit_signal("pressed");
+						_unpress_group();
+
+						toggled(status.pressed);
+						if (get_script_instance()) {
+							get_script_instance()->call(SceneStringNames::get_singleton()->_toggled, status.pressed);
+						}
+						emit_signal("toggled", status.pressed);
+					}
+
+				} else {
+					if (status.pressing_button)
+						status.pressing_button--;
+
+					if (status.pressing_button)
+						return;
+
+					emit_signal("button_up");
+					status.press_attempt = false;
+				}
+
+				update();
+				return;
+			}
+
 			if (p_event->is_pressed()) {
 
 				status.pressing_button++;
