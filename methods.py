@@ -22,6 +22,10 @@ def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 def disable_warnings(self):
     # 'self' is the environment
     if self.msvc:
+        # We have to remove existing warning level defines before appending /w,
+        # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
+        warn_flags = ['/Wall', '/W4', '/W3', '/W2', '/W1', '/WX']
+        self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
         self.Append(CCFLAGS=['/w'])
     else:
         self.Append(CCFLAGS=['-w'])

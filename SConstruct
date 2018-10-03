@@ -159,15 +159,16 @@ opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", Tru
 opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
 
 # Advanced options
+opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
+opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
+opts.Add(BoolVariable('werror', "Treat compiler warnings as errors. Depends on the level of warnings set with 'warnings'", False))
+opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
+opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
+opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
+opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D GUI nodes and behaviors", False))
-opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
-opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
-opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
-opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
-opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
-opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
-opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 opts.Add('system_certs_path', "Use this path as SSL certificates default for editor (for package maintainers)", '')
 
@@ -235,7 +236,6 @@ env_base.platform_apis = platform_apis
 
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
-    
 
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
@@ -318,6 +318,7 @@ if selected_platform in platform_list:
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
 
+    # Configure compiler warnings
     if env.msvc:
         # Truncations, narrowing conversions, signed/unsigned comparisons...
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4018', '/wd4800']
@@ -331,6 +332,8 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['/w'])
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=['/EHsc'])
+        if (env["werror"]):
+            env.Append(CCFLAGS=['/WX'])
     else: # Rest of the world
         disable_nonessential_warnings = ['-Wno-sign-compare']
         if (env["warnings"] == 'extra'):
@@ -341,7 +344,10 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
-        env.Append(CCFLAGS=['-Werror=return-type'])
+        if (env["werror"]):
+            env.Append(CCFLAGS=['-Werror'])
+        else: # always enable those errors
+            env.Append(CCFLAGS=['-Werror=return-type'])
 
     suffix = "." + selected_platform
 
