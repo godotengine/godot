@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
+#include "core/os/displaydriver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -509,15 +510,14 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
-	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
-
+	Size2 win_size = Size2(DisplayDriver::get_singleton()->get_window_size().width, DisplayDriver::get_singleton()->get_window_size().height);
 	if (win_size != last_screen_size) {
 
 		last_screen_size = win_size;
 		_update_root_rect();
 
 		if (use_font_oversampling) {
-			DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
+			DynamicFontAtSize::font_oversampling = DisplayDriver::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
 			DynamicFont::update_oversampling();
 		}
 
@@ -1132,7 +1132,7 @@ void SceneTree::_update_root_rect() {
 	}
 
 	//actual screen video mode
-	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	Size2 video_mode = Size2(DisplayDriver::get_singleton()->get_window_size().width, DisplayDriver::get_singleton()->get_window_size().height);
 	Size2 desired_res = stretch_min;
 
 	Size2 viewport_size;
@@ -1918,7 +1918,7 @@ void SceneTree::set_use_font_oversampling(bool p_oversampling) {
 
 	use_font_oversampling = p_oversampling;
 	if (use_font_oversampling) {
-		DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
+		DynamicFontAtSize::font_oversampling = DisplayDriver::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
 	} else {
 		DynamicFontAtSize::font_oversampling = 1.0;
 	}
@@ -2025,7 +2025,7 @@ SceneTree::SceneTree() {
 	stretch_aspect = STRETCH_ASPECT_IGNORE;
 	stretch_shrink = 1;
 
-	last_screen_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+	last_screen_size = Size2(DisplayDriver::get_singleton()->get_window_size().width, DisplayDriver::get_singleton()->get_window_size().height);
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {

@@ -38,6 +38,7 @@
 #include "core/io/resource_saver.h"
 #include "core/io/translation_loader_po.h"
 #include "core/os/dir_access.h"
+#include "core/os/displaydriver.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -497,7 +498,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/window_placement/rect", 1);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen");
 	String screen_hints = "Same as Editor,Previous Monitor,Next Monitor";
-	for (int i = 0; i < OS::get_singleton()->get_screen_count(); i++) {
+	for (int i = 0; i < DisplayDriver::get_singleton()->get_screen_count(); i++) {
 		screen_hints += ",Monitor " + itos(i + 1);
 	}
 	_initial_set("run/window_placement/rect_custom_position", Vector2());

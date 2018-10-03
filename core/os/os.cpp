@@ -31,6 +31,7 @@
 #include "os.h"
 
 #include "core/os/dir_access.h"
+#include "core/os/displaydriver.h"
 #include "core/os/file_access.h"
 #include "core/os/input.h"
 #include "core/os/midi_driver.h"
@@ -107,14 +108,6 @@ void OS::printerr(const char *p_format, ...) {
 	va_end(argp);
 };
 
-void OS::set_keep_screen_on(bool p_enabled) {
-	_keep_screen_on = p_enabled;
-}
-
-bool OS::is_keep_screen_on() const {
-	return _keep_screen_on;
-}
-
 void OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	low_processor_usage_mode = p_enabled;
@@ -133,15 +126,6 @@ void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
 int OS::get_low_processor_usage_mode_sleep_usec() const {
 
 	return low_processor_usage_mode_sleep_usec;
-}
-
-void OS::set_clipboard(const String &p_text) {
-
-	_local_clipboard = p_text;
-}
-String OS::get_clipboard() const {
-
-	return _local_clipboard;
 }
 
 String OS::get_executable_path() const {
@@ -202,21 +186,6 @@ static void _OS_printres(Object *p_obj) {
 		print_line(str);
 }
 
-bool OS::has_virtual_keyboard() const {
-
-	return false;
-}
-
-void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
-}
-
-void OS::hide_virtual_keyboard() {
-}
-
-int OS::get_virtual_keyboard_height() const {
-	return 0;
-}
-
 void OS::print_all_resources(String p_to_file) {
 
 	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
@@ -256,16 +225,6 @@ void OS::clear_last_error() {
 	if (last_error)
 		memfree(last_error);
 	last_error = NULL;
-}
-
-void OS::set_no_window_mode(bool p_enable) {
-
-	_no_window = p_enable;
-}
-
-bool OS::is_no_window_mode_enabled() const {
-
-	return _no_window;
 }
 
 int OS::get_exit_code() const {
@@ -409,28 +368,12 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-bool OS::has_touchscreen_ui_hint() const {
-
-	//return false;
-	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
-}
-
 int OS::get_free_static_memory() const {
 
 	return Memory::get_mem_available();
 }
 
 void OS::yield() {
-}
-
-void OS::set_screen_orientation(ScreenOrientation p_orientation) {
-
-	_orientation = p_orientation;
-}
-
-OS::ScreenOrientation OS::get_screen_orientation() const {
-
-	return (OS::ScreenOrientation)_orientation;
 }
 
 void OS::_ensure_user_data_dir() {
@@ -452,12 +395,13 @@ void OS::_ensure_user_data_dir() {
 	memdelete(da);
 }
 
-void OS::set_icon(const Ref<Image> &p_icon) {
-}
-
 String OS::get_model_name() const {
 
 	return "GenericDevice";
+}
+
+MainLoop *OS::get_main_loop() const {
+	return DisplayDriver::get_singleton()->get_main_loop();
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
@@ -465,15 +409,6 @@ void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
 	_execpath = p_execpath;
 	_cmdline = p_args;
 };
-
-void OS::release_rendering_thread() {
-}
-
-void OS::make_rendering_thread() {
-}
-
-void OS::swap_buffers() {
-}
 
 String OS::get_unique_id() const {
 
@@ -485,31 +420,6 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
-Error OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-
-	return FAILED;
-};
-
-bool OS::native_video_is_playing() const {
-
-	return false;
-};
-
-void OS::native_video_pause(){
-
-};
-
-void OS::native_video_unpause(){
-
-};
-
-void OS::native_video_stop(){
-
-};
-
-void OS::set_mouse_mode(MouseMode p_mode) {
-}
-
 bool OS::can_use_threads() const {
 
 #ifdef NO_THREADS
@@ -517,43 +427,6 @@ bool OS::can_use_threads() const {
 #else
 	return true;
 #endif
-}
-
-OS::MouseMode OS::get_mouse_mode() const {
-
-	return MOUSE_MODE_VISIBLE;
-}
-
-OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
-
-	return LATIN_KEYBOARD_QWERTY;
-}
-
-bool OS::is_joy_known(int p_device) {
-	return true;
-}
-
-String OS::get_joy_guid(int p_device) const {
-	return "Default Joypad";
-}
-
-void OS::set_context(int p_context) {
-}
-
-OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = NULL;
-
-void OS::set_use_vsync(bool p_enable) {
-	_use_vsync = p_enable;
-	if (switch_vsync_function) { //if a function was set, use function
-		switch_vsync_function(p_enable);
-	} else { //otherwise just call here
-		_set_use_vsync(p_enable);
-	}
-}
-
-bool OS::is_vsync_enabled() const {
-
-	return _use_vsync;
 }
 
 OS::PowerState OS::get_power_state() {
@@ -628,35 +501,36 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
-void OS::center_window() {
+// void OS::center_window() {
 
-	if (is_window_fullscreen()) return;
+// 	if (is_window_fullscreen()) return;
 
-	Point2 sp = get_screen_position(get_current_screen());
-	Size2 scr = get_screen_size(get_current_screen());
-	Size2 wnd = get_real_window_size();
+// 	Point2 sp = get_screen_position(get_current_screen());
+// 	Size2 scr = get_screen_size(get_current_screen());
+// 	Size2 wnd = get_real_window_size();
 
-	int x = sp.width + (scr.width - wnd.width) / 2;
-	int y = sp.height + (scr.height - wnd.height) / 2;
+// 	int x = sp.width + (scr.width - wnd.width) / 2;
+// 	int y = sp.height + (scr.height - wnd.height) / 2;
 
-	set_window_position(Vector2(x, y));
-}
+// 	set_window_position(Vector2(x, y));
+// }
 
-int OS::get_video_driver_count() const {
+// int OS::get_video_driver_count() const {
 
-	return 2;
-}
+// 	return 2;
+// }
 
-const char *OS::get_video_driver_name(int p_driver) const {
+// const char *OS::get_video_driver_name(int p_driver) const {
 
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-		case VIDEO_DRIVER_GLES3:
-		default:
-			return "GLES3";
-	}
-}
+// 	switch (p_driver) {
+// 		case VIDEO_DRIVER_GLES2:
+// 			return "GLES2";
+// 		case VIDEO_DRIVER_GLES3:
+// 			return "GLES3";
+// 		default:
+// 			return "INVALID VIDEO DRIVER";
+// 	}
+// }
 
 int OS::get_audio_driver_count() const {
 
@@ -710,18 +584,13 @@ OS::OS() {
 	restart_on_exit = false;
 	last_error = NULL;
 	singleton = this;
-	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode = false;
 	low_processor_usage_mode_sleep_usec = 10000;
 	_verbose_stdout = false;
-	_no_window = false;
 	_exit_code = 0;
-	_orientation = SCREEN_LANDSCAPE;
 
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
-	_allow_hidpi = false;
-	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;

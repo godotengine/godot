@@ -87,9 +87,9 @@ Copyright: 2002, Google Inc.
 License: Apache-2.0
 
 Files: ./platform/android/power_android.cpp
+ ./platform/freedesktop/power_x11.cpp
  ./platform/osx/power_osx.cpp
  ./platform/windows/power_windows.cpp
- ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
   2007-2018, Juan Linietsky, Ariel Manzur.

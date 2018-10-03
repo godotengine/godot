@@ -1963,14 +1963,14 @@ void SpatialEditorViewport::set_freelook_active(bool active_now) {
 		}
 
 		// Hide mouse like in an FPS (warping doesn't work)
-		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_CAPTURED);
+		DisplayDriver::get_singleton()->set_mouse_mode(DisplayDriver::MOUSE_MODE_CAPTURED);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
 
 		// Restore mouse
-		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_VISIBLE);
+		DisplayDriver::get_singleton()->set_mouse_mode(DisplayDriver::MOUSE_MODE_VISIBLE);
 	}
 
 	freelook_active = active_now;

@@ -1,0 +1,11 @@
+[default]
+name=Default
+runtime=host
+toolchain=default
+config-opts=
+run-opts=
+prefix=/home/wmww/.cache/gnome-builder/install/godot/host
+app-id=
+postbuild=
+prebuild=
+default=true

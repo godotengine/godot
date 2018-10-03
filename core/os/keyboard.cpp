@@ -29,8 +29,7 @@
 /*************************************************************************/
 
 #include "keyboard.h"
-
-#include "core/os/os.h"
+#include "core/os/displaydriver.h"
 
 struct _KeyCodeText {
 	int code;

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_run.h                                                         */
+/*  export.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EDITOR_RUN_H
-#define EDITOR_RUN_H
+#include "export.h"
 
-#include "core/os/displaydriver.h"
-#include "core/os/os.h"
-#include "scene/main/node.h"
-class EditorRun {
-public:
-	enum Status {
+#include "editor/editor_export.h"
+#include "platform/freedesktop/logo.gen.h"
+#include "scene/resources/texture.h"
 
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
+void register_freedesktop_exporter() {
 
-	OS::ProcessID pid;
+	Ref<EditorExportPlatformPC> platform;
+	platform.instance();
 
-private:
-	bool debug_collisions;
-	bool debug_navigation;
-	Status status;
+	Ref<Image> img = memnew(Image(_freedesktop_logo));
+	Ref<ImageTexture> logo;
+	logo.instance();
+	logo->create_from_image(img);
+	platform->set_logo(logo);
+	platform->set_name("Linux/X11");
+	platform->set_extension("x86");
+	platform->set_extension("x86_64", "binary_format/64_bits");
+	platform->set_release_32("linux_x11_32_release");
+	platform->set_debug_32("linux_x11_32_debug");
+	platform->set_release_64("linux_x11_64_release");
+	platform->set_debug_64("linux_x11_64_debug");
+	platform->set_os_name("X11");
+	platform->set_chmod_flags(0755);
 
-public:
-	Status get_status() const;
-	Error run(const String &p_scene, const String p_custom_args, const List<String> &p_breakpoints);
-	void run_native_notify() { status = STATUS_PLAY; }
-	void stop();
-
-	OS::ProcessID get_pid() const { return pid; }
-
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
-
-	EditorRun();
-};
-
-#endif // EDITOR_RUN_H
+	EditorExport::get_singleton()->add_export_platform(platform);
+}

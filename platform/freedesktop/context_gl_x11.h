@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_x11.cpp                                                        */
+/*  context_gl_x11.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <limits.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <unistd.h>
+#ifndef CONTEXT_GL_X11_H
+#define CONTEXT_GL_X11_H
 
-#include "main/main.h"
-#include "os_x11.h"
+/**
+	@author Juan Linietsky <reduzio@gmail.com>
+*/
+#ifdef X11_ENABLED
 
-int main(int argc, char *argv[]) {
+#if defined(OPENGL_ENABLED)
 
-	OS_X11 os;
+#include "core/os/displaydriver.h"
+#include "core/os/os.h"
+#include "drivers/gl_context/context_gl.h"
 
-	setlocale(LC_CTYPE, "");
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
 
-	char *cwd = (char *)malloc(PATH_MAX);
-	char *ret = getcwd(cwd, PATH_MAX);
+struct ContextGL_X11_Private;
 
-	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
-	if (err != OK) {
-		free(cwd);
-		return 255;
-	}
+class ContextGL_X11 : public ContextGL {
 
-	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
-	Main::cleanup();
+public:
+	enum ContextType {
+		OLDSTYLE,
+		GLES_2_0_COMPATIBLE,
+		GLES_3_0_COMPATIBLE
+	};
 
-	if (ret)
-		chdir(cwd);
-	free(cwd);
+private:
+	ContextGL_X11_Private *p;
+	DisplayDriver::VideoMode default_video_mode;
+	//::Colormap x11_colormap;
+	::Display *x11_display;
+	::Window &x11_window;
+	bool double_buffer;
+	bool direct_render;
+	int glx_minor, glx_major;
+	bool use_vsync;
+	ContextType context_type;
 
-	return os.get_exit_code();
-}
+public:
+	virtual void release_current();
+	virtual void make_current();
+	virtual void swap_buffers();
+	virtual int get_window_width();
+	virtual int get_window_height();
+
+	virtual Error initialize();
+
+	virtual void set_use_vsync(bool p_use);
+	virtual bool is_using_vsync() const;
+
+	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const DisplayDriver::VideoMode &p_default_video_mode, ContextType p_context_type);
+	virtual ~ContextGL_X11();
+};
+
+#endif
+
+#endif
+#endif

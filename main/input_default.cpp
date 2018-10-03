@@ -31,6 +31,7 @@
 #include "input_default.h"
 
 #include "core/input_map.h"
+#include "core/os/displaydriver.h"
 #include "core/os/os.h"
 #include "main/default_controller_mappings.h"
 #include "scene/resources/texture.h"
@@ -498,7 +499,7 @@ int InputDefault::get_mouse_button_mask() const {
 
 void InputDefault::warp_mouse_position(const Vector2 &p_to) {
 
-	OS::get_singleton()->warp_mouse_position(p_to);
+	DisplayDriver::get_singleton()->warp_mouse_position(p_to);
 }
 
 Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) {
@@ -521,7 +522,7 @@ Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_moti
 	const Point2i pos_local = p_motion->get_global_position() - p_rect.position;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
-		OS::get_singleton()->warp_mouse_position(pos_warped + p_rect.position);
+		DisplayDriver::get_singleton()->warp_mouse_position(pos_warped + p_rect.position);
 	}
 
 	return rel_warped;
@@ -611,7 +612,7 @@ void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_sh
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
 
-	OS::get_singleton()->set_custom_mouse_cursor(p_cursor, (OS::CursorShape)p_shape, p_hotspot);
+	DisplayDriver::get_singleton()->set_custom_mouse_cursor(p_cursor, (DisplayDriver::CursorShape)p_shape, p_hotspot);
 }
 
 void InputDefault::set_mouse_in_window(bool p_in_window) {
@@ -1026,11 +1027,11 @@ void InputDefault::set_fallback_mapping(String p_guid) {
 //Defaults to simple implementation for platforms with a fixed gamepad layout, like consoles.
 bool InputDefault::is_joy_known(int p_device) {
 
-	return OS::get_singleton()->is_joy_known(p_device);
+	return DisplayDriver::get_singleton()->is_joy_known(p_device);
 }
 
 String InputDefault::get_joy_guid(int p_device) const {
-	return OS::get_singleton()->get_joy_guid(p_device);
+	return DisplayDriver::get_singleton()->get_joy_guid(p_device);
 }
 
 //platforms that use the remapping system can override and call to these ones

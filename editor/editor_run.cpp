@@ -30,6 +30,7 @@
 
 #include "editor_run.h"
 
+#include "core/os/displaydriver.h"
 #include "core/project_settings.h"
 #include "editor_settings.h"
 
@@ -69,19 +70,19 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 	if (screen == 0) {
 		// Same as editor
-		screen = OS::get_singleton()->get_current_screen();
+		screen = DisplayDriver::get_singleton()->get_current_screen();
 	} else if (screen == 1) {
 		// Previous monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
-				OS::get_singleton()->get_current_screen() - 1,
+				DisplayDriver::get_singleton()->get_current_screen() - 1,
 				0,
-				OS::get_singleton()->get_screen_count());
+				DisplayDriver::get_singleton()->get_screen_count());
 	} else if (screen == 2) {
 		// Next monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
-				OS::get_singleton()->get_current_screen() + 1,
+				DisplayDriver::get_singleton()->get_current_screen() + 1,
 				0,
-				OS::get_singleton()->get_screen_count());
+				DisplayDriver::get_singleton()->get_screen_count());
 	} else {
 		// Fixed monitor ID
 		// There are 3 special options, so decrement the option ID by 3 to get the monitor ID
@@ -93,8 +94,8 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 	}
 
 	Rect2 screen_rect;
-	screen_rect.position = OS::get_singleton()->get_screen_position(screen);
-	screen_rect.size = OS::get_singleton()->get_screen_size(screen);
+	screen_rect.position = DisplayDriver::get_singleton()->get_screen_position(screen);
+	screen_rect.size = DisplayDriver::get_singleton()->get_screen_size(screen);
 
 	Size2 desired_size;
 	desired_size.x = ProjectSettings::get_singleton()->get("display/window/size/width");

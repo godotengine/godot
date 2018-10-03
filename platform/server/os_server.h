@@ -30,6 +30,8 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
+#include "../freedesktop/crash_handler_x11.h"
+#include "../freedesktop/power_x11.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
