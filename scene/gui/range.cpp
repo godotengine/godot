@@ -323,7 +323,7 @@ Range::Range() {
 	shared->min = 0;
 	shared->max = 100;
 	shared->val = 0;
-	shared->step = 1;
+	shared->step = 0;
 	shared->page = 0;
 	shared->owners.insert(this);
 	shared->exp_ratio = false;
