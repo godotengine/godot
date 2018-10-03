@@ -322,13 +322,13 @@ if selected_platform in platform_list:
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
     if env.msvc:
-        disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
+        # Truncations, narrowing conversions, signed/unsigned comparisons...
+        disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4018', '/wd4800']
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
         elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
             env.Append(CCFLAGS=['/W3'] + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
-            # C4244 shouldn't be needed here being a level-3 warning, but it is
             env.Append(CCFLAGS=['/W2'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['/w'])

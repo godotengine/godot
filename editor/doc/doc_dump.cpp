@@ -223,7 +223,7 @@ void DocDump::dump(const String &p_file) {
 						hint = "Values: ";
 						for (int j = 0; j < arginfo.hint_string.get_slice_count(","); j++) {
 							if (j > 0) hint += ", ";
-							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos(1 << j);
+							hint += arginfo.hint_string.get_slice(",", j) + "=" + itos((uint64_t)1 << j);
 						}
 						break;
 					case PROPERTY_HINT_FILE: hint = "A file:"; break;

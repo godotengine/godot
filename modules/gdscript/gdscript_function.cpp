@@ -155,6 +155,7 @@ String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const 
 	return err_text;
 }
 
+#ifdef DEBUG_ENABLED
 static String _get_var_type(const Variant *p_type) {
 
 	String basestr;
@@ -164,7 +165,6 @@ static String _get_var_type(const Variant *p_type) {
 		if (!bobj) {
 			basestr = "null instance";
 		} else {
-#ifdef DEBUG_ENABLED
 			if (ObjectDB::instance_validate(bobj)) {
 				if (bobj->get_script_instance())
 					basestr = bobj->get_class() + " (" + bobj->get_script_instance()->get_script()->get_path().get_file() + ")";
@@ -173,10 +173,6 @@ static String _get_var_type(const Variant *p_type) {
 			} else {
 				basestr = "previously freed instance";
 			}
-
-#else
-			basestr = "Object";
-#endif
 		}
 
 	} else {
@@ -185,6 +181,7 @@ static String _get_var_type(const Variant *p_type) {
 
 	return basestr;
 }
+#endif
 
 #if defined(__GNUC__)
 #define OPCODES_TABLE                         \
@@ -676,6 +673,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_SET_MEMBER) {
 
 				CHECK_SPACE(3);
+#ifdef DEBUG_ENABLED
 				int indexname = _code_ptr[ip + 1];
 				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
@@ -683,7 +681,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool valid;
 				bool ok = ClassDB::set_property(p_instance->owner, *index, *src, &valid);
-#ifdef DEBUG_ENABLED
 				if (!ok) {
 					err_text = "Internal error setting property: " + String(*index);
 					OPCODE_BREAK;
@@ -699,13 +696,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_GET_MEMBER) {
 
 				CHECK_SPACE(3);
+#ifdef DEBUG_ENABLED
 				int indexname = _code_ptr[ip + 1];
 				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 				GET_VARIANT_PTR(dst, 2);
-				bool ok = ClassDB::get_property(p_instance->owner, *index, *dst);
 
-#ifdef DEBUG_ENABLED
+				bool ok = ClassDB::get_property(p_instance->owner, *index, *dst);
 				if (!ok) {
 					err_text = "Internal error getting property: " + String(*index);
 					OPCODE_BREAK;
@@ -752,13 +749,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_ASSIGN_TYPED_BUILTIN) {
 
 				CHECK_SPACE(4);
-				Variant::Type var_type = (Variant::Type)_code_ptr[ip + 1];
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
+#ifdef DEBUG_ENABLED
+				Variant::Type var_type = (Variant::Type)_code_ptr[ip + 1];
 				GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
 
-#ifdef DEBUG_ENABLED
 				if (src->get_type() != var_type) {
 					if (Variant::can_convert_strict(src->get_type(), var_type)) {
 						Variant::CallError ce;
@@ -1282,10 +1279,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 #endif
+
 					Object *obj = argobj->operator Object *();
 					String signal = argname->operator String();
-#ifdef DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
 					if (!obj) {
 						err_text = "First argument of yield() is null.";
 						OPCODE_BREAK;
@@ -1302,13 +1300,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-#endif
 					Error err = obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
-#ifdef DEBUG_ENABLED
 					if (err != OK) {
 						err_text = "Error connecting to signal: " + signal + " during yield().";
 						OPCODE_BREAK;
 					}
+#else
+					obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
 #endif
 				}
 

@@ -809,10 +809,10 @@ void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
 
-	ClassInfo *check = type;
 	StringName sname = p_signal.name;
-#ifdef DEBUG_METHODS_ENABLED
 
+#ifdef DEBUG_METHODS_ENABLED
+	ClassInfo *check = type;
 	while (check) {
 		if (check->signal_map.has(sname)) {
 			ERR_EXPLAIN("Type " + String(p_class) + " already has signal: " + String(sname));
