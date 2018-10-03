@@ -176,6 +176,7 @@
 			</argument>
 			<description>
 				Finds a descendant of this node whose name matches [code]mask[/code] as in [method String.match] (i.e. case sensitive, but '*' matches zero or more characters and '?' matches any single character except '.'). Note that it does not match against the full path, just against individual node names.
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through script, because those scenes don't have an owner.
 			</description>
 		</method>
 		<method name="get_child" qualifiers="const">
