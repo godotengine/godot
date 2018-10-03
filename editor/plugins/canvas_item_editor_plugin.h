@@ -280,6 +280,10 @@ private:
 		Transform2D xform;
 		float length;
 		uint64_t last_pass;
+
+		BoneList() :
+				length(0.f),
+				last_pass(0) {}
 	};
 
 	uint64_t bone_last_frame;
