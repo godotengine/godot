@@ -578,8 +578,14 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			for (ScriptConstantsMap::Element *sc = constants.front(); sc; sc = sc->next()) {
 				for (Map<StringName, Variant>::Element *E = sc->get().front(); E; E = E->next()) {
 					String script_path = sc->key() == si->get_script().ptr() ? "" : sc->key()->get_path().get_file() + "/";
-					PropertyInfo pi(E->value().get_type(), "Constants/" + script_path + E->key());
-					properties.push_back(PropertyDesc(pi, E->value()));
+					if (E->value().get_type() == Variant::OBJECT) {
+						Variant id = ((Object *)E->value())->get_instance_id();
+						PropertyInfo pi(id.get_type(), "Constants/" + E->key(), PROPERTY_HINT_OBJECT_ID, "Object");
+						properties.push_back(PropertyDesc(pi, id));
+					} else {
+						PropertyInfo pi(E->value().get_type(), "Constants/" + script_path + E->key());
+						properties.push_back(PropertyDesc(pi, E->value()));
+					}
 				}
 			}
 		}
@@ -592,8 +598,14 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			Map<StringName, Variant> constants;
 			s->get_constants(&constants);
 			for (Map<StringName, Variant>::Element *E = constants.front(); E; E = E->next()) {
-				PropertyInfo pi(E->value().get_type(), String("Constants/") + E->key());
-				properties.push_front(PropertyDesc(pi, E->value()));
+				if (E->value().get_type() == Variant::OBJECT) {
+					Variant id = ((Object *)E->value())->get_instance_id();
+					PropertyInfo pi(id.get_type(), "Constants/" + E->key(), PROPERTY_HINT_OBJECT_ID, "Object");
+					properties.push_front(PropertyDesc(pi, E->value()));
+				} else {
+					PropertyInfo pi(E->value().get_type(), String("Constants/") + E->key());
+					properties.push_front(PropertyDesc(pi, E->value()));
+				}
 			}
 		}
 	}
@@ -634,10 +646,9 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			prop.push_back(pi.hint);
 			prop.push_back(pi.hint_string);
 			prop.push_back(pi.usage);
+
 			if (!res.is_null()) {
-				var = String("PATH") + res->get_path();
-			} else if (var.get_type() == Variant::STRING) {
-				var = String("DATA") + var;
+				var = res->get_path();
 			}
 
 			prop.push_back(var);

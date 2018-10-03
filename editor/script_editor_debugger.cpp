@@ -493,21 +493,27 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			pinfo.usage = PropertyUsageFlags(int(prop[4]));
 			Variant var = prop[5];
 
+			if (pinfo.type == Variant::OBJECT) {
+				if (var.is_zero()) {
+					var = RES();
+				} else if (var.get_type() == Variant::STRING) {
+					var = ResourceLoader::load(var);
+
+					if (pinfo.hint_string == "Script")
+						debugObj->set_script(var);
+				} else if (var.get_type() == Variant::OBJECT) {
+					if (((Object *)var)->is_class("EncodedObjectAsID")) {
+						var = Object::cast_to<EncodedObjectAsID>(var)->get_object_id();
+						pinfo.type = var.get_type();
+						pinfo.hint = PROPERTY_HINT_OBJECT_ID;
+						pinfo.hint_string = "Object";
+					}
+				}
+			}
+
 			if (is_new_object) {
 				//don't update.. it's the same, instead refresh
 				debugObj->prop_list.push_back(pinfo);
-			}
-
-			if (var.get_type() == Variant::STRING) {
-				String str = var;
-				var = str.substr(4, str.length());
-
-				if (str.begins_with("PATH")) {
-					if (String(var).empty())
-						var = RES();
-					else
-						var = ResourceLoader::load(var);
-				}
 			}
 
 			debugObj->prop_values[pinfo.name] = var;
