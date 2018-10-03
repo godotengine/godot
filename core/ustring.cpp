@@ -1828,8 +1828,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	int sign, expSign = false;
 	double fraction, dblExp;
 	const double *d;
-	register const C *p;
-	register int c;
+	const C *p;
+	int c;
 	int exp = 0; /* Exponent read from "EX" field. */
 	int fracExp = 0; /* Exponent that derives from the fractional
 				 * part. Under normal circumstances, it is

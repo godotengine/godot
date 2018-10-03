@@ -73,6 +73,8 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
+#ifdef GLAD_ENABLED
+// Restricting to GLAD as only used in initialize() with GLAD_GL_ARB_debug_output
 #if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
 #define GLAPIENTRY APIENTRY
 #else
@@ -123,6 +125,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINTS(output);
 }
+#endif // GLAD_ENABLED
 
 typedef void (*DEBUGPROCARB)(GLenum source,
 		GLenum type,

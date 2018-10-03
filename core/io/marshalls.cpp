@@ -868,8 +868,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::REAL: {
 
-			double d = p_variant;
-			float f = d;
 			if (flags & ENCODE_FLAG_64) {
 				if (buf) {
 					encode_double(p_variant.operator double(), buf);
