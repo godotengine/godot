@@ -391,7 +391,7 @@ size_t DirAccessUnix::get_space_left() {
 
 	return vfs.f_bfree * vfs.f_bsize;
 #else
-#warning THIS IS BROKEN
+	// FIXME: Implement this.
 	return 0;
 #endif
 };

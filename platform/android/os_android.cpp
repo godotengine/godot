@@ -677,13 +677,14 @@ String OS_Android::get_unique_id() const {
 	return OS::get_unique_id();
 }
 
-Error OS_Android::native_video_play(String p_path, float p_volume) {
+Error OS_Android::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
+	// FIXME: Add support for volume, audio and subtitle tracks
 	if (video_play_func)
 		video_play_func(p_path);
 	return OK;
 }
 
-bool OS_Android::native_video_is_playing() {
+bool OS_Android::native_video_is_playing() const {
 	if (video_is_playing_func)
 		return video_is_playing_func();
 	return false;
