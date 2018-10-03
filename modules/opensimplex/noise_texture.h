@@ -83,9 +83,6 @@ public:
 	void set_as_normalmap(bool p_seamless);
 	bool is_normalmap();
 
-	void set_size(Vector2 p_size);
-	Vector2 get_size();
-
 	int get_width() const;
 	int get_height() const;
 

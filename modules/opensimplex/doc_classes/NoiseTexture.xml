@@ -41,8 +41,11 @@
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless">
 			Whether the texture can be tiled without visible seams or not. Seamless textures take longer to generate.
 		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size">
-			Size of the generated texture.
+		<member name="width" type="int" setter="set_width" getter="get_width">
+			Width of the generated texture.
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height">
+			Height of the generated texture.
 		</member>
 	</members>
 	<constants>
