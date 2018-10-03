@@ -484,6 +484,17 @@ void EditorProperty::update_reload_status() {
 }
 
 bool EditorProperty::use_keying_next() const {
+	List<PropertyInfo> plist;
+	object->get_property_list(&plist, true);
+
+	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
+		PropertyInfo &p = I->get();
+
+		if (p.name == property) {
+			return p.hint == PROPERTY_HINT_SPRITE_FRAME;
+		}
+	}
+
 	return false;
 }
 void EditorProperty::set_checkable(bool p_checkable) {
@@ -618,6 +629,11 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (keying_rect.has_point(mb->get_position())) {
 			emit_signal("property_keyed", property);
+
+			if (use_keying_next()) {
+				call_deferred("emit_signal", "property_changed", property, object->get(property).operator int64_t() + 1);
+				call_deferred("update_property");
+			}
 		}
 
 		if (revert_rect.has_point(mb->get_position())) {
