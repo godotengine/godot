@@ -278,6 +278,10 @@
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused">
 			If [code]true[/code] the SceneTree is paused.
+			Doing so will have the following behavior:
+			* 2D and 3D physics will be stopped.
+			* _process and _physics_process will not be called anymore in nodes.
+			* _input and _input_event will not be called anymore either.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
 			If [code]true[/code] the SceneTree's [member network_peer] refuses new incoming connections.
