@@ -307,6 +307,7 @@ void Image::_get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_widt
 	r_width = w;
 	r_height = h;
 }
+
 int Image::get_mipmap_offset(int p_mipmap) const {
 
 	ERR_FAIL_INDEX_V(p_mipmap, get_mipmap_count() + 1, -1);
@@ -498,8 +499,6 @@ void Image::convert(Format p_new_format) {
 	w = PoolVector<uint8_t>::Write();
 
 	bool gen_mipmaps = mipmaps;
-
-	//mipmaps=false;
 
 	_copy_internals_from(new_img);
 
@@ -799,6 +798,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	if (interpolate_mipmaps) {
 		dst2.create(p_width, p_height, 0, format);
 	}
+
 	bool had_mipmaps = mipmaps;
 	if (interpolate_mipmaps && !had_mipmaps) {
 		generate_mipmaps();
@@ -951,6 +951,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 }
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
+
 	if (!_can_modify(format)) {
 		ERR_EXPLAIN("Cannot crop in indexed, compressed or custom image formats.");
 		ERR_FAIL();
@@ -996,7 +997,7 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 		}
 	}
 
-	if (mipmaps > 0)
+	if (has_mipmaps())
 		dst.generate_mipmaps();
 	_copy_internals_from(dst);
 }
@@ -1013,10 +1014,10 @@ void Image::flip_y() {
 		ERR_FAIL();
 	}
 
-	bool gm = mipmaps;
-
-	if (gm)
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
 		clear_mipmaps();
+	}
 
 	{
 		PoolVector<uint8_t>::Write w = data.write();
@@ -1037,8 +1038,9 @@ void Image::flip_y() {
 		}
 	}
 
-	if (gm)
+	if (used_mipmaps) {
 		generate_mipmaps();
+	}
 }
 
 void Image::flip_x() {
@@ -1048,9 +1050,10 @@ void Image::flip_x() {
 		ERR_FAIL();
 	}
 
-	bool gm = mipmaps;
-	if (gm)
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
 		clear_mipmaps();
+	}
 
 	{
 		PoolVector<uint8_t>::Write w = data.write();
@@ -1071,8 +1074,9 @@ void Image::flip_x() {
 		}
 	}
 
-	if (gm)
+	if (used_mipmaps) {
 		generate_mipmaps();
+	}
 }
 
 int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps) {
@@ -1167,11 +1171,12 @@ void Image::expand_x2_hq2x() {
 
 	ERR_FAIL_COND(!_can_modify(format));
 
-	Format current = format;
-	bool mm = has_mipmaps();
-	if (mm) {
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
 		clear_mipmaps();
 	}
+
+	Format current = format;
 
 	if (current != FORMAT_RGBA8)
 		convert(FORMAT_RGBA8);
@@ -1193,7 +1198,7 @@ void Image::expand_x2_hq2x() {
 	if (current != FORMAT_RGBA8)
 		convert(current);
 
-	if (mipmaps) {
+	if (used_mipmaps) {
 		generate_mipmaps();
 	}
 }
