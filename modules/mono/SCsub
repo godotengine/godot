@@ -244,16 +244,13 @@ def mono_build_solution(source, target, env):
 
     copyfile(os.path.join(src_dir, asm_file), os.path.join(dst_dir, asm_file))
 
-output_dir = Dir('#bin').abspath
-assemblies_output_dir = Dir(env['mono_assemblies_output_dir']).abspath
+if env['tools']:
+    output_dir = Dir('#bin').abspath
+    editor_tools_dir = os.path.join(output_dir, 'GodotSharp', 'Tools')
 
-mono_sln_builder = Builder(action=mono_build_solution)
-env_mono.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
-env_mono.MonoBuildSolution(
-    os.path.join(assemblies_output_dir, 'GodotSharpTools.dll'),
-    'editor/GodotSharpTools/GodotSharpTools.sln'
-)
-
-if os.path.normpath(output_dir) != os.path.normpath(assemblies_output_dir):
-    rel_assemblies_output_dir = os.path.relpath(assemblies_output_dir, output_dir)
-    env_mono.Append(CPPDEFINES={'GD_MONO_EDITOR_ASSEMBLIES_DIR': rel_assemblies_output_dir})
+    mono_sln_builder = Builder(action=mono_build_solution)
+    env_mono.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
+    env_mono.MonoBuildSolution(
+        os.path.join(editor_tools_dir, 'GodotSharpTools.dll'),
+        'editor/GodotSharpTools/GodotSharpTools.sln'
+    )

@@ -162,49 +162,62 @@ void GDMono::initialize() {
 	mono_trace_set_printerr_handler(gdmono_MonoPrintCallback);
 #endif
 
+	String assembly_rootdir;
+	String config_dir;
+
+#ifdef TOOLS_ENABLED
 #ifdef WINDOWS_ENABLED
 	mono_reg_info = MonoRegUtils::find_mono();
 
-	CharString assembly_dir;
-	CharString config_dir;
-
 	if (mono_reg_info.assembly_dir.length() && DirAccess::exists(mono_reg_info.assembly_dir)) {
-		assembly_dir = mono_reg_info.assembly_dir.utf8();
+		assembly_rootdir = mono_reg_info.assembly_dir;
 	}
 
 	if (mono_reg_info.config_dir.length() && DirAccess::exists(mono_reg_info.config_dir)) {
-		config_dir = mono_reg_info.config_dir.utf8();
+		config_dir = mono_reg_info.config_dir;
 	}
-
-	mono_set_dirs(assembly_dir.length() ? assembly_dir.get_data() : NULL,
-			config_dir.length() ? config_dir.get_data() : NULL);
 #elif OSX_ENABLED
-	mono_set_dirs(NULL, NULL);
+	const char *c_assembly_rootdir = mono_assembly_getrootdir();
+	const char *c_config_dir = mono_get_config_dir();
 
-	{
-		const char *assembly_rootdir = mono_assembly_getrootdir();
-		const char *config_dir = mono_get_config_dir();
+	if (!c_assembly_rootdir || !c_config_dir || !DirAccess::exists(c_assembly_rootdir) || !DirAccess::exists(c_config_dir)) {
+		Vector<const char *> locations;
+		locations.push_back("/Library/Frameworks/Mono.framework/Versions/Current/");
+		locations.push_back("/usr/local/var/homebrew/linked/mono/");
 
-		if (!assembly_rootdir || !config_dir || !DirAccess::exists(assembly_rootdir) || !DirAccess::exists(config_dir)) {
-			Vector<const char *> locations;
-			locations.push_back("/Library/Frameworks/Mono.framework/Versions/Current/");
-			locations.push_back("/usr/local/var/homebrew/linked/mono/");
+		for (int i = 0; i < locations.size(); i++) {
+			String hint_assembly_rootdir = path_join(locations[i], "lib");
+			String hint_mscorlib_path = path_join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
+			String hint_config_dir = path_join(locations[i], "etc");
 
-			for (int i = 0; i < locations.size(); i++) {
-				String hint_assembly_rootdir = path_join(locations[i], "lib");
-				String hint_mscorlib_path = path_join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
-				String hint_config_dir = path_join(locations[i], "etc");
-
-				if (FileAccess::exists(hint_mscorlib_path) && DirAccess::exists(hint_config_dir)) {
-					mono_set_dirs(hint_assembly_rootdir.utf8().get_data(), hint_config_dir.utf8().get_data());
-					break;
-				}
+			if (FileAccess::exists(hint_mscorlib_path) && DirAccess::exists(hint_config_dir)) {
+				need_set_mono_dirs = false;
+				assembly_rootdir = hint_assembly_rootdir;
+				config_dir = hint_config_dir;
+				break;
 			}
 		}
 	}
-#else
-	mono_set_dirs(NULL, NULL);
 #endif
+#endif // TOOLS_ENABLED
+
+	String bundled_assembly_rootdir = GodotSharpDirs::get_data_mono_lib_dir();
+	String bundled_config_dir = GodotSharpDirs::get_data_mono_etc_dir();
+
+#ifdef TOOLS_ENABLED
+	if (DirAccess::exists(bundled_assembly_rootdir) && DirAccess::exists(bundled_config_dir)) {
+		assembly_rootdir = bundled_assembly_rootdir;
+		config_dir = bundled_config_dir;
+	}
+#else
+	// These are always the directories in export templates
+	assembly_rootdir = bundled_assembly_rootdir;
+	config_dir = bundled_config_dir;
+#endif
+
+	// Leak if we call mono_set_dirs more than once
+	mono_set_dirs(assembly_rootdir.length() ? assembly_rootdir.utf8().get_data() : NULL,
+			config_dir.length() ? config_dir.utf8().get_data() : NULL);
 
 	GDMonoAssembly::initialize();
 
@@ -262,8 +275,11 @@ void GDMono::initialize() {
 		// Everything is fine with the api assemblies, load the project assembly
 		_load_project_assembly();
 	} else {
-		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)) ||
-				(editor_api_assembly && editor_api_assembly_out_of_sync)) {
+		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated))
+#ifdef TOOLS_ENABLED
+				|| (editor_api_assembly && editor_api_assembly_out_of_sync)
+#endif
+		) {
 #ifdef TOOLS_ENABLED
 			// The assembly was successfully loaded, but the full api could not be cached.
 			// This is most likely an outdated assembly loaded because of an invalid version in the
@@ -362,24 +378,34 @@ GDMonoAssembly **GDMono::get_loaded_assembly(const String &p_name) {
 
 bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
 
+	return load_assembly_from(p_name, String(), r_assembly, p_refonly);
+}
+
+bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
+
+	return load_assembly_from(p_name, String(), p_aname, r_assembly, p_refonly);
+}
+
+bool GDMono::load_assembly_from(const String &p_name, const String &p_basedir, GDMonoAssembly **r_assembly, bool p_refonly) {
+
 	CRASH_COND(!r_assembly);
 
 	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
-	bool result = load_assembly(p_name, aname, r_assembly, p_refonly);
+	bool result = load_assembly_from(p_name, p_basedir, aname, r_assembly, p_refonly);
 	mono_assembly_name_free(aname);
 	mono_free(aname);
 
 	return result;
 }
 
-bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
+bool GDMono::load_assembly_from(const String &p_name, const String &p_basedir, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
 
 	CRASH_COND(!r_assembly);
 
 	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
-	MonoAssembly *assembly = mono_assembly_load_full(p_aname, NULL, &status, p_refonly);
+	MonoAssembly *assembly = mono_assembly_load_full(p_aname, p_basedir.length() ? p_basedir.utf8().get_data() : NULL, &status, p_refonly);
 
 	if (!assembly)
 		return false;
@@ -480,12 +506,10 @@ bool GDMono::_load_editor_api_assembly() {
 	if (editor_api_assembly)
 		return true;
 
-#ifdef TOOLS_ENABLED
 	if (metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR)) {
 		print_verbose("Mono: Skipping loading of Editor API assembly because it was invalidated");
 		return false;
 	}
-#endif
 
 	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
 
@@ -772,7 +796,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	print_verbose("Mono: Unloading domain `" + domain_name + "`...");
 
-	if (mono_domain_get() != root_domain)
+	if (mono_domain_get() == p_domain)
 		mono_domain_set(root_domain, true);
 
 	mono_gc_collect(mono_gc_max_generation());

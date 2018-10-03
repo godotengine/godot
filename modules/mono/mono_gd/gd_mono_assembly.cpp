@@ -46,6 +46,29 @@ bool GDMonoAssembly::in_preload = false;
 
 Vector<String> GDMonoAssembly::search_dirs;
 
+void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config) {
+
+	const char *rootdir = mono_assembly_getrootdir();
+	if (rootdir) {
+		String framework_dir = String(rootdir).plus_file("mono").plus_file("4.5");
+		r_search_dirs.push_back(framework_dir);
+		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
+	}
+
+	if (p_custom_config.length()) {
+		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(p_custom_config));
+	} else {
+		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
+	}
+
+	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
+	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
+#ifdef TOOLS_ENABLED
+	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_tools_dir());
+#endif
+}
+
 void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, void *user_data) {
 
 	if (no_search)
@@ -93,35 +116,7 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 
 	no_search = true; // Avoid the recursion madness
 
-	String path;
-	GDMonoAssembly *res = NULL;
-
-	for (int i = 0; i < search_dirs.size(); i++) {
-		const String &search_dir = search_dirs[i];
-
-		if (has_extension) {
-			path = search_dir.plus_file(name);
-			if (FileAccess::exists(path)) {
-				res = _load_assembly_from(name.get_basename(), path, refonly);
-				if (res != NULL)
-					break;
-			}
-		} else {
-			path = search_dir.plus_file(name + ".dll");
-			if (FileAccess::exists(path)) {
-				res = _load_assembly_from(name, path, refonly);
-				if (res != NULL)
-					break;
-			}
-
-			path = search_dir.plus_file(name + ".exe");
-			if (FileAccess::exists(path)) {
-				res = _load_assembly_from(name, path, refonly);
-				if (res != NULL)
-					break;
-			}
-		}
-	}
+	GDMonoAssembly *res = _load_assembly_search(name, search_dirs, refonly);
 
 	no_search = false;
 
@@ -130,31 +125,12 @@ MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, void *user_d
 
 static _THREAD_LOCAL_(MonoImage *) image_corlib_loading = NULL;
 
-MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data, bool refonly) {
+MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, void *user_data, bool refonly) {
 
 	(void)user_data; // UNUSED
 
 	if (search_dirs.empty()) {
-		search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
-		search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
-		search_dirs.push_back(OS::get_singleton()->get_resource_dir());
-		search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
-#ifdef GD_MONO_EDITOR_ASSEMBLIES_DIR
-		search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir().plus_file(_MKSTR(GD_MONO_EDITOR_ASSEMBLIES_DIR)).simplify_path());
-#endif
-
-		const char *rootdir = mono_assembly_getrootdir();
-		if (rootdir) {
-			search_dirs.push_back(String(rootdir).plus_file("mono").plus_file("4.5"));
-			search_dirs.push_back(String(rootdir).plus_file("mono").plus_file("4.5").plus_file("Facades"));
-		}
-
-		if (assemblies_path) {
-			while (*assemblies_path) {
-				search_dirs.push_back(*assemblies_path);
-				++assemblies_path;
-			}
-		}
+		fill_search_dirs(search_dirs);
 	}
 
 	{
@@ -188,33 +164,50 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **asse
 		if (stored_assembly)
 			return (*stored_assembly)->get_assembly();
 
-		String path;
-
-		for (int i = 0; i < search_dirs.size(); i++) {
-			const String &search_dir = search_dirs[i];
-
-			if (has_extension) {
-				path = search_dir.plus_file(name);
-				if (FileAccess::exists(path)) {
-					res = _load_assembly_from(name.get_basename(), path, refonly);
-					if (res != NULL)
-						break;
-				}
-			} else {
-				path = search_dir.plus_file(name + ".dll");
-				if (FileAccess::exists(path)) {
-					res = _load_assembly_from(name, path, refonly);
-					if (res != NULL)
-						break;
-				}
-			}
-		}
+		res = _load_assembly_search("mscorlib.dll", search_dirs, refonly);
 	}
 
 	no_search = false;
 	in_preload = false;
 
 	return res ? res->get_assembly() : NULL;
+}
+
+GDMonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, const Vector<String> &p_search_dirs, bool p_refonly) {
+
+	GDMonoAssembly *res = NULL;
+	String path;
+
+	bool has_extension = p_name.ends_with(".dll") || p_name.ends_with(".exe");
+
+	for (int i = 0; i < p_search_dirs.size(); i++) {
+		const String &search_dir = p_search_dirs[i];
+
+		if (has_extension) {
+			path = search_dir.plus_file(p_name);
+			if (FileAccess::exists(path)) {
+				res = _load_assembly_from(p_name.get_basename(), path, p_refonly);
+				if (res != NULL)
+					return res;
+			}
+		} else {
+			path = search_dir.plus_file(p_name + ".dll");
+			if (FileAccess::exists(path)) {
+				res = _load_assembly_from(p_name, path, p_refonly);
+				if (res != NULL)
+					return res;
+			}
+
+			path = search_dir.plus_file(p_name + ".exe");
+			if (FileAccess::exists(path)) {
+				res = _load_assembly_from(p_name, path, p_refonly);
+				if (res != NULL)
+					return res;
+			}
+		}
+	}
+
+	return NULL;
 }
 
 GDMonoAssembly *GDMonoAssembly::_load_assembly_from(const String &p_name, const String &p_path, bool p_refonly) {
@@ -462,19 +455,6 @@ GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class)
 	}
 
 	return match;
-}
-
-GDMonoAssembly *GDMonoAssembly::load_from(const String &p_name, const String &p_path, bool p_refonly) {
-
-	GDMonoAssembly **loaded_asm = GDMono::get_singleton()->get_loaded_assembly(p_name);
-	if (loaded_asm)
-		return *loaded_asm;
-
-	no_search = true;
-	GDMonoAssembly *res = _load_assembly_from(p_name, p_path, p_refonly);
-	no_search = false;
-
-	return res;
 }
 
 GDMonoAssembly::GDMonoAssembly(const String &p_name, const String &p_path) {

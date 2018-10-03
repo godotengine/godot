@@ -5,7 +5,7 @@ import sys
 import subprocess
 
 from distutils.version import LooseVersion
-from SCons.Script import BoolVariable, Dir, Environment, File, PathVariable, SCons, Variables
+from SCons.Script import BoolVariable, Dir, Environment, File, SCons, Variables
 
 
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')
@@ -55,30 +55,20 @@ def copy_file(src_dir, dst_dir, name):
     copyfile(src_path, dst_path)
 
 
-def custom_path_is_dir_create(key, val, env):
-    """Validator to check if Path is a directory, creating it if it does not exist.
-       Similar to PathIsDirCreate, except it uses SCons.Script.Dir() and
-       SCons.Script.File() in order to support the '#' top level directory token.
-       """
-    # Dir constructor will throw an error if the path points to a file
-    fsDir = Dir(val)
-    if not fsDir.exists:
-        os.makedirs(fsDir.abspath)
-
-
 def configure(env):
     env.use_ptrcall = True
     env.add_module_version_string('mono')
 
     envvars = Variables()
     envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))
-    envvars.Add(PathVariable('mono_assemblies_output_dir', 'Path to the assemblies output directory', '#bin', custom_path_is_dir_create))
+    envvars.Add(BoolVariable('copy_mono_root', 'Make a copy of the mono installation directory to bundle with the editor', False))
     envvars.Update(env)
 
     bits = env['bits']
 
+    tools_enabled = env['tools']
     mono_static = env['mono_static']
-    assemblies_output_dir = Dir(env['mono_assemblies_output_dir']).abspath
+    copy_mono_root = env['copy_mono_root']
 
     mono_lib_names = ['mono-2.0-sgen', 'monosgen-2.0']
 
@@ -151,8 +141,6 @@ def configure(env):
                 raise RuntimeError('Could not find mono shared library in: ' + mono_bin_path)
 
             copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
-
-        copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
     else:
         sharedlib_ext = '.dylib' if sys.platform == 'darwin' else '.so'
 
@@ -204,16 +192,14 @@ def configure(env):
 
                 if sys.platform == 'darwin':
                     env.Append(LINKFLAGS=['-Wl,-force_load,' + mono_lib_file])
-                elif sys.platform == 'linux' or sys.platform == 'linux2':
-                    env.Append(LINKFLAGS=['-Wl,-whole-archive', mono_lib_file, '-Wl,-no-whole-archive'])
                 else:
-                    raise RuntimeError('mono-static: Not supported on this platform')
+                    env.Append(LINKFLAGS=['-Wl,-whole-archive', mono_lib_file, '-Wl,-no-whole-archive'])
             else:
                 env.Append(LIBS=[mono_lib])
 
             if sys.platform == 'darwin':
                 env.Append(LIBS=['iconv', 'pthread'])
-            elif sys.platform == 'linux' or sys.platform == 'linux2':
+            else:
                 env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
 
             if not mono_static:
@@ -223,8 +209,6 @@ def configure(env):
                     raise RuntimeError('Could not find mono shared library in: ' + mono_lib_path)
 
                 copy_file(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
-
-            copy_file(os.path.join(mono_lib_path, 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
         else:
             assert not mono_static
 
@@ -238,7 +222,6 @@ def configure(env):
 
             mono_lib_path = ''
             mono_so_name = ''
-            mono_prefix = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
 
             tmpenv = Environment()
             tmpenv.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
@@ -255,16 +238,163 @@ def configure(env):
                 raise RuntimeError('Could not find mono shared library in: ' + str(tmpenv['LIBPATH']))
 
             copy_file(mono_lib_path, 'bin', 'lib' + mono_so_name + sharedlib_ext)
-            copy_file(os.path.join(mono_prefix, 'lib', 'mono', '4.5'), assemblies_output_dir, 'mscorlib.dll')
 
         env.Append(LINKFLAGS='-rdynamic')
+
+    if not tools_enabled:
+        if not mono_root:
+            mono_root = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
+
+        make_template_dir(env, mono_root)
+
+    if copy_mono_root:
+        if not mono_root:
+            mono_root = subprocess.check_output(['pkg-config', 'mono-2', '--variable=prefix']).decode('utf8').strip()
+
+        if tools_enabled:
+           copy_mono_root_files(env, mono_root)
+        else:
+            print("Ignoring option: 'copy_mono_root'. Only available for builds with 'tools' enabled.")
+
+
+def make_template_dir(env, mono_root):
+    from shutil import rmtree
+
+    platform = env['platform']
+    target = env['target']
+
+    template_dir_name = ''
+
+    if platform == 'windows':
+        template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
+    elif platform == 'osx':
+        template_dir_name = 'data.mono.%s.%s' % (platform, target)
+    elif platform == 'x11':
+        template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
+    else:
+        assert False
+
+    output_dir = Dir('#bin').abspath
+    template_dir = os.path.join(output_dir, template_dir_name)
+
+    template_mono_root_dir = os.path.join(template_dir, 'Mono')
+
+    if os.path.isdir(template_mono_root_dir):
+        rmtree(template_mono_root_dir) # Clean first
+
+    # Copy etc/mono/
+
+    template_mono_config_dir = os.path.join(template_mono_root_dir, 'etc', 'mono')
+    copy_mono_etc_dir(mono_root, template_mono_config_dir, env['platform'])
+
+    # Copy the required shared libraries
+
+    copy_mono_shared_libs(mono_root, template_mono_root_dir, env['platform'])
+
+
+def copy_mono_root_files(env, mono_root):
+    from glob import glob
+    from shutil import copy
+    from shutil import rmtree
+
+    if not mono_root:
+        raise RuntimeError('Mono installation directory not found')
+
+    output_dir = Dir('#bin').abspath
+    editor_mono_root_dir = os.path.join(output_dir, 'GodotSharp', 'Mono')
+
+    if os.path.isdir(editor_mono_root_dir):
+        rmtree(editor_mono_root_dir) # Clean first
+
+    # Copy etc/mono/
+
+    editor_mono_config_dir = os.path.join(editor_mono_root_dir, 'etc', 'mono')
+    copy_mono_etc_dir(mono_root, editor_mono_config_dir, env['platform'])
+
+    # Copy the required shared libraries
+
+    copy_mono_shared_libs(mono_root, editor_mono_root_dir, env['platform'])
+
+    # Copy framework assemblies
+
+    mono_framework_dir = os.path.join(mono_root, 'lib', 'mono', '4.5')
+    mono_framework_facades_dir = os.path.join(mono_framework_dir, 'Facades')
+
+    editor_mono_framework_dir = os.path.join(editor_mono_root_dir, 'lib', 'mono', '4.5')
+    editor_mono_framework_facades_dir = os.path.join(editor_mono_framework_dir, 'Facades')
+
+    if not os.path.isdir(editor_mono_framework_dir):
+        os.makedirs(editor_mono_framework_dir)
+    if not os.path.isdir(editor_mono_framework_facades_dir):
+        os.makedirs(editor_mono_framework_facades_dir)
+
+    for assembly in glob(os.path.join(mono_framework_dir, '*.dll')):
+        copy(assembly, editor_mono_framework_dir)
+    for assembly in glob(os.path.join(mono_framework_facades_dir, '*.dll')):
+        copy(assembly, editor_mono_framework_facades_dir)
+
+
+def copy_mono_etc_dir(mono_root, target_mono_config_dir, platform):
+    from distutils.dir_util import copy_tree
+    from glob import glob
+    from shutil import copy
+
+    if not os.path.isdir(target_mono_config_dir):
+        os.makedirs(target_mono_config_dir)
+
+    mono_etc_dir = os.path.join(mono_root, 'etc', 'mono')
+    if not os.path.isdir(mono_etc_dir):
+        mono_etc_dir = ''
+        etc_hint_dirs = []
+        if platform != 'windows':
+            etc_hint_dirs += ['/etc/mono', '/usr/local/etc/mono']
+        if 'MONO_CFG_DIR' in os.environ:
+            etc_hint_dirs += [os.path.join(os.environ['MONO_CFG_DIR'], 'mono')]
+        for etc_hint_dir in etc_hint_dirs:
+            if os.path.isdir(etc_hint_dir):
+                mono_etc_dir = etc_hint_dir
+                break
+        if not mono_etc_dir:
+            raise RuntimeError('Mono installation etc directory not found')
+
+    copy_tree(os.path.join(mono_etc_dir, '2.0'), os.path.join(target_mono_config_dir, '2.0'))
+    copy_tree(os.path.join(mono_etc_dir, '4.0'), os.path.join(target_mono_config_dir, '4.0'))
+    copy_tree(os.path.join(mono_etc_dir, '4.5'), os.path.join(target_mono_config_dir, '4.5'))
+    copy_tree(os.path.join(mono_etc_dir, 'mconfig'), os.path.join(target_mono_config_dir, 'mconfig'))
+
+    for file in glob(os.path.join(mono_etc_dir, '*')):
+        if os.path.isfile(file):
+            copy(file, target_mono_config_dir)
+
+
+def copy_mono_shared_libs(mono_root, target_mono_root_dir, platform):
+    from shutil import copy
+
+    if platform == 'windows':
+        target_mono_bin_dir = os.path.join(target_mono_root_dir, 'bin')
+
+        if not os.path.isdir(target_mono_bin_dir):
+            os.makedirs(target_mono_bin_dir)
+
+        copy(os.path.join(mono_root, 'bin', 'MonoPosixHelper.dll'), os.path.join(target_mono_bin_dir, 'MonoPosixHelper.dll'))
+    else:
+        target_mono_lib_dir = os.path.join(target_mono_root_dir, 'lib')
+
+        if not os.path.isdir(target_mono_lib_dir):
+            os.makedirs(target_mono_lib_dir)
+
+        if platform == 'osx':
+            copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.dylib'), os.path.join(target_mono_lib_dir, 'libMonoPosixHelper.dylib'))
+        elif platform == 'x11':
+            copy(os.path.join(mono_root, 'lib', 'libmono-btls-shared.so'), os.path.join(target_mono_lib_dir, 'libmono-btls-shared.so'))
+            copy(os.path.join(mono_root, 'lib', 'libMonoPosixHelper.so'), os.path.join(target_mono_lib_dir, 'libMonoPosixHelper.so'))
 
 
 def configure_for_mono_version(env, mono_version):
     if mono_version is None:
         raise RuntimeError('Mono JIT compiler version not found')
     print('Found Mono JIT compiler version: ' + str(mono_version))
-    if mono_version >= LooseVersion("5.12.0"):
+    if mono_version >= LooseVersion('5.12.0'):
         env.Append(CPPFLAGS=['-DHAS_PENDING_EXCEPTIONS'])
 
 
