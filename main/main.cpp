@@ -115,9 +115,11 @@ static bool editor = false;
 static bool project_manager = false;
 static String locale;
 static bool show_help = false;
-static bool auto_build_solutions = false;
 static bool auto_quit = false;
 static OS::ProcessID allow_focus_steal_pid = 0;
+#ifdef TOOLS_ENABLED
+static bool auto_build_solutions = false;
+#endif
 
 // Display
 

@@ -215,7 +215,7 @@ void CSGShapeSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int 
 		UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Extents"));
 		static const char *method[3] = { "set_width", "set_height", "set_depth" };
-		float current;
+		float current = 0;
 		switch (p_idx) {
 			case 0: current = s->get_width(); break;
 			case 1: current = s->get_height(); break;
