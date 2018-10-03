@@ -809,6 +809,19 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					expr = constant;
 					bfn = true;
 				}
+
+				if (!bfn && ScriptServer::is_global_class(identifier)) {
+					//check from script classes
+					ConstantNode *constant = alloc_node<ConstantNode>();
+					String path = ScriptServer::get_global_class_path(identifier);
+					Ref<Script> scr = ResourceLoader::load(path);
+					if (scr.is_valid()) {
+						constant->value = scr;
+						constant->datatype = _type_from_variant(constant->value);
+					}
+					expr = constant;
+					bfn = true;
+				}
 			}
 
 			if (!bfn) {
@@ -4320,6 +4333,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						if (constant.get_type() == Variant::OBJECT) {
 							GDScriptNativeClass *native_class = Object::cast_to<GDScriptNativeClass>(constant);
+							Ref<Script> script_type = Object::cast_to<Script>(constant);
 
 							if (native_class && ClassDB::is_parent_class(native_class->get_name(), "Resource")) {
 								current_export.type = Variant::OBJECT;
@@ -4328,6 +4342,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 								current_export.hint_string = native_class->get_name();
 								current_export.class_name = native_class->get_name();
+
+							} else if (script_type.is_valid() && ClassDB::is_parent_class(script_type->get_instance_base_type(), "Resource")) {
+								current_export.type = Variant::OBJECT;
+								current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+								current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+
+								current_export.hint_string = script_type->get_instance_base_type();
+								current_export.class_name = script_type->get_instance_base_type();
 
 							} else {
 								current_export = PropertyInfo();
@@ -5506,6 +5528,12 @@ GDScriptParser::DataType GDScriptParser::_type_from_variant(const Variant &p_val
 		}
 		if (scr.is_valid()) {
 			result.script_type = scr;
+
+			String name = scr->get_language()->get_global_class_name(scr->get_path());
+			if (ScriptServer::is_global_class(name)) {
+				result.is_constant = true;
+			}
+
 			Ref<GDScript> gds = scr;
 			if (gds.is_valid()) {
 				result.kind = DataType::GDSCRIPT;
