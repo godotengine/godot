@@ -1630,7 +1630,7 @@ FRAGMENT_SHADER_CODE
 		highp vec4 splane = shadow_coord;
 		float shadow_len = length(splane.xyz);
 
-		splane = normalize(splane.xyz);
+		splane.xyz = normalize(splane.xyz);
 
 		vec4 clamp_rect = light_clamp;
 
