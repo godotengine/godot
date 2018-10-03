@@ -245,6 +245,8 @@ private:
 	void _file_list_rmb_pressed(const Vector2 &p_pos);
 	void _tree_empty_selected();
 
+	void _script_created(Ref<Script> p_script);
+
 	struct FileInfo {
 		String name;
 		String path;

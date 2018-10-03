@@ -2353,6 +2353,10 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->popup();
 }
 
+void FileSystemDock::_script_created(Ref<Script> p_script) {
+	_rescan();
+}
+
 void FileSystemDock::select_file(const String &p_file) {
 	_navigate_to_path(p_file);
 }
@@ -2489,6 +2493,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("navigate_to_path"), &FileSystemDock::navigate_to_path);
 
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
+	ClassDB::bind_method(D_METHOD("_script_created"), &FileSystemDock::_script_created);
 
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
@@ -2698,6 +2703,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTR("Create Script"));
 	add_child(make_script_dialog);
+	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_script_created));
 
 	new_resource_dialog = memnew(CreateDialog);
 	add_child(new_resource_dialog);
