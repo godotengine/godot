@@ -108,7 +108,7 @@ private:
 	HSplitContainer *list_hb;
 	LineEdit *file;
 	AcceptDialog *mkdirerr;
-	AcceptDialog *exterr;
+	AcceptDialog *saveerr;
 	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;

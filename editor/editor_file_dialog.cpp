@@ -222,7 +222,6 @@ void EditorFileDialog::update_dir() {
 void EditorFileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	file->set_text("");
 	invalidate();
 	update_dir();
 	_push_history();
@@ -236,9 +235,26 @@ void EditorFileDialog::_file_entered(const String &p_file) {
 void EditorFileDialog::_save_confirm_pressed() {
 
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
-	_save_to_recent();
-	hide();
-	emit_signal("file_selected", f);
+	bool failed = false;
+	if (!dir_access->dir_exists(dir_access->get_current_dir())) {
+		if (can_create_dir) {
+			Error err = dir_access->make_dir_recursive(dir_access->get_current_dir());
+			if (err != OK) {
+				saveerr->set_text(TTR("Could not create folder."));
+				saveerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
+				failed = true;
+			}
+		} else {
+			saveerr->set_text(TTR("Folder does not exist."));
+			saveerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			failed = true;
+		}
+	}
+	if (!failed) {
+		_save_to_recent();
+		hide();
+		emit_signal("file_selected", f);
+	}
 }
 
 void EditorFileDialog::_post_popup() {
@@ -437,15 +453,28 @@ void EditorFileDialog::_action_pressed() {
 
 		if (!valid) {
 
-			exterr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			saveerr->set_text(TTR("Must use a valid extension."));
+			saveerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
 			return;
 		}
 
-		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
-			confirm_save->set_text(TTR("File Exists, Overwrite?"));
+		bool failed = false;
+		if (!dir_access->dir_exists(dir_access->get_current_dir())) {
+			if (!can_create_dir) {
+				saveerr->set_text(TTR("Folder does not exist."));
+				saveerr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+				return;
+			}
+			confirm_save->set_text(TTR("Folder does not exist. Create it?"));
 			confirm_save->popup_centered(Size2(200, 80));
-		} else {
-
+			failed = true;
+		}
+		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
+			confirm_save->set_text(TTR("File already exists. Overwrite it?"));
+			confirm_save->popup_centered(Size2(200, 80));
+			failed = true;
+		}
+		if (!failed) {
 			_save_to_recent();
 			hide();
 			emit_signal("file_selected", f);
@@ -1707,9 +1736,8 @@ EditorFileDialog::EditorFileDialog() {
 	mkdirerr->set_text(TTR("Could not create folder."));
 	add_child(mkdirerr);
 
-	exterr = memnew(AcceptDialog);
-	exterr->set_text(TTR("Must use a valid extension."));
-	add_child(exterr);
+	saveerr = memnew(AcceptDialog);
+	add_child(saveerr);
 
 	update_filters();
 	update_dir();
