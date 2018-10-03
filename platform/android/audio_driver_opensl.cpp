@@ -38,12 +38,7 @@
 /* Structure for passing information to callback function */
 
 void AudioDriverOpenSL::_buffer_callback(
-		SLAndroidSimpleBufferQueueItf queueItf
-		/*   SLuint32 eventFlags,
-    const void * pBuffer,
-    SLuint32 bufferSize,
-    SLuint32 dataUsed*/
-) {
+		SLAndroidSimpleBufferQueueItf queueItf) {
 
 	bool mix = true;
 
@@ -85,7 +80,6 @@ void AudioDriverOpenSL::_buffer_callbacks(
 
 	AudioDriverOpenSL *ad = (AudioDriverOpenSL *)pContext;
 
-	//ad->_buffer_callback(queueItf,eventFlags,pBuffer,bufferSize,dataUsed);
 	ad->_buffer_callback(queueItf);
 }
 
@@ -98,12 +92,9 @@ const char *AudioDriverOpenSL::get_name() const {
 
 Error AudioDriverOpenSL::init() {
 
-	SLresult
-			res;
+	SLresult res;
 	SLEngineOption EngineOption[] = {
-		(SLuint32)SL_ENGINEOPTION_THREADSAFE,
-		(SLuint32)SL_BOOLEAN_TRUE
-
+		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
 	};
 	res = slCreateEngine(&sl, 1, EngineOption, 0, NULL, NULL);
 	if (res != SL_RESULT_SUCCESS) {
@@ -126,8 +117,6 @@ void AudioDriverOpenSL::start() {
 	mutex = Mutex::create();
 	active = false;
 
-	SLint32 numOutputs = 0;
-	SLuint32 deviceID = 0;
 	SLresult res;
 
 	buffer_size = 1024;

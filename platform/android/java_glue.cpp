@@ -589,8 +589,6 @@ TST tst;
 
 static bool initialized = false;
 static int step = 0;
-static bool resized = false;
-static bool resized_reload = false;
 static Size2 new_size;
 static Vector3 accelerometer;
 static Vector3 gravity;
@@ -792,7 +790,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		_getClipboard = env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 		_setClipboard = env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 
-		jclass clsio = env->FindClass("org/godotengine/godot/Godot");
 		if (cls) {
 			jclass c = env->GetObjectClass(gob);
 			_openURI = env->GetMethodID(c, "openURI", "(Ljava/lang/String;)I");
@@ -886,8 +883,6 @@ static void _initialize_java_modules() {
 				ERR_EXPLAIN("Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m);
 				ERR_CONTINUE(!initialize);
 			}
-			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, _godot_instance);
-			jobject gob = env->NewGlobalRef(obj);
 		}
 	}
 }
@@ -931,13 +926,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 
 	if (os_android)
 		os_android->set_display_size(Size2(width, height));
-
-	/*input_mutex->lock();
-	resized=true;
-	if (reload)
-		resized_reload=true;
-	new_size=Size2(width,height);
-	input_mutex->unlock();*/
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {

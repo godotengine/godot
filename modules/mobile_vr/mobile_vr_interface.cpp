@@ -398,7 +398,6 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	ERR_FAIL_COND(p_screen_rect == Rect2());
 
 	Rect2 dest = p_screen_rect;
-	float aspect_ratio = 0.5 * p_screen_rect.size.x / p_screen_rect.size.y;
 	Vector2 eye_center;
 
 	// we output half a screen

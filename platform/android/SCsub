@@ -18,12 +18,15 @@ android_files = [
     'dir_access_jandroid.cpp',
     'thread_jandroid.cpp',
     'audio_driver_jandroid.cpp',
-    'ifaddrs_android.cpp',
-    'android_native_app_glue.c',
     'java_glue.cpp',
-    'cpu-features.c',
     'java_class_wrapper.cpp',
 #    'power_android.cpp'
+]
+
+thirdparty_files = [
+    'ifaddrs_android.cpp',
+    'android_native_app_glue.c',
+    'cpu-features.c',
 ]
 
 env_android = env.Clone()
@@ -33,6 +36,11 @@ if env['target'] == "profile":
 android_objects = []
 for x in android_files:
     android_objects.append(env_android.SharedObject(x))
+
+env_thirdparty = env_android.Clone()
+env_thirdparty.disable_warnings()
+for x in thirdparty_files:
+    android_objects.append(env_thirdparty.SharedObject(x))
 
 prog = None
 
