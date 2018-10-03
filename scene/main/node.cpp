@@ -2486,6 +2486,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 		tree_changed_b->tree_changed();
 }
 
+#ifdef DEBUG_ENABLED
 static void _Node_debug_sn(Object *p_obj) {
 
 	Node *n = Object::cast_to<Node>(p_obj);
@@ -2507,6 +2508,7 @@ static void _Node_debug_sn(Object *p_obj) {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + ")");
 }
+#endif // DEBUG_ENABLED
 
 void Node::_print_stray_nodes() {
 
@@ -2516,7 +2518,6 @@ void Node::_print_stray_nodes() {
 void Node::print_stray_nodes() {
 
 #ifdef DEBUG_ENABLED
-
 	ObjectDB::debug_objects(_Node_debug_sn);
 #endif
 }

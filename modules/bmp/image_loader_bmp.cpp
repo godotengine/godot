@@ -42,12 +42,9 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 	if (err == OK) {
 		size_t index = 0;
-		size_t width =
-				static_cast<size_t>(p_header.bmp_info_header.bmp_width < 0 ? -p_header.bmp_info_header.bmp_width : p_header.bmp_info_header.bmp_width);
-		size_t height =
-				static_cast<size_t>(p_header.bmp_info_header.bmp_height < 0 ? -p_header.bmp_info_header.bmp_height : p_header.bmp_info_header.bmp_height);
-		size_t bits_per_pixel =
-				static_cast<size_t>(p_header.bmp_info_header.bmp_bit_count);
+		size_t width = (size_t)p_header.bmp_info_header.bmp_width;
+		size_t height = (size_t)p_header.bmp_info_header.bmp_height;
+		size_t bits_per_pixel = (size_t)p_header.bmp_info_header.bmp_bit_count;
 
 		if (p_header.bmp_info_header.bmp_compression != 0) {
 			err = FAILED;

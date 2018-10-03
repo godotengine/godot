@@ -56,7 +56,9 @@ T *GDScriptParser::alloc_node() {
 	return t;
 }
 
+#ifdef DEBUG_ENABLED
 static String _find_function_name(const GDScriptParser::OperatorNode *p_call);
+#endif // DEBUG_ENABLED
 
 bool GDScriptParser::_end_statement() {
 
@@ -747,7 +749,6 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			while (!bfn && b) {
 				if (b->variables.has(identifier)) {
 					IdentifierNode *id = alloc_node<IdentifierNode>();
-					LocalVarNode *lv = b->variables[identifier];
 					id->name = identifier;
 					id->declared_block = b;
 					id->line = id_line;
@@ -755,6 +756,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					bfn = true;
 
 #ifdef DEBUG_ENABLED
+					LocalVarNode *lv = b->variables[identifier];
 					switch (tokenizer->get_token()) {
 						case GDScriptTokenizer::TK_OP_ASSIGN_ADD:
 						case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND:
