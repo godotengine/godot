@@ -20,6 +20,22 @@
 				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them. Note: the presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
+		<method name="erase_preset">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Remove the given color from the list of color presets of this color picker.
+			</description>
+		</method>
+		<method name="get_presets">
+			<return type="PoolColorArray">
+			</return>
+			<description>
+				Return the list of colors in the presets of the color picker.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
@@ -41,6 +57,24 @@
 			</argument>
 			<description>
 				Emitted when the color is changed.
+			</description>
+		</signal>
+	</signals>
+	<signals>
+		<signal name="preset_added">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Emitted when a preset is added.
+			</description>
+		</signal>
+	</signals>
+	<signals>
+		<signal name="preset_removed">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Emitted when a preset is removed.
 			</description>
 		</signal>
 	</signals>
