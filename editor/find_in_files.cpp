@@ -31,6 +31,7 @@
 #include "find_in_files.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
+#include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -300,7 +301,7 @@ const char *FindInFilesDialog::SIGNAL_REPLACE_REQUESTED = "replace_requested";
 
 FindInFilesDialog::FindInFilesDialog() {
 
-	set_custom_minimum_size(Size2(400, 190));
+	set_custom_minimum_size(Size2(400, 190) * EDSCALE);
 	set_resizable(true);
 	set_title(TTR("Find in Files"));
 
@@ -334,12 +335,12 @@ FindInFilesDialog::FindInFilesDialog() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		_whole_words_checkbox = memnew(CheckBox);
-		_whole_words_checkbox->set_text(TTR("Whole words"));
+		_whole_words_checkbox->set_text(TTR("Whole Words"));
 		_whole_words_checkbox->set_pressed(true);
 		hbc->add_child(_whole_words_checkbox);
 
 		_match_case_checkbox = memnew(CheckBox);
-		_match_case_checkbox->set_text(TTR("Match case"));
+		_match_case_checkbox->set_text(TTR("Match Case"));
 		_match_case_checkbox->set_pressed(true);
 		hbc->add_child(_match_case_checkbox);
 
@@ -548,7 +549,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(find_label);
 
 		_search_text_label = memnew(Label);
-		_search_text_label->add_font_override("font", get_font("source", "EditorFonts"));
+		_search_text_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
 		hbc->add_child(_search_text_label);
 
 		_progress_bar = memnew(ProgressBar);
@@ -569,7 +570,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	}
 
 	_results_display = memnew(Tree);
-	_results_display->add_font_override("font", get_font("source", "EditorFonts"));
+	_results_display->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("source", "EditorFonts"));
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", this, "_on_result_selected");
 	_results_display->connect("item_edited", this, "_on_item_edited");
@@ -702,7 +703,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	r.begin = begin;
 	r.end = end;
 	r.draw_begin = (item_text_width - raw_text_width) + font->get_string_size(text.left(r.begin)).x;
-	r.draw_width = font->get_string_size(text.substr(r.begin, r.end - r.begin + 1)).x;
+	r.draw_width = font->get_string_size(text.substr(r.begin, r.end - r.begin)).x;
 	_result_items[item] = r;
 
 	if (_with_replace) {
