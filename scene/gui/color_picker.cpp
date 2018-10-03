@@ -76,8 +76,9 @@ void ColorPicker::_notification(int p_what) {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-
-	c_text->call_deferred("grab_focus");
+	if (!raw_mode_enabled) {
+		c_text->call_deferred("grab_focus");
+	}
 }
 
 void ColorPicker::_update_controls() {
@@ -507,8 +508,9 @@ void ColorPicker::_focus_exit() {
 }
 
 void ColorPicker::_html_focus_exit() {
-	_html_entered(c_text->get_text());
-	_focus_exit();
+	//Commented out as a temporary fix for issue #21860. So that raw mode can work properly until raw mode settings are saved/loaded from the scene.
+	//_html_entered(c_text->get_text());
+	//_focus_exit();
 }
 
 void ColorPicker::_bind_methods() {
