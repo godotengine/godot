@@ -2182,13 +2182,15 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				continue;
 			}
 			NodePath ptarget = p_original->get_path_to(target);
-			Node *copytarget = p_copy->get_node(ptarget);
 
-			// Cannot find a path to the duplicate target, so it seems it's not part
-			// of the duplicated and not yet parented hierarchy, so at least try to connect
+			Node *copytarget = target;
+
+			// Atempt to find a path to the duplicate target, if it seems it's not part
+			// of the duplicated and not yet parented hierarchy then at least try to connect
 			// to the same target as the original
-			if (!copytarget)
-				copytarget = target;
+
+			if (p_copy->has_node(ptarget))
+				copytarget = p_copy->get_node(ptarget);
 
 			if (copy && copytarget) {
 				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, E->get().flags);
