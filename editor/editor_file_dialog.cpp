@@ -219,7 +219,6 @@ void EditorFileDialog::update_dir() {
 void EditorFileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	file->set_text("");
 	invalidate();
 	update_dir();
 	_push_history();
@@ -232,8 +231,25 @@ void EditorFileDialog::_file_entered(const String &p_file) {
 
 void EditorFileDialog::_save_confirm_pressed() {
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
-	_save_to_recent();
-	emit_signal("file_selected", f);
+	bool failed = false;
+	if (!dir_access->dir_exists(dir_access->get_current_dir())) {
+		if (can_create_dir) {
+			Error err = dir_access->make_dir_recursive(dir_access->get_current_dir());
+			if (err != OK) {
+				exterr->set_text("Could not create folder.");
+				exterr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
+				failed = true;
+			}
+		} else {
+			exterr->set_text("Folder does not exist.");
+			exterr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			failed = true;
+		}
+	}
+	if (!failed) {
+		_save_to_recent();
+		emit_signal("file_selected", f);
+	}
 	hide();
 }
 
@@ -436,11 +452,23 @@ void EditorFileDialog::_action_pressed() {
 			return;
 		}
 
+		bool one_more_question = false;
+		if (!dir_access->dir_exists(dir_access->get_current_dir())) {
+			if (!can_create_dir) {
+				exterr->set_text("Folder does not exist.");
+				exterr->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+				return;
+			}
+			confirm_save->set_text("Folder does not exist, Create?");
+			confirm_save->popup_centered(Size2(200, 80));
+			one_more_question = true;
+		}
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
 			confirm_save->set_text(TTR("File Exists, Overwrite?"));
 			confirm_save->popup_centered(Size2(200, 80));
-		} else {
-
+			one_more_question = true;
+		}
+		if (!one_more_question) {
 			_save_to_recent();
 			emit_signal("file_selected", f);
 			hide();
