@@ -412,6 +412,7 @@
 				Fired when specified list item has been selected via right mouse clicking.
 				The click position is also provided to allow appropriate popup of context menus
 				at the correct location.
+				[member allow_rmb_select] must be enabled.
 			</description>
 		</signal>
 		<signal name="item_selected">
@@ -419,6 +420,7 @@
 			</argument>
 			<description>
 				Fired when specified item has been selected.
+				[member allow_reselect] must be enabled to reselect an item.
 			</description>
 		</signal>
 		<signal name="multi_selected">
