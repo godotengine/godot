@@ -219,7 +219,6 @@ void EditorFileDialog::update_dir() {
 void EditorFileDialog::_dir_entered(String p_dir) {
 
 	dir_access->change_dir(p_dir);
-	//file->set_text("");
 	invalidate();
 	update_dir();
 	_push_history();
