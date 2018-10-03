@@ -1864,28 +1864,30 @@ bool OS_OSX::can_draw() const {
 
 void OS_OSX::set_clipboard(const String &p_text) {
 
-	NSArray *types = [NSArray arrayWithObjects:NSStringPboardType, nil];
+	NSString *copiedString = [NSString stringWithUTF8String:p_text.utf8().get_data()];
+	NSArray *copiedStringArray = [NSArray arrayWithObject:copiedString];
 
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	[pasteboard declareTypes:types owner:nil];
-	[pasteboard setString:[NSString stringWithUTF8String:p_text.utf8().get_data()]
-				  forType:NSStringPboardType];
+	[pasteboard clearContents];
+	[pasteboard writeObjects:copiedStringArray];
 }
 
 String OS_OSX::get_clipboard() const {
 
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
+	NSDictionary *options = [NSDictionary dictionary];
 
-	if (![[pasteboard types] containsObject:NSStringPboardType]) {
+	BOOL ok = [pasteboard canReadObjectForClasses:classArray options:options];
+
+	if (!ok) {
 		return "";
 	}
 
-	NSString *object = [pasteboard stringForType:NSStringPboardType];
-	if (!object) {
-		return "";
-	}
+	NSArray *objectsToPaste = [pasteboard readObjectsForClasses:classArray options:options];
+	NSString *string = [objectsToPaste objectAtIndex:0];
 
-	char *utfs = strdup([object UTF8String]);
+	char *utfs = strdup([string UTF8String]);
 	String ret;
 	ret.parse_utf8(utfs);
 	free(utfs);
