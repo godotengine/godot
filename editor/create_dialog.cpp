@@ -558,6 +558,7 @@ void CreateDialog::_history_selected() {
 		return;
 
 	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
+	favorites->deselect_all();
 	_update_search();
 }
 
@@ -568,6 +569,7 @@ void CreateDialog::_favorite_selected() {
 		return;
 
 	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
+	recent->deselect_all();
 	_update_search();
 }
 
