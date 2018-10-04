@@ -836,6 +836,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().commit_action();
 
 			editor->edit_node(new_node);
+			editor_selection->clear();
+			editor_selection->add_node(new_node);
 
 		} break;
 
