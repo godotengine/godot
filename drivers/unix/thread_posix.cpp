@@ -103,8 +103,6 @@ void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 
 Error ThreadPosix::set_name_func_posix(const String &p_name) {
 
-	pthread_t running_thread = pthread_self();
-
 #ifdef PTHREAD_NO_RENAME
 	return ERR_UNAVAILABLE;
 
@@ -117,6 +115,7 @@ Error ThreadPosix::set_name_func_posix(const String &p_name) {
 
 #else
 
+	pthread_t running_thread = pthread_self();
 #ifdef PTHREAD_BSD_SET_NAME
 	pthread_set_name_np(running_thread, p_name.utf8().get_data());
 	int err = 0; // Open/FreeBSD ignore errors in this function

@@ -368,11 +368,14 @@ inline NativeScriptDesc *NativeScript::get_script_desc() const {
 
 class NativeReloadNode : public Node {
 	GDCLASS(NativeReloadNode, Node)
-	bool unloaded = false;
+	bool unloaded;
 
 public:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	NativeReloadNode() :
+			unloaded(false) {}
 };
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {

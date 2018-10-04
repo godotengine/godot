@@ -53,7 +53,6 @@ static GLView *_instance = NULL;
 
 static bool video_found_error = false;
 static bool video_playing = false;
-static float video_previous_volume = 0.0f;
 static CMTime video_current_time;
 
 void _show_keyboard(String);
@@ -246,16 +245,6 @@ static int remove_touch(UITouch *p_touch) {
 			++remaining;
 	};
 	return remaining;
-};
-
-static int get_first_id(UITouch *p_touch) {
-
-	for (int i = 0; i < max_touches; i++) {
-
-		if (touches[i] != NULL)
-			return i;
-	};
-	return -1;
 };
 
 static void clear_touches() {
@@ -751,7 +740,6 @@ static void clear_touches() {
 		[_instance.moviePlayerController stop];
 		[_instance.moviePlayerController.view removeFromSuperview];
 
-	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 	video_playing = false;
 }
 */
