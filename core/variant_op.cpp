@@ -1165,7 +1165,37 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				_RETURN(p_a._data._int ^ p_b._data._int);
 			}
 
-			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_XOR)
+			CASE_TYPE(math, OP_BIT_XOR, BOOL) {
+				if (p_b.type != BOOL)
+					_RETURN_FAIL;
+				_RETURN((p_a._data._bool || p_b._data._bool) && !(p_a._data._bool && p_b._data._bool));
+			}
+
+			CASE_TYPE(math, OP_BIT_XOR, NIL)
+			CASE_TYPE(math, OP_BIT_XOR, REAL)
+			CASE_TYPE(math, OP_BIT_XOR, STRING)
+			CASE_TYPE(math, OP_BIT_XOR, VECTOR2)
+			CASE_TYPE(math, OP_BIT_XOR, RECT2)
+			CASE_TYPE(math, OP_BIT_XOR, VECTOR3)
+			CASE_TYPE(math, OP_BIT_XOR, TRANSFORM2D)
+			CASE_TYPE(math, OP_BIT_XOR, PLANE)
+			CASE_TYPE(math, OP_BIT_XOR, QUAT)
+			CASE_TYPE(math, OP_BIT_XOR, AABB)
+			CASE_TYPE(math, OP_BIT_XOR, BASIS)
+			CASE_TYPE(math, OP_BIT_XOR, TRANSFORM)
+			CASE_TYPE(math, OP_BIT_XOR, COLOR)
+			CASE_TYPE(math, OP_BIT_XOR, NODE_PATH)
+			CASE_TYPE(math, OP_BIT_XOR, _RID)
+			CASE_TYPE(math, OP_BIT_XOR, OBJECT)
+			CASE_TYPE(math, OP_BIT_XOR, DICTIONARY)
+			CASE_TYPE(math, OP_BIT_XOR, ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_BYTE_ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_INT_ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_REAL_ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_STRING_ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_VECTOR2_ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_VECTOR3_ARRAY)
+			CASE_TYPE(math, OP_BIT_XOR, POOL_COLOR_ARRAY)
 			_RETURN_FAIL;
 		}
 
