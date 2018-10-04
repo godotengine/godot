@@ -43,8 +43,8 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_PROCESS: {
 
-			if (bucket_queue.size() && canvas_item_editor) {
-				canvas_item_editor->update();
+			if (bucket_queue.size() && canvas_item_editor_viewport) {
+				canvas_item_editor_viewport->update();
 			}
 
 		} break;
@@ -97,27 +97,27 @@ void TileMapEditor::_menu_option(int p_option) {
 			// immediately without pressing the left mouse button first
 			tool = TOOL_NONE;
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 
 		} break;
 		case OPTION_BUCKET: {
 
 			tool = TOOL_BUCKET;
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 		} break;
 		case OPTION_PICK_TILE: {
 
 			tool = TOOL_PICKING;
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 		} break;
 		case OPTION_SELECT: {
 
 			tool = TOOL_SELECTING;
 			selection_active = false;
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 		} break;
 		case OPTION_COPY: {
 
@@ -126,7 +126,7 @@ void TileMapEditor::_menu_option(int p_option) {
 			if (selection_active) {
 				tool = TOOL_PASTING;
 
-				canvas_item_editor->update();
+				canvas_item_editor_viewport->update();
 			}
 		} break;
 		case OPTION_ERASE_SELECTION: {
@@ -141,7 +141,7 @@ void TileMapEditor::_menu_option(int p_option) {
 			selection_active = false;
 			copydata.clear();
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 		} break;
 		case OPTION_FIX_INVALID: {
 
@@ -165,7 +165,7 @@ void TileMapEditor::_menu_option(int p_option) {
 
 				tool = TOOL_PASTING;
 
-				canvas_item_editor->update();
+				canvas_item_editor_viewport->update();
 			}
 		} break;
 	}
@@ -182,13 +182,13 @@ void TileMapEditor::_palette_multi_selected(int index, bool selected) {
 void TileMapEditor::_canvas_mouse_enter() {
 
 	mouse_over = true;
-	canvas_item_editor->update();
+	canvas_item_editor_viewport->update();
 }
 
 void TileMapEditor::_canvas_mouse_exit() {
 
 	mouse_over = false;
-	canvas_item_editor->update();
+	canvas_item_editor_viewport->update();
 }
 
 Vector<int> TileMapEditor::get_selected_tiles() const {
@@ -318,7 +318,7 @@ void TileMapEditor::_manual_toggled(bool p_enabled) {
 
 void TileMapEditor::_text_entered(const String &p_text) {
 
-	canvas_item_editor->grab_focus();
+	canvas_item_editor_viewport->grab_focus();
 }
 
 void TileMapEditor::_text_changed(const String &p_text) {
@@ -524,7 +524,7 @@ void TileMapEditor::_pick_tile(const Point2 &p_pos) {
 	transp->set_pressed(node->is_cell_transposed(p_pos.x, p_pos.y));
 
 	_update_transform_buttons();
-	canvas_item_editor->update();
+	canvas_item_editor_viewport->update();
 }
 
 PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase, bool preview) {
@@ -671,7 +671,7 @@ void TileMapEditor::_select(const Point2i &p_from, const Point2i &p_to) {
 	rectangle.position = begin;
 	rectangle.size = end - begin;
 
-	canvas_item_editor->update();
+	canvas_item_editor_viewport->update();
 }
 
 void TileMapEditor::_erase_selection() {
@@ -882,7 +882,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	if (!node || !node->get_tileset().is_valid() || !node->is_visible_in_tree())
 		return false;
 
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 	Transform2D xform_inv = xform.affine_inverse();
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -978,7 +978,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 							paint_undo.clear();
 
-							canvas_item_editor->update();
+							canvas_item_editor_viewport->update();
 						}
 					} else if (tool == TOOL_RECTANGLE_PAINT) {
 
@@ -995,7 +995,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							}
 							_finish_undo();
 
-							canvas_item_editor->update();
+							canvas_item_editor_viewport->update();
 						}
 					} else if (tool == TOOL_PASTING) {
 
@@ -1011,12 +1011,12 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						}
 						_finish_undo();
 
-						canvas_item_editor->update();
+						canvas_item_editor_viewport->update();
 
 						return true; // We want to keep the Pasting tool
 					} else if (tool == TOOL_SELECTING) {
 
-						canvas_item_editor->update();
+						canvas_item_editor_viewport->update();
 
 					} else if (tool == TOOL_BUCKET) {
 
@@ -1055,7 +1055,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					tool = TOOL_NONE;
 					selection_active = false;
 
-					canvas_item_editor->update();
+					canvas_item_editor_viewport->update();
 
 					return true;
 				}
@@ -1065,7 +1065,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					tool = TOOL_NONE;
 					copydata.clear();
 
-					canvas_item_editor->update();
+					canvas_item_editor_viewport->update();
 
 					return true;
 				}
@@ -1106,7 +1106,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					_finish_undo();
 
 					if (tool == TOOL_RECTANGLE_ERASE || tool == TOOL_LINE_ERASE) {
-						canvas_item_editor->update();
+						canvas_item_editor_viewport->update();
 					}
 
 					tool = TOOL_NONE;
@@ -1149,7 +1149,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (new_over_tile != over_tile) {
 
 			over_tile = new_over_tile;
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 		}
 
 		if (show_tile_info) {
@@ -1235,7 +1235,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						_set_cell(points[i], invalid_cell);
 				}
 
-				canvas_item_editor->update();
+				canvas_item_editor_viewport->update();
 			}
 
 			return true;
@@ -1294,7 +1294,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			tool = TOOL_NONE;
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 
 			return true;
 		}
@@ -1308,13 +1308,13 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			// NOTE: We do not set tool = TOOL_PAINTING as this begins painting
 			// immediately without pressing the left mouse button first
 			tool = TOOL_NONE;
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/bucket_fill", p_event)) {
 			tool = TOOL_BUCKET;
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 
 			return true;
 		}
@@ -1327,7 +1327,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			tool = TOOL_SELECTING;
 			selection_active = false;
 
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 
 			return true;
 		}
@@ -1337,7 +1337,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			if (selection_active) {
 				tool = TOOL_PASTING;
 
-				canvas_item_editor->update();
+				canvas_item_editor_viewport->update();
 
 				return true;
 			}
@@ -1354,7 +1354,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				tool = TOOL_PASTING;
 
-				canvas_item_editor->update();
+				canvas_item_editor_viewport->update();
 				return true;
 			}
 		}
@@ -1368,21 +1368,21 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			flip_h = !flip_h;
 			mirror_x->set_pressed(flip_h);
 			_update_transform_buttons();
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/mirror_y", p_event)) {
 			flip_v = !flip_v;
 			mirror_y->set_pressed(flip_v);
 			_update_transform_buttons();
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/transpose", p_event)) {
 			transpose = !transpose;
 			transp->set_pressed(transpose);
 			_update_transform_buttons();
-			canvas_item_editor->update();
+			canvas_item_editor_viewport->update();
 			return true;
 		}
 	}
@@ -1607,8 +1607,8 @@ void TileMapEditor::edit(Node *p_tile_map) {
 
 	search_box->set_text("");
 
-	if (!canvas_item_editor) {
-		canvas_item_editor = CanvasItemEditor::get_singleton()->get_viewport_control();
+	if (!canvas_item_editor_viewport) {
+		canvas_item_editor_viewport = CanvasItemEditor::get_singleton()->get_viewport_control();
 	}
 
 	if (node)
@@ -1616,20 +1616,20 @@ void TileMapEditor::edit(Node *p_tile_map) {
 	if (p_tile_map) {
 
 		node = Object::cast_to<TileMap>(p_tile_map);
-		if (!canvas_item_editor->is_connected("mouse_entered", this, "_canvas_mouse_enter"))
-			canvas_item_editor->connect("mouse_entered", this, "_canvas_mouse_enter");
-		if (!canvas_item_editor->is_connected("mouse_exited", this, "_canvas_mouse_exit"))
-			canvas_item_editor->connect("mouse_exited", this, "_canvas_mouse_exit");
+		if (!canvas_item_editor_viewport->is_connected("mouse_entered", this, "_canvas_mouse_enter"))
+			canvas_item_editor_viewport->connect("mouse_entered", this, "_canvas_mouse_enter");
+		if (!canvas_item_editor_viewport->is_connected("mouse_exited", this, "_canvas_mouse_exit"))
+			canvas_item_editor_viewport->connect("mouse_exited", this, "_canvas_mouse_exit");
 
 		_update_palette();
 
 	} else {
 		node = NULL;
 
-		if (canvas_item_editor->is_connected("mouse_entered", this, "_canvas_mouse_enter"))
-			canvas_item_editor->disconnect("mouse_entered", this, "_canvas_mouse_enter");
-		if (canvas_item_editor->is_connected("mouse_exited", this, "_canvas_mouse_exit"))
-			canvas_item_editor->disconnect("mouse_exited", this, "_canvas_mouse_exit");
+		if (canvas_item_editor_viewport->is_connected("mouse_entered", this, "_canvas_mouse_enter"))
+			canvas_item_editor_viewport->disconnect("mouse_entered", this, "_canvas_mouse_enter");
+		if (canvas_item_editor_viewport->is_connected("mouse_exited", this, "_canvas_mouse_exit"))
+			canvas_item_editor_viewport->disconnect("mouse_exited", this, "_canvas_mouse_exit");
 
 		_update_palette();
 	}
@@ -1644,8 +1644,8 @@ void TileMapEditor::_tileset_settings_changed() {
 
 	_update_palette();
 
-	if (canvas_item_editor)
-		canvas_item_editor->update();
+	if (canvas_item_editor_viewport)
+		canvas_item_editor_viewport->update();
 }
 
 void TileMapEditor::_icon_size_changed(float p_value) {
@@ -1729,7 +1729,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	node = NULL;
 	manual_autotile = false;
 	manual_position = Vector2(0, 0);
-	canvas_item_editor = NULL;
+	canvas_item_editor_viewport = NULL;
 	editor = p_editor;
 	undo_redo = editor->get_undo_redo();
 

@@ -82,7 +82,7 @@ class TileMapEditor : public VBoxContainer {
 
 	EditorNode *editor;
 	UndoRedo *undo_redo;
-	Control *canvas_item_editor;
+	Control *canvas_item_editor_viewport;
 
 	LineEdit *search_box;
 	HSlider *size_slider;
