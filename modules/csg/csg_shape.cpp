@@ -1573,7 +1573,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 	}
 	CSGBrush *brush = memnew(CSGBrush);
 
-	int face_count;
+	int face_count = 0;
 
 	switch (mode) {
 		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2; break;

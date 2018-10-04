@@ -48,7 +48,7 @@ MainLoop *test() {
 		map.set(1337, 21);
 		map.set(42, 11880);
 
-		int value;
+		int value = 0;
 		map.lookup(42, value);
 
 		OS::get_singleton()->print("capacity  %d\n", map.get_capacity());

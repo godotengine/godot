@@ -251,7 +251,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Color preset_accent_color;
 	Color preset_base_color;
-	float preset_contrast;
+	float preset_contrast = 0;
 
 	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
 
