@@ -227,7 +227,7 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select_prev();
 		}
 
-		if (k->get_scancode() == KEY_ESCAPE) {
+		if (ED_IS_SHORTCUT("editor/bottom_panel_close", p_event)) {
 			for (int i = 0; i < bottom_panel_items.size(); i++) {
 				_bottom_panel_switch(false, i);
 			}
@@ -5546,6 +5546,7 @@ EditorNode::EditorNode() {
 	bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
 
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KEY_MASK_SHIFT | KEY_F12));
+	ED_SHORTCUT("editor/bottom_panel_close", TTR("Close Bottom Panel"), KEY_MASK_SHIFT | KEY_ESCAPE);
 
 	bottom_panel_hb->add_child(bottom_panel_raise);
 	bottom_panel_raise->hide();
