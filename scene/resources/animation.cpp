@@ -1901,7 +1901,7 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND(t->type != TYPE_VALUE);
-	ERR_FAIL_INDEX(p_mode, 4);
+	ERR_FAIL_INDEX((int)p_mode, 4);
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;

@@ -2235,13 +2235,13 @@ String Control::_get_tooltip() const {
 
 void Control::set_focus_neighbour(Margin p_margin, const NodePath &p_neighbour) {
 
-	ERR_FAIL_INDEX(p_margin, 4);
+	ERR_FAIL_INDEX((int)p_margin, 4);
 	data.focus_neighbour[p_margin] = p_neighbour;
 }
 
 NodePath Control::get_focus_neighbour(Margin p_margin) const {
 
-	ERR_FAIL_INDEX_V(p_margin, 4, NodePath());
+	ERR_FAIL_INDEX_V((int)p_margin, 4, NodePath());
 	return data.focus_neighbour[p_margin];
 }
 

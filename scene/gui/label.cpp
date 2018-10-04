@@ -511,7 +511,7 @@ void Label::regenerate_word_cache() {
 
 void Label::set_align(Align p_align) {
 
-	ERR_FAIL_INDEX(p_align, 4);
+	ERR_FAIL_INDEX((int)p_align, 4);
 	align = p_align;
 	update();
 }
@@ -523,7 +523,7 @@ Label::Align Label::get_align() const {
 
 void Label::set_valign(VAlign p_align) {
 
-	ERR_FAIL_INDEX(p_align, 4);
+	ERR_FAIL_INDEX((int)p_align, 4);
 	valign = p_align;
 	update();
 }

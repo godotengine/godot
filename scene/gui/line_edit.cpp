@@ -527,7 +527,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 void LineEdit::set_align(Align p_align) {
 
-	ERR_FAIL_INDEX(p_align, 4);
+	ERR_FAIL_INDEX((int)p_align, 4);
 	align = p_align;
 	update();
 }

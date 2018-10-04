@@ -59,14 +59,14 @@ Ref<Texture> TextureProgress::get_over_texture() const {
 }
 
 void TextureProgress::set_stretch_margin(Margin p_margin, int p_size) {
-	ERR_FAIL_INDEX(p_margin, 4);
+	ERR_FAIL_INDEX((int)p_margin, 4);
 	stretch_margin[p_margin] = p_size;
 	update();
 	minimum_size_changed();
 }
 
 int TextureProgress::get_stretch_margin(Margin p_margin) const {
-	ERR_FAIL_INDEX_V(p_margin, 4, 0);
+	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 	return stretch_margin[p_margin];
 }
 
