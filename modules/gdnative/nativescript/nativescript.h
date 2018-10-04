@@ -277,18 +277,14 @@ public:
 
 	Map<String, Set<NativeScript *> > library_script_users;
 
-	const StringName _init_call_type = "nativescript_init";
-	const StringName _init_call_name = "nativescript_init";
-
-	const StringName _terminate_call_name = "nativescript_terminate";
-
-	const StringName _noarg_call_type = "nativescript_no_arg";
-
-	const StringName _frame_call_name = "nativescript_frame";
-
+	StringName _init_call_type;
+	StringName _init_call_name;
+	StringName _terminate_call_name;
+	StringName _noarg_call_type;
+	StringName _frame_call_name;
 #ifndef NO_THREADS
-	const StringName _thread_enter_call_name = "nativescript_thread_enter";
-	const StringName _thread_exit_call_name = "nativescript_thread_exit";
+	StringName _thread_enter_call_name;
+	StringName _thread_exit_call_name;
 #endif
 
 	NativeScriptLanguage();
