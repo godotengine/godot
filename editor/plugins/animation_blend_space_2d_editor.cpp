@@ -434,7 +434,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 		if (blend_space->get_snap().x > 0) {
 
-			int prev_idx;
+			int prev_idx = 0;
 			for (int i = 0; i < s.x; i++) {
 
 				float v = blend_space->get_min_space().x + i * (blend_space->get_max_space().x - blend_space->get_min_space().x) / s.x;
@@ -450,7 +450,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 		if (blend_space->get_snap().y > 0) {
 
-			int prev_idx;
+			int prev_idx = 0;
 			for (int i = 0; i < s.y; i++) {
 
 				float v = blend_space->get_max_space().y - i * (blend_space->get_max_space().y - blend_space->get_min_space().y) / s.y;

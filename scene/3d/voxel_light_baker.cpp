@@ -1589,8 +1589,8 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 
 	const Vector3 *cone_dirs;
 	const float *cone_weights;
-	int cone_dir_count;
-	float cone_aperture;
+	int cone_dir_count = 0;
+	float cone_aperture = 0;
 
 	switch (bake_quality) {
 		case BAKE_QUALITY_LOW: {

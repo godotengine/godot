@@ -750,7 +750,7 @@ void CSGBrushOperation::_add_poly_outline(const BuildPoly &p_poly, int p_from_po
 
 		t2d.affine_invert();
 
-		float max_angle;
+		float max_angle = 0;
 		int next_point_angle = -1;
 
 		for (int i = 0; i < vertex_process[to_point].size(); i++) {

@@ -468,7 +468,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 	}
 
 	first = true;
-	float mind;
+	float mind = 0;
 	for (int i = 0; i < blend_points_used; i++) {
 
 		bool found = false;
