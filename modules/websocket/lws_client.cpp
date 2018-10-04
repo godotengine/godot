@@ -34,6 +34,10 @@
 #include "core/io/stream_peer_ssl.h"
 #include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define strncpy strncpy_s
+#endif
+
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
 	ERR_FAIL_COND_V(context != NULL, FAILED);

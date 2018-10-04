@@ -49,7 +49,7 @@
 #endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define snprintf _snprintf
+#define snprintf _snprintf_s
 #endif
 
 #define MAX_DIGITS 6

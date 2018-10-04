@@ -206,8 +206,8 @@ Size2 Node2D::get_scale() const {
 
 void Node2D::_notification(int p_what) {
 
-	switch (p_what) {
-	}
+	//switch (p_what) {
+	//}
 }
 
 Transform2D Node2D::get_transform() const {

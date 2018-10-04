@@ -1204,7 +1204,10 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
-	char *windowid = getenv("GODOT_WINDOWID");
+	char *windowid;
+	size_t len;
+	_dupenv_s(&windowid, &len, "GODOT_WINDOWID");
+
 	if (windowid) {
 
 // strtoull on mingw
@@ -2546,7 +2549,10 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 
 bool OS_Windows::has_environment(const String &p_var) const {
 
-	return _wgetenv(p_var.c_str()) != NULL;
+	wchar_t *env;
+	size_t len;
+	_wdupenv_s(&env, &len, p_var.c_str());
+	return env != NULL;
 };
 
 String OS_Windows::get_environment(const String &p_var) const {
@@ -2926,7 +2932,7 @@ bool OS_Windows::is_disable_crash_handler() const {
 Error OS_Windows::move_to_trash(const String &p_path) {
 	SHFILEOPSTRUCTW sf;
 	WCHAR *from = new WCHAR[p_path.length() + 2];
-	wcscpy(from, p_path.c_str());
+	wcscpy_s(from, p_path.length() + 1, p_path.c_str());
 	from[p_path.length() + 1] = 0;
 
 	sf.hwnd = hWnd;

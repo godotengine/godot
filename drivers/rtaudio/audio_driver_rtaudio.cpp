@@ -128,7 +128,7 @@ Error AudioDriverRtAudio::init() {
 			active = true;
 
 			break;
-		} catch (RtAudioError &e) {
+		} catch (RtAudioError) {
 			// try with less channels
 			ERR_PRINT("Unable to open audio, retrying with fewer channels...");
 

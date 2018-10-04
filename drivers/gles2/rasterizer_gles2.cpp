@@ -74,6 +74,10 @@
 #include <EGL/eglext.h>
 #endif
 
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define strcpy strcpy_s
+#endif
+
 #ifndef IPHONE_ENABLED
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 
@@ -84,6 +88,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		return; //these are ultimately annoying, so removing for now
 
 	char debSource[256], debType[256], debSev[256];
+
 	if (source == _EXT_DEBUG_SOURCE_API_ARB)
 		strcpy(debSource, "OpenGL");
 	else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)

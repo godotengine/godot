@@ -594,7 +594,16 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 
 	if (p_create_soft_world) {
 		dynamicsWorld = new (world_mem) btSoftRigidDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4316)
+#endif
 		soft_body_world_info = bulletnew(btSoftBodyWorldInfo);
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 	} else {
 		dynamicsWorld = new (world_mem) btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 	}

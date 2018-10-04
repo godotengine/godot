@@ -55,6 +55,19 @@ class GodotMotionState : public btMotionState {
 	RigidBodyBullet *owner;
 
 public:
+	// Below overrides added to prevent "warning C4316: '<name>': object allocated on the heap may not be aligned 16" on Windows
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+
+	void *operator new(size_t i) {
+		return _mm_malloc(i, 16);
+	}
+
+	void operator delete(void *p) {
+		_mm_free(p);
+	}
+
+#endif
+
 	GodotMotionState(RigidBodyBullet *p_owner) :
 			bodyKinematicWorldTransf(btMatrix3x3(1., 0., 0., 0., 1., 0., 0., 0., 1.), btVector3(0., 0., 0.)),
 			bodyCurrentWorldTransform(btMatrix3x3(1., 0., 0., 0., 1., 0., 0., 0., 1.), btVector3(0., 0., 0.)),

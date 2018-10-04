@@ -3506,7 +3506,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 						nv.sint = -cn->values[i].sint;
 					} break;
 					case TYPE_UINT: {
-						nv.uint = -cn->values[i].uint;
+						nv.uint = cn->values[i].uint;
 					} break;
 					case TYPE_FLOAT: {
 						nv.real = -cn->values[i].real;
