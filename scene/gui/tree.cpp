@@ -3102,6 +3102,32 @@ bool Tree::is_anything_selected() {
 	return (selected_item != NULL);
 }
 
+void recursive_collapsed(TreeItem *p_item, bool p_collapsed) {
+
+	if (!p_item) {
+		return;
+	}
+
+	p_item->set_collapsed(p_collapsed);
+	TreeItem *c = p_item->get_children();
+
+	while (c) {
+
+		recursive_collapsed(c, p_collapsed);
+		c = c->get_next();
+	}
+}
+
+void Tree::expand_all() {
+
+	recursive_collapsed(root, false);
+}
+
+void Tree::collapse_all() {
+
+	recursive_collapsed(root, true);
+}
+
 void Tree::clear() {
 
 	if (blocked > 0) {
@@ -3764,6 +3790,9 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &Tree::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("set_select_mode", "mode"), &Tree::set_select_mode);
 	ClassDB::bind_method(D_METHOD("get_select_mode"), &Tree::get_select_mode);
+
+	ClassDB::bind_method(D_METHOD("expand_all"), &Tree::expand_all);
+	ClassDB::bind_method(D_METHOD("collapse_all"), &Tree::collapse_all);
 
 	ClassDB::bind_method(D_METHOD("set_columns", "amount"), &Tree::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &Tree::get_columns);

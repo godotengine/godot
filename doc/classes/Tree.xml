@@ -218,6 +218,20 @@
 				If [code]true[/code] column titles are visible.
 			</description>
 		</method>
+		<method name="expand_all">
+			<return type="void">
+			</return>
+			<description>
+				Expand all the children recursively.
+			</description>
+		</method>
+		<method name="collapse_all">
+			<return type="void">
+			</return>
+			<description>
+				Collapse all the children recursively.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
