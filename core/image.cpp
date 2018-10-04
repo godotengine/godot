@@ -780,8 +780,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	// Setup mipmap-aware scaling
 	Image dst2;
-	int mip1;
-	int mip2;
+	int mip1 = 0;
+	int mip2 = 0;
 	float mip1_weight;
 	if (mipmap_aware) {
 		float avg_scale = ((float)p_width / width + (float)p_height / height) * 0.5f;
