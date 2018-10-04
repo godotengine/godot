@@ -163,7 +163,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	const GUID &guid = instance->guidProduct;
 	char uid[128];
-	sprintf(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
+	sprintf_s(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
 			__builtin_bswap32(guid.Data1), guid.Data2, guid.Data3,
 			guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
 			guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);

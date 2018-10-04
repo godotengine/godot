@@ -1246,14 +1246,11 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				case ShaderLanguage::TYPE_SAMPLER3D: {
 
 					target = GL_TEXTURE_3D;
+					tex = storage->resources.white_tex_3d;
 
-					switch (texture_hints[i]) {
-
-						// TODO
-						default: {
-							tex = storage->resources.white_tex_3d;
-						} break;
-					}
+					//switch (texture_hints[i]) {
+					// TODO
+					//}
 
 				} break;
 

@@ -593,7 +593,7 @@ void TileMap::update_dirty_quadrants() {
 
 	if (quadrant_order_dirty) {
 
-		int index = -0x80000000; //always must be drawn below children
+		int index = -(int64_t)0x80000000; //always must be drawn below children
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();

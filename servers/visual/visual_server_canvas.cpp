@@ -689,7 +689,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	if (indices.empty()) {
 
 		ERR_EXPLAIN("Bad Polygon!");
-		ERR_FAIL_V();
+		ERR_FAIL();
 	}
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);

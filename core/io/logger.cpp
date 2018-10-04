@@ -45,6 +45,10 @@
 #endif
 #endif
 
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define sprintf sprintf_s
+#endif
+
 bool Logger::should_log(bool p_err) {
 	return (!p_err || _print_error_enabled) && (p_err || _print_line_enabled);
 }
