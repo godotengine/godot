@@ -3454,7 +3454,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		if (points.size() > 3) {
 
-			QuickHull qh;
+			QuickHull qh = {};
 			Vector<Vector3> varr = Variant(points);
 			Geometry::MeshData md;
 			Error err = qh.build(varr, md);
