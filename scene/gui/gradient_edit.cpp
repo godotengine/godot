@@ -238,21 +238,21 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (mm->get_shift()) {
 			float snap_treshhold = 0.03;
 			float smallest_ofs = snap_treshhold;
-			bool founded = false;
-			int nearest_point;
+			bool found = false;
+			int nearest_point = 0;
 			for (int i = 0; i < points.size(); ++i) {
 				if (i != grabbed) {
 					float temp_ofs = ABS(points[i].offset - newofs);
 					if (temp_ofs < smallest_ofs) {
 						smallest_ofs = temp_ofs;
 						nearest_point = i;
-						if (founded)
+						if (found)
 							break;
-						founded = true;
+						found = true;
 					}
 				}
 			}
-			if (founded) {
+			if (found) {
 				if (points[nearest_point].offset < newofs)
 					newofs = points[nearest_point].offset + 0.00001;
 				else

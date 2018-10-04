@@ -1471,7 +1471,8 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 void Image::create(const char **p_xpm) {
 
-	int size_width, size_height;
+	int size_width = 0;
+	int size_height = 0;
 	int pixelchars = 0;
 	mipmaps = false;
 	bool has_alpha = false;
@@ -1487,8 +1488,8 @@ void Image::create(const char **p_xpm) {
 	int line = 0;
 
 	HashMap<String, Color> colormap;
-	int colormap_size;
-	uint32_t pixel_size;
+	int colormap_size = 0;
+	uint32_t pixel_size = 0;
 	PoolVector<uint8_t>::Write w;
 
 	while (status != DONE) {

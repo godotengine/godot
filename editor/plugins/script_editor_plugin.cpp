@@ -1960,7 +1960,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 
 	// doesn't have it, make a new one
 
-	ScriptEditorBase *se;
+	ScriptEditorBase *se = NULL;
 
 	for (int i = script_editor_func_count - 1; i >= 0; i--) {
 		se = script_editor_funcs[i](p_resource);

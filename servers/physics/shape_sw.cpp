@@ -1047,7 +1047,7 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 	/** FIND SUPPORT VERTEX **/
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < 3; i++) {
 

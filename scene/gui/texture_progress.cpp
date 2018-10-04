@@ -148,9 +148,9 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 	float angle = (val * Math_TAU) - Math_PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
-	float cp;
-	float cq;
-	float cr;
+	float cp = 0;
+	float cq = 0;
+	float cr = 0;
 	float edgeLeft = 0.0;
 	float edgeRight = 1.0;
 	float edgeBottom = 0.0;

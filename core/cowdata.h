@@ -87,7 +87,10 @@ private:
 #if defined(_add_overflow) && defined(_mul_overflow)
 		size_t o;
 		size_t p;
-		if (_mul_overflow(p_elements, sizeof(T), &o)) return false;
+		if (_mul_overflow(p_elements, sizeof(T), &o)) {
+			*out = 0;
+			return false;
+		}
 		*out = next_power_of_2(o);
 		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
 		return true;

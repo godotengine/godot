@@ -797,7 +797,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_CREATE_USER_INTERFACE:
 		case TOOL_CREATE_FAVORITE: {
 
-			Node *new_node;
+			Node *new_node = NULL;
 
 			if (TOOL_CREATE_FAVORITE == p_tool) {
 				String name = selected_favorite_root.get_slicec(' ', 0);
