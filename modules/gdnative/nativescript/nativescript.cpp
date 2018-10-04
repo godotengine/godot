@@ -1016,6 +1016,16 @@ NativeScriptLanguage::NativeScriptLanguage() {
 #ifdef DEBUG_ENABLED
 	profiling = false;
 #endif
+
+	_init_call_type = "nativescript_init";
+	_init_call_name = "nativescript_init";
+	_terminate_call_name = "nativescript_terminate";
+	_noarg_call_type = "nativescript_no_arg";
+	_frame_call_name = "nativescript_frame";
+#ifndef NO_THREADS
+	_thread_enter_call_name = "nativescript_thread_enter";
+	_thread_exit_call_name = "nativescript_thread_exit";
+#endif
 }
 
 NativeScriptLanguage::~NativeScriptLanguage() {
