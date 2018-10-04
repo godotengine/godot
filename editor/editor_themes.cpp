@@ -1016,6 +1016,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
+	theme->set_constant("title_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
