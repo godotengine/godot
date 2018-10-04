@@ -29,7 +29,7 @@ matrix:
             - clang-format-6.0
             - libstdc++6 # >= 4.9 needed for clang-format-6.0
 
-    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no"
+    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no werror=yes"
       os: linux
       compiler: gcc
       addons:
@@ -49,7 +49,7 @@ matrix:
           build_command: "scons p=x11 -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
-    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang
+    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="werror=yes"
       os: linux
       compiler: clang
       addons:
@@ -57,7 +57,7 @@ matrix:
           packages:
             - *linux_deps
 
-    - env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang
+    - env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="werror=yes"
       os: linux
       compiler: clang
 
