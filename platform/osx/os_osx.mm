@@ -76,11 +76,6 @@
 #define NSWindowStyleMaskBorderless NSBorderlessWindowMask
 #endif
 
-static NSRect convertRectToBacking(NSRect contentRect) {
-
-	return [OS_OSX::singleton->window_view convertRectToBacking:contentRect];
-}
-
 static void get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> state) {
 
 	state->set_shift((p_osx_state & NSEventModifierFlagShift));
@@ -271,7 +266,7 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 		float newDisplayScale = OS_OSX::singleton->is_hidpi_allowed() ? newBackingScaleFactor : 1.0;
 
 		const NSRect contentRect = [OS_OSX::singleton->window_view frame];
-		const NSRect fbRect = contentRect; //convertRectToBacking(contentRect);
+		const NSRect fbRect = contentRect;
 
 		OS_OSX::singleton->window_size.width = fbRect.size.width * newDisplayScale;
 		OS_OSX::singleton->window_size.height = fbRect.size.height * newDisplayScale;
@@ -292,7 +287,7 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	[OS_OSX::singleton->context update];
 
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
-	const NSRect fbRect = contentRect; //convertRectToBacking(contentRect);
+	const NSRect fbRect = contentRect;
 
 	float displayScale = OS_OSX::singleton->_display_scale();
 	OS_OSX::singleton->window_size.width = fbRect.size.width * displayScale;

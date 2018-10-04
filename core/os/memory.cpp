@@ -89,8 +89,13 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	atomic_increment(&alloc_count);
 
 	if (prepad) {
+		// Clang 5 wrongly complains about 's' being unused,
+		// while it's used to modify 'mem'.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
 		uint64_t *s = (uint64_t *)mem;
 		*s = p_bytes;
+#pragma clang diagnostic pop
 
 		uint8_t *s8 = (uint8_t *)mem;
 

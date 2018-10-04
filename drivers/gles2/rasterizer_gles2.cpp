@@ -74,6 +74,7 @@
 #include <EGL/eglext.h>
 #endif
 
+#ifndef IPHONE_ENABLED
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
@@ -120,6 +121,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINTS(output);
 }
+#endif // IPHONE_ENABLED
 
 typedef void (*DEBUGPROCARB)(GLenum source,
 		GLenum type,
