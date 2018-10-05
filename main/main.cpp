@@ -1692,6 +1692,9 @@ bool Main::start() {
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 			}
 #endif
+			if (!editor) {
+				OS::get_singleton()->set_context(OS::CONTEXT_ENGINE);
+			}
 		}
 
 		if (!project_manager && !editor) { // game
