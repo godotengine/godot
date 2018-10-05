@@ -185,7 +185,7 @@ public:
 	_FORCE_INLINE_ GDMonoAssembly *get_editor_tools_assembly() const { return editor_tools_assembly; }
 #endif
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	const MonoRegInfo &get_mono_reg_info() { return mono_reg_info; }
 #endif
 
