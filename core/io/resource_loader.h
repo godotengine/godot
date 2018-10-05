@@ -77,6 +77,8 @@ public:
 typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
 typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
 
+typedef Error (*ResourceLoaderImport)(const String &p_path);
+
 class ResourceLoader {
 
 	enum {
@@ -147,6 +149,8 @@ public:
 	static void reload_translation_remaps();
 	static void load_translation_remaps();
 	static void clear_translation_remaps();
+
+	static ResourceLoaderImport import;
 };
 
 #endif

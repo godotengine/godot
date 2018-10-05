@@ -230,6 +230,8 @@ class EditorFileSystem : public Node {
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
+	static Error _resource_import(const String &p_path);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

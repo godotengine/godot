@@ -647,3 +647,5 @@ bool ResourceLoader::timestamp_on_load = false;
 SelfList<Resource>::List ResourceLoader::remapped_list;
 HashMap<String, Vector<String> > ResourceLoader::translation_remaps;
 HashMap<String, String> ResourceLoader::path_remaps;
+
+ResourceLoaderImport ResourceLoader::import = NULL;

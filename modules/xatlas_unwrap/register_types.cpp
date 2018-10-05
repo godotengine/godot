@@ -75,8 +75,9 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	xatlas::CharterOptions chart_options;
 	xatlas::PackerOptions pack_options;
 
+	pack_options.method = xatlas::PackMethod::TexelArea;
 	pack_options.texelArea = 1.0 / p_texel_size;
-	pack_options.quality = 4;
+	pack_options.quality = 3;
 
 	xatlas::Atlas *atlas = xatlas::Create();
 	printf("adding mesh..\n");
@@ -93,7 +94,10 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	float w = *r_size_hint_x;
 	float h = *r_size_hint_y;
 
-	printf("final texsize: %f,%f\n", w, h);
+	if (w == 0 || h == 0) {
+		return false; //could not bake
+	}
+
 	const xatlas::OutputMesh *const *output_meshes = xatlas::GetOutputMeshes(atlas);
 
 	const xatlas::OutputMesh *output = output_meshes[0];
@@ -102,11 +106,17 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	*r_uv = (float *)malloc(sizeof(float) * output->vertexCount * 2);
 	*r_index = (int *)malloc(sizeof(int) * output->indexCount);
 
+	float max_x = 0;
+	float max_y = 0;
 	for (int i = 0; i < output->vertexCount; i++) {
 		(*r_vertex)[i] = output->vertexArray[i].xref;
-		(*r_uv)[i * 2 + 0] = output->vertexArray[i].uv[0];
-		(*r_uv)[i * 2 + 1] = output->vertexArray[i].uv[1];
+		(*r_uv)[i * 2 + 0] = output->vertexArray[i].uv[0] / w;
+		(*r_uv)[i * 2 + 1] = output->vertexArray[i].uv[1] / h;
+		max_x = MAX(max_x, output->vertexArray[i].uv[0]);
+		max_y = MAX(max_y, output->vertexArray[i].uv[1]);
 	}
+
+	printf("final texsize: %f,%f - max %f,%f\n", w, h, max_x, max_y);
 	*r_vertex_count = output->vertexCount;
 
 	for (int i = 0; i < output->indexCount; i++) {

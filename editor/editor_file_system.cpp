@@ -1705,6 +1705,17 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	emit_signal("resources_reimported", p_files);
 }
 
+Error EditorFileSystem::_resource_import(const String &p_path) {
+
+	Vector<String> files;
+	files.push_back(p_path);
+
+	singleton->update_file(p_path);
+	singleton->reimport_files(files);
+
+	return OK;
+}
+
 void EditorFileSystem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_filesystem"), &EditorFileSystem::get_filesystem);
@@ -1744,6 +1755,7 @@ void EditorFileSystem::_update_extensions() {
 
 EditorFileSystem::EditorFileSystem() {
 
+	ResourceLoader::import = _resource_import;
 	reimport_on_missing_imported_files = GLOBAL_DEF("editor/reimport_missing_imported_files", true);
 
 	singleton = this;
