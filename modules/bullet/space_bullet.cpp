@@ -175,7 +175,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 
-	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, 0.002);
+	space->dynamicsWorld->convexSweepTest(bt_convex_shape, bt_xform_from, bt_xform_to, btResult, space->dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
 
 	r_closest_unsafe = 1.0;
 	r_closest_safe = 1.0;
