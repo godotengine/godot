@@ -246,7 +246,7 @@ public:
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 
-	int get_max_length() const;
+	int get_max_item_width() const;
 
 	VScrollBar *get_v_scroll() { return v_scroll; }
 	HScrollBar *get_h_scroll() { return h_scroll; }

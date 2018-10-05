@@ -942,6 +942,7 @@ void ItemList::_notification(int p_what) {
 			if (max_columns > 0)
 				current_columns = max_columns;
 
+			int max_item_width = get_max_item_width();
 			// V_SCROLL
 			while (true) {
 				//repeat util all fits
@@ -959,8 +960,11 @@ void ItemList::_notification(int p_what) {
 						break;
 					}
 
-					if (same_column_width)
+					if (current_columns == 1) {
+						items.write[i].rect_cache.size.x = MAX(get_size().x, max_item_width);
+					} else if (same_column_width) {
 						items.write[i].rect_cache.size.x = max_column_width;
+					}
 
 					items.write[i].rect_cache.position = ofs;
 					max_h = MAX(max_h, items[i].rect_cache.size.y);
@@ -1012,16 +1016,15 @@ void ItemList::_notification(int p_what) {
 
 			// H_SCROLL
 			if (h_scroll_enabled) {
-				int max_w = get_max_length();
 
 				float page = size.width - bg->get_minimum_size().width;
 				if (v_scroll->is_visible_in_tree())
-					max_w += v_scroll->get_size().width;
+					max_item_width += v_scroll->get_size().width;
 
 				h_scroll->set_page(page);
-				h_scroll->set_max(max_w);
+				h_scroll->set_max(max_item_width);
 
-				if (max_w <= page) {
+				if (max_item_width <= page) {
 
 					h_scroll->hide();
 					h_scroll->set_value(0);
@@ -1080,7 +1083,6 @@ void ItemList::_notification(int p_what) {
 			first_item_visible = lo;
 		}
 
-		int max_length = get_max_length();
 		for (int i = first_item_visible; i < items.size(); i++) {
 
 			Item it = items[i];
@@ -1092,22 +1094,12 @@ void ItemList::_notification(int p_what) {
 			if (!clip.intersects(rcache) && !h_scroll_enabled)
 				continue;
 
-			if (current_columns == 1) {
-				rcache.size.width = width - rcache.position.x;
-			}
-
 			if (it.selected) {
 				Rect2 r = rcache;
 				r.position += base_ofs;
 				r.position.y -= vseparation / 2;
 				r.size.y += vseparation;
 				r.position.x -= hseparation / 2;
-
-				if (h_scroll_enabled) {
-					r.size.x = max_length;
-				} else {
-					r.size.x += hseparation;
-				}
 
 				draw_style_box(sbsel, r);
 			}
@@ -1121,14 +1113,14 @@ void ItemList::_notification(int p_what) {
 				r.position.x -= hseparation / 2;
 				r.size.x += hseparation;
 
-				draw_rect(r, items[i].custom_bg);
+				draw_rect(r, it.custom_bg);
 			}
 
 			Vector2 text_ofs;
 			if (it.icon.is_valid()) {
 
 				Size2 icon_size;
-				//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
+				//= _adjust_to_max_size(it.get_icon_size(),fixed_icon_size) * icon_scale;
 
 				if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
 					icon_size = fixed_icon_size * icon_scale;
@@ -1144,8 +1136,8 @@ void ItemList::_notification(int p_what) {
 
 					pos.x += Math::floor((it.rect_cache.size.width - icon_size.width) / 2);
 					pos.y += MIN(
-							Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2),
-							items[i].rect_cache.size.height - it.min_rect_cache.size.height);
+							Math::floor((it.rect_cache.size.height - icon_size.height) / 2),
+							it.rect_cache.size.height - it.min_rect_cache.size.height);
 					text_ofs.y = icon_size.height + icon_margin;
 					text_ofs.y += it.rect_cache.size.height - it.min_rect_cache.size.height;
 				} else {
@@ -1187,12 +1179,13 @@ void ItemList::_notification(int p_what) {
 				int max_len = -1;
 
 				Vector2 size2 = font->get_string_size(it.text);
-				if (fixed_column_width)
+				if (fixed_column_width) {
 					max_len = fixed_column_width;
-				else if (same_column_width)
+				} else if (same_column_width) {
 					max_len = it.rect_cache.size.x;
-				else
+				} else {
 					max_len = size2.x;
+				}
 
 				Color modulate = it.selected ? font_color_selected : (it.custom_fg != Color() ? it.custom_fg : font_color);
 				if (it.disabled)
@@ -1200,7 +1193,7 @@ void ItemList::_notification(int p_what) {
 
 				if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 
-					int ss = items[i].text.length();
+					int ss = it.text.length();
 					float ofs = 0;
 					int line = 0;
 					for (int j = 0; j <= ss; j++) {
@@ -1307,14 +1300,14 @@ void ItemList::_notification(int p_what) {
 	}
 }
 
-int ItemList::get_max_length() const {
-	int max_w = 0;
+int ItemList::get_max_item_width() const {
+	int max_width = 0;
 
 	for (int i = 0; i < items.size(); i++) {
-		max_w = MAX(get_font("font")->get_string_size(items[i].text).x, max_w);
+		max_width = MAX(get_font("font")->get_string_size(items[i].text).x, max_width);
 	}
 
-	return max_w;
+	return max_width + 3;
 }
 
 void ItemList::_scroll_changed(double) {
@@ -1326,7 +1319,7 @@ void ItemList::_h_scroll_resized() {
 		h_scroll->disconnect("resized", this, "_h_scroll_resized");
 
 		int h_scroll_height = h_scroll->get_size().height;
-		int new_h_scroll_width = get_size().width - 18; // v_scroll->get_size().width is not enough
+		int new_h_scroll_width = get_size().width - (v_scroll->get_size().width + 5); // v_scroll->get_size().width is not enough, bug?
 		h_scroll->set_size(Vector2(new_h_scroll_width, h_scroll_height));
 
 		h_scroll->connect("resized", this, "_h_scroll_resized");

@@ -890,9 +890,9 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-                        int cursor_insert_offset_y = 0;
+			int cursor_insert_offset_y = 0;
 
-                        // Get the highlighted words
+			// get the highlighted words
 			String highlighted_text = get_selection_text();
 
 			// Check if highlighted words contains only whitespaces (tabs or spaces).
@@ -2049,6 +2049,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (completion->is_anything_selected() && completion->get_current() > 0) {
 					completion->select(completion->get_current() - 1);
+					completion->ensure_current_is_visible();
 				}
 			}
 
@@ -2056,16 +2057,20 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				if (completion->is_anything_selected() && completion->get_current() < completion->get_item_count() - 1) {
 					completion->select(completion->get_current() + 1);
+					completion->ensure_current_is_visible();
 				}
 			}
 
-			if (mb->get_button_index() == BUTTON_LEFT && !completion_rect.has_point(mb->get_position())) {
-				completion->select(completion->get_item_at_position(mb->get_position()));
+			if (mb->get_button_index() == BUTTON_LEFT) {
 
-				if (mb->is_doubleclick())
-					confirm_completion(completion->get_current());
-
-				completion->hide();
+				if (completion_rect.has_point(mb->get_position())) {
+					completion->select(completion->get_item_at_position(mb->get_position()));
+					if (mb->is_doubleclick()) {
+						confirm_completion(completion->get_current());
+					}
+				} else {
+					_cancel_completion();
+				}
 			}
 			return;
 		} else {
@@ -2509,7 +2514,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						}
 					}
 					accept_event();
-
+					_update_completion_candidates();
 					return;
 				}
 			}
@@ -3825,7 +3830,7 @@ void TextEdit::_insert_text(int p_line, int p_char, const String &p_text, int *r
 	op.chain_forward = false;
 	op.chain_backward = false;
 
-	// See if it should just be set as current op.
+	//see if it should just be set as current op
 	if (current_op.type != op.type) {
 		op.prev_version = get_version();
 		_push_current_op();
@@ -6119,7 +6124,28 @@ void TextEdit::confirm_completion(int id) {
 
 	begin_complex_operation();
 
-	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
+	String word = get_word_at_cursor(cursor.line, cursor.column);
+
+	if (String("():. ,+-*/").find(word.left(1))) {
+		word = get_word_at_cursor(cursor.line, cursor.column - 1);
+	}
+
+	if (completion_base == word) {
+		_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
+	} else {
+		int end_col_of_word = cursor.column - completion_base.length() + word.length();
+		if (end_col_of_word + 1 < text[cursor.line].length() && text[cursor.line][end_col_of_word + 1] == ')') {
+			end_col_of_word += 2;
+		} else if (text[cursor.line][end_col_of_word] == '(') {
+			end_col_of_word += 1;
+		} else if (text[cursor.line][cursor.column - completion_base.length()] == '"' || text[cursor.line][cursor.column - completion_base.length()] == '\'') {
+			end_col_of_word += 1;
+		} else if (end_col_of_word + 1 < text[cursor.line].length() && (text[cursor.line][end_col_of_word + 1] == '"' || text[cursor.line][end_col_of_word + 1] == '\'')) {
+			end_col_of_word += 2;
+		}
+
+		_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, end_col_of_word);
+	}
 	cursor_set_column(cursor.column - completion_base.length(), false);
 	insert_text_at_cursor(completion->get_item_text(id));
 
@@ -6165,7 +6191,6 @@ void TextEdit::_cancel_code_hint() {
 
 void TextEdit::_cancel_completion() {
 
-        VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 0);
 	if (!completion->is_visible_in_tree())
 		return;
 
@@ -6229,7 +6254,6 @@ void TextEdit::_update_completion_candidates() {
 		}
 
 		pre_keyword = keywords.has(kw);
-
 	} else {
 
 		while (cofs > 0 && l[cofs - 1] > 32 && (l[cofs - 1] == '/' || _is_completable(l[cofs - 1]))) {
@@ -6244,8 +6268,6 @@ void TextEdit::_update_completion_candidates() {
 	if (cursor.column > 0 && l[cursor.column - 1] == '(' && !pre_keyword && !completion_forced) {
 		cancel = true;
 	}
-
-	update();
 
 	bool prev_is_prefix = false;
 	if (cofs > 0 && completion_prefixes.has(String::chr(l[cofs - 1])))
@@ -6433,12 +6455,16 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	int row, col;
 	_get_mouse_pos(p_pos, row, col);
 
+	return get_word_at_cursor(row, col);
+}
+
+String TextEdit::get_word_at_cursor(int row, int col) const {
+
 	String s = text[row];
 	if (s.length() == 0)
 		return "";
 	int beg, end;
 	if (select_word(s, col, beg, end)) {
-
 		bool inside_quotes = false;
 		CharType selected_quote = '\0';
 		int qbegin = 0, qend = 0;

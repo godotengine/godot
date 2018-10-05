@@ -807,7 +807,7 @@ void CodeTextEditor::_complete_request() {
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
-	if (entries.size() == 0)
+	if (entries.size() == 0) {
 		return;
 
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
