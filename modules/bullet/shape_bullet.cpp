@@ -34,6 +34,7 @@
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
+#include "core/project_settings.h"
 #include "shape_owner_bullet.h"
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
@@ -400,18 +401,22 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 		btVector3 supVec_1;
 		btVector3 supVec_2;
 		for (int i = 0; i < src_face_count; ++i) {
-			G_TO_B(facesr[i * 3], supVec_0);
+			G_TO_B(facesr[i * 3 + 0], supVec_0);
 			G_TO_B(facesr[i * 3 + 1], supVec_1);
 			G_TO_B(facesr[i * 3 + 2], supVec_2);
 
-			shapeInterface->addTriangle(supVec_0, supVec_1, supVec_2);
+			// Inverted from standard godot otherwise btGenerateInternalEdgeInfo generates wrong edge info
+			shapeInterface->addTriangle(supVec_2, supVec_1, supVec_0);
 		}
 
 		const bool useQuantizedAabbCompression = true;
 
 		meshShape = bulletnew(btBvhTriangleMeshShape(shapeInterface, useQuantizedAabbCompression));
-		btTriangleInfoMap *triangleInfoMap = new btTriangleInfoMap();
-		btGenerateInternalEdgeInfo(meshShape, triangleInfoMap);
+
+		if (GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false)) {
+			btTriangleInfoMap *triangleInfoMap = new btTriangleInfoMap();
+			btGenerateInternalEdgeInfo(meshShape, triangleInfoMap);
+		}
 	} else {
 		meshShape = NULL;
 		ERR_PRINT("The faces count are 0, the mesh shape cannot be created");
@@ -426,6 +431,7 @@ btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_
 		cs = ShapeBullet::create_shape_empty();
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
+	cs->setMargin(0);
 	return cs;
 }
 
