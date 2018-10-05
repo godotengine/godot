@@ -45,9 +45,11 @@ name is available.
     Bojidar Marinov (bojidar-bg)
     bruvzg
     Carl Olsson (not-surt)
+    Chris Bradfield (cbscribe)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
     Dmitry Koteroff (Krakean)
+    DualMatrix
     Emmanuel Leblond (touilleMan)
     Eric Lasota (elasota)
     est31
@@ -111,9 +113,9 @@ name is available.
     Ramesh Ravone (RameshRavone)
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
+    Rhody Lugo (rraallvv)
     Roberto F. Arroyo (robfram)
     romulox-x
-    rraallvv
     Ruslan Mustakov (endragor)
     Saniko (sanikoyes)
     SaracenOne
