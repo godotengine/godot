@@ -156,10 +156,18 @@ void ColorPicker::_value_changed(double) {
 
 void ColorPicker::_html_entered(const String &p_html) {
 
+	String tmp_html = p_html;
+
 	if (updating)
 		return;
 
-	color = Color::html(p_html);
+	if (!edit_alpha)
+	{
+		if (tmp_html.size() > 6)
+			tmp_html = tmp_html.right(2);
+	}
+
+	color = Color::html(tmp_html);
 
 	if (!is_inside_tree())
 		return;
