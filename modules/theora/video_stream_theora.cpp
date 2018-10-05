@@ -730,7 +730,6 @@ RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_origi
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
-		memdelete(f);
 		return RES();
 	}
 
