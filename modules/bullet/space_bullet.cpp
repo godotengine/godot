@@ -571,7 +571,6 @@ void SpaceBullet::create_empty_world(bool p_create_soft_world) {
 
 	gjk_epa_pen_solver = bulletnew(btGjkEpaPenetrationDepthSolver);
 	gjk_simplex_solver = bulletnew(btVoronoiSimplexSolver);
-	gjk_simplex_solver->setEqualVertexThreshold(0.f);
 
 	void *world_mem;
 	if (p_create_soft_world) {
