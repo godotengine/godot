@@ -243,14 +243,40 @@ bool ColorPicker::is_raw_mode() const {
 }
 
 void ColorPicker::set_deferred_mode(bool p_enabled) {
+
 	deferred_mode_enabled = p_enabled;
 }
 
 bool ColorPicker::is_deferred_mode() const {
+
 	return deferred_mode_enabled;
 }
 
+void ColorPicker::set_color_grabber_enabled(bool p_enabled) {
+
+	color_grabber_enabled = p_enabled;
+	btn_pick->set_visible(p_enabled);
+}
+
+bool ColorPicker::is_color_grabber_enabled() const {
+
+	return color_grabber_enabled;
+}
+
+void ColorPicker::set_controls_enabled(bool p_enabled) {
+
+	controls_enabled = p_enabled;
+	controls_container->set_visible(p_enabled);
+	// TODO update size
+}
+
+bool ColorPicker::are_controls_enabled() const {
+
+	return controls_enabled;
+}
+
 void ColorPicker::_update_text_value() {
+
 	bool visible = true;
 	if (text_is_constructor) {
 		String t = "Color(" + String::num(color.r) + "," + String::num(color.g) + "," + String::num(color.b);
@@ -521,6 +547,10 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPicker::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPicker::is_editing_alpha);
+	ClassDB::bind_method(D_METHOD("set_color_grabber_enabled", "enabled"), &ColorPicker::set_color_grabber_enabled);
+	ClassDB::bind_method(D_METHOD("is_color_grabber_enabled"), &ColorPicker::is_color_grabber_enabled);
+	ClassDB::bind_method(D_METHOD("set_controls_enabled", "enabled"), &ColorPicker::set_controls_enabled);
+	ClassDB::bind_method(D_METHOD("are_controls_enabled"), &ColorPicker::are_controls_enabled);
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
 	ClassDB::bind_method(D_METHOD("_value_changed"), &ColorPicker::_value_changed);
 	ClassDB::bind_method(D_METHOD("_html_entered"), &ColorPicker::_html_entered);
@@ -542,6 +572,8 @@ void ColorPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "color_grabber"), "set_color_grabber_enabled", "is_color_grabber_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_controls"), "set_controls_enabled", "are_controls_enabled");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 }
@@ -555,6 +587,8 @@ ColorPicker::ColorPicker() :
 	raw_mode_enabled = false;
 	deferred_mode_enabled = false;
 	changing_color = false;
+	color_grabber_enabled = true;
+	controls_enabled = true;
 	screen = NULL;
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
@@ -563,6 +597,7 @@ ColorPicker::ColorPicker() :
 
 	sample = memnew(TextureRect);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
+	sample->set_custom_minimum_size(Size2(get_constant("h_width"), get_constant("h_width")));
 	sample->connect("draw", this, "_sample_draw");
 
 	hb_smpl->add_child(sample);
@@ -594,13 +629,14 @@ ColorPicker::ColorPicker() :
 	hb_edit->add_child(memnew(VSeparator));
 	hb_edit->add_child(w_edit);
 
-	VBoxContainer *vbl = memnew(VBoxContainer);
-	add_child(vbl);
+	// This container groups the main tools for this widget
+	controls_container = memnew(VBoxContainer);
+	add_child(controls_container);
 
 	add_child(memnew(HSeparator));
 
 	VBoxContainer *vbr = memnew(VBoxContainer);
-	add_child(vbr);
+	controls_container->add_child(vbr);
 	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 	const char *lt[4] = { "R", "G", "B", "A" };
 
@@ -660,7 +696,7 @@ ColorPicker::ColorPicker() :
 	set_pick_color(Color(1, 1, 1));
 
 	HBoxContainer *bbc = memnew(HBoxContainer);
-	add_child(bbc);
+	controls_container->add_child(bbc);
 
 	preset = memnew(TextureRect);
 	bbc->add_child(preset);

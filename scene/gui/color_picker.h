@@ -47,6 +47,7 @@ class ColorPicker : public BoxContainer {
 	GDCLASS(ColorPicker, BoxContainer);
 
 private:
+	VBoxContainer *controls_container;
 	Control *screen;
 	Control *uv_edit;
 	Control *w_edit;
@@ -70,6 +71,8 @@ private:
 	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
+	bool color_grabber_enabled;
+	bool controls_enabled;
 	float h, s, v;
 	Color last_hsv;
 
@@ -110,6 +113,12 @@ public:
 
 	void set_deferred_mode(bool p_enabled);
 	bool is_deferred_mode() const;
+
+	void set_color_grabber_enabled(bool p_enabled);
+	bool is_color_grabber_enabled() const;
+
+	void set_controls_enabled(bool p_enabled);
+	bool are_controls_enabled() const;
 
 	void set_focus_on_line_edit();
 
