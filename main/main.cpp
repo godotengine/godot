@@ -736,9 +736,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc", PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1")); // No negative and limit to 500 due to crashes
 	GLOBAL_DEF("network/limits/debugger_stdout/max_chars_per_second", 2048);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_chars_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_chars_per_second", PROPERTY_HINT_RANGE, "0, 4096, 1, or_greater"));
 	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_messages_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_messages_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
 	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_frame", 10);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_errors_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_errors_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
 
 	if (debug_mode == "remote") {
 
@@ -811,6 +815,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/log.txt");
 	GLOBAL_DEF("logging/file_logging/max_log_files", 10);
+	ProjectSettings::get_singleton()->set_custom_property_info("logging/file_logging/max_log_files", PropertyInfo(Variant::INT, "logging/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater")); //no negative numbers
 	if (FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) && GLOBAL_GET("logging/file_logging/enable_file_logging")) {
 		String base_path = GLOBAL_GET("logging/file_logging/log_path");
 		int max_files = GLOBAL_GET("logging/file_logging/max_log_files");
@@ -1001,6 +1006,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,120,1,or_greater"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 
@@ -1009,10 +1015,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
+		ProjectSettings::get_singleton()->set_custom_property_info("application/run/frame_delay_msec", PropertyInfo(Variant::INT, "application/run/frame_delay_msec", PROPERTY_HINT_RANGE, "0,100,1,or_greater")); // No negative numbers
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 8000));
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec", PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater")); // No negative numbers
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -1641,7 +1649,7 @@ bool Main::start() {
 			GLOBAL_DEF("display/window/stretch/aspect", "ignore");
 			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect", PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"));
 			GLOBAL_DEF("display/window/stretch/shrink", 1);
-			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink", PropertyInfo(Variant::STRING, "display/window/stretch/shrink", PROPERTY_HINT_RANGE, "1,8,1"));
+			ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/shrink", PropertyInfo(Variant::REAL, "display/window/stretch/shrink", PROPERTY_HINT_RANGE, "1,8,1"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 			sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 			GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);

@@ -4855,10 +4855,7 @@ void RasterizerSceneGLES3::initialize() {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	render_list.max_elements = GLOBAL_DEF_RST("rendering/limits/rendering/max_renderable_elements", (int)RenderList::DEFAULT_MAX_ELEMENTS);
-	if (render_list.max_elements > 1000000)
-		render_list.max_elements = 1000000;
-	if (render_list.max_elements < 1024)
-		render_list.max_elements = 1024;
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_renderable_elements", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_renderable_elements", PROPERTY_HINT_RANGE, "1024,1000000,1"));
 
 	{
 		//quad buffers
@@ -5057,6 +5054,7 @@ void RasterizerSceneGLES3::initialize() {
 	{
 
 		uint32_t immediate_buffer_size = GLOBAL_DEF("rendering/limits/buffers/immediate_buffer_size_kb", 2048);
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/immediate_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/immediate_buffer_size_kb", PROPERTY_HINT_RANGE, "0,8192,1,or_greater"));
 
 		glGenBuffers(1, &state.immediate_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, state.immediate_buffer);

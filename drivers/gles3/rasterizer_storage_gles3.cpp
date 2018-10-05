@@ -7684,6 +7684,8 @@ void RasterizerStorageGLES3::initialize() {
 	{
 		//transform feedback buffers
 		uint32_t xf_feedback_size = GLOBAL_DEF_RST("rendering/limits/buffers/blend_shape_max_buffer_size_kb", 4096);
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/blend_shape_max_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/blend_shape_max_buffer_size_kb", PROPERTY_HINT_RANGE, "0,8192,1,or_greater"));
+
 		for (int i = 0; i < 2; i++) {
 
 			glGenBuffers(1, &resources.transform_feedback_buffers[i]);

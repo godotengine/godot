@@ -2065,12 +2065,12 @@ GDScriptLanguage::GDScriptLanguage() {
 
 	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
+
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 
 		_debug_max_call_stack = dmcs;
-		if (_debug_max_call_stack < 1024)
-			_debug_max_call_stack = 1024;
 		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 
 	} else {

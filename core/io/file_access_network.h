@@ -98,7 +98,6 @@ class FileAccessNetwork : public FileAccess {
 
 	int page_size;
 	int read_ahead;
-	int max_pages;
 
 	mutable int waiting_on_page;
 	mutable int last_activity_val;

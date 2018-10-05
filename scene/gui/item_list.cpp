@@ -1524,6 +1524,7 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers
 }
 
 ItemList::ItemList() {

@@ -432,6 +432,7 @@ void RasterizerGLES3::register_config() {
 	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::REAL, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));
 }
 
 RasterizerGLES3::RasterizerGLES3() {
