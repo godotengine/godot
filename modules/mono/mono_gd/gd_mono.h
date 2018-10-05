@@ -142,7 +142,7 @@ class GDMono {
 
 	GDMonoLog *gdmono_log;
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	MonoRegInfo mono_reg_info;
 #endif
 
@@ -197,6 +197,9 @@ public:
 
 	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
 	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly_from(const String &p_name, const String &p_basedir, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly_from(const String &p_name, const String &p_basedir, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
 
 	void initialize();
@@ -205,12 +208,14 @@ public:
 	~GDMono();
 };
 
-class GDMonoScopeDomain {
+namespace gdmono {
+
+class ScopeDomain {
 
 	MonoDomain *prev_domain;
 
 public:
-	GDMonoScopeDomain(MonoDomain *p_domain) {
+	ScopeDomain(MonoDomain *p_domain) {
 		MonoDomain *prev_domain = mono_domain_get();
 		if (prev_domain != p_domain) {
 			this->prev_domain = prev_domain;
@@ -220,15 +225,35 @@ public:
 		}
 	}
 
-	~GDMonoScopeDomain() {
+	~ScopeDomain() {
 		if (prev_domain)
 			mono_domain_set(prev_domain, false);
 	}
 };
 
-#define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                    \
-	GDMonoScopeDomain __gdmono__scope__domain__(m_mono_domain); \
+class ScopeExitDomainUnload {
+	MonoDomain *domain;
+
+public:
+	ScopeExitDomainUnload(MonoDomain *p_domain) :
+			domain(p_domain) {
+	}
+
+	~ScopeExitDomainUnload() {
+		if (domain)
+			GDMono::get_singleton()->finalize_and_unload_domain(domain);
+	}
+};
+
+} // namespace gdmono
+
+#define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                      \
+	gdmono::ScopeDomain __gdmono__scope__domain__(m_mono_domain); \
 	(void)__gdmono__scope__domain__;
+
+#define _GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(m_mono_domain)                                  \
+	gdmono::ScopeExitDomainUnload __gdmono__scope__exit__domain__unload__(m_mono_domain); \
+	(void)__gdmono__scope__exit__domain__unload__;
 
 class _GodotSharp : public Object {
 	GDCLASS(_GodotSharp, Object)

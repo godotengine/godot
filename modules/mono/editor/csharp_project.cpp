@@ -51,7 +51,7 @@ String generate_core_api_project(const String &p_dir, const Vector<String> &p_fi
 	MonoObject *ret = klass->get_method("GenCoreApiProject", 2)->invoke(NULL, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL_V(String());
 	}
 
@@ -72,7 +72,7 @@ String generate_editor_api_project(const String &p_dir, const String &p_core_dll
 	MonoObject *ret = klass->get_method("GenEditorApiProject", 3)->invoke(NULL, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL_V(String());
 	}
 
@@ -93,7 +93,7 @@ String generate_game_project(const String &p_dir, const String &p_name, const Ve
 	MonoObject *ret = klass->get_method("GenGameProject", 3)->invoke(NULL, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL_V(String());
 	}
 
@@ -114,7 +114,7 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 	klass->get_method("AddItemToProjectChecked", 3)->invoke(NULL, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL();
 	}
 }

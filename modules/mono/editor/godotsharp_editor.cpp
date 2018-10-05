@@ -197,6 +197,7 @@ void GodotSharpEditor::register_internal_calls() {
 	mono_add_internal_call("GodotSharpTools.Utils.OS::GetPlatformName", (void *)godot_icall_Utils_OS_GetPlatformName);
 
 	GodotSharpBuilds::register_internal_calls();
+	GodotSharpExport::register_internal_calls();
 }
 
 void GodotSharpEditor::show_error_dialog(const String &p_message, const String &p_title) {

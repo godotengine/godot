@@ -249,6 +249,18 @@ bool GodotSharpBuilds::build_api_sln(const String &p_name, const String &p_api_s
 
 bool GodotSharpBuilds::copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name, APIAssembly::Type p_api_type) {
 
+	// Create destination directory if needed
+	if (!DirAccess::exists(p_dst_dir)) {
+		DirAccess *da = DirAccess::create_for_path(p_dst_dir);
+		Error err = da->make_dir_recursive(p_dst_dir);
+		memdelete(da);
+
+		if (err != OK) {
+			show_build_error_dialog("Failed to create destination directory for the API assemblies. Error: " + itos(err));
+			return false;
+		}
+	}
+
 	String assembly_file = p_assembly_name + ".dll";
 	String assembly_src = p_src_dir.plus_file(assembly_file);
 	String assembly_dst = p_dst_dir.plus_file(assembly_file);
@@ -296,9 +308,9 @@ bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
 	String api_name = p_api_type == APIAssembly::API_CORE ? API_ASSEMBLY_NAME : EDITOR_API_ASSEMBLY_NAME;
 	String api_build_config = "Release";
 
-	EditorProgress pr("mono_build_release_" + api_name, "Building " + api_name + " solution...", 4);
+	EditorProgress pr("mono_build_release_" + api_name, "Building " + api_name + " solution...", 3);
 
-	pr.step("Generating " + api_name + " solution");
+	pr.step("Generating " + api_name + " solution", 0);
 
 	String core_api_sln_dir = GodotSharpDirs::get_mono_solutions_dir()
 									  .plus_file(_api_folder_name(APIAssembly::API_CORE))
@@ -336,33 +348,18 @@ bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
 		}
 	}
 
-	pr.step("Building " + api_name + " solution");
+	pr.step("Building " + api_name + " solution", 1);
 
 	if (!GodotSharpBuilds::build_api_sln(api_name, api_sln_dir, api_build_config))
 		return false;
 
-	pr.step("Copying " + api_name + " assembly");
-
-	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
-
-	// Create assemblies directory if needed
-	if (!DirAccess::exists(res_assemblies_dir)) {
-		DirAccess *da = DirAccess::create_for_path(res_assemblies_dir);
-		Error err = da->make_dir_recursive(res_assemblies_dir);
-		memdelete(da);
-
-		if (err != OK) {
-			show_build_error_dialog("Failed to create assemblies directory. Error: " + itos(err));
-			return false;
-		}
-	}
+	pr.step("Copying " + api_name + " assembly", 2);
 
 	// Copy the built assembly to the assemblies directory
 	String api_assembly_dir = api_sln_dir.plus_file("bin").plus_file(api_build_config);
+	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
 	if (!GodotSharpBuilds::copy_api_assembly(api_assembly_dir, res_assemblies_dir, api_name, p_api_type))
 		return false;
-
-	pr.step("Done");
 
 	return true;
 }
@@ -372,23 +369,45 @@ bool GodotSharpBuilds::build_project_blocking(const String &p_config) {
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return true; // No solution to build
 
-	if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
-		return false;
+	String editor_prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir();
+	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
 
-	if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
-		return false;
+	if (FileAccess::exists(editor_prebuilt_api_dir.plus_file(API_ASSEMBLY_NAME ".dll"))) {
+		EditorProgress pr("mono_copy_prebuilt_api_assemblies",
+				"Copying prebuilt " API_ASSEMBLY_NAME " assemblies...", 1);
+		pr.step("Copying " API_ASSEMBLY_NAME " assembly", 0);
 
-	EditorProgress pr("mono_project_debug_build", "Building project solution...", 2);
+		if (!GodotSharpBuilds::copy_api_assembly(editor_prebuilt_api_dir, res_assemblies_dir,
+					API_ASSEMBLY_NAME, APIAssembly::API_CORE)) {
+			return false;
+		}
+	} else {
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
+			return false;
+	}
 
-	pr.step("Building project solution");
+	if (DirAccess::exists(editor_prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll"))) {
+		EditorProgress pr("mono_copy_prebuilt_api_assemblies",
+				"Copying prebuilt " EDITOR_API_ASSEMBLY_NAME " assemblies...", 1);
+		pr.step("Copying " EDITOR_API_ASSEMBLY_NAME " assembly", 0);
+
+		if (!GodotSharpBuilds::copy_api_assembly(editor_prebuilt_api_dir, res_assemblies_dir,
+					EDITOR_API_ASSEMBLY_NAME, APIAssembly::API_EDITOR)) {
+			return false;
+		}
+	} else {
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
+			return false;
+	}
+
+	EditorProgress pr("mono_project_debug_build", "Building project solution...", 1);
+	pr.step("Building project solution", 0);
 
 	MonoBuildInfo build_info(GodotSharpDirs::get_project_sln_path(), p_config);
 	if (!GodotSharpBuilds::get_singleton()->build(build_info)) {
 		GodotSharpBuilds::show_build_error_dialog("Failed to build project solution");
 		return false;
 	}
-
-	pr.step("Done");
 
 	return true;
 }
