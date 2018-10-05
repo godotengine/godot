@@ -262,9 +262,9 @@ void GDMono::initialize() {
 		// Everything is fine with the api assemblies, load the project assembly
 		_load_project_assembly();
 	} else {
+#ifdef TOOLS_ENABLED
 		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)) ||
 				(editor_api_assembly && editor_api_assembly_out_of_sync)) {
-#ifdef TOOLS_ENABLED
 			// The assembly was successfully loaded, but the full api could not be cached.
 			// This is most likely an outdated assembly loaded because of an invalid version in the
 			// metadata, so we invalidate the version in the metadata and unload the script domain.
@@ -288,11 +288,11 @@ void GDMono::initialize() {
 			if (err != OK) {
 				WARN_PRINT("Mono: Failed to unload scripts domain");
 			}
-#else
-			ERR_PRINT("The loaded API assembly is invalid");
-			CRASH_NOW();
-#endif // TOOLS_ENABLED
 		}
+#else
+		ERR_PRINT("The loaded API assembly is invalid");
+		CRASH_NOW();
+#endif // TOOLS_ENABLED
 	}
 #else
 	print_verbose("Mono: Glue disabled, ignoring script assemblies.");
