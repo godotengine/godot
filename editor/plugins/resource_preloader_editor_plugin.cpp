@@ -229,11 +229,15 @@ void ResourcePreloaderEditor::_update_library() {
 		ERR_CONTINUE(r.is_null());
 
 		ti->set_tooltip(0, r->get_path());
-		ti->set_text(1, r->get_path());
-		ti->add_button(1, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
-		ti->set_tooltip(1, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + r->get_class());
-		ti->set_editable(1, false);
-		ti->set_selectable(1, false);
+
+		if (r->is_class("PackedScene")) {
+			ti->set_text(1, r->get_path());
+			ti->add_button(1, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			ti->set_tooltip(1, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + r->get_class());
+			ti->set_editable(1, false);
+			ti->set_selectable(1, false);
+		}
+
 		String type = r->get_class();
 		ti->set_text(2, type);
 		ti->set_selectable(2, false);
