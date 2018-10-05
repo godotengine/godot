@@ -4,7 +4,7 @@
 		Adds a band pass filter to the Audio Bus.
 	</brief_description>
 	<description>
-		Attenuates the frequencies inside of a range around the [member cutoff_hz] and cuts frequencies outside of this band.
+		Attenuates the frequencies inside of a range around the [member AudioEffectFilter.cutoff_hz] and cuts frequencies outside of this band.
 	</description>
 	<tutorials>
 	</tutorials>
