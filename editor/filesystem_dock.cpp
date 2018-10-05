@@ -1953,7 +1953,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 		}
 
 		String ltarget = files->get_item_metadata(pos);
-		target = ltarget.ends_with("/") ? ltarget : path;
+		target = ltarget.ends_with("/") ? ltarget : path.get_base_dir();
 		return;
 	}
 
