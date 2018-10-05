@@ -69,7 +69,7 @@
 			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision], which contains information about the collision.
-				If [code]test_only[/code] is [code]true[/true], the body does not move but the would-be collision information is given.
+				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
 			</description>
 		</method>
 		<method name="move_and_slide">

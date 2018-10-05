@@ -230,7 +230,7 @@
 			The amount of columns.
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags">
-			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants. Once dropping is done, reverts to [code]DROP_MODE_DISABLED[/code]. Setting this during [method can_drop_data] is recommended.
+			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants. Once dropping is done, reverts to [code]DROP_MODE_DISABLED[/code]. Setting this during [method Control.can_drop_data] is recommended.
 		</member>
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden">
 			If [code]true[/code] the folding arrow is hidden.
