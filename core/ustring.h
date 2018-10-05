@@ -232,6 +232,7 @@ public:
 	String rstrip(const String &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
+	String get_basename(const String &file_extension) const;
 	String plus_file(const String &p_file) const;
 	CharType ord_at(int p_idx) const;
 

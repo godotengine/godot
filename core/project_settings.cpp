@@ -324,8 +324,9 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	if (exec_path != "") {
 		bool found = false;
 
-		// get our filename without our path (note, using exec_path.get_file before get_basename anymore because not all file systems have dots in their file names!)
-		String filebase_name = exec_path.get_file().get_basename();
+		// We want to get the filename without the extension (no .exe on Windows or .app on Mac) without
+		// breaking the executables that don't have file extensions but do have periods in their names
+		String filebase_name = exec_path.get_file().get_basename(OS::get_singleton()->get_executable_extension());
 
 		// try to open at the location of executable
 		String datapack_name = exec_path.get_base_dir().plus_file(filebase_name) + ".pck";

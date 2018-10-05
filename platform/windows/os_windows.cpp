@@ -2064,6 +2064,11 @@ String OS_Windows::get_name() {
 	return "Windows";
 }
 
+String OS_Windows::get_executable_extension() const {
+
+	return ".exe";
+}
+
 OS::Date OS_Windows::get_date(bool utc) const {
 
 	SYSTEMTIME systemtime;

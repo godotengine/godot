@@ -245,6 +245,7 @@ public:
 	virtual MainLoop *get_main_loop() const;
 
 	virtual String get_name();
+	virtual String get_executable_extension() const;
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;

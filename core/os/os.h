@@ -269,6 +269,7 @@ public:
 	virtual String get_name() = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual String get_model_name() const;
+	virtual String get_executable_extension() const { return "."; }	// may be too specific or not specific enough for some platforms
 
 	virtual MainLoop *get_main_loop() const = 0;
 

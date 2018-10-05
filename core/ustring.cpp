@@ -3887,8 +3887,11 @@ String String::percent_decode() const {
 }
 
 String String::get_basename() const {
+	return get_basename(".");
+}
 
-	int pos = find_last(".");
+String String::get_basename(const String &file_extension) const {
+	int pos = to_lower().find_last(file_extension.to_lower());
 	if (pos < 0 || pos < MAX(find_last("/"), find_last("\\")))
 		return *this;
 

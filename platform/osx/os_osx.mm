@@ -1436,6 +1436,11 @@ String OS_OSX::get_name() {
 	return "OSX";
 }
 
+String OS_OSX::get_executable_extension() const {
+
+	return ".app";
+}
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
 class OSXTerminalLogger : public StdLogger {
 public:
