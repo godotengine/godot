@@ -4,7 +4,7 @@ namespace Godot
     {
         public T GetNode<T>(NodePath path) where T : class
         {
-            return (T)GetNode(path);
+            return (T)(object)GetNode(path);
         }
 
         public T GetNodeOrNull<T>(NodePath path) where T : class
@@ -14,7 +14,7 @@ namespace Godot
 
         public T GetChild<T>(int idx) where T : class
         {
-            return (T)GetChild(idx);
+            return (T)(object)GetChild(idx);
         }
 
         public T GetChildOrNull<T>(int idx) where T : class
@@ -24,7 +24,7 @@ namespace Godot
 
         public T GetOwner<T>() where T : class
         {
-            return (T)GetOwner();
+            return (T)(object)GetOwner();
         }
 
         public T GetOwnerOrNull<T>() where T : class
@@ -34,7 +34,7 @@ namespace Godot
 
         public T GetParent<T>() where T : class
         {
-            return (T)GetParent();
+            return (T)(object)GetParent();
         }
 
         public T GetParentOrNull<T>() where T : class
