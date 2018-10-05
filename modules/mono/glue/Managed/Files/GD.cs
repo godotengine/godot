@@ -67,7 +67,7 @@ namespace Godot
 
         public static T Load<T>(string path) where T : class
         {
-            return (T) ResourceLoader.Load(path);
+            return ResourceLoader.Load<T>(path);
         }
 
         public static void Print(params object[] what)
