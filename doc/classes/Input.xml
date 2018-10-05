@@ -55,6 +55,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
 			</description>
 		</method>
 		<method name="get_connected_joypads">
