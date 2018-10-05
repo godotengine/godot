@@ -159,7 +159,10 @@ void ColorPicker::_html_entered(const String &p_html) {
 	if (updating)
 		return;
 
+	float last_alpha = color.a;
 	color = Color::html(p_html);
+	if (!is_editing_alpha())
+		color.a = last_alpha;
 
 	if (!is_inside_tree())
 		return;
