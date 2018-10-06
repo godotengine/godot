@@ -1198,7 +1198,9 @@ void Image::expand_x2_hq2x() {
 	if (current != FORMAT_RGBA8)
 		convert(current);
 
-	if (used_mipmaps) {
+	// FIXME: This is likely meant to use "used_mipmaps" as defined above, but if we do,
+	// we end up with a regression: GH-22747
+	if (mipmaps) {
 		generate_mipmaps();
 	}
 }
