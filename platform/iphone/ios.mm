@@ -39,8 +39,20 @@ void iOS::_bind_methods() {
 };
 
 void iOS::alert(const char *p_alert, const char *p_title) {
-	UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[NSString stringWithUTF8String:p_title] message:[NSString stringWithUTF8String:p_alert] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
-	[alert show];
+	NSString *titleString = [NSString stringWithUTF8String:p_title];
+	NSString *messageString = [NSString stringWithUTF8String:p_alert];
+
+	// Create an alert controller with an OK button for these strings
+	UIAlertController *controller = [UIAlertController alertControllerWithTitle:titleString
+																		message:messageString
+																 preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+	[controller addAction:okAction];
+
+	// Finally present the alert
+	[[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:controller
+																			  animated:YES
+																			completion:nil];
 }
 
 String iOS::get_model() const {
