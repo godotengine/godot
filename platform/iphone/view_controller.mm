@@ -72,16 +72,12 @@ int add_cmdline(int p_argc, char **p_args) {
 };
 }; // extern "C"
 
-@interface ViewController ()
-
-@end
-
 @implementation ViewController
 
-- (void)didReceiveMemoryWarning {
-
-	printf("*********** did receive memory warning!\n");
-};
+- (void)loadView {
+	const CGRect frame = [UIApplication sharedApplication].keyWindow.bounds;
+	self.view = [[GLView alloc] initWithFrame:frame];
+}
 
 - (void)viewDidLoad {
 	[super viewDidLoad];

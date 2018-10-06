@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 	gargv = argv;
 
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	AppDelegate *app = [AppDelegate alloc];
+	AppDelegate *app = [[AppDelegate alloc] init];
 	printf("running app main\n");
 	UIApplicationMain(argc, argv, nil, @"AppDelegate");
 	printf("main done, pool release\n");

@@ -28,20 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "gl_view.h"
-#import "view_controller.h"
+#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import <CoreMotion/CoreMotion.h>
+#import "gl_view.h"
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
-	//@property (strong, nonatomic) UIWindow *window;
-	ViewController *view_controller;
-	bool is_focus_out;
-};
+@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate>
 
 @property(strong, nonatomic) UIWindow *window;
-
-+ (ViewController *)getViewController;
+@property(assign, nonatomic, getter=isFocused) BOOL focused;
 
 @end
