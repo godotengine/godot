@@ -3542,7 +3542,10 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		case INT: {
 			int64_t va = a._data._int;
 			int64_t vb = b._data._int;
-			r_dst = int((1.0 - c) * va + vb * c);
+			if (va != vb)
+				r_dst = int((1.0 - c) * va + vb * c);
+			else //avoid int casting issues
+				r_dst = a;
 		}
 			return;
 		case REAL: {
