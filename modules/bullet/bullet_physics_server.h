@@ -60,13 +60,6 @@ class BulletPhysicsServer : public PhysicsServer {
 	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
 	mutable RID_Owner<JointBullet> joint_owner;
 
-private:
-	/// This is used as replacement of collision shape inside a compound or main shape
-	static btEmptyShape *emptyShape;
-
-public:
-	static btEmptyShape *get_empty_shape();
-
 protected:
 	static void _bind_methods();
 

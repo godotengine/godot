@@ -279,9 +279,10 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	// Initial properties
 	const btVector3 localInertia(0, 0, 0);
-	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, BulletPhysicsServer::get_empty_shape(), localInertia);
+	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, godotMotionState, NULL, localInertia);
 
 	btBody = bulletnew(btRigidBody(cInfo));
+	reload_shapes();
 	setupBulletCollisionObject(btBody);
 
 	set_mode(PhysicsServer::BODY_MODE_RIGID);
@@ -314,11 +315,9 @@ void RigidBodyBullet::destroy_kinematic_utilities() {
 	}
 }
 
-void RigidBodyBullet::main_shape_resetted() {
-	if (get_main_shape())
-		btBody->setCollisionShape(get_main_shape());
-	else
-		btBody->setCollisionShape(BulletPhysicsServer::get_empty_shape());
+void RigidBodyBullet::main_shape_changed() {
+	CRASH_COND(!get_main_shape())
+	btBody->setCollisionShape(get_main_shape());
 	set_continuous_collision_detection(is_continuous_collision_detection_enabled()); // Reset
 }
 
@@ -791,8 +790,8 @@ const btTransform &RigidBodyBullet::get_transform__bullet() const {
 	}
 }
 
-void RigidBodyBullet::on_shapes_changed() {
-	RigidCollisionObjectBullet::on_shapes_changed();
+void RigidBodyBullet::reload_shapes() {
+	RigidCollisionObjectBullet::reload_shapes();
 
 	const btScalar invMass = btBody->getInvMass();
 	const btScalar mass = invMass == 0 ? 0 : 1 / invMass;

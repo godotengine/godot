@@ -65,7 +65,8 @@ btCollisionShape *ShapeBullet::prepare(btCollisionShape *p_btShape) const {
 
 void ShapeBullet::notifyShapeChanged() {
 	for (Map<ShapeOwnerBullet *, int>::Element *E = owners.front(); E; E = E->next()) {
-		static_cast<ShapeOwnerBullet *>(E->key())->on_shape_changed(this);
+		ShapeOwnerBullet *owner = static_cast<ShapeOwnerBullet *>(E->key());
+		owner->shape_changed(owner->find_shape(this));
 	}
 }
 

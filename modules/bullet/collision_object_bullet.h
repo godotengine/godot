@@ -157,7 +157,7 @@ public:
 	void set_body_scale(const Vector3 &p_new_scale);
 	const Vector3 &get_body_scale() const { return body_scale; }
 	btVector3 get_bt_body_scale() const;
-	virtual void on_body_scale_changed();
+	virtual void body_scale_changed();
 
 	void add_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
 	void remove_collision_exception(const CollisionObjectBullet *p_ignoreCollisionObject);
@@ -185,7 +185,7 @@ public:
 	virtual void reload_body() = 0;
 	virtual void set_space(SpaceBullet *p_space) = 0;
 	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
-	/// This is an event that is called when a collision checker starts
+
 	virtual void on_collision_checker_start() = 0;
 
 	virtual void dispatch_callbacks() = 0;
@@ -197,7 +197,6 @@ public:
 	virtual void on_enter_area(AreaBullet *p_area) = 0;
 	virtual void on_exit_area(AreaBullet *p_area);
 
-	/// GodotObjectFlags
 	void set_godot_object_flags(int flags);
 	int get_godot_object_flags() const;
 
@@ -209,7 +208,6 @@ public:
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
 protected:
-	/// This could be a compound shape in case multi please collision are found
 	btCollisionShape *mainShape;
 	Vector<ShapeWrapper> shapes;
 
@@ -219,31 +217,34 @@ public:
 
 	_FORCE_INLINE_ const Vector<ShapeWrapper> &get_shapes_wrappers() const { return shapes; }
 
-	/// This is used to set new shape or replace existing
-	//virtual void _internal_replaceShape(btCollisionShape *p_old_shape, btCollisionShape *p_new_shape) = 0;
+	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
+
 	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform());
 	void set_shape(int p_index, ShapeBullet *p_shape);
-	void set_shape_transform(int p_index, const Transform &p_transform);
-	virtual void remove_shape(ShapeBullet *p_shape);
-	void remove_shape(int p_index);
-	void remove_all_shapes(bool p_permanentlyFromThisBody = false);
-
-	virtual void on_shape_changed(const ShapeBullet *const p_shape);
-	virtual void on_shapes_changed();
-
-	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
 	int get_shape_count() const;
 	ShapeBullet *get_shape(int p_index) const;
 	btCollisionShape *get_bt_shape(int p_index) const;
+
+	int find_shape(ShapeBullet *p_shape) const;
+
+	virtual void remove_shape_full(ShapeBullet *p_shape);
+	void remove_shape_full(int p_index);
+	void remove_all_shapes(bool p_permanentlyFromThisBody = false);
+
+	void set_shape_transform(int p_index, const Transform &p_transform);
+
 	const btTransform &get_bt_shape_transform(int p_index) const;
 	Transform get_shape_transform(int p_index) const;
 
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);
 
-	virtual void main_shape_resetted() = 0;
-	virtual void on_body_scale_changed();
+	virtual void shape_changed(int p_shape_index);
+	virtual void reload_shapes();
+
+	virtual void main_shape_changed() = 0;
+	virtual void body_scale_changed();
 
 private:
 	void internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody = false);

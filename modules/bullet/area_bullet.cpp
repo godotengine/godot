@@ -58,7 +58,7 @@ AreaBullet::AreaBullet() :
 		isScratched(false) {
 
 	btGhost = bulletnew(btGhostObject);
-	btGhost->setCollisionShape(BulletPhysicsServer::get_empty_shape());
+	reload_shapes();
 	setupBulletCollisionObject(btGhost);
 	/// Collision objects with a callback still have collision response with dynamic rigid bodies.
 	/// In order to use collision objects as trigger, you have to disable the collision response.
@@ -166,11 +166,9 @@ bool AreaBullet::is_monitoring() const {
 	return get_godot_object_flags() & GOF_IS_MONITORING_AREA;
 }
 
-void AreaBullet::main_shape_resetted() {
-	if (get_main_shape())
-		btGhost->setCollisionShape(get_main_shape());
-	else
-		btGhost->setCollisionShape(BulletPhysicsServer::get_empty_shape());
+void AreaBullet::main_shape_changed() {
+	CRASH_COND(!get_main_shape())
+	btGhost->setCollisionShape(get_main_shape());
 }
 
 void AreaBullet::reload_body() {
