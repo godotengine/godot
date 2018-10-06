@@ -1,11 +1,6 @@
 #import "gamepad_iphone.h"
-#import "app_delegate.h"
-#import "core/project_settings.h"
 #import "os_iphone.h"
-
-void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
-	[[GamepadManager sharedManager] addController:controller];
-}
+#import <GameController/GameController.h>
 
 @interface GamepadManager ()
 
@@ -33,8 +28,6 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 		self.gamepads = [NSMutableArray arrayWithCapacity:5];
 		self.pendingGamepads = [NSMutableArray arrayWithCapacity:3];
 
-		// this will be called immediately for all
-		// connected controllers
 		[[NSNotificationCenter defaultCenter]
 				addObserver:self
 				   selector:@selector(controllerWasConnected:)
@@ -60,6 +53,7 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 			removeObserver:self
 					  name:GCControllerDidDisconnectNotification
 					object:nil];
+	
 	[super dealloc];
 }
 
@@ -101,10 +95,6 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 - (void)controllerWasDisconnected:(NSNotification *)notification {
 	GCController *controller = (GCController *)notification.object;
 	if ([self.gamepads containsObject:controller]) {
-		// tell Godot this joystick is no longer there
-		int joy_id = [self getJoyIdForController:controller];
-		OSIPhone::get_singleton()->joy_connection_changed(joy_id, false, "");
-
 		[self removeController:controller];
 	}
 }
@@ -126,7 +116,6 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 		self.gamepadById[@(joy_id)] = controller;
 		[self.gamepads addObject:controller];
 
-		// set our input handler
 		[self setControllerInputHandler:controller];
 	} else {
 		printf("Couldn't retrieve new joy id\n");
@@ -134,9 +123,13 @@ void _ios_add_joystick(GCController *controller, AppDelegate *delegate) {
 }
 
 - (void)removeController:(GCController *)controller {
+	// tell Godot this joystick is no longer there
+	int joy_id = [self getJoyIdForController:controller];
+	OSIPhone::get_singleton()->joy_connection_changed(joy_id, false, "");
+
+	// Stop tracking internally
 	NSNumber *key = [self.gamepadById allKeysForObject:controller].firstObject;
 	[self.gamepadById removeObjectForKey:key];
-
 	[self.gamepads removeObject:controller];
 }
 

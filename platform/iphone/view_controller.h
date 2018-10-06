@@ -34,6 +34,6 @@
 
 @interface ViewController : UIViewController <GKGameCenterControllerDelegate>
 
-@property(nonatomic, strong) GLView *view;
+@property(readonly) GLView *glView;
 
 @end

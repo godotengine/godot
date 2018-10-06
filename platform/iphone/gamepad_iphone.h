@@ -1,8 +1,4 @@
-#import <GameController/GameController.h>
-
-@class AppDelegate;
-
-void _ios_add_joystick(GCController *controller, AppDelegate *delegate);
+#import <Foundation/Foundation.h>
 
 @interface GamepadManager : NSObject
 

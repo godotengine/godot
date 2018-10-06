@@ -108,24 +108,14 @@ static int frame_count = 0;
 			OSIPhone::get_singleton()->set_locale(
 					String::utf8([locale_code UTF8String]));
 
-			NSString *uuid;
-			if (NSClassFromString(@"NSUUID")) {
+			NSString *uuid = [[NSUserDefaults standardUserDefaults]
+					objectForKey:@"identiferForVendor"];
+			if (!uuid) {
 				uuid = [[NSUUID UUID] UUIDString];
-			} else if ([[UIDevice currentDevice]
-							   respondsToSelector:@selector(identifierForVendor)]) {
-				uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
-			} else {
-				// before iOS 6, so just generate an identifier and store it
-				uuid = [[NSUserDefaults standardUserDefaults]
-						objectForKey:@"identiferForVendor"];
-				if (!uuid) {
-					CFUUIDRef cfuuid = CFUUIDCreate(NULL);
-					uuid = (NSString *)CFUUIDCreateString(NULL, cfuuid);
-					CFRelease(cfuuid);
-					[[NSUserDefaults standardUserDefaults]
-							setObject:uuid
-							   forKey:@"identifierForVendor"];
-				}
+
+				[[NSUserDefaults standardUserDefaults]
+						setObject:uuid
+						   forKey:@"identifierForVendor"];
 			}
 			OSIPhone::get_singleton()->set_unique_id(String::utf8([uuid UTF8String]));
 
@@ -138,22 +128,19 @@ static int frame_count = 0;
 
 			[GamepadManager sharedManager].ready = YES;
 
-			NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
-			for (NSString *key in dict) {
+			NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
+			for (NSString *key in info) {
 				String ukey = String::utf8([key UTF8String]);
+				ukey += "Info.plist/";
 
-				NSObject *value = dict[key];
-				if ([value isKindOfClass:[NSString class]]) {
-					NSString *str = (NSString *)value;
-					String uval = String::utf8([str UTF8String]);
-
-					ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
-				} else if ([value isKindOfClass:[NSNumber class]]) {
+				id value = info[key];
+				if ([value isKindOfClass:NSString.class]) {
+					String uval = String::utf8([value UTF8String]);
+					ProjectSettings::get_singleton()->set(ukey, uval);
+				} else if ([value isKindOfClass:NSNumber.class]) {
 					NSNumber *n = (NSNumber *)value;
-					double dval = [n doubleValue];
-
-					ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
-				};
+					ProjectSettings::get_singleton()->set(ukey, [n doubleValue]);
+				}
 			}
 
 		}; break;
@@ -287,10 +274,10 @@ static int frame_count = 0;
 	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true)) ? YES : NO);
 
 	// Create our engine view controller
-	UIViewController *rootVC = [[ViewController alloc] init];
+	ViewController *rootVC = [[ViewController alloc] init];
 	self.window.rootViewController = rootVC;
 
-	GLView *glView = rootVC.view;
+	GLView *glView = rootVC.glView;
 	glView.delegate = self;
 
 	glView.useCADisplayLink =
@@ -323,14 +310,12 @@ static int frame_count = 0;
 };
 
 - (void)onAudioInterruption:(NSNotification *)notification {
-	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
-		if ([notification.userInfo[AVAudioSessionInterruptionTypeKey] isEqualToNumber:@(AVAudioSessionInterruptionTypeBegan)]) {
-			NSLog(@"Audio interruption began. Details: %@", notification.userInfo);
-			[self toggleFocus:NO];
-		} else if ([notification.userInfo[AVAudioSessionInterruptionTypeKey] isEqualToNumber:@(AVAudioSessionInterruptionTypeEnded)]) {
-			NSLog(@"Audio interruption ended. Details: %@", notification.userInfo);
-			[self toggleFocus:YES];
-		}
+	NSLog(@"Audio interruption. Details: %@", notification.userInfo);
+
+	if ([notification.userInfo[AVAudioSessionInterruptionTypeKey] isEqualToNumber:@(AVAudioSessionInterruptionTypeBegan)]) {
+		[self toggleFocus:NO];
+	} else if ([notification.userInfo[AVAudioSessionInterruptionTypeKey] isEqualToNumber:@(AVAudioSessionInterruptionTypeEnded)]) {
+		[self toggleFocus:YES];
 	}
 }
 
@@ -363,10 +348,11 @@ static int frame_count = 0;
 		}
 
 		// OpenGL Animation
+		ViewController *viewController = (ViewController *)self.window.rootViewController;
 		if (self.isFocused) {
-			[self.window.rootViewController.view startAnimation];
+			[viewController.glView startAnimation];
 		} else {
-			[self.window.rootViewController.view stopAnimation];
+			[viewController.glView stopAnimation];
 		}
 
 		// Native Video
