@@ -671,14 +671,18 @@ Error GDMono::_unload_scripts_domain() {
 
 	print_verbose("Mono: Unloading scripts domain...");
 
-	_GodotSharp::get_singleton()->_dispose_callback();
-
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
 
 	mono_gc_collect(mono_gc_max_generation());
 
-	mono_domain_finalize(scripts_domain, 2000);
+	finalizing_scripts_domain = true;
+
+	if (!mono_domain_finalize(scripts_domain, 2000)) {
+		ERR_PRINT("Mono: Domain finalization timeout");
+	}
+
+	finalizing_scripts_domain = false;
 
 	mono_gc_collect(mono_gc_max_generation());
 
@@ -695,8 +699,6 @@ Error GDMono::_unload_scripts_domain() {
 
 	MonoDomain *domain = scripts_domain;
 	scripts_domain = NULL;
-
-	_GodotSharp::get_singleton()->_dispose_callback();
 
 	MonoException *exc = NULL;
 	mono_domain_try_unload(domain, (MonoObject **)&exc);
@@ -800,7 +802,9 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 		mono_domain_set(root_domain, true);
 
 	mono_gc_collect(mono_gc_max_generation());
-	mono_domain_finalize(p_domain, 2000);
+	if (!mono_domain_finalize(p_domain, 2000)) {
+		ERR_PRINT("Mono: Domain finalization timeout");
+	}
 	mono_gc_collect(mono_gc_max_generation());
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
@@ -875,6 +879,7 @@ GDMono::GDMono() {
 	gdmono_log = memnew(GDMonoLog);
 
 	runtime_initialized = false;
+	finalizing_scripts_domain = false;
 
 	root_domain = NULL;
 	scripts_domain = NULL;
@@ -941,29 +946,6 @@ GDMono::~GDMono() {
 
 _GodotSharp *_GodotSharp::singleton = NULL;
 
-void _GodotSharp::_dispose_callback() {
-
-#ifndef NO_THREADS
-	queue_mutex->lock();
-#endif
-
-	for (List<NodePath *>::Element *E = np_delete_queue.front(); E; E = E->next()) {
-		memdelete(E->get());
-	}
-
-	for (List<RID *>::Element *E = rid_delete_queue.front(); E; E = E->next()) {
-		memdelete(E->get());
-	}
-
-	np_delete_queue.clear();
-	rid_delete_queue.clear();
-	queue_empty = true;
-
-#ifndef NO_THREADS
-	queue_mutex->unlock();
-#endif
-}
-
 void _GodotSharp::attach_thread() {
 
 	GDMonoUtils::attach_current_thread();
@@ -1012,6 +994,8 @@ bool _GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
 
 	if (!p_domain)
 		return true;
+	if (p_domain == SCRIPTS_DOMAIN && GDMono::get_singleton()->is_finalizing_scripts_domain())
+		return true;
 	return mono_domain_is_unloading(p_domain);
 }
 
@@ -1023,49 +1007,6 @@ bool _GodotSharp::is_runtime_shutting_down() {
 bool _GodotSharp::is_runtime_initialized() {
 
 	return GDMono::get_singleton()->is_runtime_initialized();
-}
-
-#define ENQUEUE_FOR_DISPOSAL(m_queue, m_inst)                                                            \
-	m_queue.push_back(m_inst);                                                                           \
-	if (queue_empty) {                                                                                   \
-		queue_empty = false;                                                                             \
-		if (!is_domain_finalizing_for_unload(SCRIPTS_DOMAIN)) { /* call_deferred may not be safe here */ \
-			call_deferred("_dispose_callback");                                                          \
-		}                                                                                                \
-	}
-
-void _GodotSharp::queue_dispose(NodePath *p_node_path) {
-
-	if (GDMonoUtils::is_main_thread() && !is_domain_finalizing_for_unload(SCRIPTS_DOMAIN)) {
-		memdelete(p_node_path);
-	} else {
-#ifndef NO_THREADS
-		queue_mutex->lock();
-#endif
-
-		ENQUEUE_FOR_DISPOSAL(np_delete_queue, p_node_path);
-
-#ifndef NO_THREADS
-		queue_mutex->unlock();
-#endif
-	}
-}
-
-void _GodotSharp::queue_dispose(RID *p_rid) {
-
-	if (GDMonoUtils::is_main_thread() && !is_domain_finalizing_for_unload(SCRIPTS_DOMAIN)) {
-		memdelete(p_rid);
-	} else {
-#ifndef NO_THREADS
-		queue_mutex->lock();
-#endif
-
-		ENQUEUE_FOR_DISPOSAL(rid_delete_queue, p_rid);
-
-#ifndef NO_THREADS
-		queue_mutex->unlock();
-#endif
-	}
 }
 
 void _GodotSharp::_bind_methods() {
@@ -1080,8 +1021,6 @@ void _GodotSharp::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_runtime_shutting_down"), &_GodotSharp::is_runtime_shutting_down);
 	ClassDB::bind_method(D_METHOD("is_runtime_initialized"), &_GodotSharp::is_runtime_initialized);
-
-	ClassDB::bind_method(D_METHOD("_dispose_callback"), &_GodotSharp::_dispose_callback);
 }
 
 _GodotSharp::_GodotSharp() {

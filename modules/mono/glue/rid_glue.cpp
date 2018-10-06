@@ -45,7 +45,7 @@ RID *godot_icall_RID_Ctor(Object *p_from) {
 
 void godot_icall_RID_Dtor(RID *p_ptr) {
 	ERR_FAIL_NULL(p_ptr);
-	_GodotSharp::get_singleton()->queue_dispose(p_ptr);
+	memdelete(p_ptr);
 }
 
 uint32_t godot_icall_RID_get_id(RID *p_ptr) {
