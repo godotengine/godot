@@ -419,8 +419,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.call_count++;
 		profile.frame_call_count++;
 	}
-#endif
 	bool exit_ok = false;
+#endif
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -679,8 +679,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(src, 2);
 
 				bool valid;
+#ifndef DEBUG_ENABLED
+				ClassDB::set_property(p_instance->owner, *index, *src, &valid);
+#else
 				bool ok = ClassDB::set_property(p_instance->owner, *index, *src, &valid);
-#ifdef DEBUG_ENABLED
 				if (!ok) {
 					err_text = "Internal error setting property: " + String(*index);
 					OPCODE_BREAK;
@@ -700,9 +702,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
 				const StringName *index = &_global_names_ptr[indexname];
 				GET_VARIANT_PTR(dst, 2);
-				bool ok = ClassDB::get_property(p_instance->owner, *index, *dst);
 
-#ifdef DEBUG_ENABLED
+#ifndef DEBUG_ENABLED
+				ClassDB::get_property(p_instance->owner, *index, *dst);
+#else
+				bool ok = ClassDB::get_property(p_instance->owner, *index, *dst);
 				if (!ok) {
 					err_text = "Internal error getting property: " + String(*index);
 					OPCODE_BREAK;
@@ -749,13 +753,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_ASSIGN_TYPED_BUILTIN) {
 
 				CHECK_SPACE(4);
-				Variant::Type var_type = (Variant::Type)_code_ptr[ip + 1];
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
+#ifdef DEBUG_ENABLED
+				Variant::Type var_type = (Variant::Type)_code_ptr[ip + 1];
 				GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
 
-#ifdef DEBUG_ENABLED
 				if (src->get_type() != var_type) {
 					if (Variant::can_convert_strict(src->get_type(), var_type)) {
 						Variant::CallError ce;
@@ -779,11 +783,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_ASSIGN_TYPED_NATIVE) {
 
 				CHECK_SPACE(4);
-				GET_VARIANT_PTR(type, 1);
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
 #ifdef DEBUG_ENABLED
+				GET_VARIANT_PTR(type, 1);
 				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(type->operator Object *());
 				GD_ERR_BREAK(!nc);
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
@@ -808,11 +812,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_ASSIGN_TYPED_SCRIPT) {
 
 				CHECK_SPACE(4);
-				GET_VARIANT_PTR(type, 1);
 				GET_VARIANT_PTR(dst, 2);
 				GET_VARIANT_PTR(src, 3);
 
 #ifdef DEBUG_ENABLED
+				GET_VARIANT_PTR(type, 1);
 				Script *base_type = Object::cast_to<Script>(type->operator Object *());
 
 				GD_ERR_BREAK(!base_type);
@@ -1310,7 +1314,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 				}
 
+#ifdef DEBUG_ENABLED
 				exit_ok = true;
+#endif
 				OPCODE_BREAK;
 			}
 
@@ -1387,7 +1393,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				CHECK_SPACE(2);
 				GET_VARIANT_PTR(r, 1);
 				retvalue = *r;
+#ifdef DEBUG_ENABLED
 				exit_ok = true;
+#endif
 				OPCODE_BREAK;
 			}
 
@@ -1459,9 +1467,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_ASSERT) {
 				CHECK_SPACE(2);
-				GET_VARIANT_PTR(test, 1);
 
 #ifdef DEBUG_ENABLED
+				GET_VARIANT_PTR(test, 1);
 				bool result = test->booleanize();
 
 				if (!result) {
@@ -1516,8 +1524,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_END) {
-
+#ifdef DEBUG_ENABLED
 				exit_ok = true;
+#endif
 				OPCODE_BREAK;
 			}
 
