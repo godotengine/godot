@@ -1619,7 +1619,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 				Vector3(-0.700629, -0.509037, 0.5),
 				Vector3(0.267617, -0.823639, 0.5)
 			};
-			static const float weights[6] = { 0.25, 0.15, 0.15, 0.15, 0.15, 0.15 };
+			static const float weights[6] = { 0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f };
 			//
 			cone_dirs = dirs;
 			cone_dir_count = 6;
@@ -1641,7 +1641,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 				Vector3(0.19124006749743122, 0.39355745585016605, 0.8991883926788214),
 				Vector3(0.19124006749743122, -0.39355745585016605, 0.8991883926788214),
 			};
-			static const float weights[10] = { 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.133333, 0.133333, 0.13333 };
+			static const float weights[10] = { 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.133333f, 0.133333f, 0.13333f };
 			cone_dirs = dirs;
 			cone_dir_count = 10;
 			cone_aperture = 0.404; // tan(angle) 45 degrees
@@ -1875,7 +1875,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 		if (bake_mode == BAKE_MODE_RAY_TRACE) {
 			//blur
 			//gauss kernel, 7 step sigma 2
-			static const float gauss_kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
+			static const float gauss_kernel[4] = { 0.214607f, 0.189879f, 0.131514f, 0.071303f };
 			//horizontal pass
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
