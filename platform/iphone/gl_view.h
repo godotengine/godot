@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <AVFoundation/AVFoundation.h>
+#import <Foundation/Foundation.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
@@ -50,9 +50,6 @@
 	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
 	GLuint depthRenderbuffer;
 
-	// CADisplayLink available on 3.1+ synchronizes the animation timer & drawing with the refresh rate of the display, only supports animation intervals of 1/60 1/30 & 1/15
-	CADisplayLink *_displayLink;
-
 	// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
 	NSTimer *animationTimer;
 	// I'd like to remove the above as an option
@@ -60,18 +57,13 @@
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;
 
-@property(strong, nonatomic) AVAsset *avAsset;
-@property(strong, nonatomic) AVPlayerItem *avPlayerItem;
-@property(strong, nonatomic) AVPlayer *avPlayer;
-@property(strong, nonatomic) AVPlayerLayer *avPlayerLayer;
-
 @property (strong, nonatomic) UIWindow *backgroundWindow;
 
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;
-@property (assign) NSTimeInterval animationInterval;
+@property (nonatomic, assign) NSTimeInterval animationInterval;
 @property (nonatomic, assign) BOOL useCADisplayLink;
-@property (nonatomic, assign, getter=isActive) BOOL active;
-@property (nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
+@property(nonatomic, assign, getter=isActive) BOOL active;
+@property(nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
 
 - (void)startAnimation;
 - (void)stopAnimation;
@@ -81,10 +73,6 @@
 - (BOOL)hasText;
 - (void)insertText:(NSString *)p_text;
 
-- (BOOL)createFramebuffer;
-- (void)destroyFramebuffer;
-
-- (void)audioRouteChangeListenerCallback:(NSNotification *)notification;
 - (void)keyboardOnScreen:(NSNotification *)notification;
 - (void)keyboardHidden:(NSNotification *)notification;
 

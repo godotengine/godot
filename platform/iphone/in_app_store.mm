@@ -31,36 +31,15 @@
 #ifdef STOREKIT_ENABLED
 
 #import "in_app_store.h"
-
-extern "C" {
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-};
+
+InAppStore *InAppStore::instance = NULL;
 
 bool auto_finish_transactions = true;
 NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
 
-@interface SKProduct (LocalizedPrice)
-
-@property(nonatomic, readonly) NSString *localizedPrice;
-
-@end
-
-@implementation SKProduct (LocalizedPrice)
-
-- (NSString *)localizedPrice {
-	NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-	[numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
-	[numberFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-	[numberFormatter setLocale:self.priceLocale];
-	NSString *formattedString = [numberFormatter stringFromNumber:self.price];
-	[numberFormatter release];
-	return formattedString;
-}
-
-@end
-
-InAppStore *InAppStore::instance = NULL;
+static Dictionary TransactionDictionary(SKPaymentTransaction *transaction);
 
 void InAppStore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_product_info"), &InAppStore::request_product_info);
@@ -73,29 +52,15 @@ void InAppStore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_finish_transaction"), &InAppStore::set_auto_finish_transaction);
 }
 
-static inline Dictionary TransactionDictionary(SKPaymentTransaction *transaction) {
-	Dictionary ret;
-	ret["result"] = "ok";
-	ret["product_id"] = String::utf8([transaction.payment.productIdentifier UTF8String]);
-	if (transaction.transactionState == SKPaymentTransactionStatePurchased) {
-		ret["type"] = "purchase";
-		ret["transaction_id"] = String::utf8([transaction.transactionIdentifier UTF8String]);
-	} else if (transaction.transactionState == SKPaymentTransactionStateFailed) {
-		ret["type"] = "purchase";
-		ret["error"] = String::utf8([transaction.error.localizedDescription UTF8String]);
-	} else if (transaction.transactionState == SKPaymentTransactionStateRestored) {
-		ret["type"] = "restore";
-	}
-	return ret;
-}
-
-@interface ProductsDelegate : NSObject <SKProductsRequestDelegate>
+@interface ProductsDelegate : NSObject <SKProductsRequestDelegate, SKPaymentTransactionObserver>
 
 @end
 
 @implementation ProductsDelegate
 
-- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
+#pragma mark - SKProductsRequestDelegate
+- (void)productsRequest:(SKProductsRequest *)request
+		didReceiveResponse:(SKProductsResponse *)response {
 	PoolStringArray titles;
 	PoolStringArray descriptions;
 	PoolRealArray prices;
@@ -110,7 +75,7 @@ static inline Dictionary TransactionDictionary(SKPaymentTransaction *transaction
 		descriptions.push_back(String::utf8(description != NULL ? description : ""));
 		prices.push_back([product.price doubleValue]);
 		ids.push_back(String::utf8([product.productIdentifier UTF8String]));
-		localized_prices.push_back(String::utf8([product.localizedPrice UTF8String]));
+		localized_prices.push_back(String::utf8([[self localizedPrice:product] UTF8String]));
 		currency_codes.push_back(String::utf8([[[product priceLocale] objectForKey:NSLocaleCurrencyCode] UTF8String]));
 	}
 
@@ -132,11 +97,97 @@ static inline Dictionary TransactionDictionary(SKPaymentTransaction *transaction
 	ret["invalid_ids"] = invalid_ids;
 
 	InAppStore::get_singleton()->_post_event(ret);
+}
 
-	[request release];
+#pragma mark - SKPaymentTransactionObserver
+- (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions {
+	for (SKPaymentTransaction *transaction in transactions) {
+		// Create a variant with this info
+		Dictionary ret = TransactionDictionary(transaction);
+		String pid = String::utf8([transaction.payment.productIdentifier UTF8String]);
+
+		switch (transaction.transactionState) {
+			case SKPaymentTransactionStatePurchased: {
+				printf("status purchased!\n");
+				InAppStore::get_singleton()->_record_purchase(pid);
+
+				// Get the transaction receipt file path location in the app 
+				// bundle and read the contents
+				NSURL *receiptFileURL = [[NSBundle mainBundle] appStoreReceiptURL];
+				NSData *receipt = [NSData dataWithContentsOfURL:receiptFileURL];
+
+				// Send the receipt back to Godot
+				Dictionary receipt_ret;
+				receipt_ret["receipt"] = String::utf8(receipt != nil ? [receipt.description UTF8String] : "");
+				receipt_ret["sdk"] = 7;
+				ret["receipt"] = receipt_ret;
+
+				if (auto_finish_transactions) {
+					[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+				} else {
+					pending_transactions[transaction.payment.productIdentifier] = transaction;
+				}
+				break;
+			}
+			case SKPaymentTransactionStateFailed: {
+				printf("status transaction failed!\n");
+				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+				break;
+			} 
+			case SKPaymentTransactionStateRestored: {
+				printf("status transaction restored!\n");
+				InAppStore::get_singleton()->_record_purchase(pid);
+				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+				break;
+			} 
+			default: {
+				printf("status default %i!\n", (int)transaction.transactionState);
+				break;
+			}
+		}
+
+		// Send the variant back to Godot
+		InAppStore::get_singleton()->_post_event(ret);
+	}
+}
+
+#pragma mark - Helpers
+- (NSString *)localizedPrice:(SKProduct *)product {
+	NSNumberFormatter *numberFormatter = [self.class cachedPriceFormatter];
+	[numberFormatter setLocale:product.priceLocale];
+	return [numberFormatter stringFromNumber:product.price];
+}
+
++ (NSNumberFormatter *)cachedPriceFormatter {
+	static dispatch_once_t onceToken;
+	static NSNumberFormatter *gPriceFormatter = nil;
+	dispatch_once(&onceToken, ^{
+		gPriceFormatter = [[NSNumberFormatter alloc] init];
+		[gPriceFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
+		[gPriceFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+	});
+	return gPriceFormatter;
 }
 
 @end
+
+ProductsDelegate *gProductsDelegate = [[ProductsDelegate alloc] init];
+
+static inline Dictionary TransactionDictionary(SKPaymentTransaction *transaction) {
+	Dictionary ret;
+	ret["result"] = "ok";
+	ret["product_id"] = String::utf8([transaction.payment.productIdentifier UTF8String]);
+	if (transaction.transactionState == SKPaymentTransactionStatePurchased) {
+		ret["type"] = "purchase";
+		ret["transaction_id"] = String::utf8([transaction.transactionIdentifier UTF8String]);
+	} else if (transaction.transactionState == SKPaymentTransactionStateFailed) {
+		ret["type"] = "purchase";
+		ret["error"] = String::utf8([transaction.error.localizedDescription UTF8String]);
+	} else if (transaction.transactionState == SKPaymentTransactionStateRestored) {
+		ret["type"] = "restore";
+	}
+	return ret;
+}
 
 Error InAppStore::request_product_info(Variant p_params) {
 
@@ -152,12 +203,9 @@ Error InAppStore::request_product_info(Variant p_params) {
 		[products addObject:@(pids[i].utf8().get_data())];
 	}
 
-	// Create a delegate to respond to this request
-	ProductsDelegate *delegate = [[ProductsDelegate alloc] init];
 	// Create a products request from the identifiers for StoreKit
 	SKProductsRequest *request = [[SKProductsRequest alloc] initWithProductIdentifiers:[products copy]];
-	request.delegate = delegate;
-	// Start the request
+	request.delegate = gProductsDelegate;
 	[request start];
 
 	return OK;
@@ -170,65 +218,6 @@ Error InAppStore::restore_purchases() {
 
 	return OK;
 }
-
-@interface TransObserver : NSObject <SKPaymentTransactionObserver>
-
-@end
-
-@implementation TransObserver
-
-- (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions {
-
-	printf("transactions updated!\n");
-	for (SKPaymentTransaction *transaction in transactions) {
-		// Create a variant with this info
-		Dictionary ret = TransactionDictionary(transaction);
-
-		String pid = String::utf8([transaction.payment.productIdentifier UTF8String]);
-
-		switch (transaction.transactionState) {
-			case SKPaymentTransactionStatePurchased: {
-				printf("status purchased!\n");
-				InAppStore::get_singleton()->_record_purchase(pid);
-
-				// Get the transaction receipt file path location in the app bundle.
-				NSURL *receiptFileURL = [[NSBundle mainBundle] appStoreReceiptURL];
-
-				// Read in the contents of the transaction file.
-				NSData *receipt = [NSData dataWithContentsOfURL:receiptFileURL];
-
-				Dictionary receipt_ret;
-				receipt_ret["receipt"] = String::utf8(receipt != nil ? [receipt.description UTF8String] : "");
-				receipt_ret["sdk"] = 7;
-				ret["receipt"] = receipt_ret;
-
-				if (auto_finish_transactions) {
-					[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-				} else {
-					[pending_transactions setObject:transaction forKey:transaction.payment.productIdentifier];
-				}
-
-			}; break;
-			case SKPaymentTransactionStateFailed: {
-				printf("status transaction failed!\n");
-				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-			} break;
-			case SKPaymentTransactionStateRestored: {
-				printf("status transaction restored!\n");
-				InAppStore::get_singleton()->_record_purchase(pid);
-				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-			} break;
-			default: {
-				printf("status default %i!\n", (int)transaction.transactionState);
-			}; break;
-		}
-
-		// Send the variant back to Godot
-		InAppStore::get_singleton()->_post_event(ret);
-	}
-}
-
-@end
 
 Error InAppStore::purchase(Variant p_params) {
 
@@ -286,8 +275,7 @@ InAppStore::InAppStore() {
 	instance = this;
 	auto_finish_transactions = false;
 
-	TransObserver *observer = [[TransObserver alloc] init];
-	[[SKPaymentQueue defaultQueue] addTransactionObserver:observer];
+	[[SKPaymentQueue defaultQueue] addTransactionObserver:gProductsDelegate];
 };
 
 void InAppStore::finish_transaction(String product_id) {

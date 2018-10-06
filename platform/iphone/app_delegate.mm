@@ -29,15 +29,13 @@
 /*************************************************************************/
 
 #import "app_delegate.h"
-#import "gamepad_iphone.h"
-#import "view_controller.h"
-#import <CoreMotion/CoreMotion.h>
-
 #import "core/project_settings.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
+#import "gamepad_iphone.h"
 #import "main/main.h"
 #import "os_iphone.h"
 
+#import <CoreMotion/CoreMotion.h>
 #import <AudioToolbox/AudioServices.h>
 
 #define kFilteringFactor 0.1
@@ -54,36 +52,26 @@ void _vibrate() {
 extern int gargc;
 extern char **gargv;
 extern int iphone_main(int, int, int, char **, String);
+
 extern void iphone_finish();
+
+extern void _set_keep_screen_on(bool p_enabled);
+extern OS::VideoMode _get_video_mode();
+
+@implementation AppDelegate
 
 CMMotionManager *motionManager;
 bool motionInitialised;
 
-OS::VideoMode _get_video_mode() {
-	int backingWidth;
-	int backingHeight;
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
-			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-	OS::VideoMode vm;
-	vm.fullscreen = true;
-	vm.width = backingWidth;
-	vm.height = backingHeight;
-	vm.resizable = false;
-	return vm;
-};
-
-static int frame_count = 0;
 - (void)drawView:(GLView *)view {
+	static int frame_count = 0;
 	switch (frame_count) {
 		case 0: {
-			OS::get_singleton()->set_video_mode(_get_video_mode());
-
 			if (!OS::get_singleton()) {
 				exit(0);
-			};
+			}
+
+			OS::get_singleton()->set_video_mode(_get_video_mode());
 			++frame_count;
 
 			NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
@@ -261,11 +249,6 @@ static int frame_count = 0;
 
 	GLView *glView = rootVC.glView;
 	glView.delegate = self;
-
-	glView.useCADisplayLink =
-			bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
-	printf("cadisaplylink: %d", glView.useCADisplayLink);
-
 	[glView startAnimation];
 
 	// Configure and start accelerometer

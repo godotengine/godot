@@ -53,7 +53,7 @@
 			removeObserver:self
 					  name:GCControllerDidDisconnectNotification
 					object:nil];
-	
+
 	[super dealloc];
 }
 

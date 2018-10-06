@@ -31,18 +31,9 @@
 #ifdef ICLOUD_ENABLED
 
 #include "icloud.h"
-
-#ifndef __IPHONE_9_0
-extern "C" {
-#endif
-
 #import "app_delegate.h"
 
 #import <Foundation/Foundation.h>
-
-#ifndef __IPHONE_9_0
-};
-#endif
 
 ICloud *ICloud::instance = NULL;
 

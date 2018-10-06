@@ -30,6 +30,7 @@
 
 #import "view_controller.h"
 #import "gl_view.h"
+#import "video_iphone.h"
 #import "os_iphone.h"
 
 @interface GodotGameViewController ()
@@ -51,6 +52,10 @@
 - (void)loadView {
 	const CGRect frame = [UIApplication sharedApplication].keyWindow.bounds;
 	self.view = [[GLView alloc] initWithFrame:frame];
+
+	MediaView *mediaView = [[MediaView alloc] initWithFrame:frame];
+	mediaView.hidden = YES;
+	[self.view addSubview:mediaView];
 }
 
 - (void)viewDidLoad {

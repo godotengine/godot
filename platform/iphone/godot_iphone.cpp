@@ -38,11 +38,8 @@
 
 static OSIPhone *os = NULL;
 
-extern "C" {
 int add_path(int p_argc, char **p_args);
 int add_cmdline(int p_argc, char **p_args);
-};
-
 int iphone_main(int, int, int, char **, String);
 
 int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
