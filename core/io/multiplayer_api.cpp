@@ -416,7 +416,7 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 
 		Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 
-		if (!F || F->get() == false) {
+		if (!F || !F->get()) {
 			// Path was not cached, or was cached but is unconfirmed.
 			if (!F) {
 				// Not cached at all, take note.

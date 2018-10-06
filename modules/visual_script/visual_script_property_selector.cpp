@@ -149,7 +149,7 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("PoolColorArray", "EditorIcons")
 		};
 
-		if (!seq_connect && visual_script_generic == false) {
+		if (!seq_connect && !visual_script_generic) {
 			get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/by_type/" + Variant::get_type_name(type), Set<String>(), found, root, search_box);
@@ -228,7 +228,7 @@ void VisualScriptPropertySelector::_update_search() {
 		}
 	}
 
-	if (seq_connect && visual_script_generic == false) {
+	if (seq_connect && !visual_script_generic) {
 		String text = search_box->get_text();
 		create_visualscript_item(String("VisualScriptCondition"), root, text, String("Condition"));
 		create_visualscript_item(String("VisualScriptSwitch"), root, text, String("Switch"));

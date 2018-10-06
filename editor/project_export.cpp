@@ -638,10 +638,10 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 
 		TreeItem *subdir = include_files->create_item(p_item);
-		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_only_scenes) == false) {
-			memdelete(subdir);
-		} else {
+		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_only_scenes)) {
 			used = true;
+		} else {
+			memdelete(subdir);
 		}
 	}
 

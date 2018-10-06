@@ -209,7 +209,7 @@ class PoolVector {
 		if (!alloc)
 			return;
 
-		if (alloc->refcount.unref() == false) {
+		if (!alloc->refcount.unref()) {
 			alloc = NULL;
 			return;
 		}

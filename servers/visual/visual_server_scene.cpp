@@ -2831,7 +2831,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if ((!probe_data->dynamic.light_cache_changes.has(rid) || !(probe_data->dynamic.light_cache_changes[rid] == lc)) && lc.visible) {
+		if ((!probe_data->dynamic.light_cache_changes.has(rid) || probe_data->dynamic.light_cache_changes[rid] != lc) && lc.visible) {
 			//erase light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, -1);
@@ -2844,7 +2844,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if ((!probe_data->dynamic.light_cache.has(rid) || !(probe_data->dynamic.light_cache[rid] == lc)) && lc.visible) {
+		if ((!probe_data->dynamic.light_cache.has(rid) || probe_data->dynamic.light_cache[rid] != lc) && lc.visible) {
 			//add light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, 1);
@@ -3061,7 +3061,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
 		lc.visible = E->get()->visible;
 
-		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
+		if (!probe_data->dynamic.light_cache.has(E->get()->self) || probe_data->dynamic.light_cache[E->get()->self] != lc) {
 			all_equal = false;
 		}
 
@@ -3081,7 +3081,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
 		lc.visible = E->get()->visible;
 
-		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
+		if (!probe_data->dynamic.light_cache.has(E->get()->self) || probe_data->dynamic.light_cache[E->get()->self] != lc) {
 			all_equal = false;
 		}
 
@@ -3164,7 +3164,7 @@ void VisualServerScene::render_probes() {
 			force_lighting = true;
 		}
 
-		if (probe->invalid == false && probe->dynamic.enabled) {
+		if (!probe->invalid && probe->dynamic.enabled) {
 
 			switch (probe->dynamic.updating_stage) {
 				case GI_UPDATE_STAGE_CHECK: {

@@ -796,14 +796,13 @@ Error AudioDriverWASAPI::capture_start() {
 		return err;
 	}
 
-	if (audio_input.active == false) {
-		audio_input.audio_client->Start();
-		audio_input.active = true;
-
-		return OK;
+	if (audio_input.active) {
+		return FAILED;
 	}
 
-	return FAILED;
+	audio_input.audio_client->Start();
+	audio_input.active = true;
+	return OK;
 }
 
 Error AudioDriverWASAPI::capture_stop() {

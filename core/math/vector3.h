@@ -218,7 +218,7 @@ Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
 
 Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Vector3());
+	ERR_FAIL_COND_V(!is_normalized(), Vector3());
 #endif
 
 	real_t theta = angle_to(p_b);
@@ -430,7 +430,7 @@ void Vector3::zero() {
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector3 Vector3::slide(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector3());
+	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector3());
 #endif
 	return *this - p_normal * this->dot(p_normal);
 }
@@ -441,7 +441,7 @@ Vector3 Vector3::bounce(const Vector3 &p_normal) const {
 
 Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(p_normal.is_normalized() == false, Vector3());
+	ERR_FAIL_COND_V(!p_normal.is_normalized(), Vector3());
 #endif
 	return 2.0 * p_normal * this->dot(p_normal) - *this;
 }

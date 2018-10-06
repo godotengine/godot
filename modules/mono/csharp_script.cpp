@@ -1468,7 +1468,7 @@ void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted) {
 
 #ifdef DEBUG_ENABLED
-	CRASH_COND(base_ref == false);
+	CRASH_COND(!base_ref);
 	CRASH_COND(gchandle.is_null());
 #endif
 	if (_unreference_owner_unsafe()) {

@@ -1793,22 +1793,22 @@ template <>
 struct EditorSceneImporterGLTFInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
-		ERR_FAIL_COND_V(a.is_normalized() == false, Quat());
-		ERR_FAIL_COND_V(b.is_normalized() == false, Quat());
+		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
 
 		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
-		ERR_FAIL_COND_V(p1.is_normalized() == false, Quat());
-		ERR_FAIL_COND_V(p2.is_normalized() == false, Quat());
+		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
 
 		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		ERR_FAIL_COND_V(start.is_normalized() == false, Quat());
-		ERR_FAIL_COND_V(end.is_normalized() == false, Quat());
+		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
 
 		return start.slerp(end, t).normalized();
 	}

@@ -679,7 +679,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			if (tokenizer->get_token() == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 				Variant::Type ct = tokenizer->get_token_type();
-				if (p_parsing_constant == false) {
+				if (!p_parsing_constant) {
 					if (ct == Variant::ARRAY) {
 						if (tokenizer->get_token(2) == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
 							ArrayNode *arr = alloc_node<ArrayNode>();
