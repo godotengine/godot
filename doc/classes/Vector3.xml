@@ -280,7 +280,10 @@
 			Enumerated value for the Z axis.
 		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
-			Null vector.
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector3( 1, 1, 1 )">
+			One vector.
 		</constant>
 		<constant name="INF" value="Vector3( inf, inf, inf )">
 			Infinite vector.
