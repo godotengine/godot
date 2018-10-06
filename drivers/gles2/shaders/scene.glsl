@@ -310,7 +310,6 @@ uniform highp float fog_height_max;
 uniform mediump float fog_height_curve;
 #endif
 
-
 #endif //fog
 
 void main() {
@@ -625,19 +624,19 @@ VERTEX_SHADER_CODE
 
 	{
 
-	    float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
+		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
-	    fog_amount = pow(fog_z, fog_depth_curve);
+		fog_amount = pow(fog_z, fog_depth_curve);
 	}
 #endif
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-	    float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
-	    fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
+		float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
+		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif
-	fog_interp = vec4(fog_color,fog_amount);
+	fog_interp = vec4(fog_color, fog_amount);
 
 #endif //fog
 
@@ -2021,8 +2020,8 @@ FRAGMENT_SHADER_CODE
 
 #if defined(USE_VERTEX_LIGHTING)
 
-	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_interp.rgb,fog_interp.a);
-#else	//pixel based fog
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_interp.rgb, fog_interp.a);
+#else //pixel based fog
 	float fog_amount = 0.0;
 
 #ifdef LIGHT_MODE_DIRECTIONAL
@@ -2036,26 +2035,26 @@ FRAGMENT_SHADER_CODE
 
 	{
 
-	    float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
+		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
-	    fog_amount = pow(fog_z, fog_depth_curve);
+		fog_amount = pow(fog_z, fog_depth_curve);
 
-	    if (fog_transmit_enabled) {
-		vec3 total_light = gl_FragColor.rgb;
-		float transmit = pow(fog_z, fog_transmit_curve);
-		fog_color = mix(max(total_light, fog_color), fog_color, transmit);
-	    }
+		if (fog_transmit_enabled) {
+			vec3 total_light = gl_FragColor.rgb;
+			float transmit = pow(fog_z, fog_transmit_curve);
+			fog_color = mix(max(total_light, fog_color), fog_color, transmit);
+		}
 	}
 #endif
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-	    float y = (camera_matrix * vec4(vertex, 1.0)).y;
-	    fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
+		float y = (camera_matrix * vec4(vertex, 1.0)).y;
+		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif
 
-	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_color,fog_amount);
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_color, fog_amount);
 
 #endif //use vertex lit
 
