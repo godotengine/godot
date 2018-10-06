@@ -75,12 +75,12 @@ attribute highp vec4 instance_custom_data; // attrib:12
 // uniforms
 //
 
-uniform mat4 camera_matrix;
-uniform mat4 camera_inverse_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 projection_inverse_matrix;
+uniform highp mat4 camera_matrix;
+uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 projection_matrix;
+uniform highp mat4 projection_inverse_matrix;
 
-uniform mat4 world_transform;
+uniform highp mat4 world_transform;
 
 uniform highp float time;
 
@@ -156,22 +156,22 @@ varying highp vec3 diffuse_interp;
 varying highp vec3 specular_interp;
 
 // general for all lights
-uniform vec4 light_color;
-uniform float light_specular;
+uniform highp vec4 light_color;
+uniform highp float light_specular;
 
 // directional
-uniform vec3 light_direction;
+uniform highp vec3 light_direction;
 
 // omni
-uniform vec3 light_position;
+uniform highp vec3 light_position;
 
-uniform float light_range;
-uniform float light_attenuation;
+uniform highp float light_range;
+uniform highp float light_attenuation;
 
 // spot
-uniform float light_spot_attenuation;
-uniform float light_spot_range;
-uniform float light_spot_angle;
+uniform highp float light_spot_attenuation;
+uniform highp float light_spot_range;
+uniform highp float light_spot_angle;
 
 void light_compute(
 		vec3 N,
@@ -262,9 +262,9 @@ void light_compute(
 
 #ifdef USE_REFLECTION_PROBE1
 
-uniform mat4 refprobe1_local_matrix;
+uniform highp mat4 refprobe1_local_matrix;
 varying mediump vec4 refprobe1_reflection_normal_blend;
-uniform vec3 refprobe1_box_extents;
+uniform highp vec3 refprobe1_box_extents;
 
 #ifndef USE_LIGHTMAP
 varying mediump vec3 refprobe1_ambient_normal;
@@ -274,9 +274,9 @@ varying mediump vec3 refprobe1_ambient_normal;
 
 #ifdef USE_REFLECTION_PROBE2
 
-uniform mat4 refprobe2_local_matrix;
+uniform highp mat4 refprobe2_local_matrix;
 varying mediump vec4 refprobe2_reflection_normal_blend;
-uniform vec3 refprobe2_box_extents;
+uniform highp vec3 refprobe2_box_extents;
 
 #ifndef USE_LIGHTMAP
 varying mediump vec3 refprobe2_ambient_normal;
@@ -671,13 +671,13 @@ precision highp int;
 // uniforms
 //
 
-uniform mat4 camera_matrix;
+uniform highp mat4 camera_matrix;
 /* clang-format on */
-uniform mat4 camera_inverse_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 projection_inverse_matrix;
+uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 projection_matrix;
+uniform highp mat4 projection_inverse_matrix;
 
-uniform mat4 world_transform;
+uniform highp mat4 world_transform;
 
 uniform highp float time;
 
@@ -704,9 +704,9 @@ varying mediump vec3 refprobe1_ambient_normal;
 #else
 
 uniform bool refprobe1_use_box_project;
-uniform vec3 refprobe1_box_extents;
+uniform highp vec3 refprobe1_box_extents;
 uniform vec3 refprobe1_box_offset;
-uniform mat4 refprobe1_local_matrix;
+uniform highp mat4 refprobe1_local_matrix;
 
 #endif //use vertex lighting
 
@@ -731,9 +731,9 @@ varying mediump vec3 refprobe2_ambient_normal;
 #else
 
 uniform bool refprobe2_use_box_project;
-uniform vec3 refprobe2_box_extents;
+uniform highp vec3 refprobe2_box_extents;
 uniform vec3 refprobe2_box_offset;
-uniform mat4 refprobe2_local_matrix;
+uniform highp mat4 refprobe2_local_matrix;
 
 #endif //use vertex lighting
 
@@ -874,29 +874,29 @@ uniform float ambient_energy;
 varying highp vec3 diffuse_interp;
 varying highp vec3 specular_interp;
 
-uniform vec3 light_direction; //may be used by fog, so leave here
+uniform highp vec3 light_direction; //may be used by fog, so leave here
 
 #else
 //done in fragment
 // general for all lights
-uniform vec4 light_color;
-uniform float light_specular;
+uniform highp vec4 light_color;
+uniform highp float light_specular;
 
 // directional
-uniform vec3 light_direction;
+uniform highp vec3 light_direction;
 // omni
-uniform vec3 light_position;
+uniform highp vec3 light_position;
 
-uniform float light_attenuation;
+uniform highp float light_attenuation;
 
 // spot
-uniform float light_spot_attenuation;
-uniform float light_spot_range;
-uniform float light_spot_angle;
+uniform highp float light_spot_attenuation;
+uniform highp float light_spot_range;
+uniform highp float light_spot_angle;
 #endif
 
 //this is needed outside above if because dual paraboloid wants it
-uniform float light_range;
+uniform highp float light_range;
 
 #ifdef USE_SHADOW
 
