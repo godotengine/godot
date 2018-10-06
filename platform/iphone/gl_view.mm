@@ -30,23 +30,19 @@
 
 #import "gl_view.h"
 
-#include "core/os/keyboard.h"
-#include "core/project_settings.h"
-#include "os_iphone.h"
-#include "servers/audio_server.h"
+#import "core/os/keyboard.h"
+#import "core/project_settings.h"
+#import "os_iphone.h"
+#import "servers/audio_server.h"
 
 #import <OpenGLES/EAGLDrawable.h>
-#import <QuartzCore/QuartzCore.h>
 
 bool gles3_available = true;
 int gl_view_base_fb;
 static String keyboard_text;
 
 static GLView *_instance = nil;
-
-static bool video_found_error = false;
 static bool video_playing = false;
-static CMTime video_current_time;
 
 void _show_keyboard(String);
 void _hide_keyboard();
@@ -87,13 +83,10 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 	NSString *file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
 
 	_instance.avAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:file_path]];
-
 	_instance.avPlayerItem = [[AVPlayerItem alloc] initWithAsset:_instance.avAsset];
 	[_instance.avPlayerItem addObserver:_instance forKeyPath:@"status" options:0 context:nil];
 
 	_instance.avPlayer = [[AVPlayer alloc] initWithPlayerItem:_instance.avPlayerItem];
-	_instance.avPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:_instance.avPlayer];
-
 	[_instance.avPlayer addObserver:_instance forKeyPath:@"status" options:0 context:nil];
 	[_instance.avPlayer addObserver:_instance forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:0];
 	[[NSNotificationCenter defaultCenter]
@@ -102,8 +95,10 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 				   name:AVPlayerItemDidPlayToEndTimeNotification
 				 object:[_instance.avPlayer currentItem]];
 
-	[_instance.avPlayerLayer setFrame:_instance.bounds];
+	_instance.avPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:_instance.avPlayer];
+	_instance.avPlayerLayer.frame = _instance.bounds;
 	[_instance.layer addSublayer:_instance.avPlayerLayer];
+
 	[_instance.avPlayer play];
 
 	AVMediaSelectionGroup *audioGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic:AVMediaCharacteristicAudible];
@@ -155,7 +150,6 @@ bool _is_video_playing() {
 }
 
 void _pause_video() {
-	video_current_time = _instance.avPlayer.currentTime;
 	[_instance.avPlayer pause];
 	video_playing = false;
 }
@@ -192,13 +186,12 @@ CGFloat _points_to_pixels(CGFloat points) {
 
 @interface GLView ()
 
-@property(nonatomic, strong) NSMutableArray *activeTouches;
-
 @end
 
 @implementation GLView
 
-@synthesize animationInterval;
+@synthesize useCADisplayLink;
+@synthesize animationInterval = _animationInterval;
 
 // Implement this to override the default layer class (which is [CALayer class]).
 // We do this so that our view will be backed by a layer that is capable of OpenGL ES rendering.
@@ -224,22 +217,21 @@ CGFloat _points_to_pixels(CGFloat points) {
 - (void)setUp {
 	_instance = self;
 
-	self.activeTouches = [[NSMutableArray alloc] initWithCapacity:10];
-
-	active = NO;
+	self.active = NO;
+	// Default the animation interval to 1/60th of a second.
+	self.animationInterval = 1.0 / 60.0;
+	self.multipleTouchEnabled = YES;
+	self.autocorrectionType = UITextAutocorrectionTypeNo;
 
 	// Get our backing layer
 	CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
 
 	// Configure it so that it is opaque, does not retain the contents of the backbuffer when displayed, and uses RGBA8888 color.
 	eaglLayer.opaque = YES;
-	eaglLayer.drawableProperties = [NSDictionary
-			dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:FALSE],
-			kEAGLDrawablePropertyRetainedBacking,
-			kEAGLColorFormatRGBA8,
-			kEAGLDrawablePropertyColorFormat,
-			nil];
-	bool fallback_gl2 = false;
+    eaglLayer.drawableProperties = @{ kEAGLDrawablePropertyRetainedBacking : @(NO),
+                                      kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8 };
+    
+    bool fallback_gl2 = false;
 	// Create a GL ES 3 context based on the gl driver from project settings
 	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3") {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
@@ -276,14 +268,11 @@ CGFloat _points_to_pixels(CGFloat points) {
 	self.multipleTouchEnabled = YES;
 	self.autocorrectionType = UITextAutocorrectionTypeNo;
 
-	printf("******** adding observer for sound routing changes\n");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(audioRouteChangeListenerCallback:)
 				   name:AVAudioSessionRouteChangeNotification
 				 object:nil];
-
-	printf("******** adding observer for keyboard show/hide\n");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(keyboardOnScreen:)
@@ -296,7 +285,6 @@ CGFloat _points_to_pixels(CGFloat points) {
 				 object:nil];
 }
 
-// Stop animating and release resources when they are no longer needed.
 - (void)dealloc {
 	[self stopAnimation];
 
@@ -309,21 +297,6 @@ CGFloat _points_to_pixels(CGFloat points) {
 
 	[super dealloc];
 }
-
-- (id<GLViewDelegate>)delegate {
-	return delegate;
-}
-
-// Update the delegate, and if it needs a -setupView: call, set our internal flag so that it will be called.
-- (void)setDelegate:(id<GLViewDelegate>)d {
-	delegate = d;
-}
-
-@synthesize useCADisplayLink;
-
-// If our view is resized, we'll be asked to layout subviews.
-// This is the perfect opportunity to also update the framebuffer so that it is
-// the same size as our display area.
 
 - (void)layoutSubviews {
 	[EAGLContext setCurrentContext:context];
@@ -370,7 +343,7 @@ CGFloat _points_to_pixels(CGFloat points) {
 		vm.resizable = false;
 		OS::get_singleton()->set_video_mode(vm);
 		OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
-	};
+	}
 	gl_view_base_fb = viewFramebuffer;
 
 	return YES;
@@ -390,25 +363,36 @@ CGFloat _points_to_pixels(CGFloat points) {
 }
 
 - (void)startAnimation {
-	if (active)
-		return;
+	// Already active?
+	if (self.isActive) return;
 
-	active = YES;
+	self.active = YES;
 
 	printf("start animation!\n");
-	if (useCADisplayLink) {
-		displayLink = [CADisplayLink displayLinkWithTarget:self
-												  selector:@selector(drawView)];
 
-		// Approximate frame rate: assumes device refreshes at 60 fps.
-		// Note that newer iOS devices are 120Hz screens
-		displayLink.frameInterval = (int)floor(animationInterval * 60.0f);
+	if (self.useCADisplayLink) {
+
+		// Create a display link and with the fatest refresh rate
+		_displayLink = [CADisplayLink displayLinkWithTarget:self
+												   selector:@selector(drawView)];
+		if ([_displayLink respondsToSelector:@selector(preferredFramesPerSecond)]) {
+			_displayLink.preferredFramesPerSecond = 0;
+			// We could potentially check the display link's maximumFPS here.
+			// If it supports 120 we could force the preferredFPS to that.
+			// Currently that the's only way to drive a game at 120Hz
+		} else {
+			// Approximate frame rate: assumes device refreshes at 60 fps.
+			// Note that newer iOS devices are 120Hz screens
+			_displayLink.frameInterval = (int)floor(self.animationInterval * 60.0f);
+		}
 
 		// Setup DisplayLink in main thread
-		[displayLink addToRunLoop:[NSRunLoop currentRunLoop]
-						  forMode:NSRunLoopCommonModes];
+		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop]
+						   forMode:NSRunLoopCommonModes];
 	} else {
-		animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval
+		// This is an extremely terrible way to animate. Very low resolution with lots
+		// of drift. You would be lucky to have this called every 16ms
+		animationTimer = [NSTimer scheduledTimerWithTimeInterval:self.animationInterval
 														  target:self
 														selector:@selector(drawView)
 														userInfo:nil
@@ -421,34 +405,38 @@ CGFloat _points_to_pixels(CGFloat points) {
 }
 
 - (void)stopAnimation {
-	if (!active)
-		return;
+	if (!self.isActive) return;
 
-	active = NO;
-	printf("******** stop animation!\n");
+	self.active = NO;
+	printf("stop animation!\n");
 
-	if (useCADisplayLink) {
-		[displayLink invalidate];
-		displayLink = nil;
+	if (self.useCADisplayLink) {
+		[_displayLink invalidate];
+		_displayLink = nil;
 	} else {
 		[animationTimer invalidate];
 		animationTimer = nil;
 	}
 
 	if (video_playing) {
-		// save position
+		_pause_video();
 	}
 }
 
 - (void)setAnimationInterval:(NSTimeInterval)interval {
-	animationInterval = interval;
-	if ((useCADisplayLink && displayLink) || (!useCADisplayLink && animationTimer)) {
+
+	_animationInterval = interval;
+
+	if (self.isActive) {
 		[self stopAnimation];
-		[self startAnimation];
 	}
+	[self startAnimation];
 }
 
-// Updates the OpenGL view when the timer fires
+- (NSTimeInterval)animationInterval {
+	return _animationInterval;
+}
+
 - (void)drawView {
 
 	if (!active) {
@@ -476,14 +464,13 @@ CGFloat _points_to_pixels(CGFloat points) {
 	[EAGLContext setCurrentContext:context];
 
 	// If our drawing delegate needs to have the view setup, then call -setupView: and flag that it won't need to be called again.
-	if ([self.delegate respondsToSelector:@selector(setupView:)] && !delegateSetup) {
-		[delegate setupView:self];
-		delegateSetup = YES;
+	if (!self.isSetUpComplete && [self.delegate respondsToSelector:@selector(setupView:)]) {
+		[self.delegate setupView:self];
+		self.setUpComplete = YES;
 	}
 
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-
-	[delegate drawView:self];
+	[self.delegate drawView:self];
 
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
@@ -495,47 +482,9 @@ CGFloat _points_to_pixels(CGFloat points) {
 #endif
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-	UITouch *touch = [touches anyObject];
-
-	[self.activeTouches addObject:touch];
-
-	CGPoint touchPoint = [self scaledPoint:[touch locationInView:self]];
-	OSIPhone::get_singleton()->touch_press([self.activeTouches indexOfObject:touch], touchPoint.x, touchPoint.y, true, touch.tapCount > 1);
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-	UITouch *touch = [touches anyObject];
-
-	CGPoint touchPoint = [self scaledPoint:[touch locationInView:self]];
-	CGPoint previousPoint = [self scaledPoint:[touch previousLocationInView:self]];
-	OSIPhone::get_singleton()->touch_drag([self.activeTouches indexOfObject:touch], previousPoint.x, previousPoint.y, touchPoint.x, touchPoint.y);
-}
-
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-	UITouch *touch = [touches anyObject];
-
-	CGPoint touchPoint = [self scaledPoint:[touch locationInView:self]];
-	OSIPhone::get_singleton()->touch_press([self.activeTouches indexOfObject:touch], touchPoint.x * self.contentScaleFactor, touchPoint.y * self.contentScaleFactor, false, false);
-
-	[self.activeTouches removeObject:touch];
-}
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-	UITouch *touch = [touches anyObject];
-
-	OSIPhone::get_singleton()->touches_cancelled();
-
-	[self.activeTouches removeObject:touch];
-};
-
-- (CGPoint)scaledPoint:(CGPoint)point {
-	return CGPointMake(point.x * self.contentScaleFactor, point.y * self.contentScaleFactor);
-}
-
 - (BOOL)canBecomeFirstResponder {
 	return YES;
-};
+}
 
 - (void)keyboardOnScreen:(NSNotification *)notification {
 	NSValue *value = notification.userInfo[UIKeyboardFrameEndUserInfoKey];
@@ -552,11 +501,11 @@ CGFloat _points_to_pixels(CGFloat points) {
 	if (keyboard_text.length())
 		keyboard_text.erase(keyboard_text.length() - 1, 1);
 	OSIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-};
+}
 
 - (BOOL)hasText {
 	return keyboard_text.length() ? YES : NO;
-};
+}
 
 - (void)insertText:(NSString *)p_text {
 	String character;
@@ -602,15 +551,12 @@ CGFloat _points_to_pixels(CGFloat points) {
 	if (object == self.avPlayerItem && [keyPath isEqualToString:@"status"]) {
 		if (self.avPlayerItem.status == AVPlayerStatusFailed || self.avPlayer.status == AVPlayerStatusFailed) {
 			_stop_video();
-			video_found_error = true;
 		}
 
 		if (self.avPlayer.status == AVPlayerStatusReadyToPlay &&
-				self.avPlayerItem.status == AVPlayerItemStatusReadyToPlay &&
-				CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
+				self.avPlayerItem.status == AVPlayerItemStatusReadyToPlay) {
 
-			[self.avPlayer seekToTime:video_current_time];
-			video_current_time = kCMTimeZero;
+			[self.avPlayer seekToTime:kCMTimeZero];
 		}
 	}
 

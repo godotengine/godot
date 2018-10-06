@@ -32,10 +32,12 @@
 #include <sys/sysctl.h>
 
 #import <UIKit/UIKit.h>
+#import <StoreKit/StoreKit.h>
 
 void iOS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
+	ClassDB::bind_method(D_METHOD("show_store_rating_ui"), &iOS::show_store_rating_ui);
 };
 
 void iOS::alert(const char *p_alert, const char *p_title) {
@@ -71,26 +73,66 @@ String iOS::get_model() const {
 }
 
 String iOS::get_rate_url(int p_app_id) const {
-	String templ = "itms-apps://ax.itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?type=Purple+Software&id=APP_ID";
-	String templ_iOS7 = "itms-apps://itunes.apple.com/app/idAPP_ID";
-	String templ_iOS8 = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=APP_ID&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software";
-
-	//ios7 before
-	String ret = templ;
-
-	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1) {
-		// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
-		ret = templ_iOS7;
-	} else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-		// iOS 8 needs a different templateReviewURL also @see https://github.com/arashpayan/appirater/issues/182
-		ret = templ_iOS8;
-	}
-
-	// ios7 for everything?
-	ret = templ_iOS7.replace("APP_ID", String::num(p_app_id));
-
-	printf("returning rate url %ls\n", ret.c_str());
-	return ret;
+	String rate_url = "itms-apps://itunes.apple.com/WebObjects/MZStore.woa/wa/viewContentsUserReviews?id=APP_ID&onlyLatestVersion=true&pageNumber=0&sortOrdering=1&type=Purple+Software";
+	rate_url = rate_url.replace("APP_ID", String::num(p_app_id));
+	printf("returning rate url %ls\n", rate_url.c_str());
+	return rate_url;
 };
+
+void iOS::show_store_rating_ui() {
+	[SKStoreReviewController requestReview];
+}
+
+extern "C" {
+
+int add_path(int p_argc, char **p_args) {
+
+	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
+	if (!str)
+		return p_argc;
+
+	p_args[p_argc++] = (char *)"--path";
+	p_args[p_argc++] = (char *)[[str copy] cStringUsingEncoding:NSUTF8StringEncoding];
+	p_args[p_argc] = NULL;
+
+	return p_argc;
+};
+
+int add_cmdline(int p_argc, char **p_args) {
+
+	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
+	if (!arr)
+		return p_argc;
+
+	for (id value in arr) {
+
+		NSString *string = value;
+		if (![string isKindOfClass:NSString.class])
+			continue;
+
+		p_args[p_argc++] = (char *)[[string copy] cStringUsingEncoding:NSUTF8StringEncoding];
+	};
+
+	p_args[p_argc] = NULL;
+
+	return p_argc;
+};
+
+Error _shell_open(String p_uri) {
+	NSString *url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
+
+	if (![[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]])
+		return ERR_CANT_OPEN;
+
+	printf("opening url %ls\n", p_uri.c_str());
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
+	[url release];
+	return OK;
+}
+
+void _set_keep_screen_on(bool p_enabled) {
+	[[UIApplication sharedApplication] setIdleTimerDisabled:(BOOL)p_enabled];
+}
+}; // extern "C"
 
 iOS::iOS(){};

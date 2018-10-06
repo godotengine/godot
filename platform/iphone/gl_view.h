@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #import <AVFoundation/AVFoundation.h>
-#import <MediaPlayer/MediaPlayer.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
@@ -51,29 +50,16 @@
 	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
 	GLuint depthRenderbuffer;
 
-	BOOL useCADisplayLink;
 	// CADisplayLink available on 3.1+ synchronizes the animation timer & drawing with the refresh rate of the display, only supports animation intervals of 1/60 1/30 & 1/15
-	CADisplayLink *displayLink;
+	CADisplayLink *_displayLink;
 
 	// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
-	// Only used if CADisplayLink is not
 	NSTimer *animationTimer;
-
-	NSTimeInterval animationInterval;
-
-	// Delegate to do our drawing, called by -drawView, which can be called manually or via the animation timer.
-	id<GLViewDelegate> delegate;
-
-	// Flag to denote that the -setupView method of a delegate has been called.
-	// Resets to NO whenever the delegate changes.
-	BOOL delegateSetup;
-	BOOL active;
-	float screen_scale;
+	// I'd like to remove the above as an option
 }
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;
 
-// AVPlayer-related properties
 @property(strong, nonatomic) AVAsset *avAsset;
 @property(strong, nonatomic) AVPlayerItem *avPlayerItem;
 @property(strong, nonatomic) AVPlayer *avPlayer;
@@ -84,6 +70,8 @@
 @property (nonatomic) UITextAutocorrectionType autocorrectionType;
 @property (assign) NSTimeInterval animationInterval;
 @property (nonatomic, assign) BOOL useCADisplayLink;
+@property (nonatomic, assign, getter=isActive) BOOL active;
+@property (nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
 
 - (void)startAnimation;
 - (void)stopAnimation;

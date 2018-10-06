@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "gl_view.h"
 #import <GameKit/GameKit.h>
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
+@class GLView;
+
+@interface GodotGameViewController : UIViewController <GKGameCenterControllerDelegate>
 
 @property(readonly) GLView *glView;
 

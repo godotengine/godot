@@ -41,27 +41,9 @@
 #import <AudioToolbox/AudioServices.h>
 
 #define kFilteringFactor 0.1
-#define kRenderingFrequency 60
 #define kAccelerometerFrequency 100.0 // Hz
 
-Error _shell_open(String);
-void _set_keep_screen_on(bool p_enabled);
-
-Error _shell_open(String p_uri) {
-	NSString *url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
-
-	if (![[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]])
-		return ERR_CANT_OPEN;
-
-	printf("opening url %ls\n", p_uri.c_str());
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
-	[url release];
-	return OK;
-};
-
-void _set_keep_screen_on(bool p_enabled) {
-	[[UIApplication sharedApplication] setIdleTimerDisabled:(BOOL)p_enabled];
-};
+extern void _set_keep_screen_on(bool p_enabled);
 
 void _vibrate() {
 	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
@@ -274,7 +256,7 @@ static int frame_count = 0;
 	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true)) ? YES : NO);
 
 	// Create our engine view controller
-	ViewController *rootVC = [[ViewController alloc] init];
+	GodotGameViewController *rootVC = [[GodotGameViewController alloc] init];
 	self.window.rootViewController = rootVC;
 
 	GLView *glView = rootVC.glView;
@@ -283,7 +265,7 @@ static int frame_count = 0;
 	glView.useCADisplayLink =
 			bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	printf("cadisaplylink: %d", glView.useCADisplayLink);
-	glView.animationInterval = 1.0 / kRenderingFrequency;
+
 	[glView startAnimation];
 
 	// Configure and start accelerometer
@@ -348,7 +330,7 @@ static int frame_count = 0;
 		}
 
 		// OpenGL Animation
-		ViewController *viewController = (ViewController *)self.window.rootViewController;
+		GodotGameViewController *viewController = (GodotGameViewController *)self.window.rootViewController;
 		if (self.isFocused) {
 			[viewController.glView startAnimation];
 		} else {

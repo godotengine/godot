@@ -45,6 +45,8 @@ public:
 	String get_model() const;
 	String get_rate_url(int p_app_id) const;
 
+	void show_store_rating_ui();
+
 	iOS();
 };
 

@@ -29,49 +29,24 @@
 /*************************************************************************/
 
 #import "view_controller.h"
+#import "gl_view.h"
+#import "os_iphone.h"
 
-#include "os_iphone.h"
+@interface GodotGameViewController ()
 
-extern "C" {
+@property(nonatomic, strong) NSMutableArray *activeTouches;
 
-int add_path(int, char **);
-int add_cmdline(int, char **);
+@end
 
-int add_path(int p_argc, char **p_args) {
+@implementation GodotGameViewController
 
-	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
-	if (!str)
-		return p_argc;
-
-	p_args[p_argc++] = (char *)"--path";
-	p_args[p_argc++] = (char *)[[str copy] cStringUsingEncoding:NSUTF8StringEncoding];
-	p_args[p_argc] = NULL;
-
-	return p_argc;
-};
-
-int add_cmdline(int p_argc, char **p_args) {
-
-	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
-	if (!arr)
-		return p_argc;
-
-	for (id value in arr) {
-
-		NSString *string = value;
-		if (![string isKindOfClass:NSString.class])
-			continue;
-
-		p_args[p_argc++] = (char *)[[string copy] cStringUsingEncoding:NSUTF8StringEncoding];
-	};
-
-	p_args[p_argc] = NULL;
-
-	return p_argc;
-};
-}; // extern "C"
-
-@implementation ViewController
+- (id)initWithFrame:(CGRect)frame {
+	if (self = [super init]) {
+		self.activeTouches = [NSMutableArray arrayWithCapacity:10];
+		self.view.frame = frame;
+	}
+	return self;
+}
 
 - (void)loadView {
 	const CGRect frame = [UIApplication sharedApplication].keyWindow.bounds;
@@ -94,6 +69,7 @@ int add_cmdline(int p_argc, char **p_args) {
 	return (GLView *)self.view;
 }
 
+#pragma mark - View Geometry
 - (BOOL)shouldAutorotate {
 	switch (OS::get_singleton()->get_screen_orientation()) {
 		case OS::SCREEN_SENSOR:
@@ -126,6 +102,45 @@ int add_cmdline(int p_argc, char **p_args) {
 
 - (BOOL)prefersStatusBarHidden {
 	return YES;
+}
+
+#pragma mark - Touch Handling via UIControl
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+	UITouch *touch = [touches anyObject];
+
+	[self.activeTouches addObject:touch];
+
+	CGPoint touchPoint = [self scaledPoint:[touch locationInView:self.view]];
+	OSIPhone::get_singleton()->touch_press([self.activeTouches indexOfObject:touch], touchPoint.x, touchPoint.y, true, touch.tapCount > 1);
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+	UITouch *touch = [touches anyObject];
+
+	CGPoint touchPoint = [self scaledPoint:[touch locationInView:self.view]];
+	CGPoint previousPoint = [self scaledPoint:[touch previousLocationInView:self.view]];
+	OSIPhone::get_singleton()->touch_drag([self.activeTouches indexOfObject:touch], previousPoint.x, previousPoint.y, touchPoint.x, touchPoint.y);
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+	UITouch *touch = [touches anyObject];
+
+	CGPoint touchPoint = [self scaledPoint:[touch locationInView:self.view]];
+	OSIPhone::get_singleton()->touch_press([self.activeTouches indexOfObject:touch], touchPoint.x, touchPoint.y, false, false);
+
+	[self.activeTouches removeObject:touch];
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
+	UITouch *touch = [touches anyObject];
+
+	OSIPhone::get_singleton()->touches_cancelled();
+
+	[self.activeTouches removeObject:touch];
+}
+
+- (CGPoint)scaledPoint:(CGPoint)point {
+	return CGPointMake(point.x * self.view.contentScaleFactor, point.y * self.view.contentScaleFactor);
 }
 
 #ifdef GAME_CENTER_ENABLED

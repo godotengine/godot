@@ -31,9 +31,8 @@
 #ifdef GAME_CENTER_ENABLED
 
 #import "game_center.h"
-#import <GameKit/GameKit.h>
-#import "app_delegate.h"
 #import "view_controller.h"
+#import <GameKit/GameKit.h>
 
 GameCenter *GameCenter::instance = NULL;
 
@@ -76,7 +75,7 @@ void GameCenter::connect() {
 		return;
 	}
 
-	ViewController *root_controller = (ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
+	GodotGameViewController *root_controller = (GodotGameViewController *)[UIApplication sharedApplication].keyWindow.rootViewController;
 	if (!root_controller) {
 		return_connect_error("Window doesn't have root ViewController");
 		return;
@@ -306,7 +305,7 @@ Error GameCenter::show_game_center(Variant p_params) {
 	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc] init];
 	ERR_FAIL_COND_V(!controller, FAILED);
 
-	ViewController *root_controller = (ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
+	GodotGameViewController *root_controller = (GodotGameViewController *)[UIApplication sharedApplication].keyWindow.rootViewController;
 	ERR_FAIL_COND_V(!root_controller, FAILED);
 
 	controller.gameCenterDelegate = root_controller;
