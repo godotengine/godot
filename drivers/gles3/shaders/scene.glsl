@@ -1340,7 +1340,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal, vec3 binormal, vec3 t
 
 		reflection_accum += reflection;
 	}
-#ifndef USE_LIGHTMAP
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
 	if (reflections[idx].ambient.a > 0.0) { //compute ambient using skybox
 
 		vec3 local_amb_vec = (reflections[idx].local_matrix * vec4(normal, 0.0)).xyz;
@@ -1957,7 +1957,7 @@ FRAGMENT_SHADER_CODE
 	} else {
 		specular_light += env_reflection_light;
 	}
-#ifndef USE_LIGHTMAP
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
 	if (ambient_accum.a > 0.0) {
 		ambient_light = ambient_accum.rgb / ambient_accum.a;
 	}
