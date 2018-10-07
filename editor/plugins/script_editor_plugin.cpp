@@ -3173,9 +3173,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	find_in_files_dialog->connect(FindInFilesDialog::SIGNAL_REPLACE_REQUESTED, this, "_start_find_in_files", varray(true));
 	add_child(find_in_files_dialog);
 	find_in_files = memnew(FindInFilesPanel);
-	find_in_files_button = editor->add_bottom_panel_item(TTR("Search results"), find_in_files);
+	find_in_files_button = editor->add_bottom_panel_item(TTR("Search Results"), find_in_files);
 	find_in_files_button->set_tooltip(TTR("Search in files"));
-	find_in_files->set_custom_minimum_size(Size2(0, 200));
+	find_in_files->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	find_in_files->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, this, "_on_find_in_files_result_selected");
 	find_in_files->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, this, "_on_find_in_files_modified_files");
 	find_in_files->hide();
