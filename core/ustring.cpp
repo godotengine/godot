@@ -3092,7 +3092,7 @@ String String::simplify_path() const {
 	} else if (s.begins_with("user://")) {
 
 		drive = "user://";
-		s = s.substr(6, s.length());
+		s = s.substr(7, s.length());
 	} else if (s.begins_with("/") || s.begins_with("\\")) {
 
 		drive = s.substr(0, 1);
