@@ -39,7 +39,8 @@
 	new cl
 
 #define bulletdelete(cl) \
-	delete cl;           \
-	cl = NULL;
-
+	{                    \
+		delete cl;       \
+		cl = NULL;       \
+	}
 #endif
