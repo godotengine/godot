@@ -72,12 +72,6 @@ void SoftBodyBullet::set_space(SpaceBullet *p_space) {
 	}
 }
 
-void SoftBodyBullet::dispatch_callbacks() {}
-
-void SoftBodyBullet::on_collision_filters_change() {}
-
-void SoftBodyBullet::on_collision_checker_start() {}
-
 void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}

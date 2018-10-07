@@ -43,8 +43,7 @@
 	@author AndreaCatania
 */
 
-#define enableDynamicAabbTree true
-#define initialChildCapacity 1
+#define enableDynamicAabbTree false
 
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
@@ -60,7 +59,10 @@ void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_tra
 
 void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_scale) {
 	if (!bt_shape) {
-		bt_shape = shape->create_bt_shape(scale * body_scale);
+		if (active)
+			bt_shape = shape->create_bt_shape(scale * body_scale);
+		else
+			bt_shape = ShapeBullet::create_shape_empty();
 	}
 }
 
@@ -72,7 +74,8 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		bt_collision_object(NULL),
 		body_scale(1., 1., 1.),
 		force_shape_reset(false),
-		space(NULL) {}
+		space(NULL),
+		isTransformChanged(false) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it
@@ -90,7 +93,7 @@ bool equal(real_t first, real_t second) {
 void CollisionObjectBullet::set_body_scale(const Vector3 &p_new_scale) {
 	if (!equal(p_new_scale[0], body_scale[0]) || !equal(p_new_scale[1], body_scale[1]) || !equal(p_new_scale[2], body_scale[2])) {
 		body_scale = p_new_scale;
-		on_body_scale_changed();
+		body_scale_changed();
 	}
 }
 
@@ -100,7 +103,7 @@ btVector3 CollisionObjectBullet::get_bt_body_scale() const {
 	return s;
 }
 
-void CollisionObjectBullet::on_body_scale_changed() {
+void CollisionObjectBullet::body_scale_changed() {
 	force_shape_reset = true;
 }
 
@@ -186,10 +189,15 @@ Transform CollisionObjectBullet::get_transform() const {
 
 void CollisionObjectBullet::set_transform__bullet(const btTransform &p_global_transform) {
 	bt_collision_object->setWorldTransform(p_global_transform);
+	notify_transform_changed();
 }
 
 const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 	return bt_collision_object->getWorldTransform();
+}
+
+void CollisionObjectBullet::notify_transform_changed() {
+	isTransformChanged = true;
 }
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
@@ -198,37 +206,16 @@ RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
-	remove_all_shapes(true);
+	remove_all_shapes(true, true);
 	if (mainShape && mainShape->isCompound()) {
 		bulletdelete(mainShape);
 	}
 }
 
-/* Not used
-void RigidCollisionObjectBullet::_internal_replaceShape(btCollisionShape *p_old_shape, btCollisionShape *p_new_shape) {
-	bool at_least_one_was_changed = false;
-	btTransform old_transf;
-	// Inverse because I need remove the shapes
-	// Fetch all shapes to be sure to remove all shapes
-	for (int i = compoundShape->getNumChildShapes() - 1; 0 <= i; --i) {
-		if (compoundShape->getChildShape(i) == p_old_shape) {
-
-			old_transf = compoundShape->getChildTransform(i);
-			compoundShape->removeChildShapeByIndex(i);
-			compoundShape->addChildShape(old_transf, p_new_shape);
-			at_least_one_was_changed = true;
-		}
-	}
-
-	if (at_least_one_was_changed) {
-		on_shapes_changed();
-	}
-}*/
-
 void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform) {
 	shapes.push_back(ShapeWrapper(p_shape, p_transform, true));
 	p_shape->add_owner(this);
-	on_shapes_changed();
+	reload_shapes();
 }
 
 void RigidCollisionObjectBullet::set_shape(int p_index, ShapeBullet *p_shape) {
@@ -236,42 +223,7 @@ void RigidCollisionObjectBullet::set_shape(int p_index, ShapeBullet *p_shape) {
 	shp.shape->remove_owner(this);
 	p_shape->add_owner(this);
 	shp.shape = p_shape;
-	on_shapes_changed();
-}
-
-void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
-	ERR_FAIL_INDEX(p_index, get_shape_count());
-
-	shapes.write[p_index].set_transform(p_transform);
-	on_shape_changed(shapes.write[p_index].shape);
-}
-
-void RigidCollisionObjectBullet::remove_shape(ShapeBullet *p_shape) {
-	// Remove the shape, all the times it appears
-	// Reverse order required for delete.
-	for (int i = shapes.size() - 1; 0 <= i; --i) {
-		if (p_shape == shapes[i].shape) {
-			internal_shape_destroy(i);
-			shapes.remove(i);
-		}
-	}
-	on_shapes_changed();
-}
-
-void RigidCollisionObjectBullet::remove_shape(int p_index) {
-	ERR_FAIL_INDEX(p_index, get_shape_count());
-	internal_shape_destroy(p_index);
-	shapes.remove(p_index);
-	on_shapes_changed();
-}
-
-void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBody) {
-	// Reverse order required for delete.
-	for (int i = shapes.size() - 1; 0 <= i; --i) {
-		internal_shape_destroy(i, p_permanentlyFromThisBody);
-	}
-	shapes.clear();
-	on_shapes_changed();
+	reload_shapes();
 }
 
 int RigidCollisionObjectBullet::get_shape_count() const {
@@ -286,6 +238,52 @@ btCollisionShape *RigidCollisionObjectBullet::get_bt_shape(int p_index) const {
 	return shapes[p_index].bt_shape;
 }
 
+int RigidCollisionObjectBullet::find_shape(ShapeBullet *p_shape) const {
+	const int size = shapes.size();
+	for (int i = 0; i < size; ++i) {
+		if (shapes[i].shape == p_shape)
+			return i;
+	}
+	return -1;
+}
+
+void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
+	// Remove the shape, all the times it appears
+	// Reverse order required for delete.
+	for (int i = shapes.size() - 1; 0 <= i; --i) {
+		if (p_shape == shapes[i].shape) {
+			internal_shape_destroy(i);
+			shapes.remove(i);
+		}
+	}
+	reload_shapes();
+}
+
+void RigidCollisionObjectBullet::remove_shape_full(int p_index) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+	internal_shape_destroy(p_index);
+	shapes.remove(p_index);
+	reload_shapes();
+}
+
+void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBody, bool p_force_not_reload) {
+	// Reverse order required for delete.
+	for (int i = shapes.size() - 1; 0 <= i; --i) {
+		internal_shape_destroy(i, p_permanentlyFromThisBody);
+	}
+	shapes.clear();
+	if (!p_force_not_reload)
+		reload_shapes();
+}
+
+void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+
+	shapes.write[p_index].set_transform(p_transform);
+	// Note, enableDynamicAabbTree is false because on transform change compound is destroyed
+	reload_shapes();
+}
+
 const btTransform &RigidCollisionObjectBullet::get_bt_shape_transform(int p_index) const {
 	return shapes[p_index].transform;
 }
@@ -296,21 +294,26 @@ Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
 	return trs;
 }
 
-void RigidCollisionObjectBullet::on_shape_changed(const ShapeBullet *const p_shape) {
-	const int size = shapes.size();
-	for (int i = 0; i < size; ++i) {
-		if (shapes[i].shape == p_shape) {
-			bulletdelete(shapes.write[i].bt_shape);
-		}
-	}
-	on_shapes_changed();
+void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
+	shapes.write[p_index].active = !p_disabled;
+	shape_changed(p_index);
 }
 
-void RigidCollisionObjectBullet::on_shapes_changed() {
+bool RigidCollisionObjectBullet::is_shape_disabled(int p_index) {
+	return !shapes[p_index].active;
+}
 
-	if (mainShape && mainShape->isCompound()) {
+void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
+	bulletdelete(shapes.write[p_shape_index].bt_shape);
+	reload_shapes();
+}
+
+void RigidCollisionObjectBullet::reload_shapes() {
+
+	if (mainShape && mainShape->isCompound())
+		// Destroy compound
 		bulletdelete(mainShape);
-	}
+
 	mainShape = NULL;
 
 	ShapeWrapper *shpWrapper;
@@ -325,55 +328,38 @@ void RigidCollisionObjectBullet::on_shapes_changed() {
 		force_shape_reset = false;
 	}
 
-	btVector3 body_scale(get_bt_body_scale());
-
-	if (!shape_count)
-		return;
+	const btVector3 body_scale(get_bt_body_scale());
 
 	// Try to optimize by not using compound
 	if (1 == shape_count) {
 		shpWrapper = &shapes.write[0];
-		if (shpWrapper->active && shpWrapper->transform.getOrigin().isZero() && shpWrapper->transform.getBasis() == shpWrapper->transform.getBasis().getIdentity()) {
+		if (shpWrapper->transform.getOrigin().isZero() && shpWrapper->transform.getBasis() == shpWrapper->transform.getBasis().getIdentity()) {
 			shpWrapper->claim_bt_shape(body_scale);
 			mainShape = shpWrapper->bt_shape;
-			main_shape_resetted();
+			main_shape_changed();
 			return;
 		}
 	}
 
-	btCompoundShape *compoundShape = bulletnew(btCompoundShape(enableDynamicAabbTree, initialChildCapacity));
+	// Optimization not possible use a compound shape
+	btCompoundShape *compoundShape = bulletnew(btCompoundShape(enableDynamicAabbTree, shape_count));
 
-	// Insert all shapes into compound
 	for (int i(0); i < shape_count; ++i) {
 		shpWrapper = &shapes.write[i];
-		if (shpWrapper->active) {
-			shpWrapper->claim_bt_shape(body_scale);
-
-			btTransform scaled_shape_transform(shpWrapper->transform);
-			scaled_shape_transform.getOrigin() *= body_scale;
-			compoundShape->addChildShape(scaled_shape_transform, shpWrapper->bt_shape);
-		} else {
-			compoundShape->addChildShape(btTransform(), BulletPhysicsServer::get_empty_shape());
-		}
+		shpWrapper->claim_bt_shape(body_scale);
+		btTransform scaled_shape_transform(shpWrapper->transform);
+		scaled_shape_transform.getOrigin() *= body_scale;
+		compoundShape->addChildShape(scaled_shape_transform, shpWrapper->bt_shape);
 	}
 
 	compoundShape->recalculateLocalAabb();
 	mainShape = compoundShape;
-	main_shape_resetted();
+	main_shape_changed();
 }
 
-void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
-	shapes.write[p_index].active = !p_disabled;
-	on_shapes_changed();
-}
-
-bool RigidCollisionObjectBullet::is_shape_disabled(int p_index) {
-	return !shapes[p_index].active;
-}
-
-void RigidCollisionObjectBullet::on_body_scale_changed() {
-	CollisionObjectBullet::on_body_scale_changed();
-	on_shapes_changed();
+void RigidCollisionObjectBullet::body_scale_changed() {
+	CollisionObjectBullet::body_scale_changed();
+	reload_shapes();
 }
 
 void RigidCollisionObjectBullet::internal_shape_destroy(int p_index, bool p_permanentlyFromThisBody) {
