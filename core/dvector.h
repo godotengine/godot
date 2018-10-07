@@ -149,7 +149,7 @@ class PoolVector {
 			}
 		}
 
-		if (old_alloc->refcount.unref() == true) {
+		if (old_alloc->refcount.unref()) {
 			//this should never happen but..
 
 #ifdef DEBUG_ENABLED
@@ -209,7 +209,7 @@ class PoolVector {
 		if (!alloc)
 			return;
 
-		if (alloc->refcount.unref() == false) {
+		if (!alloc->refcount.unref()) {
 			alloc = NULL;
 			return;
 		}

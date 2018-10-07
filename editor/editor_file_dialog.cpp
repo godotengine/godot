@@ -501,7 +501,7 @@ void EditorFileDialog::_items_clear_selection() {
 		case MODE_OPEN_FILE:
 		case MODE_OPEN_FILES:
 			get_ok()->set_text(TTR("Open"));
-			get_ok()->set_disabled(item_list->is_anything_selected() == false);
+			get_ok()->set_disabled(!item_list->is_anything_selected());
 			break;
 
 		case MODE_OPEN_DIR:

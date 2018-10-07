@@ -221,7 +221,7 @@ void OS_Server::run() {
 
 	while (!force_quit) {
 
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 

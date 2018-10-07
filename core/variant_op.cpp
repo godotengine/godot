@@ -521,7 +521,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
 
-				_RETURN((*arr_a == *arr_b) == false);
+				_RETURN(*arr_a != *arr_b);
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {

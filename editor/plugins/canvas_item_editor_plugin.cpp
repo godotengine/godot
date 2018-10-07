@@ -5113,7 +5113,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						   type == "AtlasTexture" ||
 						   type == "LargeTexture") {
 					Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
-					if (texture.is_valid() == false) {
+					if (!texture.is_valid()) {
 						continue;
 					}
 				} else {

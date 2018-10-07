@@ -2124,7 +2124,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 		_update_freelook(delta);
 
 		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
-		if (previewing_cinema == true && scene_root != NULL) {
+		if (previewing_cinema && scene_root != NULL) {
 			Camera *cam = scene_root->get_viewport()->get_camera();
 			if (cam != NULL && cam != previewing) {
 				//then switch the viewport's camera to the scene's viewport camera

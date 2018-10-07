@@ -83,7 +83,7 @@ int G6DOFRotationalLimitMotorSW::testLimitValue(real_t test_value) {
 real_t G6DOFRotationalLimitMotorSW::solveAngularLimits(
 		real_t timeStep, Vector3 &axis, real_t jacDiagABInv,
 		BodySW *body0, BodySW *body1) {
-	if (needApplyTorques() == false) return 0.0f;
+	if (!needApplyTorques()) return 0.0f;
 
 	real_t target_velocity = m_targetVelocity;
 	real_t maxMotorForce = m_maxMotorForce;

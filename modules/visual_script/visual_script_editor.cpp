@@ -2639,7 +2639,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		}
 		undo_redo->create_action(TTR("Add Node"));
 		undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, vnode_new, ofs);
-		if (vnode_old.is_valid() && p_connecting == true) {
+		if (vnode_old.is_valid() && p_connecting) {
 			connect_seq(vnode_old, vnode_new, new_id);
 			connect_data(vnode_old, vnode_new, new_id);
 		}
@@ -2806,7 +2806,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		}
 	}
 	Ref<VisualScriptNode> vnode_old = script->get_node(edited_func, port_action_node);
-	if (vnode_old.is_valid() && p_connecting == true) {
+	if (vnode_old.is_valid() && p_connecting) {
 		connect_seq(vnode_old, vnode, port_action_new_node);
 		connect_data(vnode_old, vnode, port_action_new_node);
 	}
@@ -2816,7 +2816,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<VisualScriptNode> vnode_new, int new_id) {
 	VisualScriptOperator *vnode_operator = Object::cast_to<VisualScriptOperator>(vnode_new.ptr());
-	if (vnode_operator != NULL && vnode_operator->has_input_sequence_port() == false) {
+	if (vnode_operator != NULL && !vnode_operator->has_input_sequence_port()) {
 		return;
 	}
 	VisualScriptConstructor *vnode_constructor = Object::cast_to<VisualScriptConstructor>(vnode_new.ptr());
@@ -2826,7 +2826,7 @@ void VisualScriptEditor::connect_seq(Ref<VisualScriptNode> vnode_old, Ref<Visual
 	if (vnode_old->get_output_sequence_port_count() <= 0) {
 		return;
 	}
-	if (vnode_new->has_input_sequence_port() == false) {
+	if (!vnode_new->has_input_sequence_port()) {
 		return;
 	}
 

@@ -368,7 +368,7 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		return DRAW_DISABLED;
 	};
 
-	if (status.press_attempt == false && status.hovering) {
+	if (!status.press_attempt && status.hovering) {
 		if (status.pressed)
 			return DRAW_HOVER_PRESSED;
 

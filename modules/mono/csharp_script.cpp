@@ -1194,7 +1194,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 
 			MonoObject *ret = method->invoke(mono_object, args);
 
-			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret) == true)
+			if (ret && GDMonoMarshal::unbox<MonoBoolean>(ret))
 				return true;
 
 			break;
@@ -1459,7 +1459,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 
 #ifdef DEBUG_ENABLED
-	CRASH_COND(base_ref == true);
+	CRASH_COND(base_ref);
 	CRASH_COND(gchandle.is_null());
 #endif
 	CSharpLanguage::get_singleton()->release_script_gchandle(p_obj, gchandle);
@@ -1468,7 +1468,7 @@ void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
 void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted) {
 
 #ifdef DEBUG_ENABLED
-	CRASH_COND(base_ref == false);
+	CRASH_COND(!base_ref);
 	CRASH_COND(gchandle.is_null());
 #endif
 	if (_unreference_owner_unsafe()) {

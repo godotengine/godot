@@ -2487,7 +2487,7 @@ _Thread::~_Thread() {
 	if (active) {
 		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running...");
 	}
-	ERR_FAIL_COND(active == true);
+	ERR_FAIL_COND(active);
 }
 /////////////////////////////////////
 

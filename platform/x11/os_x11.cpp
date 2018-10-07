@@ -1096,7 +1096,7 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	int old_h = xwa.height;
 
 	// If window resizable is disabled we need to update the attributes first
-	if (is_window_resizable() == false) {
+	if (!is_window_resizable()) {
 		XSizeHints *xsh;
 		xsh = XAllocSizeHints();
 		xsh->flags = PMinSize | PMaxSize;
@@ -1688,7 +1688,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		}
 	} else {
 		//ignore
-		if (last_is_pressed == false) {
+		if (!last_is_pressed) {
 			return;
 		}
 	}
@@ -2814,7 +2814,7 @@ void OS_X11::run() {
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 

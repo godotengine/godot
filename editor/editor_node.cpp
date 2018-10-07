@@ -3889,7 +3889,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 }
 
 void EditorNode::_scene_tab_hover(int p_tab) {
-	if (bool(EDITOR_GET("interface/scene_tabs/show_thumbnail_on_hover")) == false) {
+	if (!bool(EDITOR_GET("interface/scene_tabs/show_thumbnail_on_hover"))) {
 		return;
 	}
 	int current_tab = scene_tabs->get_current_tab();

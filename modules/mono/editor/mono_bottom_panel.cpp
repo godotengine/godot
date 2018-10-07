@@ -63,7 +63,7 @@ void MonoBottomPanel::_update_build_tabs_list() {
 				item_tooltip += "Running";
 			}
 
-			if (!tab->build_exited || !tab->build_result == MonoBuildTab::RESULT_SUCCESS) {
+			if (!tab->build_exited || tab->build_result == MonoBuildTab::RESULT_ERROR) {
 				item_tooltip += "\nErrors: " + itos(tab->error_count);
 			}
 

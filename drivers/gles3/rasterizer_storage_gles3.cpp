@@ -6841,7 +6841,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 			glDisable(GL_SCISSOR_TEST);
 			glColorMask(1, 1, 1, 1);
-			if (rt->buffers.active == false) {
+			if (!rt->buffers.active) {
 				glDepthMask(GL_TRUE);
 			}
 

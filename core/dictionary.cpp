@@ -145,6 +145,11 @@ bool Dictionary::operator==(const Dictionary &p_dictionary) const {
 	return _p == p_dictionary._p;
 }
 
+bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
+
+	return _p != p_dictionary._p;
+}
+
 void Dictionary::_ref(const Dictionary &p_from) const {
 
 	//make a copy first (thread safe)

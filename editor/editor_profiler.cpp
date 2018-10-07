@@ -257,7 +257,7 @@ void EditorProfiler::_update_plot() {
 
 					//get
 					const Metric &m = frame_metrics[idx];
-					if (m.valid == false)
+					if (!m.valid)
 						continue; //skip because invalid
 
 					float value = 0;

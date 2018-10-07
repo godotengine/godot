@@ -86,7 +86,7 @@ void HaikuDirectWindow::DirectConnected(direct_buffer_info *info) {
 void HaikuDirectWindow::MessageReceived(BMessage *message) {
 	switch (message->what) {
 		case REDRAW_MSG:
-			if (Main::iteration() == true) {
+			if (Main::iteration()) {
 				view->EnableDirectMode(false);
 				Quit();
 			}
