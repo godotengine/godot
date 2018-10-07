@@ -334,8 +334,14 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		can_integrate_forces = false;
 
-		// Remove all eventual constraints
-		assert_no_constraints();
+		if (!p_space) {
+			// Remove all eventual constraints
+			for (int i = btBody->getNumConstraintRefs() - 1; 0 <= i; --i) {
+				btTypedConstraint *btConst = btBody->getConstraintRef(i);
+				JointBullet *joint = static_cast<JointBullet *>(btConst->getUserConstraintPtr());
+				space->remove_constraint(joint);
+			}
+		}
 
 		// Remove this object form the physics world
 		space->remove_rigid_body(this);
@@ -345,6 +351,13 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 
 	if (space) {
 		space->add_rigid_body(this);
+
+		//Restore the constraints
+		for (int i = btBody->getNumConstraintRefs() - 1; 0 <= i; --i) {
+			btTypedConstraint *btConst = btBody->getConstraintRef(i);
+			JointBullet *joint = static_cast<JointBullet *>(btConst->getUserConstraintPtr());
+			space->add_constraint(joint);
+		}
 	}
 }
 
@@ -435,17 +448,6 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 
 	++collisionsCount;
 	return true;
-}
-
-void RigidBodyBullet::assert_no_constraints() {
-	if (btBody->getNumConstraintRefs()) {
-		WARN_PRINT("A body with a joints is destroyed. Please check the implementation in order to destroy the joint before the body.");
-	}
-	/*for(int i = btBody->getNumConstraintRefs()-1; 0<=i; --i){
-        btTypedConstraint* btConst = btBody->getConstraintRef(i);
-        JointBullet* joint = static_cast<JointBullet*>( btConst->getUserConstraintPtr() );
-        space->removeConstraint(joint);
-    }*/
 }
 
 void RigidBodyBullet::set_activation_state(bool p_active) {
