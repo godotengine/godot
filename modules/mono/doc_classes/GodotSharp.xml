@@ -23,18 +23,44 @@
 				Detaches the current thread from the mono runtime.
 			</description>
 		</method>
-		<method name="is_domain_loaded">
+		<method name="get_domain_id">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_scripts_domain_id">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_domain_finalizing_for_unload">
+			<return type="bool">
+			</return>
+			<argument index="0" name="domain_id" type="int">
+			</argument>
+			<description>
+				Returns whether the domain is being finalized.
+			</description>
+		</method>
+		<method name="is_runtime_initialized">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_runtime_shutting_down">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_scripts_domain_loaded">
 			<return type="bool">
 			</return>
 			<description>
 				Returns whether the scripts domain is loaded.
-			</description>
-		</method>
-		<method name="is_finalizing_domain">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the scripts domain is being finalized.
 			</description>
 		</method>
 	</methods>

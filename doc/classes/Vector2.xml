@@ -267,7 +267,10 @@
 	</members>
 	<constants>
 		<constant name="ZERO" value="Vector2( 0, 0 )">
-			Null vector.
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector2( 1, 1 )">
+			One vector.
 		</constant>
 		<constant name="INF" value="Vector2( inf, inf )">
 			Infinite vector.

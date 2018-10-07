@@ -12,24 +12,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="set_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="height" type="int">
-			</argument>
-			<description>
-				Set texture height.
-			</description>
-		</method>
-		<method name="set_width">
-			<return type="void">
-			</return>
-			<argument index="0" name="width" type="int">
-			</argument>
-			<description>
-				Set texture width.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="as_normalmap" type="bool" setter="set_as_normalmap" getter="is_normalmap">

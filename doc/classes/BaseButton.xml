@@ -106,6 +106,8 @@
 		<constant name="DRAW_DISABLED" value="3" enum="DrawMode">
 			The state of buttons are disabled.
 		</constant>
+		<constant name="DRAW_HOVER_PRESSED" value="4" enum="DrawMode">
+		</constant>
 		<constant name="ACTION_MODE_BUTTON_PRESS" value="0" enum="ActionMode">
 			Require just a press to consider the button clicked.
 		</constant>
