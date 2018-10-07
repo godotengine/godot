@@ -2102,12 +2102,18 @@ void EditorPropertyResource::_menu_option(int p_which) {
 	}
 }
 
-void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<Texture> &p_preview, ObjectID p_obj) {
+void EditorPropertyResource::_resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj) {
 
 	RES p = get_edited_object()->get(get_edited_property());
 	if (p.is_valid() && p->get_instance_id() == p_obj) {
+		String type = p->get_class_name();
+
+		if (ClassDB::is_parent_class(type, "Script")) {
+			assign->set_text(p->get_path().get_file());
+			return;
+		}
+
 		if (p_preview.is_valid()) {
-			String type = p->get_class_name();
 			preview->set_margin(MARGIN_LEFT, assign->get_icon()->get_width() + assign->get_stylebox("normal")->get_default_margin(MARGIN_LEFT) + get_constant("hseparation", "Button"));
 			if (type == "GradientTexture") {
 				preview->set_stretch_mode(TextureRect::STRETCH_SCALE);
