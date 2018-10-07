@@ -80,9 +80,12 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	char hbuf[1024];
 	char pbuf[2048];
 	String addr_str = (String)addr;
-	strncpy(abuf, addr_str.ascii().get_data(), 1024);
-	strncpy(hbuf, p_host.utf8().get_data(), 1024);
-	strncpy(pbuf, p_path.utf8().get_data(), 2048);
+	strncpy(abuf, addr_str.ascii().get_data(), 1023);
+	abuf[1023] = '\0';
+	strncpy(hbuf, p_host.utf8().get_data(), 1023);
+	hbuf[1023] = '\0';
+	strncpy(pbuf, p_path.utf8().get_data(), 2047);
+	pbuf[2047] = '\0';
 
 	i.context = context;
 	if (p_protocols.size() > 0)

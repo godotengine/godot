@@ -850,17 +850,16 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::INT: {
 
-			int64_t val = p_variant;
 			if (flags & ENCODE_FLAG_64) {
 				//64 bits
 				if (buf) {
-					encode_uint64(val, buf);
+					encode_uint64(p_variant.operator int64_t(), buf);
 				}
 
 				r_len += 8;
 			} else {
 				if (buf) {
-					encode_uint32(int32_t(val), buf);
+					encode_uint32(p_variant.operator int32_t(), buf);
 				}
 
 				r_len += 4;
