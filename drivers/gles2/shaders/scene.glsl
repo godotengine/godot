@@ -75,12 +75,12 @@ attribute highp vec4 instance_custom_data; // attrib:12
 // uniforms
 //
 
-uniform mat4 camera_matrix;
-uniform mat4 camera_inverse_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 projection_inverse_matrix;
+uniform highp mat4 camera_matrix;
+uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 projection_matrix;
+uniform highp mat4 projection_inverse_matrix;
 
-uniform mat4 world_transform;
+uniform highp mat4 world_transform;
 
 uniform highp float time;
 
@@ -156,22 +156,22 @@ varying highp vec3 diffuse_interp;
 varying highp vec3 specular_interp;
 
 // general for all lights
-uniform vec4 light_color;
-uniform float light_specular;
+uniform highp vec4 light_color;
+uniform highp float light_specular;
 
 // directional
-uniform vec3 light_direction;
+uniform highp vec3 light_direction;
 
 // omni
-uniform vec3 light_position;
+uniform highp vec3 light_position;
 
-uniform float light_range;
-uniform float light_attenuation;
+uniform highp float light_range;
+uniform highp float light_attenuation;
 
 // spot
-uniform float light_spot_attenuation;
-uniform float light_spot_range;
-uniform float light_spot_angle;
+uniform highp float light_spot_attenuation;
+uniform highp float light_spot_range;
+uniform highp float light_spot_angle;
 
 void light_compute(
 		vec3 N,
@@ -262,9 +262,9 @@ void light_compute(
 
 #ifdef USE_REFLECTION_PROBE1
 
-uniform mat4 refprobe1_local_matrix;
+uniform highp mat4 refprobe1_local_matrix;
 varying mediump vec4 refprobe1_reflection_normal_blend;
-uniform vec3 refprobe1_box_extents;
+uniform highp vec3 refprobe1_box_extents;
 
 #ifndef USE_LIGHTMAP
 varying mediump vec3 refprobe1_ambient_normal;
@@ -274,9 +274,9 @@ varying mediump vec3 refprobe1_ambient_normal;
 
 #ifdef USE_REFLECTION_PROBE2
 
-uniform mat4 refprobe2_local_matrix;
+uniform highp mat4 refprobe2_local_matrix;
 varying mediump vec4 refprobe2_reflection_normal_blend;
-uniform vec3 refprobe2_box_extents;
+uniform highp vec3 refprobe2_box_extents;
 
 #ifndef USE_LIGHTMAP
 varying mediump vec3 refprobe2_ambient_normal;
@@ -309,7 +309,6 @@ uniform highp float fog_height_min;
 uniform highp float fog_height_max;
 uniform mediump float fog_height_curve;
 #endif
-
 
 #endif //fog
 
@@ -625,19 +624,19 @@ VERTEX_SHADER_CODE
 
 	{
 
-	    float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
+		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
-	    fog_amount = pow(fog_z, fog_depth_curve);
+		fog_amount = pow(fog_z, fog_depth_curve);
 	}
 #endif
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-	    float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
-	    fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
+		float y = (camera_matrix * vec4(vertex_interp, 1.0)).y;
+		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif
-	fog_interp = vec4(fog_color,fog_amount);
+	fog_interp = vec4(fog_color, fog_amount);
 
 #endif //fog
 
@@ -671,13 +670,13 @@ precision highp int;
 // uniforms
 //
 
-uniform mat4 camera_matrix;
+uniform highp mat4 camera_matrix;
 /* clang-format on */
-uniform mat4 camera_inverse_matrix;
-uniform mat4 projection_matrix;
-uniform mat4 projection_inverse_matrix;
+uniform highp mat4 camera_inverse_matrix;
+uniform highp mat4 projection_matrix;
+uniform highp mat4 projection_inverse_matrix;
 
-uniform mat4 world_transform;
+uniform highp mat4 world_transform;
 
 uniform highp float time;
 
@@ -704,9 +703,9 @@ varying mediump vec3 refprobe1_ambient_normal;
 #else
 
 uniform bool refprobe1_use_box_project;
-uniform vec3 refprobe1_box_extents;
+uniform highp vec3 refprobe1_box_extents;
 uniform vec3 refprobe1_box_offset;
-uniform mat4 refprobe1_local_matrix;
+uniform highp mat4 refprobe1_local_matrix;
 
 #endif //use vertex lighting
 
@@ -731,9 +730,9 @@ varying mediump vec3 refprobe2_ambient_normal;
 #else
 
 uniform bool refprobe2_use_box_project;
-uniform vec3 refprobe2_box_extents;
+uniform highp vec3 refprobe2_box_extents;
 uniform vec3 refprobe2_box_offset;
-uniform mat4 refprobe2_local_matrix;
+uniform highp mat4 refprobe2_local_matrix;
 
 #endif //use vertex lighting
 
@@ -874,29 +873,29 @@ uniform float ambient_energy;
 varying highp vec3 diffuse_interp;
 varying highp vec3 specular_interp;
 
-uniform vec3 light_direction; //may be used by fog, so leave here
+uniform highp vec3 light_direction; //may be used by fog, so leave here
 
 #else
 //done in fragment
 // general for all lights
-uniform vec4 light_color;
-uniform float light_specular;
+uniform highp vec4 light_color;
+uniform highp float light_specular;
 
 // directional
-uniform vec3 light_direction;
+uniform highp vec3 light_direction;
 // omni
-uniform vec3 light_position;
+uniform highp vec3 light_position;
 
-uniform float light_attenuation;
+uniform highp float light_attenuation;
 
 // spot
-uniform float light_spot_attenuation;
-uniform float light_spot_range;
-uniform float light_spot_angle;
+uniform highp float light_spot_attenuation;
+uniform highp float light_spot_range;
+uniform highp float light_spot_angle;
 #endif
 
 //this is needed outside above if because dual paraboloid wants it
-uniform float light_range;
+uniform highp float light_range;
 
 #ifdef USE_SHADOW
 
@@ -2021,8 +2020,8 @@ FRAGMENT_SHADER_CODE
 
 #if defined(USE_VERTEX_LIGHTING)
 
-	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_interp.rgb,fog_interp.a);
-#else	//pixel based fog
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_interp.rgb, fog_interp.a);
+#else //pixel based fog
 	float fog_amount = 0.0;
 
 #ifdef LIGHT_MODE_DIRECTIONAL
@@ -2036,26 +2035,26 @@ FRAGMENT_SHADER_CODE
 
 	{
 
-	    float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
+		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
-	    fog_amount = pow(fog_z, fog_depth_curve);
+		fog_amount = pow(fog_z, fog_depth_curve);
 
-	    if (fog_transmit_enabled) {
-		vec3 total_light = gl_FragColor.rgb;
-		float transmit = pow(fog_z, fog_transmit_curve);
-		fog_color = mix(max(total_light, fog_color), fog_color, transmit);
-	    }
+		if (fog_transmit_enabled) {
+			vec3 total_light = gl_FragColor.rgb;
+			float transmit = pow(fog_z, fog_transmit_curve);
+			fog_color = mix(max(total_light, fog_color), fog_color, transmit);
+		}
 	}
 #endif
 
 #ifdef FOG_HEIGHT_ENABLED
 	{
-	    float y = (camera_matrix * vec4(vertex, 1.0)).y;
-	    fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
+		float y = (camera_matrix * vec4(vertex, 1.0)).y;
+		fog_amount = max(fog_amount, pow(smoothstep(fog_height_min, fog_height_max, y), fog_height_curve));
 	}
 #endif
 
-	gl_FragColor.rgb = mix(gl_FragColor.rgb,fog_color,fog_amount);
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_color, fog_amount);
 
 #endif //use vertex lit
 
