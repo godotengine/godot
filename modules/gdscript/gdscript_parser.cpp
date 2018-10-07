@@ -4342,15 +4342,21 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							// Enumeration
 							bool is_flags = false;
 
-							if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-								tokenizer->advance();
-
-								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
-									is_flags = true;
+							String prefix_filter = "";
+							for (int i = 0; i < 2; i++) {
+								if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 									tokenizer->advance();
-								} else {
-									current_export = PropertyInfo();
-									_set_error("Expected 'FLAGS' after comma.");
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
+										is_flags = true;
+										tokenizer->advance();
+									} else if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING) {
+										prefix_filter = tokenizer->get_token_constant();
+										tokenizer->advance();
+									} else {
+										current_export = PropertyInfo();
+										_set_error("Expected 'FLAGS' or string-constant prefix filter after comma.");
+									}
 								}
 							}
 
@@ -4370,10 +4376,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									else
 										first = false;
 
-									current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
+									String s = E->get();
+									current_export.hint_string += (s.substr(prefix_filter.length(), s.length())).camelcase_to_underscore(true).capitalize().xml_escape();
+
 									if (!is_flags) {
-										current_export.hint_string += ":";
-										current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
+
+										current_export.hint_string += ":" + enum_values[s].operator String().xml_escape();
 									}
 								}
 							}
