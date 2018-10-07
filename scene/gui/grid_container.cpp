@@ -184,8 +184,6 @@ void GridContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);
-	ClassDB::bind_method(D_METHOD("get_child_control_at_cell", "row", "column"),
-			&GridContainer::get_child_control_at_cell);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns", PROPERTY_HINT_RANGE, "1,1024,1"), "set_columns", "get_columns");
 }
@@ -239,21 +237,6 @@ Size2 GridContainer::get_minimum_size() const {
 	ms.width += hsep * max_col;
 
 	return ms;
-}
-
-Control *GridContainer::get_child_control_at_cell(int row, int column) {
-	Control *c;
-	int grid_index = row * columns + column;
-	for (int i = 0; i < get_child_count(); i++) {
-		c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
-			continue;
-
-		if (grid_index == i) {
-			break;
-		}
-	}
-	return c;
 }
 
 GridContainer::GridContainer() {
