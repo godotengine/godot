@@ -7,6 +7,7 @@
 @property(nonatomic, strong) NSMutableDictionary *gamepadById;
 @property(nonatomic, strong) NSMutableArray *gamepads;
 @property(nonatomic, strong) NSMutableArray *pendingGamepads;
+@property(nonatomic, strong) NSMutableArray *availablePlayerIndices;
 
 @end
 
@@ -27,6 +28,7 @@
 		self.gamepadById = [NSMutableDictionary dictionary];
 		self.gamepads = [NSMutableArray arrayWithCapacity:5];
 		self.pendingGamepads = [NSMutableArray arrayWithCapacity:3];
+		self.availablePlayerIndices = [NSMutableArray arrayWithArray:@[ @(GCControllerPlayerIndex1), @(GCControllerPlayerIndex2), @(GCControllerPlayerIndex3), @(GCControllerPlayerIndex4) ]];
 
 		[[NSNotificationCenter defaultCenter]
 				addObserver:self
@@ -69,10 +71,15 @@
 }
 
 - (GCControllerPlayerIndex)getFreePlayerIndex {
-	if (self.gamepads.count == 0) {
-		return GCControllerPlayerIndex1;
+	NSNumber *index = self.availablePlayerIndices.firstObject;
+	if (!index) {
+		return GCControllerPlayerIndexUnset;
 	}
-	return (GCControllerPlayerIndex)self.gamepads.count - 1;
+
+	// Remove this index to prevent reuse
+	[self.availablePlayerIndices removeObjectAtIndex:0];
+
+	return index.integerValue;
 }
 
 - (int)getJoyIdForController:(GCController *)controller {
@@ -125,12 +132,19 @@
 - (void)removeController:(GCController *)controller {
 	// tell Godot this joystick is no longer there
 	int joy_id = [self getJoyIdForController:controller];
+	if (joy_id == -1) {
+		// Bail out if Godot doesn't know about this controller
+		return;
+	}
 	OSIPhone::get_singleton()->joy_connection_changed(joy_id, false, "");
 
 	// Stop tracking internally
 	NSNumber *key = [self.gamepadById allKeysForObject:controller].firstObject;
 	[self.gamepadById removeObjectForKey:key];
 	[self.gamepads removeObject:controller];
+
+	// Add the game controller index back to available
+	[self.availablePlayerIndices addObject:@(controller.playerIndex)];
 }
 
 - (void)setControllerInputHandler:(GCController *)controller {

@@ -131,7 +131,7 @@ OS::VideoMode _get_video_mode() {
 	_instance = self;
 
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
-	printf("CADisplayLink is %s. From setting 'display.iOS/use_cadisplaylink'", self.useCADisplayLink ? "enabled" : "disabled");
+	printf("CADisplayLink is %s. From setting 'display.iOS/use_cadisplaylink'\n", self.useCADisplayLink ? "enabled" : "disabled");
 
 	self.active = NO;
 	self.multipleTouchEnabled = YES;
@@ -215,9 +215,6 @@ OS::VideoMode _get_video_mode() {
 }
 
 - (BOOL)createFramebuffer {
-
-	printf("******** screen size %i, %i\n", backingWidth, backingHeight);
-
 	// Generate IDs for a framebuffer object and a color renderbuffer
 	glGenFramebuffersOES(1, &viewFramebuffer);
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
@@ -234,13 +231,14 @@ OS::VideoMode _get_video_mode() {
 	}
 
 	if (OS::get_singleton()) {
+		OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
+
 		OS::VideoMode vm;
 		vm.fullscreen = true;
-		vm.width = backingWidth;
-		vm.height = backingHeight;
 		vm.resizable = false;
-		OS::get_singleton()->set_video_mode(OSIPhone::get_singleton()->get_video_mode());
-		OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
+		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &vm.width);
+		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &vm.height);
+		OS::get_singleton()->set_video_mode(vm);
 	}
 
 	// Save the gl reference to the frame buffer

@@ -36,6 +36,5 @@
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate>
 
 @property(strong, nonatomic) UIWindow *window;
-@property(assign, nonatomic, getter=isFocused) BOOL focused;
 
 @end

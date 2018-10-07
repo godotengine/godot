@@ -57,7 +57,12 @@ extern int iphone_main(int, int, int, char **, String);
 extern void iphone_finish();
 
 extern void _set_keep_screen_on(bool p_enabled);
-extern OS::VideoMode _get_video_mode();
+
+@interface AppDelegate ()
+
+@property(assign, nonatomic, getter=isFocused) BOOL focused;
+
+@end
 
 @implementation AppDelegate
 
@@ -69,7 +74,6 @@ extern OS::VideoMode _get_video_mode();
 				exit(0);
 			}
 
-			OS::get_singleton()->set_video_mode(_get_video_mode());
 			++frame_count;
 
 			NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
@@ -147,11 +151,12 @@ extern OS::VideoMode _get_video_mode();
 	// Show the window
 	[self.window makeKeyAndVisible];
 
-	OS::VideoMode vm = _get_video_mode();
+	CGSize bufferSize = [UIScreen mainScreen].nativeBounds.size;
+	printf("******** screen size %.0f, %.0f\n", bufferSize.width, bufferSize.height);
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
 			NSUserDomainMask, YES);
 	NSString *documents = paths.firstObject;
-	int err = iphone_main(vm.width, vm.height, gargc, gargv, String::utf8([documents UTF8String]));
+	int err = iphone_main((int)bufferSize.width, (int)bufferSize.height, gargc, gargv, String::utf8([documents UTF8String]));
 	if (err != 0) {
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...
 		exit(0);

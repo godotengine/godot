@@ -52,7 +52,6 @@
 
 	// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
 	NSTimer *animationTimer;
-	// I'd like to remove the above as an option
 }
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;

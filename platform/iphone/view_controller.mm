@@ -37,8 +37,6 @@
 static String keyboard_text;
 static GodotGameViewController *_instance = nil;
 
-extern CGFloat _points_to_pixels(CGFloat points);
-
 @interface GodotGameViewController ()
 
 @property(nonatomic, strong) NSMutableArray *activeTouches;
@@ -94,7 +92,7 @@ extern CGFloat _points_to_pixels(CGFloat points);
 	return (GLView *)self.view;
 }
 
-#pragma mark - View Geometry
+#pragma mark - UIViewController Overrides
 - (BOOL)shouldAutorotate {
 	switch (OS::get_singleton()->get_screen_orientation()) {
 		case OS::SCREEN_SENSOR:
@@ -107,22 +105,7 @@ extern CGFloat _points_to_pixels(CGFloat points);
 };
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-	switch (OS::get_singleton()->get_screen_orientation()) {
-		case OS::SCREEN_PORTRAIT:
-			return UIInterfaceOrientationMaskPortrait;
-		case OS::SCREEN_REVERSE_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeRight;
-		case OS::SCREEN_REVERSE_PORTRAIT:
-			return UIInterfaceOrientationMaskPortraitUpsideDown;
-		case OS::SCREEN_SENSOR_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscape;
-		case OS::SCREEN_SENSOR_PORTRAIT:
-			return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-		case OS::SCREEN_SENSOR:
-			return UIInterfaceOrientationMaskAll;
-		case OS::SCREEN_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeLeft;
-	}
+	return UIInterfaceOrientationMaskAll;
 };
 
 - (BOOL)prefersStatusBarHidden {
@@ -176,7 +159,7 @@ extern CGFloat _points_to_pixels(CGFloat points);
 - (void)keyboardOnScreen:(NSNotification *)notification {
 	NSValue *value = notification.userInfo[UIKeyboardFrameEndUserInfoKey];
 	CGRect frame = [value CGRectValue];
-	const CGFloat kScaledHeight = _points_to_pixels(frame.size.height);
+	const CGFloat kScaledHeight = frame.size.height * [UIScreen mainScreen].nativeScale;
 	OSIPhone::get_singleton()->set_virtual_keyboard_height(kScaledHeight);
 }
 
@@ -228,8 +211,8 @@ void _hide_keyboard() {
 
 Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height) {
 	UIEdgeInsets insets = UIEdgeInsetsMake(0, 0, 0, 0);
-	if ([_instance respondsToSelector:@selector(safeAreaInsets)]) {
-		insets = [_instance safeAreaInsets];
+	if ([_instance.view respondsToSelector:@selector(safeAreaInsets)]) {
+		insets = [_instance.view safeAreaInsets];
 	}
 	ERR_FAIL_COND_V(insets.left < 0 || insets.top < 0 || insets.right < 0 || insets.bottom < 0,
 			Rect2(0, 0, p_window_width, p_window_height));
