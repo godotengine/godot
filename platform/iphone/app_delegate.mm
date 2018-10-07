@@ -33,9 +33,9 @@
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "gamepad_iphone.h"
 #import "main/main.h"
+#import "motion_iphone.h"
 #import "os_iphone.h"
 #import "view_controller.h"
-#import "motion_iphone.h"
 
 #import <CoreMotion/CoreMotion.h>
 #import <AudioToolbox/AudioServices.h>

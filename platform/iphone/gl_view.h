@@ -36,7 +36,7 @@
 
 @protocol GLViewDelegate;
 
-@interface GLView : UIView <UIKeyInput> {
+@interface GLView : UIView {
 @private
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
@@ -69,24 +69,15 @@
 - (void)stopAnimation;
 - (void)drawView;
 
-- (void)deleteBackward;
-- (BOOL)hasText;
-- (void)insertText:(NSString *)p_text;
-
-- (void)keyboardOnScreen:(NSNotification *)notification;
-- (void)keyboardHidden:(NSNotification *)notification;
-
 @end
 
 @protocol GLViewDelegate <NSObject>
 
 @required
-
 // Draw with OpenGL ES
 - (void)drawView:(GLView *)view;
 
 @optional
-
 // Called whenever you need to do some initialization before rendering.
 - (void)setupView:(GLView *)view;
 

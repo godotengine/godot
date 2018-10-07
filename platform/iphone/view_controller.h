@@ -33,7 +33,7 @@
 
 @class GLView;
 
-@interface GodotGameViewController : UIViewController <GKGameCenterControllerDelegate>
+@interface GodotGameViewController : UIViewController <GKGameCenterControllerDelegate, UIKeyInput>
 
 @property(readonly) GLView *glView;
 

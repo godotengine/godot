@@ -7,4 +7,3 @@
 - (void)updateMotion;
 
 @end
-

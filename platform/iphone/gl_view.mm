@@ -30,7 +30,6 @@
 
 #import "gl_view.h"
 
-#import "core/os/keyboard.h"
 #import "core/project_settings.h"
 #import "os_iphone.h"
 #import "servers/audio_server.h"
@@ -39,7 +38,6 @@
 
 bool gles3_available = true;
 int gl_view_base_fb;
-static String keyboard_text;
 
 static GLView *_instance = nil;
 
@@ -223,7 +221,6 @@ OS::VideoMode _get_video_mode() {
 	// Generate IDs for a framebuffer object and a color renderbuffer
 	glGenFramebuffersOES(1, &viewFramebuffer);
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
 
 	// Next the render backing store
 	[self createRenderBuffer];
@@ -232,7 +229,7 @@ OS::VideoMode _get_video_mode() {
 	[self createDepthBuffer];
 
 	if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+		printf("failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
 		return NO;
 	}
 
@@ -262,6 +259,7 @@ OS::VideoMode _get_video_mode() {
 	// allowing us to draw into a buffer that will later be rendered to screen wherever the layer is (which corresponds with our view).
 	[context renderbufferStorage:GL_RENDERBUFFER_OES
 					fromDrawable:(id<EAGLDrawable>)self.layer];
+	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
 
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);

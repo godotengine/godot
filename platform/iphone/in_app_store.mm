@@ -111,7 +111,7 @@ void InAppStore::_bind_methods() {
 				printf("status purchased!\n");
 				InAppStore::get_singleton()->_record_purchase(pid);
 
-				// Get the transaction receipt file path location in the app 
+				// Get the transaction receipt file path location in the app
 				// bundle and read the contents
 				NSURL *receiptFileURL = [[NSBundle mainBundle] appStoreReceiptURL];
 				NSData *receipt = [NSData dataWithContentsOfURL:receiptFileURL];
@@ -133,13 +133,13 @@ void InAppStore::_bind_methods() {
 				printf("status transaction failed!\n");
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 				break;
-			} 
+			}
 			case SKPaymentTransactionStateRestored: {
 				printf("status transaction restored!\n");
 				InAppStore::get_singleton()->_record_purchase(pid);
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 				break;
-			} 
+			}
 			default: {
 				printf("status default %i!\n", (int)transaction.transactionState);
 				break;

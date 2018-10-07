@@ -1,8 +1,8 @@
 #import <AVFoundation/AVFoundation.h>
-#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-@interface MediaView : UIView 
+@interface MediaView : UIView
 
 @property(strong, nonatomic) AVAsset *avAsset;
 @property(strong, nonatomic) AVPlayerItem *avPlayerItem;
