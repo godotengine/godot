@@ -227,12 +227,6 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 			_editor_select_prev();
 		}
 
-		if (k->get_scancode() == KEY_ESCAPE) {
-			for (int i = 0; i < bottom_panel_items.size(); i++) {
-				_bottom_panel_switch(false, i);
-			}
-		}
-
 		if (old_editor != editor_plugin_screen) {
 			get_tree()->set_input_as_handled();
 		}
