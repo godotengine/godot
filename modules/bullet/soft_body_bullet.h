@@ -91,9 +91,10 @@ public:
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
-	virtual void dispatch_callbacks();
-	virtual void on_collision_filters_change();
-	virtual void on_collision_checker_start();
+	virtual void dispatch_callbacks() {}
+	virtual void on_collision_filters_change() {}
+	virtual void on_collision_checker_start() {}
+	virtual void on_collision_checker_end() {}
 	virtual void on_enter_area(AreaBullet *p_area);
 	virtual void on_exit_area(AreaBullet *p_area);
 

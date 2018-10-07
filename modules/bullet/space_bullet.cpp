@@ -540,17 +540,20 @@ void onBulletPreTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep
 
 void onBulletTickCallback(btDynamicsWorld *p_dynamicsWorld, btScalar timeStep) {
 
-	// Notify all Collision objects the collision checker is started
 	const btCollisionObjectArray &colObjArray = p_dynamicsWorld->getCollisionObjectArray();
+
+	// Notify all Collision objects the collision checker is started
 	for (int i = colObjArray.size() - 1; 0 <= i; --i) {
-		CollisionObjectBullet *colObj = static_cast<CollisionObjectBullet *>(colObjArray[i]->getUserPointer());
-		assert(NULL != colObj);
-		colObj->on_collision_checker_start();
+		static_cast<CollisionObjectBullet *>(colObjArray[i]->getUserPointer())->on_collision_checker_start();
 	}
 
 	SpaceBullet *sb = static_cast<SpaceBullet *>(p_dynamicsWorld->getWorldUserInfo());
 	sb->check_ghost_overlaps();
 	sb->check_body_collision();
+
+	for (int i = colObjArray.size() - 1; 0 <= i; --i) {
+		static_cast<CollisionObjectBullet *>(colObjArray[i]->getUserPointer())->on_collision_checker_end();
+	}
 }
 
 BulletPhysicsDirectSpaceState *SpaceBullet::get_direct_state() {
@@ -649,7 +652,6 @@ void SpaceBullet::check_ghost_overlaps() {
 	btConvexShape *area_shape;
 	btGjkPairDetector::ClosestPointInput gjk_input;
 	AreaBullet *area;
-	RigidCollisionObjectBullet *otherObject;
 	int x(-1), i(-1), y(-1), z(-1), indexOverlap(-1);
 
 	/// For each areas
@@ -676,13 +678,17 @@ void SpaceBullet::check_ghost_overlaps() {
 		// For each overlapping
 		for (i = ghostOverlaps.size() - 1; 0 <= i; --i) {
 
-			if (ghostOverlaps[i]->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
-				if (!static_cast<AreaBullet *>(ghostOverlaps[i]->getUserPointer())->is_monitorable())
-					continue;
-			} else if (ghostOverlaps[i]->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY)
+			btCollisionObject *overlapped_bt_co = ghostOverlaps[i];
+			RigidCollisionObjectBullet *otherObject = static_cast<RigidCollisionObjectBullet *>(overlapped_bt_co->getUserPointer());
+
+			if (!area->is_transform_changed() && !otherObject->is_transform_changed())
 				continue;
 
-			otherObject = static_cast<RigidCollisionObjectBullet *>(ghostOverlaps[i]->getUserPointer());
+			if (overlapped_bt_co->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
+				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable())
+					continue;
+			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY)
+				continue;
 
 			bool hasOverlap = false;
 

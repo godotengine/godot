@@ -74,7 +74,8 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		bt_collision_object(NULL),
 		body_scale(1., 1., 1.),
 		force_shape_reset(false),
-		space(NULL) {}
+		space(NULL),
+		isTransformChanged(false) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it
@@ -188,10 +189,15 @@ Transform CollisionObjectBullet::get_transform() const {
 
 void CollisionObjectBullet::set_transform__bullet(const btTransform &p_global_transform) {
 	bt_collision_object->setWorldTransform(p_global_transform);
+	notify_transform_changed();
 }
 
 const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 	return bt_collision_object->getWorldTransform();
+}
+
+void CollisionObjectBullet::notify_transform_changed() {
+	isTransformChanged = true;
 }
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
@@ -200,7 +206,7 @@ RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
-	remove_all_shapes(true);
+	remove_all_shapes(true, true);
 	if (mainShape && mainShape->isCompound()) {
 		bulletdelete(mainShape);
 	}
@@ -260,13 +266,14 @@ void RigidCollisionObjectBullet::remove_shape_full(int p_index) {
 	reload_shapes();
 }
 
-void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBody) {
+void RigidCollisionObjectBullet::remove_all_shapes(bool p_permanentlyFromThisBody, bool p_force_not_reload) {
 	// Reverse order required for delete.
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		internal_shape_destroy(i, p_permanentlyFromThisBody);
 	}
 	shapes.clear();
-	reload_shapes();
+	if (!p_force_not_reload)
+		reload_shapes();
 }
 
 void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transform &p_transform) {
@@ -322,9 +329,6 @@ void RigidCollisionObjectBullet::reload_shapes() {
 	}
 
 	const btVector3 body_scale(get_bt_body_scale());
-
-	if (!shape_count)
-		return;
 
 	// Try to optimize by not using compound
 	if (1 == shape_count) {

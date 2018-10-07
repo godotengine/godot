@@ -82,7 +82,7 @@ public:
 	virtual void setWorldTransform(const btTransform &worldTrans) {
 		bodyCurrentWorldTransform = worldTrans;
 
-		owner->scratch();
+		owner->notify_transform_changed();
 	}
 
 public:

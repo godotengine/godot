@@ -1489,7 +1489,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		body->set_space(NULL);
 
-		body->remove_all_shapes(true);
+		body->remove_all_shapes(true, true);
 
 		rigid_body_owner.free(p_rid);
 		bulletdelete(body);
@@ -1509,7 +1509,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		area->set_space(NULL);
 
-		area->remove_all_shapes(true);
+		area->remove_all_shapes(true, true);
 
 		area_owner.free(p_rid);
 		bulletdelete(area);

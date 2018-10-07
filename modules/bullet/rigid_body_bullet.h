@@ -202,6 +202,7 @@ private:
 	real_t angularDamp;
 	bool can_sleep;
 	bool omit_forces_integration;
+	bool can_integrate_forces;
 
 	Vector<CollisionData> collisions;
 	// these parameters are used to avoid vector resize
@@ -216,7 +217,6 @@ private:
 	int countGravityPointSpaces;
 	bool isScratchedSpaceOverrideModificator;
 
-	bool isTransformChanged;
 	bool previousActiveState; // Last check state
 
 	ForceIntegrationCallback *force_integration_callback;
@@ -237,11 +237,12 @@ public:
 
 	virtual void dispatch_callbacks();
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
-	void scratch();
 	void scratch_space_override_modificator();
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start();
+	virtual void on_collision_checker_end();
+
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
 		maxCollisionsDetection = p_maxCollisionsDetection;
 		collisions.resize(p_maxCollisionsDetection);
@@ -310,6 +311,8 @@ public:
 
 	/// Kinematic
 	void reload_kinematic_shapes();
+
+	virtual void notify_transform_changed();
 
 private:
 	void _internal_set_mass(real_t p_mass);

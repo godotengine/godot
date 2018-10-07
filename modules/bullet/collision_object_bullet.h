@@ -132,6 +132,7 @@ protected:
 	/// New area is added when overlap with new area (AreaBullet::addOverlap), then is removed when it exit (CollisionObjectBullet::onExitArea)
 	/// This array is used mainly to know which area hold the pointer of this object
 	Vector<AreaBullet *> areasOverlapped;
+	bool isTransformChanged;
 
 public:
 	CollisionObjectBullet(Type p_type);
@@ -187,6 +188,7 @@ public:
 	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
 
 	virtual void on_collision_checker_start() = 0;
+	virtual void on_collision_checker_end() = 0;
 
 	virtual void dispatch_callbacks() = 0;
 
@@ -204,6 +206,9 @@ public:
 	Transform get_transform() const;
 	virtual void set_transform__bullet(const btTransform &p_global_transform);
 	virtual const btTransform &get_transform__bullet() const;
+
+	bool is_transform_changed() const { return isTransformChanged; }
+	virtual void notify_transform_changed();
 };
 
 class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwnerBullet {
@@ -230,7 +235,7 @@ public:
 
 	virtual void remove_shape_full(ShapeBullet *p_shape);
 	void remove_shape_full(int p_index);
-	void remove_all_shapes(bool p_permanentlyFromThisBody = false);
+	void remove_all_shapes(bool p_permanentlyFromThisBody = false, bool p_force_not_reload = false);
 
 	void set_shape_transform(int p_index, const Transform &p_transform);
 
