@@ -635,7 +635,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon("GuiVisibilityHidden", "EditorIcons"));
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
-	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
 	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1, 2, 0, 0, 0);
 	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
@@ -734,10 +734,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_color_selected", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("vseparation", "ItemList", 2 * EDSCALE);
-	theme->set_constant("hseparation", "ItemList", 2 * EDSCALE);
+	theme->set_constant("vseparation", "ItemList", 3 * EDSCALE);
+	theme->set_constant("hseparation", "ItemList", 3 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", default_margin_size * EDSCALE);
-	theme->set_constant("line_separation", "ItemList", 2 * EDSCALE);
+	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// Tabs & TabContainer
 	theme->set_stylebox("tab_fg", "TabContainer", style_tab_selected);
