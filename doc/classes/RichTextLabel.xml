@@ -166,6 +166,12 @@
 				Adds a meta tag to the tag stack. Similar to the bbcode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
+		<method name="push_strikethrough">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="push_table">
 			<return type="void">
 			</return>
@@ -304,15 +310,17 @@
 		</constant>
 		<constant name="ITEM_UNDERLINE" value="6" enum="ItemType">
 		</constant>
-		<constant name="ITEM_ALIGN" value="7" enum="ItemType">
+		<constant name="ITEM_STRIKETHROUGH" value="7" enum="ItemType">
 		</constant>
-		<constant name="ITEM_INDENT" value="8" enum="ItemType">
+		<constant name="ITEM_ALIGN" value="8" enum="ItemType">
 		</constant>
-		<constant name="ITEM_LIST" value="9" enum="ItemType">
+		<constant name="ITEM_INDENT" value="9" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TABLE" value="10" enum="ItemType">
+		<constant name="ITEM_LIST" value="10" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="11" enum="ItemType">
+		<constant name="ITEM_TABLE" value="11" enum="ItemType">
+		</constant>
+		<constant name="ITEM_META" value="12" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>

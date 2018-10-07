@@ -63,6 +63,8 @@
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			A status representing a [code]StreamPeerSSL[/code] that is disconnected.
 		</constant>
+		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
+		</constant>
 		<constant name="STATUS_CONNECTED" value="2" enum="Status">
 			A status representing a [code]StreamPeerSSL[/code] that is connected to a host.
 		</constant>

@@ -31,9 +31,13 @@
 		</theme_item>
 		<theme_item name="font_color_hover" type="Color">
 		</theme_item>
+		<theme_item name="font_color_hover_pressed" type="Color">
+		</theme_item>
 		<theme_item name="font_color_pressed" type="Color">
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
+		</theme_item>
+		<theme_item name="hover_pressed" type="StyleBox">
 		</theme_item>
 		<theme_item name="hseparation" type="int">
 		</theme_item>

@@ -4380,7 +4380,7 @@
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
 		</constant>
-		<constant name="ENV_TONE_MAPPER_REINHARDT" value="1" enum="EnvironmentToneMapper">
+		<constant name="ENV_TONE_MAPPER_REINHARD" value="1" enum="EnvironmentToneMapper">
 		</constant>
 		<constant name="ENV_TONE_MAPPER_FILMIC" value="2" enum="EnvironmentToneMapper">
 		</constant>
