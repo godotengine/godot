@@ -653,7 +653,7 @@ bool RasterizerSceneGLES3::reflection_probe_instance_begin_render(RID p_instance
 
 	int best_free = -1;
 	int best_used = -1;
-	uint64_t best_used_frame;
+	uint64_t best_used_frame = 0;
 
 	for (int i = 0; i < reflection_atlas->reflections.size(); i++) {
 		if (reflection_atlas->reflections[i].owner == RID()) {
