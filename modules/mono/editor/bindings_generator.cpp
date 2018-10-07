@@ -1269,12 +1269,12 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	output.push_back("namespace GodotSharpBindings\n" OPEN_BLOCK "\n");
 
 	output.push_back("uint64_t get_core_api_hash() { return ");
-	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + "; }\n");
+	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + "U; }\n");
 
 	output.push_back("#ifdef TOOLS_ENABLED\n"
 					 "uint64_t get_editor_api_hash() { return ");
-	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) +
-					 "; }\n#endif // TOOLS_ENABLED\n");
+	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) + "U; }\n");
+	output.push_back("#endif // TOOLS_ENABLED\n");
 
 	output.push_back("uint32_t get_bindings_version() { return ");
 	output.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + "; }\n");
@@ -2019,7 +2019,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
-	itype.c_arg_in = "&%s";
+	itype.c_arg_in = "&%s_in";
 	// /* MonoBoolean <---> bool
 	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
 	itype.c_out = "\treturn (%0)%1;\n";
