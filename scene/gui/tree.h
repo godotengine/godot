@@ -552,6 +552,9 @@ public:
 	void deselect_all();
 	bool is_anything_selected();
 
+	void expand_all();
+	void collapse_all();
+
 	void set_columns(int p_columns);
 	int get_columns() const;
 
