@@ -172,6 +172,8 @@ public:
 
 	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */; }
 
+	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
+
 	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ MonoDomain *get_tools_domain() { return tools_domain; }
@@ -260,8 +262,6 @@ class _GodotSharp : public Object {
 
 	friend class GDMono;
 
-	void _dispose_callback();
-
 	bool _is_domain_finalizing_for_unload(int32_t p_domain_id);
 
 	List<NodePath *> np_delete_queue;
@@ -294,9 +294,6 @@ public:
 
 	bool is_runtime_shutting_down();
 	bool is_runtime_initialized();
-
-	void queue_dispose(NodePath *p_node_path);
-	void queue_dispose(RID *p_rid);
 
 	_GodotSharp();
 	~_GodotSharp();
