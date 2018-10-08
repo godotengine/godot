@@ -146,17 +146,17 @@ extern void _set_keep_screen_on(bool p_enabled);
 	self.focused = NO;
 
 	// Create a full-screen window
-	CGRect rect = [[UIScreen mainScreen] bounds];
-	self.window = [[UIWindow alloc] initWithFrame:rect];
+	CGRect screenBounds = [[UIScreen mainScreen] bounds];
+	self.window = [[UIWindow alloc] initWithFrame:screenBounds];
 	// Show the window
 	[self.window makeKeyAndVisible];
 
-	CGSize bufferSize = [UIScreen mainScreen].nativeBounds.size;
-	printf("******** screen size %.0f, %.0f\n", bufferSize.width, bufferSize.height);
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-			NSUserDomainMask, YES);
-	NSString *documents = paths.firstObject;
-	int err = iphone_main((int)bufferSize.width, (int)bufferSize.height, gargc, gargv, String::utf8([documents UTF8String]));
+	const CGFloat kPixelScale = [UIScreen mainScreen].scale;
+	const int bufferWidth = (screenBounds.size.width * kPixelScale);
+	const int bufferHeight = (screenBounds.size.height * kPixelScale);
+	printf("******** screen size %i, %i\n", bufferWidth, bufferHeight);
+	NSString *documents = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+	int err = iphone_main(bufferWidth, bufferHeight, gargc, gargv, String::utf8([documents UTF8String]));
 	if (err != 0) {
 		// bail, things did not go very well for us, should probably output a message on screen with our error code...
 		exit(0);

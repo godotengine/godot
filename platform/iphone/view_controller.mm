@@ -102,13 +102,17 @@ static GodotGameViewController *_instance = nil;
 		default:
 			return NO;
 	}
-};
+}
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
 	return UIInterfaceOrientationMaskAll;
-};
+}
 
 - (BOOL)prefersStatusBarHidden {
+	return YES;
+}
+
+- (BOOL)prefersHomeIndicatorAutoHidden {
 	return YES;
 }
 
@@ -182,7 +186,7 @@ static GodotGameViewController *_instance = nil;
 	character.parse_utf8([p_text UTF8String]);
 	keyboard_text = keyboard_text + character;
 	OSIPhone::get_singleton()->key(character[0] == 10 ? KEY_ENTER : character[0], true);
-	printf("inserting text with character %i\n", character[0]);
+	printf("inserting text with character %i\n", character.to_int());
 }
 
 #pragma mark - Game Center
@@ -201,16 +205,16 @@ void _show_keyboard(String p_existing) {
 	keyboard_text = p_existing;
 	NSLog(@"Show keyboard");
 	[_instance becomeFirstResponder];
-};
+}
 
 void _hide_keyboard() {
 	NSLog(@"Hide keyboard and clear text");
 	[_instance resignFirstResponder];
 	keyboard_text = "";
-};
+}
 
 Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height) {
-	UIEdgeInsets insets = UIEdgeInsetsMake(0, 0, 0, 0);
+	UIEdgeInsets insets = UIEdgeInsetsZero;
 	if ([_instance.view respondsToSelector:@selector(safeAreaInsets)]) {
 		insets = [_instance.view safeAreaInsets];
 	}

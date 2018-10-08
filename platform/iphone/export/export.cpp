@@ -230,18 +230,18 @@ struct LoadingScreenInfo {
 };
 
 static const LoadingScreenInfo loading_screen_infos[] = {
-	{ "landscape_launch_screens/iphone_2436x1125", "Default-Landscape-X.png" },
-	{ "landscape_launch_screens/iphone_2208x1242", "Default-Landscape-736h@3x.png" },
-	{ "landscape_launch_screens/ipad_1024x768", "Default-Landscape.png" },
-	{ "landscape_launch_screens/ipad_2048x1536", "Default-Landscape@2x.png" },
+	{ "landscape_launch_screens/iphone_2208x1242", "Default-Landscape-736h@3x.png" }, // iPhone 6 7 8 Plus
+	{ "landscape_launch_screens/iphone_2436x1125", "Default-Landscape-X.png" }, // iPhone X
+	{ "landscape_launch_screens/ipad_1024x768", "Default-Landscape.png" }, // iPad 1 (Likely not needed, way outdated
+	{ "landscape_launch_screens/ipad_2048x1536", "Default-Landscape@2x.png" }, // iPad 2 3 4
 
-	{ "portrait_launch_screens/iphone_640x960", "Default-480h@2x.png" },
-	{ "portrait_launch_screens/iphone_640x1136", "Default-568h@2x.png" },
-	{ "portrait_launch_screens/iphone_750x1334", "Default-667h@2x.png" },
-	{ "portrait_launch_screens/iphone_1125x2436", "Default-Portrait-X.png" },
-	{ "portrait_launch_screens/ipad_768x1024", "Default-Portrait.png" },
-	{ "portrait_launch_screens/ipad_1536x2048", "Default-Portrait@2x.png" },
-	{ "portrait_launch_screens/iphone_1242x2208", "Default-Portrait-736h@3x.png" }
+	{ "portrait_launch_screens/iphone_640x960", "Default-480h@2x.png" }, // iPhone 4 (Likely not needed, way outdated)
+	{ "portrait_launch_screens/iphone_640x1136", "Default-568h@2x.png" }, // iPhone 5 C S SE
+	{ "portrait_launch_screens/iphone_750x1334", "Default-667h@2x.png" }, // iPhone 6 7 8
+	{ "portrait_launch_screens/iphone_1242x2208", "Default-Portrait-736h@3x.png" }, // iPhone 6 7 8 Plus
+	{ "portrait_launch_screens/iphone_1125x2436", "Default-Portrait-X.png" }, // iPhone X
+	{ "portrait_launch_screens/ipad_768x1024", "Default-Portrait.png" }, // iPad 1 (Likely not needed, way outdated)
+	{ "portrait_launch_screens/ipad_1536x2048", "Default-Portrait@2x.png" }, // iPad 2 3 4
 };
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {

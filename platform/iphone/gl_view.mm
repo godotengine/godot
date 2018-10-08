@@ -39,32 +39,7 @@
 bool gles3_available = true;
 int gl_view_base_fb;
 
-static GLView *_instance = nil;
-
 CGFloat _points_to_pixels(CGFloat);
-
-void _show_keyboard(String p_existing) {
-	keyboard_text = p_existing;
-	NSLog(@"Show keyboard");
-	[_instance becomeFirstResponder];
-};
-
-void _hide_keyboard() {
-	NSLog(@"Hide keyboard and clear text");
-	[_instance resignFirstResponder];
-	keyboard_text = "";
-};
-
-Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height) {
-	UIEdgeInsets insets = UIEdgeInsetsMake(0, 0, 0, 0);
-	if ([_instance respondsToSelector:@selector(safeAreaInsets)]) {
-		insets = [_instance safeAreaInsets];
-	}
-	ERR_FAIL_COND_V(insets.left < 0 || insets.top < 0 || insets.right < 0 || insets.bottom < 0,
-			Rect2(0, 0, p_window_width, p_window_height));
-	UIEdgeInsets window_insets = UIEdgeInsetsMake(_points_to_pixels(insets.top), _points_to_pixels(insets.left), _points_to_pixels(insets.bottom), _points_to_pixels(insets.right));
-	return Rect2(window_insets.left, window_insets.top, p_window_width - window_insets.right - window_insets.left, p_window_height - window_insets.bottom - window_insets.top);
-}
 
 CGFloat _points_to_pixels(CGFloat points) {
 	float pixelPerInch;
@@ -98,11 +73,27 @@ OS::VideoMode _get_video_mode() {
 @interface GLView ()
 
 @property(nonatomic, strong) CADisplayLink *displayLink;
+@property(nonatomic, strong) NSTimer *animationTimer;
 @property(nonatomic, assign) BOOL useCADisplayLink;
+
+@property(nonatomic, assign, getter=isActive) BOOL active;
+@property(nonatomic, assign, getter=isSetUpComplete) BOOL setUpComplete;
 
 @end
 
-@implementation GLView
+@implementation GLView {
+	// The pixel dimensions of the backbuffer
+	GLint backingWidth;
+	GLint backingHeight;
+
+	EAGLContext *context;
+
+	// OpenGL names for the renderbuffer and framebuffers used to render to this view
+	GLuint viewRenderbuffer, viewFramebuffer;
+
+	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
+	GLuint depthRenderbuffer;
+}
 
 @synthesize animationInterval = _animationInterval;
 
@@ -112,22 +103,16 @@ OS::VideoMode _get_video_mode() {
 	return [CAEAGLLayer class];
 }
 
-//The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
-- (id)initWithCoder:(NSCoder *)coder {
-	if (self = [super initWithCoder:coder]) {
-		[self setUp];
-	}
-	return self;
-}
-
 - (id)initWithFrame:(CGRect)frame {
 	if (self = [super initWithFrame:frame]) {
-		[self setUp];
+		if (![self setUp]) {
+			return nil;
+		}
 	}
 	return self;
 }
 
-- (void)setUp {
+- (BOOL)setUp {
 	_instance = self;
 
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
@@ -254,7 +239,8 @@ OS::VideoMode _get_video_mode() {
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 
 	// This call associates the storage for the current render buffer with the EAGLDrawable (our CAEAGLLayer)
-	// allowing us to draw into a buffer that will later be rendered to screen wherever the layer is (which corresponds with our view).
+	// allowing us to draw into a buffer that will later be rendered to screen wherever 
+	// the layer is (which corresponds with our view).
 	[context renderbufferStorage:GL_RENDERBUFFER_OES
 					fromDrawable:(id<EAGLDrawable>)self.layer];
 	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
@@ -295,35 +281,33 @@ OS::VideoMode _get_video_mode() {
 	if (self.useCADisplayLink) {
 
 		// Create a display link and try and grab the fatest refresh rate
-		_displayLink = [CADisplayLink displayLinkWithTarget:self
-												   selector:@selector(drawView)];
-		if ([_displayLink respondsToSelector:@selector(preferredFramesPerSecond)]) {
-			_displayLink.preferredFramesPerSecond = 0;
+		self.displayLink = [CADisplayLink displayLinkWithTarget:self
+			  									       selector:@selector(drawView)];
+		if ([self.displayLink respondsToSelector:@selector(preferredFramesPerSecond)]) {
+			// TODO: Add support for max fps from project settings here, so we're not
+			// rendering too quickly
+			self.displayLink.preferredFramesPerSecond = 0;
 			// We could potentially check the display link's maximumFPS here.
 			// If it supports 120 we could force the preferredFPS to that.
 			// Currently that the's only way to drive a game at 120Hz
 		} else {
+			// DEPRECATED: 
 			// Approximate frame rate: assumes device refreshes at 60 fps.
 			// Note that newer iOS devices are 120Hz screens
-			_displayLink.frameInterval = 1;
+			self.displayLink.frameInterval = 1;
 		}
 
 		// Setup DisplayLink in main thread
-		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop]
-						   forMode:NSRunLoopCommonModes];
+		[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop]
+						       forMode:NSRunLoopCommonModes];
 	} else {
-		// This is an extremely terrible way to animate. Very low resolution with lots
-		// of drift. You would be lucky to have this called every 16ms
-		animationTimer = [NSTimer scheduledTimerWithTimeInterval:self.animationInterval
-														  target:self
-														selector:@selector(drawView)
-														userInfo:nil
-														 repeats:YES];
+		// Fallback to low resolution NSTimer instead of 
+		self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:self.animationInterval
+		 												       target:self
+														     selector:@selector(drawView)
+														 	 userInfo:nil
+														  	 repeats:YES];
 	}
-
-	// if (video_playing) {
-	// 	_unpause_video();
-	// }
 }
 
 - (void)stopAnimation {
@@ -333,22 +317,17 @@ OS::VideoMode _get_video_mode() {
 	printf("stop animation!\n");
 
 	if (self.useCADisplayLink) {
-		[_displayLink invalidate];
-		_displayLink = nil;
+		[self.displayLink invalidate];
+		self.displayLink = nil;
 	} else {
-		[animationTimer invalidate];
-		animationTimer = nil;
+		[self.animationTimer invalidate];
+		self.animationTimer = nil;
 	}
-
-	// if (video_playing) {
-	// 	_pause_video();
-	// }
 }
 
 - (void)setAnimationInterval:(NSTimeInterval)interval {
-
 	_animationInterval = interval;
-
+	// Reset the timers the timers if we're currently rendering
 	if (self.isActive) {
 		[self stopAnimation];
 	}
@@ -403,38 +382,5 @@ OS::VideoMode _get_video_mode() {
 		NSLog(@"%x (gl) error", err);
 #endif
 }
-
-- (BOOL)canBecomeFirstResponder {
-	return YES;
-}
-
-- (void)keyboardOnScreen:(NSNotification *)notification {
-	NSValue *value = notification.userInfo[UIKeyboardFrameEndUserInfoKey];
-	CGRect frame = [value CGRectValue];
-	const CGFloat kScaledHeight = _points_to_pixels(frame.size.height);
-	OSIPhone::get_singleton()->set_virtual_keyboard_height(kScaledHeight);
-}
-
-- (void)keyboardHidden:(NSNotification *)notification {
-	OSIPhone::get_singleton()->set_virtual_keyboard_height(0);
-}
-
-- (void)deleteBackward {
-	if (keyboard_text.length())
-		keyboard_text.erase(keyboard_text.length() - 1, 1);
-	OSIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-}
-
-- (BOOL)hasText {
-	return keyboard_text.length() ? YES : NO;
-}
-
-- (void)insertText:(NSString *)p_text {
-	String character;
-	character.parse_utf8([p_text UTF8String]);
-	keyboard_text = keyboard_text + character;
-	OSIPhone::get_singleton()->key(character[0] == 10 ? KEY_ENTER : character[0], true);
-	printf("inserting text with character %lc\n", (CharType)character[0]);
-};
 
 @end
