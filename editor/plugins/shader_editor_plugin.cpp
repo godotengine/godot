@@ -60,6 +60,26 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	_line_col_changed();
 }
 
+void ShaderTextEditor::reload_text() {
+	ERR_FAIL_COND(shader.is_null());
+
+	TextEdit *te = get_text_edit();
+	int column = te->cursor_get_column();
+	int row = te->cursor_get_line();
+	int h = te->get_h_scroll();
+	int v = te->get_v_scroll();
+
+	te->set_text(shader->get_code());
+	te->cursor_set_line(row);
+	te->cursor_set_column(column);
+	te->set_h_scroll(h);
+	te->set_v_scroll(v);
+
+	te->tag_saved_version();
+
+	update_line_and_column();
+}
+
 void ShaderTextEditor::_load_theme_settings() {
 
 	get_text_edit()->clear_colors();
@@ -330,9 +350,8 @@ void ShaderEditor::_menu_option(int p_option) {
 
 void ShaderEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		//if (is_visible_in_tree())
-		//	shader_editor->get_text_edit()->grab_focus();
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+		_check_for_external_edit();
 	}
 }
 
@@ -363,12 +382,14 @@ void ShaderEditor::_editor_settings_changed() {
 
 void ShaderEditor::_bind_methods() {
 
+	ClassDB::bind_method("_reload_shader_from_disk", &ShaderEditor::_reload_shader_from_disk);
 	ClassDB::bind_method("_editor_settings_changed", &ShaderEditor::_editor_settings_changed);
 	ClassDB::bind_method("_text_edit_gui_input", &ShaderEditor::_text_edit_gui_input);
 
 	ClassDB::bind_method("_menu_option", &ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
 	ClassDB::bind_method("apply_shaders", &ShaderEditor::apply_shaders);
+	ClassDB::bind_method("save_external_data", &ShaderEditor::save_external_data);
 }
 
 void ShaderEditor::ensure_select_current() {
@@ -389,6 +410,37 @@ void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	shader_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
+void ShaderEditor::_check_for_external_edit() {
+
+	if (shader.is_null() || !shader.is_valid()) {
+		return;
+	}
+
+	// internal shader.
+	if (shader->get_path() == "" || shader->get_path().find("local://") != -1 || shader->get_path().find("::") != -1) {
+		return;
+	}
+
+	bool use_autoreload = bool(EDITOR_DEF("text_editor/files/auto_reload_scripts_on_external_change", false));
+	if (shader->get_last_modified_time() != FileAccess::get_modified_time(shader->get_path())) {
+		if (use_autoreload) {
+			_reload_shader_from_disk();
+		} else {
+			disk_changed->call_deferred("popup_centered");
+		}
+	}
+}
+
+void ShaderEditor::_reload_shader_from_disk() {
+
+	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), true);
+	ERR_FAIL_COND(!rel_shader.is_valid());
+
+	shader->set_code(rel_shader->get_code());
+	shader->set_last_modified_time(rel_shader->get_last_modified_time());
+	shader_editor->reload_text();
+}
+
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
 	if (p_shader.is_null() || !p_shader->is_text_shader())
@@ -405,16 +457,20 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	// see if already has it
 }
 
-void ShaderEditor::save_external_data() {
+void ShaderEditor::save_external_data(const String &p_str) {
 
-	if (shader.is_null())
+	if (shader.is_null()) {
+		disk_changed->hide();
 		return;
-	apply_shaders();
+	}
 
+	apply_shaders();
 	if (shader->get_path() != "" && shader->get_path().find("local://") == -1 && shader->get_path().find("::") == -1) {
 		//external shader, save it
 		ResourceSaver::save(shader->get_path(), shader);
 	}
+
+	disk_changed->hide();
 }
 
 void ShaderEditor::apply_shaders() {
@@ -572,6 +628,23 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
+
+	disk_changed = memnew(ConfirmationDialog);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	disk_changed->add_child(vbc);
+
+	Label *dl = memnew(Label);
+	dl->set_text(TTR("This shader has been modified on on disk.\nWhat action should be taken?"));
+	vbc->add_child(dl);
+
+	disk_changed->connect("confirmed", this, "_reload_shader_from_disk");
+	disk_changed->get_ok()->set_text(TTR("Reload"));
+
+	disk_changed->add_button(TTR("Resave"), !OS::get_singleton()->get_swap_ok_cancel(), "resave");
+	disk_changed->connect("custom_action", this, "save_external_data");
+
+	add_child(disk_changed);
 
 	_editor_settings_changed();
 }
