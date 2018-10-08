@@ -41,9 +41,11 @@ namespace GodotSharpTools.Editor
 
                 string outputDataDir = Path.Combine(outputDir, GetDataDirName());
 
-                Directory.Delete(outputDataDir, recursive: true); // Clean first
+                if (Directory.Exists(outputDataDir))
+                    Directory.Delete(outputDataDir, recursive: true); // Clean first
+
                 Directory.CreateDirectory(outputDataDir);
-                
+
                 foreach (string dir in Directory.GetDirectories(templateDirPath, "*", SearchOption.AllDirectories))
                 {
                     Directory.CreateDirectory(Path.Combine(outputDataDir, dir.Substring(templateDirPath.Length + 1)));
