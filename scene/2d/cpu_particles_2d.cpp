@@ -985,7 +985,7 @@ void CPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 
-		if (particles.size() == 0)
+		if (particles.size() == 0 || !is_visible_in_tree())
 			return;
 
 		float delta = get_process_delta_time();
