@@ -310,9 +310,10 @@ void RigidCollisionObjectBullet::shape_changed(int p_shape_index) {
 
 void RigidCollisionObjectBullet::reload_shapes() {
 
-	if (mainShape && mainShape->isCompound())
+	if (mainShape && mainShape->isCompound()) {
 		// Destroy compound
 		bulletdelete(mainShape);
+	}
 
 	mainShape = NULL;
 
