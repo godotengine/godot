@@ -48,6 +48,24 @@ void Script::_notification(int p_what) {
 	}
 }
 
+bool Script::has_method(const StringName &p_method) const {
+
+	if (Object::has_method(p_method)) {
+		return true;
+	}
+
+	if (defines_method(p_method)) {
+		return true;
+	}
+
+	Ref<Script> parent = get_base_script();
+	if (parent.is_valid() && parent->has_method(p_method)) {
+		return true;
+	}
+
+	return false;
+}
+
 void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("can_instance"), &Script::can_instance);

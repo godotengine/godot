@@ -1038,7 +1038,7 @@ void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
-bool VisualScript::has_method(const StringName &p_method) const {
+bool VisualScript::defines_method(const StringName &p_method) const {
 
 	return functions.has(p_method);
 }

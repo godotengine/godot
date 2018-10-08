@@ -422,7 +422,7 @@ void VisualScriptFunctionCall::_update_method_cache() {
 				use_default_args++;
 			}
 		}
-	} else if (script.is_valid() && script->has_method(function)) {
+	} else if (script.is_valid() && script->defines_method(function)) {
 
 		method_cache = script->get_method_info(function);
 		use_default_args = method_cache.default_arguments.size();

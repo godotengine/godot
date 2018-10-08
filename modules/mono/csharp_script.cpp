@@ -2393,7 +2393,7 @@ void CSharpScript::set_source_code(const String &p_code) {
 #endif
 }
 
-bool CSharpScript::has_method(const StringName &p_method) const {
+bool CSharpScript::defines_method(const StringName &p_method) const {
 
 	if (!script_class)
 		return false;

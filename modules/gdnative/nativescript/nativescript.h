@@ -156,7 +156,7 @@ public:
 	virtual void set_source_code(const String &p_code);
 	virtual Error reload(bool p_keep_state = false);
 
-	virtual bool has_method(const StringName &p_method) const;
+	virtual bool defines_method(const StringName &p_method) const;
 	virtual MethodInfo get_method_info(const StringName &p_method) const;
 
 	virtual bool is_tool() const;

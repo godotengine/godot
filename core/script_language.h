@@ -124,7 +124,8 @@ public:
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
 
-	virtual bool has_method(const StringName &p_method) const = 0;
+	virtual bool has_method(const StringName &p_method) const;
+	virtual bool defines_method(const StringName &p_method) const = 0;
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;

@@ -268,7 +268,7 @@ void GDScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-bool GDScript::has_method(const StringName &p_method) const {
+bool GDScript::defines_method(const StringName &p_method) const {
 
 	return member_functions.has(p_method);
 }

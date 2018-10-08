@@ -286,7 +286,7 @@ void PluginScript::get_script_property_list(List<PropertyInfo> *r_properties) co
 	}
 }
 
-bool PluginScript::has_method(const StringName &p_method) const {
+bool PluginScript::defines_method(const StringName &p_method) const {
 	ASSERT_SCRIPT_VALID_V(false);
 	return _methods_info.has(p_method);
 }

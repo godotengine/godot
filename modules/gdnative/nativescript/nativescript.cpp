@@ -265,7 +265,7 @@ Error NativeScript::reload(bool p_keep_state) {
 	return FAILED;
 }
 
-bool NativeScript::has_method(const StringName &p_method) const {
+bool NativeScript::defines_method(const StringName &p_method) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
 	while (script_data) {

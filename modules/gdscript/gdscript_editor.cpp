@@ -1235,7 +1235,7 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 			switch (base_type.kind) {
 				case GDScriptParser::DataType::GDSCRIPT: {
 					Ref<GDScript> gds = base_type.script_type;
-					if (gds.is_valid() && gds->has_method(p_context.function->name)) {
+					if (gds.is_valid() && gds->defines_method(p_context.function->name)) {
 						GDScriptFunction *func = gds->get_member_functions()[p_context.function->name];
 						if (func) {
 							for (int i = 0; i < func->get_argument_count(); i++) {

@@ -2686,7 +2686,7 @@ int VisualScriptSubCall::get_input_value_port_count() const {
 
 	Ref<Script> script = get_script();
 
-	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+	if (script.is_valid() && script->defines_method(VisualScriptLanguage::singleton->_subcall)) {
 
 		MethodInfo mi = script->get_method_info(VisualScriptLanguage::singleton->_subcall);
 		return mi.arguments.size();
@@ -2707,7 +2707,7 @@ String VisualScriptSubCall::get_output_sequence_port_text(int p_port) const {
 PropertyInfo VisualScriptSubCall::get_input_value_port_info(int p_idx) const {
 
 	Ref<Script> script = get_script();
-	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+	if (script.is_valid() && script->defines_method(VisualScriptLanguage::singleton->_subcall)) {
 
 		MethodInfo mi = script->get_method_info(VisualScriptLanguage::singleton->_subcall);
 		return mi.arguments[p_idx];
@@ -2719,7 +2719,7 @@ PropertyInfo VisualScriptSubCall::get_input_value_port_info(int p_idx) const {
 PropertyInfo VisualScriptSubCall::get_output_value_port_info(int p_idx) const {
 
 	Ref<Script> script = get_script();
-	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+	if (script.is_valid() && script->defines_method(VisualScriptLanguage::singleton->_subcall)) {
 		MethodInfo mi = script->get_method_info(VisualScriptLanguage::singleton->_subcall);
 		return mi.return_val;
 	}
@@ -2775,7 +2775,7 @@ VisualScriptNodeInstance *VisualScriptSubCall::instance(VisualScriptInstance *p_
 	VisualScriptNodeInstanceSubCall *instance = memnew(VisualScriptNodeInstanceSubCall);
 	instance->instance = p_instance;
 	Ref<Script> script = get_script();
-	if (script.is_valid() && script->has_method(VisualScriptLanguage::singleton->_subcall)) {
+	if (script.is_valid() && script->defines_method(VisualScriptLanguage::singleton->_subcall)) {
 		instance->valid = true;
 		instance->input_args = get_input_value_port_count();
 	} else {

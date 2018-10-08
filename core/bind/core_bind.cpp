@@ -2604,7 +2604,7 @@ Error _ClassDB::set_property(Object *p_object, const StringName &p_property, con
 	return OK;
 }
 
-bool _ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
+bool _ClassDB::class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
 
 	return ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
@@ -2685,7 +2685,7 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &_ClassDB::get_property);
 	ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &_ClassDB::set_property);
 
-	ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &_ClassDB::has_method, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &_ClassDB::class_has_method, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &_ClassDB::get_method_list, DEFVAL(false));
 
