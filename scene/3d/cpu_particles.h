@@ -142,6 +142,8 @@ private:
 	int fixed_fps;
 	bool fractional_delta;
 
+	volatile bool can_update;
+
 	DrawOrder draw_order;
 
 	Ref<Mesh> mesh;
