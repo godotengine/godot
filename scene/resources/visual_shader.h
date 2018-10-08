@@ -176,6 +176,7 @@ public:
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_TRANSFORM,
+		PORT_TYPE_REROUTE
 	};
 
 	virtual String get_caption() const = 0;
@@ -311,6 +312,78 @@ public:
 	String get_uniform_name() const;
 
 	VisualShaderNodeUniform();
+};
+
+///////////////////////////////////////
+
+class VisualShaderNodeReroute : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeReroute, VisualShaderNode)
+
+	Vector<int> out_nodes;
+	Vector<int> out_ports;
+	int in_node;
+
+	int in_node_begin;
+	int in_port_begin;
+
+	PortType port_type;
+	bool has_output;
+
+	void _update_out_connection(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type, const int p_exclude_node);
+
+	void _update_port_type_output(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type p_type, const int p_exclude_node);
+	void _update_port_type_output_reverse(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type p_type);
+
+	PortType _get_connected_output_type(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type p_type, const int p_exclude_node);
+
+	void _set_output_nodes(const Array &p_array);
+	Array _get_output_nodes() const;
+
+	void _set_output_ports(const Array &p_array);
+	Array _get_output_ports() const;
+
+	void _set_input_node(const int p_node);
+	int _get_input_node() const;
+
+	void _set_input_node_begin(const int p_node);
+	int _get_input_node_begin() const;
+
+	void _set_input_port_begin(const int p_port);
+	int _get_input_port_begin() const;
+
+	void _set_port_type(const int p_port_type);
+	int _get_port_type() const;
+
+	void _set_has_output(const int p_has_output);
+	bool _get_has_output() const;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void add_out_connection(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type p_type, const int p_node, const int p_port);
+	void remove_out_connection(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type p_type, const int p_node);
+	bool has_out_connection() const;
+
+	void set_in_connection(const Ref<VisualShader> &p_visual_shader, const VisualShader::Type p_type, const int p_node, const int p_port);
+
+	bool get_connected_input_connection(int &p_node, int &p_port) const;
+
+	void clear();
+
+	VisualShaderNodeReroute();
 };
 
 #endif // VISUAL_SHADER_H

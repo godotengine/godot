@@ -71,6 +71,9 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _update_graph();
 
+	void _connect_reroute(const VisualShader::Type p_type, const int p_from_node, const int p_from_port, const int p_to_node, const int p_to_port);
+	void _disconnect_reroute(const VisualShader::Type p_type, const int p_from_node, const int p_from_port, const int p_to_node, const int p_to_port);
+
 	struct AddOption {
 		String name;
 		String category;

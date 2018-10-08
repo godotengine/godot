@@ -165,10 +165,11 @@ void VisualShaderEditor::_update_graph() {
 		}
 	}
 
-	static const Color type_color[3] = {
+	static const Color type_color[4] = {
 		Color::html("#61daf4"),
 		Color::html("#d67dee"),
-		Color::html("#f6a86e")
+		Color::html("#f6a86e"),
+		Color::html("#555555")
 	};
 
 	List<VisualShader::Connection> connections;
@@ -340,7 +341,12 @@ void VisualShaderEditor::_update_graph() {
 
 			node->add_child(hb);
 
-			node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
+			Ref<VisualShaderNodeReroute> reroute = vsnode;
+			if (reroute.is_valid() && !reroute->has_out_connection()) {
+				node->set_slot(i + port_offset, valid_left, VisualShaderNode::PORT_TYPE_REROUTE, type_color[port_left], valid_right, port_right, type_color[port_right]);
+			} else {
+				node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
+			}
 		}
 
 		if (vsnode->get_output_port_for_preview() >= 0) {
@@ -367,6 +373,32 @@ void VisualShaderEditor::_update_graph() {
 		int to_idx = E->get().to_port;
 
 		graph->connect_node(itos(from), from_idx, itos(to), to_idx);
+	}
+}
+
+void VisualShaderEditor::_connect_reroute(const VisualShader::Type p_type, const int p_from_node, const int p_from_port, const int p_to_node, const int p_to_port) {
+
+	Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(p_type, p_from_node);
+	if (node_from.is_valid()) {
+		node_from->add_out_connection(visual_shader, p_type, p_to_node, p_to_port);
+	}
+
+	Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(p_type, p_to_node);
+	if (node_to.is_valid()) {
+		node_to->set_in_connection(visual_shader, p_type, p_from_node, p_from_port);
+	}
+}
+
+void VisualShaderEditor::_disconnect_reroute(const VisualShader::Type p_type, const int p_from_node, const int p_from_port, const int p_to_node, const int p_to_port) {
+
+	Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(p_type, p_from_node);
+	if (node_from.is_valid()) {
+		node_from->remove_out_connection(visual_shader, p_type, p_to_node);
+	}
+
+	Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(p_type, p_to_node);
+	if (node_to.is_valid()) {
+		node_to->set_in_connection(visual_shader, p_type, -1, -1);
 	}
 }
 
@@ -514,15 +546,39 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
 
+	Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(type, to);
+	Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(type, from);
+
+	bool hasDisconnectedRerouteCon = false;
+	VisualShader::Connection diconnectedRerouteCon;
+
 	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
 		if (E->get().to_node == to && E->get().to_port == p_to_index) {
+
 			undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
 			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+
+			Ref<VisualShaderNodeReroute> node_from_prev = visual_shader->get_node(type, E->get().from_node);
+			if (node_to.is_valid() || node_from_prev.is_valid()) {
+
+				undo_redo->add_do_method(this, "_disconnect_reroute", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+				diconnectedRerouteCon = E->get();
+				hasDisconnectedRerouteCon = true;
+			}
+			break;
 		}
 	}
 
 	undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
+	if (node_to.is_valid() || node_from.is_valid()) {
+
+		undo_redo->add_do_method(this, "_connect_reroute", type, from, p_from_index, to, p_to_index);
+		undo_redo->add_undo_method(this, "_disconnect_reroute", type, from, p_from_index, to, p_to_index);
+	}
+	if (hasDisconnectedRerouteCon) {
+		undo_redo->add_undo_method(this, "_connect_reroute", type, diconnectedRerouteCon.from_node, diconnectedRerouteCon.from_port, diconnectedRerouteCon.to_node, diconnectedRerouteCon.to_port);
+	}
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -537,10 +593,18 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 	int from = p_from.to_int();
 	int to = p_to.to_int();
 
+	Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(type, to);
+	Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(type, from);
+
 	//updating = true; seems graph edit can handle this, no need to protect
 	undo_redo->create_action("Nodes Disconnected");
 	undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
+	if (node_to.is_valid() || node_from.is_valid()) {
+
+		undo_redo->add_do_method(this, "_disconnect_reroute", type, from, p_from_index, to, p_to_index);
+		undo_redo->add_undo_method(this, "_connect_reroute", type, from, p_from_index, to, p_to_index);
+	}
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -555,15 +619,31 @@ void VisualShaderEditor::_delete_request(int which) {
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 
 	undo_redo->create_action("Delete Node");
-	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
-	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, visual_shader->get_node(type, which), visual_shader->get_node_position(type, which), which);
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
+	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+		if (E->get().from_node == which || E->get().to_node == which) {
+
+			Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(type, E->get().to_node);
+			Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(type, E->get().from_node);
+			if ((node_to.is_valid() && E->get().from_node == which) || (node_from.is_valid() && E->get().to_node == which)) {
+				undo_redo->add_do_method(this, "_disconnect_reroute", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+			}
+		}
+	}
+	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
+	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, visual_shader->get_node(type, which), visual_shader->get_node_position(type, which), which);
 
 	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
 		if (E->get().from_node == which || E->get().to_node == which) {
 			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+
+			Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(type, E->get().to_node);
+			Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(type, E->get().from_node);
+			if (node_to.is_valid() || node_from.is_valid()) {
+				undo_redo->add_undo_method(this, "_connect_reroute", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+			}
 		}
 	}
 
@@ -663,6 +743,10 @@ void VisualShaderEditor::_duplicate_nodes() {
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, E->get());
 
 		Ref<VisualShaderNode> dupli = node->duplicate();
+		Ref<VisualShaderNodeReroute> dupli_reroute = dupli;
+		if (dupli_reroute.is_valid()) {
+			dupli_reroute->clear();
+		}
 
 		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(type, E->get()) + Vector2(10, 10) * EDSCALE, id_from);
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
@@ -675,7 +759,16 @@ void VisualShaderEditor::_duplicate_nodes() {
 
 	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
 		if (connection_remap.has(E->get().from_node) && connection_remap.has(E->get().to_node)) {
-			undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, connection_remap[E->get().from_node], E->get().from_port, connection_remap[E->get().to_node], E->get().to_port);
+
+			int remapped_from = connection_remap[E->get().from_node];
+			int remapped_to = connection_remap[E->get().to_node];
+			undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, remapped_from, E->get().from_port, remapped_to, E->get().to_port);
+
+			Ref<VisualShaderNodeReroute> node_from = visual_shader->get_node(type, E->get().from_node);
+			Ref<VisualShaderNodeReroute> node_to = visual_shader->get_node(type, E->get().to_node);
+			if (node_from.is_valid() || node_to.is_valid()) {
+				undo_redo->add_do_method(this, "_connect_reroute", type, remapped_from, E->get().from_port, remapped_to, E->get().to_port);
+			}
 		}
 	}
 
@@ -756,6 +849,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
 	ClassDB::bind_method("_input", &VisualShaderEditor::_input);
+	ClassDB::bind_method("_connect_reroute", &VisualShaderEditor::_connect_reroute);
+	ClassDB::bind_method("_disconnect_reroute", &VisualShaderEditor::_disconnect_reroute);
 }
 
 VisualShaderEditor *VisualShaderEditor::singleton = NULL;
@@ -770,6 +865,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_REROUTE);
 	//graph->add_valid_left_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->connect("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
@@ -782,6 +878,13 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_REROUTE, VisualShaderNode::PORT_TYPE_REROUTE);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_REROUTE, VisualShaderNode::PORT_TYPE_SCALAR);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_REROUTE);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_REROUTE, VisualShaderNode::PORT_TYPE_VECTOR);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_VECTOR, VisualShaderNode::PORT_TYPE_REROUTE);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_REROUTE, VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_REROUTE);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);
@@ -830,6 +933,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Texture", "Uniforms", "VisualShaderNodeTextureUniform"));
 	add_options.push_back(AddOption("CubeMap", "Uniforms", "VisualShaderNodeCubeMapUniform"));
 	add_options.push_back(AddOption("Input", "Inputs", "VisualShaderNodeInput"));
+	add_options.push_back(AddOption("Reroute", "Reroute", "VisualShaderNodeReroute"));
 
 	_update_options_menu();
 
