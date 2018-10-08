@@ -37,8 +37,12 @@ class AudioDriverJavaScript : public AudioDriver {
 
 	float *internal_buffer;
 
+	int buffer_length;
+
 public:
 	void mix_to_js();
+	void process_capture(float sample);
+
 	static AudioDriverJavaScript *singleton;
 
 	virtual const char *get_name() const;
@@ -50,6 +54,9 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	virtual Error capture_start();
+	virtual Error capture_stop();
 
 	AudioDriverJavaScript();
 };
