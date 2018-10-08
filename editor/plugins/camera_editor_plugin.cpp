@@ -32,11 +32,6 @@
 
 #include "spatial_editor_plugin.h"
 
-void CameraEditor::_notification(int p_what) {
-
-	//switch (p_what) {
-	//}
-}
 void CameraEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {

@@ -1205,8 +1205,12 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
 	char *windowid;
+#ifdef MINGW_ENABLED
+	char *windowid = getenv("GODOT_WINDOWID");
+#else
 	size_t len;
 	_dupenv_s(&windowid, &len, "GODOT_WINDOWID");
+#endif
 
 	if (windowid) {
 
@@ -2549,10 +2553,14 @@ void OS_Windows::set_icon(const Ref<Image> &p_icon) {
 
 bool OS_Windows::has_environment(const String &p_var) const {
 
+#ifdef MINGW_ENABLED
+	return _wgetenv(p_var.c_str()) != NULL;
+#else
 	wchar_t *env;
 	size_t len;
 	_wdupenv_s(&env, &len, p_var.c_str());
 	return env != NULL;
+#endif
 };
 
 String OS_Windows::get_environment(const String &p_var) const {

@@ -150,7 +150,7 @@ private:
 		if (new_hash_table_power == -1)
 			return;
 
-		Element **new_hash_table = memnew_arr(Element *, (1ULL << new_hash_table_power));
+		Element **new_hash_table = memnew_arr(Element *, ((uint64_t)1 << new_hash_table_power));
 		if (!new_hash_table) {
 
 			ERR_PRINT("Out of Memory");
