@@ -1220,6 +1220,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 #else
 		hWnd = (HWND)_strtoui64(windowid, NULL, 0);
 #endif
+		free(windowid);
 		SetLastError(0);
 		user_proc = (WNDPROC)GetWindowLongPtr(hWnd, GWLP_WNDPROC);
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)::WndProc);
@@ -2559,7 +2560,9 @@ bool OS_Windows::has_environment(const String &p_var) const {
 	wchar_t *env;
 	size_t len;
 	_wdupenv_s(&env, &len, p_var.c_str());
-	return env != NULL;
+	const bool has_env = env != NULL;
+	free(env);
+	return has_env;
 #endif
 };
 

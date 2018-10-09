@@ -230,7 +230,7 @@ private:
 		if (!p_t.hash_table || p_t.hash_table_power == 0)
 			return; /* not copying from empty table */
 
-		hash_table = memnew_arr(Element *, 1ULL << p_t.hash_table_power);
+		hash_table = memnew_arr(Element *, (uint64_t)1 << p_t.hash_table_power);
 		hash_table_power = p_t.hash_table_power;
 		elements = p_t.elements;
 
