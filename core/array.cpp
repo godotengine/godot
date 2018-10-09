@@ -258,7 +258,6 @@ struct _ArrayVariantSortCustom {
 Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 
 	ERR_FAIL_NULL_V(p_obj, *this);
-	ERR_FAIL_COND_V(!p_obj->has_method(p_function), *this);
 
 	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
 	avs.compare.obj = p_obj;
