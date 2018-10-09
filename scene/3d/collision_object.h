@@ -88,6 +88,7 @@ public:
 	void shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform);
 	Transform shape_owner_get_transform(uint32_t p_owner) const;
 	Object *shape_owner_get_owner(uint32_t p_owner) const;
+	String get_shape_source(uint32_t p_owner) const;
 
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;

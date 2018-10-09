@@ -136,6 +136,7 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform"), &CollisionObject::shape_owner_set_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_transform", "owner_id"), &CollisionObject::shape_owner_get_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject::shape_owner_get_owner);
+	ClassDB::bind_method(D_METHOD("get_shape_source", "owner_id"), &CollisionObject::get_shape_source);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject::shape_owner_set_disabled);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject::is_shape_owner_disabled);
 	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject::shape_owner_add_shape);
@@ -247,6 +248,19 @@ Object *CollisionObject::shape_owner_get_owner(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), NULL);
 
 	return shapes[p_owner].owner;
+}
+
+String CollisionObject::get_shape_source(uint32_t p_owner) const {
+
+	ERR_FAIL_COND_V(!shapes.has(p_owner), "");
+
+	Node *n = Object::cast_to<Node>(shapes[p_owner].owner);
+
+	if (n == NULL) {
+		return "";
+	}
+
+	return n->get_name();
 }
 
 void CollisionObject::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape> &p_shape) {
