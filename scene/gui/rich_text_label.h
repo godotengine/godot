@@ -225,6 +225,7 @@ private:
 	bool scroll_following;
 	bool scroll_active;
 	int scroll_w;
+	bool scroll_updated;
 	bool updating_scroll;
 	int current_idx;
 	int visible_line_count;
