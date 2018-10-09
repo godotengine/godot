@@ -336,12 +336,10 @@ FindInFilesDialog::FindInFilesDialog() {
 
 		_whole_words_checkbox = memnew(CheckBox);
 		_whole_words_checkbox->set_text(TTR("Whole Words"));
-		_whole_words_checkbox->set_pressed(true);
 		hbc->add_child(_whole_words_checkbox);
 
 		_match_case_checkbox = memnew(CheckBox);
 		_match_case_checkbox->set_text(TTR("Match Case"));
-		_match_case_checkbox->set_pressed(true);
 		hbc->add_child(_match_case_checkbox);
 
 		gc->add_child(hbc);
@@ -563,7 +561,7 @@ FindInFilesPanel::FindInFilesPanel() {
 		_cancel_button = memnew(Button);
 		_cancel_button->set_text(TTR("Cancel"));
 		_cancel_button->connect("pressed", this, "_on_cancel_button_clicked");
-		_cancel_button->set_disabled(true);
+		_cancel_button->hide();
 		hbc->add_child(_cancel_button);
 
 		vbc->add_child(hbc);
@@ -642,7 +640,7 @@ void FindInFilesPanel::start_search() {
 	_finder->start();
 
 	update_replace_buttons();
-	_cancel_button->set_disabled(false);
+	_cancel_button->show();
 }
 
 void FindInFilesPanel::stop_search() {
@@ -652,7 +650,7 @@ void FindInFilesPanel::stop_search() {
 	_status_label->set_text("");
 	update_replace_buttons();
 	set_progress_visible(false);
-	_cancel_button->set_disabled(true);
+	_cancel_button->hide();
 }
 
 void FindInFilesPanel::_notification(int p_what) {
@@ -688,7 +686,7 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	// Do this first because it resets properties of the cell...
 	item->set_cell_mode(text_index, TreeItem::CELL_MODE_CUSTOM);
 
-	String item_text = String::num_int64(line_number) + ":    " + text.replace("\t", "    ");
+	String item_text = vformat("%3s:    %s", line_number, text.replace("\t", "    "));
 
 	item->set_text(text_index, item_text);
 	item->set_custom_draw(text_index, this, "_draw_result_text");
@@ -754,7 +752,7 @@ void FindInFilesPanel::_on_finished() {
 	_status_label->set_text(TTR("Search complete"));
 	update_replace_buttons();
 	set_progress_visible(false);
-	_cancel_button->set_disabled(true);
+	_cancel_button->hide();
 }
 
 void FindInFilesPanel::_on_cancel_button_clicked() {
