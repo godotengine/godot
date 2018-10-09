@@ -309,7 +309,7 @@
 			</description>
 		</method>
 		<method name="sort_custom">
-			<argument index="0" name="obj" type="Object">
+			<argument index="0" name="obj" type="Variant">
 			</argument>
 			<argument index="1" name="func" type="String">
 			</argument>
