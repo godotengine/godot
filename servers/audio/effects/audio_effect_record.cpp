@@ -31,16 +31,14 @@
 #include "audio_effect_record.h"
 
 void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	if (!is_recording) {
+	if (!base->recording_active) {
 		return;
 	}
 
-	//Add incoming audio frames to the IO ring buffer
-	const AudioFrame *src = p_src_frames;
-	AudioFrame *rb_buf = ring_buffer.ptrw();
+	//Add incoming audio frames to the recording_data
 	for (int i = 0; i < p_frame_count; i++) {
-		rb_buf[ring_buffer_pos & ring_buffer_mask] = src[i];
-		ring_buffer_pos++;
+		recording_data.push_back(p_src_frames[i].l);
+		recording_data.push_back(p_src_frames[i].r);
 	}
 }
 
@@ -48,106 +46,21 @@ bool AudioEffectRecordInstance::process_silence() const {
 	return true;
 }
 
-void AudioEffectRecordInstance::_io_thread_process() {
-
-	//Reset recorder status
-	thread_active = true;
-	ring_buffer_pos = 0;
-	ring_buffer_read_pos = 0;
-
-	//We start a new recording
-	recording_data.resize(0); //Clear data completely and reset length
-	is_recording = true;
-
-	while (is_recording) {
-		//Check: The current recording has been requested to stop
-		if (is_recording && !base->recording_active) {
-			is_recording = false;
-		}
-
-		//Case: Frames are remaining in the buffer
-		if (ring_buffer_read_pos < ring_buffer_pos) {
-			//Read from the buffer into recording_data
-			_io_store_buffer();
-		}
-		//Case: The buffer is empty
-		else if (is_recording) {
-			//Wait to avoid too much busy-wait
-			OS::get_singleton()->delay_usec(500);
-		}
-	}
-
-	thread_active = false;
-}
-
-void AudioEffectRecordInstance::_io_store_buffer() {
-	int to_read = ring_buffer_pos - ring_buffer_read_pos;
-
-	AudioFrame *rb_buf = ring_buffer.ptrw();
-
-	while (to_read) {
-		AudioFrame buffered_frame = rb_buf[ring_buffer_read_pos & ring_buffer_mask];
-		recording_data.push_back(buffered_frame.l);
-		recording_data.push_back(buffered_frame.r);
-
-		ring_buffer_read_pos++;
-		to_read--;
-	}
-}
-
-void AudioEffectRecordInstance::_thread_callback(void *_instance) {
-
-	AudioEffectRecordInstance *aeri = reinterpret_cast<AudioEffectRecordInstance *>(_instance);
-
-	aeri->_io_thread_process();
-}
-
 void AudioEffectRecordInstance::init() {
-	io_thread = Thread::create(_thread_callback, this);
+	recording_data.clear();
 }
 
 Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 	Ref<AudioEffectRecordInstance> ins;
 	ins.instance();
 	ins->base = Ref<AudioEffectRecord>(this);
-	ins->is_recording = false;
 
-	//Re-using the buffer size calculations from audio_effect_delay.cpp
-	float ring_buffer_max_size = IO_BUFFER_SIZE_MS;
-	ring_buffer_max_size /= 1000.0; //convert to seconds
-	ring_buffer_max_size *= AudioServer::get_singleton()->get_mix_rate();
-
-	int ringbuff_size = ring_buffer_max_size;
-
-	int bits = 0;
-
-	while (ringbuff_size > 0) {
-		bits++;
-		ringbuff_size /= 2;
-	}
-
-	ringbuff_size = 1 << bits;
-	ins->ring_buffer_mask = ringbuff_size - 1;
-	ins->ring_buffer_pos = 0;
-
-	ins->ring_buffer.resize(ringbuff_size);
-
-	ins->ring_buffer_read_pos = 0;
-
-	ensure_thread_stopped();
 	current_instance = ins;
 	if (recording_active) {
 		ins->init();
 	}
 
 	return ins;
-}
-
-void AudioEffectRecord::ensure_thread_stopped() {
-	recording_active = false;
-	if (current_instance != 0 && current_instance->thread_active) {
-		Thread::wait_to_finish(current_instance->io_thread);
-	}
 }
 
 void AudioEffectRecord::set_recording_active(bool p_record) {
@@ -158,7 +71,6 @@ void AudioEffectRecord::set_recording_active(bool p_record) {
 			return;
 		}
 
-		ensure_thread_stopped();
 		current_instance->init();
 	}
 
