@@ -47,19 +47,8 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	friend class AudioEffectRecord;
 	Ref<AudioEffectRecord> base;
 
-	bool is_recording;
-	Thread *io_thread;
-	bool thread_active;
-
-	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
 
-	unsigned int ring_buffer_pos;
-	unsigned int ring_buffer_mask;
-	unsigned int ring_buffer_read_pos;
-
-	void _io_thread_process();
-	void _io_store_buffer();
 	static void _thread_callback(void *_instance);
 	void _init_recording();
 
@@ -68,8 +57,7 @@ public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
 
-	AudioEffectRecordInstance() :
-			thread_active(false) {}
+	AudioEffectRecordInstance() {}
 };
 
 class AudioEffectRecord : public AudioEffect {
