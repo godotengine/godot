@@ -62,14 +62,18 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 	void _io_store_buffer();
 	static void _thread_callback(void *_instance);
 	void _init_recording();
+	void _update_buffer();
+	static void _update(void *userdata);
 
 public:
 	void init();
+	void finish();
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
 
 	AudioEffectRecordInstance() :
 			thread_active(false) {}
+	~AudioEffectRecordInstance();
 };
 
 class AudioEffectRecord : public AudioEffect {

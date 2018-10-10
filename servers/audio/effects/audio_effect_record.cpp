@@ -44,20 +44,25 @@ void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFra
 	}
 }
 
+void AudioEffectRecordInstance::_update_buffer() {
+	//Case: Frames are remaining in the buffer
+	while (ring_buffer_read_pos < ring_buffer_pos) {
+		//Read from the buffer into recording_data
+		_io_store_buffer();
+	}
+}
+
+void AudioEffectRecordInstance::_update(void *userdata) {
+	AudioEffectRecordInstance *ins = (AudioEffectRecordInstance *)userdata;
+	ins->_update_buffer();
+}
+
 bool AudioEffectRecordInstance::process_silence() const {
 	return true;
 }
 
 void AudioEffectRecordInstance::_io_thread_process() {
-
-	//Reset recorder status
 	thread_active = true;
-	ring_buffer_pos = 0;
-	ring_buffer_read_pos = 0;
-
-	//We start a new recording
-	recording_data.resize(0); //Clear data completely and reset length
-	is_recording = true;
 
 	while (is_recording) {
 		//Check: The current recording has been requested to stop
@@ -65,13 +70,9 @@ void AudioEffectRecordInstance::_io_thread_process() {
 			is_recording = false;
 		}
 
-		//Case: Frames are remaining in the buffer
-		if (ring_buffer_read_pos < ring_buffer_pos) {
-			//Read from the buffer into recording_data
-			_io_store_buffer();
-		}
-		//Case: The buffer is empty
-		else if (is_recording) {
+		_update_buffer();
+
+		if (is_recording) {
 			//Wait to avoid too much busy-wait
 			OS::get_singleton()->delay_usec(500);
 		}
@@ -103,7 +104,35 @@ void AudioEffectRecordInstance::_thread_callback(void *_instance) {
 }
 
 void AudioEffectRecordInstance::init() {
+	//Reset recorder status
+	ring_buffer_pos = 0;
+	ring_buffer_read_pos = 0;
+
+	//We start a new recording
+	recording_data.resize(0); //Clear data completely and reset length
+	is_recording = true;
+
+#ifdef NO_THREADS
+	AudioServer::get_singleton()->add_update_callback(&AudioEffectRecordInstance::_update, this);
+#else
 	io_thread = Thread::create(_thread_callback, this);
+#endif
+}
+
+void AudioEffectRecordInstance::finish() {
+
+#ifdef NO_THREADS
+	AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
+#else
+	if (thread_active) {
+		Thread::wait_to_finish(io_thread);
+	}
+#endif
+}
+
+AudioEffectRecordInstance::~AudioEffectRecordInstance() {
+
+	finish();
 }
 
 Ref<AudioEffectInstance> AudioEffectRecord::instance() {
@@ -145,8 +174,8 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 
 void AudioEffectRecord::ensure_thread_stopped() {
 	recording_active = false;
-	if (current_instance != 0 && current_instance->thread_active) {
-		Thread::wait_to_finish(current_instance->io_thread);
+	if (current_instance != 0) {
+		current_instance->finish();
 	}
 }
 

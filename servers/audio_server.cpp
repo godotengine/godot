@@ -1004,6 +1004,11 @@ void AudioServer::update() {
 	AudioDriver::get_singleton()->reset_profiling_time();
 	prof_time = 0;
 #endif
+
+	for (Set<CallbackItem>::Element *E = update_callbacks.front(); E; E = E->next()) {
+
+		E->get().callback(E->get().userdata);
+	}
 }
 
 void AudioServer::load_default_bus_layout() {
@@ -1126,6 +1131,25 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
 	callbacks.erase(ci);
+	unlock();
+}
+
+void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
+	lock();
+	CallbackItem ci;
+	ci.callback = p_callback;
+	ci.userdata = p_userdata;
+	update_callbacks.insert(ci);
+	unlock();
+}
+
+void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
+
+	lock();
+	CallbackItem ci;
+	ci.callback = p_callback;
+	ci.userdata = p_userdata;
+	update_callbacks.erase(ci);
 	unlock();
 }
 
