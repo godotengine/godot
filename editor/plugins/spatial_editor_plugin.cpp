@@ -2250,6 +2250,11 @@ void SpatialEditorViewport::_notification(int p_what) {
 			float cinema_half_width = cinema_label->get_size().width / 2.0f;
 			cinema_label->set_anchor_and_margin(MARGIN_LEFT, 0.5f, -cinema_half_width);
 		}
+
+		if (lock_rotation) {
+			float locked_half_width = locked_label->get_size().width / 2.0f;
+			locked_label->set_anchor_and_margin(MARGIN_LEFT, 0.5f, -locked_half_width);
+		}
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2260,27 +2265,36 @@ void SpatialEditorViewport::_notification(int p_what) {
 		surface->connect("mouse_exited", this, "_surface_mouse_exit");
 		surface->connect("focus_entered", this, "_surface_focus_enter");
 		surface->connect("focus_exited", this, "_surface_focus_exit");
-		view_menu->set_flat(false);
-		view_menu->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		view_menu->add_style_override("hover", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		view_menu->add_style_override("pressed", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		view_menu->add_style_override("focus", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		view_menu->add_style_override("disabled", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		cinema_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
-		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
+
 		_init_gizmo_instance(index);
 	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		_finish_gizmo_instances();
 	}
 
-	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-	}
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+		view_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+		preview_camera->set_icon(get_icon("Camera", "EditorIcons"));
+
+		view_menu->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		view_menu->add_style_override("hover", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		view_menu->add_style_override("pressed", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		view_menu->add_style_override("focus", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		view_menu->add_style_override("disabled", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+
+		preview_camera->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		preview_camera->add_style_override("hover", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		preview_camera->add_style_override("pressed", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		preview_camera->add_style_override("focus", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		preview_camera->add_style_override("disabled", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+
+		info_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		fps_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		cinema_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
+		locked_label->add_style_override("normal", editor->get_gui_base()->get_stylebox("Information3dViewport", "EditorStyles"));
 	}
 }
 
@@ -2570,9 +2584,9 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			lock_rotation = !current;
 			view_menu->get_popup()->set_item_checked(idx, !current);
 			if (lock_rotation) {
-				view_menu->set_icon(get_icon("Lock", "EditorIcons"));
+				locked_label->show();
 			} else {
-				view_menu->set_icon(Ref<Texture>());
+				locked_label->hide();
 			}
 
 		} break;
@@ -2641,11 +2655,6 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			int idx = view_menu->get_popup()->get_item_index(VIEW_FPS);
 			bool current = view_menu->get_popup()->is_item_checked(idx);
 			view_menu->get_popup()->set_item_checked(idx, !current);
-
-			if (current)
-				preview_camera->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-			else
-				preview_camera->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 15 * EDSCALE + fps_label->get_size().height);
 
 		} break;
 		case VIEW_DISPLAY_NORMAL: {
@@ -2760,7 +2769,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview)
 			preview_camera->hide();
-		view_menu->show();
+		view_menu->set_disabled(false);
 		surface->update();
 
 	} else {
@@ -2768,7 +2777,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 		previewing = preview;
 		previewing->connect("tree_exiting", this, "_preview_exited_scene");
 		VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
-		view_menu->hide();
+		view_menu->set_disabled(true);
 		surface->update();
 	}
 }
@@ -3425,8 +3434,10 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface->set_focus_mode(FOCUS_ALL);
 
 	view_menu = memnew(MenuButton);
+	view_menu->set_flat(false);
 	surface->add_child(view_menu);
-	view_menu->set_position(Point2(4, 4) * EDSCALE);
+	view_menu->set_position(Point2(10, 10) * EDSCALE);
+
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
@@ -3477,12 +3488,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	ED_SHORTCUT("spatial_editor/freelook_down", TTR("Freelook Down"), KEY_Q);
 	ED_SHORTCUT("spatial_editor/freelook_speed_modifier", TTR("Freelook Speed Modifier"), KEY_SHIFT);
 
-	preview_camera = memnew(Button);
-	preview_camera->set_toggle_mode(true);
-	preview_camera->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
-	preview_camera->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
-	preview_camera->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -10 * EDSCALE);
-	preview_camera->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	preview_camera = memnew(CheckBox);
+	preview_camera->set_position(Point2(10 * EDSCALE, 15 * EDSCALE + view_menu->get_size().height));
 	preview_camera->set_text(TTR("Preview"));
 	surface->add_child(preview_camera);
 	preview_camera->hide();
@@ -3502,7 +3509,6 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface->add_child(info_label);
 	info_label->hide();
 
-	// FPS Counter.
 	fps_label = memnew(Label);
 	fps_label->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -90 * EDSCALE);
 	fps_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 10 * EDSCALE);
@@ -3519,6 +3525,16 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	cinema_label->set_text(TTR("Cinematic Preview"));
 	cinema_label->hide();
 	previewing_cinema = false;
+
+	locked_label = memnew(Label);
+	locked_label->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -20 * EDSCALE);
+	locked_label->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	locked_label->set_h_grow_direction(GROW_DIRECTION_END);
+	locked_label->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	locked_label->set_align(Label::ALIGN_CENTER);
+	surface->add_child(locked_label);
+	locked_label->set_text(TTR("View Rotation Locked"));
+	locked_label->hide();
 
 	accept = NULL;
 
@@ -5443,7 +5459,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
-	view_menu->set_position(Point2(212, 0));
 	hbc_menu->add_child(view_menu);
 
 	p = view_menu->get_popup();

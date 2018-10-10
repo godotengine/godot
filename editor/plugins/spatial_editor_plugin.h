@@ -192,7 +192,7 @@ private:
 	EditorSelection *editor_selection;
 	UndoRedo *undo_redo;
 
-	Button *preview_camera;
+	CheckBox *preview_camera;
 	ViewportContainer *viewport_container;
 
 	MenuButton *view_menu;
@@ -211,6 +211,7 @@ private:
 	Label *info_label;
 	Label *fps_label;
 	Label *cinema_label;
+	Label *locked_label;
 
 	struct _RayResult {
 
