@@ -173,7 +173,7 @@ private:
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
-	void _duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const;
+	void _duplicate_owners(Node *p_copy, const Map<Node *, Node *> &p_reown_map) const;
 	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = NULL) const;
 
 	Array _get_children() const;
