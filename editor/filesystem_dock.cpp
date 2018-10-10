@@ -1017,7 +1017,23 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	print_verbose("Moving " + old_path + " -> " + new_path);
-	Error err = da->rename(old_path, new_path);
+	Error err;
+	if (p_item.is_file) {
+		err = da->rename(old_path, new_path);
+	}
+	else {
+		if (da->copy_dir(old_path, new_path) == OK) {
+			for (int i = 0; i < file_changed_paths.size(); ++i) {
+				err = da->remove(file_changed_paths[i]);
+				if (err == FAILED) {
+					break;
+				}
+			}
+			if (err == OK) {
+				err = da->remove(old_path);
+			}
+		}
+	}
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
