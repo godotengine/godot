@@ -569,12 +569,16 @@ void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
 	int invalid_count = 0;
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<Texture> t = Ref<Texture>(ResourceLoader::load(p_paths[i]));
-		if (texture_map.has(t->get_rid())) {
-			invalid_count++;
+		if (t != NULL) {
+			if (texture_map.has(t->get_rid())) {
+				invalid_count++;
+			} else {
+				texture_list->add_item(t->get_path().get_file());
+				texture_map.insert(t->get_rid(), t);
+				texture_list->set_item_metadata(texture_list->get_item_count() - 1, t->get_rid());
+			}
 		} else {
-			texture_list->add_item(t->get_path().get_file());
-			texture_map.insert(t->get_rid(), t);
-			texture_list->set_item_metadata(texture_list->get_item_count() - 1, t->get_rid());
+			invalid_count++;
 		}
 	}
 	update_texture_list_icon();
