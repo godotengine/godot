@@ -2380,7 +2380,7 @@ void EditorPropertyResource::update_property() {
 		if (res->get_name() != String()) {
 			assign->set_text(res->get_name());
 		} else if (res->get_path().is_resource_file()) {
-			assign->set_text(res->get_name());
+			assign->set_text(res->get_path().get_file());
 			assign->set_tooltip(res->get_path());
 		} else {
 			assign->set_text(res->get_class());
