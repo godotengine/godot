@@ -729,22 +729,14 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = Variant();
 				return;
 			}
+			r_ret = *p_args[0];
 
 			VariantParser::StreamString ss;
 			ss.s = *p_args[0];
 
 			String errs;
 			int line;
-			Error err = VariantParser::parse(&ss, r_ret, errs, line);
-
-			if (err != OK) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::STRING;
-				r_ret = "Parse error at line " + itos(line) + ": " + errs;
-				return;
-			}
-
+			(void)VariantParser::parse(&ss, r_ret, errs, line);
 		} break;
 		case VAR_TO_BYTES: {
 			VALIDATE_ARG_COUNT(1);
