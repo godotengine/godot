@@ -92,6 +92,35 @@ MainLoop *test() {
 		}
 	}
 
+	// stress test / test for issue #22928
+	{
+		OAHashMap<int, int> map;
+		int dummy;
+		const int N = 1000;
+		uint32_t *keys = new uint32_t[N];
+
+		Math::seed(0);
+
+		// insert a couple of random keys (with a dummy value, which is ignored)
+		for (int i = 0; i < N; i++) {
+			keys[i] = Math::rand();
+			map.set(keys[i], dummy);
+
+			if (!map.lookup(keys[i], dummy))
+				OS::get_singleton()->print("could not find 0x%X despite it was just inserted!\n", unsigned(keys[i]));
+		}
+
+		// check whether the keys are still present
+		for (int i = 0; i < N; i++) {
+			if (!map.lookup(keys[i], dummy)) {
+				OS::get_singleton()->print("could not find 0x%X despite it has been inserted previously! (not checking the other keys, breaking...)\n", unsigned(keys[i]));
+				break;
+			}
+		}
+
+		delete[] keys;
+	}
+
 	return NULL;
 }
 } // namespace TestOAHashMap

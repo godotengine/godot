@@ -125,7 +125,7 @@ private:
 
 		while (42) {
 			if (hashes[pos] == EMPTY_HASH) {
-				_construct(pos, hash, p_key, p_value);
+				_construct(pos, hash, key, value);
 
 				return;
 			}
@@ -136,7 +136,7 @@ private:
 
 				if (hashes[pos] & DELETED_HASH_BIT) {
 					// we found a place where we can fit in!
-					_construct(pos, hash, p_key, p_value);
+					_construct(pos, hash, key, value);
 
 					return;
 				}
