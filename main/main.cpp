@@ -1138,7 +1138,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
-		if (boot_logo.is_valid()) {
+		if (boot_logo.is_valid() && ((!Engine::get_singleton()->is_editor_hint()) || (Engine::get_singleton()->is_editor_hint() && GLOBAL_DEF("application/boot_splash/use_at_editor_startup", true)))) {
 			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale);
 
