@@ -164,6 +164,7 @@
 			Undoes the previous action.
 		</constant>
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
+			Reverse the last undo action.
 		</constant>
 		<constant name="MENU_MAX" value="7" enum="MenuItems">
 		</constant>
