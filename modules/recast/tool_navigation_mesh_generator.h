@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  tool_navigation_mesh_generator.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef TOOL_NAVIGATION_MESH_GENERATOR_H
+#define TOOL_NAVIGATION_MESH_GENERATOR_H
 
-#include "navigation_mesh_editor_plugin.h"
-#include "tool_navigation_mesh_generator.h"
+#include "core/reference.h"
+#include "navigation_mesh_generator.h"
 
-void register_recast_types() {
-	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-	ClassDB::register_class<ToolNavigationMeshGenerator>();
-}
+class ToolNavigationMeshGenerator : public Reference {
+	GDCLASS(ToolNavigationMeshGenerator, Reference)
+protected:
+	static void _bind_methods();
 
-void unregister_recast_types() {}
+public:
+	void bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node);
+	void clear(Ref<NavigationMesh> p_nav_mesh);
+};
+
+#endif // TOOL_NAVIGATION_MESH_GENERATOR_H
