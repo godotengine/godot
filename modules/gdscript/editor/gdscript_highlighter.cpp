@@ -72,6 +72,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	bool in_word = false;
 	bool in_function_name = false;
 	bool in_variable_declaration = false;
+	bool in_function_args = false;
 	bool in_member_variable = false;
 	bool in_node_path = false;
 	bool is_hex_notation = false;
@@ -220,17 +221,24 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		}
 
 		if (is_symbol) {
-			in_function_name = false;
-			in_member_variable = false;
 
-			if (expect_type && str[j] != ' ' && str[j] != '\t' && str[j] != ':') {
+			if (in_function_name) {
+				in_function_args = true;
+			}
+
+			if (in_function_args && str[j] == ')') {
+				in_function_args = false;
+			}
+
+			if (expect_type && prev_is_char) {
 				expect_type = false;
 			}
+
 			if (j > 0 && str[j] == '>' && str[j - 1] == '-') {
 				expect_type = true;
 			}
 
-			if (in_variable_declaration || previous_text == "(" || previous_text == ",") {
+			if (in_variable_declaration || in_function_args) {
 				int k = j;
 				// Skip space
 				while (k < str.length() && (str[k] == '\t' || str[k] == ' ')) {
@@ -244,6 +252,8 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			}
 
 			in_variable_declaration = false;
+			in_function_name = false;
+			in_member_variable = false;
 		}
 
 		if (!in_node_path && in_region == -1 && str[j] == '$') {
