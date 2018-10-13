@@ -268,7 +268,7 @@
 			<argument index="1" name="shape_id" type="int">
 			</argument>
 			<description>
-				Returns the [Transform2D] of a tile's sahpe.
+				Returns the [Transform2D] of a tile's shape.
 			</description>
 		</method>
 		<method name="tile_get_shapes" qualifiers="const">
