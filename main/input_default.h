@@ -117,6 +117,7 @@ class InputDefault : public Input {
 	};
 
 	SpeedTrack mouse_speed_track;
+	Map<int, SpeedTrack> touch_speed_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping;
 
