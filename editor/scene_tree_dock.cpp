@@ -1606,10 +1606,20 @@ void SceneTreeDock::_delete_confirm() {
 }
 
 void SceneTreeDock::_update_script_button() {
-	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size() == 1) {
-		button_create_script->show();
+	List<Node *> node_selection = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+	if (node_selection.size() == 1) {
+		Node *selected_node = node_selection[0];
+		Ref<Script> script = selected_node->get_script();
+		if (script.is_valid()) {
+			button_clear_script->show();
+			button_create_script->hide();
+		} else {
+			button_create_script->show();
+			button_clear_script->hide();
+		}
 	} else {
 		button_create_script->hide();
+		button_clear_script->hide();
 	}
 }
 
