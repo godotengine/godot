@@ -1473,6 +1473,17 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 			ERR_EXPLAIN("In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to method '" + p_to_object->get_class() + "." + p_to_method + "'");
 			ERR_FAIL_COND_V(!signal_is_valid, ERR_INVALID_PARAMETER);
 		}
+
+#ifdef DEBUG_METHODS_ENABLED
+		StringName class_name = get_class_name();
+
+		while (class_name != StringName()) {
+			TEST_SIGNAL_DEPRECATED(class_name, p_signal);
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+#endif
+
 		signal_map[p_signal] = Signal();
 		s = &signal_map[p_signal];
 	}
@@ -1651,7 +1662,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				_clear_internal_resource_paths(d[E->get()]);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

@@ -30,6 +30,7 @@
 
 #include "class_db.h"
 
+#include "core/deprecation_manager.h"
 #include "core/engine.h"
 #include "core/os/mutex.h"
 #include "core/version.h"
@@ -718,7 +719,7 @@ int ClassDB::get_integer_constant(const StringName &p_class, const StringName &p
 
 		int *constant = type->constant_map.getptr(p_name);
 		if (constant) {
-
+			TEST_CONSTANT_DEPRECATED(type->name, p_name);
 			if (p_success)
 				*p_success = true;
 			return *constant;
@@ -746,8 +747,10 @@ StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const S
 
 			List<StringName> &constants_list = type->enum_map.get(*k);
 			const List<StringName>::Element *found = constants_list.find(p_name);
-			if (found)
+			if (found) {
+				TEST_CONSTANT_DEPRECATED(type->name, p_name);
 				return *k;
+			}
 		}
 
 		if (p_no_inheritance)
@@ -996,6 +999,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 	while (check) {
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
+			TEST_PROPERTY_DEPRECATED(check->name, p_property);
 
 			if (!psg->setter) {
 				if (r_valid)
@@ -1042,6 +1046,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 	while (check) {
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
+			TEST_PROPERTY_DEPRECATED(check->name, p_property);
 			if (!psg->getter)
 				return true; //return true but do nothing
 
@@ -1066,7 +1071,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 
 		const int *c = check->constant_map.getptr(p_property);
 		if (c) {
-
+			TEST_CONSTANT_DEPRECATED(check->name, p_property);
 			r_value = *c;
 			return true;
 		}

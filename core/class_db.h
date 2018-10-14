@@ -396,7 +396,6 @@ public:
 #else
 
 #define BIND_VMETHOD(m_method)
-
 #endif
 
 #endif // CLASS_DB_H

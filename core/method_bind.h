@@ -31,11 +31,11 @@
 #ifndef METHOD_BIND_H
 #define METHOD_BIND_H
 
+#include "core/deprecation_manager.h"
 #include "core/list.h"
 #include "core/method_ptrcall.h"
 #include "core/object.h"
 #include "core/variant.h"
-
 #include <stdio.h>
 
 /**

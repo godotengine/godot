@@ -31,7 +31,8 @@ public:
 		T *instance=Object::cast_to<T>(p_object);
 		r_error.error=Variant::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
-
+		TEST_METHOD_DEPRECATED(get_instance_class(), get_name());
+		
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
@@ -121,6 +122,8 @@ public:
 		r_error.error=Variant::CallError::CALL_OK;
 #ifdef DEBUG_METHODS_ENABLED
 
+		TEST_METHOD_DEPRECATED(get_instance_class(), get_name());
+        
 		ERR_FAIL_COND_V(!instance,Variant());
 		if (p_arg_count>get_argument_count()) {
 			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
