@@ -2934,7 +2934,7 @@ void Tree::_notification(int p_what) {
 
 		if (show_column_titles) {
 
-			//title butons
+			//title buttons
 			int ofs = cache.bg->get_margin(MARGIN_LEFT);
 			for (int i = 0; i < columns.size(); i++) {
 
