@@ -17,7 +17,7 @@
 			<argument index="0" name="filter" type="String">
 			</argument>
 			<description>
-				Add a custom filter. Filter format is: "mask ; description", example (C++): dialog-&gt;add_filter("*.png ; PNG Images");
+				Add a custom filter. Example: [code]add_filter("*.png ; PNG Images")[/code]
 			</description>
 		</method>
 		<method name="clear_filters">
@@ -31,12 +31,14 @@
 			<return type="void">
 			</return>
 			<description>
+				Clear currently selected items in the dialog.
 			</description>
 		</method>
 		<method name="get_line_edit">
 			<return type="LineEdit">
 			</return>
 			<description>
+				Returns the LineEdit for the selected file.
 			</description>
 		</method>
 		<method name="get_vbox">
@@ -56,6 +58,7 @@
 	</methods>
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access">
+			The file system access scope. See enum [code]Access[/code] constants.
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
 			The current working directory of the file dialog.
@@ -67,13 +70,16 @@
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="filters" type="PoolStringArray" setter="set_filters" getter="get_filters">
+			Set file type filters. This example shows only .png and .gd files [code]set_filters(PoolStringArray(["*.png ; PNG Images","*.gd ; GD Script"]))[/code].
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="FileDialog.Mode">
+			Set dialog to open or save mode, changes selection behavior. See enum [code]Mode[/code] constants.
 		</member>
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title">
-			If [code]true[/code], changing the [code]mode[/code] property will set the window title accordingly (e. g. setting mode to [code]MODE_OPEN_FILE[/code] will change the window title to "Open a File").
+			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e. g. setting mode to [code]MODE_OPEN_FILE[/code] will change the window title to "Open a File").
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
+			If [code]true[/code], the dialog will show hidden files.
 		</member>
 	</members>
 	<signals>

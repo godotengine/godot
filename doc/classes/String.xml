@@ -671,6 +671,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
+				Returns the SHA-256 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="sha256_text">
