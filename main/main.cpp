@@ -729,7 +729,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		OS::get_singleton()->print("Error: Could not load game path '%s'.\n", project_path.ascii().get_data());
+		String error_msg = "Error: Could not load game data at path '" + project_path + "'. Is the .pck file missing?\n";
+		OS::get_singleton()->print(error_msg.ascii().get_data());
+		OS::get_singleton()->alert(error_msg);
 
 		goto error;
 #endif
