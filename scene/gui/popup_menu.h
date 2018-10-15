@@ -54,6 +54,8 @@ class PopupMenu : public Popup {
 		int max_states;
 		int state;
 		bool separator;
+		bool slot;
+		int slot_id;
 		bool disabled;
 		int ID;
 		Variant metadata;
@@ -70,6 +72,8 @@ class PopupMenu : public Popup {
 			checked = false;
 			checkable_type = CHECKABLE_TYPE_NONE;
 			separator = false;
+			slot = false;
+			slot_id = -1;
 			max_states = 0;
 			state = 0;
 			accel = 0;
@@ -112,6 +116,10 @@ class PopupMenu : public Popup {
 	void _ref_shortcut(Ref<ShortCut> p_sc);
 	void _unref_shortcut(Ref<ShortCut> p_sc);
 
+	int active_slot_id;
+	int insertion_idx;
+	void _insert_item(Item &p_item);
+
 protected:
 	virtual bool has_point(const Point2 &p_point) const;
 
@@ -147,6 +155,7 @@ public:
 	void set_item_as_separator(int p_idx, bool p_separator);
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
+	void set_item_as_slot(int p_idx, bool p_slot);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	void set_item_shortcut(int p_idx, const Ref<ShortCut> &p_shortcut, bool p_global = false);
 	void set_item_h_offset(int p_idx, int p_offset);
@@ -173,6 +182,7 @@ public:
 	String get_item_tooltip(int p_idx) const;
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
+	int get_last_item_index() const;
 
 	int get_item_count() const;
 
@@ -181,9 +191,17 @@ public:
 
 	void remove_item(int p_idx);
 
-	void add_separator(const String &p_text = String());
+	void add_separator(const String &p_text = String(), int p_ID = -1);
 
 	void clear();
+
+	void set_active_slot_by_id(int p_id);
+	void set_active_slot_by_idx(int p_idx);
+
+	int get_active_slot_id() const;
+	int get_active_slot_idx() const;
+
+	void reset_active_slot();
 
 	void set_parent_rect(const Rect2 &p_rect);
 

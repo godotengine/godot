@@ -561,6 +561,25 @@ void PopupMenu::_notification(int p_what) {
 	}
 }
 
+void PopupMenu::_insert_item(Item &p_item)
+{
+	if (active_slot_id != -1)
+	{
+		if (items[insertion_idx].slot_id != active_slot_id)
+		{
+			insertion_idx = get_item_index(active_slot_id);
+		}
+		++insertion_idx;
+		p_item.slot_id = active_slot_id;
+		items.insert(insertion_idx, p_item);
+	}
+	else
+	{
+		++insertion_idx;
+		items.push_back(p_item);
+	}
+}
+
 void PopupMenu::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID, uint32_t p_accel) {
 
 	Item item;
@@ -569,7 +588,7 @@ void PopupMenu::add_icon_item(const Ref<Texture> &p_icon, const String &p_label,
 	item.xl_text = tr(p_label);
 	item.accel = p_accel;
 	item.ID = p_ID;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -580,7 +599,7 @@ void PopupMenu::add_item(const String &p_label, int p_ID, uint32_t p_accel) {
 	item.xl_text = tr(p_label);
 	item.accel = p_accel;
 	item.ID = p_ID;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -592,7 +611,7 @@ void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu,
 	item.xl_text = tr(p_label);
 	item.ID = p_ID;
 	item.submenu = p_submenu;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -606,7 +625,7 @@ void PopupMenu::add_icon_check_item(const Ref<Texture> &p_icon, const String &p_
 	item.accel = p_accel;
 	item.ID = p_ID;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -619,7 +638,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_ID, uint32_t p_accel
 	item.accel = p_accel;
 	item.ID = p_ID;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -627,7 +646,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_ID, uint32_t p_accel
 void PopupMenu::add_radio_check_item(const String &p_label, int p_ID, uint32_t p_accel) {
 
 	add_check_item(p_label, p_ID, p_accel);
-	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	items.write[get_last_item_index()].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	update();
 	minimum_size_changed();
 }
@@ -635,7 +654,7 @@ void PopupMenu::add_radio_check_item(const String &p_label, int p_ID, uint32_t p
 void PopupMenu::add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID, uint32_t p_accel) {
 
 	add_icon_check_item(p_icon, p_label, p_ID, p_accel);
-	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	items.write[get_last_item_index()].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	update();
 	minimum_size_changed();
 }
@@ -651,7 +670,7 @@ void PopupMenu::add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut
 	item.icon = p_icon;
 	item.shortcut = p_shortcut;
 	item.shortcut_is_global = p_global;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -666,7 +685,7 @@ void PopupMenu::add_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bool p_g
 	item.ID = p_ID;
 	item.shortcut = p_shortcut;
 	item.shortcut_is_global = p_global;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -683,7 +702,7 @@ void PopupMenu::add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<Sh
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	item.icon = p_icon;
 	item.shortcut_is_global = p_global;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -699,7 +718,7 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bo
 	item.shortcut = p_shortcut;
 	item.shortcut_is_global = p_global;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
-	items.push_back(item);
+	_insert_item(item);
 	update();
 	minimum_size_changed();
 }
@@ -707,7 +726,7 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bo
 void PopupMenu::add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID, bool p_global) {
 
 	add_check_shortcut(p_shortcut, p_ID, p_global);
-	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	items.write[get_last_item_index()].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
 	update();
 	minimum_size_changed();
 }
@@ -888,6 +907,11 @@ int PopupMenu::get_item_state(int p_idx) const {
 	return items[p_idx].state;
 }
 
+int PopupMenu::get_last_item_index() const
+{
+	return insertion_idx;
+}
+
 void PopupMenu::set_item_as_separator(int p_idx, bool p_separator) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
@@ -912,6 +936,12 @@ void PopupMenu::set_item_as_radio_checkable(int p_idx, bool p_radio_checkable) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].checkable_type = p_radio_checkable ? Item::CHECKABLE_TYPE_RADIO_BUTTON : Item::CHECKABLE_TYPE_NONE;
 	update();
+}
+
+void PopupMenu::set_item_as_slot(int p_idx, bool p_slot)
+{
+	ERR_FAIL_INDEX(p_idx, items.size());
+	items.write[p_idx].slot = p_slot;
 }
 
 void PopupMenu::set_item_tooltip(int p_idx, const String &p_tooltip) {
@@ -1104,18 +1134,23 @@ void PopupMenu::remove_item(int p_idx) {
 	items.remove(p_idx);
 	update();
 	minimum_size_changed();
+
+	if (p_idx < insertion_idx)
+	{
+		--insertion_idx;
+	}
 }
 
-void PopupMenu::add_separator(const String &p_text) {
+void PopupMenu::add_separator(const String &p_text, int p_ID) {
 
 	Item sep;
 	sep.separator = true;
-	sep.ID = -1;
+	sep.ID = p_ID;
 	if (p_text != String()) {
 		sep.text = p_text;
 		sep.xl_text = tr(p_text);
 	}
-	items.push_back(sep);
+	_insert_item(sep);
 	update();
 }
 
@@ -1130,6 +1165,40 @@ void PopupMenu::clear() {
 	mouse_over = -1;
 	update();
 	minimum_size_changed();
+	insertion_idx = -1;
+}
+
+void PopupMenu::set_active_slot_by_id(int p_id)
+{
+	ERR_FAIL_COND(p_id == -1);
+	ERR_FAIL_COND(get_item_index(p_id) == -1);
+
+	active_slot_id = p_id;
+}
+
+void PopupMenu::set_active_slot_by_idx(int p_idx)
+{
+	ERR_FAIL_INDEX(p_idx, items.size())
+	int id = get_item_id(p_idx);
+	ERR_FAIL_COND(id == -1);
+
+	active_slot_id = id;
+}
+
+int PopupMenu::get_active_slot_id() const
+{
+	return active_slot_id;
+}
+
+int PopupMenu::get_active_slot_idx() const
+{
+	return get_item_index(active_slot_id);
+}
+
+void PopupMenu::reset_active_slot()
+{
+	active_slot_id = -1;
+	insertion_idx = items.size() - 1;
 }
 
 Array PopupMenu::_get_items() const {
@@ -1329,6 +1398,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_as_separator", "idx", "enable"), &PopupMenu::set_item_as_separator);
 	ClassDB::bind_method(D_METHOD("set_item_as_checkable", "idx", "enable"), &PopupMenu::set_item_as_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_as_radio_checkable", "idx", "enable"), &PopupMenu::set_item_as_radio_checkable);
+	ClassDB::bind_method(D_METHOD("set_item_as_slot", "idx", "enable"), &PopupMenu::set_item_as_slot);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &PopupMenu::set_item_tooltip);
 	ClassDB::bind_method(D_METHOD("set_item_shortcut", "idx", "shortcut", "global"), &PopupMenu::set_item_shortcut, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_item_multistate", "idx", "state"), &PopupMenu::set_item_multistate);
@@ -1352,13 +1422,20 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_item_shortcut_disabled", "idx"), &PopupMenu::is_item_shortcut_disabled);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "idx"), &PopupMenu::get_item_shortcut);
+	ClassDB::bind_method(D_METHOD("get_last_item_index"), &PopupMenu::get_last_item_index);
 
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &PopupMenu::remove_item);
 
-	ClassDB::bind_method(D_METHOD("add_separator", "label"), &PopupMenu::add_separator, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("add_separator", "label", "id"), &PopupMenu::add_separator, DEFVAL(String()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("clear"), &PopupMenu::clear);
+
+	ClassDB::bind_method(D_METHOD("set_active_slot_by_id", "id"), &PopupMenu::set_active_slot_by_id);
+	ClassDB::bind_method(D_METHOD("set_active_slot_by_idx", "idx"), &PopupMenu::set_active_slot_by_idx);
+	ClassDB::bind_method(D_METHOD("get_active_slot_id"), &PopupMenu::get_active_slot_id);
+	ClassDB::bind_method(D_METHOD("get_active_slot_idx"), &PopupMenu::get_active_slot_idx);
+	ClassDB::bind_method(D_METHOD("reset_active_slot"), &PopupMenu::reset_active_slot);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &PopupMenu::_set_items);
 	ClassDB::bind_method(D_METHOD("_get_items"), &PopupMenu::_get_items);
@@ -1417,6 +1494,9 @@ PopupMenu::PopupMenu() {
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", this, "_submenu_timeout");
 	add_child(submenu_timer);
+
+	active_slot_id = -1;
+	insertion_idx = items.size() - 1;
 }
 
 PopupMenu::~PopupMenu() {
