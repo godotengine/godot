@@ -385,6 +385,8 @@
 		<constant name="SPEAKER_MODE_STEREO" value="0" enum="SpeakerMode">
 			Two or fewer speakers are detected.
 		</constant>
+		<constant name="SPEAKER_SURROUND_31" value="1" enum="SpeakerMode">
+		</constant>
 		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
 			A 5.1 channel surround setup detected.
 		</constant>
