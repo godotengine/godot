@@ -574,6 +574,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
 			editor_data->get_undo_redo().add_do_method(node, "set_filename", root->get_filename());
 			editor_data->get_undo_redo().add_do_method(root, "set_filename", String());
+			editor_data->get_undo_redo().add_do_method(node, "set_owner", (Object *)NULL);
+			editor_data->get_undo_redo().add_do_method(root, "set_owner", node);
 			_node_replace_owner(root, root, node, MODE_DO);
 
 			editor_data->get_undo_redo().add_undo_method(root, "set_filename", root->get_filename());
@@ -581,6 +583,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().add_undo_method(node, "remove_child", root);
 			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", root);
 			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
+			editor_data->get_undo_redo().add_undo_method(root, "set_owner", (Object *)NULL);
+			editor_data->get_undo_redo().add_undo_method(node, "set_owner", root);
+
 			_node_replace_owner(root, root, root, MODE_UNDO);
 
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
@@ -982,7 +987,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode) {
 
-	if (p_node->get_owner() == p_base || !p_node->get_owner()) {
+	if (p_node->get_owner() == p_base && p_node != p_root) {
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {
 			case MODE_BIDI: {
