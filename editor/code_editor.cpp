@@ -1039,6 +1039,8 @@ void CodeTextEditor::delete_lines() {
 		int to_line = text_editor->get_selection_to_line();
 		int from_line = text_editor->get_selection_from_line();
 		int count = Math::abs(to_line - from_line) + 1;
+
+		text_editor->cursor_set_line(to_line, false);
 		while (count) {
 			text_editor->set_line(text_editor->cursor_get_line(), "");
 			text_editor->backspace_at_cursor();
