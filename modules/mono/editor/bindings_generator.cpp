@@ -646,8 +646,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	List<String> output;
 
 	output.push_back("using System;\n"); // IntPtr
+	output.push_back("using System.Diagnostics;\n"); // DebuggerBrowsable
+
 	output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
 					 "'Missing XML comment for publicly visible type or member'\n");
+
 	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
@@ -1086,7 +1089,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
-			p_output.push_back(MEMBER_BEGIN "private static IntPtr ");
+			p_output.push_back(MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN "private static IntPtr ");
 			p_output.push_back(method_bind_field + " = Object." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
 			p_output.push_back(p_imethod.name);
 			p_output.push_back("\");\n");
