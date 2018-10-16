@@ -3708,18 +3708,18 @@ void register_visual_script_nodes() {
 		for (List<MethodInfo>::Element *E = constructors.front(); E; E = E->next()) {
 
 			if (E->get().arguments.size() > 0) {
-
-				String name = "functions/constructors/" + Variant::get_type_name(Variant::Type(i)) + " ( ";
+				String name = "functions/constructors/" + Variant::get_type_name(Variant::Type(i)) + "(";
 				for (int j = 0; j < E->get().arguments.size(); j++) {
-					if (j > 0)
+					if (j > 0) {
 						name += ", ";
-					if (E->get().arguments.size() == 1)
+					}
+					if (E->get().arguments.size() == 1) {
 						name += Variant::get_type_name(E->get().arguments[j].type);
-					else
+					} else {
 						name += E->get().arguments[j].name;
+					}
 				}
-				name += ") ";
-
+				name += ")";
 				VisualScriptLanguage::singleton->add_register_func(name, create_constructor_node);
 				Pair<Variant::Type, MethodInfo> pair;
 				pair.first = Variant::Type(i);
