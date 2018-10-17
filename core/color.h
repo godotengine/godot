@@ -33,13 +33,14 @@
 
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 struct Color {
 
 	union {
-
 		struct {
 			float r;
 			float g;
@@ -67,6 +68,7 @@ struct Color {
 	_FORCE_INLINE_ float &operator[](int idx) {
 		return components[idx];
 	}
+
 	_FORCE_INLINE_ const float &operator[](int idx) const {
 		return components[idx];
 	}
@@ -94,37 +96,34 @@ struct Color {
 	Color contrasted() const;
 
 	_FORCE_INLINE_ Color linear_interpolate(const Color &p_b, float p_t) const {
-
 		Color res = *this;
-
-		res.r += (p_t * (p_b.r - r));
-		res.g += (p_t * (p_b.g - g));
-		res.b += (p_t * (p_b.b - b));
-		res.a += (p_t * (p_b.a - a));
+		res.r += p_t * (p_b.r - r);
+		res.g += p_t * (p_b.g - g);
+		res.b += p_t * (p_b.b - b);
+		res.a += p_t * (p_b.a - a);
 
 		return res;
 	}
 
 	_FORCE_INLINE_ Color darkened(float p_amount) const {
-
 		Color res = *this;
-		res.r = res.r * (1.0f - p_amount);
-		res.g = res.g * (1.0f - p_amount);
-		res.b = res.b * (1.0f - p_amount);
+		res.r *= (1.0f - p_amount);
+		res.g *= (1.0f - p_amount);
+		res.b *= (1.0f - p_amount);
+
 		return res;
 	}
 
 	_FORCE_INLINE_ Color lightened(float p_amount) const {
-
 		Color res = *this;
-		res.r = res.r + (1.0f - res.r) * p_amount;
-		res.g = res.g + (1.0f - res.g) * p_amount;
-		res.b = res.b + (1.0f - res.b) * p_amount;
+		res.r += (1.0f - res.r) * p_amount;
+		res.g += (1.0f - res.g) * p_amount;
+		res.b += (1.0f - res.b) * p_amount;
+
 		return res;
 	}
 
 	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
-
 		const float pow2to9 = 512.0f;
 		const float B = 15.0f;
 		//const float Emax = 31.0f;
@@ -158,30 +157,30 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
-
 		Color res;
-		float sa = 1.0 - p_over.a;
-		res.a = a * sa + p_over.a;
+		float sa = a * (1.0 - p_over.a);
+		res.a = sa + p_over.a;
+
 		if (res.a == 0) {
-			return Color(0, 0, 0, 0);
+			res.r = res.g = res.b = 0;
 		} else {
-			res.r = (r * a * sa + p_over.r * p_over.a) / res.a;
-			res.g = (g * a * sa + p_over.g * p_over.a) / res.a;
-			res.b = (b * a * sa + p_over.b * p_over.a) / res.a;
+			res.r = (r * sa + p_over.r * p_over.a) / res.a;
+			res.g = (g * sa + p_over.g * p_over.a) / res.a;
+			res.b = (b * sa + p_over.b * p_over.a) / res.a;
 		}
+
 		return res;
 	}
 
 	_FORCE_INLINE_ Color to_linear() const {
-
 		return Color(
 				r < 0.04045 ? r * (1.0 / 12.92) : Math::pow((r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				g < 0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				b < 0.04045 ? b * (1.0 / 12.92) : Math::pow((b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				a);
 	}
-	_FORCE_INLINE_ Color to_srgb() const {
 
+	_FORCE_INLINE_ Color to_srgb() const {
 		return Color(
 				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
 				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
@@ -194,15 +193,23 @@ struct Color {
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
 	String to_html(bool p_alpha = true) const;
-	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
+	Color from_hsv(float p_h, float p_s, float p_v, float p_a = 1.0) const;
 	static Color from_rgbe9995(uint32_t p_color);
 
-	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
+	_FORCE_INLINE_ bool operator<(const Color &p_color) const { //used in set keys
+		if (r == p_color.r) {
+			if (g == p_color.g) {
+				if (b == p_color.b) {
+					return (a < p_color.a);
+				} else
+					return (b < p_color.b);
+			} else
+				return g < p_color.g;
+		} else
+			return r < p_color.r;
+	}
 	operator String() const;
 
-	/**
-	 * No construct parameters, r=0, g=0, b=0. a=255
-	 */
 	_FORCE_INLINE_ Color() {
 		r = 0;
 		g = 0;
@@ -210,9 +217,6 @@ struct Color {
 		a = 1.0;
 	}
 
-	/**
-	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 1.0
-	 */
 	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a = 1.0) {
 		r = p_r;
 		g = p_g;
@@ -221,18 +225,4 @@ struct Color {
 	}
 };
 
-bool Color::operator<(const Color &p_color) const {
-
-	if (r == p_color.r) {
-		if (g == p_color.g) {
-			if (b == p_color.b) {
-				return (a < p_color.a);
-			} else
-				return (b < p_color.b);
-		} else
-			return g < p_color.g;
-	} else
-		return r < p_color.r;
-}
-
-#endif
+#endif // COLOR_H
