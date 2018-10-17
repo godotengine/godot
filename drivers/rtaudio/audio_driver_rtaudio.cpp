@@ -114,11 +114,12 @@ Error AudioDriverRtAudio::init() {
 	unsigned int buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	print_verbose("Audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
-	short int tries = 2;
+	short int tries = 4;
 
-	while (tries >= 0) {
+	while (tries > 0) {
 		switch (speaker_mode) {
 			case SPEAKER_MODE_STEREO: parameters.nChannels = 2; break;
+			case SPEAKER_SURROUND_31: parameters.nChannels = 4; break;
 			case SPEAKER_SURROUND_51: parameters.nChannels = 6; break;
 			case SPEAKER_SURROUND_71: parameters.nChannels = 8; break;
 		};
@@ -133,7 +134,9 @@ Error AudioDriverRtAudio::init() {
 			ERR_PRINT("Unable to open audio, retrying with fewer channels...");
 
 			switch (speaker_mode) {
-				case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_MODE_STEREO; break;
+				case SPEAKER_MODE_STEREO: break; // Required to silence unhandled enum value warning.
+				case SPEAKER_SURROUND_31: speaker_mode = SPEAKER_MODE_STEREO; break;
+				case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_SURROUND_31; break;
 				case SPEAKER_SURROUND_71: speaker_mode = SPEAKER_SURROUND_51; break;
 			}
 
