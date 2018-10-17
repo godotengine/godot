@@ -140,8 +140,8 @@ void Button::_notification(int p_what) {
 
 		if (has_focus()) {
 
-			Ref<StyleBox> style = get_stylebox("focus");
-			style->draw(ci, Rect2(Point2(), size));
+			Ref<StyleBox> hover_style = get_stylebox("focus");
+			hover_style->draw(ci, Rect2(Point2(), size));
 		}
 
 		Ref<Font> font = get_font("font");
