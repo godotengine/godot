@@ -1248,7 +1248,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	return lv;
 }
 
-Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_infinite_inertia, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle) {
+Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	bool was_on_floor = on_floor;
 
@@ -1384,9 +1384,9 @@ void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "infinite_inertia", "stop_on_slope", "max_bounces", "floor_max_angle"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(true), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody::test_move);
+	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody::test_move, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &KinematicBody::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody::is_on_ceiling);
