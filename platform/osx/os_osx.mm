@@ -325,6 +325,7 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 - (void)windowDidBecomeKey:(NSNotification *)notification {
 	//_GodotInputWindowFocus(window, GL_TRUE);
 	//_GodotPlatformSetCursorMode(window, window->cursorMode);
+	[OS_OSX::singleton->context update];
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 }
