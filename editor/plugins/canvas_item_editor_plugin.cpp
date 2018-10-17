@@ -4608,6 +4608,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	skeleton_menu = memnew(MenuButton);
 	hb->add_child(skeleton_menu);
+	skeleton_menu->set_tooltip(TTR("Skeleton Options"));
 
 	p = skeleton_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
