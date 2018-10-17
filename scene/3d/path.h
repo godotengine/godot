@@ -106,6 +106,8 @@ public:
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
 
+	String get_configuration_warning() const;
+
 	PathFollow();
 };
 
@@ -150,6 +152,8 @@ public:
 
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
+
+	String get_configuration_warning() const;
 
 	OrientedPathFollow();
 };
