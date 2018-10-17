@@ -55,14 +55,4 @@ struct ManagedType {
 	}
 };
 
-typedef union {
-	uint32_t _uint32;
-	float _float;
-} mono_float;
-
-typedef union {
-	uint64_t _uint64;
-	float _double;
-} mono_double;
-
 #endif // GD_MONO_HEADER_H

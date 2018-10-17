@@ -223,7 +223,7 @@ class BindingsGenerator {
 		String c_in;
 
 		/**
-		 * Determines the name of the variable that will be passed as argument to a ptrcall.
+		 * Determines the expression that will be passed as argument to ptrcall.
 		 * By default the value equals the name of the parameter,
 		 * this varies for types that require special manipulation via [c_in].
 		 * Formatting elements:
@@ -333,8 +333,6 @@ class BindingsGenerator {
 			itype.proxy_name = itype.name;
 
 			itype.c_type = itype.name;
-			itype.c_type_in = "void*";
-			itype.c_type_out = "MonoObject*";
 			itype.cs_type = itype.proxy_name;
 			itype.im_type_in = "ref " + itype.proxy_name;
 			itype.im_type_out = itype.proxy_name;
@@ -385,10 +383,19 @@ class BindingsGenerator {
 		}
 
 		static void postsetup_enum_type(TypeInterface &r_enum_itype) {
-			r_enum_itype.c_arg_in = "&%s";
-			r_enum_itype.c_type = "int";
-			r_enum_itype.c_type_in = "int";
-			r_enum_itype.c_type_out = "int";
+			// C interface is the same as that of 'int'. Remember to apply any
+			// changes done here to the 'int' type interface as well
+
+			r_enum_itype.c_arg_in = "&%s_in";
+			{
+				// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
+				r_enum_itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+				r_enum_itype.c_out = "\treturn (%0)%1;\n";
+				r_enum_itype.c_type = "int64_t";
+			}
+			r_enum_itype.c_type_in = "int32_t";
+			r_enum_itype.c_type_out = r_enum_itype.c_type_in;
+
 			r_enum_itype.cs_type = r_enum_itype.proxy_name;
 			r_enum_itype.cs_in = "(int)%s";
 			r_enum_itype.cs_out = "return (%1)%0;";
