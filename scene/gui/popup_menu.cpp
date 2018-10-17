@@ -60,6 +60,9 @@ Size2 PopupMenu::get_minimum_size() const {
 
 	for (int i = 0; i < items.size(); i++) {
 
+		if (items[i].hidden)
+			continue;
+
 		Size2 size;
 		if (!items[i].icon.is_null()) {
 
@@ -122,6 +125,9 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	float font_h = font->get_height();
 
 	for (int i = 0; i < items.size(); i++) {
+
+		if (items[i].hidden)
+			continue;
 
 		ofs.y += vseparation;
 		float h;
@@ -444,6 +450,9 @@ void PopupMenu::_notification(int p_what) {
 			float font_h = font->get_height();
 
 			for (int i = 0; i < items.size(); i++) {
+
+				if (items[i].hidden)
+					continue;
 
 				if (i > 0)
 					ofs.y += vseparation;
@@ -805,6 +814,14 @@ void PopupMenu::set_item_disabled(int p_idx, bool p_disabled) {
 	minimum_size_changed();
 }
 
+void PopupMenu::set_item_hidden(int p_idx, bool p_hidden)
+{
+	ERR_FAIL_INDEX(p_idx, items.size());
+	items.write[p_idx].hidden = p_hidden;
+	update();
+	minimum_size_changed();
+}
+
 void PopupMenu::set_item_submenu(int p_idx, const String &p_submenu) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
@@ -817,6 +834,72 @@ void PopupMenu::toggle_item_checked(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].checked = !items[p_idx].checked;
+	update();
+	minimum_size_changed();
+}
+
+int PopupMenu::_set_slot_disabled_recursive(int p_idx, bool p_disabled)
+{
+	int slot_id = items[p_idx].ID;
+	int i = p_idx + 1;
+
+	items.write[p_idx].disabled = p_disabled;
+	while (items[i].slot_id == slot_id)
+	{
+		if (items[i].slot)
+		{
+			i += _set_slot_disabled_recursive(i, p_disabled);
+		}
+		else
+		{
+			items.write[i].disabled = p_disabled;
+			++i;
+		}
+	}
+
+	return i - p_idx;
+}
+
+void PopupMenu::set_slot_disabled(int p_idx, bool p_disabled)
+{
+	ERR_FAIL_INDEX(p_idx, items.size());
+	ERR_FAIL_COND(!items[p_idx].slot);
+
+	(void) _set_slot_disabled_recursive(p_idx, p_disabled);
+
+	update();
+	minimum_size_changed();
+}
+
+int PopupMenu::_set_slot_hidden_recursive(int p_idx, bool p_hidden)
+{
+	int slot_id = items[p_idx].ID;
+	int i = p_idx + 1;
+
+	items.write[p_idx].hidden = p_hidden;
+	while (items[i].slot_id == slot_id)
+	{
+		if (items[i].slot)
+		{
+			i += _set_slot_hidden_recursive(i, p_hidden);
+		}
+		else
+		{
+			items.write[i].hidden = p_hidden;
+			++i;
+		}
+	}
+
+	return i - p_idx;
+}
+
+void PopupMenu::set_slot_hidden(int p_idx, bool p_hidden)
+{
+	ERR_FAIL_INDEX(p_idx, items.size());
+	ERR_FAIL_COND(!items[p_idx].slot);
+
+	(void) _set_slot_hidden_recursive(p_idx, p_hidden);
+
 	update();
 	minimum_size_changed();
 }
@@ -859,6 +942,12 @@ bool PopupMenu::is_item_disabled(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
 	return items[p_idx].disabled;
+}
+
+bool PopupMenu::is_item_hidden(int p_idx) const
+{
+	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+	return items[p_idx].hidden;
 }
 
 bool PopupMenu::is_item_checked(int p_idx) const {
@@ -1044,7 +1133,7 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 
 	int il = items.size();
 	for (int i = 0; i < il; i++) {
-		if (is_item_disabled(i) || items[i].shortcut_is_disabled)
+		if (is_item_disabled(i) || is_item_hidden(i) || items[i].shortcut_is_disabled)
 			continue;
 
 		if (items[i].shortcut.is_valid() && items[i].shortcut->is_shortcut(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
@@ -1394,6 +1483,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_accelerator", "idx", "accel"), &PopupMenu::set_item_accelerator);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &PopupMenu::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &PopupMenu::set_item_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_hidden", "idx", "hidden"), &PopupMenu::set_item_hidden);
 	ClassDB::bind_method(D_METHOD("set_item_submenu", "idx", "submenu"), &PopupMenu::set_item_submenu);
 	ClassDB::bind_method(D_METHOD("set_item_as_separator", "idx", "enable"), &PopupMenu::set_item_as_separator);
 	ClassDB::bind_method(D_METHOD("set_item_as_checkable", "idx", "enable"), &PopupMenu::set_item_as_checkable);
@@ -1406,6 +1496,9 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("toggle_item_checked", "idx"), &PopupMenu::toggle_item_checked);
 	ClassDB::bind_method(D_METHOD("toggle_item_multistate", "idx"), &PopupMenu::toggle_item_multistate);
+
+	ClassDB::bind_method(D_METHOD("set_slot_disabled", "idx", "disabled"), &PopupMenu::set_slot_disabled);
+	ClassDB::bind_method(D_METHOD("set_slot_hidden", "idx", "hidden"), &PopupMenu::set_slot_hidden);
 
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &PopupMenu::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &PopupMenu::get_item_icon);

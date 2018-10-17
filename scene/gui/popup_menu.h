@@ -57,6 +57,7 @@ class PopupMenu : public Popup {
 		bool slot;
 		int slot_id;
 		bool disabled;
+		bool hidden;
 		int ID;
 		Variant metadata;
 		String submenu;
@@ -78,6 +79,7 @@ class PopupMenu : public Popup {
 			state = 0;
 			accel = 0;
 			disabled = false;
+			hidden = false;
 			_ofs_cache = 0;
 			h_ofs = 0;
 			shortcut_is_global = false;
@@ -118,7 +120,11 @@ class PopupMenu : public Popup {
 
 	int active_slot_id;
 	int insertion_idx;
+
 	void _insert_item(Item &p_item);
+
+	int _set_slot_disabled_recursive(int p_idx, bool p_disabled);
+	int _set_slot_hidden_recursive(int p_idx, bool p_hidden);
 
 protected:
 	virtual bool has_point(const Point2 &p_point) const;
@@ -151,6 +157,7 @@ public:
 	void set_item_accelerator(int p_idx, uint32_t p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
+	void set_item_hidden(int p_idx, bool p_hidden);
 	void set_item_submenu(int p_idx, const String &p_submenu);
 	void set_item_as_separator(int p_idx, bool p_separator);
 	void set_item_as_checkable(int p_idx, bool p_checkable);
@@ -165,6 +172,9 @@ public:
 
 	void toggle_item_checked(int p_idx);
 
+	void set_slot_disabled(int p_idx, bool p_disabled);
+	void set_slot_hidden(int p_idx, bool p_hidden);
+
 	String get_item_text(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture> get_item_icon(int p_idx) const;
@@ -174,6 +184,7 @@ public:
 	uint32_t get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
+	bool is_item_hidden(int p_idx) const;
 	String get_item_submenu(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
@@ -183,6 +194,8 @@ public:
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
 	int get_last_item_index() const;
+
+
 
 	int get_item_count() const;
 
