@@ -860,12 +860,14 @@ int PopupMenu::_set_slot_disabled_recursive(int p_idx, bool p_disabled)
 	return i - p_idx;
 }
 
-void PopupMenu::set_slot_disabled(int p_idx, bool p_disabled)
+void PopupMenu::set_slot_disabled(int p_id, bool p_disabled)
 {
-	ERR_FAIL_INDEX(p_idx, items.size());
-	ERR_FAIL_COND(!items[p_idx].slot);
+	int idx = get_item_index(p_id);
 
-	(void) _set_slot_disabled_recursive(p_idx, p_disabled);
+	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND(!items[idx].slot);
+
+	(void) _set_slot_disabled_recursive(idx, p_disabled);
 
 	update();
 	minimum_size_changed();
@@ -893,12 +895,14 @@ int PopupMenu::_set_slot_hidden_recursive(int p_idx, bool p_hidden)
 	return i - p_idx;
 }
 
-void PopupMenu::set_slot_hidden(int p_idx, bool p_hidden)
+void PopupMenu::set_slot_hidden(int p_id, bool p_hidden)
 {
-	ERR_FAIL_INDEX(p_idx, items.size());
-	ERR_FAIL_COND(!items[p_idx].slot);
+	int idx = get_item_index(p_id);
 
-	(void) _set_slot_hidden_recursive(p_idx, p_hidden);
+	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND(!items[idx].slot);
+
+	(void) _set_slot_hidden_recursive(idx, p_hidden);
 
 	update();
 	minimum_size_changed();

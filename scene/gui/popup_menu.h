@@ -172,8 +172,8 @@ public:
 
 	void toggle_item_checked(int p_idx);
 
-	void set_slot_disabled(int p_idx, bool p_disabled);
-	void set_slot_hidden(int p_idx, bool p_hidden);
+	void set_slot_disabled(int p_id, bool p_disabled);
+	void set_slot_hidden(int p_id, bool p_hidden);
 
 	String get_item_text(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
