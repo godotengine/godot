@@ -97,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(3)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(4)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -646,8 +646,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	List<String> output;
 
 	output.push_back("using System;\n"); // IntPtr
+	output.push_back("using System.Diagnostics;\n"); // DebuggerBrowsable
+
 	output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
 					 "'Missing XML comment for publicly visible type or member'\n");
+
 	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
@@ -1086,7 +1089,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
-			p_output.push_back(MEMBER_BEGIN "private static IntPtr ");
+			p_output.push_back(MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN "private static IntPtr ");
 			p_output.push_back(method_bind_field + " = Object." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
 			p_output.push_back(p_imethod.name);
 			p_output.push_back("\");\n");
@@ -1990,18 +1993,18 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type, m_type_in)                                                         \
-	{                                                                                                 \
-		itype = TypeInterface::create_value_type(String(#m_type));                                    \
-		itype.c_in = "\tMARSHALLED_IN(" #m_type ", %1, %1_in);\n";                                    \
-		itype.c_out = "\tMARSHALLED_OUT(" #m_type ", %1, ret_out)\n"                                  \
-					  "\treturn mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(%2), ret_out);\n"; \
-		itype.c_arg_in = "&%s_in";                                                                    \
-		itype.c_type_in = m_type_in;                                                                  \
-		itype.cs_in = "ref %s";                                                                       \
-		itype.cs_out = "return (%1)%0;";                                                              \
-		itype.im_type_out = "object";                                                                 \
-		builtin_types.insert(itype.cname, itype);                                                     \
+#define INSERT_STRUCT_TYPE(m_type, m_type_in)                          \
+	{                                                                  \
+		itype = TypeInterface::create_value_type(String(#m_type));     \
+		itype.c_in = "\t%0 %1_in = MARSHALLED_IN(" #m_type ", %1);\n"; \
+		itype.c_out = "\treturn MARSHALLED_OUT(" #m_type ", %1);\n";   \
+		itype.c_arg_in = "&%s_in";                                     \
+		itype.c_type_in = "GDMonoMarshal::M_" #m_type "*";             \
+		itype.c_type_out = "GDMonoMarshal::M_" #m_type;                \
+		itype.cs_in = "ref %s";                                        \
+		itype.cs_out = "return (%1)%0;";                               \
+		itype.im_type_out = itype.cs_type;                             \
+		builtin_types.insert(itype.cname, itype);                      \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2, "real_t*")
@@ -2019,26 +2022,31 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
-	itype.c_arg_in = "&%s_in";
-	// /* MonoBoolean <---> bool
-	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "bool";
-	// */
-	itype.c_type_in = "MonoBoolean";
-	itype.c_type_out = itype.c_type_in;
+
+	{
+		// MonoBoolean <---> bool
+		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+		itype.c_out = "\treturn (%0)%1;\n";
+		itype.c_type = "bool";
+		itype.c_type_in = "MonoBoolean";
+		itype.c_type_out = itype.c_type_in;
+		itype.c_arg_in = "&%s_in";
+	}
 	itype.im_type_in = itype.name;
 	itype.im_type_out = itype.name;
 	builtin_types.insert(itype.cname, itype);
 
 	// int
+	// C interface is the same as that of enums. Remember to apply any
+	// changes done here to TypeInterface::postsetup_enum_type as well
 	itype = TypeInterface::create_value_type(String("int"));
 	itype.c_arg_in = "&%s_in";
-	// /* ptrcall only supports int64_t and uint64_t
-	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "int64_t";
-	// */
+	{
+		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
+		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+		itype.c_out = "\treturn (%0)%1;\n";
+		itype.c_type = "int64_t";
+	}
 	itype.c_type_in = "int32_t";
 	itype.c_type_out = itype.c_type_in;
 	itype.im_type_in = itype.name;
@@ -2047,21 +2055,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// real_t
 	itype = TypeInterface();
-#ifdef REAL_T_IS_DOUBLE
-	itype.name = "double";
-#else
-	itype.name = "float";
-#endif
+	itype.name = "float"; // The name is always "float" in Variant, even with REAL_T_IS_DOUBLE.
 	itype.cname = itype.name;
-	itype.proxy_name = itype.name;
-	itype.c_arg_in = "&%s_in";
-	//* ptrcall only supports double
-	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "double";
-	//*/
-	itype.c_type_in = "real_t";
-	itype.c_type_out = "real_t";
+#ifdef REAL_T_IS_DOUBLE
+	itype.proxy_name = "double";
+#else
+	itype.proxy_name = "float";
+#endif
+	{
+		// The expected type for parameters and return value in ptrcall is 'double'.
+		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+		itype.c_out = "\treturn (%0)%1;\n";
+		itype.c_type = "double";
+		itype.c_type_in = "real_t";
+		itype.c_type_out = "real_t";
+		itype.c_arg_in = "&%s_in";
+	}
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = itype.proxy_name;
 	itype.im_type_out = itype.proxy_name;
