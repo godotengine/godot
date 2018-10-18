@@ -43,20 +43,21 @@ class BindingsGenerator {
 
 	struct ConstantInterface {
 		String name;
+		String proxy_name;
 		int value;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
 
-		ConstantInterface(const String &p_name, int p_value) {
+		ConstantInterface(const String &p_name, const String &p_proxy_name, int p_value) {
 			name = p_name;
+			proxy_name = p_proxy_name;
 			value = p_value;
 		}
 	};
 
 	struct EnumInterface {
 		StringName cname;
-		String prefix;
 		List<ConstantInterface> constants;
 
 		_FORCE_INLINE_ bool operator==(const EnumInterface &p_ienum) const {
@@ -520,7 +521,8 @@ class BindingsGenerator {
 		return p_type.name;
 	}
 
-	String _determine_enum_prefix(const EnumInterface &p_ienum);
+	int _determine_enum_prefix(const EnumInterface &p_ienum);
+	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
 
 	void _generate_method_icalls(const TypeInterface &p_itype);
 

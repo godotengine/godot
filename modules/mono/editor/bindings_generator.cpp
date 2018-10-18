@@ -97,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(4)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(5)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -173,23 +173,74 @@ static String snake_to_camel_case(const String &p_identifier, bool p_input_is_up
 	return ret;
 }
 
-String BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
+int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
 
 	CRASH_COND(p_ienum.constants.empty());
 
-	const List<ConstantInterface>::Element *front = p_ienum.constants.front();
-	int candidate_len = front->get().name.length();
+	const ConstantInterface &front_iconstant = p_ienum.constants.front()->get();
+	Vector<String> front_parts = front_iconstant.name.split("_", /* p_allow_empty: */ true);
+	int candidate_len = front_parts.size() - 1;
 
-	for (const List<ConstantInterface>::Element *E = front->next(); E; E = E->next()) {
-		int j = 0;
-		for (j = 0; j < candidate_len && j < E->get().name.length(); j++) {
-			if (front->get().name[j] != E->get().name[j])
-				break;
+	if (candidate_len == 0)
+		return 0;
+
+	for (const List<ConstantInterface>::Element *E = p_ienum.constants.front()->next(); E; E = E->next()) {
+		const ConstantInterface &iconstant = E->get();
+
+		Vector<String> parts = iconstant.name.split("_", /* p_allow_empty: */ true);
+
+		int i;
+		for (i = 0; i < candidate_len && i < parts.size(); i++) {
+			if (front_parts[i] != parts[i]) {
+				// HARDCODED: Some Flag enums have the prefix 'FLAG_' for everything except 'FLAGS_DEFAULT' (same for 'METHOD_FLAG_' and'METHOD_FLAGS_DEFAULT').
+				bool hardcoded_exc = (i == candidate_len - 1 && ((front_parts[i] == "FLAGS" && parts[i] == "FLAG") || (front_parts[i] == "FLAG" && parts[i] == "FLAGS")));
+				if (!hardcoded_exc)
+					break;
+			}
 		}
-		candidate_len = j;
+		candidate_len = i;
+
+		if (candidate_len == 0)
+			return 0;
 	}
 
-	return front->get().name.substr(0, candidate_len);
+	return candidate_len;
+}
+
+void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumInterface &p_ienum, int p_prefix_length) {
+
+	if (p_prefix_length > 0) {
+		for (List<ConstantInterface>::Element *E = p_ienum.constants.front(); E; E = E->next()) {
+			int curr_prefix_length = p_prefix_length;
+
+			ConstantInterface &curr_const = E->get();
+
+			String constant_name = curr_const.name;
+
+			Vector<String> parts = constant_name.split("_", /* p_allow_empty: */ true);
+
+			if (parts.size() <= curr_prefix_length)
+				continue;
+
+			if (parts[curr_prefix_length][0] >= '0' && parts[curr_prefix_length][0] <= '9') {
+				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
+				// so we make the prefix for this constant one word shorter in those cases.
+				for (curr_prefix_length = curr_prefix_length - 1; curr_prefix_length > 0; curr_prefix_length--) {
+					if (parts[curr_prefix_length][0] < '0' || parts[curr_prefix_length][0] > '9')
+						break;
+				}
+			}
+
+			constant_name = "";
+			for (int i = curr_prefix_length; i < parts.size(); i++) {
+				if (i > curr_prefix_length)
+					constant_name += "_";
+				constant_name += parts[i];
+			}
+
+			curr_const.proxy_name = snake_to_pascal_case(constant_name, true);
+		}
+	}
 }
 
 void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
@@ -272,7 +323,7 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 		}
 
 		p_output.push_back(MEMBER_BEGIN "public const int ");
-		p_output.push_back(iconstant.name);
+		p_output.push_back(iconstant.proxy_name);
 		p_output.push_back(" = ");
 		p_output.push_back(itos(iconstant.value));
 		p_output.push_back(";");
@@ -334,25 +385,8 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 				p_output.push_back(INDENT2 "/// </summary>\n");
 			}
 
-			String constant_name = iconstant.name;
-
-			if (!ienum.prefix.empty() && constant_name.begins_with(ienum.prefix)) {
-				constant_name = constant_name.substr(ienum.prefix.length(), constant_name.length());
-			}
-
-			if (constant_name[0] >= '0' && constant_name[0] <= '9') {
-				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
-				// so we make the prefix one word shorter in those cases.
-				int i = 0;
-				for (i = ienum.prefix.length() - 1; i >= 0; i--) {
-					if (ienum.prefix[i] >= 'A' && ienum.prefix[i] <= 'Z')
-						break;
-				}
-				constant_name = ienum.prefix.substr(i, ienum.prefix.length()) + constant_name;
-			}
-
 			p_output.push_back(INDENT2);
-			p_output.push_back(constant_name);
+			p_output.push_back(iconstant.proxy_name);
 			p_output.push_back(" = ");
 			p_output.push_back(itos(iconstant.value));
 			p_output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
@@ -720,7 +754,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			output.push_back(MEMBER_BEGIN "public const int ");
-			output.push_back(iconstant.name);
+			output.push_back(iconstant.proxy_name);
 			output.push_back(" = ");
 			output.push_back(itos(iconstant.value));
 			output.push_back(";");
@@ -760,25 +794,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					output.push_back(INDENT3 "/// </summary>\n");
 				}
 
-				String constant_name = iconstant.name;
-
-				if (!ienum.prefix.empty() && constant_name.begins_with(ienum.prefix)) {
-					constant_name = constant_name.substr(ienum.prefix.length(), constant_name.length());
-				}
-
-				if (constant_name[0] >= '0' && constant_name[0] <= '9') {
-					// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
-					// so we make the prefix one word shorter in those cases.
-					int i = 0;
-					for (i = ienum.prefix.length() - 1; i >= 0; i--) {
-						if (ienum.prefix[i] >= 'A' && ienum.prefix[i] <= 'Z')
-							break;
-					}
-					constant_name = ienum.prefix.substr(i, ienum.prefix.length()) + constant_name;
-				}
-
 				output.push_back(INDENT3);
-				output.push_back(constant_name);
+				output.push_back(iconstant.proxy_name);
 				output.push_back(" = ");
 				output.push_back(itos(iconstant.value));
 				output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
@@ -1846,11 +1863,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			EnumInterface ienum(enum_proxy_cname);
 			const List<StringName> &constants = enum_map.get(*k);
 			for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-				int *value = class_info->constant_map.getptr(E->get());
+				const StringName &constant_cname = E->get();
+				String constant_name = constant_cname.operator String();
+				int *value = class_info->constant_map.getptr(constant_cname);
 				ERR_FAIL_NULL(value);
-				constant_list.erase(E->get().operator String());
+				constant_list.erase(constant_name);
 
-				ConstantInterface iconstant(snake_to_pascal_case(E->get(), true), *value);
+				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
 				iconstant.const_doc = NULL;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -1865,7 +1884,9 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				ienum.constants.push_back(iconstant);
 			}
 
-			ienum.prefix = _determine_enum_prefix(ienum);
+			int prefix_length = _determine_enum_prefix(ienum);
+
+			_apply_prefix_to_enum_constants(ienum, prefix_length);
 
 			itype.enums.push_back(ienum);
 
@@ -1879,10 +1900,11 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const List<String>::Element *E = constant_list.front(); E; E = E->next()) {
-			int *value = class_info->constant_map.getptr(E->get());
+			const String &constant_name = E->get();
+			int *value = class_info->constant_map.getptr(StringName(E->get()));
 			ERR_FAIL_NULL(value);
 
-			ConstantInterface iconstant(snake_to_pascal_case(E->get(), true), *value);
+			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
 			iconstant.const_doc = NULL;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -2265,7 +2287,7 @@ void BindingsGenerator::_populate_global_constants() {
 			int constant_value = GlobalConstants::get_global_constant_value(i);
 			StringName enum_name = GlobalConstants::get_global_constant_enum(i);
 
-			ConstantInterface iconstant(snake_to_pascal_case(constant_name, true), constant_value);
+			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
@@ -2293,16 +2315,18 @@ void BindingsGenerator::_populate_global_constants() {
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
-			ienum.prefix = _determine_enum_prefix(ienum);
+			int prefix_length = _determine_enum_prefix(ienum);
 
-			// HARDCODED
+			// HARDCODED: The Error enum have the prefix 'ERR_' for everything except 'OK' and 'FAILED'.
 			if (ienum.cname == name_cache.enum_Error) {
-				if (!ienum.prefix.empty()) { // Just in case it ever changes
+				if (prefix_length > 0) { // Just in case it ever changes
 					ERR_PRINTS("Prefix for enum 'Error' is not empty");
 				}
 
-				ienum.prefix = "Err";
+				prefix_length = 1; // 'ERR_'
 			}
+
+			_apply_prefix_to_enum_constants(ienum, prefix_length);
 		}
 	}
 
