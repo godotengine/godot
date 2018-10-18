@@ -306,6 +306,16 @@ String GodotSharpBuilds::_api_folder_name(APIAssembly::Type p_api_type) {
 bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
 
 	String api_name = p_api_type == APIAssembly::API_CORE ? API_ASSEMBLY_NAME : EDITOR_API_ASSEMBLY_NAME;
+
+	String editor_prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir();
+	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
+
+	if (FileAccess::exists(editor_prebuilt_api_dir.plus_file(api_name + ".dll"))) {
+		EditorProgress pr("mono_copy_prebuilt_api_assembly", "Copying prebuilt " + api_name + " assembly...", 1);
+		pr.step("Copying " + api_name + " assembly", 0);
+		return GodotSharpBuilds::copy_api_assembly(editor_prebuilt_api_dir, res_assemblies_dir, api_name, p_api_type);
+	}
+
 	String api_build_config = "Release";
 
 	EditorProgress pr("mono_build_release_" + api_name, "Building " + api_name + " solution...", 3);
@@ -357,7 +367,6 @@ bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
 
 	// Copy the built assembly to the assemblies directory
 	String api_assembly_dir = api_sln_dir.plus_file("bin").plus_file(api_build_config);
-	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
 	if (!GodotSharpBuilds::copy_api_assembly(api_assembly_dir, res_assemblies_dir, api_name, p_api_type))
 		return false;
 
@@ -369,36 +378,11 @@ bool GodotSharpBuilds::build_project_blocking(const String &p_config) {
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return true; // No solution to build
 
-	String editor_prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir();
-	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
+	if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
+		return false;
 
-	if (FileAccess::exists(editor_prebuilt_api_dir.plus_file(API_ASSEMBLY_NAME ".dll"))) {
-		EditorProgress pr("mono_copy_prebuilt_api_assemblies",
-				"Copying prebuilt " API_ASSEMBLY_NAME " assemblies...", 1);
-		pr.step("Copying " API_ASSEMBLY_NAME " assembly", 0);
-
-		if (!GodotSharpBuilds::copy_api_assembly(editor_prebuilt_api_dir, res_assemblies_dir,
-					API_ASSEMBLY_NAME, APIAssembly::API_CORE)) {
-			return false;
-		}
-	} else {
-		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
-			return false;
-	}
-
-	if (DirAccess::exists(editor_prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll"))) {
-		EditorProgress pr("mono_copy_prebuilt_api_assemblies",
-				"Copying prebuilt " EDITOR_API_ASSEMBLY_NAME " assemblies...", 1);
-		pr.step("Copying " EDITOR_API_ASSEMBLY_NAME " assembly", 0);
-
-		if (!GodotSharpBuilds::copy_api_assembly(editor_prebuilt_api_dir, res_assemblies_dir,
-					EDITOR_API_ASSEMBLY_NAME, APIAssembly::API_EDITOR)) {
-			return false;
-		}
-	} else {
-		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
-			return false;
-	}
+	if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
+		return false;
 
 	EditorProgress pr("mono_project_debug_build", "Building project solution...", 1);
 	pr.step("Building project solution", 0);
