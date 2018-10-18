@@ -1025,8 +1025,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			// Scroll or pan down
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				_update_scrollbars();
-				viewport->update();
+				update_viewport();
 			} else {
 				_zoom_on_position(zoom * (1 - (0.05 * b->get_factor())), b->get_position());
 			}
@@ -1037,8 +1036,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			// Scroll or pan up
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				_update_scrollbars();
-				viewport->update();
+				update_viewport();
 			} else {
 				_zoom_on_position(zoom * ((0.95 + (0.05 * b->get_factor())) / 0.95), b->get_position());
 			}
@@ -1049,8 +1047,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			// Pan left
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.x -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				_update_scrollbars();
-				viewport->update();
+				update_viewport();
 				return true;
 			}
 		}
@@ -1059,8 +1056,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			// Pan right
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan"))) {
 				view_offset.x += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
-				_update_scrollbars();
-				viewport->update();
+				update_viewport();
 				return true;
 			}
 		}
@@ -1112,8 +1108,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			}
 			view_offset.x -= relative.x / zoom;
 			view_offset.y -= relative.y / zoom;
-			_update_scrollbars();
-			viewport->update();
+			update_viewport();
 			return true;
 		}
 	}
@@ -1131,8 +1126,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 		const Vector2 delta = (int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom) * pan_gesture->get_delta();
 		view_offset.x += delta.x;
 		view_offset.y += delta.y;
-		_update_scrollbars();
-		viewport->update();
+		update_viewport();
 		return true;
 	}
 
@@ -3168,6 +3162,11 @@ void CanvasItemEditor::_draw_viewport() {
 	_draw_hover();
 }
 
+void CanvasItemEditor::update_viewport() {
+	_update_scrollbars();
+	viewport->update();
+}
+
 void CanvasItemEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
@@ -3574,8 +3573,7 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	view_offset.x = Math::round(view_offset.x + ofs.x);
 	view_offset.y = Math::round(view_offset.y + ofs.y);
 
-	_update_scrollbars();
-	viewport->update();
+	update_viewport();
 }
 
 void CanvasItemEditor::_button_zoom_minus() {
@@ -4172,8 +4170,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		Vector2 offset = viewport->get_size() / 2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
 		view_offset.x -= offset.x / zoom;
 		view_offset.y -= offset.y / zoom;
-		_update_scrollbars();
-		viewport->update();
+		update_viewport();
 
 	} else { // VIEW_FRAME_TO_SELECTION
 
@@ -4210,6 +4207,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
 	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
+	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));

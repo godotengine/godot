@@ -57,7 +57,7 @@ void LightOccluder2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = NULL;
 		hide();
-		canvas_item_editor->get_viewport_control()->update();
+		canvas_item_editor->update_viewport();
 	}
 }
 
@@ -88,8 +88,8 @@ void LightOccluder2DEditor::_wip_close(bool p_closed) {
 	undo_redo->add_undo_method(node->get_occluder_polygon().ptr(), "set_closed", node->get_occluder_polygon()->is_closed());
 	undo_redo->add_do_method(node->get_occluder_polygon().ptr(), "set_closed", p_closed);
 
-	undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-	undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+	undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+	undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 	undo_redo->commit_action();
 	wip.clear();
 	wip_active = false;
@@ -139,7 +139,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						wip.push_back(cpoint);
 						wip_active = true;
 						edited_point_pos = cpoint;
-						canvas_item_editor->get_viewport_control()->update();
+						canvas_item_editor->update_viewport();
 						edited_point = 1;
 						return true;
 					} else {
@@ -158,7 +158,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 							wip.push_back(cpoint);
 							edited_point = wip.size();
-							canvas_item_editor->get_viewport_control()->update();
+							canvas_item_editor->update_viewport();
 							return true;
 
 							//add wip point
@@ -183,8 +183,8 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 								undo_redo->add_undo_method(node->get_occluder_polygon().ptr(), "set_polygon", poly);
 								poly.push_back(cpoint);
 								undo_redo->add_do_method(node->get_occluder_polygon().ptr(), "set_polygon", poly);
-								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+								undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+								undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 								undo_redo->commit_action();
 								return true;
 							}
@@ -217,7 +217,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 								edited_point = closest_idx + 1;
 								edited_point_pos = xform.affine_inverse().xform(closest_pos);
 								node->get_occluder_polygon()->set_polygon(Variant(poly));
-								canvas_item_editor->get_viewport_control()->update();
+								canvas_item_editor->update_viewport();
 								return true;
 							}
 						} else {
@@ -244,7 +244,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 								pre_move_edit = poly;
 								edited_point = closest_idx;
 								edited_point_pos = xform.affine_inverse().xform(closest_pos);
-								canvas_item_editor->get_viewport_control()->update();
+								canvas_item_editor->update_viewport();
 								return true;
 							}
 						}
@@ -259,8 +259,8 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(node->get_occluder_polygon().ptr(), "set_polygon", poly);
 							undo_redo->add_undo_method(node->get_occluder_polygon().ptr(), "set_polygon", pre_move_edit);
-							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+							undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+							undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 							undo_redo->commit_action();
 
 							edited_point = -1;
@@ -290,8 +290,8 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						undo_redo->add_undo_method(node->get_occluder_polygon().ptr(), "set_polygon", poly);
 						poly.remove(closest_idx);
 						undo_redo->add_do_method(node->get_occluder_polygon().ptr(), "set_polygon", poly);
-						undo_redo->add_do_method(canvas_item_editor->get_viewport_control(), "update");
-						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
+						undo_redo->add_do_method(canvas_item_editor, "update_viewport");
+						undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 						undo_redo->commit_action();
 						return true;
 					}
@@ -312,7 +312,7 @@ bool LightOccluder2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			cpoint = canvas_item_editor->snap_point(cpoint);
 			edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
-			canvas_item_editor->get_viewport_control()->update();
+			canvas_item_editor->update_viewport();
 		}
 	}
 
@@ -369,7 +369,7 @@ void LightOccluder2DEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		canvas_item_editor->get_viewport_control()->update();
+		canvas_item_editor->update_viewport();
 	} else {
 		node = NULL;
 	}
