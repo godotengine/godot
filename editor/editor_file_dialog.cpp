@@ -1135,14 +1135,10 @@ void EditorFileDialog::_update_drives() {
 }
 
 void EditorFileDialog::_favorite_selected(int p_idx) {
-
-	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
-	ERR_FAIL_INDEX(p_idx, favorited.size());
-
-	dir_access->change_dir(favorited[p_idx]);
+	dir_access->change_dir(favorites->get_item_metadata(p_idx));
 	file->set_text("");
-	invalidate();
 	update_dir();
+	invalidate();
 	_push_history();
 }
 
@@ -1192,7 +1188,7 @@ void EditorFileDialog::_update_favorites() {
 	bool res = access == ACCESS_RESOURCES;
 
 	String current = get_current_dir();
-	Ref<Texture> star = get_icon("Favorites", "EditorIcons");
+	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
 	favorites->clear();
 
 	favorite->set_pressed(false);
@@ -1203,16 +1199,23 @@ void EditorFileDialog::_update_favorites() {
 		if (cres != res)
 			continue;
 		String name = favorited[i];
-
-		bool setthis = name == current;
+		bool setthis = false;
 
 		if (res && name == "res://") {
+			if (name == current)
+				setthis = true;
 			name = "/";
+		} else if (name.ends_with("/")) {
+			if (name == current)
+				setthis = true;
+			name = name.substr(0, name.length() - 1);
+			name = name.get_file();
+
+			favorites->add_item(name, folder_icon);
 		} else {
-			name = name.get_file() + "/";
+			continue; // We don't handle favorite files here
 		}
 
-		favorites->add_item(name, star);
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
 
 		if (setthis) {
