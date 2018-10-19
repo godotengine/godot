@@ -80,6 +80,14 @@ double AudioDriver::get_mix_time() const {
 	return total;
 }
 
+void AudioDriver::input_buffer_init(int driver_buffer_frames) {
+
+	const int input_buffer_channels = 2;
+	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
+	input_position = 0;
+	input_size = 0;
+}
+
 void AudioDriver::input_buffer_write(int32_t sample) {
 
 	input_buffer.write[input_position++] = sample;

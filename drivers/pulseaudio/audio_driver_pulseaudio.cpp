@@ -613,20 +613,18 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 	}
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
-
 	pa_sample_spec spec;
 
 	spec.format = PA_SAMPLE_S16LE;
 	spec.channels = pa_rec_map.channels;
 	spec.rate = mix_rate;
 
-	int latency = 30;
-	input_buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-	int buffer_size = input_buffer_frames * spec.channels;
+	int input_latency = 30;
+	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
+	int input_buffer_size = input_buffer_frames * spec.channels;
 
 	pa_buffer_attr attr;
-	attr.fragsize = buffer_size * sizeof(int16_t);
+	attr.fragsize = input_buffer_size * sizeof(int16_t);
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);
 	if (pa_rec_str == NULL) {
@@ -642,9 +640,10 @@ Error AudioDriverPulseAudio::capture_init_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	input_buffer.resize(input_buffer_frames * 8);
-	input_position = 0;
-	input_size = 0;
+	input_buffer_init(input_buffer_frames);
+
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }
@@ -760,7 +759,6 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 
 	mix_rate = 0;
 	buffer_frames = 0;
-	input_buffer_frames = 0;
 	pa_buffer_size = 0;
 	channels = 0;
 	pa_ready = 0;

@@ -59,6 +59,7 @@ protected:
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
+	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
