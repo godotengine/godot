@@ -246,6 +246,12 @@ godot_bool GDAPI godot_string_is_valid_identifier(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_valid_integer(const godot_string *p_self);
 godot_bool GDAPI godot_string_is_valid_ip_address(const godot_string *p_self);
 
+godot_string GDAPI godot_string_dedent(const godot_string *p_self);
+godot_string GDAPI godot_string_trim_prefix(const godot_string *p_self, const godot_string *p_prefix);
+godot_string GDAPI godot_string_trim_suffix(const godot_string *p_self, const godot_string *p_suffix);
+godot_string GDAPI godot_string_rstrip(const godot_string *p_self, const godot_string *p_chars);
+godot_pool_string_array GDAPI godot_string_rsplit(const godot_string *p_self, const godot_string *p_divisor, const godot_bool p_allow_empty, const godot_int p_maxsplit);
+
 void GDAPI godot_string_destroy(godot_string *p_self);
 
 #ifdef __cplusplus
