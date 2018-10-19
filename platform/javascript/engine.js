@@ -1,9 +1,3 @@
-		exposedLibs['PATH'] = PATH;
-		exposedLibs['FS'] = FS;
-		return Module;
-	},
-};
-
 (function() {
 	var engine = Engine;
 
