@@ -547,6 +547,8 @@ public:
 
 	Control *get_viewport_control() { return viewport; }
 
+	void update_viewport();
+
 	Tool get_current_tool() { return tool; }
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
