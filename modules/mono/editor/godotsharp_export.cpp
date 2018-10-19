@@ -191,21 +191,21 @@ Error GodotSharpExport::_get_assembly_dependencies(GDMonoAssembly *p_assembly, c
 			if (has_extension) {
 				path = search_dir.plus_file(ref_name);
 				if (FileAccess::exists(path)) {
-					GDMono::get_singleton()->load_assembly_from(ref_name.get_basename(), search_dir, ref_aname, &ref_assembly, true);
+					GDMono::get_singleton()->load_assembly_from(ref_name.get_basename(), path, &ref_assembly, true);
 					if (ref_assembly != NULL)
 						break;
 				}
 			} else {
 				path = search_dir.plus_file(ref_name + ".dll");
 				if (FileAccess::exists(path)) {
-					GDMono::get_singleton()->load_assembly_from(ref_name, search_dir, ref_aname, &ref_assembly, true);
+					GDMono::get_singleton()->load_assembly_from(ref_name, path, &ref_assembly, true);
 					if (ref_assembly != NULL)
 						break;
 				}
 
 				path = search_dir.plus_file(ref_name + ".exe");
 				if (FileAccess::exists(path)) {
-					GDMono::get_singleton()->load_assembly_from(ref_name, search_dir, ref_aname, &ref_assembly, true);
+					GDMono::get_singleton()->load_assembly_from(ref_name, path, &ref_assembly, true);
 					if (ref_assembly != NULL)
 						break;
 				}

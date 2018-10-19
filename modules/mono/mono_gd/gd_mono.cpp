@@ -378,34 +378,24 @@ GDMonoAssembly **GDMono::get_loaded_assembly(const String &p_name) {
 
 bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
 
-	return load_assembly_from(p_name, String(), r_assembly, p_refonly);
-}
-
-bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
-
-	return load_assembly_from(p_name, String(), p_aname, r_assembly, p_refonly);
-}
-
-bool GDMono::load_assembly_from(const String &p_name, const String &p_basedir, GDMonoAssembly **r_assembly, bool p_refonly) {
-
 	CRASH_COND(!r_assembly);
 
 	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
-	bool result = load_assembly_from(p_name, p_basedir, aname, r_assembly, p_refonly);
+	bool result = load_assembly(p_name, aname, r_assembly, p_refonly);
 	mono_assembly_name_free(aname);
 	mono_free(aname);
 
 	return result;
 }
 
-bool GDMono::load_assembly_from(const String &p_name, const String &p_basedir, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
+bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
 
 	CRASH_COND(!r_assembly);
 
 	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
-	MonoAssembly *assembly = mono_assembly_load_full(p_aname, p_basedir.length() ? p_basedir.utf8().get_data() : NULL, &status, p_refonly);
+	MonoAssembly *assembly = mono_assembly_load_full(p_aname, NULL, &status, p_refonly);
 
 	if (!assembly)
 		return false;
@@ -420,6 +410,32 @@ bool GDMono::load_assembly_from(const String &p_name, const String &p_basedir, M
 	ERR_FAIL_COND_V((*stored_assembly)->get_assembly() != assembly, false);
 
 	*r_assembly = *stored_assembly;
+
+	print_verbose("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path());
+
+	return true;
+}
+
+bool GDMono::load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly, bool p_refonly) {
+
+	CRASH_COND(!r_assembly);
+
+	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
+
+	GDMonoAssembly *assembly = GDMonoAssembly::load_from(p_name, p_path, p_refonly);
+
+	if (!assembly)
+		return false;
+
+#ifdef DEBUG_ENABLED
+	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
+	GDMonoAssembly **stored_assembly = assemblies[domain_id].getptr(p_name);
+
+	ERR_FAIL_COND_V(stored_assembly == NULL, false);
+	ERR_FAIL_COND_V(*stored_assembly != assembly, false);
+#endif
+
+	*r_assembly = assembly;
 
 	print_verbose("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path());
 
@@ -481,7 +497,14 @@ bool GDMono::_load_core_api_assembly() {
 	}
 #endif
 
-	bool success = load_assembly(API_ASSEMBLY_NAME, &core_api_assembly);
+	String assembly_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(API_ASSEMBLY_NAME ".dll");
+
+	if (!FileAccess::exists(assembly_path))
+		return false;
+
+	bool success = load_assembly_from(API_ASSEMBLY_NAME,
+			assembly_path,
+			&core_api_assembly);
 
 	if (success) {
 #ifdef MONO_GLUE_ENABLED
@@ -511,7 +534,14 @@ bool GDMono::_load_editor_api_assembly() {
 		return false;
 	}
 
-	bool success = load_assembly(EDITOR_API_ASSEMBLY_NAME, &editor_api_assembly);
+	String assembly_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+
+	if (!FileAccess::exists(assembly_path))
+		return false;
+
+	bool success = load_assembly_from(EDITOR_API_ASSEMBLY_NAME,
+			assembly_path,
+			&editor_api_assembly);
 
 	if (success) {
 #ifdef MONO_GLUE_ENABLED
