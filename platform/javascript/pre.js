@@ -1,2 +1,3 @@
 var Engine = {
-	RuntimeEnvironment: function(Module, exposedLibs) {
+	RuntimeEnvironment: function(Module, exposedLibs) { }
+}
