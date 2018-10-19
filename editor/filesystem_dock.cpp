@@ -412,7 +412,7 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 		return;
 
 	TreeItem *favorites_item = tree->get_root()->get_children();
-	if (selected->get_parent() == favorites_item) {
+	if (selected->get_parent() == favorites_item && !String(selected->get_metadata(0)).ends_with("/")) {
 		// Go to the favorites if we click in the favorites and the path has changed
 		path = "Favorites";
 	} else {
