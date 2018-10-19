@@ -225,6 +225,12 @@ godot_quat GDAPI godot_quat_operator_neg(const godot_quat *p_self) {
 	return raw_dest;
 }
 
+void GDAPI godot_quat_set_axis_angle(godot_quat *p_self, const godot_vector3 *p_axis, const godot_real p_angle) {
+	Quat *self = (Quat *)p_self;
+	const Vector3 *axis = (const Vector3 *)p_axis;
+	self->set_axis_angle(*axis, p_angle);
+}
+
 #ifdef __cplusplus
 }
 #endif
