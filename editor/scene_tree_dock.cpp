@@ -1613,6 +1613,14 @@ void SceneTreeDock::_delete_confirm() {
 void SceneTreeDock::_update_script_button() {
 	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size() == 1) {
 		button_create_script->show();
+		Node *n = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()[0];
+		if (n->get_script().is_null()) {
+			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
+			button_create_script->set_tooltip(TTR("Attach a new or existing script for the selected node."));
+		} else {
+			button_create_script->set_icon(get_icon("ScriptExtend", "EditorIcons"));
+			button_create_script->set_tooltip(TTR("Extend the selected node's script with a new or existing script."));
+		}
 	} else {
 		button_create_script->hide();
 	}
@@ -2359,7 +2367,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	tb = memnew(ToolButton);
 	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_ATTACH_SCRIPT, false));
-	tb->set_tooltip(TTR("Attach a new or existing script for the selected node."));
 	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
 	filter_hbc->add_child(tb);
 	tb->hide();
