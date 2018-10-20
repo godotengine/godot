@@ -180,7 +180,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(desc_lb);
 
 	desc_edit = memnew(TextEdit);
-	desc_edit->set_custom_minimum_size(Size2(400.0f, 50.0f));
+	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
 	grid->add_child(desc_edit);
 
 	Label *author_lb = memnew(Label);
