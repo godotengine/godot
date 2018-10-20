@@ -306,6 +306,8 @@ private:
 	float target_v_scroll;
 	float v_scroll_speed;
 
+	bool raised_from_completion;
+
 	String highlighted_word;
 
 	uint64_t last_dblclk;
