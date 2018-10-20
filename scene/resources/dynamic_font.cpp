@@ -1029,7 +1029,7 @@ void DynamicFont::_bind_methods() {
 
 Mutex *DynamicFont::dynamic_font_mutex = NULL;
 
-SelfList<DynamicFont>::List DynamicFont::dynamic_fonts;
+SelfList<DynamicFont>::List *DynamicFont::dynamic_fonts = NULL;
 
 DynamicFont::DynamicFont() :
 		font_list(this) {
@@ -1041,29 +1041,31 @@ DynamicFont::DynamicFont() :
 	spacing_char = 0;
 	spacing_space = 0;
 	outline_color = Color(1, 1, 1);
-	if (dynamic_font_mutex)
+	if (dynamic_font_mutex) {
 		dynamic_font_mutex->lock();
-	dynamic_fonts.add(&font_list);
-	if (dynamic_font_mutex)
+		dynamic_fonts->add(&font_list);
 		dynamic_font_mutex->unlock();
+	}
 }
 
 DynamicFont::~DynamicFont() {
-
-	if (dynamic_font_mutex)
+	if (dynamic_font_mutex) {
 		dynamic_font_mutex->lock();
-	dynamic_fonts.remove(&font_list);
-	if (dynamic_font_mutex)
+		dynamic_fonts->remove(&font_list);
 		dynamic_font_mutex->unlock();
+	}
 }
 
 void DynamicFont::initialize_dynamic_fonts() {
+	dynamic_fonts = memnew(SelfList<DynamicFont>::List());
 	dynamic_font_mutex = Mutex::create();
 }
 
 void DynamicFont::finish_dynamic_fonts() {
 	memdelete(dynamic_font_mutex);
 	dynamic_font_mutex = NULL;
+	memdelete(dynamic_fonts);
+	dynamic_fonts = NULL;
 }
 
 void DynamicFont::update_oversampling() {
@@ -1073,7 +1075,7 @@ void DynamicFont::update_oversampling() {
 	if (dynamic_font_mutex)
 		dynamic_font_mutex->lock();
 
-	SelfList<DynamicFont> *E = dynamic_fonts.first();
+	SelfList<DynamicFont> *E = dynamic_fonts->first();
 	while (E) {
 
 		if (E->self()->data_at_size.is_valid()) {
