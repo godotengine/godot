@@ -101,9 +101,9 @@ protected:
 
 	// functions used by main to initialize/deintialize the OS
 	virtual void initialize_core() = 0;
-	virtual Error initialize(int p_audio_driver) = 0;
+	virtual Error initialize_os(int p_audio_driver) = 0;
 
-	virtual void finalize() = 0;
+	virtual void finalize_os() = 0;
 	virtual void finalize_core() = 0;
 
 	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);

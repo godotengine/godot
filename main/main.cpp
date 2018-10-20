@@ -1078,11 +1078,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	Error err;
-	err = OS::get_singleton()->initialize(audio_driver_idx);
+	err = OS::get_singleton()->initialize_os(audio_driver_idx);
 	if (err != OK) {
 		return err;
 	}
-	err = DisplayDriver::get_singleton()->initialize(video_mode, video_driver_idx);
+	err = DisplayDriver::get_singleton()->initialize_display(video_mode, video_driver_idx);
 	if (err != OK) {
 		return err;
 	}
@@ -2008,8 +2008,8 @@ void Main::cleanup() {
 		memdelete(audio_server);
 	}
 
-	DisplayDriver::get_singleton()->finalize();
-	OS::get_singleton()->finalize();
+	DisplayDriver::get_singleton()->finalize_display();
+	OS::get_singleton()->finalize_os();
 	finalize_physics();
 
 	if (packed_data)

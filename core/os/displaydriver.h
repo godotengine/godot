@@ -96,8 +96,8 @@ protected:
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deintialize the OS
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver) = 0;
-	virtual void finalize() = 0;
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver) = 0;
+	virtual void finalize_display() = 0;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
@@ -157,8 +157,8 @@ public:
 	virtual void set_borderless_window(bool p_borderless) {}
 	virtual bool get_borderless_window() { return 0; }
 
-	virtual bool get_window_per_pixel_transparency_enabled() const = 0;
-	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) = 0;
+	virtual bool get_window_per_pixel_transparency_enabled() const { return false; };
+	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled){};
 
 	virtual int get_video_driver_count() const = 0;
 	virtual const char *get_video_driver_name(int p_driver) const = 0;

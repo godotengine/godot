@@ -110,7 +110,7 @@ const char *Display_X11::get_video_driver_name(int p_driver) const {
 void Display_X11::initialize_core() {
 }
 
-Error Display_X11::initialize(const VideoMode &p_desired, int p_video_driver) {
+Error Display_X11::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	long im_event_mask = 0;
 	last_button_state = 0;
@@ -644,7 +644,7 @@ void Display_X11::set_ime_position(const Point2 &p_pos) {
 	XFree(preedit_attr);
 }
 
-void Display_X11::finalize() {
+void Display_X11::finalize_display() {
 
 	delete_main_loop();
 
@@ -1894,8 +1894,8 @@ void Display_X11::process_events() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-					// Grab touch devices to avoid OS gesture interference
-					/*for (int i = 0; i < touch.devices.size(); ++i) {
+				// Grab touch devices to avoid OS gesture interference
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
 				}*/
 #endif

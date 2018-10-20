@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_x11.cpp                                                           */
+/*  os_freedesktop.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -74,7 +74,7 @@ void OS_Freedesktop::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-Error OS_Freedesktop::initialize(int p_audio_driver) {
+Error OS_Freedesktop::initialize_os(int p_audio_driver) {
 	args = OS::get_singleton()->get_cmdline_args();
 	last_timestamp = 0;
 
@@ -102,7 +102,7 @@ String OS_Freedesktop::get_unique_id() const {
 	return machine_id;
 }
 
-void OS_Freedesktop::finalize() {
+void OS_Freedesktop::finalize_os() {
 
 	args.clear();
 }

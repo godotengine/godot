@@ -193,8 +193,8 @@ protected:
 	virtual const char *get_video_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver);
-	virtual void finalize();
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	void _window_changed(XEvent *event);
 

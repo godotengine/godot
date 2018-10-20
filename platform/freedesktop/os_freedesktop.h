@@ -75,8 +75,8 @@ protected:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
-	virtual Error initialize(int p_audio_driver);
-	virtual void finalize();
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
 
 public:
 	virtual String get_name();
