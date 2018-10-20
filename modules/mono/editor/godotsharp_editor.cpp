@@ -108,6 +108,33 @@ bool GodotSharpEditor::_create_project_solution() {
 	return true;
 }
 
+void GodotSharpEditor::_make_api_solutions_if_needed() {
+	// I'm sick entirely of ProgressDialog
+	static bool recursion_guard = false;
+	if (!recursion_guard) {
+		recursion_guard = true;
+		_make_api_solutions_if_needed_impl();
+		recursion_guard = false;
+	}
+}
+
+void GodotSharpEditor::_make_api_solutions_if_needed_impl() {
+	// If the project has a solution and C# project make sure the API assemblies are present and up to date
+	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
+
+	if (!FileAccess::exists(res_assemblies_dir.plus_file(API_ASSEMBLY_NAME ".dll")) ||
+			GDMono::get_singleton()->metadata_is_api_assembly_invalidated(APIAssembly::API_CORE)) {
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
+			return;
+	}
+
+	if (!FileAccess::exists(res_assemblies_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll")) ||
+			GDMono::get_singleton()->metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR)) {
+		if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
+			return; // Redundant? I don't think so
+	}
+}
+
 void GodotSharpEditor::_remove_create_sln_menu_option() {
 
 	menu_popup->remove_item(menu_popup->get_item_index(MENU_CREATE_SLN));
@@ -169,6 +196,7 @@ void GodotSharpEditor::_notification(int p_notification) {
 void GodotSharpEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_create_project_solution"), &GodotSharpEditor::_create_project_solution);
+	ClassDB::bind_method(D_METHOD("_make_api_solutions_if_needed"), &GodotSharpEditor::_make_api_solutions_if_needed);
 	ClassDB::bind_method(D_METHOD("_remove_create_sln_menu_option"), &GodotSharpEditor::_remove_create_sln_menu_option);
 	ClassDB::bind_method(D_METHOD("_toggle_about_dialog_on_start"), &GodotSharpEditor::_toggle_about_dialog_on_start);
 	ClassDB::bind_method(D_METHOD("_menu_option_pressed", "id"), &GodotSharpEditor::_menu_option_pressed);
@@ -390,7 +418,10 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	String sln_path = GodotSharpDirs::get_project_sln_path();
 	String csproj_path = GodotSharpDirs::get_project_csproj_path();
 
-	if (!FileAccess::exists(sln_path) || !FileAccess::exists(csproj_path)) {
+	if (FileAccess::exists(sln_path) && FileAccess::exists(csproj_path)) {
+		// We can't use EditorProgress here. It calls Main::iterarion() and the main loop is not initialized yet.
+		call_deferred("_make_api_solutions_if_needed");
+	} else {
 		bottom_panel_btn->hide();
 		menu_popup->add_item(TTR("Create C# solution"), MENU_CREATE_SLN);
 	}

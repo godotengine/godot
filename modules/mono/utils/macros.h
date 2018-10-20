@@ -33,6 +33,15 @@
 
 // noreturn
 
+#if __cpp_static_assert
+#define GD_STATIC_ASSERT(m_cond) static_assert((m_cond), "Condition '" #m_cond "' failed")
+#else
+#define _GD_STATIC_ASSERT_VARNAME_CONCAT_B(m_ignore, m_name) m_name
+#define _GD_STATIC_ASSERT_VARNAME_CONCAT_A(m_a, m_b) GD_STATIC_ASSERT_VARNAME_CONCAT_B(hello there, m_a##m_b)
+#define _GD_STATIC_ASSERT_VARNAME_CONCAT(m_a, m_b) GD_STATIC_ASSERT_VARNAME_CONCAT_A(m_a, m_b)
+#define GD_STATIC_ASSERT(m_cond) typedef int GD_STATIC_ASSERT_VARNAME_CONCAT(godot_static_assert_, __COUNTER__)[((m_cond) ? 1 : -1)]
+#endif
+
 #undef _NO_RETURN_
 
 #ifdef __GNUC__

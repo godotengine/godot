@@ -56,6 +56,8 @@ class GodotSharpEditor : public Node {
 #endif
 
 	bool _create_project_solution();
+	void _make_api_solutions_if_needed();
+	void _make_api_solutions_if_needed_impl();
 
 	void _remove_create_sln_menu_option();
 	void _show_about_dialog();

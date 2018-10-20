@@ -97,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(3)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(5)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -173,23 +173,74 @@ static String snake_to_camel_case(const String &p_identifier, bool p_input_is_up
 	return ret;
 }
 
-String BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
+int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
 
 	CRASH_COND(p_ienum.constants.empty());
 
-	const List<ConstantInterface>::Element *front = p_ienum.constants.front();
-	int candidate_len = front->get().name.length();
+	const ConstantInterface &front_iconstant = p_ienum.constants.front()->get();
+	Vector<String> front_parts = front_iconstant.name.split("_", /* p_allow_empty: */ true);
+	int candidate_len = front_parts.size() - 1;
 
-	for (const List<ConstantInterface>::Element *E = front->next(); E; E = E->next()) {
-		int j = 0;
-		for (j = 0; j < candidate_len && j < E->get().name.length(); j++) {
-			if (front->get().name[j] != E->get().name[j])
-				break;
+	if (candidate_len == 0)
+		return 0;
+
+	for (const List<ConstantInterface>::Element *E = p_ienum.constants.front()->next(); E; E = E->next()) {
+		const ConstantInterface &iconstant = E->get();
+
+		Vector<String> parts = iconstant.name.split("_", /* p_allow_empty: */ true);
+
+		int i;
+		for (i = 0; i < candidate_len && i < parts.size(); i++) {
+			if (front_parts[i] != parts[i]) {
+				// HARDCODED: Some Flag enums have the prefix 'FLAG_' for everything except 'FLAGS_DEFAULT' (same for 'METHOD_FLAG_' and'METHOD_FLAGS_DEFAULT').
+				bool hardcoded_exc = (i == candidate_len - 1 && ((front_parts[i] == "FLAGS" && parts[i] == "FLAG") || (front_parts[i] == "FLAG" && parts[i] == "FLAGS")));
+				if (!hardcoded_exc)
+					break;
+			}
 		}
-		candidate_len = j;
+		candidate_len = i;
+
+		if (candidate_len == 0)
+			return 0;
 	}
 
-	return front->get().name.substr(0, candidate_len);
+	return candidate_len;
+}
+
+void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumInterface &p_ienum, int p_prefix_length) {
+
+	if (p_prefix_length > 0) {
+		for (List<ConstantInterface>::Element *E = p_ienum.constants.front(); E; E = E->next()) {
+			int curr_prefix_length = p_prefix_length;
+
+			ConstantInterface &curr_const = E->get();
+
+			String constant_name = curr_const.name;
+
+			Vector<String> parts = constant_name.split("_", /* p_allow_empty: */ true);
+
+			if (parts.size() <= curr_prefix_length)
+				continue;
+
+			if (parts[curr_prefix_length][0] >= '0' && parts[curr_prefix_length][0] <= '9') {
+				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
+				// so we make the prefix for this constant one word shorter in those cases.
+				for (curr_prefix_length = curr_prefix_length - 1; curr_prefix_length > 0; curr_prefix_length--) {
+					if (parts[curr_prefix_length][0] < '0' || parts[curr_prefix_length][0] > '9')
+						break;
+				}
+			}
+
+			constant_name = "";
+			for (int i = curr_prefix_length; i < parts.size(); i++) {
+				if (i > curr_prefix_length)
+					constant_name += "_";
+				constant_name += parts[i];
+			}
+
+			curr_const.proxy_name = snake_to_pascal_case(constant_name, true);
+		}
+	}
 }
 
 void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
@@ -272,7 +323,7 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 		}
 
 		p_output.push_back(MEMBER_BEGIN "public const int ");
-		p_output.push_back(iconstant.name);
+		p_output.push_back(iconstant.proxy_name);
 		p_output.push_back(" = ");
 		p_output.push_back(itos(iconstant.value));
 		p_output.push_back(";");
@@ -334,25 +385,8 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 				p_output.push_back(INDENT2 "/// </summary>\n");
 			}
 
-			String constant_name = iconstant.name;
-
-			if (!ienum.prefix.empty() && constant_name.begins_with(ienum.prefix)) {
-				constant_name = constant_name.substr(ienum.prefix.length(), constant_name.length());
-			}
-
-			if (constant_name[0] >= '0' && constant_name[0] <= '9') {
-				// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
-				// so we make the prefix one word shorter in those cases.
-				int i = 0;
-				for (i = ienum.prefix.length() - 1; i >= 0; i--) {
-					if (ienum.prefix[i] >= 'A' && ienum.prefix[i] <= 'Z')
-						break;
-				}
-				constant_name = ienum.prefix.substr(i, ienum.prefix.length()) + constant_name;
-			}
-
 			p_output.push_back(INDENT2);
-			p_output.push_back(constant_name);
+			p_output.push_back(iconstant.proxy_name);
 			p_output.push_back(" = ");
 			p_output.push_back(itos(iconstant.value));
 			p_output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
@@ -646,8 +680,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	List<String> output;
 
 	output.push_back("using System;\n"); // IntPtr
+	output.push_back("using System.Diagnostics;\n"); // DebuggerBrowsable
+
 	output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
 					 "'Missing XML comment for publicly visible type or member'\n");
+
 	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
@@ -717,7 +754,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			output.push_back(MEMBER_BEGIN "public const int ");
-			output.push_back(iconstant.name);
+			output.push_back(iconstant.proxy_name);
 			output.push_back(" = ");
 			output.push_back(itos(iconstant.value));
 			output.push_back(";");
@@ -757,25 +794,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					output.push_back(INDENT3 "/// </summary>\n");
 				}
 
-				String constant_name = iconstant.name;
-
-				if (!ienum.prefix.empty() && constant_name.begins_with(ienum.prefix)) {
-					constant_name = constant_name.substr(ienum.prefix.length(), constant_name.length());
-				}
-
-				if (constant_name[0] >= '0' && constant_name[0] <= '9') {
-					// The name of enum constants may begin with a numeric digit when strip from the enum prefix,
-					// so we make the prefix one word shorter in those cases.
-					int i = 0;
-					for (i = ienum.prefix.length() - 1; i >= 0; i--) {
-						if (ienum.prefix[i] >= 'A' && ienum.prefix[i] <= 'Z')
-							break;
-					}
-					constant_name = ienum.prefix.substr(i, ienum.prefix.length()) + constant_name;
-				}
-
 				output.push_back(INDENT3);
-				output.push_back(constant_name);
+				output.push_back(iconstant.proxy_name);
 				output.push_back(" = ");
 				output.push_back(itos(iconstant.value));
 				output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
@@ -1086,7 +1106,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
-			p_output.push_back(MEMBER_BEGIN "private static IntPtr ");
+			p_output.push_back(MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN "private static IntPtr ");
 			p_output.push_back(method_bind_field + " = Object." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
 			p_output.push_back(p_imethod.name);
 			p_output.push_back("\");\n");
@@ -1843,11 +1863,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			EnumInterface ienum(enum_proxy_cname);
 			const List<StringName> &constants = enum_map.get(*k);
 			for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
-				int *value = class_info->constant_map.getptr(E->get());
+				const StringName &constant_cname = E->get();
+				String constant_name = constant_cname.operator String();
+				int *value = class_info->constant_map.getptr(constant_cname);
 				ERR_FAIL_NULL(value);
-				constant_list.erase(E->get().operator String());
+				constant_list.erase(constant_name);
 
-				ConstantInterface iconstant(snake_to_pascal_case(E->get(), true), *value);
+				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
 				iconstant.const_doc = NULL;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -1862,7 +1884,9 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				ienum.constants.push_back(iconstant);
 			}
 
-			ienum.prefix = _determine_enum_prefix(ienum);
+			int prefix_length = _determine_enum_prefix(ienum);
+
+			_apply_prefix_to_enum_constants(ienum, prefix_length);
 
 			itype.enums.push_back(ienum);
 
@@ -1876,10 +1900,11 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const List<String>::Element *E = constant_list.front(); E; E = E->next()) {
-			int *value = class_info->constant_map.getptr(E->get());
+			const String &constant_name = E->get();
+			int *value = class_info->constant_map.getptr(StringName(E->get()));
 			ERR_FAIL_NULL(value);
 
-			ConstantInterface iconstant(snake_to_pascal_case(E->get(), true), *value);
+			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
 			iconstant.const_doc = NULL;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -1990,18 +2015,18 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type, m_type_in)                                                         \
-	{                                                                                                 \
-		itype = TypeInterface::create_value_type(String(#m_type));                                    \
-		itype.c_in = "\tMARSHALLED_IN(" #m_type ", %1, %1_in);\n";                                    \
-		itype.c_out = "\tMARSHALLED_OUT(" #m_type ", %1, ret_out)\n"                                  \
-					  "\treturn mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(%2), ret_out);\n"; \
-		itype.c_arg_in = "&%s_in";                                                                    \
-		itype.c_type_in = m_type_in;                                                                  \
-		itype.cs_in = "ref %s";                                                                       \
-		itype.cs_out = "return (%1)%0;";                                                              \
-		itype.im_type_out = "object";                                                                 \
-		builtin_types.insert(itype.cname, itype);                                                     \
+#define INSERT_STRUCT_TYPE(m_type, m_type_in)                          \
+	{                                                                  \
+		itype = TypeInterface::create_value_type(String(#m_type));     \
+		itype.c_in = "\t%0 %1_in = MARSHALLED_IN(" #m_type ", %1);\n"; \
+		itype.c_out = "\treturn MARSHALLED_OUT(" #m_type ", %1);\n";   \
+		itype.c_arg_in = "&%s_in";                                     \
+		itype.c_type_in = "GDMonoMarshal::M_" #m_type "*";             \
+		itype.c_type_out = "GDMonoMarshal::M_" #m_type;                \
+		itype.cs_in = "ref %s";                                        \
+		itype.cs_out = "return (%1)%0;";                               \
+		itype.im_type_out = itype.cs_type;                             \
+		builtin_types.insert(itype.cname, itype);                      \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2, "real_t*")
@@ -2019,26 +2044,31 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
-	itype.c_arg_in = "&%s_in";
-	// /* MonoBoolean <---> bool
-	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "bool";
-	// */
-	itype.c_type_in = "MonoBoolean";
-	itype.c_type_out = itype.c_type_in;
+
+	{
+		// MonoBoolean <---> bool
+		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+		itype.c_out = "\treturn (%0)%1;\n";
+		itype.c_type = "bool";
+		itype.c_type_in = "MonoBoolean";
+		itype.c_type_out = itype.c_type_in;
+		itype.c_arg_in = "&%s_in";
+	}
 	itype.im_type_in = itype.name;
 	itype.im_type_out = itype.name;
 	builtin_types.insert(itype.cname, itype);
 
 	// int
+	// C interface is the same as that of enums. Remember to apply any
+	// changes done here to TypeInterface::postsetup_enum_type as well
 	itype = TypeInterface::create_value_type(String("int"));
 	itype.c_arg_in = "&%s_in";
-	// /* ptrcall only supports int64_t and uint64_t
-	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "int64_t";
-	// */
+	{
+		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
+		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+		itype.c_out = "\treturn (%0)%1;\n";
+		itype.c_type = "int64_t";
+	}
 	itype.c_type_in = "int32_t";
 	itype.c_type_out = itype.c_type_in;
 	itype.im_type_in = itype.name;
@@ -2047,21 +2077,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// real_t
 	itype = TypeInterface();
-#ifdef REAL_T_IS_DOUBLE
-	itype.name = "double";
-#else
-	itype.name = "float";
-#endif
+	itype.name = "float"; // The name is always "float" in Variant, even with REAL_T_IS_DOUBLE.
 	itype.cname = itype.name;
-	itype.proxy_name = itype.name;
-	itype.c_arg_in = "&%s_in";
-	//* ptrcall only supports double
-	itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-	itype.c_out = "\treturn (%0)%1;\n";
-	itype.c_type = "double";
-	//*/
-	itype.c_type_in = "real_t";
-	itype.c_type_out = "real_t";
+#ifdef REAL_T_IS_DOUBLE
+	itype.proxy_name = "double";
+#else
+	itype.proxy_name = "float";
+#endif
+	{
+		// The expected type for parameters and return value in ptrcall is 'double'.
+		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+		itype.c_out = "\treturn (%0)%1;\n";
+		itype.c_type = "double";
+		itype.c_type_in = "real_t";
+		itype.c_type_out = "real_t";
+		itype.c_arg_in = "&%s_in";
+	}
 	itype.cs_type = itype.proxy_name;
 	itype.im_type_in = itype.proxy_name;
 	itype.im_type_out = itype.proxy_name;
@@ -2256,7 +2287,7 @@ void BindingsGenerator::_populate_global_constants() {
 			int constant_value = GlobalConstants::get_global_constant_value(i);
 			StringName enum_name = GlobalConstants::get_global_constant_enum(i);
 
-			ConstantInterface iconstant(snake_to_pascal_case(constant_name, true), constant_value);
+			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
@@ -2284,16 +2315,18 @@ void BindingsGenerator::_populate_global_constants() {
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
-			ienum.prefix = _determine_enum_prefix(ienum);
+			int prefix_length = _determine_enum_prefix(ienum);
 
-			// HARDCODED
+			// HARDCODED: The Error enum have the prefix 'ERR_' for everything except 'OK' and 'FAILED'.
 			if (ienum.cname == name_cache.enum_Error) {
-				if (!ienum.prefix.empty()) { // Just in case it ever changes
+				if (prefix_length > 0) { // Just in case it ever changes
 					ERR_PRINTS("Prefix for enum 'Error' is not empty");
 				}
 
-				ienum.prefix = "Err";
+				prefix_length = 1; // 'ERR_'
 			}
+
+			_apply_prefix_to_enum_constants(ienum, prefix_length);
 		}
 	}
 

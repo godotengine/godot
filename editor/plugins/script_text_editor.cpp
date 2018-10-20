@@ -817,6 +817,9 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				if (tx->get_selection_to_column() == 0)
 					end -= 1;
 
+				int col_to = tx->get_selection_to_column();
+				int cursor_pos = tx->cursor_get_column();
+
 				// Check if all lines in the selected block are commented
 				bool is_commented = true;
 				for (int i = begin; i <= end; i++) {
@@ -839,19 +842,42 @@ void ScriptTextEditor::_edit_option(int p_op) {
 					}
 					tx->set_line(i, line_text);
 				}
+
+				// Adjust selection & cursor position.
+				int offset = is_commented ? -1 : 1;
+				int col_from = tx->get_selection_from_column() > 0 ? tx->get_selection_from_column() + offset : 0;
+
+				if (is_commented && tx->cursor_get_column() == tx->get_line(tx->cursor_get_line()).length() + 1)
+					cursor_pos += 1;
+
+				if (tx->get_selection_to_column() != 0 && col_to != tx->get_line(tx->get_selection_to_line()).length() + 1)
+					col_to += offset;
+
+				if (tx->cursor_get_column() != 0)
+					cursor_pos += offset;
+
+				tx->select(begin, col_from, tx->get_selection_to_line(), col_to);
+				tx->cursor_set_column(cursor_pos);
+
 			} else {
 				int begin = tx->cursor_get_line();
 				String line_text = tx->get_line(begin);
 
-				if (line_text.begins_with(delimiter))
+				int col = tx->cursor_get_column();
+				if (line_text.begins_with(delimiter)) {
 					line_text = line_text.substr(delimiter.length(), line_text.length());
-				else
+					col -= 1;
+				} else {
 					line_text = delimiter + line_text;
+					col += 1;
+				}
+
 				tx->set_line(begin, line_text);
+				tx->cursor_set_column(col);
 			}
 			tx->end_complex_operation();
 			tx->update();
-			//tx->deselect();
+
 		} break;
 		case EDIT_COMPLETE: {
 

@@ -290,7 +290,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			PhysicsDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask);
+			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
 			Area *area = NULL;
 
 			for (int i = 0; i < areas; i++) {
@@ -448,7 +448,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
 
-							float center_val[3] = { 0.5, 0.25, 0.16666 };
+							float center_val[3] = { 0.5f, 0.25f, 0.16666f };
 							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
 
 							if (attenuation < 1.0) {

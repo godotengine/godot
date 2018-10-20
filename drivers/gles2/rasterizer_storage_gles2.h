@@ -43,7 +43,6 @@
 /*
 #include "shaders/blend_shape.glsl.gen.h"
 #include "shaders/canvas.glsl.gen.h"
-#include "shaders/copy.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
 */
 

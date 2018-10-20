@@ -2331,9 +2331,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// no need to indent if we are going upwards.
 				if (auto_indent && !(k->get_command() && k->get_shift())) {
-					// indent once again if previous line will end with ':' or '{'
+					// indent once again if previous line will end with ':' or '{' and the line is not a comment
 					// (i.e. colon/brace precedes current cursor position)
-					if (cursor.column > 0 && (text[cursor.line][cursor.column - 1] == ':' || text[cursor.line][cursor.column - 1] == '{')) {
+					if (cursor.column > 0 && (text[cursor.line][cursor.column - 1] == ':' || text[cursor.line][cursor.column - 1] == '{') && !is_line_comment(cursor.line)) {
 						if (indent_using_spaces) {
 							ins += space_indent;
 						} else {

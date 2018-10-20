@@ -4086,6 +4086,8 @@ void AnimationTrackEditor::_move_selection_commit() {
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();
 	}
+
+	_update_key_edit();
 }
 void AnimationTrackEditor::_move_selection_cancel() {
 

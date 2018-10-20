@@ -52,6 +52,7 @@ class VisualScriptNode : public Resource {
 	Array _get_default_input_values() const;
 
 	void validate_input_default_values();
+	void _update_input_ports();
 
 protected:
 	void _notification(int p_what);

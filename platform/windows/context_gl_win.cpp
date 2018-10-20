@@ -91,18 +91,18 @@ Error ContextGL_Win::initialize() {
 		PFD_DRAW_TO_WINDOW | // Format Must Support Window
 				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 				PFD_DOUBLEBUFFER,
-		PFD_TYPE_RGBA,
-		OS::get_singleton()->is_layered_allowed() ? 32 : 24,
-		0, 0, 0, 0, 0, 0, // Color Bits Ignored
-		OS::get_singleton()->is_layered_allowed() ? 8 : 0, // Alpha Buffer
-		0, // Shift Bit Ignored
-		0, // No Accumulation Buffer
-		0, 0, 0, 0, // Accumulation Bits Ignored
-		24, // 24Bit Z-Buffer (Depth Buffer)
-		0, // No Stencil Buffer
-		0, // No Auxiliary Buffer
-		PFD_MAIN_PLANE, // Main Drawing Layer
-		0, // Reserved
+		(BYTE)PFD_TYPE_RGBA,
+		OS::get_singleton()->is_layered_allowed() ? (BYTE)32 : (BYTE)24,
+		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Color Bits Ignored
+		OS::get_singleton()->is_layered_allowed() ? (BYTE)8 : (BYTE)0, // Alpha Buffer
+		(BYTE)0, // Shift Bit Ignored
+		(BYTE)0, // No Accumulation Buffer
+		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Accumulation Bits Ignored
+		(BYTE)24, // 24Bit Z-Buffer (Depth Buffer)
+		(BYTE)0, // No Stencil Buffer
+		(BYTE)0, // No Auxiliary Buffer
+		(BYTE)PFD_MAIN_PLANE, // Main Drawing Layer
+		(BYTE)0, // Reserved
 		0, 0, 0 // Layer Masks Ignored
 	};
 

@@ -1309,7 +1309,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 		case Variant::INT: {
 
 			int64_t val = p_property;
-			if (val > 0x7FFFFFFF || val < -0x80000000) {
+			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
 				f->store_32(VARIANT_INT64);
 				f->store_64(val);
 
