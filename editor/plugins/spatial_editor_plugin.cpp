@@ -952,8 +952,10 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (b->is_pressed()) {
 					int mod = _get_key_modifier(b);
-					if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
-						set_freelook_active(true);
+					if (!orthogonal) {
+						if (mod == _get_key_modifier_setting("editors/3d/freelook/freelook_activation_modifier")) {
+							set_freelook_active(true);
+						}
 					}
 				} else {
 					set_freelook_active(false);
@@ -1134,7 +1136,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 					if (clicked) {
 						_select_clicked(clicked_wants_append, true);
-						//clickd processing was deferred
+						// Processing was deferred.
 						clicked = 0;
 					}
 
@@ -1241,7 +1243,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					if (!clicked_includes_current) {
 
 						_select_clicked(clicked_wants_append, true);
-						//clickd processing was deferred
+						// Processing was deferred.
 					}
 
 					_compute_edit(_edit.mouse_pos);
@@ -1339,7 +1341,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
+						// Disable local transformation for TRANSFORM_VIEW
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
 
 						float snap = 0;
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -1468,7 +1471,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						List<Node *> &selection = editor_selection->get_selected_node_list();
 
-						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
+						// Disable local transformation for TRANSFORM_VIEW
+						bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW);
 
 						float snap = 0;
 						if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -1643,6 +1647,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (freelook_active) {
 				nav_mode = NAVIGATION_LOOK;
+			} else if (orthogonal) {
+				nav_mode = NAVIGATION_PAN;
 			}
 
 		} else if (m->get_button_mask() & BUTTON_MASK_MIDDLE) {
@@ -1793,7 +1799,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event)) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/switch_perspective_orthogonal", p_event)) {
+		// Orthgonal mode doesn't work in freelook.
+		if (!freelook_active && ED_IS_SHORTCUT("spatial_editor/switch_perspective_orthogonal", p_event)) {
 			_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
 			_update_name();
 		}
@@ -1823,7 +1830,8 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			set_message(TTR("Animation Key Inserted."));
 		}
 
-		if (ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
+		// Freelook doesn't work in orthogonal mode.
+		if (!orthogonal && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", p_event)) {
 			set_freelook_active(!is_freelook_active());
 
 		} else if (k->get_scancode() == KEY_ESCAPE) {
@@ -1911,37 +1919,38 @@ void SpatialEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, con
 
 void SpatialEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const Vector2 &p_relative) {
 
-	// Freelook only works properly in perspective.
-	// It could technically work in ortho, but it's terrible for a user due to FOV being a fixed width.
-	if (!orthogonal) {
-		real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
-		real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
-		bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y-axis");
-
-		// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
-		Transform prev_camera_transform = to_camera_transform(cursor);
-
-		if (invert_y_axis) {
-			cursor.x_rot -= p_relative.y * radians_per_pixel;
-		} else {
-			cursor.x_rot += p_relative.y * radians_per_pixel;
-		}
-		cursor.y_rot += p_relative.x * radians_per_pixel;
-		if (cursor.x_rot > Math_PI / 2.0)
-			cursor.x_rot = Math_PI / 2.0;
-		if (cursor.x_rot < -Math_PI / 2.0)
-			cursor.x_rot = -Math_PI / 2.0;
-
-		// Look is like the opposite of Orbit: the focus point rotates around the camera
-		Transform camera_transform = to_camera_transform(cursor);
-		Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
-		Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
-		Vector3 diff = prev_pos - pos;
-		cursor.pos += diff;
-
-		name = "";
-		_update_name();
+	if (orthogonal) {
+		_nav_pan(p_event, p_relative);
+		return;
 	}
+
+	real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
+	real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+	bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y-axis");
+
+	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
+	Transform prev_camera_transform = to_camera_transform(cursor);
+
+	if (invert_y_axis) {
+		cursor.x_rot -= p_relative.y * radians_per_pixel;
+	} else {
+		cursor.x_rot += p_relative.y * radians_per_pixel;
+	}
+	cursor.y_rot += p_relative.x * radians_per_pixel;
+	if (cursor.x_rot > Math_PI / 2.0)
+		cursor.x_rot = Math_PI / 2.0;
+	if (cursor.x_rot < -Math_PI / 2.0)
+		cursor.x_rot = -Math_PI / 2.0;
+
+	// Look is like the opposite of Orbit: the focus point rotates around the camera
+	Transform camera_transform = to_camera_transform(cursor);
+	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
+	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
+	Vector3 diff = prev_pos - pos;
+	cursor.pos += diff;
+
+	name = "";
+	_update_name();
 }
 
 void SpatialEditorViewport::set_freelook_active(bool active_now) {
