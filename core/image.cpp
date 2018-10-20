@@ -1903,99 +1903,6 @@ Ref<Image> Image::get_rect(const Rect2 &p_area) const {
 	return img;
 }
 
-void Image::erase(const Ref<Image> &p_brush, const Point2 &p_dest) {
-	ERR_FAIL_COND(p_brush.is_null());
-	int dsize = data.size();
-	int brushdsize = p_brush->data.size();
-	ERR_FAIL_COND(dsize == 0);
-	ERR_FAIL_COND(brushdsize == 0);
-
-	Rect2i act_rect = Rect2i(-p_brush->width, -p_brush->height, width + p_brush->width, height + p_brush->height);
-	if (!act_rect.has_point(p_dest))
-		return;
-
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, p_brush->get_size()));
-
-	for (int i = 0; i < dest_rect.size.y; i++) {
-
-		for (int j = 0; j < dest_rect.size.x; j++) {
-
-			int src_x = MAX(-p_dest.x, 0) + j;
-			int src_y = MAX(-p_dest.y, 0) + i;
-
-			int dst_x = dest_rect.position.x + j;
-			int dst_y = dest_rect.position.y + i;
-
-			lock();
-			Ref<Image> brush = p_brush;
-			brush->lock();
-
-			Color br = brush->get_pixel(src_x, src_y);
-			Color dc = get_pixel(dst_x, dst_y);
-			dc.a = dc.a * (1.0 - br.a);
-
-			set_pixel(dst_x, dst_y, dc);
-
-			brush->unlock();
-			unlock();
-		}
-	}
-}
-
-void Image::brush_transfer(const Ref<Image> &p_src, const Ref<Image> &p_brush, const Point2 &p_dest) {
-	ERR_FAIL_COND(p_src.is_null());
-	ERR_FAIL_COND(p_brush.is_null());
-	int dsize = data.size();
-	int srcdsize = p_src->data.size();
-	int brushdsize = p_brush->data.size();
-	ERR_FAIL_COND(dsize == 0);
-	ERR_FAIL_COND(srcdsize == 0);
-	ERR_FAIL_COND(brushdsize == 0);
-	ERR_FAIL_COND(p_src->width != p_brush->width);
-	ERR_FAIL_COND(p_src->height != p_brush->height);
-	ERR_FAIL_COND(format != p_src->format);
-
-	Rect2i act_rect = Rect2i(-p_src->width, -p_src->height, width + p_src->width, height + p_src->height);
-	if (!act_rect.has_point(p_dest))
-		return;
-
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, p_src->get_size()));
-
-	for (int i = 0; i < dest_rect.size.y; i++) {
-
-		for (int j = 0; j < dest_rect.size.x; j++) {
-
-			int src_x = MAX(-p_dest.x, 0) + j;
-			int src_y = MAX(-p_dest.y, 0) + i;
-
-			int dst_x = dest_rect.position.x + j;
-			int dst_y = dest_rect.position.y + i;
-
-			lock();
-			Ref<Image> brush = p_brush;
-			Ref<Image> src = p_src;
-			brush->lock();
-			src->lock();
-
-			Color br = brush->get_pixel(src_x, src_y);
-			Color sc = src->get_pixel(src_x, src_y);
-			Color dc = get_pixel(dst_x, dst_y);
-
-			float a = (double)(1.0 - (1.0 - sc.a * br.a) * (1.0 - dc.a));
-			dc.r = (double)((sc.a * br.a * sc.r + (1.0 - sc.a * br.a) * dc.a * dc.r) / a);
-			dc.g = (double)((sc.a * br.a * sc.g + (1.0 - sc.a * br.a) * dc.a * dc.g) / a);
-			dc.b = (double)((sc.a * br.a * sc.b + (1.0 - sc.a * br.a) * dc.a * dc.b) / a);
-			dc.a = a;
-
-			set_pixel(dst_x, dst_y, dc);
-
-			brush->unlock();
-			src->unlock();
-			unlock();
-		}
-	}
-}
-
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
 	ERR_FAIL_COND(p_src.is_null());
@@ -2685,8 +2592,6 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rgbe_to_srgb"), &Image::rgbe_to_srgb);
 	ClassDB::bind_method(D_METHOD("bumpmap_to_normalmap", "bump_scale"), &Image::bumpmap_to_normalmap, DEFVAL(1.0));
 
-	ClassDB::bind_method(D_METHOD("brush_transfer", "src", "brush", "dst"), &Image::brush_transfer);
-	ClassDB::bind_method(D_METHOD("erase", "brush", "dst"), &Image::erase);
 	ClassDB::bind_method(D_METHOD("blit_rect", "src", "src_rect", "dst"), &Image::blit_rect);
 	ClassDB::bind_method(D_METHOD("blit_rect_mask", "src", "mask", "src_rect", "dst"), &Image::blit_rect_mask);
 	ClassDB::bind_method(D_METHOD("blend_rect", "src", "src_rect", "dst"), &Image::blend_rect);

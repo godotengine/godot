@@ -309,9 +309,6 @@ public:
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
-
-	void brush_transfer(const Ref<Image> &p_src, const Ref<Image> &p_brush, const Point2 &p_dest);
-	void erase(const Ref<Image> &p_brush, const Point2 &p_dest);
 	void blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest);
 	void fill(const Color &c);
