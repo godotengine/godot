@@ -1608,6 +1608,8 @@ LineEdit::LineEdit() {
 	text_changed_dirty = false;
 	placeholder_alpha = 0.6;
 	clear_button_enabled = false;
+	clear_button_status.press_attempt = false;
+	clear_button_status.pressing_inside = false;
 
 	deselect();
 	set_focus_mode(FOCUS_ALL);
