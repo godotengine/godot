@@ -226,6 +226,23 @@ Rect2 DisplayDriver::get_window_safe_area() const {
 	return Rect2(0, 0, window_size.width, window_size.height);
 }
 
+int DisplayDriver::get_video_driver_count() const {
+
+	return 2;
+}
+
+const char *DisplayDriver::get_video_driver_name(int p_driver) const {
+
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		default:
+			return "INVALID VIDEO DRIVER";
+	}
+}
+
 void DisplayDriver::set_context(int p_context) {
 }
 

@@ -501,37 +501,6 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
-// void OS::center_window() {
-
-// 	if (is_window_fullscreen()) return;
-
-// 	Point2 sp = get_screen_position(get_current_screen());
-// 	Size2 scr = get_screen_size(get_current_screen());
-// 	Size2 wnd = get_real_window_size();
-
-// 	int x = sp.width + (scr.width - wnd.width) / 2;
-// 	int y = sp.height + (scr.height - wnd.height) / 2;
-
-// 	set_window_position(Vector2(x, y));
-// }
-
-// int OS::get_video_driver_count() const {
-
-// 	return 2;
-// }
-
-// const char *OS::get_video_driver_name(int p_driver) const {
-
-// 	switch (p_driver) {
-// 		case VIDEO_DRIVER_GLES2:
-// 			return "GLES2";
-// 		case VIDEO_DRIVER_GLES3:
-// 			return "GLES3";
-// 		default:
-// 			return "INVALID VIDEO DRIVER";
-// 	}
-// }
-
 int OS::get_audio_driver_count() const {
 
 	return AudioDriverManager::get_driver_count();
