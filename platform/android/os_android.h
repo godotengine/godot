@@ -33,6 +33,7 @@
 
 #include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
@@ -44,7 +45,7 @@
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
-class OS_Android : public OS_Unix {
+class OS_Android : public OS_Unix, public DisplayDriver {
 public:
 	struct TouchPos {
 		int id;
@@ -73,7 +74,7 @@ private:
 	bool use_gl2;
 	bool use_apk_expansion;
 
-	bool use_16bits_fbo;
+	//bool use_16bits_fbo;
 
 	VisualServer *visual_server;
 
@@ -106,16 +107,18 @@ public:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
 
-	virtual void finalize();
-
 	typedef int64_t ProcessID;
 
-	static OS *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
 

@@ -119,7 +119,19 @@ int OS_Android::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Android::initialize_os(int p_audio_driver) {
+
+	AudioDriverManager::initialize(p_audio_driver);
+
+	//power_manager = memnew(power_android);
+
+	return OK;
+}
+
+void OS_Android::finalize_os() {
+}
+
+Error OS_Android::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	bool use_gl3 = godot_java->get_gles_version_code() >= 0x00030000;
 	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
@@ -171,14 +183,14 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	visual_server->init();
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
 
-	//power_manager = memnew(PowerAndroid);
-
 	return OK;
+}
+
+void OS_Android::finalize_display() {
+	memdelete(input);
 }
 
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
@@ -190,10 +202,6 @@ void OS_Android::set_main_loop(MainLoop *p_main_loop) {
 void OS_Android::delete_main_loop() {
 
 	memdelete(main_loop);
-}
-
-void OS_Android::finalize() {
-	memdelete(input);
 }
 
 GodotJavaWrapper *OS_Android::get_godot_java() {
@@ -267,7 +275,7 @@ void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen)
 }
 
 void OS_Android::set_keep_screen_on(bool p_enabled) {
-	OS::set_keep_screen_on(p_enabled);
+	DisplayDriver::set_keep_screen_on(p_enabled);
 
 	godot_java->set_keep_screen_on(p_enabled);
 }
@@ -575,7 +583,7 @@ void OS_Android::set_clipboard(const String &p_text) {
 	if (godot_java->has_set_clipboard()) {
 		godot_java->set_clipboard(p_text);
 	} else {
-		OS_Unix::set_clipboard(p_text);
+		DisplayDriver::set_clipboard(p_text);
 	}
 }
 
@@ -586,7 +594,7 @@ String OS_Android::get_clipboard() const {
 		return godot_java->get_clipboard();
 	}
 
-	return OS_Unix::get_clipboard();
+	return DisplayDriver::get_clipboard();
 }
 
 String OS_Android::get_model_name() const {
