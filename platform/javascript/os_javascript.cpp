@@ -807,7 +807,25 @@ void OS_JavaScript::initialize_core() {
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
 }
 
-Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_JavaScript::initialize_os(int p_audio_driver) {
+
+	char locale_ptr[16];
+	/* clang-format off */
+	EM_ASM_ARGS({
+		stringToUTF8(Module.locale, $0, 16);
+	}, locale_ptr);
+	/* clang-format on */
+	setenv("LANG", locale_ptr, true);
+
+	AudioDriverManager::initialize(p_audio_driver);
+
+	return OK;
+}
+
+void OS_JavaScript::finalize_os() {
+}
+
+Error OS_JavaScript::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	EmscriptenWebGLContextAttributes attributes;
 	emscripten_webgl_init_context_attributes(&attributes);
@@ -890,15 +908,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		set_window_size(get_window_size());
 	}
 
-	char locale_ptr[16];
-	/* clang-format off */
-	EM_ASM_ARGS({
-		stringToUTF8(Module.locale, $0, 16);
-	}, locale_ptr);
-	/* clang-format on */
-	setenv("LANG", locale_ptr, true);
-
-	AudioDriverManager::initialize(p_audio_driver);
 	VisualServer *visual_server = memnew(VisualServerRaster());
 	input = memnew(InputDefault);
 
@@ -951,6 +960,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	visual_server->init();
 
 	return OK;
+}
+
+void OS_JavaScript::finalize_display() {
+
+	memdelete(input);
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
@@ -1027,11 +1041,6 @@ bool OS_JavaScript::main_loop_iterate() {
 void OS_JavaScript::delete_main_loop() {
 
 	memdelete(main_loop);
-}
-
-void OS_JavaScript::finalize() {
-
-	memdelete(input);
 }
 
 // Miscellaneous

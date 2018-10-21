@@ -32,6 +32,7 @@
 #define OS_JAVASCRIPT_H
 
 #include "audio_driver_javascript.h"
+#include "core/os/display_driver.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
@@ -39,7 +40,7 @@
 
 #include <emscripten/html5.h>
 
-class OS_JavaScript : public OS_Unix {
+class OS_JavaScript : public OS_Unix, public DisplayDriver {
 
 	VideoMode video_mode;
 	Vector2 windowed_size;
@@ -90,12 +91,15 @@ protected:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
-
-	virtual void finalize();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
