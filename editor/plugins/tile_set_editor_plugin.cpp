@@ -483,6 +483,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	//---------------
 	helper = memnew(TilesetEditorContext(this));
 	tile_names_opacity = 0;
+
+	// config scale
+	max_scale = 10.0f;
+	min_scale = 0.1f;
+	scale_ratio = 1.2f;
 }
 
 TileSetEditor::~TileSetEditor() {
@@ -972,6 +977,15 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 				}
 			}
 		}
+
+		// Mouse Wheel Event
+		const int _mouse_button_index = mb->get_button_index();
+		if (_mouse_button_index == BUTTON_WHEEL_UP && mb->get_control()) {
+			_zoom_in();
+
+		} else if (_mouse_button_index == BUTTON_WHEEL_DOWN && mb->get_control()) {
+			_zoom_out();
+		}
 	}
 	// Drag Middle Mouse
 	if (mm.is_valid()) {
@@ -1448,23 +1462,11 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 			}
 		}
 	} else if (p_tool == ZOOM_OUT) {
-		float scale = workspace->get_scale().x;
-		if (scale > 0.1) {
-			scale /= 2;
-			workspace->set_scale(Vector2(scale, scale));
-			workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
-			workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
-		}
+		_zoom_out();
 	} else if (p_tool == ZOOM_1) {
-		workspace->set_scale(Vector2(1, 1));
-		workspace_container->set_custom_minimum_size(workspace->get_rect().size);
-		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size);
+		_reset_zoom();
 	} else if (p_tool == ZOOM_IN) {
-		float scale = workspace->get_scale().x;
-		scale *= 2;
-		workspace->set_scale(Vector2(scale, scale));
-		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
-		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
+		_zoom_in();
 	} else if (p_tool == TOOL_SELECT) {
 		if (creating_shape) {
 			// Cancel Creation
@@ -1501,6 +1503,31 @@ void TileSetEditor::_set_snap_sep(Vector2 p_val) {
 	snap_separation.x = CLAMP(p_val.x, 0, 256);
 	snap_separation.y = CLAMP(p_val.y, 0, 256);
 	workspace->update();
+}
+
+void TileSetEditor::_zoom_in() {
+	float scale = workspace->get_scale().x;
+	if (scale < max_scale) {
+		scale *= scale_ratio;
+		workspace->set_scale(Vector2(scale, scale));
+		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
+		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
+	}
+}
+void TileSetEditor::_zoom_out() {
+
+	float scale = workspace->get_scale().x;
+	if (scale > min_scale) {
+		scale /= scale_ratio;
+		workspace->set_scale(Vector2(scale, scale));
+		workspace_container->set_custom_minimum_size(workspace->get_rect().size * scale);
+		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
+	}
+}
+void TileSetEditor::_reset_zoom() {
+	workspace->set_scale(Vector2(1, 1));
+	workspace_container->set_custom_minimum_size(workspace->get_rect().size);
+	workspace_overlay->set_custom_minimum_size(workspace->get_rect().size);
 }
 
 void TileSetEditor::draw_highlight_current_tile() {
