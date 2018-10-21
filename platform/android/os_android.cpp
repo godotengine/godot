@@ -135,7 +135,19 @@ int OS_Android::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Android::initialize_os(int p_audio_driver) {
+
+	AudioDriverManager::initialize(p_audio_driver);
+
+	//power_manager = memnew(power_android);
+
+	return OK;
+}
+
+void OS_Android::finalize_os() {
+}
+
+Error OS_Android::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
 	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
@@ -191,14 +203,14 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	visual_server->init();
 	//	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
 
-	//power_manager = memnew(power_android);
-
 	return OK;
+}
+
+void OS_Android::finalize_display() {
+	memdelete(input);
 }
 
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
@@ -210,10 +222,6 @@ void OS_Android::set_main_loop(MainLoop *p_main_loop) {
 void OS_Android::delete_main_loop() {
 
 	memdelete(main_loop);
-}
-
-void OS_Android::finalize() {
-	memdelete(input);
 }
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
@@ -264,7 +272,7 @@ void OS_Android::set_window_title(const String &p_title) {
 void OS_Android::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_Android::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }
@@ -275,7 +283,7 @@ void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen)
 }
 
 void OS_Android::set_keep_screen_on(bool p_enabled) {
-	OS::set_keep_screen_on(p_enabled);
+	DisplayDriver::set_keep_screen_on(p_enabled);
 
 	if (set_keep_screen_on_func) {
 		set_keep_screen_on_func(p_enabled);
@@ -601,16 +609,17 @@ void OS_Android::set_clipboard(const String &p_text) {
 	if (set_clipboard_func) {
 		set_clipboard_func(p_text);
 	} else {
-		OS_Unix::set_clipboard(p_text);
+		DisplayDriver::set_clipboard(p_text);
 	}
 }
 
 String OS_Android::get_clipboard() const {
+
 	if (get_clipboard_func) {
 		return get_clipboard_func();
 	}
 
-	return OS_Unix::get_clipboard();
+	return DisplayDriver::get_clipboard();
 }
 
 String OS_Android::get_model_name() const {
