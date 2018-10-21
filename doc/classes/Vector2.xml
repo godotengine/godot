@@ -259,10 +259,10 @@
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="">
-			The vector's x component.
+			The vector's x component. Also accessible by using the index position [code][0][/code].
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			The vector's y component.
+			The vector's y component. Also accessible by using the index position [code][1][/code].
 		</member>
 	</members>
 	<constants>
