@@ -51,7 +51,7 @@ private:
 	uint32 last_buttons_state;
 	uint32 last_key_modifier_state;
 	int last_button_mask;
-	OS::VideoMode *current_video_mode;
+	DisplayDriver::VideoMode *current_video_mode;
 
 	MainLoop *main_loop;
 	InputDefault *input;
@@ -76,7 +76,7 @@ public:
 	void StopMessageRunner();
 	void SetInput(InputDefault *p_input);
 	void SetMainLoop(MainLoop *p_main_loop);
-	inline void SetVideoMode(OS::VideoMode *video_mode) { current_video_mode = video_mode; };
+	inline void SetVideoMode(DisplayDriver::VideoMode *video_mode) { current_video_mode = video_mode; };
 	virtual bool QuitRequested();
 	virtual void DirectConnected(direct_buffer_info *info);
 	virtual void MessageReceived(BMessage *message);
