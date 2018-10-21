@@ -536,8 +536,8 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
-	OS::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
-	OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
+	DisplayDriver::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
+	OS_OSX::singleton->cursor_shape = DisplayDriver::CURSOR_MAX;
 	OS_OSX::singleton->set_cursor_shape(p_shape);
 }
 
@@ -658,7 +658,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	if (!OS_OSX::singleton)
 		return;
 
-	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != DisplayDriver::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 	if (OS_OSX::singleton->input)
 		OS_OSX::singleton->input->set_mouse_in_window(false);
@@ -667,13 +667,13 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 - (void)mouseEntered:(NSEvent *)event {
 	if (!OS_OSX::singleton)
 		return;
-	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != DisplayDriver::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 	if (OS_OSX::singleton->input)
 		OS_OSX::singleton->input->set_mouse_in_window(true);
 
-	OS::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
-	OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
+	DisplayDriver::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
+	OS_OSX::singleton->cursor_shape = DisplayDriver::CURSOR_MAX;
 	OS_OSX::singleton->set_cursor_shape(p_shape);
 }
 
@@ -1175,11 +1175,27 @@ int OS_OSX::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_OSX::initialize_os(int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
+
+	AudioDriverManager::initialize(p_audio_driver);
+
+	power_manager = memnew(power_osx);
+
+	_ensure_user_data_dir();
+
+	return OK;
+}
+
+void OS_OSX::finalize_os() {
+
+	midi_driver.close();
+}
+
+Error OS_OSX::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	keyboard_layout_dirty = true;
 	displays_arrangement_dirty = true;
@@ -1378,26 +1394,20 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	visual_server->init();
-	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
 	joypad_osx = memnew(JoypadOSX);
-
-	power_manager = memnew(power_osx);
-
-	_ensure_user_data_dir();
 
 	restore_rect = Rect2(get_window_position(), get_window_size());
 
 	if (p_desired.layered_splash) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
+
 	return OK;
 }
 
-void OS_OSX::finalize() {
-
-	midi_driver.close();
+void OS_OSX::finalize_display() {
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
@@ -1924,7 +1934,7 @@ void OS_OSX::wm_minimized(bool p_minimized) {
 void OS_OSX::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_OSX::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_OSX::get_video_mode(int p_screen) const {
 
 	VideoMode vm;
 	vm.width = window_size.width;
@@ -2383,7 +2393,7 @@ static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
 	return (NSString *)output;
 }
 
-OS::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
+DisplayDriver::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
 
 	static LatinKeyboardVariant layout = LATIN_KEYBOARD_QWERTY;
 
@@ -2547,7 +2557,7 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 	mouse_mode = p_mode;
 }
 
-OS::MouseMode OS_OSX::get_mouse_mode() const {
+DisplayDriver::MouseMode OS_OSX::get_mouse_mode() const {
 
 	return mouse_mode;
 }
@@ -2604,7 +2614,7 @@ OS_OSX::OS_OSX() {
 
 	memset(cursors, 0, sizeof(cursors));
 	key_event_pos = 0;
-	mouse_mode = OS::MOUSE_MODE_VISIBLE;
+	mouse_mode = DisplayDriver::MOUSE_MODE_VISIBLE;
 	main_loop = NULL;
 	singleton = this;
 	im_active = false;
