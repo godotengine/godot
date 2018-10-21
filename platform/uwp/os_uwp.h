@@ -33,6 +33,7 @@
 
 #include "context_egl_uwp.h"
 #include "core/math/transform_2d.h"
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/ustring.h"
@@ -52,7 +53,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class OS_UWP : public OS {
+class OS_UWP : public OS, public DisplayDriver {
 
 public:
 	struct KeyEvent {
@@ -158,13 +159,16 @@ protected:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual void finalize_core();
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
-
-	virtual void finalize();
-	virtual void finalize_core();
 
 	void process_events();
 
