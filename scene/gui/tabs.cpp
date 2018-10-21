@@ -106,41 +106,8 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// test hovering to display right or close button
-		int hover_now = -1;
-		int hover_buttons = -1;
-		for (int i = 0; i < tabs.size(); i++) {
-
-			if (i < offset)
-				continue;
-
-			Rect2 rect = get_tab_rect(i);
-			if (rect.has_point(pos)) {
-				hover_now = i;
-			}
-			if (tabs[i].rb_rect.has_point(pos)) {
-				rb_hover = i;
-				cb_hover = -1;
-				hover_buttons = i;
-				break;
-			} else if (!tabs[i].disabled && tabs[i].cb_rect.has_point(pos)) {
-				cb_hover = i;
-				rb_hover = -1;
-				hover_buttons = i;
-				break;
-			}
-		}
-		if (hover != hover_now) {
-			hover = hover_now;
-			emit_signal("tab_hover", hover);
-		}
-
-		if (hover_buttons == -1) { // no hover
-			rb_hover = hover_buttons;
-			cb_hover = hover_buttons;
-		}
+		_update_hover();
 		update();
-
 		return;
 	}
 
@@ -522,6 +489,48 @@ Ref<Texture> Tabs::get_tab_right_button(int p_tab) const {
 	return tabs[p_tab].right_button;
 }
 
+void Tabs::_update_hover() {
+
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	const Point2 &pos = get_local_mouse_position();
+	// test hovering to display right or close button
+	int hover_now = -1;
+	int hover_buttons = -1;
+	for (int i = 0; i < tabs.size(); i++) {
+
+		if (i < offset)
+			continue;
+
+		Rect2 rect = get_tab_rect(i);
+		if (rect.has_point(pos)) {
+			hover_now = i;
+		}
+		if (tabs[i].rb_rect.has_point(pos)) {
+			rb_hover = i;
+			cb_hover = -1;
+			hover_buttons = i;
+			break;
+		} else if (!tabs[i].disabled && tabs[i].cb_rect.has_point(pos)) {
+			cb_hover = i;
+			rb_hover = -1;
+			hover_buttons = i;
+			break;
+		}
+	}
+	if (hover != hover_now) {
+		hover = hover_now;
+		emit_signal("tab_hover", hover);
+	}
+
+	if (hover_buttons == -1) { // no hover
+		rb_hover = hover_buttons;
+		cb_hover = hover_buttons;
+	}
+}
+
 void Tabs::_update_cache() {
 	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
@@ -597,6 +606,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 
 	tabs.push_back(t);
 	_update_cache();
+	call_deferred("_update_hover");
 	update();
 	minimum_size_changed();
 }
@@ -604,6 +614,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 void Tabs::clear_tabs() {
 	tabs.clear();
 	current = 0;
+	call_deferred("_update_hover");
 	update();
 }
 
@@ -614,6 +625,7 @@ void Tabs::remove_tab(int p_idx) {
 	if (current >= p_idx)
 		current--;
 	_update_cache();
+	call_deferred("_update_hover");
 	update();
 	minimum_size_changed();
 
@@ -931,6 +943,7 @@ bool Tabs::get_select_with_rmb() const {
 void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
+	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
