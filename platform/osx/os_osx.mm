@@ -2318,24 +2318,6 @@ bool OS_OSX::get_borderless_window() {
 	return [window_object styleMask] == NSWindowStyleMaskBorderless;
 }
 
-String OS_OSX::get_executable_path() const {
-
-	int ret;
-	pid_t pid;
-	char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
-
-	pid = getpid();
-	ret = proc_pidpath(pid, pathbuf, sizeof(pathbuf));
-	if (ret <= 0) {
-		return OS::get_executable_path();
-	} else {
-		String path;
-		path.parse_utf8(pathbuf);
-
-		return path;
-	}
-}
-
 // Returns string representation of keys, if they are printable.
 //
 static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
