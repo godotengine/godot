@@ -33,6 +33,7 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
@@ -45,7 +46,7 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
-class OSIPhone : public OS_Unix {
+class OSIPhone : public OS_Unix, public DisplayDriver {
 
 private:
 	enum {
@@ -80,14 +81,17 @@ private:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual MainLoop *get_main_loop() const;
 
 	virtual void delete_main_loop();
-
-	virtual void finalize();
 
 	struct MouseList {
 
