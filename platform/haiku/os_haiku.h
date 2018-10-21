@@ -33,6 +33,7 @@
 
 #include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
+#include "core/os/display_driver.h"
 #include "drivers/unix/os_unix.h"
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
@@ -40,7 +41,7 @@
 #include "servers/audio_server.h"
 #include "servers/visual_server.h"
 
-class OS_Haiku : public OS_Unix {
+class OS_Haiku : public OS_Unix, public DisplayDriver {
 private:
 	HaikuApplication *app;
 	HaikuDirectWindow *window;
@@ -65,8 +66,11 @@ protected:
 	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual int get_current_video_driver() const;
 
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 

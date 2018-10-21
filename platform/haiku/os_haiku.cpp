@@ -85,11 +85,18 @@ int OS_Haiku::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Haiku::initialize_os(int p_audio_driver) {
+	app = new HaikuApplication();
+	AudioDriverManager::initialize(p_audio_driver);
+	return OK;
+}
+
+void OS_Haiku::finalize_os() {
+}
+
+Error OS_Haiku::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 	main_loop = NULL;
 	current_video_mode = p_desired;
-
-	app = new HaikuApplication();
 
 	BRect frame;
 	frame.Set(50, 50, 50 + current_video_mode.width - 1, 50 + current_video_mode.height - 1);
@@ -133,12 +140,10 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	window->Show();
 	visual_server->init();
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	return OK;
 }
 
-void OS_Haiku::finalize() {
+void OS_Haiku::finalize_display() {
 	if (main_loop) {
 		memdelete(main_loop);
 	}
@@ -203,7 +208,7 @@ void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
 	//ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
 }
 
-OS::CursorShape OS_Haiku::get_cursor_shape() const {
+DisplayDriver::CursorShape OS_Haiku::get_cursor_shape() const {
 	// TODO: implement get_cursor_shape
 }
 
