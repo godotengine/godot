@@ -404,7 +404,7 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 	};
 };
 
-OS::VideoMode _get_video_mode() {
+DisplayDriver::VideoMode _get_video_mode() {
 	int backingWidth;
 	int backingHeight;
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
@@ -412,7 +412,7 @@ OS::VideoMode _get_video_mode() {
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-	OS::VideoMode vm;
+	DisplayDriver::VideoMode vm;
 	vm.fullscreen = true;
 	vm.width = backingWidth;
 	vm.height = backingHeight;
@@ -626,7 +626,7 @@ static int frame_count = 0;
 	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
 	// UIViewAutoresizingFlexibleWidth];
 
-	OS::VideoMode vm = _get_video_mode();
+	DisplayDriver::VideoMode vm = _get_video_mode();
 
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
 			NSUserDomainMask, YES);

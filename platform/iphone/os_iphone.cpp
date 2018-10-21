@@ -97,7 +97,34 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OSIPhone::initialize_os(int p_audio_driver) {
+
+	AudioDriverManager::initialize(p_audio_driver);
+
+#ifdef GAME_CENTER_ENABLED
+	game_center = memnew(GameCenter);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
+	game_center->connect();
+#endif
+
+#ifdef STOREKIT_ENABLED
+	store_kit = memnew(InAppStore);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
+#endif
+
+#ifdef ICLOUD_ENABLED
+	icloud = memnew(ICloud);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
+	//icloud->connect();
+#endif
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
+
+	return OK;
+};
+
+void OSIPhone::finalize_os(){};
+
+Error OSIPhone::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	video_driver_index = VIDEO_DRIVER_GLES3;
 
@@ -121,29 +148,21 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
 	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	input = memnew(InputDefault);
 
-#ifdef GAME_CENTER_ENABLED
-	game_center = memnew(GameCenter);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
-	game_center->connect();
-#endif
-
-#ifdef STOREKIT_ENABLED
-	store_kit = memnew(InAppStore);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
-#endif
-
-#ifdef ICLOUD_ENABLED
-	icloud = memnew(ICloud);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-	//icloud->connect();
-#endif
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
-
 	return OK;
+};
+
+void OSIPhone::finalize_display() {
+
+	if (main_loop) // should not happen?
+		memdelete(main_loop);
+
+	visual_server->finish();
+	memdelete(visual_server);
+	//	memdelete(rasterizer);
+
+	memdelete(input);
 };
 
 MainLoop *OSIPhone::get_main_loop() const {
@@ -314,18 +333,6 @@ void OSIPhone::delete_main_loop() {
 	main_loop = NULL;
 };
 
-void OSIPhone::finalize() {
-
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
-
-	visual_server->finish();
-	memdelete(visual_server);
-	//	memdelete(rasterizer);
-
-	memdelete(input);
-};
-
 void OSIPhone::set_mouse_show(bool p_show){};
 void OSIPhone::set_mouse_grab(bool p_grab){};
 
@@ -389,7 +396,7 @@ void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 	video_mode = p_video_mode;
 };
 
-OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OSIPhone::get_video_mode(int p_screen) const {
 
 	return video_mode;
 };
@@ -444,7 +451,7 @@ Error OSIPhone::shell_open(String p_uri) {
 };
 
 void OSIPhone::set_keep_screen_on(bool p_enabled) {
-	OS::set_keep_screen_on(p_enabled);
+	DisplayDriver::set_keep_screen_on(p_enabled);
 	_set_keep_screen_on(p_enabled);
 };
 

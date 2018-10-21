@@ -352,7 +352,7 @@ static void clear_touches() {
 	}
 
 	if (OS::get_singleton()) {
-		OS::VideoMode vm;
+		DisplayDriver::VideoMode vm;
 		vm.fullscreen = true;
 		vm.width = backingWidth;
 		vm.height = backingHeight;
