@@ -130,7 +130,7 @@ void OSUWP::set_keep_screen_on(bool p_enabled) {
 	else
 		display_request->RequestRelease();
 
-	OS::set_keep_screen_on(p_enabled);
+	DisplayDriver::set_keep_screen_on(p_enabled);
 }
 
 void OSUWP::initialize_core() {
@@ -166,6 +166,11 @@ void OSUWP::initialize_core() {
 	cursor_shape = CURSOR_ARROW;
 }
 
+void OSUWP::finalize_core() {
+
+	NetSocketPosix::cleanup();
+}
+
 bool OSUWP::can_draw() const {
 
 	return !minimized;
@@ -180,7 +185,49 @@ void OSUWP::screen_size_changed() {
 	gl_context->reset();
 };
 
-Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OSUWP::initialize_os(int p_audio_driver) {
+
+	AudioDriverManager::initialize(p_audio_driver);
+
+	power_manager = memnew(PowerUWP);
+
+	managed_object->update_clipboard();
+
+	Clipboard::ContentChanged += ref new EventHandler<Platform::Object ^>(managed_object, &ManagedType::on_clipboard_changed);
+
+	accelerometer = Accelerometer::GetDefault();
+	if (accelerometer != nullptr) {
+		// 60 FPS
+		accelerometer->ReportInterval = (1.0f / 60.0f) * 1000;
+		accelerometer->ReadingChanged +=
+				ref new TypedEventHandler<Accelerometer ^, AccelerometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_accelerometer_reading_changed);
+	}
+
+	magnetometer = Magnetometer::GetDefault();
+	if (magnetometer != nullptr) {
+		// 60 FPS
+		magnetometer->ReportInterval = (1.0f / 60.0f) * 1000;
+		magnetometer->ReadingChanged +=
+				ref new TypedEventHandler<Magnetometer ^, MagnetometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_magnetometer_reading_changed);
+	}
+
+	gyrometer = Gyrometer::GetDefault();
+	if (gyrometer != nullptr) {
+		// 60 FPS
+		gyrometer->ReportInterval = (1.0f / 60.0f) * 1000;
+		gyrometer->ReadingChanged +=
+				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
+	}
+
+	_ensure_user_data_dir();
+
+	return OK;
+}
+
+void OSUWP::finalize_os() {
+}
+
+Error OSUWP::initialize_display(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	main_loop = NULL;
 	outside = true;
@@ -309,46 +356,31 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	joypad = ref new JoypadUWP(input);
 	joypad->register_events();
 
-	AudioDriverManager::initialize(p_audio_driver);
-
-	power_manager = memnew(PowerUWP);
-
-	managed_object->update_clipboard();
-
-	Clipboard::ContentChanged += ref new EventHandler<Platform::Object ^>(managed_object, &ManagedType::on_clipboard_changed);
-
-	accelerometer = Accelerometer::GetDefault();
-	if (accelerometer != nullptr) {
-		// 60 FPS
-		accelerometer->ReportInterval = (1.0f / 60.0f) * 1000;
-		accelerometer->ReadingChanged +=
-				ref new TypedEventHandler<Accelerometer ^, AccelerometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_accelerometer_reading_changed);
-	}
-
-	magnetometer = Magnetometer::GetDefault();
-	if (magnetometer != nullptr) {
-		// 60 FPS
-		magnetometer->ReportInterval = (1.0f / 60.0f) * 1000;
-		magnetometer->ReadingChanged +=
-				ref new TypedEventHandler<Magnetometer ^, MagnetometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_magnetometer_reading_changed);
-	}
-
-	gyrometer = Gyrometer::GetDefault();
-	if (gyrometer != nullptr) {
-		// 60 FPS
-		gyrometer->ReportInterval = (1.0f / 60.0f) * 1000;
-		gyrometer->ReadingChanged +=
-				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
-	}
-
-	_ensure_user_data_dir();
-
 	if (is_keep_screen_on())
 		display_request->RequestActive();
 
 	set_keep_screen_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
 
 	return OK;
+}
+
+void OSUWP::finalize_display() {
+
+	if (main_loop)
+		memdelete(main_loop);
+
+	main_loop = NULL;
+
+	visual_server->finish();
+	memdelete(visual_server);
+#ifdef OPENGL_ENABLED
+	if (gl_context)
+		memdelete(gl_context);
+#endif
+
+	memdelete(input);
+
+	joypad = nullptr;
 }
 
 void OSUWP::set_clipboard(const String &p_text) {
@@ -384,30 +416,6 @@ void OSUWP::set_main_loop(MainLoop *p_main_loop) {
 
 	input->set_main_loop(p_main_loop);
 	main_loop = p_main_loop;
-}
-
-void OSUWP::finalize() {
-
-	if (main_loop)
-		memdelete(main_loop);
-
-	main_loop = NULL;
-
-	visual_server->finish();
-	memdelete(visual_server);
-#ifdef OPENGL_ENABLED
-	if (gl_context)
-		memdelete(gl_context);
-#endif
-
-	memdelete(input);
-
-	joypad = nullptr;
-}
-
-void OSUWP::finalize_core() {
-
-	NetSocketPosix::cleanup();
 }
 
 void OSUWP::alert(const String &p_alert, const String &p_title) {
@@ -525,7 +533,7 @@ void OSUWP::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
 }
-OS::VideoMode OSUWP::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OSUWP::get_video_mode(int p_screen) const {
 
 	return video_mode;
 }
