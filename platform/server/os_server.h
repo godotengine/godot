@@ -31,6 +31,7 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
+#include "core/os/display_driver.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
@@ -51,7 +52,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class OS_Server : public OS_Unix {
+class OS_Server : public OS_Unix, public DisplayDriver {
 
 	VisualServer *visual_server;
 	VideoMode current_videomode;
@@ -87,8 +88,12 @@ protected:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
