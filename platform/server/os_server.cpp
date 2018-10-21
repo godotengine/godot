@@ -70,22 +70,11 @@ void OS_Server::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Server::initialize_os(int p_audio_driver) {
 
 	args = OS::get_singleton()->get_cmdline_args();
-	current_videomode = p_desired;
-	main_loop = NULL;
-
-	RasterizerDummy::make_current();
-
-	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
-
-	visual_server = memnew(VisualServerRaster);
-	visual_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
-
-	input = memnew(InputDefault);
 
 	power_manager = memnew(PowerX11);
 
@@ -97,7 +86,33 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	return OK;
 }
 
-void OS_Server::finalize() {
+void OS_Server::finalize_os() {
+
+	memdelete(power_manager);
+
+	memdelete(resource_loader_dummy);
+
+	args.clear();
+}
+
+Error OS_Server::initialize_display(const VideoMode &p_desired, int p_video_driver) {
+
+	current_videomode = p_desired;
+	main_loop = NULL;
+
+	RasterizerDummy::make_current();
+
+	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
+
+	visual_server = memnew(VisualServerRaster);
+	visual_server->init();
+
+	input = memnew(InputDefault);
+
+	return OK;
+}
+
+void OS_Server::finalize_display() {
 
 	if (main_loop)
 		memdelete(main_loop);
@@ -107,12 +122,6 @@ void OS_Server::finalize() {
 	memdelete(visual_server);
 
 	memdelete(input);
-
-	memdelete(power_manager);
-
-	memdelete(resource_loader_dummy);
-
-	args.clear();
 }
 
 void OS_Server::set_mouse_show(bool p_show) {
@@ -144,7 +153,7 @@ void OS_Server::set_window_title(const String &p_title) {
 void OS_Server::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_Server::get_video_mode(int p_screen) const {
 
 	return current_videomode;
 }
