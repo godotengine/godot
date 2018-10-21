@@ -2455,13 +2455,20 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_ASYM_PANO, asymmetrical);
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_PANORAMA, !asymmetrical);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_MULTIPLIER, true);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUBEMAP, false);
-	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_PANORAMA, true);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA, false);
 	storage->shaders.copy.bind();
 	storage->shaders.copy.set_uniform(CopyShaderGLES2::MULTIPLIER, p_energy);
+	if (asymmetrical) {
+		// pack the bits we need from our projection matrix
+		storage->shaders.copy.set_uniform(CopyShaderGLES2::ASYM_PROJ, camera.matrix[2][0], camera.matrix[0][0], camera.matrix[2][1], camera.matrix[1][1]);
+		///@TODO I couldn't get mat3 + p_transform.basis to work, that would be better here.
+		storage->shaders.copy.set_uniform(CopyShaderGLES2::PANO_TRANSFORM, p_transform);
+	}
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -2469,6 +2476,8 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_ASYM_PANO, false);
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_PANORAMA, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_MULTIPLIER, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUBEMAP, false);
 }
