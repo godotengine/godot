@@ -32,6 +32,7 @@
 #define OS_WINDOWS_H
 
 #include "context_gl_windows.h"
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -59,7 +60,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class JoypadWindows;
-class OS_Windows : public OS {
+class OS_Windows : public OS, public DisplayDriver {
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
@@ -163,13 +164,16 @@ protected:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual void finalize_core();
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
-
-	virtual void finalize();
-	virtual void finalize_core();
 
 	void process_events();
 	void process_key_events();

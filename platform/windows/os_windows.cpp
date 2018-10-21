@@ -239,6 +239,14 @@ void OS_Windows::initialize_core() {
 	cursor_shape = CURSOR_ARROW;
 }
 
+void OS_Windows::finalize_core() {
+
+	timeEndPeriod(1);
+
+	memdelete(process_map);
+	NetSocketPosix::cleanup();
+}
+
 bool OS_Windows::can_draw() const {
 
 	return !minimized;
@@ -1097,7 +1105,22 @@ int OS_Windows::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_Windows::initialize_os(int p_audio_driver) {
+
+	power_manager = memnew(PowerWindows);
+	AudioDriverManager::initialize(p_audio_driver);
+
+	return OK;
+}
+
+void OS_Windows::finalize_os() {
+
+#ifdef WINMIDI_ENABLED
+	driver_midi.close();
+#endif
+}
+
+Error OS_Windows::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	main_loop = NULL;
 	outside = true;
@@ -1353,10 +1376,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	joypad = memnew(JoypadWindows(input, &hWnd));
 
-	power_manager = memnew(PowerWindows);
-
-	AudioDriverManager::initialize(p_audio_driver);
-
 	TRACKMOUSEEVENT tme;
 	tme.cbSize = sizeof(TRACKMOUSEEVENT);
 	tme.dwFlags = TME_LEAVE;
@@ -1406,6 +1425,29 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	update_real_mouse_position();
 
 	return OK;
+}
+
+void OS_Windows::finalize_display() {
+
+	if (main_loop)
+		memdelete(main_loop);
+
+	main_loop = NULL;
+
+	memdelete(joypad);
+	memdelete(input);
+	touch_state.clear();
+
+	visual_server->finish();
+	memdelete(visual_server);
+#ifdef OPENGL_ENABLED
+	if (gl_context)
+		memdelete(gl_context);
+#endif
+
+	if (user_proc) {
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
+	};
 }
 
 void OS_Windows::set_clipboard(const String &p_text) {
@@ -1496,41 +1538,6 @@ void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
 
 	input->set_main_loop(p_main_loop);
 	main_loop = p_main_loop;
-}
-
-void OS_Windows::finalize() {
-
-#ifdef WINMIDI_ENABLED
-	driver_midi.close();
-#endif
-
-	if (main_loop)
-		memdelete(main_loop);
-
-	main_loop = NULL;
-
-	memdelete(joypad);
-	memdelete(input);
-	touch_state.clear();
-
-	visual_server->finish();
-	memdelete(visual_server);
-#ifdef OPENGL_ENABLED
-	if (gl_context)
-		memdelete(gl_context);
-#endif
-
-	if (user_proc) {
-		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
-	};
-}
-
-void OS_Windows::finalize_core() {
-
-	timeEndPeriod(1);
-
-	memdelete(process_map);
-	NetSocketPosix::cleanup();
 }
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
@@ -2295,7 +2302,7 @@ void OS_Windows::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-OS::CursorShape OS_Windows::get_cursor_shape() const {
+DisplayDriver::CursorShape OS_Windows::get_cursor_shape() const {
 
 	return cursor_shape;
 }
