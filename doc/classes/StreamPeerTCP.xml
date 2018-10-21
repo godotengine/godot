@@ -4,7 +4,7 @@
 		TCP Stream peer.
 	</brief_description>
 	<description>
-		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a tcp server.
+		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a TCP server.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -54,6 +54,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this peer is currently connected to a host, [code]false[code] otherwise.
 			</description>
 		</method>
 		<method name="set_no_delay">
