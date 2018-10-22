@@ -42,4 +42,6 @@ bool is_csharp_keyword(const String &p_name);
 String escape_csharp_keyword(const String &p_name);
 #endif
 
+Error read_all_file_utf8(const String &p_path, String &r_content);
+
 #endif // STRING_FORMAT_H

@@ -37,6 +37,7 @@
 #include "../godotsharp_dirs.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
+#include "csharp_project.h"
 #include "godotsharp_builds.h"
 
 static MonoString *godot_icall_GodotSharpExport_GetTemplatesDir() {
@@ -86,6 +87,12 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 
 	String build_config = p_debug ? "Debug" : "Release";
 
+	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata." + String(p_debug ? "debug" : "release"));
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+	ERR_FAIL_COND(metadata_err != OK);
+
+	ERR_FAIL_COND(!_add_file(scripts_metadata_path, scripts_metadata_path));
+
 	ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config));
 
 	// Add dependency assemblies
@@ -124,7 +131,7 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 	for (Map<String, String>::Element *E = dependencies.front(); E; E = E->next()) {
 		String depend_src_path = E->value();
 		String depend_dst_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(depend_src_path.get_file());
-		ERR_FAIL_COND(!_add_assembly(depend_src_path, depend_dst_path));
+		ERR_FAIL_COND(!_add_file(depend_src_path, depend_dst_path));
 	}
 
 	// Mono specific export template extras (data dir)
@@ -155,7 +162,7 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 	}
 }
 
-bool GodotSharpExport::_add_assembly(const String &p_src_path, const String &p_dst_path) {
+bool GodotSharpExport::_add_file(const String &p_src_path, const String &p_dst_path, bool p_remap) {
 
 	FileAccessRef f = FileAccess::open(p_src_path, FileAccess::READ);
 	ERR_FAIL_COND_V(!f, false);
@@ -164,7 +171,7 @@ bool GodotSharpExport::_add_assembly(const String &p_src_path, const String &p_d
 	data.resize(f->get_len());
 	f->get_buffer(data.ptrw(), data.size());
 
-	add_file(p_dst_path, data, false);
+	add_file(p_dst_path, data, p_remap);
 
 	return true;
 }

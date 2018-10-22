@@ -32,6 +32,7 @@
 
 #include <mono/metadata/threads.h>
 
+#include "core/io/json.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
@@ -42,7 +43,6 @@
 #include "editor/csharp_project.h"
 #include "editor/editor_node.h"
 #include "editor/godotsharp_editor.h"
-#include "utils/string_utils.h"
 #endif
 
 #include "godotsharp_dirs.h"
@@ -50,6 +50,7 @@
 #include "mono_gd/gd_mono_marshal.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
+#include "utils/string_utils.h"
 #include "utils/thread_local.h"
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
@@ -370,6 +371,7 @@ bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
 
+#ifdef TOOLS_ENABLED
 static String variant_type_to_managed_name(const String &p_var_type_name) {
 
 	if (p_var_type_name.empty())
@@ -432,8 +434,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	return p_var_type_name;
 }
 
-String CSharpLanguage::make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const {
-#ifdef TOOLS_ENABLED
+String CSharpLanguage::make_function(const String &, const String &p_name, const PoolStringArray &p_args) const {
 	// FIXME
 	// - Due to Godot's API limitation this just appends the function to the end of the file
 	// - Use fully qualified name if there is ambiguity
@@ -449,10 +450,12 @@ String CSharpLanguage::make_function(const String &p_class, const String &p_name
 	s += ")\n{\n    // Replace with function body.\n}\n";
 
 	return s;
-#else
-	return String();
-#endif
 }
+#else
+String CSharpLanguage::make_function(const String &, const String &, const PoolStringArray &) const {
+	return String();
+}
+#endif
 
 String CSharpLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
@@ -821,6 +824,49 @@ void CSharpLanguage::reload_assemblies_if_needed(bool p_soft_reload) {
 	}
 }
 #endif
+
+void CSharpLanguage::project_assembly_loaded() {
+
+	scripts_metadata.clear();
+
+	String scripts_metadata_filename = "scripts_metadata.";
+
+#ifdef TOOLS_ENABLED
+	scripts_metadata_filename += Engine::get_singleton()->is_editor_hint() ? "editor" : "editor_player";
+#else
+#ifdef DEBUG_ENABLED
+	scripts_metadata_filename += "debug";
+#else
+	scripts_metadata_filename += "release";
+#endif
+#endif
+
+	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file(scripts_metadata_filename);
+
+	if (FileAccess::exists(scripts_metadata_path)) {
+		String old_json;
+
+		Error ferr = read_all_file_utf8(scripts_metadata_path, old_json);
+		ERR_FAIL_COND(ferr != OK);
+
+		Variant old_dict_var;
+		String err_str;
+		int err_line;
+		Error json_err = JSON::parse(old_json, old_dict_var, err_str, err_line);
+		if (json_err != OK) {
+			ERR_PRINTS("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ")");
+			return;
+		}
+
+		scripts_metadata = old_dict_var.operator Dictionary();
+
+		print_verbose("Successfully loaded scripts metadata");
+	} else {
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			ERR_PRINT("Missing scripts metadata file");
+		}
+	}
+}
 
 void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
 
@@ -2208,10 +2254,27 @@ bool CSharpScript::can_instance() const {
 #endif
 
 #ifdef TOOLS_ENABLED
-	return valid && (tool || ScriptServer::is_scripting_enabled());
+	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
 #else
-	return valid;
+	bool extra_cond = true;
 #endif
+
+	// FIXME Need to think this through better.
+	// For tool scripts, this will never fire if the class is not found. That's because we
+	// don't know if it's a tool script if we can't find the class to access the attributes.
+	if (extra_cond && !script_class) {
+		if (GDMono::get_singleton()->get_project_assembly() == NULL) {
+			// The project assembly is not loaded
+			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
+			ERR_FAIL_V(NULL);
+		} else {
+			// The project assembly is loaded, but the class could not found
+			ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
+			ERR_FAIL_V(NULL);
+		}
+	}
+
+	return valid && extra_cond;
 }
 
 StringName CSharpScript::get_instance_base_type() const {
@@ -2317,20 +2380,6 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 	CRASH_COND(!valid);
 #endif
 
-	if (!script_class) {
-		if (GDMono::get_singleton()->get_project_assembly() == NULL) {
-			// The project assembly is not loaded
-			ERR_EXPLAIN("Cannot instance script because the project assembly is not loaded. Script: " + get_path());
-			ERR_FAIL_V(NULL);
-		} else {
-			// The project assembly is loaded, but the class could not found
-			ERR_EXPLAIN("Cannot instance script because the class '" + name + "' could not be found. Script: " + get_path());
-			ERR_FAIL_V(NULL);
-		}
-	}
-
-	ERR_FAIL_COND_V(!valid, NULL);
-
 	if (native) {
 		String native_name = native->get_name();
 		if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
@@ -2418,7 +2467,23 @@ Error CSharpScript::reload(bool p_keep_state) {
 	GDMonoAssembly *project_assembly = GDMono::get_singleton()->get_project_assembly();
 
 	if (project_assembly) {
-		script_class = project_assembly->get_object_derived_class(name);
+		const Variant *script_metadata_var = CSharpLanguage::get_singleton()->get_scripts_metadata().getptr(get_path());
+		if (script_metadata_var) {
+			Dictionary script_metadata = script_metadata_var->operator Dictionary()["class"];
+			const Variant *namespace_ = script_metadata.getptr("namespace");
+			const Variant *class_name = script_metadata.getptr("class_name");
+			ERR_FAIL_NULL_V(namespace_, ERR_BUG);
+			ERR_FAIL_NULL_V(class_name, ERR_BUG);
+			GDMonoClass *klass = project_assembly->get_class(namespace_->operator String(), class_name->operator String());
+			if (klass) {
+				bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(klass);
+				ERR_FAIL_COND_V(!obj_type, ERR_BUG);
+				script_class = klass;
+			}
+		} else {
+			// Missing script metadata. Fallback to legacy method
+			script_class = project_assembly->get_object_derived_class(name);
+		}
 
 		valid = script_class != NULL;
 
@@ -2546,28 +2611,13 @@ int CSharpScript::get_member_line(const StringName &p_member) const {
 
 Error CSharpScript::load_source_code(const String &p_path) {
 
-	PoolVector<uint8_t> sourcef;
-	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	ERR_FAIL_COND_V(err != OK, err);
-
-	int len = f->get_len();
-	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
-	f->close();
-	memdelete(f);
-	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
-	w[len] = 0;
-
-	String s;
-	if (s.parse_utf8((const char *)w.ptr())) {
-
-		ERR_EXPLAIN("Script '" + p_path + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		ERR_FAIL_V(ERR_INVALID_DATA);
+	Error ferr = read_all_file_utf8(p_path, source);
+	if (ferr != OK) {
+		if (ferr == ERR_INVALID_DATA) {
+			ERR_EXPLAIN("Script '" + p_path + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
+		}
+		ERR_FAIL_V(ferr);
 	}
-
-	source = s;
 
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
