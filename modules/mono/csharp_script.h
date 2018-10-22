@@ -67,7 +67,7 @@ class CSharpScript : public Script {
 
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
-	friend class CSharpScriptDepSort;
+	friend struct CSharpScriptDepSort;
 
 	bool tool;
 	bool valid;

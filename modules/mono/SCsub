@@ -44,7 +44,7 @@ def make_cs_files_header(src, dst, version_dst):
                         if i > 0:
                             header.write(', ')
                         header.write(byte_to_str(buf[buf_idx]))
-                    inserted_files += '\tr_files.insert("' + filepath_src_rel + '", ' \
+                    inserted_files += '\tr_files.insert("' + filepath_src_rel.replace('\\', '\\\\') + '", ' \
                                         'CompressedFile(_cs_' + name + '_compressed_size, ' \
                                         '_cs_' + name + '_uncompressed_size, ' \
                                         '_cs_' + name + '_compressed));\n'
