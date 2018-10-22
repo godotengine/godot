@@ -191,7 +191,6 @@ void GDMono::initialize() {
 			String hint_config_dir = path_join(locations[i], "etc");
 
 			if (FileAccess::exists(hint_mscorlib_path) && DirAccess::exists(hint_config_dir)) {
-				need_set_mono_dirs = false;
 				assembly_rootdir = hint_assembly_rootdir;
 				config_dir = hint_config_dir;
 				break;
