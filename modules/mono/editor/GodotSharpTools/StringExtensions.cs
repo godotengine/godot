@@ -36,7 +36,9 @@ namespace GodotSharpTools
 
         public static bool IsAbsolutePath(this string path)
         {
-            return path.StartsWith("/") || path.StartsWith("\\") || path.StartsWith(driveRoot);
+            return path.StartsWith("/", StringComparison.Ordinal) ||
+                       path.StartsWith("\\", StringComparison.Ordinal) ||
+                       path.StartsWith(driveRoot, StringComparison.Ordinal);
         }
 
         public static string CsvEscape(this string value, char delimiter = ',')

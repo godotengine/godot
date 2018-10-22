@@ -38,7 +38,7 @@ matrix:
             - mono
           packages:
             - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
-            - &linux_mono_deps [mono-devel, msbuild]
+            - &linux_mono_deps [mono-devel, msbuild, nuget]
 
         coverity_scan:
           project:
