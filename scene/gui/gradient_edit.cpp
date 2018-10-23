@@ -236,8 +236,8 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 		//Snap to nearest point if holding shift
 		if (mm->get_shift()) {
-			float snap_treshhold = 0.03;
-			float smallest_ofs = snap_treshhold;
+			float snap_threshold = 0.03;
+			float smallest_ofs = snap_threshold;
 			bool found = false;
 			int nearest_point = 0;
 			for (int i = 0; i < points.size(); ++i) {
