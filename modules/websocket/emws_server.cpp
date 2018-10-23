@@ -71,6 +71,9 @@ int EMWSServer::get_peer_port(int p_peer_id) const {
 void EMWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 }
 
+void EMWSServer::poll() {
+}
+
 EMWSServer::EMWSServer() {
 }
 
