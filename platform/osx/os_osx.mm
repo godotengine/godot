@@ -100,12 +100,13 @@ static int prev_mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
 
-static Vector2 get_mouse_pos(NSEvent *event) {
+static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFactor) {
 
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
-	const NSPoint p = [event locationInWindow];
-	mouse_x = p.x * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	mouse_y = (contentRect.size.height - p.y) * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	const NSPoint p = locationInWindow;
+	const float s = OS_OSX::singleton->_mouse_scale(backingScaleFactor);
+	mouse_x = p.x * s;
+	mouse_y = (contentRect.size.height - p.y) * s;
 	return Vector2(mouse_x, mouse_y);
 }
 
@@ -326,6 +327,12 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	//_GodotInputWindowFocus(window, GL_TRUE);
 	//_GodotPlatformSetCursorMode(window, window->cursorMode);
 	[OS_OSX::singleton->context update];
+
+	get_mouse_pos(
+			[OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream],
+			[OS_OSX::singleton->window_view backingScaleFactor]);
+	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
+
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 }
@@ -594,12 +601,13 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_button_mask(button_mask);
 	prev_mouse_x = mouse_x;
 	prev_mouse_y = mouse_y;
-	const Vector2 pos = get_mouse_pos(event);
+	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
+	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
 	mm->set_global_position(pos);
 	Vector2 relativeMotion = Vector2();
-	relativeMotion.x = [event deltaX] * OS_OSX::singleton -> _mouse_scale([[event window] backingScaleFactor]);
-	relativeMotion.y = [event deltaY] * OS_OSX::singleton -> _mouse_scale([[event window] backingScaleFactor]);
+	relativeMotion.x = [event deltaX] * OS_OSX::singleton -> _mouse_scale(backingScaleFactor);
+	relativeMotion.y = [event deltaY] * OS_OSX::singleton -> _mouse_scale(backingScaleFactor);
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
@@ -682,7 +690,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instance();
 	get_key_modifier_state([event modifierFlags], ev);
-	ev->set_position(get_mouse_pos(event));
+	ev->set_position(get_mouse_pos([event locationInWindow], [[event window] backingScaleFactor]));
 	ev->set_factor([event magnification] + 1.0);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -1073,6 +1081,8 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
+
+	get_mouse_pos([event locationInWindow], [[event window] backingScaleFactor]);
 
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
