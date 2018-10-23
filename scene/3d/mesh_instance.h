@@ -76,6 +76,7 @@ public:
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
+	int get_surface_material_count() const;
 	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_surface) const;
 
