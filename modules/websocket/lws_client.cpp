@@ -34,7 +34,7 @@
 #include "core/io/stream_peer_ssl.h"
 #include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#if !defined(MINGW_ENABLED) && defined(_MSC_VER)
 #define strncpy strncpy_s
 #endif
 
