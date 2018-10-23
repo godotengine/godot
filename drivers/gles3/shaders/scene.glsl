@@ -2053,7 +2053,7 @@ FRAGMENT_SHADER_CODE
 
 		emission = emission * rev_amount + fog_color * fog_amount;
 		ambient_light *= rev_amount;
-		specular_light *rev_amount;
+		specular_light *= rev_amount;
 		diffuse_light *= rev_amount;
 	}
 
