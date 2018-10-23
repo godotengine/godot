@@ -34,10 +34,6 @@
 #include "core/io/stream_peer_ssl.h"
 #include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define strncpy strncpy_s
-#endif
-
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
 	ERR_FAIL_COND_V(context != NULL, FAILED);
@@ -80,26 +76,11 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		ERR_FAIL_V(FAILED);
 	}
 
-	char abuf[1024];
-	char hbuf[1024];
-	char pbuf[2048];
-	String addr_str = (String)addr;
-	strncpy(abuf, addr_str.ascii().get_data(), 1023);
-	abuf[1023] = '\0';
-	strncpy(hbuf, p_host.utf8().get_data(), 1023);
-	hbuf[1023] = '\0';
-	strncpy(pbuf, p_path.utf8().get_data(), 2047);
-	pbuf[2047] = '\0';
-
 	i.context = context;
 	if (p_protocols.size() > 0)
 		i.protocol = _lws_ref->lws_names;
 	else
 		i.protocol = NULL;
-	i.address = abuf;
-	i.host = hbuf;
-	i.path = pbuf;
-	i.port = p_port;
 
 	if (p_ssl) {
 		i.ssl_connection = LCCSCF_USE_SSL;
@@ -109,7 +90,16 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		i.ssl_connection = 0;
 	}
 
+	// This String needs to survive till we call lws_client_connect_via_info
+	String addr_str = (String)addr;
+
+	i.address = addr_str.ascii().get_data();
+	i.host = p_host.utf8().get_data();
+	i.path = p_path.utf8().get_data();
+	i.port = p_port;
+
 	lws_client_connect_via_info(&i);
+
 	return OK;
 };
 
