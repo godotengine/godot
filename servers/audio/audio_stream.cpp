@@ -136,16 +136,20 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
+	int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
+	int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
+#ifdef DEBUG_ENABLED
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+#endif
 
-	// p_frames is multiplied by two since an AudioFrame is stereo
-	if ((p_frames + MICROPHONE_PLAYBACK_DELAY * 2) > input_size) {
+	if (playback_delay > input_size) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0.0f, 0.0f);
 		}
 		input_ofs = 0;
 	} else {
 		for (int i = 0; i < p_frames; i++) {
-			if (input_size >= input_ofs) {
+			if (input_size > input_ofs) {
 				float l = (buf[input_ofs++] >> 16) / 32768.f;
 				if (input_ofs >= buf.size()) {
 					input_ofs = 0;
@@ -161,6 +165,12 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 			}
 		}
 	}
+
+#ifdef DEBUG_ENABLED
+	if (input_ofs > input_position && (input_ofs - input_position) < (p_frames * 2)) {
+		print_verbose(String(get_class_name()) + " buffer underrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
+	}
+#endif
 
 	AudioDriver::get_singleton()->unlock();
 }

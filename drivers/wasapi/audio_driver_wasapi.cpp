@@ -336,10 +336,7 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 	HRESULT hr = audio_input.audio_client->GetBufferSize(&max_frames);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
-	// Set the buffer size
-	input_buffer.resize(max_frames * CAPTURE_BUFFER_CHANNELS);
-	input_position = 0;
-	input_size = 0;
+	input_buffer_init(max_frames);
 
 	return OK;
 }

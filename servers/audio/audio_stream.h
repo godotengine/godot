@@ -122,8 +122,6 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlayback)
 	friend class AudioStreamMicrophone;
 
-	static const int MICROPHONE_PLAYBACK_DELAY = 256;
-
 	bool active;
 	unsigned int input_ofs;
 

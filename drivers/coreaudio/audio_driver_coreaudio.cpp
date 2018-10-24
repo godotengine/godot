@@ -145,9 +145,6 @@ Error AudioDriverCoreAudio::init() {
 	unsigned int buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
 	input_buf.resize(buffer_size);
-	input_buffer.resize(buffer_size * 8);
-	input_position = 0;
-	input_size = 0;
 
 	print_verbose("CoreAudio: detected " + itos(channels) + " channels");
 	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
@@ -486,6 +483,8 @@ void AudioDriverCoreAudio::capture_finish() {
 }
 
 Error AudioDriverCoreAudio::capture_start() {
+
+	input_buffer_init(buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
 	if (result != noErr) {
