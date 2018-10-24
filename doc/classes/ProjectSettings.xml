@@ -691,7 +691,7 @@
 		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="">
-			For reflection probes and panorama backgrounds (sky), use a texure array instead of mipmaps. This reduces jitter noise on reflections, but costs more performance and memory.
+			For reflection probes and panorama backgrounds (sky), use a texture array instead of mipmaps. This reduces jitter noise on reflections, but costs more performance and memory.
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="">
 		</member>
@@ -704,7 +704,7 @@
 		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="">
-			Force vertex shading for all rendering. This can increase performance a lot, but also reduces quality inmensely. Can work to optimize on very low end mobile.
+			Force vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can work to optimize on very low end mobile.
 		</member>
 		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="">
 		</member>
