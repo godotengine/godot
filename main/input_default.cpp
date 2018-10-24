@@ -261,6 +261,13 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 
 void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
 
+	// Notes on mouse-touch emulation:
+	// - Emulated mouse events are parsed, that is, re-routed to this method, so they make the same effects
+	//   as true mouse events. The only difference is the situation is flagged as emulated so they are not
+	//   emulated back to touch events in an endless loop.
+	// - Emulated touch events are handed right to the main loop (i.e., the SceneTree) because they don't
+	//   require additional handling by this class.
+
 	_THREAD_SAFE_METHOD_
 
 	Ref<InputEventKey> k = p_event;
@@ -316,11 +323,21 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 		}
 	}
 
-	if (emulate_mouse_from_touch) {
+	Ref<InputEventScreenTouch> st = p_event;
 
-		Ref<InputEventScreenTouch> st = p_event;
+	if (st.is_valid()) {
 
-		if (st.is_valid()) {
+		if (st->is_pressed()) {
+			SpeedTrack &track = touch_speed_track[st->get_index()];
+			track.reset();
+		} else {
+			// Since a pointer index may not occur again (OSs may or may not reuse them),
+			// imperatively remove it from the map to keep no fossil entries in it
+			touch_speed_track.erase(st->get_index());
+		}
+
+		if (emulate_mouse_from_touch) {
+
 			bool translate = false;
 			if (st->is_pressed()) {
 				if (mouse_from_touch_index == -1) {
@@ -351,10 +368,18 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				_parse_input_event_impl(button_event, true);
 			}
 		}
+	}
 
-		Ref<InputEventScreenDrag> sd = p_event;
+	Ref<InputEventScreenDrag> sd = p_event;
 
-		if (sd.is_valid() && sd->get_index() == mouse_from_touch_index) {
+	if (sd.is_valid()) {
+
+		SpeedTrack &track = touch_speed_track[sd->get_index()];
+		track.update(sd->get_relative());
+		sd->set_speed(track.speed);
+
+		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
+
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instance();
 
