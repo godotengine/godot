@@ -248,7 +248,7 @@ void register_scene_types() {
 	resource_saver_text = memnew(ResourceFormatSaverText);
 	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
 
-	resource_loader_text = memnew(ResourceFormatLoaderText);
+	resource_loader_text = ResourceFormatLoaderText::get_singleton();
 	ResourceLoader::add_resource_format_loader(resource_loader_text, true);
 
 	resource_saver_shader = memnew(ResourceFormatSaverShader);

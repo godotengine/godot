@@ -1333,6 +1333,13 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	return ria->save_as_binary(f, p_dst_path);
 }
 
+ResourceFormatLoaderText *ResourceFormatLoaderText::get_singleton() {
+	if (ResourceFormatLoaderText::singleton == NULL) {
+		ResourceFormatLoaderText::singleton = memnew(ResourceFormatLoaderText);
+	}
+	return ResourceFormatLoaderText::singleton;
+}
+
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 /*****************************************************************************************************/

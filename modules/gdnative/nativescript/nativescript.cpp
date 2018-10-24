@@ -1711,7 +1711,7 @@ void NativeReloadNode::_notification(int p_what) {
 }
 
 RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error);
+	return ResourceFormatLoaderText::get_singleton()->load(p_path, p_original_path, r_error);
 }
 
 void ResourceFormatLoaderNativeScript::get_recognized_extensions(List<String> *p_extensions) const {

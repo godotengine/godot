@@ -1446,7 +1446,7 @@ void EditorSceneImporterESCN::get_extensions(List<String> *r_extensions) const {
 Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 
 	Error error;
-	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
+	Ref<PackedScene> ps = ResourceFormatLoaderText::get_singleton()->load(p_path, p_path, &error);
 	ERR_FAIL_COND_V(!ps.is_valid(), NULL);
 
 	Node *scene = ps->instance();

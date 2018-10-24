@@ -129,8 +129,10 @@ public:
 
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 
-public:
+	ResourceFormatLoaderText() {}
 	static ResourceFormatLoaderText *singleton;
+
+public:
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -140,8 +142,7 @@ public:
 	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 
 	static Error convert_file_to_binary(const String &p_src_path, const String &p_dst_path);
-
-	ResourceFormatLoaderText() { singleton = this; }
+	static ResourceFormatLoaderText *get_singleton();
 };
 
 class ResourceFormatSaverTextInstance {
