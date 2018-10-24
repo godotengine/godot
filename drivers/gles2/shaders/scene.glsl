@@ -359,7 +359,7 @@ void main() {
 	normal = normalize((world_matrix * vec4(normal, 0.0)).xyz);
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 
-	tangent = normalize((world_matrix * vec4(tangent, 0.0)), xyz);
+	tangent = normalize((world_matrix * vec4(tangent, 0.0)).xyz);
 	binormal = normalize((world_matrix * vec4(binormal, 0.0)).xyz);
 #endif
 #endif
