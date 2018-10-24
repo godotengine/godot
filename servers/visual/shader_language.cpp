@@ -2498,7 +2498,7 @@ bool ShaderLanguage::_get_completable_identifier(BlockNode *p_block, CompletionT
 
 	identifier = StringName();
 
-	TkPos pos;
+	TkPos pos = { 0, 0 };
 
 	Token tk = _get_token();
 
