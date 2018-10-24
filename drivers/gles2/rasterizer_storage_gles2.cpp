@@ -4458,6 +4458,7 @@ void RasterizerStorageGLES2::initialize() {
 		}
 	}
 
+	config.keep_original_textures = false;
 	config.shrink_textures_x2 = false;
 
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
@@ -4605,6 +4606,7 @@ void RasterizerStorageGLES2::initialize() {
 #endif
 
 	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
+	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
 }
 
 void RasterizerStorageGLES2::finalize() {
