@@ -6709,9 +6709,15 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 					}
 				}
 
+				bool rets = false;
 				return_type.has_type = true;
 				return_type.kind = DataType::BUILTIN;
-				return_type.builtin_type = Variant::get_method_return_type(base_type.builtin_type, callee_name);
+				return_type.builtin_type = Variant::get_method_return_type(base_type.builtin_type, callee_name, &rets);
+				// If the method returns, but it might return any type, (Variant::NIL), pretend we don't know the type.
+				// At least make sure we know that it returns
+				if (rets && return_type.builtin_type == Variant::NIL) {
+					return_type.has_type = false;
+				}
 				break;
 			}
 
