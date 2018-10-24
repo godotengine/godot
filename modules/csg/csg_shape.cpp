@@ -521,6 +521,11 @@ CSGBrush *CSGMesh::_build_brush() {
 
 		Array arrays = mesh->surface_get_arrays(i);
 
+		if (arrays.size() == 0) {
+			_make_dirty();
+			ERR_FAIL_COND_V(arrays.size() == 0, NULL);
+		}
+
 		PoolVector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
 		if (avertices.size() == 0)
 			continue;
