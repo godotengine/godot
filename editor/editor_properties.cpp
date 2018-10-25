@@ -1860,6 +1860,12 @@ void EditorPropertyNodePath::update_property() {
 	Node *target_node = base_node->get_node(p);
 	ERR_FAIL_COND(!target_node);
 
+	if (String(target_node->get_name()).find("@") != -1) {
+		assign->set_icon(Ref<Texture>());
+		assign->set_text(p);
+		return;
+	}
+
 	assign->set_text(target_node->get_name());
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
