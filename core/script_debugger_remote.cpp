@@ -1100,7 +1100,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 	eh.userdata = this;
 	add_error_handler(&eh);
 
-	profile_info.resize(CLAMP(int(ProjectSettings::get_singleton()->get("debug/settings/profiler/max_functions")), 128, 65535));
+	profile_info.resize(GLOBAL_GET("debug/settings/profiler/max_functions"));
 	profile_info_ptrs.resize(profile_info.size());
 }
 

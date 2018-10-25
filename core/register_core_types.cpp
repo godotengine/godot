@@ -199,6 +199,7 @@ void register_core_types() {
 void register_core_settings() {
 	//since in register core types, globals may not e present
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
 }
 
 void register_core_singletons() {
