@@ -34,8 +34,14 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
+#ifdef __APPLE__
+#include "platform/osx/crash_handler_osx.h"
+#include "platform/osx/power_osx.h"
+#include "platform/osx/sem_osx.h"
+#else
 #include "platform/x11/crash_handler_x11.h"
 #include "platform/x11/power_x11.h"
+#endif
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -61,7 +67,11 @@ class OS_Server : public OS_Unix {
 
 	InputDefault *input;
 
+#ifdef __APPLE__
+	power_osx *power_manager;
+#else
 	PowerX11 *power_manager;
+#endif
 
 	CrashHandler crash_handler;
 

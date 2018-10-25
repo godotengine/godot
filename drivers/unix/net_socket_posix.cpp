@@ -55,7 +55,7 @@
 
 #include <netinet/tcp.h>
 
-#if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
+#if defined(__APPLE__)
 #define MSG_NOSIGNAL SO_NOSIGPIPE
 #endif
 

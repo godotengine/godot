@@ -74,8 +74,12 @@ public:
 
 	IP_Unix *ip_unix;
 
+#ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
+#endif
+#ifdef COREMIDI_ENABLED
 	MIDIDriverCoreMidi midi_driver;
+#endif
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;

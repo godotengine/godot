@@ -68,6 +68,10 @@ void OS_Server::initialize_core() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+#ifdef __APPLE__
+	SemaphoreOSX::make_default();
+#endif
 }
 
 Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -87,7 +91,11 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	input = memnew(InputDefault);
 
+#ifdef __APPLE__
+	power_manager = memnew(power_osx);
+#else
 	power_manager = memnew(PowerX11);
+#endif
 
 	_ensure_user_data_dir();
 

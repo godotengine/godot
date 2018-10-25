@@ -349,7 +349,10 @@ if selected_platform in platform_list:
         else: # always enable those errors
             env.Append(CCFLAGS=['-Werror=return-type'])
 
-    suffix = "." + selected_platform
+    if (hasattr(detect, 'get_program_suffix')):
+        suffix = "." + detect.get_program_suffix()
+    else:
+        suffix = "." + selected_platform
 
     if (env["target"] == "release"):
         if env["tools"]:
