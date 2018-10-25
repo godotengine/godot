@@ -288,9 +288,28 @@ void ProjectSettings::_convert_to_last_version() {
 	}
 }
 
+/*
+ * This method is responsible for loading a project.godot file and/or data file
+ * using the following merit order:
+ *  - If using NetworkClient, try to lookup project file or fail.
+ *  - If --main-pack was passed by the user (`p_main_pack`), load it or fail.
+ *  - Search for .pck file matching binary name. There are two possibilities:
+ *    o exec_path.get_basename() + '.pck' (e.g. 'win_game.exe' -> 'win_game.pck')
+ *    o exec_path + '.pck' (e.g. 'linux_game' -> 'linux_game.pck')
+ *    For each tentative, if the file exists, load it or fail.
+ *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
+ *    If found, load it or fail.
+ *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
+ *    are running from source code.
+ *    If not found and `p_upwards` is true (--upwards passed by the user), look for
+ *    project files in parent folders up to the system root (used to run a game
+ *    from command line while in a subfolder).
+ *    If a project file is found, load it or fail.
+ *    If nothing was found, error out.
+ */
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
 
-	//If looking for files in network, just use network!
+	// If looking for files in a network client, use it directly
 
 	if (FileAccessNetworkClient::get_singleton()) {
 
@@ -302,9 +321,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		return err;
 	}
 
-	String exec_path = OS::get_singleton()->get_executable_path();
-
-	//Attempt with a passed main pack first
+	// Attempt with a user-defined main pack first
 
 	if (p_main_pack != "") {
 
@@ -320,25 +337,39 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		return err;
 	}
 
-	//Attempt with execname.pck
+	// Attempt with exec_name.pck
+	// (This is the usual case when distributing a Godot game.)
+
+	// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
+	// or the exec path's basename + '.pck' (Windows).
+	// We need to test both possibilities as extensions for Linux binaries are optional
+	// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
+
+	String exec_path = OS::get_singleton()->get_executable_path();
+
 	if (exec_path != "") {
 		bool found = false;
 
-		// get our filename without our path (note, using exec_path.get_file before get_basename anymore because not all file systems have dots in their file names!)
-		String filebase_name = exec_path.get_file().get_basename();
+		String exec_dir = exec_path.get_base_dir();
+		String exec_filename = exec_path.get_file();
+		String exec_basename = exec_filename.get_basename();
 
-		// try to open at the location of executable
-		String datapack_name = exec_path.get_base_dir().plus_file(filebase_name) + ".pck";
-		if (_load_resource_pack(datapack_name)) {
+		// Try to load data pack at the location of the executable
+		// As mentioned above, we have two potential names to attempt
+
+		if (_load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) ||
+				_load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"))) {
 			found = true;
 		} else {
-			datapack_name = filebase_name + ".pck";
-			if (_load_resource_pack(datapack_name)) {
+			// If we couldn't find them next to the executable, we attempt
+			// the current working directory. Same story, two tests.
+			if (_load_resource_pack(exec_basename + ".pck") ||
+					_load_resource_pack(exec_filename + ".pck")) {
 				found = true;
 			}
 		}
 
-		// if we opened our package, try and load our project...
+		// If we opened our package, try and load our project
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 			if (err == OK) {
@@ -350,17 +381,15 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		}
 	}
 
-	//Try to use the filesystem for files, according to OS. (only Android -when reading from pck- and iOS use this)
+	// Try to use the filesystem for files, according to OS. (only Android -when reading from pck- and iOS use this)
+
 	if (OS::get_singleton()->get_resource_dir() != "") {
-		//OS will call Globals->get_resource_path which will be empty if not overridden!
-		//if the OS would rather use somewhere else, then it will not be empty.
-
+		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
+		// If the OS would rather use a specific location, then it will not be empty.
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
-		if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
+		if (resource_path != "" && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
-
-		// data.pck and data.zip are deprecated and no longer supported, apologies.
-		// make sure this is loaded from the resource path
+		}
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK) {
@@ -371,21 +400,19 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		return err;
 	}
 
-	//Nothing was found, try to find a project.godot somewhere!
+	// Nothing was found, try to find a project file in provided path (`p_path`)
+	// or, if requested (`p_upwards`) in parent directories.
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!d, ERR_CANT_CREATE);
-
 	d->change_dir(p_path);
 
-	String candidate = d->get_current_dir();
 	String current_dir = d->get_current_dir();
-
+	String candidate = current_dir;
 	bool found = false;
 	Error err;
 
 	while (true) {
-
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK) {
 			// Optional, we don't mind if it fails
@@ -396,10 +423,10 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		}
 
 		if (p_upwards) {
-			// Try to load settings ascending through dirs shape!
+			// Try to load settings ascending through parent directories
 			d->change_dir("..");
 			if (d->get_current_dir() == current_dir)
-				break; //not doing anything useful
+				break; // not doing anything useful
 			current_dir = d->get_current_dir();
 		} else {
 			break;
@@ -416,6 +443,8 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
 		resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
 
+	// If we're loading a project.godot from source code, we can operate some
+	// ProjectSettings conversions if need be.
 	_convert_to_last_version();
 
 	return OK;
