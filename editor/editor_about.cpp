@@ -47,7 +47,9 @@ void EditorAbout::_notification(int p_what) {
 			Control *base = EditorNode::get_singleton()->get_gui_base();
 			Ref<Font> font = base->get_font("source", "EditorFonts");
 			_tpl_text->add_font_override("normal_font", font);
+			_tpl_text->add_constant_override("line_separation", 6 * EDSCALE);
 			_license_text->add_font_override("normal_font", font);
+			_license_text->add_constant_override("line_separation", 6 * EDSCALE);
 			_logo->set_texture(base->get_icon("Logo", "EditorIcons"));
 		} break;
 	}
