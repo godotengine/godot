@@ -457,6 +457,20 @@ GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class)
 	return match;
 }
 
+GDMonoAssembly *GDMonoAssembly::load_from(const String &p_name, const String &p_path, bool p_refonly) {
+
+	GDMonoAssembly **loaded_asm = GDMono::get_singleton()->get_loaded_assembly(p_name);
+	if (loaded_asm)
+		return *loaded_asm;
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!FileAccess::exists(p_path));
+#endif
+	no_search = true;
+	GDMonoAssembly *res = _load_assembly_from(p_name, p_path, p_refonly);
+	no_search = false;
+	return res;
+}
+
 GDMonoAssembly::GDMonoAssembly(const String &p_name, const String &p_path) {
 
 	loaded = false;

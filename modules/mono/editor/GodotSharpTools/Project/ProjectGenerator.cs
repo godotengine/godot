@@ -6,6 +6,9 @@ namespace GodotSharpTools.Project
 {
     public static class ProjectGenerator
     {
+        const string CoreApiProjectGuid = "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}";
+        const string EditorApiProjectGuid = "{8FBEC238-D944-4074-8548-B3B524305905}";
+
         public static string GenCoreApiProject(string dir, string[] compileItems)
         {
             string path = Path.Combine(dir, CoreApiProject + ".csproj");
@@ -15,6 +18,7 @@ namespace GodotSharpTools.Project
 
             mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
             mainGroup.SetProperty("RootNamespace", "Godot");
+            mainGroup.SetProperty("ProjectGuid", CoreApiProjectGuid);
 
             GenAssemblyInfoFile(root, dir, CoreApiProject,
                                 new string[] { "[assembly: InternalsVisibleTo(\"" + EditorApiProject + "\")]" },
@@ -39,6 +43,7 @@ namespace GodotSharpTools.Project
 
             mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
             mainGroup.SetProperty("RootNamespace", "Godot");
+            mainGroup.SetProperty("ProjectGuid", EditorApiProjectGuid);
 
             GenAssemblyInfoFile(root, dir, EditorApiProject);
 

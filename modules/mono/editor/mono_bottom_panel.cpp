@@ -31,6 +31,8 @@
 #include "mono_bottom_panel.h"
 
 #include "../csharp_script.h"
+#include "../godotsharp_dirs.h"
+#include "csharp_project.h"
 #include "godotsharp_editor.h"
 
 MonoBottomPanel *MonoBottomPanel::singleton = NULL;
@@ -147,6 +149,10 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 }
 
 void MonoBottomPanel::_build_project_pressed() {
+
+	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+	ERR_FAIL_COND(metadata_err != OK);
 
 	GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 

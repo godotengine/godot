@@ -39,6 +39,7 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/path_utils.h"
 #include "bindings_generator.h"
+#include "csharp_project.h"
 #include "godotsharp_editor.h"
 
 #define PROP_NAME_MSBUILD_MONO "MSBuild (Mono)"
@@ -268,7 +269,7 @@ bool GodotSharpBuilds::copy_api_assembly(const String &p_src_dir, const String &
 	if (!FileAccess::exists(assembly_dst) ||
 			FileAccess::get_modified_time(assembly_src) > FileAccess::get_modified_time(assembly_dst) ||
 			GDMono::get_singleton()->metadata_is_api_assembly_invalidated(p_api_type)) {
-		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 		String xml_file = p_assembly_name + ".xml";
 		if (da->copy(p_src_dir.plus_file(xml_file), p_dst_dir.plus_file(xml_file)) != OK)
@@ -279,8 +280,6 @@ bool GodotSharpBuilds::copy_api_assembly(const String &p_src_dir, const String &
 			WARN_PRINTS("Failed to copy " + pdb_file);
 
 		Error err = da->copy(assembly_src, assembly_dst);
-
-		memdelete(da);
 
 		if (err != OK) {
 			show_build_error_dialog("Failed to copy " + assembly_file);
@@ -397,6 +396,18 @@ bool GodotSharpBuilds::build_project_blocking(const String &p_config) {
 }
 
 bool GodotSharpBuilds::editor_build_callback() {
+
+	String scripts_metadata_path_editor = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
+	String scripts_metadata_path_player = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor_player");
+
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path_editor);
+	ERR_FAIL_COND_V(metadata_err != OK, false);
+
+	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Error copy_err = da->copy(scripts_metadata_path_editor, scripts_metadata_path_player);
+
+	ERR_EXPLAIN("Failed to copy scripts metadata file");
+	ERR_FAIL_COND_V(copy_err != OK, false);
 
 	return build_project_blocking("Tools");
 }

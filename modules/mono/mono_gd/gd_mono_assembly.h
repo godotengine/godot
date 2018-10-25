@@ -128,6 +128,8 @@ public:
 
 	static void fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config = String());
 
+	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);
+
 	GDMonoAssembly(const String &p_name, const String &p_path = String());
 	~GDMonoAssembly();
 };

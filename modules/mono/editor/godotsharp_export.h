@@ -41,7 +41,7 @@ class GodotSharpExport : public EditorExportPlugin {
 
 	MonoAssemblyName *aname_prealloc;
 
-	bool _add_assembly(const String &p_src_path, const String &p_dst_path);
+	bool _add_file(const String &p_src_path, const String &p_dst_path, bool p_remap = false);
 
 	Error _get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Map<String, String> &r_dependencies);
 

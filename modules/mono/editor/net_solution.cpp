@@ -52,7 +52,7 @@
 
 #define PROJECT_DECLARATION "Project(\"{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}\") = \"%0\", \"%1\", \"{%2}\"\nEndProject"
 
-#define SOLUTION_PLATFORMS_CONFIG "\t\%0|Any CPU = %0|Any CPU"
+#define SOLUTION_PLATFORMS_CONFIG "\t%0|Any CPU = %0|Any CPU"
 
 #define PROJECT_PLATFORMS_CONFIG                   \
 	"\t\t{%0}.%1|Any CPU.ActiveCfg = %1|Any CPU\n" \

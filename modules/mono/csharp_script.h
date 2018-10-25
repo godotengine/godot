@@ -67,7 +67,7 @@ class CSharpScript : public Script {
 
 	friend class CSharpInstance;
 	friend class CSharpLanguage;
-	friend class CSharpScriptDepSort;
+	friend struct CSharpScriptDepSort;
 
 	bool tool;
 	bool valid;
@@ -275,6 +275,8 @@ class CSharpLanguage : public ScriptLanguage {
 
 	int lang_idx;
 
+	Dictionary scripts_metadata;
+
 public:
 	StringNameCache string_names;
 
@@ -294,6 +296,10 @@ public:
 #ifdef TOOLS_ENABLED
 	void reload_assemblies_if_needed(bool p_soft_reload);
 #endif
+
+	void project_assembly_loaded();
+
+	_FORCE_INLINE_ const Dictionary &get_scripts_metadata() { return scripts_metadata; }
 
 	virtual String get_name() const;
 
