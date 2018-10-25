@@ -172,7 +172,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
 	joy->di_joy->SetCooperativeLevel(*hWnd, DISCL_FOREGROUND);
-	joy->di_joy->EnumObjects(objectsCallback, this, NULL);
+	joy->di_joy->EnumObjects(objectsCallback, this, 0);
 	joy->joy_axis.sort();
 
 	joy->guid = instance->guidInstance;

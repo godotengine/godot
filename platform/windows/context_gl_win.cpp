@@ -92,9 +92,9 @@ Error ContextGL_Win::initialize() {
 				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 				PFD_DOUBLEBUFFER,
 		(BYTE)PFD_TYPE_RGBA,
-		OS::get_singleton()->is_layered_allowed() ? (BYTE)32 : (BYTE)24,
+		(BYTE)(OS::get_singleton()->is_layered_allowed() ? 32 : 24),
 		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Color Bits Ignored
-		OS::get_singleton()->is_layered_allowed() ? (BYTE)8 : (BYTE)0, // Alpha Buffer
+		(BYTE)(OS::get_singleton()->is_layered_allowed() ? 8 : 0), // Alpha Buffer
 		(BYTE)0, // Shift Bit Ignored
 		(BYTE)0, // No Accumulation Buffer
 		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Accumulation Bits Ignored
