@@ -268,7 +268,7 @@ private:
 	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
 	void _tree_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
 
-	void _update_display_mode();
+	void _update_display_mode(bool p_force = false);
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
 

@@ -225,7 +225,7 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 	updating_tree = false;
 }
 
-void FileSystemDock::_update_display_mode() {
+void FileSystemDock::_update_display_mode(bool p_force) {
 	// Compute the new display mode
 	DisplayMode new_display_mode;
 	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
@@ -234,7 +234,7 @@ void FileSystemDock::_update_display_mode() {
 		new_display_mode = DISPLAY_MODE_SPLIT;
 	}
 
-	if (new_display_mode != display_mode || old_display_mode_setting != display_mode_setting) {
+	if (p_force || new_display_mode != display_mode || old_display_mode_setting != display_mode_setting) {
 		display_mode = new_display_mode;
 		old_display_mode_setting = display_mode_setting;
 		button_toggle_display_mode->set_pressed(display_mode_setting == DISPLAY_MODE_SETTING_SPLIT ? true : false);
@@ -352,6 +352,9 @@ void FileSystemDock::_notification(int p_what) {
 			tree->set_drop_mode_flags(0);
 
 		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_display_mode(true);
+		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update icons
 			String ei = "EditorIcons";
@@ -360,6 +363,11 @@ void FileSystemDock::_notification(int p_what) {
 			button_tree->set_icon(get_icon("Filesystem", ei));
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
+			if (button_file_list_display_mode->is_pressed()) {
+				button_file_list_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
+			} else {
+				button_file_list_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
+			}
 
 			tree_search_box->set_right_icon(get_icon("Search", ei));
 			tree_search_box->set_clear_button_enabled(true);
