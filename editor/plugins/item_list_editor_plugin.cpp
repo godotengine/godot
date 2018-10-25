@@ -350,8 +350,6 @@ ItemListEditor::ItemListEditor() {
 
 	selected_idx = -1;
 
-	add_child(memnew(VSeparator));
-
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
