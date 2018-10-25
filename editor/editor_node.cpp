@@ -5515,8 +5515,8 @@ EditorNode::EditorNode() {
 	for (int i = 0; i < vsplits.size(); i++)
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
-	default_layout->set_value(docks_section, "dock_hsplit_2", 40 * EDSCALE);
-	default_layout->set_value(docks_section, "dock_hsplit_3", -40 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_2", 100 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_3", -100 * EDSCALE);
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();
