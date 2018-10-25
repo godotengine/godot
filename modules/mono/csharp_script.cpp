@@ -1407,6 +1407,8 @@ bool CSharpInstance::_unreference_owner_unsafe() {
 	if (!unsafe_referenced)
 		return false; // Already unreferenced
 
+	unsafe_referenced = false;
+
 	// Called from CSharpInstance::mono_object_disposed() or ~CSharpInstance()
 
 	// Unsafe refcount decrement. The managed instance also counts as a reference.
