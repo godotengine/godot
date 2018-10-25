@@ -1802,8 +1802,13 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	NodePath path = p_path;
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
-	if (base_node == NULL && get_edited_object()->has_method("get_root_path")) {
-		base_node = get_edited_object()->call("get_root_path");
+	if (base_node == NULL) {
+		if (Object::cast_to<Resource>(get_edited_object())) {
+			Node *to_node = get_node(p_path);
+			path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
+		} else if (get_edited_object()->has_method("get_root_path")) {
+			base_node = get_edited_object()->call("get_root_path");
+		}
 	}
 	if (base_node) { // for AnimationTrackKeyEdit
 		path = base_node->get_path().rel_path_to(p_path);
