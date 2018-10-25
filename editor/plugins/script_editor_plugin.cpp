@@ -482,13 +482,13 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	if (p_idx < previous_scripts.size() && p_idx >= 0) {
 
 		String path = previous_scripts.get(p_idx);
-		// if its not on disk its a help file or deleted
+		// if it's not on disk it's a help file or deleted
 		if (FileAccess::exists(path)) {
 			Ref<Script> script = ResourceLoader::load(path);
 			if (script.is_valid()) {
 				edit(script, true);
 			}
-			// if it's a path then its most likely a delted file not help
+			// if it's a path then it's most likely a deleted file not help
 		} else if (!path.is_resource_file()) {
 			_help_class_open(path);
 		}

@@ -62,7 +62,7 @@ public:
 };
 
 /*
-	ARVRController is a helper node that automatically updates it's position based on tracker data.
+	ARVRController is a helper node that automatically updates its position based on tracker data.
 
 	It must be a child node of our ARVROrigin node
 */
@@ -102,7 +102,7 @@ public:
 };
 
 /*
-	ARVRAnchor is a helper node that automatically updates it's position based on anchor data, it represents a real world location.
+	ARVRAnchor is a helper node that automatically updates its position based on anchor data, it represents a real world location.
 	It must be a child node of our ARVROrigin node
 */
 
