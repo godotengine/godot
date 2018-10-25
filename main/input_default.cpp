@@ -429,6 +429,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				action.physics_frame = Engine::get_singleton()->get_physics_frames();
 				action.idle_frame = Engine::get_singleton()->get_idle_frames();
 				action.pressed = p_event->is_action_pressed(E->key());
+				action.strength = 0.f;
 				action_state[E->key()] = action;
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
@@ -562,6 +563,7 @@ void InputDefault::action_press(const StringName &p_action) {
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = true;
+	action.strength = 0.f;
 
 	action_state[p_action] = action;
 }
@@ -573,6 +575,7 @@ void InputDefault::action_release(const StringName &p_action) {
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = false;
+	action.strength = 0.f;
 
 	action_state[p_action] = action;
 }
