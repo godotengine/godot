@@ -123,7 +123,7 @@
 			<argument index="0" name="button_index" type="int">
 			</argument>
 			<description>
-				Receives a [code]JOY_BUTTON_*[/code] Enum and returns it's equivalent name as a string.
+				Receives a [code]JOY_BUTTON_*[/code] Enum and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">

@@ -586,7 +586,7 @@ Error OS_Android::shell_open(String p_uri) {
 
 String OS_Android::get_resource_dir() const {
 
-	return "/"; //android has it's own filesystem for resources inside the APK
+	return "/"; //android has its own filesystem for resources inside the APK
 }
 
 String OS_Android::get_locale() const {
