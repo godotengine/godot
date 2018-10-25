@@ -1307,6 +1307,13 @@ bool SceneTreeDock::_validate_no_foreign() {
 			return false;
 		}
 
+		// When edited_scene inherits from another one the root Node will be the parent Scene,
+		// we don't want to consider that Node a foreign one otherwise we would not be able to
+		// delete it
+		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene == E->get()) {
+			continue;
+		}
+
 		if (edited_scene->get_scene_inherited_state().is_valid() && edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E->get())) >= 0) {
 
 			accept->set_text(TTR("Can't operate on nodes the current scene inherits from!"));
