@@ -490,7 +490,7 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 			edit(text_file, true);
 			return;
 		}
-		// if it's a path then its most likely a deleted file not help
+		// if it's a path then it's most likely a deleted file not help
 	} else if (path.find("::") != -1) {
 		// built-in script
 		Ref<Script> script = ResourceLoader::load(path);

@@ -2095,7 +2095,7 @@ void OS_X11::process_xevents() {
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
-				// it will be handled in it's own function.
+				// it will be handled in its own function.
 				handle_key_event((XKeyEvent *)&event);
 			} break;
 			case SelectionRequest: {

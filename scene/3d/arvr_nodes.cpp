@@ -38,14 +38,14 @@
 void ARVRCamera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			// need to find our ARVROrigin parent and let it know we're it's camera!
+			// need to find our ARVROrigin parent and let it know we're its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 			if (origin != NULL) {
 				origin->set_tracked_camera(this);
 			}
 		}; break;
 		case NOTIFICATION_EXIT_TREE: {
-			// need to find our ARVROrigin parent and let it know we're no longer it's camera!
+			// need to find our ARVROrigin parent and let it know we're no longer its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 			if (origin != NULL) {
 				origin->clear_tracked_camera_if(this);
