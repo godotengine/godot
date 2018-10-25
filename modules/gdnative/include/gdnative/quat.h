@@ -109,6 +109,8 @@ godot_bool GDAPI godot_quat_operator_equal(const godot_quat *p_self, const godot
 
 godot_quat GDAPI godot_quat_operator_neg(const godot_quat *p_self);
 
+void GDAPI godot_quat_set_axis_angle(godot_quat *p_self, const godot_vector3 *p_axis, const godot_real p_angle);
+
 #ifdef __cplusplus
 }
 #endif

@@ -127,6 +127,8 @@ godot_basis GDAPI godot_basis_operator_multiply_vector(const godot_basis *p_self
 
 godot_basis GDAPI godot_basis_operator_multiply_scalar(const godot_basis *p_self, const godot_real p_b);
 
+godot_basis GDAPI godot_basis_slerp(const godot_basis *p_self, const godot_basis *p_b, const godot_real p_t);
+
 #ifdef __cplusplus
 }
 #endif

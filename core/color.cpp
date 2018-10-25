@@ -468,7 +468,7 @@ String Color::to_html(bool p_alpha) const {
 	return txt;
 }
 
-Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) {
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 
 	p_h = Math::fmod(p_h * 360.0f, 360.0f);
 	if (p_h < 0.0)
