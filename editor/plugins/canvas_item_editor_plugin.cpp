@@ -183,11 +183,14 @@ bool CanvasItemEditor::_is_node_locked(const Node *p_node) {
 	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
 }
 
-bool CanvasItemEditor::_is_node_movable(const Node *p_node) {
+bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning) {
 	if (_is_node_locked(p_node)) {
 		return false;
 	}
 	if (Object::cast_to<Control>(p_node) && Object::cast_to<Container>(p_node->get_parent())) {
+		if (p_popup_warning) {
+			_popup_warning_temporarily(warning_child_of_container, 3.0);
+		}
 		return false;
 	}
 	return true;
@@ -1295,26 +1298,28 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	// Start rotation
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
-			List<CanvasItem *> selection = _get_edited_canvas_items();
+			if ((b->get_control() && !b->get_alt() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
+				List<CanvasItem *> selection = _get_edited_canvas_items();
 
-			// Remove not movable nodes
-			for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
-				if (!_is_node_movable(E->get()))
-					selection.erase(E);
-			}
-
-			drag_selection = selection;
-			if (drag_selection.size() > 0 && ((b->get_control() && !b->get_alt() && tool == TOOL_SELECT) || tool == TOOL_ROTATE)) {
-				drag_type = DRAG_ROTATE;
-				drag_from = transform.affine_inverse().xform(b->get_position());
-				CanvasItem *canvas_item = drag_selection[0];
-				if (canvas_item->_edit_use_pivot()) {
-					drag_rotation_center = canvas_item->get_global_transform_with_canvas().xform(canvas_item->_edit_get_pivot());
-				} else {
-					drag_rotation_center = canvas_item->get_global_transform_with_canvas().get_origin();
+				// Remove not movable nodes
+				for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
+					if (!_is_node_movable(E->get(), true))
+						selection.erase(E);
 				}
-				_save_canvas_item_state(drag_selection);
-				return true;
+
+				drag_selection = selection;
+				if (drag_selection.size() > 0) {
+					drag_type = DRAG_ROTATE;
+					drag_from = transform.affine_inverse().xform(b->get_position());
+					CanvasItem *canvas_item = drag_selection[0];
+					if (canvas_item->_edit_use_pivot()) {
+						drag_rotation_center = canvas_item->get_global_transform_with_canvas().xform(canvas_item->_edit_get_pivot());
+					} else {
+						drag_rotation_center = canvas_item->get_global_transform_with_canvas().get_origin();
+					}
+					_save_canvas_item_state(drag_selection);
+					return true;
+				}
 			}
 		}
 	}
@@ -1772,16 +1777,16 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		//Start moving the nodes
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
-			List<CanvasItem *> selection = _get_edited_canvas_items();
-
-			// Remove not movable nodes
-			for (int i = 0; i < selection.size(); i++) {
-				if (!_is_node_movable(selection[i])) {
-					selection.erase(selection[i]);
-				}
-			}
-
 			if ((b->get_alt() && !b->get_control()) || tool == TOOL_MOVE) {
+				List<CanvasItem *> selection = _get_edited_canvas_items();
+
+				// Remove not movable nodes
+				for (int i = 0; i < selection.size(); i++) {
+					if (!_is_node_movable(selection[i], true)) {
+						selection.erase(selection[i]);
+					}
+				}
+
 				if (selection.size() > 0) {
 					drag_type = DRAG_MOVE;
 					drag_from = transform.affine_inverse().xform(b->get_position());
@@ -2067,7 +2072,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 					// Remove not movable nodes
 					for (int i = 0; i < selection.size(); i++) {
-						if (!_is_node_movable(selection[i])) {
+						if (!_is_node_movable(selection[i], true)) {
 							selection.erase(selection[i]);
 						}
 					}
@@ -3174,6 +3179,8 @@ void CanvasItemEditor::_draw_viewport() {
 	group_button->set_disabled(selection.empty());
 	ungroup_button->set_visible(all_group);
 
+	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
+
 	_draw_grid();
 	_draw_selection();
 	_draw_axis();
@@ -3539,6 +3546,35 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	previous_update_view_offset = view_offset;
 	updating_scroll = false;
+}
+
+void CanvasItemEditor::_popup_warning_depop(Control *p_control) {
+	ERR_FAIL_COND(!popup_temporarily_timers.has(p_control));
+
+	Timer *timer = popup_temporarily_timers[p_control];
+	p_control->hide();
+	remove_child(timer);
+	popup_temporarily_timers.erase(p_control);
+	memdelete(timer);
+	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
+}
+
+void CanvasItemEditor::_popup_warning_temporarily(Control *p_control, const float p_duration) {
+	Timer *timer;
+	if (!popup_temporarily_timers.has(p_control)) {
+		timer = memnew(Timer);
+		timer->connect("timeout", this, "_popup_warning_depop", varray(p_control));
+		timer->set_one_shot(true);
+		add_child(timer);
+
+		popup_temporarily_timers[p_control] = timer;
+	} else {
+		timer = popup_temporarily_timers[p_control];
+	}
+
+	timer->start(p_duration);
+	p_control->show();
+	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 }
 
 void CanvasItemEditor::_update_scroll(float) {
@@ -4247,7 +4283,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_snap_changed", &CanvasItemEditor::_snap_changed);
 	ClassDB::bind_method("_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method("_tree_changed", &CanvasItemEditor::_tree_changed);
-
+	ClassDB::bind_method("_popup_warning_depop", &CanvasItemEditor::_popup_warning_depop);
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
 	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
@@ -4433,7 +4469,22 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	viewport->update();
 }
 
+void CanvasItemEditor::add_control_to_info_overlay(Control *p_control) {
+	ERR_FAIL_COND(!p_control);
+
+	p_control->set_h_size_flags(p_control->get_h_size_flags() & ~Control::SIZE_EXPAND_FILL);
+	info_overlay->add_child(p_control);
+	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
+}
+
+void CanvasItemEditor::remove_control_from_info_overlay(Control *p_control) {
+
+	info_overlay->remove_child(p_control);
+	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
+}
+
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
+	ERR_FAIL_COND(!p_control);
 
 	hb->add_child(p_control);
 }
@@ -4501,6 +4552,28 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->set_focus_mode(FOCUS_ALL);
 	viewport->connect("draw", this, "_draw_viewport");
 	viewport->connect("gui_input", this, "_gui_input_viewport");
+
+	info_overlay = memnew(VBoxContainer);
+	info_overlay->set_anchors_and_margins_preset(Control::PRESET_BOTTOM_LEFT);
+	info_overlay->set_margin(MARGIN_LEFT, 10);
+	info_overlay->set_margin(MARGIN_BOTTOM, -15);
+	info_overlay->set_v_grow_direction(Control::GROW_DIRECTION_BEGIN);
+	info_overlay->add_constant_override("separation", 10);
+	viewport_scrollable->add_child(info_overlay);
+
+	Theme *info_overlay_theme = memnew(Theme);
+	info_overlay_theme->copy_default_theme();
+	info_overlay->set_theme(info_overlay_theme);
+
+	StyleBoxFlat *info_overlay_label_stylebox = memnew(StyleBoxFlat);
+	info_overlay_label_stylebox->set_bg_color(Color(0.0, 0.0, 0.0, 0.2));
+	info_overlay_label_stylebox->set_expand_margin_size_all(4);
+	info_overlay_theme->set_stylebox("normal", "Label", info_overlay_label_stylebox);
+
+	warning_child_of_container = memnew(Label);
+	warning_child_of_container->hide();
+	warning_child_of_container->set_text("Warning: Children of a container get their position and size determined only by their parent");
+	add_control_to_info_overlay(warning_child_of_container);
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
