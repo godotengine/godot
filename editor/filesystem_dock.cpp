@@ -353,7 +353,9 @@ void FileSystemDock::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_display_mode(true);
+			if (tree->is_visible_in_tree()) {
+				_update_display_mode(true);
+			}
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			// Update icons
