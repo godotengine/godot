@@ -213,6 +213,8 @@
 		<member name="audio/mix_rate" type="int" setter="" getter="">
 			Mix rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
+		<member name="audio/output_latency" type="int" setter="" getter="">
+		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
@@ -229,6 +231,8 @@
 			Enable long distance matching in zstd.
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="">
 		</member>
@@ -372,7 +376,7 @@
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="">
 			Timer setting for incremental search in Tree, IntemList, etc. controls.
 		</member>
-		<member name="gui/timers/text_edit_idle_detect_sec" type="int" setter="" getter="">
+		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="">
 			Timer for detecting idle in the editor.
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
@@ -604,9 +608,6 @@
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
 			Default size of packet peer stream for deserializing godot data. Over this size, data is dropped.
 		</member>
-		<member name="network/remote_fs/max_pages" type="int" setter="" getter="">
-			Maximum amount of pages used for remote filesystem (used by debugging).
-		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
 			Amount of read ahead used by remote filesystem. Improves latency.
 		</member>
@@ -652,7 +653,7 @@
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
 			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not mesh themselves.
 		</member>
-		<member name="rendering/limits/time/time_rollover_secs" type="int" setter="" getter="">
+		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="">
 			Shaders have a time variable that constantly increases. At some point it needs to be rolled back to zero to avoid numerical errors on shader animations. This setting specifies when.
 		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="">

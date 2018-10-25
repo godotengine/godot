@@ -47,5 +47,7 @@
 		</constant>
 		<constant name="FLAG_COMPRESS" value="32" enum="SaverFlags">
 		</constant>
+		<constant name="FLAG_REPLACE_SUBRESOURCE_PATHS" value="64" enum="SaverFlags">
+		</constant>
 	</constants>
 </class>
