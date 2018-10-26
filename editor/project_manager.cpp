@@ -1312,7 +1312,7 @@ void ProjectManager::_load_recent_projects() {
 		show->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(show);
 		show->connect("pressed", this, "_show_project", varray(path));
-		show->set_tooltip(TTR("Show In File Manager"));
+		show->set_tooltip(TTR("Show in File Manager"));
 
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");

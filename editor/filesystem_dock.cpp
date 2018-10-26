@@ -2117,7 +2117,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		p_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 
 		String fpath = p_paths[0];
-		String item_text = fpath.ends_with("/") ? TTR("Open In File Manager") : TTR("Show In File Manager");
+		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		p_popup->add_item(item_text, FILE_SHOW_IN_EXPLORER);
 	}
 }
@@ -2128,8 +2128,8 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 
 	if (paths.size() == 1) {
 		if (paths[0].ends_with("/")) {
-			tree_popup->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
-			tree_popup->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
+			tree_popup->add_item(TTR("Expand All"), FOLDER_EXPAND_ALL);
+			tree_popup->add_item(TTR("Collapse All"), FOLDER_COLLAPSE_ALL);
 			tree_popup->add_separator();
 		}
 	}
@@ -2175,7 +2175,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
 	file_list_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_list_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
-	file_list_popup->add_item(TTR("Show In File Manager"), FILE_SHOW_IN_EXPLORER);
+	file_list_popup->add_item(TTR("Show in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);
 	file_list_popup->popup();
 }

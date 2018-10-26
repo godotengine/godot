@@ -968,7 +968,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				RES r = v;
 				if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->add_separator();
-					menu->add_item(TTR("Show in File System"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
+					menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
 			} else {
 			}
