@@ -375,7 +375,7 @@ def make_method(
         event=False,
         pp=None
 ):
-    if (declare or pp == None):
+    if (declare or pp is None):
         t = '- '
     else:
         t = ""
@@ -405,7 +405,7 @@ def make_method(
             t += 'void'
         t += ' '
 
-    if declare or pp == None:
+    if declare or pp is None:
 
         s = '**' + method_data.attrib['name'] + '** '
     else:
@@ -577,7 +577,7 @@ def make_rst_class(node):
             make_method(f, name, m, True, True)
             f.write('\n')
             d = m.find('description')
-            if d == None or d.text.strip() == '':
+            if d is None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
@@ -676,7 +676,7 @@ def make_rst_class(node):
             make_method(f, name, m, True)
             f.write('\n')
             d = m.find('description')
-            if d == None or d.text.strip() == '':
+            if d is None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")

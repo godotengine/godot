@@ -17,7 +17,7 @@ def can_build():
         # building natively on windows!
         if (os.getenv("VSINSTALLDIR")):
 
-            if (os.getenv("ANGLE_SRC_PATH") == None):
+            if (os.getenv("ANGLE_SRC_PATH") is None):
                 return False
 
             return True
