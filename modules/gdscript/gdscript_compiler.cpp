@@ -696,6 +696,19 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					//next will be where to place the result :)
 
 				} break;
+				case GDScriptParser::OperatorNode::OP_AWAIT: {
+					ERR_FAIL_COND_V(on->arguments.size() != 1, -1);
+
+					int ret = _parse_expression(codegen, on->arguments[0], p_stack_level);
+					if (ret < 0)
+						return ret;
+					if ((ret >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
+						codegen.alloc_stack(p_stack_level + 1);
+					}
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_AWAIT);
+					codegen.opcodes.push_back(ret);
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_YIELD_RESUME);
+				} break;
 
 				//indexing operator
 				case GDScriptParser::OperatorNode::OP_INDEX:

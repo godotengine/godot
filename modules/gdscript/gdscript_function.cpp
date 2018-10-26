@@ -214,6 +214,7 @@ static String _get_var_type(const Variant *p_type) {
 		&&OPCODE_CALL_SELF_BASE,              \
 		&&OPCODE_YIELD,                       \
 		&&OPCODE_YIELD_SIGNAL,                \
+		&&OPCODE_AWAIT,                       \
 		&&OPCODE_YIELD_RESUME,                \
 		&&OPCODE_JUMP,                        \
 		&&OPCODE_JUMP_IF,                     \
@@ -1235,12 +1236,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_YIELD)
-			OPCODE(OPCODE_YIELD_SIGNAL) {
+			OPCODE(OPCODE_YIELD_SIGNAL)
+			OPCODE(OPCODE_AWAIT) {
 
 				int ipofs = 1;
 				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
 					CHECK_SPACE(4);
 					ipofs += 2;
+				} else if (_code_ptr[ip] == OPCODE_AWAIT) {
+					CHECK_SPACE(3);
+					ipofs += 1;
 				} else {
 					CHECK_SPACE(2);
 				}
@@ -1310,6 +1315,38 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #else
 					obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+#endif
+				} else if (_code_ptr[ip] == OPCODE_AWAIT) {
+					//do the oneshot connect
+					GET_VARIANT_PTR(argobj, 1);
+#ifdef DEBUG_ENABLED
+					if (argobj->get_type() != Variant::OBJECT) {
+						err_text = "First argument of await not of type object.";
+						OPCODE_BREAK;
+					}
+#endif
+
+					Object *obj = argobj->operator Object *();
+
+#ifdef DEBUG_ENABLED
+					if (!obj) {
+						err_text = "First argument of await is null.";
+						OPCODE_BREAK;
+					}
+					if (ScriptDebugger::get_singleton()) {
+						if (!ObjectDB::instance_validate(obj)) {
+							err_text = "First argument of await is a previously freed instance.";
+							OPCODE_BREAK;
+						}
+					}
+
+					Error err = obj->connect("completed", gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+					if (err != OK) {
+						err_text = "Error connecting to signal `completed` during await";
+						OPCODE_BREAK;
+					}
+#else
+					obj->connect("completed", gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
 #endif
 				}
 
