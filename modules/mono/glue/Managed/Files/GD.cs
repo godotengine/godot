@@ -70,6 +70,16 @@ namespace Godot
             return ResourceLoader.Load<T>(path);
         }
 
+        public static void LogError(string message)
+        {
+            godot_icall_GD_logerror(message);
+        }
+
+        public static void LogWarning(string message)
+        {
+            godot_icall_GD_logwarning(message);
+        }
+
         public static void Print(params object[] what)
         {
             godot_icall_GD_print(what);
@@ -238,5 +248,11 @@ namespace Godot
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static string godot_icall_GD_var2str(object var);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_logerror(string type);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_logwarning(string type);
     }
 }
