@@ -264,11 +264,7 @@
 			<argument index="0" name="step" type="float">
 			</argument>
 			<description>
-				Returns the position of the first non-zero digit, after the decimal point.
-				[codeblock]
-				# n is 2
-				n = decimals(0.035)
-				[/codeblock]
+				Deprecated alias for "[method step_decimals]". 
 			</description>
 		</method>
 		<method name="dectime">
@@ -1020,6 +1016,23 @@
 				Returns the square root of [code]s[/code].
 				[codeblock]
 				sqrt(9) # returns 3
+				[/codeblock]
+			</description>
+		</method>
+		<method name="step_decimals">
+			<return type="float">
+			</return>
+			<argument index="0" name="step" type="float">
+			</argument>
+			<description>
+				Returns the position of the first non-zero digit, after the decimal point.
+				[codeblock]
+				# n is 0
+				n = step_decimals(5)
+				# n is 4
+				n = step_decimals(1.0005)
+				# n is 9
+				n = step_decimals(0.000000005)
 				[/codeblock]
 			</description>
 		</method>

@@ -21,6 +21,16 @@ namespace Godot
         public const real_t Epsilon = 1e-06f;
 #endif
 
+        public static int DecimalCount(real_t s)
+        {
+            return DecimalCount((decimal)s);
+        }
+
+        public static int DecimalCount(decimal s)
+        {
+            return BitConverter.GetBytes(decimal.GetBits(s)[3])[2];
+        }
+
         public static int CeilToInt(real_t s)
         {
             return (int)Math.Ceiling(s);

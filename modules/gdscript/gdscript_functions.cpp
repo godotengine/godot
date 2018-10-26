@@ -72,6 +72,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"is_zero_approx",
 		"ease",
 		"decimals",
+		"step_decimals",
 		"stepify",
 		"lerp",
 		"inverse_lerp",
@@ -336,6 +337,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			r_ret = Math::ease((double)*p_args[0], (double)*p_args[1]);
 		} break;
 		case MATH_DECIMALS: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			r_ret = Math::step_decimals((double)*p_args[0]);
+			ERR_EXPLAIN("GDScript method 'decimals' is deprecated and has been renamed to 'step_decimals', please update your code accordingly.");
+			WARN_DEPRECATED
+		} break;
+		case MATH_STEP_DECIMALS: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
 			r_ret = Math::step_decimals((double)*p_args[0]);
@@ -1452,6 +1460,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_ISINF:
 		case MATH_EASE:
 		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_STEPIFY:
 		case MATH_LERP:
 		case MATH_INVERSE_LERP:
@@ -1626,7 +1635,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_DECIMALS: {
 			MethodInfo mi("decimals", PropertyInfo(Variant::REAL, "step"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::INT;
+			return mi;
+		} break;
+		case MATH_STEP_DECIMALS: {
+			MethodInfo mi("step_decimals", PropertyInfo(Variant::REAL, "step"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_STEPIFY: {
