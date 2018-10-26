@@ -4972,7 +4972,7 @@ EditorNode::EditorNode() {
 	dock_vb->add_child(dock_hb);
 
 	dock_select = memnew(Control);
-	dock_select->set_custom_minimum_size(Size2(64, 0) * EDSCALE);
+	dock_select->set_custom_minimum_size(Size2(128, 64) * EDSCALE);
 	dock_select->connect("gui_input", this, "_dock_select_input");
 	dock_select->connect("draw", this, "_dock_select_draw");
 	dock_select->connect("mouse_exited", this, "_dock_popup_exit");
@@ -4983,7 +4983,7 @@ EditorNode::EditorNode() {
 	dock_select_rect_over = -1;
 	dock_popup_selected = -1;
 	for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-		dock_slot[i]->set_custom_minimum_size(Size2(0, 64) * EDSCALE);
+		dock_slot[i]->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popup);
 		dock_slot[i]->connect("pre_popup_pressed", this, "_dock_pre_popup", varray(i));
@@ -5499,8 +5499,8 @@ EditorNode::EditorNode() {
 	right_r_vsplit->hide();
 
 	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize
-	left_r_hsplit->set_split_offset(100 * EDSCALE);
-	main_hsplit->set_split_offset(-100 * EDSCALE);
+	left_r_hsplit->set_split_offset(70 * EDSCALE);
+	main_hsplit->set_split_offset(-70 * EDSCALE);
 
 	// Define corresponding default layout
 
@@ -5515,8 +5515,8 @@ EditorNode::EditorNode() {
 	for (int i = 0; i < vsplits.size(); i++)
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
-	default_layout->set_value(docks_section, "dock_hsplit_2", 100 * EDSCALE);
-	default_layout->set_value(docks_section, "dock_hsplit_3", -100 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_2", 70 * EDSCALE);
+	default_layout->set_value(docks_section, "dock_hsplit_3", -70 * EDSCALE);
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
 
 	_update_layouts_menu();

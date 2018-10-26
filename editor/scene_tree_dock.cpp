@@ -2370,6 +2370,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter nodes"));
 	filter_hbc->add_child(filter);
+	filter->add_constant_override("minimum_spaces", 0);
 	filter->connect("text_changed", this, "_filter_changed");
 
 	tb = memnew(ToolButton);
