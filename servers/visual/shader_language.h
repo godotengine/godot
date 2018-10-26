@@ -636,7 +636,7 @@ private:
 
 	struct BuiltinFuncDef {
 
-		enum { MAX_ARGS = 5 };
+		enum { MAX_ARGS = 17 };
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];

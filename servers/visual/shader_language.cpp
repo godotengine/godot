@@ -1363,6 +1363,10 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "mat3", TYPE_MAT3, { TYPE_FLOAT, TYPE_VOID } },
 	{ "mat4", TYPE_MAT4, { TYPE_FLOAT, TYPE_VOID } },
 
+	{ "mat2", TYPE_MAT2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "mat3", TYPE_MAT3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "mat4", TYPE_MAT4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+
 	//conversion scalars
 
 	{ "int", TYPE_INT, { TYPE_BOOL, TYPE_VOID } },
@@ -2031,7 +2035,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 
 	bool failed_builtin = false;
 
-	if (argcount <= 4) {
+	if (argcount <= 16) {
 		// test builtins
 		int idx = 0;
 
@@ -2051,7 +2055,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 					}
 				}
 
-				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount] != TYPE_VOID)
+				if (!fail && argcount < 16 && builtin_func_defs[idx].args[argcount] != TYPE_VOID)
 					fail = true; //make sure the number of arguments matches
 
 				if (!fail) {
@@ -4635,7 +4639,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					calltip += "(";
 
 					bool found_arg = false;
-					for (int i = 0; i < 4; i++) {
+					for (int i = 0; i < 16; i++) {
 
 						if (builtin_func_defs[idx].args[i] == TYPE_VOID)
 							break;
@@ -4701,9 +4705,9 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					limit = 4;
 
 				} break;
-				case TYPE_MAT2: limit = 2; break;
-				case TYPE_MAT3: limit = 3; break;
-				case TYPE_MAT4: limit = 4; break;
+				case TYPE_MAT2: limit = 4; break;
+				case TYPE_MAT3: limit = 9; break;
+				case TYPE_MAT4: limit = 16; break;
 				default: {}
 			}
 
