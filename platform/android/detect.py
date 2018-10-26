@@ -178,7 +178,7 @@ def configure(env):
 
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
 
-    if env['android_stl']:
+    if env['android_stl'] == 'yes':
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
         env.Append(CXXFLAGS=['-frtti',"-std=gnu++14"])
