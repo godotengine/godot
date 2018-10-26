@@ -64,6 +64,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"is_inf",
 	"ease",
 	"decimals",
+	"step_decimals",
 	"stepify",
 	"lerp",
 	"inverse_lerp",
@@ -149,6 +150,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_ISNAN:
 		case MATH_ISINF:
 		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_SEED:
 		case MATH_RANDSEED:
 		case MATH_DEG2RAD:
@@ -361,6 +363,11 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			*r_return = Math::ease((double)*p_inputs[0], (double)*p_inputs[1]);
 		} break;
 		case MATH_DECIMALS: {
+
+			VALIDATE_ARG_NUM(0);
+			*r_return = Math::step_decimals((double)*p_inputs[0]);
+		} break;
+		case MATH_STEP_DECIMALS: {
 
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
