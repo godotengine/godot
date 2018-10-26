@@ -169,5 +169,6 @@ if lib_arch_dir != '':
     env_android.Command(out_dir + '/libgodot_android.so', '#bin/libgodot' + env['SHLIBSUFFIX'], Move("$TARGET", "$SOURCE"))
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
-        stl_lib_path = str(env['ANDROID_NDK_ROOT']) + '/sources/cxx-stl/llvm-libc++/libs/' + lib_arch_dir + '/libc++_shared.so'
-        env_android.Command(out_dir + '/libc++_shared.so', stl_lib_path, Copy("$TARGET", "$SOURCE"))
+        if env['android_stl'] == 'yes':
+            stl_lib_path = str(env['ANDROID_NDK_ROOT']) + '/sources/cxx-stl/llvm-libc++/libs/' + lib_arch_dir + '/libc++_shared.so'
+            env_android.Command(out_dir + '/libc++_shared.so', stl_lib_path, Copy("$TARGET", "$SOURCE"))
