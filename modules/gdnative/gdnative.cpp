@@ -306,6 +306,13 @@ bool GDNative::initialize() {
 #elif defined(UWP_ENABLED)
 	// On UWP we use a relative path from the app
 	String path = lib_path.replace("res://", "");
+#elif defined(OSX_ENABLED)
+	// On OSX the exported libraries are located under the Frameworks directory.
+	// So we need to replace the library path.
+	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
+	if (!FileAccess::exists(path)) {
+		path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(lib_path.get_file());
+	}
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif
