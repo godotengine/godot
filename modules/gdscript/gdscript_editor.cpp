@@ -1330,7 +1330,12 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 				r_type.value = Engine::get_singleton()->get_singleton_object(target_id);
 			} else {
 				r_type.type.is_meta_type = true;
-				int idx = GDScriptLanguage::get_singleton()->get_global_map()[target_id];
+				const Map<StringName, int>::Element *target_elem = GDScriptLanguage::get_singleton()->get_global_map().find(target_id);
+				// Check because classes like EditorNode are in ClassDB by now, but unknown to GDScript
+				if (!target_elem) {
+					return false;
+				}
+				int idx = target_elem->get();
 				r_type.value = GDScriptLanguage::get_singleton()->get_global_array()[idx];
 			}
 			return true;
