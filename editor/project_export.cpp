@@ -745,12 +745,16 @@ void ProjectExportDialog::_export_project() {
 	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
 	export_project->clear_filters();
 
-	String extension = platform->get_binary_extension(current);
-	if (extension != String()) {
-		export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
-		export_project->set_current_file(default_filename + "." + extension);
+	if (current->get_export_path() != "") {
+		export_project->set_current_path(current->get_export_path());
 	} else {
-		export_project->set_current_file(default_filename);
+		String extension = platform->get_binary_extension(current);
+		if (extension != String()) {
+			export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
+			export_project->set_current_file(default_filename + "." + extension);
+		} else {
+			export_project->set_current_file(default_filename);
+		}
 	}
 
 	// Ensure that signal is connected if previous attempt left it disconnected with _validate_export_path
@@ -772,6 +776,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	ERR_FAIL_COND(current.is_null());
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
+	current->set_export_path(p_path);
 
 	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
 	if (err != OK) {
