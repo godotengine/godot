@@ -5,6 +5,30 @@
 
 #include "../utils/string_utils.h"
 
+const char *ScriptClassParser::token_names[ScriptClassParser::TK_MAX] = {
+	"[",
+	"]",
+	"{",
+	"}",
+	".",
+	":",
+	",",
+	"Symbol",
+	"Identifier",
+	"String",
+	"Number",
+	"<",
+	">",
+	"EOF",
+	"Error"
+};
+
+String ScriptClassParser::get_token_name(ScriptClassParser::Token p_token) {
+
+	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
+	return token_names[p_token];
+}
+
 ScriptClassParser::Token ScriptClassParser::get_token() {
 
 	while (true) {
@@ -203,7 +227,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 	}
 }
 
-Error ScriptClassParser::_skip_type_parameters() {
+Error ScriptClassParser::_skip_generic_type_params() {
 
 	Token tk;
 
@@ -213,68 +237,100 @@ Error ScriptClassParser::_skip_type_parameters() {
 		if (tk == TK_IDENTIFIER) {
 			tk = get_token();
 
+			if (tk == TK_PERIOD) {
+				while (true) {
+					tk = get_token();
+
+					if (tk != TK_IDENTIFIER) {
+						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + ", found: " + get_token_name(tk);
+						error = true;
+						return ERR_PARSE_ERROR;
+					}
+
+					tk = get_token();
+
+					if (tk != TK_PERIOD)
+						break;
+				}
+			}
+
 			if (tk == TK_OP_LESS) {
-				Error err = _skip_type_parameters();
+				Error err = _skip_generic_type_params();
 				if (err)
 					return err;
 				continue;
 			} else if (tk != TK_COMMA) {
-				error_str = "Unexpected token: " + itos(tk);
+				error_str = "Unexpected token: " + get_token_name(tk);
 				error = true;
 				return ERR_PARSE_ERROR;
 			}
 		} else if (tk == TK_OP_LESS) {
-			error_str = "Expected identifier before `<`.";
+			error_str = "Expected " + get_token_name(TK_IDENTIFIER) + ", found " + get_token_name(TK_OP_LESS);
 			error = true;
 			return ERR_PARSE_ERROR;
 		} else if (tk == TK_OP_GREATER) {
 			return OK;
 		} else {
-			error_str = "Unexpected token: " + itos(tk);
+			error_str = "Unexpected token: " + get_token_name(tk);
 			error = true;
 			return ERR_PARSE_ERROR;
 		}
 	}
 }
 
+Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
+
+	Token tk = get_token();
+
+	if (tk != TK_IDENTIFIER) {
+		error_str = "Expected " + get_token_name(TK_IDENTIFIER) + ", found: " + get_token_name(tk);
+		error = true;
+		return ERR_PARSE_ERROR;
+	}
+
+	r_full_name += String(value);
+
+	if (code[idx] != '.') // We only want to take the next token if it's a period
+		return OK;
+
+	tk = get_token();
+
+	CRASH_COND(tk != TK_PERIOD); // Assertion
+
+	r_full_name += ".";
+
+	return _parse_type_full_name(r_full_name);
+}
+
 Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
 
-	Token tk;
+	String name;
 
-	while (true) {
-		tk = get_token();
+	Error err = _parse_type_full_name(name);
+	if (err)
+		return err;
 
-		if (tk == TK_IDENTIFIER) {
-			bool generic = false;
+	Token tk = get_token();
 
-			String name = value;
-
-			tk = get_token();
-
-			if (tk == TK_OP_LESS) {
-				generic = true;
-				Error err = _skip_type_parameters();
-				if (err)
-					return err;
-			} else if (tk == TK_COMMA) {
-				Error err = _parse_class_base(r_base);
-				if (err)
-					return err;
-			} else if (tk != TK_CURLY_BRACKET_OPEN) {
-				error_str = "Unexpected token: " + itos(tk);
-				error = true;
-				return ERR_PARSE_ERROR;
-			}
-
-			r_base.push_back(!generic ? name : String()); // no generics, please
-
-			return OK;
-		} else {
-			error_str = "Unexpected token: " + itos(tk);
-			error = true;
-			return ERR_PARSE_ERROR;
-		}
+	if (tk == TK_OP_LESS) {
+		// We don't add it to the base list if it's generic
+		Error err = _skip_generic_type_params();
+		if (err)
+			return err;
+	} else if (tk == TK_COMMA) {
+		Error err = _parse_class_base(r_base);
+		if (err)
+			return err;
+		r_base.push_back(name);
+	} else if (tk == TK_CURLY_BRACKET_OPEN) {
+		r_base.push_back(name);
+	} else {
+		error_str = "Unexpected token: " + get_token_name(tk);
+		error = true;
+		return ERR_PARSE_ERROR;
 	}
+
+	return OK;
 }
 
 Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stack) {
@@ -284,7 +340,7 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 	if (tk == TK_IDENTIFIER) {
 		r_name += String(value);
 	} else {
-		error_str = "Unexpected token: " + itos(tk);
+		error_str = "Unexpected token: " + get_token_name(tk);
 		error = true;
 		return ERR_PARSE_ERROR;
 	}
@@ -298,7 +354,7 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 		r_curly_stack++;
 		return OK;
 	} else {
-		error_str = "Unexpected token: " + itos(tk);
+		error_str = "Unexpected token: " + get_token_name(tk);
 		error = true;
 		return ERR_PARSE_ERROR;
 	}
@@ -366,11 +422,11 @@ Error ScriptClassParser::parse(const String &p_code) {
 					} else if (tk == TK_OP_LESS && !generic) {
 						generic = true;
 
-						Error err = _skip_type_parameters();
+						Error err = _skip_generic_type_params();
 						if (err)
 							return err;
 					} else {
-						error_str = "Unexpected token: " + itos(tk);
+						error_str = "Unexpected token: " + get_token_name(tk);
 						error = true;
 						return ERR_PARSE_ERROR;
 					}
@@ -400,7 +456,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 					name = String(value);
 				} else if (tk == TK_CURLY_BRACKET_OPEN) {
 					if (name.empty()) {
-						error_str = "Expected identifier after keyword `struct`. Found `{`.";
+						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword `struct`, found " + get_token_name(TK_CURLY_BRACKET_OPEN);
 						error = true;
 						return ERR_PARSE_ERROR;
 					}
@@ -409,7 +465,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 					type_curly_stack++;
 					break;
 				} else if (tk == TK_EOF) {
-					error_str = "Expected `{` after struct decl. Found `EOF`.";
+					error_str = "Expected " + get_token_name(TK_CURLY_BRACKET_OPEN) + " after struct decl, found " + get_token_name(TK_EOF);
 					error = true;
 					return ERR_PARSE_ERROR;
 				}
