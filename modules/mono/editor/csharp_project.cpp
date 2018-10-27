@@ -167,6 +167,7 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 		ScriptClassParser scp;
 		Error err = scp.parse_file(project_file);
 		if (err != OK) {
+			ERR_PRINTS("Parse error: " + scp.get_error());
 			ERR_EXPLAIN("Failed to determine namespace and class for script: " + project_file);
 			ERR_FAIL_V(err);
 		}
