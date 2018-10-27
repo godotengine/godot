@@ -395,7 +395,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		return aname;
 	}
 
-	String get_package_name(const String &p_package) {
+	String get_package_name(const String &p_package) const {
 
 		String pname = p_package;
 		String basename = ProjectSettings::get_singleton()->get("application/config/name");
@@ -418,6 +418,70 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 		pname = pname.replace("$genname", name);
 		return pname;
+	}
+
+	bool is_package_name_valid(const String &p_package, String *r_error = NULL) const {
+
+		String pname = p_package;
+
+		if (pname.length() == 0) {
+			if (r_error) {
+				*r_error = "Package name is missing.";
+			}
+			return false;
+		}
+
+		int segments = 0;
+		bool first = true;
+		for (int i = 0; i < pname.length(); i++) {
+			CharType c = pname[i];
+			if (first && c == '.') {
+				if (r_error) {
+					*r_error = "Package segments must be of non-zero length.";
+				}
+				return false;
+			}
+			if (c == '.') {
+				segments++;
+				first = true;
+				continue;
+			}
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+				if (r_error) {
+					*r_error = "The character '" + String::chr(c) + "' is not allowed in Android application package names.";
+				}
+				return false;
+			}
+			if (first && (c >= '0' && c <= '9')) {
+				if (r_error) {
+					*r_error = "A digit cannot be the first character in a package segment.";
+				}
+				return false;
+			}
+			if (first && c == '_') {
+				if (r_error) {
+					*r_error = "The character '" + String::chr(c) + "' cannot be the first character in a package segment.";
+				}
+				return false;
+			}
+			first = false;
+		}
+
+		if (segments == 0) {
+			if (r_error) {
+				*r_error = "The package must have at least one '.' separator.";
+			}
+			return false;
+		}
+
+		if (first) {
+			if (r_error) {
+				*r_error = "Package segments must be of non-zero length.";
+			}
+			return false;
+		}
+
+		return true;
 	}
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
@@ -1380,6 +1444,15 @@ public:
 
 				err += "Invalid public key for APK expansion.\n";
 			}
+		}
+
+		String pn = p_preset->get("package/unique_name");
+		String pn_err;
+
+		if (!is_package_name_valid(get_package_name(pn), &pn_err)) {
+
+			valid = false;
+			err += "Invalid package name - " + pn_err + "\n";
 		}
 
 		r_error = err;
