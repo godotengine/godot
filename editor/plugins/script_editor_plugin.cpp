@@ -40,6 +40,7 @@
 #include "editor/editor_settings.h"
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
+#include "editor/plugins/shader_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
 #include "script_text_editor.h"
@@ -2788,13 +2789,18 @@ void ScriptEditor::_on_find_in_files_requested(String text) {
 void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_number, int begin, int end) {
 
 	RES res = ResourceLoader::load(fpath);
-	edit(res);
+	if (fpath.get_extension() == "shader") {
+		ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor("Shader"));
+		shader_editor->edit(res.ptr());
+		shader_editor->make_visible(true);
+		shader_editor->get_shader_editor()->goto_line_selection(line_number - 1, begin, end);
+	} else {
+		edit(res);
 
-	ScriptEditorBase *seb = _get_current_editor();
-
-	ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(seb);
-	if (ste) {
-		ste->goto_line_selection(line_number - 1, begin, end);
+		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+		if (ste) {
+			ste->goto_line_selection(line_number - 1, begin, end);
+		}
 	}
 }
 

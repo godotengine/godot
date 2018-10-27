@@ -120,6 +120,8 @@ public:
 	void ensure_select_current();
 	void edit(const Ref<Shader> &p_shader);
 
+	void goto_line_selection(int p_line, int p_begin, int p_end);
+
 	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
 	void save_external_data();
 
@@ -142,6 +144,8 @@ public:
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify();
+
+	ShaderEditor *get_shader_editor() const { return shader_editor; }
 
 	virtual void save_external_data();
 	virtual void apply_changes();
