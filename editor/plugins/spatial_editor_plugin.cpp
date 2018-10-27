@@ -1835,8 +1835,11 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
 			_update_name();
 		}
-		if (ED_IS_SHORTCUT("spatial_editor/align_selection_with_view", p_event)) {
-			_menu_option(VIEW_ALIGN_SELECTION_WITH_VIEW);
+		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", p_event)) {
+			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", p_event)) {
+			_menu_option(VIEW_ALIGN_ROTATION_WITH_VIEW);
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event)) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE)
@@ -2562,7 +2565,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			focus_selection();
 
 		} break;
-		case VIEW_ALIGN_SELECTION_WITH_VIEW: {
+		case VIEW_ALIGN_TRANSFORM_WITH_VIEW: {
 
 			if (!get_selected_count())
 				break;
@@ -2571,7 +2574,8 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			undo_redo->create_action(TTR("Align with View"));
+			undo_redo->create_action(TTR("Align Transform with View"));
+
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				Spatial *sp = Object::cast_to<Spatial>(E->get());
@@ -2595,6 +2599,34 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
 			}
 			undo_redo->commit_action();
+			focus_selection();
+
+		} break;
+		case VIEW_ALIGN_ROTATION_WITH_VIEW: {
+
+			if (!get_selected_count())
+				break;
+
+			Transform camera_transform = camera->get_global_transform();
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+
+			undo_redo->create_action(TTR("Align Rotation with View"));
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *sp = Object::cast_to<Spatial>(E->get());
+				if (!sp)
+					continue;
+
+				SpatialEditorSelectedItem *se = editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+				if (!se)
+					continue;
+
+				undo_redo->add_do_method(sp, "set_rotation", camera_transform.basis.get_rotation());
+				undo_redo->add_undo_method(sp, "set_rotation", sp->get_rotation());
+			}
+			undo_redo->commit_action();
+
 		} break;
 		case VIEW_ENVIRONMENT: {
 
@@ -3544,7 +3576,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
-	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
+	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
+	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
 	view_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
 	view_menu->set_disable_shortcuts(true);
@@ -5601,7 +5634,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTR("Insert Animation Key"), KEY_K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTR("Focus Origin"), KEY_O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), KEY_F);
-	ED_SHORTCUT("spatial_editor/align_selection_with_view", TTR("Align Selection With View"), KEY_MASK_ALT + KEY_MASK_CMD + KEY_F);
+	ED_SHORTCUT("spatial_editor/align_transform_with_view", TTR("Align Transform with View"), KEY_MASK_ALT + KEY_MASK_CMD + KEY_M);
+	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTR("Align Rotation with View"), KEY_MASK_ALT + KEY_MASK_CMD + KEY_F);
 
 	ED_SHORTCUT("spatial_editor/tool_select", TTR("Tool Select"), KEY_Q);
 	ED_SHORTCUT("spatial_editor/tool_move", TTR("Tool Move"), KEY_W);
