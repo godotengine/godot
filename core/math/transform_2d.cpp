@@ -50,7 +50,7 @@ void Transform2D::affine_invert() {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(det == 0);
 #endif
-	real_t idet = 1.0 / det;
+	real_t idet = (((1.0 / det) * 100000) + 0.5) / 100000;
 
 	SWAP(elements[0][0], elements[1][1]);
 	elements[0] *= Vector2(idet, -idet);
