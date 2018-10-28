@@ -3018,11 +3018,15 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 
 void VisualScriptEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY) {
+	if (p_what == NOTIFICATION_READY || (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())) {
+
 		node_filter->set_right_icon(Control::get_icon("Search", "EditorIcons"));
 		node_filter->set_clear_button_enabled(true);
-		variable_editor->connect("changed", this, "_update_members");
-		signal_editor->connect("changed", this, "_update_members");
+
+		if (p_what == NOTIFICATION_READY) {
+			variable_editor->connect("changed", this, "_update_members");
+			signal_editor->connect("changed", this, "_update_members");
+		}
 
 		Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
 
@@ -3056,8 +3060,12 @@ void VisualScriptEditor::_notification(int p_what) {
 				node_styles[E->get().first] = frame_style;
 			}
 		}
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (is_visible_in_tree()) {
+			_update_members();
+			_update_graph();
+		}
+	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		left_vsplit->set_visible(is_visible_in_tree());
 	}
 }
