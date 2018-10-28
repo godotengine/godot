@@ -148,7 +148,10 @@ void main() {
 
 	vec4 color = color_interp;
 
+#if !defined(COLOR_USED)
+	//default behavior, texture by color
 	color *= texture2D(color_texture, uv_interp);
+#endif
 
 #ifdef SCREEN_UV_USED
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
