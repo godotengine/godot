@@ -614,7 +614,7 @@ void SpatialMaterial::_update_shader() {
 			code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
 			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0.0,particle_total_frames-1.0); else particle_frame=mod(particle_frame,float(particle_total_frames));\n";
 			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
-			code += "\tUV += vec2(mod(particle_frame,float(particles_anim_h_frames)) / float(particles_anim_h_frames),particle_frame / float(particles_anim_h_frames) / float(particles_anim_v_frames));\n";
+			code += "\tUV += vec2(mod(particle_frame,float(particles_anim_h_frames)) / float(particles_anim_h_frames), floor(particle_frame / float(particles_anim_h_frames)) / float(particles_anim_v_frames));\n";
 		} break;
 	}
 
