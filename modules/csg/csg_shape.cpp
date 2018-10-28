@@ -552,8 +552,8 @@ CSGBrush *CSGMesh::_build_brush() {
 
 		PoolVector<int> aindices = arrays[Mesh::ARRAY_INDEX];
 		if (aindices.size()) {
-			int as = vertices.size();
-			int is = aindices.size();
+			int is = vertices.size();
+			int as = aindices.size();
 
 			vertices.resize(as + is);
 			smooth.resize((as + is) / 3);
@@ -567,7 +567,7 @@ CSGBrush *CSGMesh::_build_brush() {
 
 			PoolVector<int>::Read ir = aindices.read();
 
-			for (int j = 0; j < is; j += 3) {
+			for (int j = 0; j < as; j += 3) {
 
 				Vector3 vertex[3];
 				Vector3 normal[3];
@@ -586,13 +586,13 @@ CSGBrush *CSGMesh::_build_brush() {
 
 				bool flat = normal[0].distance_to(normal[1]) < CMP_EPSILON && normal[0].distance_to(normal[2]) < CMP_EPSILON;
 
-				vw[as + j + 0] = vertex[0];
-				vw[as + j + 1] = vertex[1];
-				vw[as + j + 2] = vertex[2];
+				vw[is + j + 0] = vertex[0];
+				vw[is + j + 1] = vertex[1];
+				vw[is + j + 2] = vertex[2];
 
-				uvw[as + j + 0] = uv[0];
-				uvw[as + j + 1] = uv[1];
-				uvw[as + j + 2] = uv[2];
+				uvw[is + j + 0] = uv[0];
+				uvw[is + j + 1] = uv[1];
+				uvw[is + j + 2] = uv[2];
 
 				sw[j / 3] = !flat;
 				mw[j / 3] = mat;
@@ -611,7 +611,7 @@ CSGBrush *CSGMesh::_build_brush() {
 			PoolVector<Vector2>::Write uvw = uvs.write();
 			PoolVector<Ref<Material> >::Write mw = materials.write();
 
-			for (int j = 0; j < is; j += 3) {
+			for (int j = 0; j < as; j += 3) {
 
 				Vector3 vertex[3];
 				Vector3 normal[3];
@@ -629,13 +629,13 @@ CSGBrush *CSGMesh::_build_brush() {
 
 				bool flat = normal[0].distance_to(normal[1]) < CMP_EPSILON && normal[0].distance_to(normal[2]) < CMP_EPSILON;
 
-				vw[as + j + 0] = vertex[0];
-				vw[as + j + 1] = vertex[1];
-				vw[as + j + 2] = vertex[2];
+				vw[is + j + 0] = vertex[0];
+				vw[is + j + 1] = vertex[1];
+				vw[is + j + 2] = vertex[2];
 
-				uvw[as + j + 0] = uv[0];
-				uvw[as + j + 1] = uv[1];
-				uvw[as + j + 2] = uv[2];
+				uvw[is + j + 0] = uv[0];
+				uvw[is + j + 1] = uv[1];
+				uvw[is + j + 2] = uv[2];
 
 				sw[j / 3] = !flat;
 				mw[j / 3] = mat;
