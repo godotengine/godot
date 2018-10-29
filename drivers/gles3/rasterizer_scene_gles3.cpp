@@ -1428,7 +1428,16 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 			if (particles->draw_order == VS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->particle_valid_histories[1]) {
 
 				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[1]); //modify the buffer, this was used 2 frames ago so it should be good enough for flushing
-				RasterizerGLES3Particle *particle_array = (RasterizerGLES3Particle *)glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 24 * sizeof(float), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+				RasterizerGLES3Particle *particle_array;
+#ifndef __EMSCRIPTEN__
+				particle_array = static_cast<RasterizerGLES3Particle *>(glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 24 * sizeof(float), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT));
+#else
+				PoolVector<RasterizerGLES3Particle> particle_vector;
+				particle_vector.resize(particles->amount);
+				PoolVector<RasterizerGLES3Particle>::Write w = particle_vector.write();
+				particle_array = w.ptr();
+				glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(RasterizerGLES3Particle), particle_array);
+#endif
 
 				SortArray<RasterizerGLES3Particle, RasterizerGLES3ParticleSort> sorter;
 
@@ -1440,7 +1449,17 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 				sorter.sort(particle_array, particles->amount);
 
+#ifndef __EMSCRIPTEN__
 				glUnmapBuffer(GL_ARRAY_BUFFER);
+#else
+				w = PoolVector<RasterizerGLES3Particle>::Write();
+				particle_array = NULL;
+				{
+					PoolVector<RasterizerGLES3Particle>::Read r = particle_vector.read();
+					glBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(RasterizerGLES3Particle), r.ptr());
+				}
+				particle_vector = PoolVector<RasterizerGLES3Particle>();
+#endif
 #ifdef DEBUG_ENABLED
 				if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->instancing_array_wireframe_id) {
 					glBindVertexArray(s->instancing_array_wireframe_id); // use the wireframe instancing array ID

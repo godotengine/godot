@@ -101,6 +101,28 @@
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+
+void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data) {
+
+	/* clang-format off */
+	EM_ASM({
+	    GLctx.getBufferSubData($0, $1, HEAPU8, $2, $3);
+	}, target, offset, data, size);
+	/* clang-format on */
+}
+
+void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
+
+	/* clang-format off */
+	EM_ASM({
+	    GLctx.bufferSubData($0, $1, HEAPU8, $2, $3);
+	}, target, offset, data, size);
+	/* clang-format on */
+}
+#endif
+
 void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
 
 #ifdef GLES_OVER_GL
@@ -3494,21 +3516,26 @@ PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, i
 
 	Surface *surface = mesh->surfaces[p_surface];
 
-	glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
-	void *data = glMapBufferRange(GL_ARRAY_BUFFER, 0, surface->array_byte_size, GL_MAP_READ_BIT);
-
-	ERR_FAIL_COND_V(!data, PoolVector<uint8_t>());
-
 	PoolVector<uint8_t> ret;
 	ret.resize(surface->array_byte_size);
+	glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
 
+#if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
 	{
-
+		PoolVector<uint8_t>::Write w = ret.write();
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, surface->array_byte_size, w.ptr());
+	}
+#else
+	void *data = glMapBufferRange(GL_ARRAY_BUFFER, 0, surface->array_byte_size, GL_MAP_READ_BIT);
+	ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
+	{
 		PoolVector<uint8_t>::Write w = ret.write();
 		copymem(w.ptr(), data, surface->array_byte_size);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	return ret;
 }
 
@@ -3521,22 +3548,26 @@ PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_m
 
 	ERR_FAIL_COND_V(surface->index_array_len == 0, PoolVector<uint8_t>());
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
-	void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, GL_MAP_READ_BIT);
-
-	ERR_FAIL_COND_V(!data, PoolVector<uint8_t>());
-
 	PoolVector<uint8_t> ret;
 	ret.resize(surface->index_array_byte_size);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
 
+#if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
 	{
-
+		PoolVector<uint8_t>::Write w = ret.write();
+		glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, w.ptr());
+	}
+#else
+	void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, GL_MAP_READ_BIT);
+	ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
+	{
 		PoolVector<uint8_t>::Write w = ret.write();
 		copymem(w.ptr(), data, surface->index_array_byte_size);
 	}
-
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+#endif
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	return ret;
 }
 
@@ -3577,23 +3608,26 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shap
 
 	for (int i = 0; i < mesh->surfaces[p_surface]->blend_shapes.size(); i++) {
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->surfaces[p_surface]->blend_shapes[i].vertex_id);
-		void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->surfaces[p_surface]->array_byte_size, GL_MAP_READ_BIT);
-
-		ERR_FAIL_COND_V(!data, Vector<PoolVector<uint8_t> >());
-
 		PoolVector<uint8_t> ret;
 		ret.resize(mesh->surfaces[p_surface]->array_byte_size);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->surfaces[p_surface]->blend_shapes[i].vertex_id);
 
+#if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
 		{
-
+			PoolVector<uint8_t>::Write w = ret.write();
+			glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->surfaces[p_surface]->array_byte_size, w.ptr());
+		}
+#else
+		void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, mesh->surfaces[p_surface]->array_byte_size, GL_MAP_READ_BIT);
+		ERR_FAIL_COND_V(!data, Vector<PoolVector<uint8_t> >());
+		{
 			PoolVector<uint8_t>::Write w = ret.write();
 			copymem(w.ptr(), data, mesh->surfaces[p_surface]->array_byte_size);
 		}
+		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+#endif
 
 		bsarr.push_back(ret);
-
-		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 	}
 
 	return bsarr;
@@ -6001,9 +6035,21 @@ AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, AABB());
 
+	const float *data;
 	glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]);
 
-	float *data = (float *)glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 16 * 6, GL_MAP_READ_BIT);
+#if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
+	PoolVector<uint8_t> vector;
+	vector.resize(particles->amount * 16 * 6);
+	{
+		PoolVector<uint8_t>::Write w = vector.write();
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * 16 * 6, w.ptr());
+	}
+	PoolVector<uint8_t>::Read r = vector.read();
+	data = reinterpret_cast<const float *>(r.ptr());
+#else
+	data = (float *)glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 16 * 6, GL_MAP_READ_BIT);
+#endif
 	AABB aabb;
 
 	Transform inv = particles->emission_transform.affine_inverse();
@@ -6020,7 +6066,13 @@ AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 			aabb.expand_to(pos);
 	}
 
+#if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
+	r = PoolVector<uint8_t>::Read();
+	vector = PoolVector<uint8_t>();
+#else
 	glUnmapBuffer(GL_ARRAY_BUFFER);
+#endif
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	float longest_axis = 0;
