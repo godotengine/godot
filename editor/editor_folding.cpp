@@ -1,5 +1,6 @@
 #include "editor_folding.h"
 
+#include "core/os/file_access.h"
 #include "editor_settings.h"
 
 PoolVector<String> EditorFolding::_get_unfolds(const Object *p_object) {
@@ -162,6 +163,13 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 		PoolVector<String> unfolds = res_unfolds[i + 1];
 		_set_unfolds(res.ptr(), unfolds);
 	}
+}
+
+bool EditorFolding::has_folding_data(const String &p_path) {
+	String path = EditorSettings::get_singleton()->get_project_settings_dir();
+	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
+	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
+	return FileAccess::exists(file);
 }
 
 EditorFolding::EditorFolding() {

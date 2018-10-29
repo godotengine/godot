@@ -38,19 +38,18 @@
 class UndoRedo;
 
 class EditorDefaultClassValueCache : public Object {
-    GDCLASS(EditorDefaultClassValueCache,Object)
+	GDCLASS(EditorDefaultClassValueCache, Object)
 
-    Map<StringName,Map<StringName,Variant> > default_values;
+	Map<StringName, Map<StringName, Variant> > default_values;
 
-    static EditorDefaultClassValueCache *singleton;
+	static EditorDefaultClassValueCache *singleton;
+
 public:
+	static EditorDefaultClassValueCache *get_singleton();
 
-    static EditorDefaultClassValueCache *get_singleton();
-
-    Variant get_default_value(const StringName& p_class,const StringName& p_property);
-    EditorDefaultClassValueCache();
+	Variant get_default_value(const StringName &p_class, const StringName &p_property);
+	EditorDefaultClassValueCache();
 };
-
 
 class EditorProperty : public Container {
 
@@ -166,6 +165,8 @@ public:
 	String get_tooltip_text() const;
 
 	void set_draw_top_bg(bool p_draw) { draw_top_bg = p_draw; }
+
+	bool can_revert_to_default() const { return can_revert; }
 
 	EditorProperty();
 };
@@ -286,6 +287,7 @@ class EditorInspector : public ScrollContainer {
 	bool read_only;
 	bool keying;
 	bool use_sub_inspector_bg;
+	bool auto_unfold_edited;
 
 	float refresh_countdown;
 	bool update_tree_pending;
@@ -380,6 +382,7 @@ public:
 	String get_object_class() const;
 
 	void set_use_sub_inspector_bg(bool p_enable);
+	void set_auto_unfold_edited(bool p_enable);
 
 	EditorInspector();
 };

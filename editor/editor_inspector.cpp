@@ -1431,6 +1431,28 @@ void EditorInspector::update_tree() {
 
 	//	TreeItem *current_category = NULL;
 
+	bool unfold_if_edited = false;
+
+	if (use_folding && auto_unfold_edited && get_tree()->get_edited_scene_root()) {
+		String path;
+		Node *node = Object::cast_to<Node>(object);
+		if (node) {
+			path = get_tree()->get_edited_scene_root()->get_filename();
+		}
+		Resource *res = Object::cast_to<Resource>(object);
+		if (res) {
+			if (res->get_path().is_resource_file()) {
+				path = res->get_path();
+			} else if (res->get_path().begins_with("res://")) { //internal resource
+				path = get_tree()->get_edited_scene_root()->get_filename();
+			}
+		}
+
+		if (!EditorNode::get_singleton()->get_editor_folding().has_folding_data(path)) {
+			unfold_if_edited = true;
+		}
+	}
+
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
@@ -1441,6 +1463,8 @@ void EditorInspector::update_tree() {
 	object->get_property_list(&plist, true);
 
 	HashMap<String, VBoxContainer *> item_path;
+	Map<VBoxContainer *, EditorInspectorSection *> section_map;
+
 	item_path[""] = main_vbox;
 
 	Color sscolor = get_color("prop_subsection", "Editor");
@@ -1603,7 +1627,9 @@ void EditorInspector::update_tree() {
 					c.a /= level;
 					section->setup(acc_path, path_name, object, c, use_folding);
 
-					item_path[acc_path] = section->get_vbox();
+					VBoxContainer *vb = section->get_vbox();
+					item_path[acc_path] = vb;
+					section_map[vb] = section;
 				}
 				current_vbox = item_path[acc_path];
 				level = (MIN(level + 1, 4));
@@ -1745,6 +1771,13 @@ void EditorInspector::update_tree() {
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
+					}
+
+					if (unfold_if_edited && ep->can_revert_to_default()) {
+						//if edited and there is a parent section, unfold it.
+						if (current_vbox && section_map.has(current_vbox)) {
+							section_map[current_vbox]->unfold();
+						}
 					}
 				}
 			}
@@ -2242,6 +2275,10 @@ String EditorInspector::get_object_class() const {
 	return object_class;
 }
 
+void EditorInspector::set_auto_unfold_edited(bool p_enable) {
+	auto_unfold_edited = p_enable;
+}
+
 void EditorInspector::_bind_methods() {
 
 	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed, DEFVAL(false));
@@ -2297,6 +2334,7 @@ EditorInspector::EditorInspector() {
 	set_process(true);
 	property_focusable = -1;
 	use_sub_inspector_bg = false;
+	auto_unfold_edited = false;
 
 	get_v_scrollbar()->connect("value_changed", this, "_vscroll_changed");
 	update_scroll_request = -1;

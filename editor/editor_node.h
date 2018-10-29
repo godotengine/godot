@@ -696,6 +696,7 @@ public:
 	void set_current_scene(int p_idx);
 
 	static EditorData &get_editor_data() { return singleton->editor_data; }
+	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
 	EditorHistory *get_editor_history() { return &editor_history; }
 
 	static VSplitContainer *get_top_split() { return singleton->top_split; }

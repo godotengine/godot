@@ -17,6 +17,8 @@ public:
 	void save_scene_folding(const Node *p_scene, const String &p_path);
 	void load_scene_folding(Node *p_scene, const String &p_path);
 
+	bool has_folding_data(const String &p_path);
+
 	EditorFolding();
 };
 
