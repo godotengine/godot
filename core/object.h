@@ -723,6 +723,9 @@ public:
 #ifdef TOOLS_ENABLED
 	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
 	bool editor_is_section_unfolded(const String &p_section);
+	const Set<String> &editor_get_section_folding() const { return editor_section_folding; }
+	void editor_clear_section_folding() { editor_section_folding.clear(); }
+
 #endif
 
 	//used by script languages to store binding data

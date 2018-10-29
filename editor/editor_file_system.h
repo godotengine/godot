@@ -204,8 +204,6 @@ class EditorFileSystem : public Node {
 
 	bool _update_scan_actions();
 
-	static void _resource_saved(const String &p_path);
-
 	void _update_extensions();
 
 	void _reimport_file(const String &p_file);

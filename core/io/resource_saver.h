@@ -46,7 +46,7 @@ public:
 	virtual ~ResourceFormatSaver() {}
 };
 
-typedef void (*ResourceSavedCallback)(const String &p_path);
+typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceSaver {
 

@@ -90,7 +90,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 				rwcopy->set_path(old_path);
 
 			if (save_callback && p_path.begins_with("res://"))
-				save_callback(p_path);
+				save_callback(p_resource, p_path);
 
 			return OK;
 		} else {

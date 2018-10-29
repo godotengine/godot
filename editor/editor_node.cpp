@@ -1061,6 +1061,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 			set_current_version(editor_data.get_undo_redo().get_version());
 		else
 			editor_data.set_edited_scene_version(0, idx);
+
+		editor_folding.save_scene_folding(scene, p_file);
+
 		_update_title();
 		_update_scene_tabs();
 	} else {
@@ -2907,6 +2910,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	_update_scene_tabs();
 	_add_to_recent_scenes(lpath);
 
+	editor_folding.load_scene_folding(new_scene, lpath);
+
 	prev_scene->set_disabled(previous_scenes.size() == 0);
 	opening_prev = false;
 
@@ -4544,6 +4549,19 @@ void EditorNode::_video_driver_selected(int p_which) {
 	_update_video_driver_color();
 }
 
+void EditorNode::_resource_saved(RES p_resource, const String &p_path) {
+	if (EditorFileSystem::get_singleton()) {
+		EditorFileSystem::get_singleton()->update_file(p_path);
+	}
+
+	singleton->editor_folding.save_resource_folding(p_resource, p_path);
+}
+
+void EditorNode::_resource_loaded(RES p_resource, const String &p_path) {
+
+	singleton->editor_folding.load_resource_folding(p_resource, p_path);
+}
+
 void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
@@ -4733,7 +4751,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
-    default_value_cache = memnew( EditorDefaultClassValueCache );
+	default_value_cache = memnew(EditorDefaultClassValueCache);
 
 	{ //register importers at the beginning, so dialogs are created with the right extensions
 		Ref<ResourceImporterTexture> import_texture;
@@ -5831,6 +5849,9 @@ EditorNode::EditorNode() {
 	print_handler.userdata = this;
 	add_print_handler(&print_handler);
 
+	ResourceSaver::set_save_callback(_resource_saved);
+	ResourceLoader::set_load_callback(_resource_loaded);
+
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_MASK_ALT | KEY_1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_MASK_ALT | KEY_2);
@@ -5859,7 +5880,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(file_server);
 	memdelete(progress_hb);
-    memdelete(default_value_cache);
+	memdelete(default_value_cache);
 	EditorSettings::destroy();
 }
 

@@ -1305,11 +1305,6 @@ void EditorFileSystem::_save_late_updated_files() {
 	}
 }
 
-void EditorFileSystem::_resource_saved(const String &p_path) {
-
-	EditorFileSystem::get_singleton()->update_file(p_path);
-}
-
 Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 
 	List<String> deps;
@@ -1772,7 +1767,6 @@ EditorFileSystem::EditorFileSystem() {
 	abort_scan = false;
 	scanning_changes = false;
 	scanning_changes_done = false;
-	ResourceSaver::set_save_callback(_resource_saved);
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->change_dir("res://.import") != OK) {

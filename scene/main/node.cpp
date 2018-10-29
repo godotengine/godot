@@ -1835,7 +1835,7 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	}
 }
 
-bool Node::is_editable_instance(Node *p_node) const {
+bool Node::is_editable_instance(const Node *p_node) const {
 
 	if (!p_node)
 		return false; //easier, null is never editable :)
