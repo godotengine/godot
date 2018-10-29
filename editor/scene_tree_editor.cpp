@@ -665,6 +665,13 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
+	// Empty node names are not allowed, so resets it to previous text and show warning
+	if (which->get_text(0).strip_edges().empty()) {
+		which->set_text(0, n->get_name());
+		EditorNode::get_singleton()->show_warning(TTR("No name provided"));
+		return;
+	}
+
 	String new_name = which->get_text(0);
 	if (!Node::_validate_node_name(new_name)) {
 
