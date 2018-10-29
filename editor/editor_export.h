@@ -57,6 +57,7 @@ private:
 	ExportFilter export_filter;
 	String include_filter;
 	String exclude_filter;
+	String export_path;
 
 	String exporter;
 	Set<String> selected_files;
@@ -113,6 +114,9 @@ public:
 
 	void set_custom_features(const String &p_custom_features);
 	String get_custom_features() const;
+
+	void set_export_path(const String &p_path);
+	String get_export_path() const;
 
 	const List<PropertyInfo> &get_properties() const { return properties; }
 
