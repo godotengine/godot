@@ -330,7 +330,7 @@ def split_lib(self, libname, src_list = None, env_lib = None):
     list = []
     lib_list = []
 
-    if src_list == None:
+    if src_list is None:
         src_list = getattr(env, libname + "_sources")
 
     if type(env_lib) == type(None):

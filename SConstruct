@@ -544,7 +544,7 @@ if 'env' in locals():
             [os.remove(f) for f in files]
 
         def file_list(self):
-            if self.path == None:
+            if self.path is None:
                 # Nothing to do
                 return []
             # Gather a list of (filename, (size, atime)) within the
@@ -569,7 +569,7 @@ if 'env' in locals():
                 if sum > self.limit:
                     mark = i
                     break
-            if mark == None:
+            if mark is None:
                 return []
             else:
                 return [x[0] for x in file_stat[mark:]]

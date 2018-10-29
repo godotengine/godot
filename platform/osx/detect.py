@@ -89,7 +89,7 @@ def configure(env):
         basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
         ccache_path = os.environ.get("CCACHE")
-        if ccache_path == None:
+        if ccache_path is None:
             env['CC'] = basecmd + "cc"
             env['CXX'] = basecmd + "c++"
         else:

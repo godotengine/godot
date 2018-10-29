@@ -186,7 +186,7 @@ def configure(env):
     env.PrependENVPath('PATH', tools_path)
 
     ccache_path = os.environ.get("CCACHE")
-    if ccache_path == None:
+    if ccache_path is None:
         env['CC'] = compiler_path + '/clang'
         env['CXX'] = compiler_path + '/clang++'
     else:
@@ -293,7 +293,7 @@ def configure(env):
 
 # Return NDK version string in source.properties (adapted from the Chromium project).
 def get_ndk_version(path):
-    if path == None:
+    if path is None:
         return None
     prop_file_path = os.path.join(path, "source.properties")
     try:

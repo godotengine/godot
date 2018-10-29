@@ -59,11 +59,11 @@ def include_file_in_legacygl_header(filename, header_data, depth):
             included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
             if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
                 header_data.vertex_included_files += [included_file]
-                if include_file_in_legacygl_header(included_file, header_data, depth + 1) == None:
+                if include_file_in_legacygl_header(included_file, header_data, depth + 1) is None:
                     print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
             elif not included_file in header_data.fragment_included_files and header_data.reading == "fragment":
                 header_data.fragment_included_files += [included_file]
-                if include_file_in_legacygl_header(included_file, header_data, depth + 1) == None:
+                if include_file_in_legacygl_header(included_file, header_data, depth + 1) is None:
                     print("Error in file '" + filename + "': #include " + includeline + "could not be found!")
 
             line = fs.readline()
