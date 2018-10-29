@@ -74,7 +74,14 @@ public:
 	virtual String get_os_name() const { return "OSX"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
 
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const { return use_dmg() ? "dmg" : "zip"; }
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+		List<String> list;
+		if (use_dmg()) {
+			list.push_back("dmg");
+		}
+		list.push_back("zip");
+		return list;
+	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
@@ -334,7 +341,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	io2.opaque = &dst_f;
 	zipFile dst_pkg_zip = NULL;
 
-	if (use_dmg()) {
+	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
+	if (export_format == "dmg") {
 		// We're on OSX so we can export to DMG, but first we create our application bundle
 		tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".app");
 		print_line("Exporting to " + tmp_app_path_name);
@@ -429,7 +437,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
-			if (use_dmg()) {
+			if (export_format == "dmg") {
 				// write it into our application bundle
 				file = tmp_app_path_name + "/" + file;
 
@@ -491,7 +499,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		ep.step("Making PKG", 1);
 
-		if (use_dmg()) {
+		if (export_format == "dmg") {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 			Vector<SharedObject> shared_objects;
 			err = save_pack(p_preset, pack_path, &shared_objects);
