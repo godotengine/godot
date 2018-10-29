@@ -61,6 +61,7 @@ private:
 	TabContainer *sections;
 
 	MenuButton *add_preset;
+	Button *duplicate_preset;
 	Button *delete_preset;
 	ItemList *presets;
 
@@ -108,6 +109,7 @@ private:
 	void _name_changed(const String &p_string);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
+	void _duplicate_preset();
 	void _delete_preset();
 	void _delete_preset_confirm();
 

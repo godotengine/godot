@@ -50,6 +50,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_READY: {
+			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
 			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
 			connect("confirmed", this, "_export_pck_zip");
 			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
@@ -58,6 +59,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			EditorSettings::get_singleton()->set("interface/dialogs/export_bounds", get_rect());
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
 			delete_preset->set_icon(get_icon("Remove", "EditorIcons"));
 			Control *panel = custom_feature_display->get_parent_control();
 			if (panel)
@@ -171,6 +173,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		runnable->set_disabled(true);
 		parameters->edit(NULL);
 		presets->unselect_all();
+		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
 		sections->hide();
 		patches->clear();
@@ -188,6 +191,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	sections->show();
 
 	name->set_editable(true);
+	duplicate_preset->set_disabled(false);
 	delete_preset->set_disabled(false);
 	name->set_text(current->get_name());
 	runnable->set_disabled(false);
@@ -426,6 +430,61 @@ void ProjectExportDialog::_name_changed(const String &p_string) {
 
 	current->set_name(p_string);
 	_update_presets();
+}
+
+void ProjectExportDialog::_duplicate_preset() {
+
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	if (current.is_null())
+		return;
+
+	Ref<EditorExportPreset> preset = current->get_platform()->create_preset();
+	ERR_FAIL_COND(!preset.is_valid());
+
+	String name = current->get_name() + "" + itos(1);
+	bool make_runnable = true;
+	int attempt = 2;
+	while (true) {
+
+		bool valid = true;
+
+		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
+			Ref<EditorExportPreset> p = EditorExport::get_singleton()->get_export_preset(i);
+			if (p->get_platform() == preset->get_platform() && p->is_runnable()) {
+				make_runnable = false;
+			}
+			if (p->get_name() == name) {
+				valid = false;
+				break;
+			}
+		}
+
+		if (valid)
+			break;
+
+		attempt++;
+		name = current->get_name() + " " + itos(attempt);
+	}
+
+	preset->set_name(name);
+	if (make_runnable)
+		preset->set_runnable(make_runnable);
+	preset->set_export_filter(current->get_export_filter());
+	preset->set_include_filter(current->get_include_filter());
+	preset->set_exclude_filter(current->get_exclude_filter());
+	Vector<String> list = current->get_patches();
+	for (int i = 0; i < list.size(); i++) {
+		preset->add_patch(list[i]);
+	}
+	preset->set_custom_features(current->get_custom_features());
+
+	for (const List<PropertyInfo>::Element *E = current->get_properties().front(); E; E = E->next()) {
+		preset->set(E->get().name, current->get(E->get().name));
+	}
+
+	EditorExport::get_singleton()->add_export_preset(preset);
+	_update_presets();
+	_edit_preset(EditorExport::get_singleton()->get_export_preset_count() - 1);
 }
 
 void ProjectExportDialog::_delete_preset() {
@@ -789,6 +848,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_update_parameters", &ProjectExportDialog::_update_parameters);
 	ClassDB::bind_method("_runnable_pressed", &ProjectExportDialog::_runnable_pressed);
 	ClassDB::bind_method("_name_changed", &ProjectExportDialog::_name_changed);
+	ClassDB::bind_method("_duplicate_preset", &ProjectExportDialog::_duplicate_preset);
 	ClassDB::bind_method("_delete_preset", &ProjectExportDialog::_delete_preset);
 	ClassDB::bind_method("_delete_preset_confirm", &ProjectExportDialog::_delete_preset_confirm);
 	ClassDB::bind_method("get_drag_data_fw", &ProjectExportDialog::get_drag_data_fw);
@@ -842,6 +902,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets->set_drag_forwarding(this);
 	mc->add_child(presets);
 	presets->connect("item_selected", this, "_edit_preset");
+	duplicate_preset = memnew(ToolButton);
+	preset_hb->add_child(duplicate_preset);
+	duplicate_preset->connect("pressed", this, "_duplicate_preset");
 	delete_preset = memnew(ToolButton);
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect("pressed", this, "_delete_preset");
@@ -949,6 +1012,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	//disable by default
 	name->set_editable(false);
 	runnable->set_disabled(true);
+	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
 	sections->hide();
 	parameters->edit(NULL);
