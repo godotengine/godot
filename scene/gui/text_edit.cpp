@@ -1429,9 +1429,6 @@ void TextEdit::_notification(int p_what) {
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
-			if (raised_from_completion) {
-				VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 1);
-			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
@@ -1443,9 +1440,6 @@ void TextEdit::_notification(int p_what) {
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();
-			if (raised_from_completion) {
-				VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 0);
-			}
 		} break;
 	}
 }
@@ -5666,16 +5660,12 @@ void TextEdit::_confirm_completion() {
 
 void TextEdit::_cancel_code_hint() {
 
-	VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 0);
-	raised_from_completion = false;
 	completion_hint = "";
 	update();
 }
 
 void TextEdit::_cancel_completion() {
 
-	VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 0);
-	raised_from_completion = false;
 	if (!completion_active)
 		return;
 
@@ -5833,8 +5823,6 @@ void TextEdit::query_code_comple() {
 
 void TextEdit::set_code_hint(const String &p_hint) {
 
-	VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 1);
-	raised_from_completion = true;
 	completion_hint = p_hint;
 	completion_hint_offset = -0xFFFF;
 	update();
@@ -5842,8 +5830,6 @@ void TextEdit::set_code_hint(const String &p_hint) {
 
 void TextEdit::code_complete(const Vector<String> &p_strings, bool p_forced) {
 
-	VisualServer::get_singleton()->canvas_item_set_z_index(get_canvas_item(), 1);
-	raised_from_completion = true;
 	completion_strings = p_strings;
 	completion_active = true;
 	completion_forced = p_forced;
@@ -6345,8 +6331,6 @@ TextEdit::TextEdit() {
 	scrolling = false;
 	target_v_scroll = 0;
 	v_scroll_speed = 80;
-
-	raised_from_completion = false;
 
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
