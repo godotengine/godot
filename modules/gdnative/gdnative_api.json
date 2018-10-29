@@ -14,6 +14,183 @@
       "next": null,
       "api": [
         {
+          "name": "godot_color_to_abgr32",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_color *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_color_to_abgr64",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_color *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_color_to_argb64",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_color *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_color_to_rgba64",
+          "return_type": "godot_int",
+          "arguments": [
+            ["const godot_color *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_color_darkened",
+          "return_type": "godot_color",
+          "arguments": [
+            ["const godot_color *", "p_self"],
+            ["const godot_real", "p_amount"]
+          ]
+        },
+        {
+          "name": "godot_color_from_hsv",
+          "return_type": "godot_color",
+          "arguments": [
+            ["const godot_color *", "p_self"],
+            ["const godot_real", "p_h"],
+            ["const godot_real", "p_s"],
+            ["const godot_real", "p_v"],
+            ["const godot_real", "p_a"]
+          ]
+        },
+        {
+          "name": "godot_color_lightened",
+          "return_type": "godot_color",
+          "arguments": [
+            ["const godot_color *", "p_self"],
+            ["const godot_real", "p_amount"]
+          ]
+        },
+        {
+          "name": "godot_array_duplicate",
+          "return_type": "godot_array",
+          "arguments": [
+            ["const godot_array *", "p_self"],
+            ["const godot_bool", "p_deep"]
+          ]
+        },
+        {
+          "name": "godot_array_max",
+          "return_type": "godot_variant",
+          "arguments": [
+            ["const godot_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_array_min",
+          "return_type": "godot_variant",
+          "arguments": [
+            ["const godot_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_array_shuffle",
+          "return_type": "void",
+          "arguments": [
+            ["godot_array *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_basis_slerp",
+          "return_type": "godot_basis",
+          "arguments": [
+            ["const godot_basis *", "p_self"],
+            ["const godot_basis *", "p_b"],
+            ["const godot_real", "p_t"]
+          ]
+        },
+        {
+          "name": "godot_node_path_get_as_property_path",
+          "return_type": "godot_node_path",
+          "arguments": [
+            ["const godot_node_path *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_quat_set_axis_angle",
+          "return_type": "void",
+          "arguments": [
+            ["godot_quat *", "p_self"],
+            ["const godot_vector3 *", "p_axis"],
+            ["const godot_real", "p_angle"]
+          ]
+        },
+        {
+          "name": "godot_rect2_grow_individual",
+          "return_type": "godot_rect2",
+          "arguments": [
+            ["const godot_rect2 *", "p_self"],
+            ["const godot_real", "p_left"],
+            ["const godot_real", "p_top"],
+            ["const godot_real", "p_right"],
+            ["const godot_real", "p_bottom"]
+          ]
+        },
+        {
+          "name": "godot_rect2_grow_margin",
+          "return_type": "godot_rect2",
+          "arguments": [
+            ["const godot_rect2 *", "p_self"],
+            ["const godot_int", "p_margin"],
+            ["const godot_real", "p_by"]
+          ]
+        },
+        {
+          "name": "godot_rect2_abs",
+          "return_type": "godot_rect2",
+          "arguments": [
+            ["const godot_rect2 *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_string_dedent",
+          "return_type": "godot_string",
+          "arguments": [
+            ["const godot_string *", "p_self"]
+          ]
+        },
+        {
+          "name": "godot_string_trim_prefix",
+          "return_type": "godot_string",
+          "arguments": [
+            ["const godot_string *", "p_self"],
+            ["const godot_string *", "p_prefix"]
+          ]
+        },
+        {
+          "name": "godot_string_trim_suffix",
+          "return_type": "godot_string",
+          "arguments": [
+            ["const godot_string *", "p_self"],
+            ["const godot_string *", "p_suffix"]
+          ]
+        },
+        {
+          "name": "godot_string_rstrip",
+          "return_type": "godot_string",
+          "arguments": [
+            ["const godot_string *", "p_self"],
+            ["const godot_string *", "p_chars"]
+          ]
+        },
+        {
+          "name": "godot_string_rsplit",
+          "return_type": "godot_pool_string_array",
+          "arguments": [
+            ["const godot_string *", "p_self"],
+            ["const godot_string *", "p_divisor"],
+            ["const godot_bool", "p_allow_empty"],
+            ["const godot_int", "p_maxsplit"]
+          ]
+        },
+        {
           "name": "godot_basis_get_quat",
           "return_type": "godot_quat",
           "arguments": [

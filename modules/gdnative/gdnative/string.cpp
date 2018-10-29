@@ -1285,6 +1285,64 @@ godot_bool GDAPI godot_string_is_valid_ip_address(const godot_string *p_self) {
 	return self->is_valid_ip_address();
 }
 
+godot_string GDAPI godot_string_dedent(const godot_string *p_self) {
+	const String *self = (const String *)p_self;
+	godot_string result;
+	String return_value = self->dedent();
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_trim_prefix(const godot_string *p_self, const godot_string *p_prefix) {
+	const String *self = (const String *)p_self;
+	String *prefix = (String *)p_prefix;
+	godot_string result;
+	String return_value = self->trim_prefix(*prefix);
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_trim_suffix(const godot_string *p_self, const godot_string *p_suffix) {
+	const String *self = (const String *)p_self;
+	String *suffix = (String *)p_suffix;
+	godot_string result;
+	String return_value = self->trim_suffix(*suffix);
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_rstrip(const godot_string *p_self, const godot_string *p_chars) {
+	const String *self = (const String *)p_self;
+	String *chars = (String *)p_chars;
+	godot_string result;
+	String return_value = self->rstrip(*chars);
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_pool_string_array GDAPI godot_string_rsplit(const godot_string *p_self, const godot_string *p_divisor,
+		const godot_bool p_allow_empty, const godot_int p_maxsplit) {
+	const String *self = (const String *)p_self;
+	String *divisor = (String *)p_divisor;
+
+	godot_pool_string_array result;
+	memnew_placement(&result, PoolStringArray);
+	PoolStringArray *proxy = (PoolStringArray *)&result;
+	PoolStringArray::Write proxy_writer = proxy->write();
+	Vector<String> tmp_result = self->rsplit(*divisor, p_allow_empty, p_maxsplit);
+	proxy->resize(tmp_result.size());
+
+	for (int i = 0; i < tmp_result.size(); i++) {
+		proxy_writer[i] = tmp_result[i];
+	}
+
+	return result;
+}
+
 #ifdef __cplusplus
 }
 #endif

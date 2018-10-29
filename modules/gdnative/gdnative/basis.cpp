@@ -282,6 +282,15 @@ godot_basis GDAPI godot_basis_operator_multiply_scalar(const godot_basis *p_self
 	return raw_dest;
 }
 
+godot_basis GDAPI godot_basis_slerp(const godot_basis *p_self, const godot_basis *p_b, const godot_real p_t) {
+	godot_basis raw_dest;
+	Basis *dest = (Basis *)&raw_dest;
+	const Basis *self = (const Basis *)p_self;
+	const Basis *b = (const Basis *)p_b;
+	*dest = self->slerp(*b, p_t);
+	return raw_dest;
+}
+
 #ifdef __cplusplus
 }
 #endif
