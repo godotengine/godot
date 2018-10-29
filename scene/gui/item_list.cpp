@@ -36,6 +36,7 @@ void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, boo
 
 	Item item;
 	item.icon = p_texture;
+	item.icon_transposed = false;
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	item.text = p_item;
@@ -54,6 +55,7 @@ void ItemList::add_icon_item(const Ref<Texture> &p_item, bool p_selectable) {
 
 	Item item;
 	item.icon = p_item;
+	item.icon_transposed = false;
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	//item.text=p_item;
@@ -122,6 +124,22 @@ Ref<Texture> ItemList::get_item_icon(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
 
 	return items[p_idx].icon;
+}
+
+void ItemList::set_item_icon_transposed(int p_idx, const bool p_transposed) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	items.write[p_idx].icon_transposed = p_transposed;
+	update();
+	shape_changed = true;
+}
+
+bool ItemList::is_item_icon_transposed(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+
+	return items[p_idx].icon_transposed;
 }
 
 void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
@@ -416,6 +434,7 @@ void ItemList::set_icon_mode(IconMode p_mode) {
 	update();
 	shape_changed = true;
 }
+
 ItemList::IconMode ItemList::get_icon_mode() const {
 
 	return icon_mode;
@@ -435,10 +454,15 @@ Size2 ItemList::Item::get_icon_size() const {
 
 	if (icon.is_null())
 		return Size2();
-	if (icon_region.has_no_area())
-		return icon->get_size();
 
-	return icon_region.size;
+	Size2 size_result = Size2(icon_region.size).abs();
+	if (icon_transposed) {
+		Size2 size_tmp = size_result;
+		size_result.x = size_tmp.y;
+		size_result.y = size_tmp.x;
+	}
+
+	return size_result;
 }
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
@@ -1067,10 +1091,14 @@ void ItemList::_notification(int p_what) {
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
-				if (items[i].icon_region.has_no_area())
-					draw_texture_rect(items[i].icon, draw_rect, false, modulate);
-				else
-					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region, modulate);
+				// If the icon is transposed, we have to swith the size so that it is drawn correctly
+				if (items[i].icon_transposed) {
+					Size2 size_tmp = draw_rect.size;
+					draw_rect.size.x = size_tmp.y;
+					draw_rect.size.y = size_tmp.x;
+				}
+
+				draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region, modulate, items[i].icon_transposed);
 			}
 
 			if (items[i].tag_icon.is_valid()) {
@@ -1404,6 +1432,9 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &ItemList::set_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &ItemList::get_item_icon);
+
+	ClassDB::bind_method(D_METHOD("set_item_icon_transposed", "idx", "rect"), &ItemList::set_item_icon_transposed);
+	ClassDB::bind_method(D_METHOD("is_item_icon_transposed", "idx"), &ItemList::is_item_icon_transposed);
 
 	ClassDB::bind_method(D_METHOD("set_item_icon_region", "idx", "rect"), &ItemList::set_item_icon_region);
 	ClassDB::bind_method(D_METHOD("get_item_icon_region", "idx"), &ItemList::get_item_icon_region);

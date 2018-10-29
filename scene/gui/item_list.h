@@ -53,6 +53,7 @@ private:
 	struct Item {
 
 		Ref<Texture> icon;
+		bool icon_transposed;
 		Rect2i icon_region;
 		Color icon_modulate;
 		Ref<Texture> tag_icon;
@@ -132,6 +133,9 @@ public:
 
 	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
 	Ref<Texture> get_item_icon(int p_idx) const;
+
+	void set_item_icon_transposed(int p_idx, const bool transposed);
+	bool is_item_icon_transposed(int p_idx) const;
 
 	void set_item_icon_region(int p_idx, const Rect2 &p_region);
 	Rect2 get_item_icon_region(int p_idx) const;
