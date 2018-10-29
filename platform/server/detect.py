@@ -11,9 +11,15 @@ def get_name():
     return "Server"
 
 
+def get_program_suffix():
+    if (sys.platform == "darwin"):
+        return "osx"
+    return "x11"
+
+
 def can_build():
 
-    if (os.name != "posix" or sys.platform == "darwin"):
+    if (os.name != "posix" or sys.platform != "darwin"):
         return False
 
     return True
@@ -147,6 +153,10 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/server'])
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
+
+    if (platform.system() == "Darwin"):
+        env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-lz', '-framework', 'IOKit'])
+
     env.Append(LIBS=['pthread'])
 
     if (platform.system() == "Linux"):
