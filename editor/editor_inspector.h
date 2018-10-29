@@ -37,6 +37,21 @@
 
 class UndoRedo;
 
+class EditorDefaultClassValueCache : public Object {
+    GDCLASS(EditorDefaultClassValueCache,Object)
+
+    Map<StringName,Map<StringName,Variant> > default_values;
+
+    static EditorDefaultClassValueCache *singleton;
+public:
+
+    static EditorDefaultClassValueCache *get_singleton();
+
+    Variant get_default_value(const StringName& p_class,const StringName& p_property);
+    EditorDefaultClassValueCache();
+};
+
+
 class EditorProperty : public Container {
 
 	GDCLASS(EditorProperty, Container)

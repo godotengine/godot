@@ -36,6 +36,50 @@
 #include "multi_node_edit.h"
 #include "scene/resources/packed_scene.h"
 
+EditorDefaultClassValueCache *EditorDefaultClassValueCache::singleton = NULL;
+
+EditorDefaultClassValueCache *EditorDefaultClassValueCache::get_singleton() {
+	return singleton;
+}
+
+Variant EditorDefaultClassValueCache::get_default_value(const StringName &p_class, const StringName &p_property) {
+
+	if (!default_values.has(p_class)) {
+
+		default_values[p_class] = Map<StringName, Variant>();
+
+		if (ClassDB::can_instance(p_class)) {
+
+			Object *c = ClassDB::instance(p_class);
+			List<PropertyInfo> plist;
+			c->get_property_list(&plist);
+			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+
+					Variant v = c->get(E->get().name);
+					default_values[p_class][E->get().name] = v;
+				}
+			}
+			memdelete(c);
+		}
+	}
+
+	if (!default_values.has(p_class)) {
+		return Variant();
+	}
+
+	if (!default_values[p_class].has(p_property)) {
+		return Variant();
+	}
+
+	return default_values[p_class][p_property];
+}
+
+EditorDefaultClassValueCache::EditorDefaultClassValueCache() {
+	ERR_FAIL_COND(singleton != NULL);
+	singleton = this;
+}
+
 Size2 EditorProperty::get_minimum_size() const {
 
 	Size2 ms;
@@ -458,6 +502,12 @@ void EditorProperty::update_reload_status() {
 
 	bool has_reload = false;
 
+	if (EditorDefaultClassValueCache::get_singleton()) {
+		Variant default_value = EditorDefaultClassValueCache::get_singleton()->get_default_value(object->get_class_name(), property);
+		if (default_value != Variant() && default_value != object->get(property)) {
+			has_reload = true;
+		}
+	}
 	if (_is_instanced_node_with_original_property_different()) {
 		has_reload = true;
 	}
@@ -651,6 +701,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				Variant rev = object->call("property_get_revert", property);
 				emit_signal("property_changed", property, rev);
 				update_property();
+				return;
 			}
 
 			if (!object->get_script().is_null()) {
@@ -659,6 +710,16 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				if (scr->get_property_default_value(property, orig_value)) {
 					emit_signal("property_changed", property, orig_value);
 					update_property();
+					return;
+				}
+			}
+
+			if (EditorDefaultClassValueCache::get_singleton()) {
+				Variant default_value = EditorDefaultClassValueCache::get_singleton()->get_default_value(object->get_class_name(), property);
+				if (default_value != Variant()) {
+					emit_signal("property_changed", property, default_value);
+					update_property();
+					return;
 				}
 			}
 		}

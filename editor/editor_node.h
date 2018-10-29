@@ -271,6 +271,7 @@ private:
 
 	Ref<Theme> theme;
 
+    EditorDefaultClassValueCache *default_value_cache;
 	PopupMenu *recent_scenes;
 	SceneTreeDock *scene_tree_dock;
 	InspectorDock *inspector_dock;
