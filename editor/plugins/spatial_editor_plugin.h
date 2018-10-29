@@ -615,7 +615,7 @@ private:
 
 	void _instance_scene();
 	void _init_indicators();
-	void _init_gizmos_menu();
+	void _update_gizmos_menu();
 	void _init_grid();
 	void _finish_indicators();
 	void _finish_grid();
@@ -710,7 +710,8 @@ public:
 		return viewports[p_idx];
 	}
 
-	void register_gizmo_plugin(Ref<EditorSpatialGizmoPlugin> ref);
+	void add_gizmo_plugin(Ref<EditorSpatialGizmoPlugin> p_plugin);
+	void remove_gizmo_plugin(Ref<EditorSpatialGizmoPlugin> p_plugin);
 
 	void edit(Spatial *p_spatial);
 	void clear();
@@ -764,6 +765,7 @@ private:
 	HashMap<String, Vector<Ref<SpatialMaterial> > > materials;
 
 protected:
+	static void _bind_methods();
 	virtual bool has_gizmo(Spatial *p_spatial);
 	virtual Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);
 
@@ -773,18 +775,18 @@ public:
 	void create_handle_material(const String &p_name, bool p_billboard = false);
 	void add_material(const String &p_name, Ref<SpatialMaterial> p_material);
 
-	Ref<SpatialMaterial> get_material(const String &p_name, EditorSpatialGizmo *p_gizmo = NULL);
+	Ref<SpatialMaterial> get_material(const String &p_name, const Ref<EditorSpatialGizmo> &p_gizmo = Ref<EditorSpatialGizmo>());
 
-	virtual String get_name() const = 0;
+	virtual String get_name() const;
 	virtual bool can_be_hidden() const;
 	virtual bool is_selectable_when_hidden() const;
 
-	virtual void redraw(EditorSpatialGizmo *p_gizmo) {}
-	virtual String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const { return ""; }
-	virtual Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const { return Variant(); }
-	virtual void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point) {}
-	virtual void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false) {}
-	virtual bool is_gizmo_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const { return false; }
+	virtual void redraw(EditorSpatialGizmo *p_gizmo);
+	virtual String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
+	virtual Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
+	virtual void set_handle(EditorSpatialGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+	virtual bool is_gizmo_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
 
 	Ref<EditorSpatialGizmo> get_gizmo(Spatial *p_spatial);
 	void set_state(int p_state);

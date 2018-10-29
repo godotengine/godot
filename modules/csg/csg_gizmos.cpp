@@ -356,5 +356,5 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 EditorPluginCSG::EditorPluginCSG(EditorNode *p_editor) {
 	Ref<CSGShapeSpatialGizmoPlugin> gizmo_plugin = Ref<CSGShapeSpatialGizmoPlugin>(memnew(CSGShapeSpatialGizmoPlugin));
-	SpatialEditor::get_singleton()->register_gizmo_plugin(gizmo_plugin);
+	SpatialEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }
