@@ -563,7 +563,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 
 	Ref<PathSpatialGizmoPlugin> gizmo_plugin;
 	gizmo_plugin.instance();
-	SpatialEditor::get_singleton()->register_gizmo_plugin(gizmo_plugin);
+	SpatialEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	sep = memnew(VSeparator);
 	sep->hide();

@@ -110,6 +110,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_spatial_gizmo_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="EditorSpatialGizmoPlugin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_tool_menu_item">
 			<return type="void">
 			</return>
@@ -390,6 +398,14 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="scene_importer" type="EditorSceneImporter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_spatial_gizmo_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="plugin" type="EditorSpatialGizmoPlugin">
 			</argument>
 			<description>
 			</description>
