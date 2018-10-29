@@ -1,0 +1,9 @@
+name: godot-dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - clangdev=6.0.0=default_0
+  - python=3.6
+  - scons=3.0.1=py36_1
+
