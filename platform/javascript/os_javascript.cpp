@@ -862,6 +862,24 @@ void OS_JavaScript::finalize() {
 
 // Miscellaneous
 
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+
+	ERR_EXPLAIN("OS::execute() is not available on the HTML5 platform");
+	ERR_FAIL_V(ERR_UNAVAILABLE);
+}
+
+Error OS_JavaScript::kill(const ProcessID &p_pid) {
+
+	ERR_EXPLAIN("OS::kill() is not available on the HTML5 platform");
+	ERR_FAIL_V(ERR_UNAVAILABLE);
+}
+
+int OS_JavaScript::get_process_id() const {
+
+	ERR_EXPLAIN("OS::get_process_id() is not available on the HTML5 platform");
+	ERR_FAIL_V(0);
+}
+
 extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int p_notification) {
 
 	if (p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || p_notification == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
