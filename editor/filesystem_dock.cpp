@@ -353,7 +353,7 @@ void FileSystemDock::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			if (tree->is_visible_in_tree()) {
+			if (is_visible_in_tree()) {
 				_update_display_mode(true);
 			}
 		} break;
