@@ -133,6 +133,10 @@ public:
 	void run_async();
 	bool main_loop_iterate();
 
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
+	virtual Error kill(const ProcessID &p_pid);
+	virtual int get_process_id() const;
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual void set_window_title(const String &p_title);
 	virtual void set_icon(const Ref<Image> &p_icon);

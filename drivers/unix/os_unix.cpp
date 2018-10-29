@@ -288,6 +288,11 @@ uint64_t OS_Unix::get_ticks_usec() const {
 
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
 
+#ifdef __EMSCRIPTEN__
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_JavaScript.
+	ERR_FAIL_V(ERR_BUG);
+#else
 	if (p_blocking && r_pipe) {
 
 		String argss;
@@ -354,6 +359,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	}
 
 	return OK;
+#endif
 }
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
