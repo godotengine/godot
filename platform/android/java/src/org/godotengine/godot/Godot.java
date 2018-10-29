@@ -279,7 +279,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
-		mView = new GodotView(getApplication(), io, use_gl3, use_32_bits, use_debug_opengl,this);
+		mView = new GodotView(getApplication(), io, use_gl3, use_32_bits, use_debug_opengl, this);
 		layout.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);

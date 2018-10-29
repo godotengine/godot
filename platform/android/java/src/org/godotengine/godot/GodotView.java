@@ -86,7 +86,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	private Godot activity;
 
 	private InputManagerCompat mInputManager;
-	public GodotView(Context context, GodotIO p_io, boolean p_use_gl3, boolean p_use_32_bits, boolean p_use_debug_opengl,Godot p_activity) {
+	public GodotView(Context context, GodotIO p_io, boolean p_use_gl3, boolean p_use_32_bits, boolean p_use_debug_opengl, Godot p_activity) {
 		super(context);
 		ctx = context;
 		io = p_io;
@@ -434,9 +434,9 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		setRenderer(new Renderer());
 	}
 
-	private static final int  _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
-	private static final int  _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR= 0x00000001;
-	
+	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
+	private static final int _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR = 0x00000001;
+
 	private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
 		private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 		public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
@@ -448,9 +448,9 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			checkEglError("Before eglCreateContext", egl);
 			EGLContext context;
 			if (use_debug_opengl) {
-				int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2,_EGL_CONTEXT_FLAGS_KHR,_EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-				int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3,_EGL_CONTEXT_FLAGS_KHR,_EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-				context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl3 ? attrib_list3 : attrib_list2);			
+				int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+				int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
+				context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl3 ? attrib_list3 : attrib_list2);
 			} else {
 				int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
 				int[] attrib_list3 = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
