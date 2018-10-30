@@ -3613,7 +3613,7 @@
 				If [code]true[/code] sets the viewport active, else sets it inactive.
 			</description>
 		</method>
-		<method name="viewport_set_canvas_layer">
+		<method name="viewport_set_canvas_stacking">
 			<return type="void">
 			</return>
 			<argument index="0" name="viewport" type="RID">
@@ -3622,8 +3622,11 @@
 			</argument>
 			<argument index="2" name="layer" type="int">
 			</argument>
+			<argument index="3" name="sublayer" type="int">
+			</argument>
 			<description>
-				Sets the renderlayer for a viewport's canvas.
+				Sets the stacking order for a viewport's canvas.
+				[code]layer[/code] is the actual canvas layer, while [code]sublayer[/code] specifies the stacking order of the canvas among those in the same layer.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_transform">
