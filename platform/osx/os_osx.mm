@@ -331,7 +331,8 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 	get_mouse_pos(
 			[OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream],
 			[OS_OSX::singleton->window_view backingScaleFactor]);
-	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
+	if (OS_OSX::singleton->input)
+		OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
 
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
