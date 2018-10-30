@@ -238,6 +238,7 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+__pycache__/
 
 # KDE
 .directory
