@@ -118,6 +118,7 @@ public:
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
 
 	GDMonoClass *get_parent_class();
+	GDMonoClass *get_native_base();
 
 #ifdef TOOLS_ENABLED
 	Vector<MonoClassField *> get_enum_fields();
@@ -130,7 +131,7 @@ public:
 	MonoObject *get_attribute(GDMonoClass *p_attr_class);
 
 	void fetch_attributes();
-	void fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base);
+	void fetch_methods_with_godot_api_checks();
 
 	GDMonoMethod *get_method(const StringName &p_name, int p_params_count = 0);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method);

@@ -372,19 +372,9 @@ GDMonoClass *type_get_proxy_class(const StringName &p_type) {
 }
 
 GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
-	GDMonoClass *klass = p_class;
+	WARN_DEPRECATED;
 
-	do {
-		const GDMonoAssembly *assembly = klass->get_assembly();
-		if (assembly == GDMono::get_singleton()->get_core_api_assembly())
-			return klass;
-#ifdef TOOLS_ENABLED
-		if (assembly == GDMono::get_singleton()->get_editor_api_assembly())
-			return klass;
-#endif
-	} while ((klass = klass->get_parent_class()) != NULL);
-
-	return NULL;
+	return p_class->get_native_base();
 }
 
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
