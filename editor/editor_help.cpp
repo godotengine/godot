@@ -733,6 +733,21 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop(); //cell
 }
 
+void EditorHelp::_add_site_links(const String &p_term, const String &p_language_code) {
+
+	class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
+	class_desc->add_text("[");
+	class_desc->push_meta("http://docs.godotengine.org/" + p_language_code + "/latest/search.html?q=" + p_term + "&check_keywords=yes&area=default");
+	class_desc->add_text("Docs");
+	class_desc->pop();
+	class_desc->add_text("|");
+	class_desc->push_meta("https://godotengine.org/qa/search?q=" + p_term);
+	class_desc->add_text("Q&A");
+	class_desc->pop();
+	class_desc->add_text("]");
+	class_desc->pop();
+}
+
 Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 	if (!doc->class_list.has(p_class))
@@ -764,6 +779,8 @@ void EditorHelp::_update_doc() {
 
 	_init_colors();
 
+	String locale = TranslationServer::get_singleton()->get_locale();
+
 	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
 
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
@@ -781,6 +798,7 @@ void EditorHelp::_update_doc() {
 	class_desc->pop();
 	class_desc->pop();
 	class_desc->pop();
+	_add_site_links(edited_class, locale);
 	class_desc->add_newline();
 
 	// Inheritance tree
@@ -1122,6 +1140,7 @@ void EditorHelp::_update_doc() {
 			class_desc->add_text(cd.signals[i].arguments.size() ? " )" : ")");
 			class_desc->pop();
 			class_desc->pop(); // end monofont
+			_add_site_links(cd.signals[i].name, locale);
 			if (cd.signals[i].description != "") {
 
 				class_desc->push_font(doc_font);
@@ -1216,6 +1235,7 @@ void EditorHelp::_update_doc() {
 					_add_text(enum_list[i].value);
 					class_desc->pop();
 					class_desc->pop();
+					_add_site_links(enum_list[i].name, locale);
 					if (enum_list[i].description != "") {
 						class_desc->push_font(doc_font);
 						//class_desc->add_text("  ");
@@ -1283,6 +1303,7 @@ void EditorHelp::_update_doc() {
 				class_desc->pop();
 
 				class_desc->pop();
+				_add_site_links(constants[i].name, locale);
 				if (constants[i].description != "") {
 					class_desc->push_font(doc_font);
 					class_desc->push_indent(1);
@@ -1437,7 +1458,9 @@ void EditorHelp::_update_doc() {
 
 			class_desc->pop(); // table
 
-			class_desc->add_newline();
+			_add_site_links(cd.properties[i].name, locale);
+
+			//class_desc->add_newline();
 
 			class_desc->push_color(text_color);
 			class_desc->push_font(doc_font);
@@ -1479,10 +1502,13 @@ void EditorHelp::_update_doc() {
 			_add_method(methods[i], false);
 			class_desc->pop();
 
-			class_desc->add_newline();
+			_add_site_links(methods[i].name, locale);
+
+			//class_desc->add_newline();
 			class_desc->push_color(text_color);
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
+
 			if (methods[i].description.strip_edges() != String()) {
 				_add_text(methods[i].description);
 			} else {
