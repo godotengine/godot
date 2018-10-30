@@ -19,7 +19,7 @@ def get_program_suffix():
 
 def can_build():
 
-    if (os.name != "posix" or sys.platform != "darwin"):
+    if (os.name != "posix"):
         return False
 
     return True
