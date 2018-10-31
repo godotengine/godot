@@ -9,12 +9,17 @@ import platform_x11_builders
 common_linux = [
     "x11/context_gl_x11.cpp",
     "x11/os_x11.cpp",
+    "wayland/context_egl_wayland.cpp",
+    "wayland/os_wayland.cpp",
     "crash_handler_x11.cpp",
     "os_linux.cpp",
     "key_mapping_x11.cpp",
     "joypad_linux.cpp",
     "power_x11.cpp",
+    "wayland/wayland_protocol/xdg-shell.c"
 ]
+
+env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL"])
 
 prog = env.add_program('#bin/godot', ['godot_linux.cpp'] + common_linux)
 
