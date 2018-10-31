@@ -35,6 +35,7 @@
 #include "core/os/input.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
+#include "os_linux.h"
 #include "power_x11.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
