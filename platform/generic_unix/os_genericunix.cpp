@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/os/displaydriver.h"
+//#include "core/os/displaydriver.h"
 #include "os_genericunix.h"
 
 #include "core/print_string.h"
@@ -74,15 +74,18 @@ void OS_GenericUnix::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-Error OS_GenericUnix::initialize_os(int p_audio_driver) {
+Error OS_GenericUnix::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	args = OS::get_singleton()->get_cmdline_args();
-	last_timestamp = 0;
 
 	AudioDriverManager::initialize(p_audio_driver);
 
 	_ensure_user_data_dir();
 
 	power_manager = memnew(PowerUnix);
+	Error err = initialize_display(p_desired, p_video_driver);
+	if (err != OK) {
+		return err;
+	}
 
 	return OK;
 }
@@ -102,14 +105,14 @@ String OS_GenericUnix::get_unique_id() const {
 	return machine_id;
 }
 
-void OS_GenericUnix::finalize_os() {
-
+void OS_GenericUnix::finalize() {
+	finalize_display();
 	args.clear();
 }
 
 String OS_GenericUnix::get_name() {
 
-	return "X11";
+	return "Linux";
 }
 
 Error OS_GenericUnix::shell_open(String p_uri) {
@@ -129,7 +132,7 @@ Error OS_GenericUnix::shell_open(String p_uri) {
 
 bool OS_GenericUnix::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc" || p_feature == "bptc";
+	return p_feature == "pc";
 }
 
 String OS_GenericUnix::get_config_path() const {
@@ -249,7 +252,7 @@ void OS_GenericUnix::run() {
 
 	while (!force_quit) {
 
-		DisplayDriver::get_singleton()->process_events();
+		process_events();
 		// #ifdef JOYDEV_ENABLED
 		//		joypad->process_joypads();
 		// #endif

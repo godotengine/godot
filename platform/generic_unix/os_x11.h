@@ -33,18 +33,11 @@
 
 #include "context_gl_x11.h"
 #include "core/os/input.h"
-#include "crash_handler_x11.h"
-#include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/midi_driver_alsamidi.h"
-#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
-#include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "os_genericunix.h"
-#include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
@@ -80,7 +73,7 @@ typedef struct _xrr_monitor_info {
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class OS_X11 : public OS_Unix {
+class OS_X11 : public OS_GenericUnix {
 
 	Atom wm_delete;
 	Atom xdnd_enter;
@@ -150,10 +143,9 @@ class OS_X11 : public OS_Unix {
 	Point2i center;
 
 	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
-	void process_xevents();
+	virtual void process_events();
 	virtual void delete_main_loop();
 
-	bool force_quit;
 	bool minimized;
 	bool window_has_focus;
 	bool do_mouse_warp;
@@ -171,24 +163,10 @@ class OS_X11 : public OS_Unix {
 	JoypadLinux *joypad;
 #endif
 
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef ALSAMIDI_ENABLED
-	MIDIDriverALSAMidi driver_alsamidi;
-#endif
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
-#endif
-
-	PowerX11 *power_manager;
-
 	bool layered_window;
-
-	CrashHandler crash_handler;
-
+	//
+	// 	CrashHandler crash_handler;
+	//
 	int video_driver_index;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);
@@ -204,18 +182,19 @@ class OS_X11 : public OS_Unix {
 
 protected:
 	virtual int get_current_video_driver() const;
+	virtual int get_video_driver_count() const;
+	virtual const char *get_video_driver_name(int p_driver) const;
 
-	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
-
-	virtual void set_main_loop(MainLoop *p_main_loop);
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	void _window_changed(XEvent *event);
 
 	bool is_window_maximize_allowed();
 
 public:
+	virtual void set_main_loop(MainLoop *p_main_loop);
+
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
@@ -238,17 +217,11 @@ public:
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
 
+	virtual bool has_touchscreen_ui_hint() const;
+
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
-
-	virtual String get_config_path() const;
-	virtual String get_data_path() const;
-	virtual String get_cache_path() const;
-
-	virtual String get_system_dir(SystemDir p_dir) const;
-
-	virtual Error shell_open(String p_uri);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
@@ -286,36 +259,22 @@ public:
 	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
 
-	virtual String get_unique_id() const;
-
 	virtual void move_window_to_foreground();
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device) const;
 
-	virtual void set_context(int p_context);
-
 	virtual void _set_use_vsync(bool p_enable);
-	//virtual bool is_vsync_enabled() const;
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-
-	virtual bool _check_internal_feature_support(const String &p_feature);
+	virtual bool is_vsync_enabled() const;
 
 	virtual void force_process_input();
-	void run();
-
-	void disable_crash_handler();
-	bool is_disable_crash_handler() const;
-
-	virtual Error move_to_trash(const String &p_path);
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
 	void update_real_mouse_position();
+
+	virtual void set_context(int p_context);
 	OS_X11();
 };
 

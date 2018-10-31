@@ -95,7 +95,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 #ifdef __APPLE__
 	power_manager = memnew(PowerOSX);
 #else
-	power_manager = memnew(PowerX11);
+	power_manager = memnew(PowerUnix);
 #endif
 
 	_ensure_user_data_dir();
