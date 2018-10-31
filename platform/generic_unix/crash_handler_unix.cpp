@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  crash_handler_x11.cpp                                                */
+/*  crash_handler_unix.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "crash_handler_x11.h"
+#include "crash_handler_unix.h"
 
 #include "core/os/os.h"
 #include "core/project_settings.h"

@@ -6,5 +6,5 @@ Import('env_gdnative')
 env_gdnative.add_source_files(env.modules_sources, '*.cpp')
 env_gdnative.Append(CPPFLAGS=['-DGDAPI_BUILT_IN'])
 
-if "platform" in env and env["platform"] in ["x11", "iphone"]:
+if "platform" in env and env["platform"] in ["generic_unix", "iphone"]:
     env.Append(LINKFLAGS=["-rdynamic"])

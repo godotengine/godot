@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  power_unix.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,4 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_x11_exporter();
+#ifndef POWER_UNIX_H
+#define POWER_UNIX_H
+
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+
+class PowerUnix {
+
+private:
+	int nsecs_left;
+	int percent_left;
+	OS::PowerState power_state;
+
+	FileAccessRef open_power_file(const char *base, const char *node, const char *key);
+	bool read_power_file(const char *base, const char *node, const char *key, char *buf, size_t buflen);
+	bool make_proc_acpi_key_val(char **_ptr, char **_key, char **_val);
+	void check_proc_acpi_battery(const char *node, bool *have_battery, bool *charging);
+	void check_proc_acpi_ac_adapter(const char *node, bool *have_ac);
+	bool GetPowerInfo_Linux_proc_acpi();
+	bool next_string(char **_ptr, char **_str);
+	bool int_string(char *str, int *val);
+	bool GetPowerInfo_Linux_proc_apm();
+	bool GetPowerInfo_Linux_sys_class_power_supply();
+	bool UpdatePowerInfo();
+
+public:
+	PowerUnix();
+	virtual ~PowerUnix();
+
+	OS::PowerState get_power_state();
+	int get_power_seconds_left();
+	int get_power_percent_left();
+};
+
+#endif // POWER_UNIX_H

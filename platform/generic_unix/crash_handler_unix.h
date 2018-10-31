@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  crash_handler_x11.h                                                  */
+/*  crash_handler_unix.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CRASH_HANDLER_X11_H
-#define CRASH_HANDLER_X11_H
+#ifndef CRASH_HANDLER_UNIX_H
+#define CRASH_HANDLER_UNIX_H
 
 class CrashHandler {
 
@@ -45,4 +45,4 @@ public:
 	~CrashHandler();
 };
 
-#endif // CRASH_HANDLER_X11_H
+#endif // CRASH_HANDLER_UNIX_H

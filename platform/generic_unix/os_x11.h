@@ -40,7 +40,7 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
-#include "power_x11.h"
+#include "os_genericunix.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"

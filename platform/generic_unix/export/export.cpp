@@ -31,27 +31,27 @@
 #include "export.h"
 
 #include "editor/editor_export.h"
-#include "platform/x11/logo.gen.h"
+#include "platform/generic_unix/logo.gen.h"
 #include "scene/resources/texture.h"
 
-void register_x11_exporter() {
+void register_generic_unix_exporter() {
 
 	Ref<EditorExportPlatformPC> platform;
 	platform.instance();
 
-	Ref<Image> img = memnew(Image(_x11_logo));
+	Ref<Image> img = memnew(Image(_generic_unix_logo));
 	Ref<ImageTexture> logo;
 	logo.instance();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
-	platform->set_name("Linux/X11");
+	platform->set_name("Unix");
 	platform->set_extension("x86");
 	platform->set_extension("x86_64", "binary_format/64_bits");
-	platform->set_release_32("linux_x11_32_release");
-	platform->set_debug_32("linux_x11_32_debug");
-	platform->set_release_64("linux_x11_64_release");
-	platform->set_debug_64("linux_x11_64_debug");
-	platform->set_os_name("X11");
+	platform->set_release_32("generic_unix_32_release");
+	platform->set_debug_32("generic_unix_32_debug");
+	platform->set_release_64("generic_unix_64_release");
+	platform->set_debug_64("generic_unix_64_debug");
+	platform->set_os_name("Unix");
 	platform->set_chmod_flags(0755);
 
 	EditorExport::get_singleton()->add_export_platform(platform);

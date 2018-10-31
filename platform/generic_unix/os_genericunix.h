@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  os_server.h                                                          */
+/*  os_genericunix.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,101 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_SERVER_H
-#define OS_SERVER_H
+#ifndef OS_GENERICUNIX_H
+#define OS_GENERICUNIX_H
 
-#include "drivers/dummy/texture_loader_dummy.h"
+#include "crash_handler_unix.h"
+#include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
-#ifdef __APPLE__
-#include "platform/osx/crash_handler_osx.h"
-#include "platform/osx/power_osx.h"
-#include "platform/osx/semaphore_osx.h"
-#else
-#include "platform/generic_unix/crash_handler_unix.h"
-#include "platform/generic_unix/power_unix.h"
-#endif
+#include "power_unix.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
-
-#undef CursorShape
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class OS_Server : public OS_Unix {
+class OS_GenericUnix : public OS_Unix {
 
-	VisualServer *visual_server;
-	VideoMode current_videomode;
 	List<String> args;
-	MainLoop *main_loop;
+	char *xmbstring;
+	int xmblen;
+	unsigned long last_timestamp;
 
-	bool grab;
-
-	virtual void delete_main_loop();
 	IP_Unix *ip_unix;
 
 	bool force_quit;
+	bool minimized;
+	bool window_has_focus;
+	bool do_mouse_warp;
 
-	InputDefault *input;
-
-#ifdef __APPLE__
-	PowerOSX *power_manager;
-#else
-	PowerUnix *power_manager;
+#ifdef ALSA_ENABLED
+	AudioDriverALSA driver_alsa;
 #endif
+
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
+	PowerUnix *power_manager;
 
 	CrashHandler crash_handler;
 
-	int video_driver_index;
-
-	Ref<ResourceFormatDummyTexture> resource_loader_dummy;
+	int audio_driver_index;
+	unsigned int capture_idle;
 
 protected:
-	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
-	virtual int get_current_video_driver() const;
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
-
-	virtual void set_main_loop(MainLoop *p_main_loop);
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
 
 public:
 	virtual String get_name();
-
-	virtual void set_cursor_shape(CursorShape p_shape);
-	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
-
-	virtual void set_mouse_show(bool p_show);
-	virtual void set_mouse_grab(bool p_grab);
-	virtual bool is_mouse_grab_enabled() const;
-	virtual Point2 get_mouse_position() const;
-	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String &p_title);
-
-	virtual MainLoop *get_main_loop() const;
-
-	virtual bool can_draw() const;
-
-	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
-	virtual VideoMode get_video_mode(int p_screen = 0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
-
-	virtual Size2 get_window_size() const;
-
-	virtual void move_window_to_foreground();
-
-	void run();
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
-	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual String get_config_path() const;
 	virtual String get_data_path() const;
@@ -130,10 +87,26 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir) const;
 
+	virtual Error shell_open(String p_uri);
+
+	virtual String get_unique_id() const;
+
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+
+	virtual OS::PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
+
+	virtual bool _check_internal_feature_support(const String &p_feature);
+
+	void run();
+
 	void disable_crash_handler();
 	bool is_disable_crash_handler() const;
 
-	OS_Server();
+	virtual Error move_to_trash(const String &p_path);
+
+	OS_GenericUnix();
 };
 
 #endif

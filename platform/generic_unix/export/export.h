@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_x11.cpp                                                        */
+/*  export.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,4 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include <limits.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include "main/main.h"
-#include "os_x11.h"
-
-int main(int argc, char *argv[]) {
-
-	OS_X11 os;
-
-	setlocale(LC_CTYPE, "");
-
-	char *cwd = (char *)malloc(PATH_MAX);
-	char *ret = getcwd(cwd, PATH_MAX);
-
-	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
-	if (err != OK) {
-		free(cwd);
-		return 255;
-	}
-
-	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
-	Main::cleanup();
-
-	if (ret)
-		chdir(cwd);
-	free(cwd);
-
-	return os.get_exit_code();
-}
+void register_generic_unix_exporter();
