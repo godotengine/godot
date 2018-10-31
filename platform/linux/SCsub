@@ -7,8 +7,8 @@ from platform_methods import run_in_subprocess
 import platform_x11_builders
 
 common_linux = [
-    "context_gl_x11.cpp",
-    "os_x11.cpp",
+    "x11/context_gl_x11.cpp",
+    "x11/os_x11.cpp",
     "crash_handler_x11.cpp",
     "os_linux.cpp",
     "key_mapping_x11.cpp",
