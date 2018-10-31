@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/os/displaydriver.h"
-#include "os_freedesktop.h"
+//#include "core/os/displaydriver.h"
+#include "os_linux.h"
 
 #include "core/print_string.h"
 #include "errno.h"
@@ -74,7 +74,7 @@ void OS_Linux::initialize_core() {
 	OS_Unix::initialize_core();
 }
 
-Error OS_Linux::initialize_os(int p_audio_driver) {
+Error OS_Linux::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	args = OS::get_singleton()->get_cmdline_args();
 	last_timestamp = 0;
 
@@ -83,6 +83,10 @@ Error OS_Linux::initialize_os(int p_audio_driver) {
 	_ensure_user_data_dir();
 
 	power_manager = memnew(PowerX11);
+	Error err = initialize_display(p_desired, p_video_driver);
+	if (err != OK) {
+		return err;
+	}
 
 	return OK;
 }
@@ -102,14 +106,14 @@ String OS_Linux::get_unique_id() const {
 	return machine_id;
 }
 
-void OS_Linux::finalize_os() {
-
+void OS_Linux::finalize() {
+	finalize_display();
 	args.clear();
 }
 
 String OS_Linux::get_name() {
 
-	return "X11";
+	return "Linux";
 }
 
 Error OS_Linux::shell_open(String p_uri) {
@@ -249,7 +253,7 @@ void OS_Linux::run() {
 
 	while (!force_quit) {
 
-		DisplayDriver::get_singleton()->process_events();
+		process_events();
 		// #ifdef JOYDEV_ENABLED
 		//		joypad->process_joypads();
 		// #endif

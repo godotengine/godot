@@ -75,8 +75,10 @@ protected:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize_core();
-	virtual Error initialize_os(int p_audio_driver);
-	virtual void finalize_os();
+	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver) = 0;
+	virtual void finalize();
+	virtual void finalize_display() = 0;
 
 public:
 	virtual String get_name();
@@ -105,7 +107,7 @@ public:
 	bool is_disable_crash_handler() const;
 
 	virtual Error move_to_trash(const String &p_path);
-
+	virtual void process_events() = 0;
 	OS_Linux();
 };
 
