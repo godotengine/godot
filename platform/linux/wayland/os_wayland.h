@@ -38,6 +38,8 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
+#include <xkbcommon/xkbcommon.h>
+
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
 #include <wayland-egl.h> // Wayland EGL MUST be included before EGL headers
@@ -45,12 +47,21 @@
 
 #include "context_egl_wayland.h"
 #include "wayland_protocol/xdg-shell.h"
+
 #undef CursorShape
 
 class OS_Wayland : public OS_Linux {
 private:
+	struct ModifierState {
+		bool alt;
+		bool ctrl;
+		bool meta;
+		bool shift;
+	};
 	// Display privat members
-	Vector2 _mouse_pos;
+	ModifierState _mod_state = {
+		false, false, false, false
+	};
 	// godot private members
 	MainLoop *main_loop;
 	InputDefault *input;
@@ -61,7 +72,14 @@ private:
 	//display private functions
 	void _get_server_refs();
 
-	//wl private members
+	static void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
+	static void _set_mouse_values_for_event(Ref<InputEventMouse> ev);
+
+	// xkb
+	struct xkb_context *xkbcontext;
+	struct xkb_keymap *xkbkeymap = NULL;
+	struct xkb_state *xkbstate = NULL;
+	// wl private members
 	struct wl_compositor *compositor = NULL;
 
 	struct wl_display *display = NULL;

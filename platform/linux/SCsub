@@ -19,7 +19,7 @@ common_linux = [
     "wayland/wayland_protocol/xdg-shell.c"
 ]
 
-env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL"])
+env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL", "xkbcommon"])
 
 prog = env.add_program('#bin/godot', ['godot_linux.cpp'] + common_linux)
 

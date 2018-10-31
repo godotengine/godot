@@ -31,8 +31,11 @@
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+// #include "key_mapping_x11.cpp"
 #include "servers/visual/visual_server_raster.h"
+
 #include <linux/input-event-codes.h>
+#include <sys/mman.h>
 //
 //
 // Wayland events
@@ -103,6 +106,23 @@ void OS_Wayland::seat_capabilities_handler(void *data, struct wl_seat *wl_seat, 
 		print_verbose("touch!!!");
 	}
 }
+// even helper functions
+void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+	if (xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0) {
+		print_verbose("control active");
+	}
+	ev->set_alt(d_wl->_mod_state.alt);
+	ev->set_control(d_wl->_mod_state.ctrl);
+	ev->set_shift(d_wl->_mod_state.shift);
+	ev->set_metakey(d_wl->_mod_state.meta);
+}
+void OS_Wayland::_set_mouse_values_for_event(Ref<InputEventMouse> ev) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+	ev->set_position(d_wl->input->get_mouse_position());
+	ev->set_global_position(d_wl->input->get_mouse_position());
+}
+
 void OS_Wayland::pointer_enter_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	print_verbose("pointer entered");
 }
@@ -111,23 +131,30 @@ void OS_Wayland::pointer_leave_handler(void *data, struct wl_pointer *wl_pointer
 }
 void OS_Wayland::pointer_motion_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	OS_Wayland *d_wl = DISPLAY_WL;
+
+	Vector2 old_pos = d_wl->input->get_mouse_position();
+	Vector2 new_pos = Vector2((float)wl_fixed_to_double(surface_x), (float)wl_fixed_to_double(surface_y));
+	d_wl->input->set_mouse_position(new_pos);
+
 	Ref<InputEventMouseMotion> mm;
 	mm.instance();
-	float x = (float)wl_fixed_to_double(surface_x);
-	float y = (float)wl_fixed_to_double(surface_y);
-	Vector2 myVec = Vector2();
-	myVec.x = x;
-	myVec.y = y;
-	d_wl->_mouse_pos = myVec;
-	mm->set_position(d_wl->_mouse_pos);
-	mm->set_global_position(d_wl->_mouse_pos);
+	_set_modifier_for_event(mm);
+	_set_mouse_values_for_event(mm);
+
+	mm->set_speed(d_wl->input->get_last_mouse_speed());
+	mm->set_relative(new_pos - old_pos);
 	d_wl->input->parse_input_event(mm);
 }
 void OS_Wayland::pointer_button_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
 	OS_Wayland *d_wl = DISPLAY_WL;
+
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
+	_set_modifier_for_event(mb);
+	_set_mouse_values_for_event(mb);
+
 	mb->set_pressed(state == WL_POINTER_BUTTON_STATE_PRESSED);
+	print_verbose(state == WL_POINTER_BUTTON_STATE_PRESSED ? "pressed" : "release");
 	switch (button) {
 		case BTN_LEFT:
 			mb->set_button_index(BUTTON_LEFT);
@@ -141,11 +168,31 @@ void OS_Wayland::pointer_button_handler(void *data, struct wl_pointer *wl_pointe
 		default:
 			break;
 	}
-	mb->set_position(d_wl->_mouse_pos);
-	mb->set_global_position(d_wl->_mouse_pos);
 	d_wl->input->parse_input_event(mb);
 }
 void OS_Wayland::pointer_axis_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+
+	Ref<InputEventMouseButton> mb;
+	mb.instance();
+	_set_modifier_for_event(mb);
+	_set_mouse_values_for_event(mb);
+	mb->set_pressed(true);
+	mb->set_factor(abs((float)wl_fixed_to_double(value)));
+	switch (axis) {
+		case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+			mb->set_button_index(value > 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT);
+			break;
+		case WL_POINTER_AXIS_VERTICAL_SCROLL:
+			mb->set_button_index(value > 0 ? BUTTON_WHEEL_DOWN : BUTTON_WHEEL_UP);
+			break;
+	}
+	d_wl->input->parse_input_event(mb);
+
+	// Maybe needed
+	// Ref<InputEventMouseButton> mb_release = mb->duplicate();
+	// mb_release->set_pressed(false);
+	// d_wl->input->parse_input_event(mb);
 }
 void OS_Wayland::pointer_frame_handler(void *data, struct wl_pointer *wl_pointer) {
 }
@@ -157,14 +204,49 @@ void OS_Wayland::pointer_axis_discrete_handler(void *data, struct wl_pointer *wl
 }
 
 void OS_Wayland::keyboard_keymap_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+
+	char *keymap_string = (char *)mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+	xkb_keymap_unref(d_wl->xkbkeymap);
+	d_wl->xkbkeymap = xkb_keymap_new_from_string(d_wl->xkbcontext, keymap_string, XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+	munmap(keymap_string, size);
+	close(fd);
+	xkb_state_unref(d_wl->xkbstate);
+	d_wl->xkbstate = xkb_state_new(d_wl->xkbkeymap);
 }
 void OS_Wayland::keyboard_enter_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
 }
 void OS_Wayland::keyboard_leave_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
 }
 void OS_Wayland::keyboard_key_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		xkb_keysym_t keysym = xkb_state_key_get_one_sym(d_wl->xkbstate, key + 8);
+		uint32_t utf32 = xkb_keysym_to_utf32(keysym);
+		if (utf32) {
+			if (utf32 >= 0x21 && utf32 <= 0x7E) {
+				printf("the key %c was pressed\n", (char)utf32);
+			} else {
+				printf("the key U+%04X was pressed\n", utf32);
+			}
+		} else {
+			char name[64];
+			xkb_keysym_get_name(keysym, name, 64);
+			printf("the key %s was pressed\n", name);
+		}
+		//unsigned int keycode = KeyMappingX11::get_keycode(utf32);
+		Ref<InputEventKey> ke;
+		ke.instance();
+		ke->set_pressed(true);
+		ke->set_scancode(utf32);
+		d_wl->input->parse_input_event(ke);
+	}
 }
 void OS_Wayland::keyboard_modifier_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+
+	xkb_state_update_mask(d_wl->xkbstate, mods_depressed, mods_latched, mods_locked, 0, 0, group);
 }
 void OS_Wayland::keyboard_repeat_info_handler(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
 }
@@ -196,6 +278,11 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 	_get_server_refs();
 	// If at this point, global_registry_handler didn't set the
 	// compositor, nor the shell, bailout !
+
+	// xkb context
+
+	xkbcontext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+
 	if (compositor == NULL || xdgbase == NULL) {
 		print_verbose("No compositor !? No Shell !! There's NOTHING in here !\n");
 		exit(1);
@@ -350,7 +437,7 @@ MainLoop *OS_Wayland::get_main_loop() const {
 }
 
 Point2 OS_Wayland::get_mouse_position() const {
-	return _mouse_pos;
+	return input->get_mouse_position();
 }
 int OS_Wayland::get_mouse_button_state() const {
 	print_line("not implemented (OS_Wayland): get_mouse_button_state");
@@ -398,7 +485,7 @@ String OS_Wayland::get_name() {
 	return String("");
 }
 bool OS_Wayland::can_draw() const {
-	wl_display_dispatch_pending(display);
+	//wl_display_dispatch_pending(display);
 	return true;
 }
 void OS_Wayland::set_cursor_shape(CursorShape p_shape) {
