@@ -495,6 +495,12 @@ void DependencyRemoveDialog::ok_pressed() {
 			Resource *res = ResourceCache::get(files_to_delete[i]);
 			res->set_path("");
 		}
+
+		// If the file we are deleting is the main scene, clear its definition.
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("application/run/main_scene")) {
+			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
+		}
+
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
 		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
