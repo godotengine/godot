@@ -238,7 +238,7 @@
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision. Default value: [code]0[/code].
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationPlayer.AnimationProcessMode">
-			The process notification in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
+			The process notification in which to update animations. Default value: [code]ANIMATION_PROCESS_IDLE[/code].
 		</member>
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
 			The speed scaling ratio. For instance, if this value is 1 then the animation plays at normal speed. If it's 0.5 then it plays at half speed. If it's 2 then it plays at double speed. Default value: [code]1[/code].
