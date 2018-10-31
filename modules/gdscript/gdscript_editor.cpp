@@ -1308,37 +1308,38 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 		return false;
 	}
 
-	// Check ClassDB
-	if (ClassDB::class_exists(p_identifier)) {
-		r_type.type.has_type = true;
-		r_type.type.kind = GDScriptParser::DataType::NATIVE;
-		r_type.type.native_type = p_identifier;
-		if (Engine::get_singleton()->has_singleton(p_identifier)) {
-			r_type.type.is_meta_type = false;
-			r_type.value = Engine::get_singleton()->get_singleton_object(p_identifier);
-		} else {
-			r_type.type.is_meta_type = true;
-			int idx = GDScriptLanguage::get_singleton()->get_global_map()[p_identifier];
-			r_type.value = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+	for (int i = 0; i < 2; i++) {
+		StringName target_id;
+		switch (i) {
+			case 0:
+				// Check ClassDB
+				target_id = p_identifier;
+				break;
+			case 1:
+				// ClassDB again for underscore-prefixed classes
+				target_id = String("_") + p_identifier;
+				break;
 		}
-		return true;
-	}
 
-	// ClassDB again for underscore-prefixed classes
-	StringName under_id = String("_") + p_identifier;
-	if (ClassDB::class_exists(under_id)) {
-		r_type.type.has_type = true;
-		r_type.type.kind = GDScriptParser::DataType::NATIVE;
-		r_type.type.native_type = p_identifier;
-		if (Engine::get_singleton()->has_singleton(p_identifier)) {
-			r_type.type.is_meta_type = false;
-			r_type.value = Engine::get_singleton()->get_singleton_object(p_identifier);
-		} else {
-			r_type.type.is_meta_type = true;
-			int idx = GDScriptLanguage::get_singleton()->get_global_map()[p_identifier];
-			r_type.value = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+		if (ClassDB::class_exists(target_id)) {
+			r_type.type.has_type = true;
+			r_type.type.kind = GDScriptParser::DataType::NATIVE;
+			r_type.type.native_type = target_id;
+			if (Engine::get_singleton()->has_singleton(target_id)) {
+				r_type.type.is_meta_type = false;
+				r_type.value = Engine::get_singleton()->get_singleton_object(target_id);
+			} else {
+				r_type.type.is_meta_type = true;
+				const Map<StringName, int>::Element *target_elem = GDScriptLanguage::get_singleton()->get_global_map().find(target_id);
+				// Check because classes like EditorNode are in ClassDB by now, but unknown to GDScript
+				if (!target_elem) {
+					return false;
+				}
+				int idx = target_elem->get();
+				r_type.value = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+			}
+			return true;
 		}
-		return true;
 	}
 
 	// Check autoload singletons
