@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_x11.cpp                                                           */
+/*  os_x11.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,15 +32,13 @@
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
 #include "drivers/gles2/rasterizer_gles2.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/unix/os_unix.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-
-#ifdef HAVE_MNTENT
-#include <mntent.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,18 +75,39 @@
 
 #include <X11/XKBlib.h>
 
-void OS_X11::initialize_core() {
-
-	crash_handler.initialize();
-
-	OS_Unix::initialize_core();
-}
-
 int OS_X11::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+void OS_X11::set_main_loop(MainLoop *p_main_loop) {
+
+	main_loop = p_main_loop;
+	input->set_main_loop(p_main_loop);
+}
+
+void OS_X11::delete_main_loop() {
+
+	if (main_loop)
+		memdelete(main_loop);
+	main_loop = NULL;
+}
+
+int OS_X11::get_video_driver_count() const {
+	return 2;
+}
+
+const char *OS_X11::get_video_driver_name(int p_driver) const {
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		default:
+			return "INVALID VIDEO DRIVER";
+	}
+}
+
+Error OS_X11::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	long im_event_mask = 0;
 	last_button_state = 0;
@@ -132,7 +151,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	if (modifiers == NULL) {
-		if (is_stdout_verbose()) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
 			WARN_PRINT("IME is disabled");
 		}
 		modifiers = XSetLocaleModifiers("@im=none");
@@ -561,17 +580,12 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	visual_server->init();
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	input = memnew(InputDefault);
 
 	window_has_focus = true; // Set focus to true at init
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(input));
 #endif
-	_ensure_user_data_dir();
-
-	power_manager = memnew(PowerX11);
 
 	if (p_desired.layered_splash) {
 		set_window_per_pixel_transparency_enabled(true);
@@ -629,35 +643,9 @@ void OS_X11::set_ime_position(const Point2 &p_pos) {
 	XFree(preedit_attr);
 }
 
-String OS_X11::get_unique_id() const {
+void OS_X11::finalize_display() {
 
-	static String machine_id;
-	if (machine_id.empty()) {
-		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
-			while (machine_id.empty() && !f->eof_reached()) {
-				machine_id = f->get_line().strip_edges();
-			}
-			f->close();
-			memdelete(f);
-		}
-	}
-	return machine_id;
-}
-
-void OS_X11::finalize() {
-
-	if (main_loop)
-		memdelete(main_loop);
-	main_loop = NULL;
-
-	/*
-	if (debugger_connection_console) {
-		memdelete(debugger_connection_console);
-	}
-	*/
-#ifdef ALSAMIDI_ENABLED
-	driver_alsamidi.close();
-#endif
+	delete_main_loop();
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
@@ -671,8 +659,6 @@ void OS_X11::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
-
-	memdelete(power_manager);
 
 	if (xrandr_handle)
 		dlclose(xrandr_handle);
@@ -1779,7 +1765,7 @@ void OS_X11::_window_changed(XEvent *event) {
 	current_videomode.height = event->xconfigure.height;
 }
 
-void OS_X11::process_xevents() {
+void OS_X11::process_events() {
 
 	//printf("checking events %i\n", XPending(x11_display));
 
@@ -1907,8 +1893,8 @@ void OS_X11::process_xevents() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-					// Grab touch devices to avoid OS gesture interference
-					/*for (int i = 0; i < touch.devices.size(); ++i) {
+				// Grab touch devices to avoid OS gesture interference
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
 				}*/
 #endif
@@ -1980,7 +1966,7 @@ void OS_X11::process_xevents() {
 
 				if (event.type == ButtonPress && event.xbutton.button == 1) {
 
-					uint64_t diff = get_ticks_usec() / 1000 - last_click_ms;
+					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
 					if (diff < 400 && Point2(last_click_pos).distance_to(Point2(event.xbutton.x, event.xbutton.y)) < 5) {
 
@@ -2099,7 +2085,7 @@ void OS_X11::process_xevents() {
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
-				// it will be handled in its own function.
+				// it will be handled in it's own function.
 				handle_key_event((XKeyEvent *)&event);
 			} break;
 			case SelectionRequest: {
@@ -2115,7 +2101,7 @@ void OS_X11::process_xevents() {
 						req->target == XA_STRING ||
 						req->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
 						req->target == XInternAtom(x11_display, "text/plain", 0)) {
-					CharString clip = OS::get_clipboard().utf8();
+					CharString clip = get_clipboard().utf8();
 					XChangeProperty(x11_display,
 							req->requestor,
 							req->property,
@@ -2281,19 +2267,6 @@ MainLoop *OS_X11::get_main_loop() const {
 	return main_loop;
 }
 
-void OS_X11::delete_main_loop() {
-
-	if (main_loop)
-		memdelete(main_loop);
-	main_loop = NULL;
-}
-
-void OS_X11::set_main_loop(MainLoop *p_main_loop) {
-
-	main_loop = p_main_loop;
-	input->set_main_loop(p_main_loop);
-}
-
 bool OS_X11::can_draw() const {
 
 	return !minimized;
@@ -2301,7 +2274,7 @@ bool OS_X11::can_draw() const {
 
 void OS_X11::set_clipboard(const String &p_text) {
 
-	OS::set_clipboard(p_text);
+	set_clipboard(p_text);
 
 	XSetSelectionOwner(x11_display, XA_PRIMARY, x11_window, CurrentTime);
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, CurrentTime);
@@ -2379,10 +2352,10 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display *x11_di
 String OS_X11::get_clipboard() const {
 
 	String ret;
-	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, x11_display, OS::get_clipboard());
+	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, x11_display, get_clipboard());
 
 	if (ret == "") {
-		ret = _get_clipboard(XA_PRIMARY, x11_window, x11_display, OS::get_clipboard());
+		ret = _get_clipboard(XA_PRIMARY, x11_window, x11_display, get_clipboard());
 	};
 
 	return ret;
@@ -2391,114 +2364,6 @@ String OS_X11::get_clipboard() const {
 String OS_X11::get_name() {
 
 	return "X11";
-}
-
-Error OS_X11::shell_open(String p_uri) {
-
-	Error ok;
-	List<String> args;
-	args.push_back(p_uri);
-	ok = execute("xdg-open", args, false);
-	if (ok == OK)
-		return OK;
-	ok = execute("gnome-open", args, false);
-	if (ok == OK)
-		return OK;
-	ok = execute("kde-open", args, false);
-	return ok;
-}
-
-bool OS_X11::_check_internal_feature_support(const String &p_feature) {
-
-	return p_feature == "pc" || p_feature == "s3tc" || p_feature == "bptc";
-}
-
-String OS_X11::get_config_path() const {
-
-	if (has_environment("XDG_CONFIG_HOME")) {
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".config");
-	} else {
-		return ".";
-	}
-}
-
-String OS_X11::get_data_path() const {
-
-	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".local/share");
-	} else {
-		return get_config_path();
-	}
-}
-
-String OS_X11::get_cache_path() const {
-
-	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".cache");
-	} else {
-		return get_config_path();
-	}
-}
-
-String OS_X11::get_system_dir(SystemDir p_dir) const {
-
-	String xdgparam;
-
-	switch (p_dir) {
-		case SYSTEM_DIR_DESKTOP: {
-
-			xdgparam = "DESKTOP";
-		} break;
-		case SYSTEM_DIR_DCIM: {
-
-			xdgparam = "PICTURES";
-
-		} break;
-		case SYSTEM_DIR_DOCUMENTS: {
-
-			xdgparam = "DOCUMENTS";
-
-		} break;
-		case SYSTEM_DIR_DOWNLOADS: {
-
-			xdgparam = "DOWNLOAD";
-
-		} break;
-		case SYSTEM_DIR_MOVIES: {
-
-			xdgparam = "VIDEOS";
-
-		} break;
-		case SYSTEM_DIR_MUSIC: {
-
-			xdgparam = "MUSIC";
-
-		} break;
-		case SYSTEM_DIR_PICTURES: {
-
-			xdgparam = "PICTURES";
-
-		} break;
-		case SYSTEM_DIR_RINGTONES: {
-
-			xdgparam = "MUSIC";
-
-		} break;
-	}
-
-	String pipe;
-	List<String> arg;
-	arg.push_back(xdgparam);
-	Error err = const_cast<OS_X11 *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
-	if (err != OK)
-		return ".";
-	return pipe.strip_edges();
 }
 
 void OS_X11::move_window_to_foreground() {
@@ -2627,6 +2492,11 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 	}
 }
 
+bool OS_X11::has_touchscreen_ui_hint() const {
+
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
+}
+
 void OS_X11::release_rendering_thread() {
 
 #if defined(OPENGL_ENABLED)
@@ -2651,7 +2521,7 @@ void OS_X11::swap_buffers() {
 void OS_X11::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
-	String path = get_environment("PATH");
+	String path = OS::get_singleton()->get_environment("PATH");
 	Vector<String> path_elems = path.split(":", false);
 	String program;
 
@@ -2705,7 +2575,7 @@ void OS_X11::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.length()) {
-		execute(program, args, true);
+		OS::get_singleton()->execute(program, args, true);
 	} else {
 		print_line(p_alert);
 	}
@@ -2792,37 +2662,10 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 }
 
 void OS_X11::force_process_input() {
-	process_xevents(); // get rid of pending events
+	process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 	joypad->process_joypads();
 #endif
-}
-
-void OS_X11::run() {
-
-	force_quit = false;
-
-	if (!main_loop)
-		return;
-
-	main_loop->init();
-
-	//uint64_t last_ticks=get_ticks_usec();
-
-	//int frames=0;
-	//uint64_t frame=0;
-
-	while (!force_quit) {
-
-		process_xevents(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
-#endif
-		if (Main::iteration())
-			break;
-	};
-
-	main_loop->finish();
 }
 
 bool OS_X11::is_joy_known(int p_device) {
@@ -2839,7 +2682,7 @@ void OS_X11::_set_use_vsync(bool p_enable) {
 		context_gl->set_use_vsync(p_enable);
 #endif
 }
-/*
+
 bool OS_X11::is_vsync_enabled() const {
 
 	if (context_gl)
@@ -2847,42 +2690,8 @@ bool OS_X11::is_vsync_enabled() const {
 
 	return true;
 }
-*/
-void OS_X11::set_context(int p_context) {
 
-	XClassHint *classHint = XAllocClassHint();
-	if (classHint) {
-
-		if (p_context == CONTEXT_EDITOR)
-			classHint->res_name = (char *)"Godot_Editor";
-		if (p_context == CONTEXT_PROJECTMAN)
-			classHint->res_name = (char *)"Godot_ProjectList";
-		classHint->res_class = (char *)"Godot";
-		XSetClassHint(x11_display, x11_window, classHint);
-		XFree(classHint);
-	}
-}
-
-OS::PowerState OS_X11::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_X11::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_X11::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
-}
-
-void OS_X11::disable_crash_handler() {
-	crash_handler.disable();
-}
-
-bool OS_X11::is_disable_crash_handler() const {
-	return crash_handler.is_disabled();
-}
-
+/*
 static String get_mountpoint(const String &p_path) {
 	struct stat s;
 	if (stat(p_path.utf8().get_data(), &s)) {
@@ -2910,69 +2719,7 @@ static String get_mountpoint(const String &p_path) {
 #endif
 	return "";
 }
-
-Error OS_X11::move_to_trash(const String &p_path) {
-	String trash_can = "";
-	String mnt = get_mountpoint(p_path);
-
-	// If there is a directory "[Mountpoint]/.Trash-[UID]/files", use it as the trash can.
-	if (mnt != "") {
-		String path(mnt + "/.Trash-" + itos(getuid()) + "/files");
-		struct stat s;
-		if (!stat(path.utf8().get_data(), &s)) {
-			trash_can = path;
-		}
-	}
-
-	// Otherwise, if ${XDG_DATA_HOME} is defined, use "${XDG_DATA_HOME}/Trash/files" as the trash can.
-	if (trash_can == "") {
-		char *dhome = getenv("XDG_DATA_HOME");
-		if (dhome) {
-			trash_can = String(dhome) + "/Trash/files";
-		}
-	}
-
-	// Otherwise, if ${HOME} is defined, use "${HOME}/.local/share/Trash/files" as the trash can.
-	if (trash_can == "") {
-		char *home = getenv("HOME");
-		if (home) {
-			trash_can = String(home) + "/.local/share/Trash/files";
-		}
-	}
-
-	// Issue an error if none of the previous locations is appropriate for the trash can.
-	if (trash_can == "") {
-		ERR_PRINTS("move_to_trash: Could not determine the trash can location");
-		return FAILED;
-	}
-
-	// Create needed directories for decided trash can location.
-	DirAccess *dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = dir_access->make_dir_recursive(trash_can);
-	memdelete(dir_access);
-
-	// Issue an error if trash can is not created proprely.
-	if (err != OK) {
-		ERR_PRINTS("move_to_trash: Could not create the trash can \"" + trash_can + "\"");
-		return err;
-	}
-
-	// The trash can is successfully created, now move the given resource to it.
-	// Do not use DirAccess:rename() because it can't move files across multiple mountpoints.
-	List<String> mv_args;
-	mv_args.push_back(p_path);
-	mv_args.push_back(trash_can);
-	int retval;
-	err = execute("mv", mv_args, true, NULL, NULL, &retval);
-
-	// Issue an error if "mv" failed to move the given resource to the trash can.
-	if (err != OK || retval != 0) {
-		ERR_PRINTS("move_to_trash: Could not move the resource \"" + p_path + "\" to the trash can \"" + trash_can + "\"");
-		return FAILED;
-	}
-
-	return OK;
-}
+*/
 
 OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 
@@ -3025,15 +2772,22 @@ void OS_X11::update_real_mouse_position() {
 	}
 }
 
+void OS_X11::set_context(int p_context) {
+
+	XClassHint *classHint = XAllocClassHint();
+	if (classHint) {
+
+		if (p_context == CONTEXT_EDITOR)
+			classHint->res_name = (char *)"Godot_Editor";
+		if (p_context == CONTEXT_PROJECTMAN)
+			classHint->res_name = (char *)"Godot_ProjectList";
+		classHint->res_class = (char *)"Godot";
+		XSetClassHint(x11_display, x11_window, classHint);
+		XFree(classHint);
+	}
+}
+
 OS_X11::OS_X11() {
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverManager::add_driver(&driver_pulseaudio);
-#endif
-
-#ifdef ALSA_ENABLED
-	AudioDriverManager::add_driver(&driver_alsa);
-#endif
 
 	layered_window = false;
 	minimized = false;
