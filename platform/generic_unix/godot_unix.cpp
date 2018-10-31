@@ -34,11 +34,11 @@
 #include <unistd.h>
 
 #include "main/main.h"
+#include "wayland/os_wayland.h"
 #include "x11/os_x11.h"
-
 int main(int argc, char *argv[]) {
 
-	OS_X11 os;
+	OS_Wayland os;
 
 	setlocale(LC_CTYPE, "");
 
