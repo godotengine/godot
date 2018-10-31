@@ -39,8 +39,8 @@
 #include "platform/osx/power_osx.h"
 #include "platform/osx/sem_osx.h"
 #else
-#include "platform/x11/crash_handler_x11.h"
-#include "platform/x11/power_x11.h"
+#include "platform/linux/crash_handler_x11.h"
+#include "platform/linux/power_x11.h"
 #endif
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
