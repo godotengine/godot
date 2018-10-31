@@ -15,9 +15,13 @@ common_unix = [
     "x11/context_gl_x11.cpp",
     "x11/key_mapping_x11.cpp",
     "x11/os_x11.cpp",
+    "wayland/context_egl_wayland.cpp",
+    "wayland/os_wayland.cpp",
 ]
 
 prog = env.add_program('#bin/godot', ['godot_unix.cpp'] + common_unix)
+
+env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL"])
 
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(
