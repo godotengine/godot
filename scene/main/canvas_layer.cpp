@@ -35,8 +35,10 @@
 void CanvasLayer::set_layer(int p_xform) {
 
 	layer = p_xform;
-	if (viewport.is_valid())
+	if (viewport.is_valid()) {
 		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
+		VisualServer::get_singleton()->viewport_set_canvas_sublayer(viewport, canvas, get_position_in_parent());
+	}
 }
 
 int CanvasLayer::get_layer() const {
@@ -184,6 +186,11 @@ void CanvasLayer::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 
 			_detach_from_viewport();
+		} break;
+		case NOTIFICATION_MOVED_IN_PARENT: {
+
+			if (is_inside_tree())
+				VisualServer::get_singleton()->viewport_set_canvas_sublayer(viewport, canvas, get_position_in_parent());
 		} break;
 	}
 }

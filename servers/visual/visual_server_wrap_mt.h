@@ -388,6 +388,7 @@ public:
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	FUNC3(viewport_set_canvas_layer, RID, RID, int)
+	FUNC3(viewport_set_canvas_sublayer, RID, RID, int)
 	FUNC2(viewport_set_shadow_atlas_size, RID, int)
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
