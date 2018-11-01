@@ -43,6 +43,9 @@ class GDMonoMethod : public GDMonoClassMember {
 	ManagedType return_type;
 	Vector<ManagedType> param_types;
 
+	bool method_info_fetched;
+	MethodInfo method_info;
+
 	bool attrs_fetched;
 	MonoCustomAttrInfo *attributes;
 
@@ -82,6 +85,8 @@ public:
 
 	void get_parameter_names(Vector<StringName> &names) const;
 	void get_parameter_types(Vector<ManagedType> &types) const;
+
+	const MethodInfo &get_method_info();
 
 	GDMonoMethod(StringName p_name, MonoMethod *p_method);
 	~GDMonoMethod();

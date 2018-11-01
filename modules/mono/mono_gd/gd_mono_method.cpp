@@ -68,6 +68,10 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 
 		param_types.push_back(param_type);
 	}
+
+	// clear the cache
+	method_info_fetched = false;
+	method_info = MethodInfo();
 }
 
 bool GDMonoMethod::is_static() {
@@ -246,10 +250,33 @@ void GDMonoMethod::get_parameter_types(Vector<ManagedType> &types) const {
 	}
 }
 
+const MethodInfo &GDMonoMethod::get_method_info() {
+
+	if (!method_info_fetched) {
+		method_info.name = name;
+		method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type), "");
+
+		Vector<StringName> names;
+		get_parameter_names(names);
+
+		for (int i = 0; i < params_count; ++i) {
+			method_info.arguments.push_back(PropertyInfo(GDMonoMarshal::managed_to_variant_type(param_types[i]), names[i]));
+		}
+
+		// TODO: default arguments
+
+		method_info_fetched = true;
+	}
+
+	return method_info;
+}
+
 GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) {
 	name = p_name;
 
 	mono_method = p_method;
+
+	method_info_fetched = false;
 
 	attrs_fetched = false;
 	attributes = NULL;

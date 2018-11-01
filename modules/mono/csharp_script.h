@@ -174,9 +174,9 @@ public:
 	virtual Ref<Script> get_base_script() const;
 	virtual ScriptLanguage *get_language() const;
 
-	/* TODO */ virtual void get_script_method_list(List<MethodInfo> *p_list) const {}
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName &p_method) const;
-	/* TODO */ MethodInfo get_method_info(const StringName &p_method) const { return MethodInfo(); }
+	MethodInfo get_method_info(const StringName &p_method) const;
 
 	virtual int get_member_line(const StringName &p_member) const;
 
