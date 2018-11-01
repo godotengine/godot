@@ -32,8 +32,11 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
+#include "core/list.h"
 #include "core/math/math_funcs.h"
 #include "core/method_bind_ext.gen.inc"
+#include "core/object.h"
+#include "core/rid.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_notification(int p_what) {
@@ -65,6 +68,8 @@ void PhysicsBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody2D::_set_layers);
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody2D::_get_layers);
+
+	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody2D::remove_collision_exception_with);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_PHYSICS, "", 0), "_set_layers", "_get_layers"); //for backwards compat
@@ -132,6 +137,20 @@ PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) :
 	collision_layer = 1;
 	collision_mask = 1;
 	set_pickable(false);
+}
+
+Array PhysicsBody2D::get_collision_exceptions() {
+	List<RID> exceptions;
+	Physics2DServer::get_singleton()->body_get_collision_exceptions(get_rid(), &exceptions);
+	Array ret;
+	for (List<RID>::Element *E = exceptions.front(); E; E = E->next()) {
+		RID body = E->get();
+		ObjectID instance_id = Physics2DServer::get_singleton()->body_get_object_instance_id(body);
+		Object *obj = ObjectDB::get_instance(instance_id);
+		PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(obj);
+		ret.append(physics_body);
+	}
+	return ret;
 }
 
 void PhysicsBody2D::add_collision_exception_with(Node *p_node) {

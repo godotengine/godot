@@ -32,7 +32,10 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
+#include "core/list.h"
 #include "core/method_bind_ext.gen.inc"
+#include "core/object.h"
+#include "core/rid.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
@@ -106,6 +109,20 @@ void PhysicsBody::set_collision_layer_bit(int p_bit, bool p_value) {
 bool PhysicsBody::get_collision_layer_bit(int p_bit) const {
 
 	return get_collision_layer() & (1 << p_bit);
+}
+
+Array PhysicsBody::get_collision_exceptions() {
+	List<RID> exceptions;
+	PhysicsServer::get_singleton()->body_get_collision_exceptions(get_rid(), &exceptions);
+	Array ret;
+	for (List<RID>::Element *E = exceptions.front(); E; E = E->next()) {
+		RID body = E->get();
+		ObjectID instance_id = PhysicsServer::get_singleton()->body_get_object_instance_id(body);
+		Object *obj = ObjectDB::get_instance(instance_id);
+		PhysicsBody *physics_body = Object::cast_to<PhysicsBody>(obj);
+		ret.append(physics_body);
+	}
+	return ret;
 }
 
 void PhysicsBody::add_collision_exception_with(Node *p_node) {
@@ -289,6 +306,7 @@ void StaticBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reload_physics_characteristics"), &StaticBody::_reload_physics_characteristics);
 
+	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody::remove_collision_exception_with);
 
