@@ -16,6 +16,7 @@ common_unix = [
     "x11/key_mapping_x11.cpp",
     "x11/os_x11.cpp",
     "wayland/context_egl_wayland.cpp",
+    "wayland/key_mapping_xkb.cpp",
     "wayland/os_wayland.cpp",
 ]
 
