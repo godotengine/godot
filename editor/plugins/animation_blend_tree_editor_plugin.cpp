@@ -833,8 +833,6 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 
 	if (p_node.is_valid()) {
 		blend_tree = p_node;
-	} else {
-		blend_tree.unref();
 	}
 
 	if (blend_tree.is_null()) {
