@@ -31,7 +31,7 @@
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
-// #include "key_mapping_x11.cpp"
+#include "key_mapping_xkb.h"
 #include "servers/visual/visual_server_raster.h"
 
 #include <linux/input-event-codes.h>
@@ -111,7 +111,7 @@ void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
 	OS_Wayland *d_wl = DISPLAY_WL;
 	if (xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0) {
 		print_verbose("control active");
-	}
+}
 	ev->set_alt(d_wl->_mod_state.alt);
 	ev->set_control(d_wl->_mod_state.ctrl);
 	ev->set_shift(d_wl->_mod_state.shift);
@@ -153,8 +153,8 @@ void OS_Wayland::pointer_button_handler(void *data, struct wl_pointer *wl_pointe
 	_set_modifier_for_event(mb);
 	_set_mouse_values_for_event(mb);
 
-	mb->set_pressed(state == WL_POINTER_BUTTON_STATE_PRESSED);
-	print_verbose(state == WL_POINTER_BUTTON_STATE_PRESSED ? "pressed" : "release");
+	mb->set_pressed(state);
+	print_verbose(state ? "pressed" : "release");
 	switch (button) {
 		case BTN_LEFT:
 			mb->set_button_index(BUTTON_LEFT);
@@ -221,27 +221,31 @@ void OS_Wayland::keyboard_leave_handler(void *data, struct wl_keyboard *wl_keybo
 void OS_Wayland::keyboard_key_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
 	OS_Wayland *d_wl = DISPLAY_WL;
 
-	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		xkb_keysym_t keysym = xkb_state_key_get_one_sym(d_wl->xkbstate, key + 8);
-		uint32_t utf32 = xkb_keysym_to_utf32(keysym);
-		if (utf32) {
-			if (utf32 >= 0x21 && utf32 <= 0x7E) {
-				printf("the key %c was pressed\n", (char)utf32);
-			} else {
-				printf("the key U+%04X was pressed\n", utf32);
-			}
-		} else {
-			char name[64];
-			xkb_keysym_get_name(keysym, name, 64);
-			printf("the key %s was pressed\n", name);
-		}
-		//unsigned int keycode = KeyMappingX11::get_keycode(utf32);
-		Ref<InputEventKey> ke;
-		ke.instance();
-		ke->set_pressed(true);
-		ke->set_scancode(utf32);
-		d_wl->input->parse_input_event(ke);
-	}
+	xkb_keysym_t keysym = xkb_state_key_get_one_sym(d_wl->xkbstate, key + 8);
+
+	unsigned int keycode = KeyMappingXKB::get_keycode(keysym);
+	uint32_t utf32 = xkb_keysym_to_utf32(keysym);
+
+	Ref<InputEventKey> ke;
+	ke.instance();
+	ke->set_scancode(keycode);
+	ke->set_unicode(utf32);
+	ke->set_pressed(state);
+
+	d_wl->input->parse_input_event(ke);
+
+	//debug prints
+	// if (utf32) {
+	// 	if (utf32 >= 0x21 && utf32 <= 0x7E) {
+	// 		printf("the key %c was pressed\n", (char)utf32);
+	// 	} else {
+	// 		printf("the key U+%04X was pressed\n", utf32);
+	// 	}
+	// } else {
+	// 	char name[64];
+	// 	xkb_keysym_get_name(keysym, name, 64);
+	// 	printf("the key %s was pressed\n", name);
+	// }
 }
 void OS_Wayland::keyboard_modifier_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
 	OS_Wayland *d_wl = DISPLAY_WL;
