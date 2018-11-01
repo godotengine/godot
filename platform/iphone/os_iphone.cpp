@@ -107,11 +107,10 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
 
-	// FIXME: Reimplement threaded rendering? Or remove?
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
-	} else {
-		visual_server = memnew(VisualServerRaster);
 	}
 
 	visual_server->init();
