@@ -181,10 +181,10 @@ void OS_Wayland::pointer_axis_handler(void *data, struct wl_pointer *wl_pointer,
 	mb->set_factor(abs((float)wl_fixed_to_double(value)));
 	switch (axis) {
 		case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-			mb->set_button_index(value > 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT);
+			mb->set_button_index((float)wl_fixed_to_double(value) > 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT);
 			break;
 		case WL_POINTER_AXIS_VERTICAL_SCROLL:
-			mb->set_button_index(value > 0 ? BUTTON_WHEEL_DOWN : BUTTON_WHEEL_UP);
+			mb->set_button_index((float)wl_fixed_to_double(value) > 0 ? BUTTON_WHEEL_DOWN : BUTTON_WHEEL_UP);
 			break;
 	}
 	d_wl->input->parse_input_event(mb);
@@ -192,6 +192,7 @@ void OS_Wayland::pointer_axis_handler(void *data, struct wl_pointer *wl_pointer,
 	// Maybe needed
 	// Ref<InputEventMouseButton> mb_release = mb->duplicate();
 	// mb_release->set_pressed(false);
+	// mb->set_factor(0);
 	// d_wl->input->parse_input_event(mb);
 }
 void OS_Wayland::pointer_frame_handler(void *data, struct wl_pointer *wl_pointer) {
@@ -228,6 +229,7 @@ void OS_Wayland::keyboard_key_handler(void *data, struct wl_keyboard *wl_keyboar
 
 	Ref<InputEventKey> ke;
 	ke.instance();
+	_set_modifier_for_event(ke);
 	ke->set_scancode(keycode);
 	ke->set_unicode(utf32);
 	ke->set_pressed(state);
@@ -310,6 +312,7 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 	xdg_toplevel_add_listener(xdgtoplevel, &xdg_toplevel_listener, NULL);
 	xdg_toplevel_set_title(xdgtoplevel, "Godot");
 	wl_surface_commit(surface);
+	//try moving wl surface commit to the end
 
 	// wait for the "initial" set of globals to appear
 
@@ -391,11 +394,7 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}
-	glClearColor(1.0, 1.0, 0.0, 0.1);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glFlush();
-
-	swap_buffers();
+	// swap_buffers();
 	wl_display_dispatch(display);
 	wl_display_roundtrip(display);
 
