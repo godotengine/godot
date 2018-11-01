@@ -111,7 +111,7 @@
 			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
 			</argument>
 			<description>
-				Adds a [code][right][/code] tag to the tag stack.
+				Adds an alignment tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
 		<method name="push_cell">
@@ -170,6 +170,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Adds a [code][s][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_table">
