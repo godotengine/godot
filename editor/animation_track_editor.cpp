@@ -1685,15 +1685,10 @@ void AnimationTrackEdit::_zoom_changed() {
 }
 
 void AnimationTrackEdit::_path_entered(const String &p_text) {
-
-	*block_animation_update_ptr = true;
 	undo_redo->create_action("Change Track Path");
 	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
 	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
 	undo_redo->commit_action();
-	*block_animation_update_ptr = false;
-	update();
-	path->hide();
 }
 
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
