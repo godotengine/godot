@@ -1332,10 +1332,11 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	gl_context->set_use_vsync(video_mode.use_vsync);
 #endif
 
-	visual_server = memnew(VisualServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	} else {
+		visual_server = memnew(VisualServerRaster);
 	}
 
 	/*
