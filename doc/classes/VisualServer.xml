@@ -3485,6 +3485,19 @@
 				Sets the renderlayer for a viewport's canvas.
 			</description>
 		</method>
+		<method name="viewport_set_canvas_sublayer">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="canvas" type="RID">
+			</argument>
+			<argument index="2" name="sublayer" type="int">
+			</argument>
+			<description>
+				Sets the stacking order of the canvas among those in the same layer.
+			</description>
+		</method>
 		<method name="viewport_set_canvas_transform">
 			<return type="void">
 			</return>
