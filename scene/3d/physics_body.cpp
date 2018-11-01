@@ -2326,7 +2326,8 @@ void PhysicalBone::set_joint_type(JointType p_joint_type) {
 	if (p_joint_type == get_joint_type())
 		return;
 
-	memdelete(joint_data);
+	if (joint_data)
+		memdelete(joint_data);
 	joint_data = NULL;
 	switch (p_joint_type) {
 		case JOINT_TYPE_PIN:
@@ -2526,7 +2527,8 @@ PhysicalBone::PhysicalBone() :
 }
 
 PhysicalBone::~PhysicalBone() {
-	memdelete(joint_data);
+	if (joint_data)
+		memdelete(joint_data);
 }
 
 void PhysicalBone::update_bone_id() {
