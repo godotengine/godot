@@ -342,11 +342,12 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	context_gl->set_use_vsync(current_videomode.use_vsync);
 
 #endif
-	visual_server = memnew(VisualServerRaster);
 
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	} else {
+		visual_server = memnew(VisualServerRaster);
 	}
 	if (current_videomode.maximized) {
 		current_videomode.maximized = false;

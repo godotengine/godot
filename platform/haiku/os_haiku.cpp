@@ -117,16 +117,15 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 
 #endif
 
-	visual_server = memnew(VisualServerRaster());
+	// FIXME: Reimplement threaded rendering? Or remove?
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+
+		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+	} else {
+		visual_server = memnew(VisualServerRaster);
+	}
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
-
-	// TODO: enable multithreaded VS
-	/*
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	}
-	*/
 
 	video_driver_index = p_video_driver;
 
