@@ -16,7 +16,8 @@ common_linux = [
     "key_mapping_x11.cpp",
     "joypad_linux.cpp",
     "power_x11.cpp",
-    "wayland/wayland_protocol/xdg-shell.c"
+    "wayland/wayland_protocol/xdg-shell.c",
+    "wayland/key_mapping_xkb.cpp"
 ]
 
 env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL", "xkbcommon"])
