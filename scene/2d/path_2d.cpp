@@ -63,6 +63,10 @@ bool Path2D::_edit_use_rect() const {
 
 bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
+	if (curve.is_null()) {
+		return false;
+	}
+
 	for (int i = 0; i < curve->get_point_count(); i++) {
 		Vector2 s[2];
 		s[0] = curve->get_point_position(i);
