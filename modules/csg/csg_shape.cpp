@@ -598,8 +598,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				mw[j / 3] = mat;
 			}
 		} else {
-			int is = vertices.size();
-			int as = avertices.size();
+			int as = vertices.size();
+			int is = avertices.size();
 
 			vertices.resize(as + is);
 			smooth.resize((as + is) / 3);
