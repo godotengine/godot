@@ -52,16 +52,6 @@
 
 class OS_Wayland : public OS_Linux {
 private:
-	struct ModifierState {
-		bool alt;
-		bool ctrl;
-		bool meta;
-		bool shift;
-	};
-	// Display privat members
-	ModifierState _mod_state = {
-		false, false, false, false
-	};
 	// godot private members
 	MainLoop *main_loop;
 	InputDefault *input;

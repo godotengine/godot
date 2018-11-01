@@ -109,13 +109,13 @@ void OS_Wayland::seat_capabilities_handler(void *data, struct wl_seat *wl_seat, 
 // even helper functions
 void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
 	OS_Wayland *d_wl = DISPLAY_WL;
-	if (xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0) {
-		print_verbose("control active");
-}
-	ev->set_alt(d_wl->_mod_state.alt);
-	ev->set_control(d_wl->_mod_state.ctrl);
-	ev->set_shift(d_wl->_mod_state.shift);
-	ev->set_metakey(d_wl->_mod_state.meta);
+
+	// xkb_state_mod_name_is_active returns -1 for non existing mods -> check for greater 0.
+
+	ev->set_control(xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0);
+	ev->set_alt(xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE) > 0);
+	ev->set_metakey(xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0);
+	ev->set_shift(xkb_state_mod_name_is_active(d_wl->xkbstate, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0);
 }
 void OS_Wayland::_set_mouse_values_for_event(Ref<InputEventMouse> ev) {
 	OS_Wayland *d_wl = DISPLAY_WL;
