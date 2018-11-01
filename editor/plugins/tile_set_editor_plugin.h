@@ -141,6 +141,10 @@ class TileSetEditor : public Control {
 	EditMode edit_mode;
 	int current_tile;
 
+	float max_scale;
+	float min_scale;
+	float scale_ratio;
+
 	void update_texture_list();
 	void update_texture_list_icon();
 
@@ -177,6 +181,10 @@ private:
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
 	void _set_snap_sep(Vector2 p_val);
+
+	void _zoom_in();
+	void _zoom_out();
+	void _reset_zoom();
 
 	void draw_highlight_current_tile();
 	void draw_highlight_subtile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
