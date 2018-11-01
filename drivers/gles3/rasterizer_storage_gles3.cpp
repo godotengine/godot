@@ -1116,8 +1116,78 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	return Ref<Image>(img);
 #else
 
-	ERR_EXPLAIN("Sorry, It's not possible to obtain images back in OpenGL ES");
-	ERR_FAIL_V(Ref<Image>());
+	Image::Format real_format;
+	GLenum gl_format;
+	GLenum gl_internal_format;
+	GLenum gl_type;
+	bool compressed;
+	bool srgb;
+	_get_gl_image_and_format(Ref<Image>(), texture->format, texture->flags, real_format, gl_format, gl_internal_format, gl_type, compressed, srgb);
+
+	PoolVector<uint8_t> data;
+
+	int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+
+	data.resize(data_size * 2); //add some memory at the end, just in case for buggy drivers
+	PoolVector<uint8_t>::Write wb = data.write();
+
+	GLuint temp_framebuffer;
+	glGenFramebuffers(1, &temp_framebuffer);
+
+	GLuint temp_color_texture;
+	glGenTextures(1, &temp_color_texture);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, temp_framebuffer);
+
+	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	print_line(itos(texture->alloc_width) + " xx " + itos(texture->alloc_height) + " -> " + itos(real_format));
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temp_color_texture, 0);
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1, 1, 1, 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture->tex_id);
+
+	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
+
+	shaders.copy.bind();
+
+	shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, !srgb);
+
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBindVertexArray(resources.quadie_array);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glBindVertexArray(0);
+
+	glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &wb[0]);
+
+	shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, false);
+
+	glDeleteTextures(1, &temp_color_texture);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &temp_framebuffer);
+
+	wb = PoolVector<uint8_t>::Write();
+
+	data.resize(data_size);
+
+	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data));
+	if (!texture->compressed) {
+		img->convert(real_format);
+	}
+
+	return Ref<Image>(img);
 #endif
 }
 
