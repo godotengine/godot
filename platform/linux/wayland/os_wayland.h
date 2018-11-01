@@ -58,7 +58,7 @@ private:
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	ContextGL_EGL *context_gl_egl;
-
+	int _surface_scale_factor = 1;
 	//display private functions
 	void _get_server_refs();
 
@@ -73,6 +73,7 @@ private:
 	struct wl_compositor *compositor = NULL;
 
 	struct wl_display *display = NULL;
+	struct wl_output *output = NULL;
 	struct wl_surface *surface;
 	struct wl_egl_window *egl_window;
 	struct wl_region *region;
@@ -112,7 +113,17 @@ private:
 	};
 	static void seat_name_handler(void *data, struct wl_seat *wl_seat, const char *name);
 	static void seat_capabilities_handler(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
+	const struct wl_output_listener output_listener = {
+		&output_geometry_listener,
+		&output_mode_listener,
+		&output_done_listener,
+		&output_scale_listener
+	};
 
+	static void output_geometry_listener(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform);
+	static void output_mode_listener(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
+	static void output_done_listener(void *data, struct wl_output *wl_output);
+	static void output_scale_listener(void *data, struct wl_output *wl_output, int32_t factor);
 	const struct wl_pointer_listener pointer_listener = {
 		&pointer_enter_handler,
 		&pointer_leave_handler,
@@ -187,7 +198,7 @@ public:
 	// virtual void set_window_position(const Point2 &p_position) {}
 	Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
-	// virtual void set_window_size(const Size2 p_size) {}
+	virtual void set_window_size(const Size2 p_size);
 	// virtual void set_window_fullscreen(bool p_enabled) {}
 	// virtual bool is_window_fullscreen() const { return true; }
 	// virtual void set_window_resizable(bool p_enabled) {}

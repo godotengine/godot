@@ -32,6 +32,7 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "key_mapping_xkb.h"
+#include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 
 #include <linux/input-event-codes.h>
@@ -43,6 +44,7 @@
 //
 #define DISPLAY_WL (OS_Wayland *)OS_Wayland::get_singleton()
 
+//-----------registry-----------
 void OS_Wayland::global_registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version) {
 	OS_Wayland *d_wl = DISPLAY_WL;
 
@@ -51,6 +53,12 @@ void OS_Wayland::global_registry_handler(void *data, struct wl_registry *registr
 	if (strcmp(interface, "wl_compositor") == 0) {
 
 		d_wl->compositor = (wl_compositor *)wl_registry_bind(registry, id, &wl_compositor_interface, 1);
+	}
+
+	else if (strcmp(interface, "wl_output") == 0) {
+
+		d_wl->output = (wl_output *)wl_registry_bind(registry, id, &wl_output_interface, 1);
+		wl_output_add_listener(d_wl->output, &d_wl->output_listener, NULL);
 	}
 
 	else if (strcmp(interface, "wl_seat") == 0) {
@@ -68,9 +76,14 @@ void OS_Wayland::global_registry_handler(void *data, struct wl_registry *registr
 void OS_Wayland::global_registry_remover(void *data, struct wl_registry *wl_registry, uint32_t name) {
 }
 
+//-----------xdg-----------
 void OS_Wayland::xdg_toplevel_configure_handler(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
-
+	OS_Wayland *d_wl = DISPLAY_WL;
 	printf("configure: %dx%d\n", width, height);
+	if (width != 0 && height != 0) {
+		d_wl->set_window_size(Vector2(width * d_wl->_surface_scale_factor, height * d_wl->_surface_scale_factor));
+	}
+	//wl_surface_commit(d_wl->surface);
 }
 
 void OS_Wayland::xdg_toplevel_close_handler(void *data, struct xdg_toplevel *xdg_toplevel) {
@@ -87,6 +100,7 @@ void OS_Wayland::xdg_ping_handler(void *data, struct xdg_wm_base *xdg_wm_base, u
 	printf("ping-pong\n");
 }
 
+// ----------seat----------
 void OS_Wayland::seat_name_handler(void *data, struct wl_seat *wl_seat, const char *name) {
 }
 void OS_Wayland::seat_capabilities_handler(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
@@ -106,6 +120,18 @@ void OS_Wayland::seat_capabilities_handler(void *data, struct wl_seat *wl_seat, 
 		print_verbose("touch!!!");
 	}
 }
+
+// ----------output----------
+void OS_Wayland::output_geometry_listener(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {}
+void OS_Wayland::output_mode_listener(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {}
+void OS_Wayland::output_done_listener(void *data, struct wl_output *wl_output) {}
+void OS_Wayland::output_scale_listener(void *data, struct wl_output *wl_output, int32_t factor) {
+	OS_Wayland *d_wl = DISPLAY_WL;
+	d_wl->_surface_scale_factor = factor;
+	wl_surface_set_buffer_scale(d_wl->surface, factor);
+}
+
+//-----------pointer-----------
 // even helper functions
 void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
 	OS_Wayland *d_wl = DISPLAY_WL;
@@ -204,6 +230,7 @@ void OS_Wayland::pointer_axis_stop_handler(void *data, struct wl_pointer *wl_poi
 void OS_Wayland::pointer_axis_discrete_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
 }
 
+//-----------keyboard-----------
 void OS_Wayland::keyboard_keymap_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
 	OS_Wayland *d_wl = DISPLAY_WL;
 
@@ -324,7 +351,7 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 	// wl_surface_set_opaque_region(surface, region);
 
 	//wl_display_dispatch(display);
-	struct wl_egl_window *egl_window = wl_egl_window_create(surface, p_desired.width, p_desired.height);
+	egl_window = wl_egl_window_create(surface, p_desired.width, p_desired.height);
 
 	if (egl_window == EGL_NO_SURFACE) {
 		print_verbose("No window !?\n");
@@ -496,6 +523,15 @@ void OS_Wayland::set_cursor_shape(CursorShape p_shape) {
 }
 void OS_Wayland::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	print_line("not implemented (OS_Wayland): set_custom_mouse_cursor");
+}
+
+void OS_Wayland::set_window_size(const Size2 p_size) {
+	if (p_size == get_window_size()) {
+		wl_surface_commit(surface);
+	} else {
+		context_gl_egl->resize(egl_window, (int)p_size.width, (int)p_size.height, 0, 0);
+		Main::force_redraw();
+	}
 }
 
 void OS_Wayland::swap_buffers() {

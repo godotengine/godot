@@ -194,6 +194,11 @@ void ContextGL_EGL::cleanup() {
 		egl_display = EGL_NO_DISPLAY;
 	}
 };
+void ContextGL_EGL::resize(struct wl_egl_window *p_egl_window, int p_width, int p_height, int dx, int dy) {
+	width = (EGLint)p_width;
+	height = (EGLint)p_height;
+	wl_egl_window_resize(p_egl_window, width, height, 0, 0);
+}
 ContextGL_EGL::ContextGL_EGL(EGLNativeDisplayType p_egl_display, EGLNativeWindowType &p_egl_window, const OS::VideoMode &p_default_video_mode, Driver p_context_type) {
 
 	default_video_mode = p_default_video_mode;

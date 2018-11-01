@@ -83,11 +83,11 @@ public:
 	virtual void swap_buffers();
 	virtual int get_window_width();
 	virtual int get_window_height();
-
 	virtual Error initialize();
 
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
+	void resize(struct wl_egl_window *p_egl_window, int p_width, int p_height, int dx, int dy);
 	void cleanup();
 	ContextGL_EGL(EGLNativeDisplayType p_egl_display, EGLNativeWindowType &p_egl_window, const OS::VideoMode &p_default_video_mode, Driver p_context_type);
 	virtual ~ContextGL_EGL();
