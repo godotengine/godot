@@ -169,7 +169,7 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			cbk->invalid_by_dir++;
 			return;
 		}
-		if (cbk->valid_dir.dot((p_point_A - p_point_B).normalized()) < 0.7071) {
+		if (cbk->valid_dir.dot((p_point_A - p_point_B).normalized()) < 0.7071) { //sqrt(2)/2.0
 			cbk->invalid_by_dir++;
 
 			/*

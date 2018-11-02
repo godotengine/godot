@@ -31,9 +31,9 @@
 #include "space_2d_sw.h"
 
 #include "collision_solver_2d_sw.h"
+#include "core/os/os.h"
 #include "core/pair.h"
 #include "physics_2d_server_sw.h"
-
 _FORCE_INLINE_ static bool _can_collide_with(CollisionObject2DSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	if (!(p_object->get_collision_layer() & p_collision_mask)) {
@@ -487,12 +487,23 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 	Rect2 body_aabb;
 
+	bool shapes_found = false;
+
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		return 0;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
@@ -647,12 +658,23 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	}
 	Rect2 body_aabb;
 
+	bool shapes_found = false;
+
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		return false;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
@@ -715,19 +737,21 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
 						cbk.valid_depth = p_margin; //only valid depth is the collision margin
 						cbk.invalid_by_dir = 0;
-
 					} else {
 						cbk.valid_dir = Vector2();
 						cbk.valid_depth = 0;
 						cbk.invalid_by_dir = 0;
 					}
 
+					int current_collisions = cbk.amount;
+					bool did_collide = false;
+
 					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
 					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, NULL, p_margin)) {
-						collided = cbk.amount > 0;
+						did_collide = cbk.amount > current_collisions;
 					}
 
-					if (!collided && cbk.invalid_by_dir > 0) {
+					if (!did_collide && cbk.invalid_by_dir > 0) {
 						//this shape must be excluded
 						if (excluded_shape_pair_count < max_excluded_shape_pairs) {
 							ExcludedShapeSW esp;
@@ -736,6 +760,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 							esp.against_shape_index = shape_idx;
 							excluded_shape_pairs[excluded_shape_pair_count++] = esp;
 						}
+					}
+
+					if (did_collide) {
+						collided = true;
 					}
 				}
 			}

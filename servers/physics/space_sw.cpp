@@ -544,14 +544,24 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 
 	AABB body_aabb;
 
+	bool shapes_found = false;
+
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
 	}
 
+	if (!shapes_found) {
+		return 0;
+	}
 	// Undo the currently transform the physics server is aware of and apply the provided one
 	body_aabb = p_transform.xform(p_body->get_inv_transform().xform(body_aabb));
 	body_aabb = body_aabb.grow(p_margin);
@@ -691,13 +701,23 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		r_result->collider_shape = 0;
 	}
 	AABB body_aabb;
+	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		return false;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
