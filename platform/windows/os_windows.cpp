@@ -58,11 +58,8 @@
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
-#ifdef _MSC_VER
-_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-#else
-__attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
-#endif
+__declspec(dllexport) DWORD NvOptimusEnablement = 1;
+__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
 // Workaround mingw-w64 < 4.0 bug
