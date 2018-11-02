@@ -737,6 +737,19 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						cbk.valid_dir = body_shape_xform.get_axis(1).normalized();
 						cbk.valid_depth = p_margin; //only valid depth is the collision margin
 						cbk.invalid_by_dir = 0;
+
+						if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
+							const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+							if ((Physics2DServer::BODY_MODE_KINEMATIC || Physics2DServer::BODY_MODE_RIGID)) {
+								//fix for moving platforms, margin is increased by how much it moved in the given direction
+								Vector2 lv = b->get_linear_velocity();
+								//compute displacement from linear velocity
+								Vector2 motion = lv * Physics2DDirectBodyStateSW::singleton->step;
+								float motion_len = motion.length();
+								motion.normalize();
+								cbk.valid_depth += motion_len * MAX(motion.dot(-cbk.valid_dir), 0.0);
+							}
+						}
 					} else {
 						cbk.valid_dir = Vector2();
 						cbk.valid_depth = 0;
