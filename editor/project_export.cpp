@@ -804,13 +804,16 @@ void ProjectExportDialog::_export_project() {
 	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
 	export_project->clear_filters();
 
+	List<String> extension_list = platform->get_binary_extensions(current);
+	for (int i = 0; i < extension_list.size(); i++) {
+		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
+	}
+
 	if (current->get_export_path() != "") {
 		export_project->set_current_path(current->get_export_path());
 	} else {
-		String extension = platform->get_binary_extension(current);
-		if (extension != String()) {
-			export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
-			export_project->set_current_file(default_filename + "." + extension);
+		if (extension_list.size() >= 1) {
+			export_project->set_current_file(default_filename + "." + extension_list[0]);
 		} else {
 			export_project->set_current_file(default_filename);
 		}

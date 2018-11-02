@@ -1459,8 +1459,10 @@ public:
 		return valid;
 	}
 
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
-		return "apk";
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+		List<String> list;
+		list.push_back("apk");
+		return list;
 	}
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
