@@ -235,7 +235,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	if (p_streamable)
 		format |= StreamTexture::FORMAT_BIT_STREAM;
-	if (p_mipmaps || p_compress_mode == COMPRESS_VIDEO_RAM) //VRAM always uses mipmaps
+	if (p_mipmaps)
 		format |= StreamTexture::FORMAT_BIT_HAS_MIPMAPS; //mipmaps bit
 	if (p_detect_3d)
 		format |= StreamTexture::FORMAT_BIT_DETECT_3D;
@@ -310,7 +310,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		case COMPRESS_VIDEO_RAM: {
 
 			Ref<Image> image = p_image->duplicate();
-			image->generate_mipmaps(p_force_normal);
+			if (p_mipmaps) {
+				image->generate_mipmaps(p_force_normal);
+			}
 
 			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
 				image->convert(Image::FORMAT_RGBE9995);
