@@ -557,8 +557,9 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 //////////////
 
-void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> &report) {
+void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Vector<String> &report) {
 
+	mode = p_mode;
 	for_file = p_for_file;
 	set_title(TTR("Error loading:") + " " + p_for_file.get_file());
 	files->clear();
@@ -584,7 +585,14 @@ void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> 
 
 void DependencyErrorDialog::ok_pressed() {
 
-	EditorNode::get_singleton()->load_scene(for_file, true);
+	switch (mode) {
+		case MODE_SCENE:
+			EditorNode::get_singleton()->load_scene(for_file, true);
+			break;
+		case MODE_RESOURCE:
+			EditorNode::get_singleton()->load_resource(for_file, true);
+			break;
+	}
 }
 
 void DependencyErrorDialog::custom_action(const String &) {
@@ -599,7 +607,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 
 	files = memnew(Tree);
 	files->set_hide_root(true);
-	vb->add_margin_child(TTR("Scene failed to load due to missing dependencies:"), files, true);
+	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_custom_minimum_size(Size2(1, 200));
 	get_ok()->set_text(TTR("Open Anyway"));
