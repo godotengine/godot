@@ -267,6 +267,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 // maybe contextgl wants to be in charge of creating the window
 #if defined(OPENGL_ENABLED)
+	// Set DRI_PRIME if not set. This means that Godot should default to a higher-power GPU if it exists.
+	// Note: Due to the final '0' parameter to setenv any existing DRI_PRIME environment variables will not
+	// be overwritten.
+	setenv("DRI_PRIME", "1", 0);
 
 	ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_3_0_COMPATIBLE;
 
