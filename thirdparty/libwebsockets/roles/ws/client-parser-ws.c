@@ -450,7 +450,7 @@ ping_drop:
 			break;
 
 		case LWSWSOPC_PONG:
-			lwsl_info("client receied pong\n");
+			lwsl_info("client received pong\n");
 			lwsl_hexdump(&wsi->ws->rx_ubuf[LWS_PRE],
 				     wsi->ws->rx_ubuf_head);
 
@@ -488,9 +488,6 @@ ping_drop:
 		ebuf.token = &wsi->ws->rx_ubuf[LWS_PRE];
 		ebuf.len = wsi->ws->rx_ubuf_head;
 
-		if (wsi->ws->opcode == LWSWSOPC_PONG && !ebuf.len)
-			goto already_done;
-
 #if !defined(LWS_WITHOUT_EXTENSIONS)
 drain_extension:
 		lwsl_ext("%s: passing %d to ext\n", __func__, ebuf.len);
@@ -504,14 +501,12 @@ drain_extension:
 #endif
 		lwsl_debug("post inflate ebuf len %d\n", ebuf.len);
 
-		if (
 #if !defined(LWS_WITHOUT_EXTENSIONS)
-		    rx_draining_ext &&
-#endif
-		    !ebuf.len) {
+		if (rx_draining_ext && !ebuf.len) {
 			lwsl_debug("   --- ending drain on 0 read result\n");
 			goto already_done;
 		}
+#endif
 
 		if (wsi->ws->check_utf8 && !wsi->ws->defeat_check_utf8) {
 			if (lws_check_utf8(&wsi->ws->utf8,
