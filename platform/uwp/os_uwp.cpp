@@ -47,6 +47,7 @@
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 #include "thread_uwp.h"
 
 #include <ppltasks.h>
