@@ -74,6 +74,10 @@ void EMWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 void EMWSServer::poll() {
 }
 
+int EMWSServer::get_max_packet_size() const {
+	return 0;
+}
+
 EMWSServer::EMWSServer() {
 }
 

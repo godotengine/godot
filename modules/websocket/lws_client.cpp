@@ -32,6 +32,7 @@
 #include "lws_client.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer_ssl.h"
+#include "core/project_settings.h"
 #include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
@@ -104,6 +105,10 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	return OK;
 };
 
+int LWSClient::get_max_packet_size() const {
+	return (1 << _out_buf_size) - PROTO_SIZE;
+}
+
 void LWSClient::poll() {
 
 	_lws_poll();
@@ -124,7 +129,7 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 		} break;
 
 		case LWS_CALLBACK_CLIENT_ESTABLISHED:
-			peer->set_wsi(wsi);
+			peer->set_wsi(wsi, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 			peer_data->peer_id = 0;
 			peer_data->force_close = false;
 			peer_data->clean_close = false;
@@ -207,6 +212,11 @@ uint16_t LWSClient::get_connected_port() const {
 };
 
 LWSClient::LWSClient() {
+	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
+	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
+	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_BUF) - 1) + 10;
+	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_PKT) - 1);
+
 	context = NULL;
 	_lws_ref = NULL;
 	_peer = Ref<LWSPeer>(memnew(LWSPeer));

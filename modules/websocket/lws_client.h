@@ -43,8 +43,15 @@ class LWSClient : public WebSocketClient {
 
 	LWS_HELPER(LWSClient);
 
+private:
+	int _in_buf_size;
+	int _in_pkt_size;
+	int _out_buf_size;
+	int _out_pkt_size;
+
 public:
 	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>());
+	int get_max_packet_size() const;
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 	void disconnect_from_host(int p_code = 1000, String p_reason = "");
 	IP_Address get_connected_host() const;
