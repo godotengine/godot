@@ -1968,7 +1968,7 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	return;
 }
 
-void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths) {
+void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders
 	ERR_FAIL_COND(p_paths.empty())
 
@@ -2055,9 +2055,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
-		p_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-		p_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-		p_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+		if (p_display_path_dependent_options) {
+			p_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+			p_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
+			p_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+		}
 
 		String fpath = p_paths[0];
 		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
@@ -2104,7 +2106,7 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 	if (!paths.empty()) {
 		file_list_popup->clear();
 		file_list_popup->set_size(Size2(1, 1));
-		_file_and_folders_fill_popup(file_list_popup, paths);
+		_file_and_folders_fill_popup(file_list_popup, paths, searched_string.length() == 0);
 		file_list_popup->set_position(files->get_global_position() + p_pos);
 		file_list_popup->popup();
 	}
@@ -2112,6 +2114,9 @@ void FileSystemDock::_file_list_rmb_select(int p_item, const Vector2 &p_pos) {
 
 void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	// Right click on empty space for file list
+	if (searched_string.length() > 0)
+		return;
+
 	file_list_popup->clear();
 	file_list_popup->set_size(Size2(1, 1));
 
