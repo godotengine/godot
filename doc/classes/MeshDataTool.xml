@@ -104,7 +104,7 @@
 			</argument>
 			<description>
 				Returns specified edge associated with given face.
-				Edge argument must 2 or less becuase a face only has three edges.
+				Edge argument must 2 or less because a face only has three edges.
 			</description>
 		</method>
 		<method name="get_face_meta" qualifiers="const">
@@ -134,14 +134,14 @@
 			</argument>
 			<description>
 				Returns specified vertex of given face.
-				Vertex argument must be 2 or less becuase faces contain three vertices.
+				Vertex argument must be 2 or less because faces contain three vertices.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns format of [Mesh]. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] becuase [code]ARRAY_FORMAT_VERTEX[/code] is [code]1[/code] and [code]ARRAY_FORMAT_NORMAL[/code] is [code]2[/code].
+				Returns format of [Mesh]. Format is an integer made up of [Mesh] format flags combined together. For example, a mesh containing both vertices and normals would return a format of [code]3[/code] because [code]ARRAY_FORMAT_VERTEX[/code] is [code]1[/code] and [code]ARRAY_FORMAT_NORMAL[/code] is [code]2[/code].
 				For list of format flags see [ArrayMesh].
 			</description>
 		</method>
