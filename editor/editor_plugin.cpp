@@ -475,7 +475,6 @@ void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
-	if (scn_root == NULL) return;
 	emit_signal("scene_changed", scn_root);
 }
 
