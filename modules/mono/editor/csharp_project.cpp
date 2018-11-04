@@ -106,6 +106,9 @@ String generate_game_project(const String &p_dir, const String &p_name, const Ve
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {
 
+	if (!GLOBAL_DEF("mono/project/auto_update_project", true))
+		return;
+
 	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
