@@ -66,14 +66,6 @@ typedef unsigned long long lws_intptr_t;
 #define O_RDONLY	_O_RDONLY
 #endif
 
-// Visual studio older than 2015 and WIN_CE has only _stricmp
-#if (defined(_MSC_VER) && _MSC_VER < 1900) || defined(_WIN32_WCE)
-#define strcasecmp _stricmp
-#elif !defined(__MINGW32__)
-#define strcasecmp stricmp
-#endif
-#define getdtablesize() 30000
-
 #define LWS_INLINE __inline
 #define LWS_VISIBLE
 #define LWS_WARN_UNUSED_RESULT
@@ -150,6 +142,7 @@ typedef unsigned long long lws_intptr_t;
 #endif
 
 #if defined(__ANDROID__)
+#include <netinet/in.h>
 #include <unistd.h>
 #define getdtablesize() sysconf(_SC_OPEN_MAX)
 #endif
@@ -163,6 +156,9 @@ typedef unsigned long long lws_intptr_t;
 #include <uv.h>
 #ifdef LWS_HAVE_UV_VERSION_H
 #include <uv-version.h>
+#endif
+#ifdef LWS_HAVE_NEW_UV_VERSION_H
+#include <uv/version.h>
 #endif
 #endif /* LWS_WITH_LIBUV */
 #if defined(LWS_WITH_LIBEVENT)
@@ -456,9 +452,6 @@ lwsl_visible(int level);
 #endif
 
 struct lws;
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-#endif
 
 typedef int64_t lws_usec_t;
 
@@ -540,7 +533,7 @@ struct timer_mapping {
 
 #define lws_uv_getloop(a, b) (NULL)
 
-static inline void uv_timer_init(void *l, uv_timer_t *t)
+static LWS_INLINE void uv_timer_init(void *l, uv_timer_t *t)
 {
 	(void)l;
 	*t = NULL;
@@ -548,7 +541,7 @@ static inline void uv_timer_init(void *l, uv_timer_t *t)
 
 extern void esp32_uvtimer_cb(TimerHandle_t t);
 
-static inline void uv_timer_start(uv_timer_t *t, uv_cb_t *cb, int first, int rep)
+static LWS_INLINE void uv_timer_start(uv_timer_t *t, uv_cb_t *cb, int first, int rep)
 {
 	struct timer_mapping *tm = (struct timer_mapping *)malloc(sizeof(*tm));
 
@@ -563,12 +556,12 @@ static inline void uv_timer_start(uv_timer_t *t, uv_cb_t *cb, int first, int rep
 	xTimerStart(*t, 0);
 }
 
-static inline void uv_timer_stop(uv_timer_t *t)
+static LWS_INLINE void uv_timer_stop(uv_timer_t *t)
 {
 	xTimerStop(*t, 0);
 }
 
-static inline void uv_close(uv_handle_t *h, void *v)
+static LWS_INLINE void uv_close(uv_handle_t *h, void *v)
 {
 	free(pvTimerGetTimerID((uv_timer_t)h));
 	xTimerDelete(*(uv_timer_t *)h, 0);
@@ -1757,7 +1750,7 @@ lws_genhash_destroy(struct lws_genhash_ctx *ctx, void *result);
  * If the return is nonzero, it failed and there is nothing needing to be
  * destroyed.
  */
-int
+LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 lws_genhmac_init(struct lws_genhmac_ctx *ctx, enum lws_genhmac_types type,
 		const uint8_t *key, size_t key_len);
 
@@ -1771,7 +1764,7 @@ lws_genhmac_init(struct lws_genhmac_ctx *ctx, enum lws_genhmac_types type,
  *
  * If the return is nonzero, it failed and needs destroying.
  */
-int
+LWS_VISIBLE LWS_EXTERN int LWS_WARN_UNUSED_RESULT
 lws_genhmac_update(struct lws_genhmac_ctx *ctx, const void *in, size_t len);
 
 /** lws_genhmac_destroy() - copy out the result digest and destroy the ctx
@@ -1785,7 +1778,7 @@ lws_genhmac_update(struct lws_genhmac_ctx *ctx, const void *in, size_t len);
  * NULL result is supported so that you can destroy the ctx cleanly on error
  * conditions, where there is no valid result.
  */
-int
+LWS_VISIBLE LWS_EXTERN int
 lws_genhmac_destroy(struct lws_genhmac_ctx *ctx, void *result);
 ///@}
 
@@ -2812,7 +2805,7 @@ struct lws_context_creation_info {
 	/**< VHOST: pointer to optional linked list of per-vhost
 	 * options made accessible to protocols */
 	int keepalive_timeout;
-	/**< VHOST: (default = 0 = 60s) seconds to allow remote
+	/**< VHOST: (default = 0 = 5s) seconds to allow remote
 	 * client to hold on to an idle HTTP/1.1 connection */
 	const char *log_filepath;
 	/**< VHOST: filepath to append logs to... this is opened before
@@ -4943,7 +4936,7 @@ lws_write(struct lws *wsi, unsigned char *buf, size_t len,
 	lws_write(wsi, (unsigned char *)(buf), len, LWS_WRITE_HTTP)
 
 /* helper for multi-frame ws message flags */
-static inline int
+static LWS_INLINE int
 lws_write_ws_flags(int initial, int is_start, int is_end)
 {
 	int r;
@@ -5621,13 +5614,13 @@ struct lws_dll_lws { /* typed as struct lws * */
 
 #define lws_dll_is_null(___dll) (!(___dll)->prev && !(___dll)->next)
 
-static inline void
+static LWS_INLINE void
 lws_dll_lws_add_front(struct lws_dll_lws *_a, struct lws_dll_lws *_head)
 {
 	lws_dll_add_front((struct lws_dll *)_a, (struct lws_dll *)_head);
 }
 
-static inline void
+static LWS_INLINE void
 lws_dll_lws_remove(struct lws_dll_lws *_a)
 {
 	lws_dll_remove((struct lws_dll *)_a);
@@ -7064,9 +7057,6 @@ lws_email_destroy(struct lws_email *email);
 //@{
 struct lejp_ctx;
 
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(_x) (sizeof(_x) / sizeof(_x[0]))
-#endif
 #define LWS_ARRAY_SIZE(_x) (sizeof(_x) / sizeof(_x[0]))
 #define LEJP_FLAG_WS_KEEP 64
 #define LEJP_FLAG_WS_COMMENTLINE 32
@@ -7219,7 +7209,7 @@ typedef signed char (*lejp_callback)(struct lejp_ctx *ctx, char reason);
 #endif
 #ifndef LEJP_STRING_CHUNK
 /* must be >= 30 to assemble floats */
-#define LEJP_STRING_CHUNK 255
+#define LEJP_STRING_CHUNK 254
 #endif
 
 enum num_flags {
@@ -7253,7 +7243,7 @@ struct lejp_ctx {
 	uint16_t i[LEJP_MAX_INDEX_DEPTH]; /* index array */
 	uint16_t wild[LEJP_MAX_INDEX_DEPTH]; /* index array */
 	char path[LEJP_MAX_PATH];
-	char buf[LEJP_STRING_CHUNK];
+	char buf[LEJP_STRING_CHUNK + 1];
 
 	/* int */
 

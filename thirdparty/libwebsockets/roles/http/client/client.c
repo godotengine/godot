@@ -93,7 +93,7 @@ lws_client_socket_service(struct lws *wsi, struct lws_pollfd *pollfd,
 	char *sb = p;
 	int n = 0;
 #if defined(LWS_WITH_SOCKS5)
-	char conn_mode = 0, pending_timeout = 0;
+	int conn_mode = 0, pending_timeout = 0;
 #endif
 
 	if ((pollfd->revents & LWS_POLLOUT) &&
@@ -252,6 +252,8 @@ socks_reply_fail:
 			/* clear his proxy connection timeout */
 			lws_set_timeout(wsi, NO_PENDING_TIMEOUT, 0);
 			goto start_ws_handshake;
+		default:
+			break;
 		}
 		break;
 #endif
@@ -578,6 +580,8 @@ lws_http_transaction_completed_client(struct lws *wsi)
 			"queued client done");
 	}
 
+	_lws_header_table_reset(wsi->http.ah);
+
 	/* after the first one, they can only be coming from the queue */
 	wsi->transaction_from_pipeline_queue = 1;
 
@@ -629,12 +633,20 @@ lws_http_transaction_completed_client(struct lws *wsi)
 }
 
 LWS_VISIBLE LWS_EXTERN unsigned int
-lws_http_client_http_response(struct lws *wsi)
+lws_http_client_http_response(struct lws *_wsi)
 {
-	if (!wsi->http.ah)
-		return 0;
+	struct lws *wsi;
+	unsigned int resp;
 
-	return wsi->http.ah->http_response;
+	if (_wsi->http.ah && _wsi->http.ah->http_response)
+		return _wsi->http.ah->http_response;
+
+	lws_vhost_lock(_wsi->vhost);
+	wsi = _lws_client_wsi_master(_wsi);
+	resp = wsi->http.ah->http_response;
+	lws_vhost_unlock(_wsi->vhost);
+
+	return resp;
 }
 #endif
 #if defined(LWS_PLAT_OPTEE)
@@ -781,7 +793,7 @@ lws_client_interpret_server_handshake(struct lws *wsi)
 			q = strrchr(new_path, '/');
 			if (q)
 				lws_strncpy(q + 1, p, sizeof(new_path) -
-							(q - new_path));
+							(q - new_path) - 1);
 			else
 				path = p;
 		}
@@ -910,9 +922,9 @@ lws_client_interpret_server_handshake(struct lws *wsi)
 		 * we seem to be good to go, give client last chance to check
 		 * headers and OK it
 		 */
-		if (wsi->protocol->callback(wsi,
+		if (w->protocol->callback(w,
 				LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH,
-					    wsi->user_space, NULL, 0)) {
+					    w->user_space, NULL, 0)) {
 
 			cce = "HS: disallowed by client filter";
 			goto bail2;
@@ -924,9 +936,9 @@ lws_client_interpret_server_handshake(struct lws *wsi)
 		wsi->rxflow_change_to = LWS_RXFLOW_ALLOW;
 
 		/* call him back to inform him he is up */
-		if (wsi->protocol->callback(wsi,
+		if (w->protocol->callback(w,
 					    LWS_CALLBACK_ESTABLISHED_CLIENT_HTTP,
-					    wsi->user_space, NULL, 0)) {
+					    w->user_space, NULL, 0)) {
 			cce = "HS: disallowed at ESTABLISHED";
 			goto bail3;
 		}
@@ -964,9 +976,9 @@ bail2:
 		n = 0;
 		if (cce)
 			n = (int)strlen(cce);
-		wsi->protocol->callback(wsi,
+		w->protocol->callback(w,
 				LWS_CALLBACK_CLIENT_CONNECTION_ERROR,
-				wsi->user_space, (void *)cce,
+				w->user_space, (void *)cce,
 				(unsigned int)n);
 	}
 	wsi->already_did_cce = 1;

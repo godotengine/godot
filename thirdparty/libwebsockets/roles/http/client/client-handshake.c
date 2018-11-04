@@ -162,7 +162,7 @@ create_new_conn:
 
 	if (!wsi->client_hostname_copy)
 		wsi->client_hostname_copy =
-			strdup(lws_hdr_simple_ptr(wsi,
+			lws_strdup(lws_hdr_simple_ptr(wsi,
 					_WSI_TOKEN_CLIENT_PEER_ADDRESS));
 
 	/*
@@ -654,12 +654,12 @@ lws_client_reset(struct lws **pwsi, int ssl, const char *address, int port,
 	lws_ssl_close(wsi);
 #endif
 
+	__remove_wsi_socket_from_fds(wsi);
+
 	if (wsi->context->event_loop_ops->close_handle_manually)
 		wsi->context->event_loop_ops->close_handle_manually(wsi);
 	else
 		compatible_close(wsi->desc.sockfd);
-
-	__remove_wsi_socket_from_fds(wsi);
 
 #if defined(LWS_WITH_TLS)
 	wsi->tls.use_ssl = ssl;
@@ -717,7 +717,7 @@ lws_client_reset(struct lws **pwsi, int ssl, const char *address, int port,
 }
 
 #ifdef LWS_WITH_HTTP_PROXY
-static hubbub_error
+hubbub_error
 html_parser_cb(const hubbub_token *token, void *pw)
 {
 	struct lws_rewrite *r = (struct lws_rewrite *)pw;
@@ -846,7 +846,7 @@ html_parser_cb(const hubbub_token *token, void *pw)
 
 #endif
 
-static char *
+char *
 lws_strdup(const char *s)
 {
 	char *d = lws_malloc(strlen(s) + 1, "strdup");
