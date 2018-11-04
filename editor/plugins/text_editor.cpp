@@ -360,7 +360,7 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_CLONE_DOWN: {
 
-			code_editor->code_lines_down();
+			code_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 
