@@ -38,6 +38,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef OSX_ENABLED
+#include <dirent.h>
+#endif
+
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
 #endif
@@ -103,6 +107,26 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 				return ERR_FILE_CANT_OPEN;
 		}
 	}
+
+#if defined(OSX_ENABLED) && defined(TOOLS_ENABLED)
+	if (p_mode_flags == READ) {
+		DIR *dir = opendir(path.get_base_dir().utf8().get_data());
+		struct dirent *dir_entry;
+		if (dir) {
+			String base_file = path.get_file();
+			while ((dir_entry = readdir(dir)) != NULL) {
+				String fname = dir_entry->d_name;
+				if (fname.nocasecmp_to(base_file) == 0) {
+					if (fname != base_file) {
+						WARN_PRINTS("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+					}
+					break;
+				}
+			}
+			closedir(dir);
+		}
+	}
+#endif
 
 	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
 		save_path = path;
