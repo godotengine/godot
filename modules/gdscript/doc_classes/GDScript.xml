@@ -8,7 +8,7 @@
 		[method new] creates a new instance of the script. [method Object.set_script] extends an existing object, if that object's class matches one of the script's base classes.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/getting_started/scripting/gdscript/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
