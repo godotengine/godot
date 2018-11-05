@@ -765,6 +765,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 }
 
 void VisualScriptEditor::_update_members() {
+	ERR_FAIL_COND(!script.is_valid());
 
 	updating_members = true;
 
@@ -3061,7 +3062,7 @@ void VisualScriptEditor::_notification(int p_what) {
 			}
 		}
 
-		if (is_visible_in_tree()) {
+		if (is_visible_in_tree() && script.is_valid()) {
 			_update_members();
 			_update_graph();
 		}
