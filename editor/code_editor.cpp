@@ -1060,7 +1060,7 @@ void CodeTextEditor::delete_lines() {
 	text_editor->end_complex_operation();
 }
 
-void CodeTextEditor::code_lines_down() {
+void CodeTextEditor::clone_lines_down() {
 	int from_line = text_editor->cursor_get_line();
 	int to_line = text_editor->cursor_get_line();
 	int column = text_editor->cursor_get_column();
@@ -1072,20 +1072,19 @@ void CodeTextEditor::code_lines_down() {
 	}
 	int next_line = to_line + 1;
 
-	if (to_line >= text_editor->get_line_count() - 1) {
-		text_editor->set_line(to_line, text_editor->get_line(to_line) + "\n");
-	}
-
+	bool caret_at_start = text_editor->cursor_get_line() == from_line;
 	text_editor->begin_complex_operation();
 	for (int i = from_line; i <= to_line; i++) {
-
 		text_editor->unfold_line(i);
-		if (i >= text_editor->get_line_count() - 1) {
-			text_editor->set_line(i, text_editor->get_line(i) + "\n");
-		}
-		String line_clone = text_editor->get_line(i);
-		text_editor->insert_at(line_clone, next_line);
+		text_editor->set_line(next_line - 1, text_editor->get_line(next_line - 1) + "\n");
+		text_editor->set_line(next_line, text_editor->get_line(i));
 		next_line++;
+	}
+
+	if (caret_at_start) {
+		text_editor->cursor_set_line(to_line + 1);
+	} else {
+		text_editor->cursor_set_line(next_line - 1);
 	}
 
 	text_editor->cursor_set_column(column);
