@@ -266,7 +266,6 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 
 	if (do_start) {
 		remaining = os_rem;
-		do_start = false;
 	}
 
 	if (!p_seek) {
@@ -769,8 +768,6 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 			rem = blend_input(current, p_time, p_seek, 1.0 - blend, FILTER_IGNORE, false);
 		}
-
-		switched = false;
 
 		if (p_seek) { // don't seek prev animation
 			blend_input(prev, 0, false, blend, FILTER_IGNORE, false);

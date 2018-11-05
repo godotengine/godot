@@ -345,7 +345,6 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 		len_current = sm->blend_node(current, sm->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
 		pos_current = 0;
 		loops_current = 0;
-		play_start = false;
 	}
 
 	if (!sm->states.has(current)) {

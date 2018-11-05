@@ -1143,10 +1143,8 @@ void EditorInspectorSection::_notification(int p_what) {
 		Color color = get_color("font_color", "Tree");
 		draw_string(font, Point2(hs, font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
 
-		int ofs = 0;
 		if (arrow.is_valid()) {
 			draw_texture(arrow, Point2(get_size().width - arrow->get_width(), (h - arrow->get_height()) / 2).floor());
-			ofs += hs + arrow->get_width();
 		}
 	}
 }
