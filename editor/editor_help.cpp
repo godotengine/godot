@@ -252,6 +252,8 @@ void EditorHelpSearch::_notification(int p_what) {
 
 		connect("confirmed", this, "_confirmed");
 		_update_search();
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this, "_confirmed");
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		if (is_visible_in_tree()) {
