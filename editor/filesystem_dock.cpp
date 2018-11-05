@@ -1290,6 +1290,8 @@ void FileSystemDock::_move_with_overwrite() {
 
 bool FileSystemDock::_check_existing() {
 	String &p_to_path = to_move_path;
+	bool can_move = true;
+	Vector<int> files_movements_to_ignore;
 	for (int i = 0; i < to_move.size(); i++) {
 		String ol_pth = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
 		String p_new_path = p_to_path.plus_file(ol_pth.get_file());
@@ -1297,14 +1299,24 @@ bool FileSystemDock::_check_existing() {
 
 		String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 		String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
+		if (old_path == new_path) {
+			files_movements_to_ignore.push_back(i);
+			continue;
+		}
 
 		if (p_item.is_file && FileAccess::exists(new_path)) {
-			return false;
+			can_move = false;
+			break;
 		} else if (!p_item.is_file && DirAccess::exists(new_path)) {
-			return false;
+			can_move = false;
+			break;
 		}
 	}
-	return true;
+
+	for (int i = files_movements_to_ignore.size() - 1; i >= 0; i--) {
+		to_move.remove(files_movements_to_ignore[i]);
+	}
+	return can_move;
 }
 
 void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overwrite) {
