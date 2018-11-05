@@ -574,8 +574,8 @@ public:
 	void set_particles_anim_v_frames(int p_frames);
 	int get_particles_anim_v_frames() const;
 
-	void set_particles_anim_loop(int p_frames);
-	int get_particles_anim_loop() const;
+	void set_particles_anim_loop(bool p_loop);
+	bool get_particles_anim_loop() const;
 
 	void set_grow_enabled(bool p_enable);
 	bool is_grow_enabled() const;
