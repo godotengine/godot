@@ -9,7 +9,7 @@
 		The [code]WorldEnvironment[/code] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox). Usually, these are added in order to improve the realism/color balance of the scene.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/3d/environment_and_post_processing.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
 	</tutorials>
 	<demos>
 	</demos>

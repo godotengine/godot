@@ -7,7 +7,7 @@
 		Contains a generic action which can be targeted from several type of inputs. Actions can be created from the project settings menu [code]Project &gt; Project Settings &gt; Input Map[/code]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html#actions</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
 	</tutorials>
 	<demos>
 	</demos>

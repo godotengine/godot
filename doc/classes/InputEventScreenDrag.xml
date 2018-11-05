@@ -8,7 +8,7 @@
 		Contains screen drag information. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<demos>
 	</demos>

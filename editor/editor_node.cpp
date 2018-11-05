@@ -2270,7 +2270,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			emit_signal("request_help_search", "");
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open("http://docs.godotengine.org/");
+			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
 		} break;
 		case HELP_QA: {
 			OS::get_singleton()->shell_open("https://godotengine.org/qa/");

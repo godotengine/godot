@@ -7,8 +7,8 @@
 		Base class of all sort of input event. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html</link>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
 	</tutorials>
 	<demos>
 	</demos>
