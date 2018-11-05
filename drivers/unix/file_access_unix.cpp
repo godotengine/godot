@@ -114,14 +114,22 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 		struct dirent *dir_entry;
 		if (dir) {
 			String base_file = path.get_file();
+			String warn_file = String();
+			bool should_warn = false;
 			while ((dir_entry = readdir(dir)) != NULL) {
 				String fname = dir_entry->d_name;
 				if (fname.nocasecmp_to(base_file) == 0) {
 					if (fname != base_file) {
-						WARN_PRINTS("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+						should_warn = true;
+						warn_file = fname;
+					} else {
+						should_warn = false;
+						break;
 					}
-					break;
 				}
+			}
+			if (should_warn) {
+				WARN_PRINTS("Case mismatch opening requested file '" + base_file + "', stored as '" + warn_file + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 			}
 			closedir(dir);
 		}
