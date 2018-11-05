@@ -73,7 +73,7 @@ name is available.
     J08nY
     Jakub Grzesik (kubecz3k)
     Jérôme GULLY (Nutriz)
-    JFonS
+    Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
