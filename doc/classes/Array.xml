@@ -300,7 +300,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of elements in the array.
+				Return the amount of non-NULL elements in the array.
 			</description>
 		</method>
 		<method name="sort">
