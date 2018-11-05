@@ -394,6 +394,8 @@ void PropertySelector::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed", this, "_confirmed");
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this, "_confirmed");
 	}
 }
 
