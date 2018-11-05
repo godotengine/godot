@@ -460,6 +460,8 @@ public:
 
 	void invert();
 
+	void init_with(const T &value);
+
 	void operator=(const PoolVector &p_dvector) { _reference(p_dvector); }
 	PoolVector() { alloc = NULL; }
 	PoolVector(const PoolVector &p_dvector) {
@@ -637,6 +639,15 @@ void PoolVector<T>::invert() {
 		temp = w[i];
 		w[i] = w[s - i - 1];
 		w[s - i - 1] = temp;
+	}
+}
+
+template <class T>
+void PoolVector<T>::init_with(const T &value) {
+	int s = size();
+	Write w = write();
+	for (int i = 0; i < s; ++i) {
+		w[i] = value;
 	}
 }
 
