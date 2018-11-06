@@ -93,13 +93,13 @@ class TileMapEditor : public VBoxContainer {
 
 	Label *tile_info;
 	MenuButton *options;
-	ToolButton *transp;
-	ToolButton *mirror_x;
-	ToolButton *mirror_y;
-	ToolButton *rotate_0;
-	ToolButton *rotate_90;
-	ToolButton *rotate_180;
-	ToolButton *rotate_270;
+
+	ToolButton *flip_horizontal_button;
+	ToolButton *flip_vertical_button;
+	ToolButton *rotate_left_button;
+	ToolButton *rotate_right_button;
+	ToolButton *clear_transform_button;
+
 	CheckBox *manual_button;
 
 	Tool tool;
@@ -196,11 +196,15 @@ class TileMapEditor : public VBoxContainer {
 	void _tileset_settings_changed();
 	void _icon_size_changed(float p_value);
 
+	void _clear_transform();
+	void _flip_horizontal();
+	void _flip_vertical();
+	void _rotate(int steps);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	CellOp _get_op_from_cell(const Point2i &p_pos);
-	void _update_transform_buttons(Object *p_button = NULL);
 
 public:
 	HBoxContainer *get_toolbar() const { return toolbar; }
