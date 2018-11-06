@@ -4353,6 +4353,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							current_export.type = Variant::INT;
 							current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
+							current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 							Dictionary enum_values = constant;
 
 							List<Variant> keys;
