@@ -1,0 +1,10 @@
+Import('env')
+
+module_env = env.Clone()
+
+module_env.add_source_files(env.modules_sources,"*.cpp")
+module_env.add_source_files(env.modules_sources,"lib/*.cpp")
+
+# Clipper library needs some C++11 features
+# module_env.Append(CPPFLAGS=["-std=c++11"])
+# module_env.Append(CPPFLAGS=["-std=c++11", "-O2"])
