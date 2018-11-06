@@ -135,6 +135,12 @@ public:
 		return p_n;
 	};
 
+	inline int decrease_write(int p_n) {
+		p_n = MIN(p_n, data_left());
+		inc(write_pos, size_mask + 1 - p_n);
+		return p_n;
+	}
+
 	Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);
 		data.write[inc(write_pos, 1)] = p_v;
