@@ -461,3 +461,8 @@ EditorSpinSlider::EditorSpinSlider() {
 	read_only = false;
 	use_custom_label_color = false;
 }
+EditorSpinSlider::~EditorSpinSlider() {
+	if (grabbing_spinner) {
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	}
+}

@@ -103,6 +103,7 @@ public:
 
 	virtual Size2 get_minimum_size() const;
 	EditorSpinSlider();
+	~EditorSpinSlider();
 };
 
 #endif // EDITOR_SPIN_SLIDER_H
