@@ -244,6 +244,7 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) {
 	type = p_type;
 	space = NULL;
 	instance_id = 0;
+	canvas_instance_id = 0;
 	collision_mask = 1;
 	collision_layer = 1;
 	pickable = true;

@@ -965,6 +965,15 @@ RID CanvasItem::get_canvas() const {
 		return get_viewport()->find_world_2d()->get_canvas();
 }
 
+ObjectID CanvasItem::get_canvas_layer_instance_id() const {
+
+	if (canvas_layer) {
+		return canvas_layer->get_instance_id();
+	} else {
+		return 0;
+	}
+}
+
 CanvasItem *CanvasItem::get_toplevel() const {
 
 	CanvasItem *ci = const_cast<CanvasItem *>(this);

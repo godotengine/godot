@@ -146,6 +146,8 @@ void CanvasLayer::_notification(int p_what) {
 				vp = Node::get_viewport();
 			}
 			ERR_FAIL_COND(!vp);
+
+			vp->_canvas_layer_add(this);
 			viewport = vp->get_viewport_rid();
 
 			VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
@@ -155,6 +157,7 @@ void CanvasLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
+			vp->_canvas_layer_remove(this);
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 			viewport = RID();
 
@@ -183,6 +186,7 @@ RID CanvasLayer::get_viewport() const {
 void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	ERR_FAIL_NULL(p_viewport);
 	if (is_inside_tree()) {
+		vp->_canvas_layer_remove(this);
 		VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 		viewport = RID();
 	}
@@ -202,6 +206,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		else
 			vp = Node::get_viewport();
 
+		vp->_canvas_layer_add(this);
 		viewport = vp->get_viewport_rid();
 
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);

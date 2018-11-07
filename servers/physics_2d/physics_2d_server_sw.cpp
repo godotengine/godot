@@ -469,6 +469,27 @@ ObjectID Physics2DServerSW::area_get_object_instance_id(RID p_area) const {
 	return area->get_instance_id();
 }
 
+void Physics2DServerSW::area_attach_canvas_instance_id(RID p_area, ObjectID p_ID) {
+
+	if (space_owner.owns(p_area)) {
+		Space2DSW *space = space_owner.get(p_area);
+		p_area = space->get_default_area()->get_self();
+	}
+	Area2DSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+	area->set_canvas_instance_id(p_ID);
+}
+ObjectID Physics2DServerSW::area_get_canvas_instance_id(RID p_area) const {
+
+	if (space_owner.owns(p_area)) {
+		Space2DSW *space = space_owner.get(p_area);
+		p_area = space->get_default_area()->get_self();
+	}
+	Area2DSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+	return area->get_canvas_instance_id();
+}
+
 void Physics2DServerSW::area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) {
 
 	if (space_owner.owns(p_area)) {
@@ -742,6 +763,22 @@ uint32_t Physics2DServerSW::body_get_object_instance_id(RID p_body) const {
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_instance_id();
+};
+
+void Physics2DServerSW::body_attach_canvas_instance_id(RID p_body, uint32_t p_ID) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_canvas_instance_id(p_ID);
+};
+
+uint32_t Physics2DServerSW::body_get_canvas_instance_id(RID p_body) const {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+
+	return body->get_canvas_instance_id();
 };
 
 void Physics2DServerSW::body_set_collision_layer(RID p_body, uint32_t p_layer) {
