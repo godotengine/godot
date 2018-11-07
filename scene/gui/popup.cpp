@@ -61,7 +61,7 @@ void Popup::_notification(int p_what) {
 void Popup::_fix_size() {
 
 	Point2 pos = get_global_position();
-	Size2 size = get_size();
+	Size2 size = get_size() * get_scale();
 	Point2 window_size = get_viewport_rect().size;
 
 	if (pos.x + size.width > window_size.width)
@@ -73,7 +73,7 @@ void Popup::_fix_size() {
 		pos.y = window_size.height - size.height;
 	if (pos.y < 0)
 		pos.y = 0;
-	if (pos != get_position())
+	if (pos != get_global_position())
 		set_global_position(pos);
 }
 
@@ -113,68 +113,52 @@ void Popup::set_as_minsize() {
 
 void Popup::popup_centered_minsize(const Size2 &p_minsize) {
 
-	set_custom_minimum_size(p_minsize);
-	_fix_size();
-	popup_centered();
+	ERR_FAIL_COND(get_scale().x == 0.0 || get_scale().y == 0.0)
+
+	Size2 size = get_size() * get_scale();
+
+	// Set costom minimum size while keeping scale.
+	set_custom_minimum_size(p_minsize / get_scale());
+
+	popup_centered(Size2(MAX(size.x, p_minsize.x), MAX(size.y, p_minsize.y)));
 }
 
 void Popup::popup_centered(const Size2 &p_size) {
 
-	Point2 window_size = get_viewport_rect().size;
+	Size2 window_size = get_viewport_rect().size;
 
-	emit_signal("about_to_show");
 	Rect2 rect;
-	rect.size = p_size == Size2() ? get_size() : p_size;
-
+	rect.size = p_size == Size2() ? get_size() * get_scale() : p_size;
 	rect.position = ((window_size - rect.size) / 2.0).floor();
-	set_position(rect.position);
-	set_size(rect.size);
 
-	show_modal(exclusive);
-	_fix_size();
-
-	Control *focusable = find_next_valid_focus();
-	if (focusable)
-		focusable->grab_focus();
-
-	_post_popup();
-	notification(NOTIFICATION_POST_POPUP);
-	popped_up = true;
+	popup(rect);
 }
 
 void Popup::popup_centered_ratio(float p_screen_ratio) {
 
-	emit_signal("about_to_show");
+	Size2 window_size = get_viewport_rect().size;
 
 	Rect2 rect;
-	Point2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
 	rect.position = ((window_size - rect.size) / 2.0).floor();
-	set_position(rect.position);
-	set_size(rect.size);
 
-	show_modal(exclusive);
-	_fix_size();
-
-	Control *focusable = find_next_valid_focus();
-	if (focusable)
-		focusable->grab_focus();
-
-	_post_popup();
-	notification(NOTIFICATION_POST_POPUP);
-	popped_up = true;
+	popup(rect);
 }
 
 void Popup::popup(const Rect2 &p_bounds) {
 
+	ERR_FAIL_COND(get_scale().x == 0.0 || get_scale().y == 0.0)
+
 	emit_signal("about_to_show");
-	show_modal(exclusive);
 
 	// Fit the popup into the optionally provided bounds.
 	if (!p_bounds.has_no_area()) {
 		set_position(p_bounds.position);
-		set_size(p_bounds.size);
+		// Resize the Popup while keeping scale.
+		set_size(p_bounds.size / get_scale());
 	}
+
+	show_modal(exclusive);
 	_fix_size();
 
 	Control *focusable = find_next_valid_focus();

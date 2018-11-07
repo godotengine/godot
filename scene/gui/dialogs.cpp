@@ -46,11 +46,14 @@ void WindowDialog::_post_popup() {
 
 void WindowDialog::_fix_size() {
 
+	ERR_FAIL_COND(get_scale().x == 0.0 || get_scale().y == 0.0)
+
 	// Perhaps this should be called when the viewport resizes as well or windows go out of bounds...
 
 	// Ensure the whole window is visible.
 	Point2i pos = get_global_position();
 	Size2i size = get_size();
+	Size2 scale = get_scale();
 	Size2i viewport_size = get_viewport_rect().size;
 
 	// Windows require additional padding to keep the window chrome visible.
@@ -74,14 +77,15 @@ void WindowDialog::_fix_size() {
 		right = panel_flat->get_expand_margin_size(MARGIN_RIGHT);
 	}
 
-	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
-	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
+	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x * scale.x - right));
+	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y * scale.y - bottom));
 	set_global_position(pos);
 
 	if (resizable) {
 		size.x = MIN(size.x, viewport_size.x - left - right);
 		size.y = MIN(size.y, viewport_size.y - top - bottom);
-		set_size(size);
+		// Resize the Dialog while keeping scale.
+		set_size(size / scale);
 	}
 }
 
