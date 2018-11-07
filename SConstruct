@@ -6,6 +6,7 @@ import string
 import os
 import os.path
 import glob
+import platform
 import sys
 import methods
 import gles_builders
@@ -294,6 +295,9 @@ if selected_platform in platform_list:
 
     if env["extra_suffix"] != '':
         env.extra_suffix += '.' + env["extra_suffix"]
+
+    if env["arch"] == "":
+        env["arch"] = platform.machine()
 
     CCFLAGS = env.get('CCFLAGS', '')
     env['CCFLAGS'] = ''
