@@ -1208,6 +1208,7 @@ void Node::remove_child(Node *p_child) {
 	for (int i = idx; i < data.children.size(); i++) {
 
 		data.children[i]->data.pos = i;
+		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = NULL;
