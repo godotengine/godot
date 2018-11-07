@@ -49,18 +49,6 @@ struct Point64 {
   inline Point64 operator+(const Point64 &b) const {
     return Point64(x + b.x, y + b.y);
   }
-  inline void operator+=(const Point64 &b) {
-    x += b.x;
-    y += b.y;
-  }
-  inline void operator/=(const Point64 &b) {
-    x /= b.x;
-    y /= b.y;
-  }
-  inline void operator/=(const int64_t& d) {
-    x /= d;
-    y /= d;
-  }
 };
 
 typedef std::vector< Point64 > Path;

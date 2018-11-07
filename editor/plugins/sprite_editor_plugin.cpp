@@ -33,7 +33,8 @@
 #include "canvas_item_editor_plugin.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/gui/box_container.h"
-#include "thirdparty/misc/clipper.hpp"
+#include "thirdparty/misc/clipper.h"
+#include "thirdparty/misc/clipper_offset.h"
 
 void SpriteEditor::_node_removed(Node *p_node) {
 
@@ -51,57 +52,51 @@ void SpriteEditor::edit(Sprite *p_sprite) {
 #define PRECISION 10.0
 
 Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
+
+	using namespace clipperlib;
+
 	int size = points.size();
 	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
 
-	ClipperLib::Path subj;
-	ClipperLib::PolyTree solution;
-	ClipperLib::PolyTree out;
+	Path subj;
+	Paths solution;
+	PolyPath out_closed;
+	Paths out_open; // ignored
 
 	for (int i = 0; i < points.size(); i++) {
 
-		subj << ClipperLib::IntPoint(points[i].x * PRECISION, points[i].y * PRECISION);
+		subj << Point64(points[i].x * PRECISION, points[i].y * PRECISION);
 	}
-	ClipperLib::ClipperOffset co;
-	co.AddPath(subj, ClipperLib::jtMiter, ClipperLib::etClosedPolygon);
+	ClipperOffset co;
+	co.AddPath(subj, kMiter, kPolygon);
 	co.Execute(solution, epsilon * PRECISION);
 
-	ClipperLib::PolyNode *p = solution.GetFirst();
+	// Clamp into the specified rect
+	Clipper cl;
+	cl.AddPaths(solution, ptSubject);
 
-	ERR_FAIL_COND_V(!p, points);
+	// Create the clipping rect
+	Path clamp;
+	clamp << Point64(0, 0);
+	clamp << Point64(rect.size.width * PRECISION, 0);
+	clamp << Point64(rect.size.width * PRECISION, rect.size.height * PRECISION);
+	clamp << Point64(0, rect.size.height * PRECISION);
 
-	while (p->IsHole()) {
-		p = p->GetNext();
-	}
-
-	//turn the result into simply polygon (AKA, fix overlap)
-
-	//clamp into the specified rect
-	ClipperLib::Clipper cl;
-	cl.StrictlySimple(true);
-	cl.AddPath(p->Contour, ClipperLib::ptSubject, true);
-	//create the clipping rect
-	ClipperLib::Path clamp;
-	clamp.push_back(ClipperLib::IntPoint(0, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, rect.size.height * PRECISION));
-	clamp.push_back(ClipperLib::IntPoint(0, rect.size.height * PRECISION));
-	cl.AddPath(clamp, ClipperLib::ptClip, true);
-	cl.Execute(ClipperLib::ctIntersection, out);
+	cl.AddPath(clamp, ptClip);
+	cl.Execute(ctIntersection, out_closed, out_open);
 
 	Vector<Vector2> outPoints;
-	ClipperLib::PolyNode *p2 = out.GetFirst();
-	ERR_FAIL_COND_V(!p2, points);
 
-	while (p2->IsHole()) {
-		p2 = p2->GetNext();
-	}
+	ERR_FAIL_COND_V(out_closed.ChildCount() == 0, points);
 
-	int lasti = p2->Contour.size() - 1;
-	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (unsigned int i = 0; i < p2->Contour.size(); i++) {
+	// Root's children are always boundaries, not holes
+	const Path &outer = out_closed.GetChild(0).GetPath();
 
-		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
+	int lasti = outer.size() - 1;
+	Vector2 prev = Vector2(outer[lasti].x / PRECISION, outer[lasti].y / PRECISION);
+	for (unsigned int i = 0; i < outer.size(); i++) {
+
+		Vector2 cur = Vector2(outer[i].x / PRECISION, outer[i].y / PRECISION);
 		if (cur.distance_to(prev) > 0.5) {
 			outPoints.push_back(cur);
 			prev = cur;
