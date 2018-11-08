@@ -84,10 +84,10 @@ public:
 	bool build(const MonoBuildInfo &p_build_info);
 	bool build_async(const MonoBuildInfo &p_build_info, GodotSharpBuild_ExitCallback p_callback = NULL);
 
-	static bool build_api_sln(const String &p_name, const String &p_api_sln_dir, const String &p_config);
+	static bool build_api_sln(const String &p_api_sln_dir, const String &p_config);
 	static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name, APIAssembly::Type p_api_type);
 
-	static bool make_api_sln(APIAssembly::Type p_api_type);
+	static bool make_api_assembly(APIAssembly::Type p_api_type);
 
 	static bool build_project_blocking(const String &p_config);
 

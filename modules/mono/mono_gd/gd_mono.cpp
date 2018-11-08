@@ -496,12 +496,12 @@ bool GDMono::_load_core_api_assembly() {
 	}
 #endif
 
-	String assembly_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(API_ASSEMBLY_NAME ".dll");
+	String assembly_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(CORE_API_ASSEMBLY_NAME ".dll");
 
 	if (!FileAccess::exists(assembly_path))
 		return false;
 
-	bool success = load_assembly_from(API_ASSEMBLY_NAME,
+	bool success = load_assembly_from(CORE_API_ASSEMBLY_NAME,
 			assembly_path,
 			&core_api_assembly);
 
@@ -635,7 +635,7 @@ void GDMono::metadata_set_api_assembly_invalidated(APIAssembly::Type p_api_type,
 
 	String assembly_path = GodotSharpDirs::get_res_assemblies_dir()
 								   .plus_file(p_api_type == APIAssembly::API_CORE ?
-													  API_ASSEMBLY_NAME ".dll" :
+													  CORE_API_ASSEMBLY_NAME ".dll" :
 													  EDITOR_API_ASSEMBLY_NAME ".dll");
 
 	ERR_FAIL_COND(!FileAccess::exists(assembly_path));
@@ -666,7 +666,7 @@ bool GDMono::metadata_is_api_assembly_invalidated(APIAssembly::Type p_api_type) 
 
 	String assembly_path = GodotSharpDirs::get_res_assemblies_dir()
 								   .plus_file(p_api_type == APIAssembly::API_CORE ?
-													  API_ASSEMBLY_NAME ".dll" :
+													  CORE_API_ASSEMBLY_NAME ".dll" :
 													  EDITOR_API_ASSEMBLY_NAME ".dll");
 
 	if (!FileAccess::exists(assembly_path))
