@@ -37,6 +37,11 @@ def can_build():
         print("glib2-devel not found. Install glib2-devel on your target in MerSDK")
         return False;
 
+    vpx_error = os.system("pkg-config vpx --modversion > /dev/null")
+    if(vpx_error):
+        print("libvpx-devel not found. Install libvpx-devel on your target in MerSDK")
+        return False;
+
     return True
 
 def get_opts():
@@ -63,7 +68,7 @@ def get_flags():
         ('builtin_libpng', False),
         ('builtin_openssl', False),
         ('builtin_zlib', False),
-        ('builtin_libvpx', False)
+        ('builtin_vpx', False),
     ]
 
 
