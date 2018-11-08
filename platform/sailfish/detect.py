@@ -27,6 +27,16 @@ def can_build():
         print("SDL2 not found.. sdl disabled.")
         return False
 
+    ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
+    if(ar_error):
+        print("libaudioresource-devel not found. Install libaudioresource-devel on your target in MerSDK")
+        return False;
+
+    glib_error = os.system("pkg-config glib-2.0 --modversion > /dev/null")
+    if(glib_error):
+        print("glib2-devel not found. Install glib2-devel on your target in MerSDK")
+        return False;
+
     return True
 
 def get_opts():
@@ -125,6 +135,8 @@ def configure(env):
     ## Dependencies
 
     env.ParseConfig('pkg-config sdl2 --cflags --libs')
+    env.ParseConfig("pkg-config audioresource --cflags --libs")
+    env.ParseConfig("pkg-config glib-2.0 --cflags --libs")
 
     if (env['touch']):
         env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
@@ -236,7 +248,7 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/sailfish','#core', '#thirdparty/glad'])
     # env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_GL'])
-    env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED'])
+    env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED', '-Wno-strict-aliasing'])
     # env.Append(LIBS=['GL', 'pthread'])
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 

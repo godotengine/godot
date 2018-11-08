@@ -45,7 +45,9 @@
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include <SDL.h>
-
+#ifdef PULSEAUDIO_ENABLED
+#include <audioresource.h>
+#endif
 
 #undef CursorShape
 /**
@@ -123,6 +125,7 @@ class OS_SDL : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
+	audioresource_t      *audio_resource;
 #endif
 
 	// Atom net_wm_icon;
@@ -164,6 +167,12 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
+#ifdef PULSEAUDIO_ENABLED
+	bool is_audio_resource_acquired;
+	void start_audio_driver();
+	void stop_audio_driver();
+#endif
+
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
