@@ -542,7 +542,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 					srgb = true;
 				}
 
-				if (!FileAccess::exists(image_path + ".import")) {
+				if (!FileAccess::exists(image_path + ".cache")) {
 					Ref<ConfigFile> config;
 					config.instance();
 					config->set_value("remap", "importer", "texture");
@@ -554,7 +554,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 					config->set_value("params", "flags/mipmaps", false);
 					config->set_value("params", "flags/srgb", srgb);
 
-					config->save(image_path + ".import");
+					config->save(image_path + ".cache");
 				}
 
 				ResourceLoader::import(image_path);

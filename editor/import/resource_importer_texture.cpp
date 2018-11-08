@@ -95,7 +95,7 @@ void ResourceImporterTexture::update_imports() {
 
 		Ref<ConfigFile> cf;
 		cf.instance();
-		String src_path = String(E->key()) + ".import";
+		String src_path = String(E->key()) + ".cache";
 
 		Error err = cf->load(src_path);
 		ERR_CONTINUE(err != OK);

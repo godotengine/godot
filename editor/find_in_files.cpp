@@ -238,7 +238,7 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 		if (file == "")
 			break;
 
-		// Ignore special dirs and hidden dirs (such as .git and .import)
+		// Ignore special dirs and hidden dirs (such as .git and .cache)
 		if (file == "." || file == ".." || file.begins_with("."))
 			continue;
 
