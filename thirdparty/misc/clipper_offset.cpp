@@ -17,7 +17,7 @@
 
 namespace clipperlib {
 
-  #define PI                (3.14159265358979323846) 
+  #define PI                (3.14159265358979323846)
   #define TWO_PI            (PI * 2)
   #define DEFAULT_ARC_FRAC  (0.02)
   #define TOLERANCE         (1.0E-12)
@@ -81,7 +81,7 @@ namespace clipperlib {
     for (size_t i = 1, last = 0; i < len_path; ++i)
     {
       if (last_pt == p[i]) continue;
-      last++; 
+      last++;
       path.push_back(p[i]);
       last_pt = p[i];
       //j == path.size() -1;
@@ -361,7 +361,7 @@ namespace clipperlib {
           pt1 = Point64(Round(path_in_[j].x + norms_[j].x *
             delta_), Round(path_in_[j].y + norms_[j].y * delta_));
           path_out_.push_back(pt1);
-          pt1 = Point64(Round(path_in_[j].x - norms_[j].x * delta_), 
+          pt1 = Point64(Round(path_in_[j].x - norms_[j].x * delta_),
             Round(path_in_[j].y - norms_[j].y * delta_));
           path_out_.push_back(pt1);
         }

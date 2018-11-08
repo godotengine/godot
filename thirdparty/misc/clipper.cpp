@@ -8,6 +8,8 @@
 * License   : http://www.boost.org/LICENSE_1_0.txt                             *
 *******************************************************************************/
 
+#include "core/error_macros.h"
+
 #include <stdlib.h>
 #include <cmath>
 #include <vector>
@@ -101,8 +103,8 @@ namespace clipperlib {
 
   PolyPath& PolyPath::GetChild(unsigned index)
   {
-    if (index < 0 || index >= childs_.size())
-      throw ClipperException("invalid range in PolyPath::GetChild.");
+    // ERR_FAIL_INDEX_V(index, childs_.size(), PolyPath());
+
     return *childs_[index];
   }
   //------------------------------------------------------------------------------
@@ -590,8 +592,9 @@ namespace clipperlib {
   void Clipper::AddPath(const Path &path, PathType polytype, bool is_open)
   {
     if (is_open) {
-      if (polytype == ptClip)
-        throw ClipperException("AddPath: Only subject paths may be open.");
+      ERR_EXPLAINC("AddPath: Only subject paths may be open.");
+      ERR_FAIL_COND(polytype == ptClip)
+
       has_open_paths_ = true;
     }
     minima_list_sorted_ = false;
@@ -965,8 +968,9 @@ namespace clipperlib {
 
   void Clipper::AddLocalMaxPoly(Active &e1, Active &e2, const Point64 pt)
   {
-    if (!IsHotEdge(e2))
-      throw new ClipperException("Error in AddLocalMaxPoly().");
+    ERR_EXPLAINC("Error in AddLocalMaxPoly().");
+    ERR_FAIL_COND(!IsHotEdge(e2))
+
     AddOutPt(e1, pt);
     if (e1.outrec == e2.outrec) {
       e1.outrec->start_e = NULL;
@@ -986,9 +990,14 @@ namespace clipperlib {
 
     if (IsStartSide(e1) == IsStartSide(e2)) {
       //one or other edge orientation is wrong...
-      if (IsOpen(e1)) SwapSides(*e2.outrec);
-      else if (!FixOrientation(e1) && !FixOrientation(e2))
-        throw new ClipperException("Error in JoinOutrecPaths()");
+      if (IsOpen(e1)) {
+        SwapSides(*e2.outrec);
+      }
+      else if (!FixOrientation(e1) && !FixOrientation(e2)) {
+        ERR_EXPLAINC("Error in JoinOutrecPaths()");
+        ERR_FAIL();
+      }
+
       if (e1.outrec->owner == e2.outrec) e1.outrec->owner = e2.outrec->owner;
     }
 

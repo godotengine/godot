@@ -221,17 +221,6 @@ class Clipper {
 
 #define CLIPPER_HORIZONTAL (-DBL_MAX)
 
-class ClipperException : public std::exception
-{
-  public:
-    ClipperException(const char* description): descr_(description) {}
-    virtual ~ClipperException() throw() {}
-    virtual const char* what() const throw() {return descr_.c_str();}
-  private:
-    std::string descr_;
-};
-//------------------------------------------------------------------------------
-
 } //clipperlib namespace
 
 #endif //clipper_h

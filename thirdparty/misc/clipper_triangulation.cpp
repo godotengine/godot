@@ -8,7 +8,7 @@
 * License   : http://www.boost.org/LICENSE_1_0.txt                             *
 *******************************************************************************/
 
-#include "core/reference.h"
+#include "core/error_macros.h"
 
 #include <stdlib.h>
 #include <cmath>
