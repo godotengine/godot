@@ -102,6 +102,9 @@ void PrimitiveMesh::_request_update() {
 }
 
 int PrimitiveMesh::get_surface_count() const {
+	if (pending_request) {
+		_update();
+	}
 	return 1;
 }
 
