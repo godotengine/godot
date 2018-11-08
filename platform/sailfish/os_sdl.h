@@ -45,13 +45,11 @@
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include <SDL.h>
-<<<<<<< HEAD
+
+
 #ifdef PULSEAUDIO_ENABLED
 #include <audioresource.h>
 #endif
-=======
-
->>>>>>> add sdl sailfish platform
 
 #undef CursorShape
 /**
@@ -123,18 +121,9 @@ class OS_SDL : public OS_Unix {
 	JoypadLinux *joypad;
 #endif
 
-<<<<<<< HEAD
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 	audioresource_t      *audio_resource;
-=======
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
-#ifdef PULSEAUDIO_ENABLED
-	AudioDriverPulseAudio driver_pulseaudio;
->>>>>>> add sdl sailfish platform
 #endif
 
 	// Atom net_wm_icon;
@@ -176,15 +165,12 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
-<<<<<<< HEAD
 #ifdef PULSEAUDIO_ENABLED
 	bool is_audio_resource_acquired;
 	void start_audio_driver();
 	void stop_audio_driver();
 #endif
 
-=======
->>>>>>> add sdl sailfish platform
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
