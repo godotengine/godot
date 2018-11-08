@@ -4767,8 +4767,6 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
-	default_value_cache = memnew(EditorDefaultClassValueCache);
-
 	{ //register importers at the beginning, so dialogs are created with the right extensions
 		Ref<ResourceImporterTexture> import_texture;
 		import_texture.instance();
@@ -5897,7 +5895,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(file_server);
 	memdelete(progress_hb);
-	memdelete(default_value_cache);
+
 	EditorSettings::destroy();
 }
 

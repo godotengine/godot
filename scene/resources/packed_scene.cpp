@@ -472,6 +472,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
+	StringName type = p_node->get_class();
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
@@ -482,7 +483,12 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		String name = E->get().name;
 		Variant value = p_node->get(E->get().name);
 
-		bool isdefault = ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one());
+		bool isdefault = false;
+		Variant default_value = ClassDB::class_get_default_property_value(type, name);
+
+		if (default_value.get_type() != Variant::NIL) {
+			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
+		}
 
 		if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
 			isdefault = true; //is script default value

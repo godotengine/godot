@@ -36,50 +36,6 @@
 #include "multi_node_edit.h"
 #include "scene/resources/packed_scene.h"
 
-EditorDefaultClassValueCache *EditorDefaultClassValueCache::singleton = NULL;
-
-EditorDefaultClassValueCache *EditorDefaultClassValueCache::get_singleton() {
-	return singleton;
-}
-
-Variant EditorDefaultClassValueCache::get_default_value(const StringName &p_class, const StringName &p_property) {
-
-	if (!default_values.has(p_class)) {
-
-		default_values[p_class] = Map<StringName, Variant>();
-
-		if (ClassDB::can_instance(p_class)) {
-
-			Object *c = ClassDB::instance(p_class);
-			List<PropertyInfo> plist;
-			c->get_property_list(&plist);
-			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
-
-					Variant v = c->get(E->get().name);
-					default_values[p_class][E->get().name] = v;
-				}
-			}
-			memdelete(c);
-		}
-	}
-
-	if (!default_values.has(p_class)) {
-		return Variant();
-	}
-
-	if (!default_values[p_class].has(p_property)) {
-		return Variant();
-	}
-
-	return default_values[p_class][p_property];
-}
-
-EditorDefaultClassValueCache::EditorDefaultClassValueCache() {
-	ERR_FAIL_COND(singleton != NULL);
-	singleton = this;
-}
-
 Size2 EditorProperty::get_minimum_size() const {
 
 	Size2 ms;
@@ -418,14 +374,24 @@ bool EditorProperty::_get_instanced_node_original_property(const StringName &p_p
 		node = node->get_owner();
 	}
 
+	if (!found) {
+		//if not found, try default class value
+		Variant attempt = ClassDB::class_get_default_property_value(object->get_class_name(), property);
+		if (attempt.get_type() != Variant::NIL) {
+			found = true;
+			value = attempt;
+		}
+	}
+
 	return found;
 }
 
-bool EditorProperty::_is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage) {
+bool EditorProperty::_is_property_different(const Variant &p_current, const Variant &p_orig) {
 
 	// this is a pretty difficult function, because a property may not be saved but may have
 	// the flag to not save if one or if zero
 
+	//make sure there is an actual state
 	{
 		Node *node = Object::cast_to<Node>(object);
 		if (!node)
@@ -459,15 +425,6 @@ bool EditorProperty::_is_property_different(const Variant &p_current, const Vari
 			return false; //pointless to check if we are not comparing against anything.
 	}
 
-	if (p_orig.get_type() == Variant::NIL) {
-		// not found (was not saved)
-		// check if it was not saved due to being zero or one
-		if (p_current.is_zero() && property_usage & PROPERTY_USAGE_STORE_IF_NONZERO)
-			return false;
-		if (p_current.is_one() && property_usage & PROPERTY_USAGE_STORE_IF_NONONE)
-			return false;
-	}
-
 	if (p_current.get_type() == Variant::REAL && p_orig.get_type() == Variant::REAL) {
 		float a = p_current;
 		float b = p_orig;
@@ -478,23 +435,6 @@ bool EditorProperty::_is_property_different(const Variant &p_current, const Vari
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));
 }
 
-bool EditorProperty::_is_instanced_node_with_original_property_different() {
-
-	bool mbi = _might_be_in_instance();
-	if (mbi) {
-		Variant vorig;
-		int usage = property_usage & (PROPERTY_USAGE_STORE_IF_NONONE | PROPERTY_USAGE_STORE_IF_NONZERO);
-		if (_get_instanced_node_original_property(property, vorig) || usage) {
-			Variant v = object->get(property);
-
-			if (_is_property_different(v, vorig, usage)) {
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
 void EditorProperty::update_reload_status() {
 
 	if (property == StringName())
@@ -502,14 +442,22 @@ void EditorProperty::update_reload_status() {
 
 	bool has_reload = false;
 
-	if (EditorDefaultClassValueCache::get_singleton()) {
-		Variant default_value = EditorDefaultClassValueCache::get_singleton()->get_default_value(object->get_class_name(), property);
+	if (_might_be_in_instance()) {
+		//check for difference including instantiation
+		Variant vorig;
+		if (_get_instanced_node_original_property(property, vorig)) {
+			Variant v = object->get(property);
+
+			if (_is_property_different(v, vorig)) {
+				has_reload = true;
+			}
+		}
+	} else {
+		//check for difference against default class value instead
+		Variant default_value = ClassDB::class_get_default_property_value(object->get_class_name(), property);
 		if (default_value != Variant() && default_value != object->get(property)) {
 			has_reload = true;
 		}
-	}
-	if (_is_instanced_node_with_original_property_different()) {
-		has_reload = true;
 	}
 
 	if (object->call("property_can_revert", property).operator bool()) {
@@ -714,13 +662,11 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (EditorDefaultClassValueCache::get_singleton()) {
-				Variant default_value = EditorDefaultClassValueCache::get_singleton()->get_default_value(object->get_class_name(), property);
-				if (default_value != Variant()) {
-					emit_signal("property_changed", property, default_value);
-					update_property();
-					return;
-				}
+			Variant default_value = ClassDB::class_get_default_property_value(object->get_class_name(), property);
+			if (default_value != Variant()) {
+				emit_signal("property_changed", property, default_value);
+				update_property();
+				return;
 			}
 		}
 		if (check_rect.has_point(mb->get_position())) {
