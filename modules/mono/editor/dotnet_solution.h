@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  net_solution.h                                                       */
+/*  dotnet_solution.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -34,23 +34,28 @@
 #include "core/map.h"
 #include "core/ustring.h"
 
-struct NETSolution {
+struct DotNetSolution {
 	String name;
 
-	void add_new_project(const String &p_name, const String &p_guid, const Vector<String> &p_extra_configs = Vector<String>());
+	struct ProjectInfo {
+		String guid;
+		String relpath; // Must be relative to the solution directory
+		Vector<String> configs;
+	};
+
+	void add_new_project(const String &p_name, const ProjectInfo &p_project_info);
+	bool has_project(const String &p_name) const;
+	const ProjectInfo &get_project_info(const String &p_name) const;
+	bool remove_project(const String &p_name);
 
 	Error save();
 
 	bool set_path(const String &p_existing_path);
+	String get_path();
 
-	NETSolution(const String &p_name);
+	DotNetSolution(const String &p_name);
 
 private:
-	struct ProjectInfo {
-		String guid;
-		Vector<String> configs;
-	};
-
 	String path;
 	Map<String, ProjectInfo> projects;
 };

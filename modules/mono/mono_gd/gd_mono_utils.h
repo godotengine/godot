@@ -233,13 +233,13 @@ _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }
 
-MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc);
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
 
-MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc);
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
 
-void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
 
 uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error);
 

@@ -631,36 +631,36 @@ void set_pending_exception(MonoException *p_exc) {
 _THREAD_LOCAL_(int)
 current_invoke_count = 0;
 
-MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc) {
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)p_exc);
+	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc) {
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)p_exc);
+	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
-MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc) {
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoString *ret = mono_object_to_string(p_obj, (MonoObject **)p_exc);
+	MonoString *ret = mono_object_to_string(p_obj, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
-void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc) {
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	mono_property_set_value(p_prop, p_obj, p_params, (MonoObject **)p_exc);
+	mono_property_set_value(p_prop, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 }
 
-MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc) {
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_property_get_value(p_prop, p_obj, p_params, (MonoObject **)p_exc);
+	MonoObject *ret = mono_property_get_value(p_prop, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
