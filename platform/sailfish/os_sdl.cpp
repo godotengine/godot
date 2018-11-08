@@ -64,13 +64,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <glib.h>
 //stupid linux.h
 #ifdef KEY_TAB
 #undef KEY_TAB
 #endif
 
 #undef CursorShape
+
+#ifdef PULSEAUDIO_ENABLED
+static void on_audio_resource_acquired(audioresource_t*, bool, void*);
+#endif
 
 int OS_SDL::get_video_driver_count() const {
 	return 1;
@@ -172,7 +176,24 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		cursors[i] = NULL;
 	}
 
-	AudioDriverManager::initialize(p_audio_driver);
+#ifdef PULSEAUDIO_ENABLED
+	// initialize libaudioresource
+	audio_resource  = audioresource_init(
+		AUDIO_RESOURCE_GAME,
+		on_audio_resource_acquired,
+		this
+	);
+	audioresource_acquire(audio_resource);
+
+	OS::get_singleton()->print("Wait libaudioresource initialization ");       
+	while (!is_audio_resource_acquired) {
+		OS::get_singleton()->print(".");
+		g_main_context_iteration(NULL, false);
+		// process_events();
+		// force_process_input();
+	}
+	OS::get_singleton()->print("\nlibaudioresource initialization finished.\n");
+#endif
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(sdl_window < 0, ERR_UNAVAILABLE);
@@ -333,7 +354,7 @@ void OS_SDL::set_current_screen(int p_screen) {
 	if (p_screen >= screen_count) return;
 
 	if (current_videomode.fullscreen) {
-		Size2i size = get_screen_size(p_screen);
+		// Size2i size = get_screen_size(p_screen);
 		Point2i position = get_screen_position(p_screen);
 
 		SDL_SetWindowPosition(sdl_window, position.x, position.y);
@@ -1320,10 +1341,45 @@ OS::LatinKeyboardVariant OS_SDL::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
+#ifdef PULSEAUDIO_ENABLED
+void OS_SDL::start_audio_driver()
+{
+	// if ( AudioDriverManager::get_driver(0)->init() != OK) {
+	// 	ERR_PRINT("Initializing audio failed.");
+	// }
+	AudioDriverManager::initialize(0);
+}
+
+void OS_SDL::stop_audio_driver() {
+	for (int i = 0; i < get_audio_driver_count(); i++) {
+		AudioDriverManager::get_driver(i)->finish();
+	}
+}
+
+static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acquired, void* user_data) 
+{
+	//AudioDriver* driver = (AudioDriver*) user_data;
+	OS_SDL* os = (OS_SDL*) user_data;
+
+	if (acquired) {
+		print_line("starting audio driver");
+		// start playback
+		os->is_audio_resource_acquired = true;
+		os->start_audio_driver();
+	} else {
+		print_line("stopping audio driver");
+		// stop playback
+		os->stop_audio_driver();
+	}
+}
+#endif
+
 OS_SDL::OS_SDL() {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
+	audio_resource = NULL;
+	is_audio_resource_acquired = false;
 #endif
 
 #ifdef ALSA_ENABLED
