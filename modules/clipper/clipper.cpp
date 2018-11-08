@@ -103,7 +103,7 @@ Vector<Vector2> Clipper::get_solution(int idx, SolutionType type) {
 
 Rect2 Clipper::get_bounds() {
 
-	ERR_EXPLAIN("Cannot get bounds in MODE_OFFSET");
+	ERR_EXPLAIN("Cannot get solution bounds in MODE_OFFSET");
 	ERR_FAIL_COND_V(mode == MODE_OFFSET, Rect2());
 
 	cl::Rect64 b(0, 0, 0, 0);
@@ -112,6 +112,9 @@ Rect2 Clipper::get_bounds() {
 
 		case MODE_CLIP: {
 			b = cl.GetBounds();
+		} break;
+
+		case MODE_OFFSET: {
 		} break;
 
 		case MODE_TRIANGULATE: {

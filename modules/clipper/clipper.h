@@ -91,15 +91,16 @@ protected:
 	void _build_hierarchy(cl::PolyPath &p_root);
 
 private:
+	ClipMode mode;
+
 	bool open;
-	cl::PathType path_type;
-	cl::ClipType clip_type;
+
 	cl::FillRule fill_rule;
+	cl::PathType path_type;
 	cl::JoinType join_type;
 	cl::EndType end_type;
+	cl::ClipType clip_type;
 	real_t delta;
-
-	ClipMode mode;
 
 	cl::Paths solution_closed;
 	cl::Paths solution_open;

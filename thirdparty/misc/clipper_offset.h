@@ -50,8 +50,8 @@ namespace clipperlib {
     Path path_in_, path_out_;
     NormalsList norms_;
     NodeList nodes_;
-    double arc_tolerance_;
     double miter_limit_;
+    double arc_tolerance_;
 
     //nb: miter_lim_ below is a temp field that differs from miter_limit
     double delta_, sin_a_, sin_, cos_, miter_lim_, steps_per_radian_;
