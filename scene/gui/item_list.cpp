@@ -456,6 +456,9 @@ Size2 ItemList::Item::get_icon_size() const {
 		return Size2();
 
 	Size2 size_result = Size2(icon_region.size).abs();
+	if (icon_region.size.x == 0 || icon_region.size.y == 0)
+		size_result = icon->get_size();
+
 	if (icon_transposed) {
 		Size2 size_tmp = size_result;
 		size_result.x = size_tmp.y;
@@ -1098,7 +1101,8 @@ void ItemList::_notification(int p_what) {
 					draw_rect.size.y = size_tmp.x;
 				}
 
-				draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region, modulate, items[i].icon_transposed);
+				Rect2 region = (items[i].icon_region.size.x == 0 || items[i].icon_region.size.y == 0) ? Rect2(Vector2(), items[i].icon->get_size()) : Rect2(items[i].icon_region);
+				draw_texture_rect_region(items[i].icon, draw_rect, region, modulate, items[i].icon_transposed);
 			}
 
 			if (items[i].tag_icon.is_valid()) {

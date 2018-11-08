@@ -1729,6 +1729,7 @@ void TileMapEditor::_rotate(int steps) {
 				transpose = mirrored_rotation_matrix[new_id][0];
 				flip_h = mirrored_rotation_matrix[new_id][1];
 				flip_v = mirrored_rotation_matrix[new_id][2];
+				break;
 			}
 		}
 	} else {
