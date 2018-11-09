@@ -300,19 +300,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	{
 		case WM_SETFOCUS: {
 			window_has_focus = true;
-			// Re-capture cursor if we're in one of the capture modes
-			if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
-				SetCapture(hWnd);
-			}
+
+			// Restore mouse mode
+			_set_mouse_mode_impl(mouse_mode);
+
 			break;
 		}
 		case WM_KILLFOCUS: {
 			window_has_focus = false;
 
-			// Release capture if we're in one of the capture modes
-			if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
-				ReleaseCapture();
-			}
+			// Release capture unconditionally because it can be set due to dragging, in addition to captured mode
+			ReleaseCapture();
 
 			// Release every touch to avoid sticky points
 			for (Map<int, Vector2>::Element *E = touch_state.front(); E; E = E->next()) {
@@ -334,15 +332,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				alt_mem = false;
 				control_mem = false;
 				shift_mem = false;
-				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
-					RECT clipRect;
-					GetClientRect(hWnd, &clipRect);
-					ClientToScreen(hWnd, (POINT *)&clipRect.left);
-					ClientToScreen(hWnd, (POINT *)&clipRect.right);
-					ClipCursor(&clipRect);
-					SetCapture(hWnd);
-				}
-			} else {
+			} else { // WM_INACTIVE
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 				alt_mem = false;
 			};
@@ -702,12 +692,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 				if (mb->is_pressed()) {
 
-					if (++pressrc > 0)
+					if (++pressrc > 0 && mouse_mode != MOUSE_MODE_CAPTURED)
 						SetCapture(hWnd);
 				} else {
 
 					if (--pressrc <= 0) {
-						ReleaseCapture();
+						if (mouse_mode != MOUSE_MODE_CAPTURED) {
+							ReleaseCapture();
+						}
 						pressrc = 0;
 					}
 				}
@@ -1516,18 +1508,27 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 	if (mouse_mode == p_mode)
 		return;
+
+	_set_mouse_mode_impl(p_mode);
+
 	mouse_mode = p_mode;
-	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
+}
+
+void OS_Windows::_set_mouse_mode_impl(MouseMode p_mode) {
+
+	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED) {
 		RECT clipRect;
 		GetClientRect(hWnd, &clipRect);
 		ClientToScreen(hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
-		center = Point2i(video_mode.width / 2, video_mode.height / 2);
-		POINT pos = { (int)center.x, (int)center.y };
-		ClientToScreen(hWnd, &pos);
-		if (mouse_mode == MOUSE_MODE_CAPTURED)
+		if (p_mode == MOUSE_MODE_CAPTURED) {
+			center = Point2i(video_mode.width / 2, video_mode.height / 2);
+			POINT pos = { (int)center.x, (int)center.y };
+			ClientToScreen(hWnd, &pos);
 			SetCursorPos(pos.x, pos.y);
+			SetCapture(hWnd);
+		}
 	} else {
 		ReleaseCapture();
 		ClipCursor(NULL);
@@ -1541,7 +1542,6 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 		set_cursor_shape(c);
 	}
 }
-
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const {
 
 	return mouse_mode;
