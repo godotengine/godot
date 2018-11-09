@@ -1365,13 +1365,13 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 	return OK;
 }
 
-Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready) {
+Error GDScriptCompiler::_parse_function(Ref<GDScript> p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready) {
 
 	Vector<int> bytecode;
 	CodeGen codegen;
 
 	codegen.class_node = p_class;
-	codegen.script = p_script;
+	codegen.script = p_script.ptr();
 	codegen.function_node = p_func;
 	codegen.stack_max = 0;
 	codegen.current_line = 0;
@@ -1591,7 +1591,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	return OK;
 }
 
-Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+Error GDScriptCompiler::_parse_class(Ref<GDScript> p_script, Ref<GDScript> p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 
 	Map<StringName, Ref<GDScript> > old_subclasses;
 
@@ -1614,7 +1614,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 	p_script->initializer = NULL;
 
 	p_script->subclasses.clear();
-	p_script->_owner = p_owner;
+	p_script->_owner = p_owner.ptr();
 	p_script->tool = p_class->tool;
 	p_script->name = p_class->name;
 
@@ -1633,8 +1633,8 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 
 				String base;
 
-				if (p_owner) {
-					GDScript *current_class = p_owner;
+				if (p_owner.is_valid()) {
+					GDScript *current_class = p_owner.ptr();
 					while (current_class != NULL) {
 						base = current_class->get_path();
 						if (base == "")
@@ -1687,7 +1687,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 			//look around for the subclasses
 
 			String base = p_class->extends_class[0];
-			GDScript *p = p_owner;
+			GDScript *p = p_owner.ptr();
 			Ref<GDScript> base_class;
 
 			while (p) {
@@ -1798,7 +1798,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 			_set_error("Member '" + name + "' already exists (in current or parent class)", p_class);
 			return ERR_ALREADY_EXISTS;
 		}
-		if (_is_class_member_property(p_script, name)) {
+		if (_is_class_member_property(p_script.ptr(), name)) {
 			_set_error("Member '" + name + "' already exists as a class property.", p_class);
 			return ERR_ALREADY_EXISTS;
 		}
@@ -1838,7 +1838,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 		StringName name = p_class->constant_expressions[i].identifier;
 		ERR_CONTINUE(p_class->constant_expressions[i].expression->type != GDScriptParser::Node::TYPE_CONSTANT);
 
-		if (_is_class_member_property(p_script, name)) {
+		if (_is_class_member_property(p_script.ptr(), name)) {
 			_set_error("Member '" + name + "' already exists as a class property.", p_class);
 			return ERR_ALREADY_EXISTS;
 		}
@@ -1857,7 +1857,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 
 		StringName name = p_class->_signals[i].name;
 
-		GDScript *c = p_script;
+		GDScript *c = p_script.ptr();
 
 		while (c) {
 
@@ -2042,7 +2042,7 @@ Error GDScriptCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, cons
 	return OK;
 }
 
-Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state) {
+Error GDScriptCompiler::compile(const GDScriptParser *p_parser, Ref<GDScript> p_script, bool p_keep_state) {
 
 	err_line = -1;
 	err_column = -1;
