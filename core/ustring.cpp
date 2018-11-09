@@ -4035,7 +4035,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					str = str.pad_decimals(min_decimals);
 
 					// Show sign
-					if (show_sign && value >= 0) {
+					if (show_sign && str.left(1) != "-") {
 						str = str.insert(0, "+");
 					}
 
