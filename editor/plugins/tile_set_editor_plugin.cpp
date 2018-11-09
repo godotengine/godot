@@ -958,7 +958,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventMouseMotion> mm = p_ie;
 
 	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && !creating_shape) {
 			if (!current_tile_region.has_point(mb->get_position())) {
 				List<int> *tiles = new List<int>();
 				tileset->get_tile_list(tiles);
