@@ -1114,6 +1114,8 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		*/
 		set_cell(x, y, v, flip_h, flip_v, transpose, Vector2(coord_x, coord_y));
 	}
+
+	format = FORMAT_2;
 }
 
 PoolVector<int> TileMap::_get_tile_data() const {
@@ -1403,7 +1405,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "format") {
-		r_ret = FORMAT_2;
+		r_ret = format;
 		return true;
 	} else if (p_name == "tile_data") {
 		r_ret = _get_tile_data();
