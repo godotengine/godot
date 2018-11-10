@@ -90,12 +90,13 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		i.ssl_connection = 0;
 	}
 
-	// This String needs to survive till we call lws_client_connect_via_info
-	String addr_str = (String)addr;
-
-	i.address = addr_str.ascii().get_data();
-	i.host = p_host.utf8().get_data();
-	i.path = p_path.utf8().get_data();
+	// These CharStrings needs to survive till we call lws_client_connect_via_info
+	CharString addr_ch = ((String)addr).ascii();
+	CharString host_ch = p_host.utf8();
+	CharString path_ch = p_path.utf8();
+	i.address = addr_ch.get_data();
+	i.host = host_ch.get_data();
+	i.path = path_ch.get_data();
 	i.port = p_port;
 
 	lws_client_connect_via_info(&i);
