@@ -1298,10 +1298,6 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONZERO" value="512" enum="PropertyUsageFlags">
-		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NONONE" value="1024" enum="PropertyUsageFlags">
-		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="4096" enum="PropertyUsageFlags">

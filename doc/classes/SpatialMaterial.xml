@@ -180,7 +180,7 @@
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle spritesheet. Only enabled when using [code]BillboardMode.BILLBOARD_PARTICLES[/code]. See [member params_billboard_mode].
 		</member>
-		<member name="particles_anim_loop" type="int" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
+		<member name="particles_anim_loop" type="bool" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
 			If [code]true[/code] particle animations are looped. Only enabled when using [code]BillboardMode.BILLBOARD_PARTICLES[/code]. See [member params_billboard_mode].
 		</member>
 		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames">

@@ -9,12 +9,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_playback_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation">
