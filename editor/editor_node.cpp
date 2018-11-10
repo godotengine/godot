@@ -3985,6 +3985,8 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	if (p_tab == editor_data.get_edited_scene())
 		return; //pointless
 
+	editor_data.set_edited_scene(p_tab);
+
 	uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
 
 	editor_data.get_undo_redo().create_action(TTR("Switch Scene Tab"));
