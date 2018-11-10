@@ -563,7 +563,8 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :
 		owner(p_owner),
 		language(p_language),
-		script(p_script) {
+		script(p_script),
+		build_failed(false) {
 }
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {
