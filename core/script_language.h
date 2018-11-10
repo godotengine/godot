@@ -31,10 +31,11 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
-#include "io/multiplayer_api.h"
-#include "map.h"
-#include "pair.h"
-#include "resource.h"
+#include "core/io/multiplayer_api.h"
+#include "core/map.h"
+#include "core/pair.h"
+#include "core/resource.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -311,6 +312,8 @@ public:
 
 	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
 	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
+	virtual void refcount_incremented_instance_binding(Object *p_object) {} //optional, not used by all languages
+	virtual bool refcount_decremented_instance_binding(Object *p_object) { return true; } //return true if it can die //optional, not used by all languages
 
 	virtual void frame();
 

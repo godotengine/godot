@@ -86,7 +86,7 @@ def configure(env):
             env.Prepend(CCFLAGS=['-O3', '-ffast-math'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os'])
-     
+
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
@@ -115,12 +115,12 @@ def configure(env):
 
     ## Compiler configuration
 
-    if 'CXX' in env and 'clang' in env['CXX']:
+    if 'CXX' in env and 'clang' in os.path.basename(env['CXX']):
         # Convenience check to enforce the use_llvm overrides when CXX is clang(++)
         env['use_llvm'] = True
 
     if env['use_llvm']:
-        if ('clang++' not in env['CXX']):
+        if ('clang++' not in os.path.basename(env['CXX'])):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
             env["LINK"] = "clang++"
@@ -148,6 +148,18 @@ def configure(env):
 
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
+
+    # Check for gcc version > 4 before adding -no-pie
+    import re
+    import subprocess
+    proc = subprocess.Popen([env['CXX'], '--version'], stdout=subprocess.PIPE)
+    (stdout, _) = proc.communicate()
+    match = re.search('[0-9][0-9.]*', stdout)
+    if match is not None:
+        version = match.group().split('.')
+        if (version[0] > '4'):
+            env.Append(CCFLAGS=['-fpie'])
+            env.Append(LINKFLAGS=['-no-pie'])
 
     ## Dependencies
 
@@ -250,7 +262,8 @@ def configure(env):
     if (os.system("pkg-config --exists alsa") == 0): # 0 means found
         print("Enabling ALSA")
         env.Append(CPPFLAGS=["-DALSA_ENABLED", "-DALSAMIDI_ENABLED"])
-        env.ParseConfig('pkg-config alsa --cflags --libs')
+	# Don't parse --cflags, we don't need to add /usr/include/alsa to include path
+        env.ParseConfig('pkg-config alsa --libs')
     else:
         print("ALSA libraries not found, disabling driver")
 
@@ -278,7 +291,7 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Append(CPPPATH=['#platform/x11'])
-    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_GL'])
+    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
     env.Append(LIBS=['GL', 'pthread'])
 
     if (platform.system() == "Linux"):

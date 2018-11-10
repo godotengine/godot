@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
@@ -9,6 +10,7 @@ precision mediump int;
 #endif
 
 uniform highp mat4 projection_matrix;
+/* clang-format on */
 uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
 attribute highp vec2 vertex; // attrib:0
@@ -29,7 +31,11 @@ uniform vec4 src_rect;
 
 uniform highp float time;
 
+/* clang-format off */
+
 VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
 
 vec2 select(vec2 a, vec2 b, bvec2 c) {
 	vec2 ret;
@@ -74,18 +80,30 @@ void main() {
 
 #endif
 
-{
-        vec2 src_vtx=outvec.xy;
+	{
+		vec2 src_vtx = outvec.xy;
+		/* clang-format off */
+
 VERTEX_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
+
+#if !defined(SKIP_TRANSFORM_USED)
+	outvec = extra_matrix * outvec;
+	outvec = modelview_matrix * outvec;
+#endif
 
 	color_interp = color;
 
-	gl_Position = projection_matrix * modelview_matrix * outvec;
+#ifdef USE_PIXEL_SNAP
+	outvec.xy = floor(outvec + 0.5).xy;
+#endif
 
+	gl_Position = projection_matrix * outvec;
 }
 
+/* clang-format off */
 [fragment]
 
 #ifdef USE_GLES_OVER_GL
@@ -97,6 +115,7 @@ precision mediump int;
 #endif
 
 uniform sampler2D color_texture; // texunit:-1
+/* clang-format on */
 uniform highp vec2 color_texpixel_size;
 uniform mediump sampler2D normal_texture; // texunit:-2
 
@@ -119,27 +138,33 @@ uniform vec2 screen_pixel_size;
 
 #endif
 
+/* clang-format off */
+
 FRAGMENT_SHADER_GLOBALS
 
+/* clang-format on */
 
 void main() {
 
 	vec4 color = color_interp;
 
+#if !defined(COLOR_USED)
+	//default behavior, texture by color
 	color *= texture2D(color_texture, uv_interp);
+#endif
 
 #ifdef SCREEN_UV_USED
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #endif
-{
+	{
+		/* clang-format off */
 
 FRAGMENT_SHADER_CODE
 
-
-}
+		/* clang-format on */
+	}
 
 	color *= final_modulate;
 
 	gl_FragColor = color;
-
 }

@@ -36,7 +36,7 @@
  * It's basically an opaque container of a Reference reference, so Variant can use it.
 */
 
-#include "rid.h"
+#include "core/rid.h"
 
 class RefPtr {
 

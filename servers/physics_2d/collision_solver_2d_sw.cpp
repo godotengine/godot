@@ -114,35 +114,6 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector
 	return true;
 }
 
-/*
-bool CollisionSolver2DSW::solve_ray(const Shape2DSW *p_shape_A,const Matrix32& p_transform_A,const Shape2DSW *p_shape_B,const Matrix32& p_transform_B,const Matrix32& p_inverse_B,CallbackResult p_result_callback,void *p_userdata,bool p_swap_result) {
-
-
-	const RayShape2DSW *ray = static_cast<const RayShape2DSW*>(p_shape_A);
-
-	Vector2 from = p_transform_A.origin;
-	Vector2 to = from+p_transform_A.basis.get_axis(2)*ray->get_length();
-	Vector2 support_A=to;
-
-	from = p_inverse_B.xform(from);
-	to = p_inverse_B.xform(to);
-
-	Vector2 p,n;
-	if (!p_shape_B->intersect_segment(from,to,&p,&n))
-		return false;
-
-	Vector2 support_B=p_transform_B.xform(p);
-
-	if (p_result_callback) {
-		if (p_swap_result)
-			p_result_callback(support_B,support_A,p_userdata);
-		else
-			p_result_callback(support_A,support_B,p_userdata);
-	}
-	return true;
-}
-*/
-
 struct _ConcaveCollisionInfo2D {
 
 	const Transform2D *transform_A;
@@ -219,7 +190,6 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 
 	concave_B->cull(local_aabb, concave_callback, &cinfo);
 
-	//print_line("Rect2 TESTS: "+itos(cinfo.aabb_tests));
 	return cinfo.collided;
 }
 
@@ -245,10 +215,6 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 		if (type_B == Physics2DServer::SHAPE_LINE || type_B == Physics2DServer::SHAPE_RAY) {
 			return false;
 		}
-		/*
-		if (type_B==Physics2DServer::SHAPE_RAY) {
-			return false;
-		*/
 
 		if (swap) {
 			return solve_static_line(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
@@ -256,17 +222,6 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 			return solve_static_line(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
 		}
 
-		/*} else if (type_A==Physics2DServer::SHAPE_RAY) {
-
-		if (type_B==Physics2DServer::SHAPE_RAY)
-			return false;
-
-		if (swap) {
-			return solve_ray(p_shape_B,p_transform_B,p_shape_A,p_transform_A,p_inverse_A,p_result_callback,p_userdata,true);
-		} else {
-			return solve_ray(p_shape_A,p_transform_A,p_shape_B,p_transform_B,p_inverse_B,p_result_callback,p_userdata,false);
-		}
-*/
 	} else if (type_A == Physics2DServer::SHAPE_RAY) {
 
 		if (type_B == Physics2DServer::SHAPE_RAY) {

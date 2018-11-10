@@ -30,11 +30,11 @@
 
 #include "editor_plugin_settings.h"
 
+#include "core/io/config_file.h"
+#include "core/os/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/project_settings.h"
 #include "editor_node.h"
-#include "io/config_file.h"
-#include "os/file_access.h"
-#include "os/main_loop.h"
-#include "project_settings.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
@@ -117,7 +117,7 @@ void EditorPluginSettings::update_plugins() {
 
 			TreeItem *item = plugin_list->create_item(root);
 			item->set_text(0, name);
-			item->set_tooltip(0, "Name: " + name + "\nPath: " + path + "\nMain Script: " + script);
+			item->set_tooltip(0, "Name: " + name + "\nPath: " + path + "\nMain Script: " + script + "\nDescription: " + description);
 			item->set_metadata(0, d);
 			item->set_text(1, version);
 			item->set_metadata(1, script);

@@ -30,7 +30,7 @@
 
 #include "path.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/scene_string_names.h"
 
 void Path::_notification(int p_what) {
@@ -42,6 +42,16 @@ void Path::_curve_changed() {
 		update_gizmo();
 	if (is_inside_tree()) {
 		emit_signal("curve_changed");
+	}
+
+	// update the configuration warnings of all children of type OrientedPathFollows
+	if (is_inside_tree()) {
+		for (int i = 0; i < get_child_count(); i++) {
+			OrientedPathFollow *child = Object::cast_to<OrientedPathFollow>(get_child(i));
+			if (child) {
+				child->update_configuration_warning();
+			}
+		}
 	}
 }
 
@@ -205,6 +215,18 @@ void PathFollow::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = "0," + rtos(max) + ",0.01";
 	}
+}
+
+String PathFollow::get_configuration_warning() const {
+
+	if (!is_visible_in_tree() || !is_inside_tree())
+		return String();
+
+	if (!Object::cast_to<Path>(get_parent())) {
+		return TTR("PathFollow only works when set as a child of a Path node.");
+	}
+
+	return String();
 }
 
 void PathFollow::_bind_methods() {
@@ -442,6 +464,23 @@ void OrientedPathFollow::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = "0," + rtos(max) + ",0.01";
 	}
+}
+
+String OrientedPathFollow::get_configuration_warning() const {
+
+	if (!is_visible_in_tree() || !is_inside_tree())
+		return String();
+
+	if (!Object::cast_to<Path>(get_parent())) {
+		return TTR("OrientedPathFollow only works when set as a child of a Path node.");
+	} else {
+		Path *path = Object::cast_to<Path>(get_parent());
+		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled()) {
+			return TTR("OrientedPathFollow requires up vectors enabled in its parent Path.");
+		}
+	}
+
+	return String();
 }
 
 void OrientedPathFollow::_bind_methods() {

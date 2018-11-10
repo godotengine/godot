@@ -31,7 +31,7 @@
 #ifndef IMAGE_LOADER_HDR_H
 #define IMAGE_LOADER_HDR_H
 
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

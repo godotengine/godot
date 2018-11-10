@@ -92,7 +92,9 @@ class TextureRegionEditor : public Control {
 	Rect2 rect_prev;
 	float prev_margin;
 	int edited_margin;
+	Map<RID, List<Rect2> > cache_map;
 	List<Rect2> autoslice_cache;
+	bool autoslice_is_dirty;
 
 	bool drag;
 	bool creating;
@@ -110,6 +112,7 @@ class TextureRegionEditor : public Control {
 	void _zoom_reset();
 	void _zoom_out();
 	void apply_rect(const Rect2 &rect);
+	void _update_autoslice();
 
 protected:
 	void _notification(int p_what);

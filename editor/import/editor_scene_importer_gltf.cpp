@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
-#include "io/json.h"
-#include "math_defs.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/io/json.h"
+#include "core/math/math_defs.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
@@ -323,7 +323,7 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 		}
 	}
 
-	print_line("total buffers: " + itos(state.buffers.size()));
+	print_verbose("glTF: Total buffers: " + itos(state.buffers.size()));
 
 	return OK;
 }
@@ -359,7 +359,7 @@ Error EditorSceneImporterGLTF::_parse_buffer_views(GLTFState &state) {
 		state.buffer_views.push_back(buffer_view);
 	}
 
-	print_line("total buffer views: " + itos(state.buffer_views.size()));
+	print_verbose("glTF: Total buffer views: " + itos(state.buffer_views.size()));
 
 	return OK;
 }
@@ -451,7 +451,7 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 		state.accessors.push_back(accessor);
 	}
 
-	print_line("total accessors: " + itos(state.accessors.size()));
+	print_verbose("glTF: Total accessors: " + itos(state.accessors.size()));
 
 	return OK;
 }
@@ -501,8 +501,8 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, int p_buffe
 	const uint8_t *bufptr = buffer.ptr();
 
 	//use to debug
-	//print_line("type " + _get_type_name(type) + " component type: " + _get_component_type_name(component_type) + " stride: " + itos(stride) + " amount " + itos(count));
-	print_line("accessor offset" + itos(byte_offset) + " view offset: " + itos(bv.byte_offset) + " total buffer len: " + itos(buffer.size()) + " view len " + itos(bv.byte_length));
+	print_verbose("glTF: type " + _get_type_name(type) + " component type: " + _get_component_type_name(component_type) + " stride: " + itos(stride) + " amount " + itos(count));
+	print_verbose("glTF: accessor offset" + itos(byte_offset) + " view offset: " + itos(bv.byte_offset) + " total buffer len: " + itos(buffer.size()) + " view len " + itos(bv.byte_length));
 
 	int buffer_end = (stride * (count - 1)) + element_size;
 	ERR_FAIL_COND_V(buffer_end > bv.byte_length, ERR_PARSE_ERROR);
@@ -793,7 +793,7 @@ Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state,
 	ret.resize(ret_size);
 	{
 		for (int i = 0; i < ret_size; i++) {
-			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]);
+			ret.write[i] = Quat(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
 		}
 	}
 	return ret;
@@ -853,7 +853,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 	Array meshes = state.json["meshes"];
 	for (int i = 0; i < meshes.size(); i++) {
 
-		print_line("on mesh: " + itos(i));
+		print_verbose("glTF: Parsing mesh: " + itos(i));
 		Dictionary d = meshes[i];
 
 		GLTFMesh mesh;
@@ -935,7 +935,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 							w[j + 3] /= total;
 						}
 
-						//print_line(itos(j / 4) + ": " + itos(r[j + 0]) + ":" + rtos(w[j + 0]) + ", " + itos(r[j + 1]) + ":" + rtos(w[j + 1]) + ", " + itos(r[j + 2]) + ":" + rtos(w[j + 2]) + ", " + itos(r[j + 3]) + ":" + rtos(w[j + 3]));
+						//print_verbose(itos(j / 4) + ": " + itos(r[j + 0]) + ":" + rtos(w[j + 0]) + ", " + itos(r[j + 1]) + ":" + rtos(w[j + 1]) + ", " + itos(r[j + 2]) + ":" + rtos(w[j + 2]) + ", " + itos(r[j + 3]) + ":" + rtos(w[j + 3]));
 					}
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
@@ -996,7 +996,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			Array morphs;
 			//blend shapes
 			if (p.has("targets")) {
-				print_line("has targets!");
+				print_verbose("glTF: Mesh has targets");
 				Array targets = p["targets"];
 
 				if (j == 0) {
@@ -1091,7 +1091,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 		state.meshes.push_back(mesh);
 	}
 
-	print_line("total meshes: " + itos(state.meshes.size()));
+	print_verbose("glTF: Total meshes: " + itos(state.meshes.size()));
 
 	return OK;
 }
@@ -1183,7 +1183,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
-	print_line("total images: " + itos(state.images.size()));
+	print_verbose("Total images: " + itos(state.images.size()));
 
 	return OK;
 }
@@ -1338,7 +1338,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		state.materials.push_back(material);
 	}
 
-	print_line("total materials: " + itos(state.materials.size()));
+	print_verbose("Total materials: " + itos(state.materials.size()));
 
 	return OK;
 }
@@ -1381,12 +1381,11 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			skin.bones.push_back(bone);
 		}
 
-		print_line("skin has skeleton? " + itos(d.has("skeleton")));
+		print_verbose("glTF: Skin has skeleton? " + itos(d.has("skeleton")));
 		if (d.has("skeleton")) {
 			int skeleton = d["skeleton"];
 			ERR_FAIL_INDEX_V(skeleton, state.nodes.size(), ERR_PARSE_ERROR);
-			//state.nodes[skeleton]->skeleton_skin = state.skins.size();
-			print_line("setting skeleton skin to" + itos(skeleton));
+			print_verbose("glTF: Setting skeleton skin to" + itos(skeleton));
 			skin.skeleton = skeleton;
 			if (!state.skeleton_nodes.has(skeleton)) {
 				state.skeleton_nodes[skeleton] = Vector<int>();
@@ -1443,7 +1442,7 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 		*/
 		state.skins.push_back(skin);
 	}
-	print_line("total skins: " + itos(state.skins.size()));
+	print_verbose("glTF: Total skins: " + itos(state.skins.size()));
 
 	//now
 
@@ -1496,7 +1495,7 @@ Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
 		state.cameras.push_back(camera);
 	}
 
-	print_line("total cameras: " + itos(state.cameras.size()));
+	print_verbose("glTF: Total cameras: " + itos(state.cameras.size()));
 
 	return OK;
 }
@@ -1574,7 +1573,6 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 				}
 			}
 
-			print_line("path: " + path);
 			PoolVector<float> times = _decode_accessor_as_floats(state, input, false);
 			if (path == "translation") {
 				PoolVector<Vector3> translations = _decode_accessor_as_vec3(state, output, false);
@@ -1624,7 +1622,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 		state.animations.push_back(animation);
 	}
 
-	print_line("total animations: " + itos(state.animations.size()));
+	print_verbose("glTF: Total animations: " + itos(state.animations.size()));
 
 	return OK;
 }
@@ -1656,7 +1654,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 	if (n->mesh >= 0) {
 		ERR_FAIL_INDEX(n->mesh, state.meshes.size());
 		MeshInstance *mi = memnew(MeshInstance);
-		print_line("**creating mesh for: " + n->name);
+		print_verbose("glTF: Creating mesh for: " + n->name);
 		GLTFMesh &mesh = state.meshes.write[n->mesh];
 		mi->set_mesh(mesh.mesh);
 		if (mesh.mesh->get_name() == "") {
@@ -1795,17 +1793,24 @@ template <>
 struct EditorSceneImporterGLTFInterpolate<Quat> {
 
 	Quat lerp(const Quat &a, const Quat &b, float c) const {
+		ERR_FAIL_COND_V(!a.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!b.is_normalized(), Quat());
 
-		return a.slerp(b, c);
+		return a.slerp(b, c).normalized();
 	}
 
 	Quat catmull_rom(const Quat &p0, const Quat &p1, const Quat &p2, const Quat &p3, float c) {
+		ERR_FAIL_COND_V(!p1.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!p2.is_normalized(), Quat());
 
-		return p1.slerp(p2, c);
+		return p1.slerp(p2, c).normalized();
 	}
 
 	Quat bezier(Quat start, Quat control_1, Quat control_2, Quat end, float t) {
-		return start.slerp(end, t);
+		ERR_FAIL_COND_V(!start.is_normalized(), Quat());
+		ERR_FAIL_COND_V(!end.is_normalized(), Quat());
+
+		return start.slerp(end, t).normalized();
 	}
 };
 
@@ -1871,9 +1876,9 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 			float c = (p_time - p_times[idx]) / (p_times[idx + 1] - p_times[idx]);
 
 			T from = p_values[idx * 3 + 1];
-			T c1 = from + p_values[idx * 3 + 0];
-			T to = p_values[idx * 3 + 3];
-			T c2 = to + p_values[idx * 3 + 2];
+			T c1 = from + p_values[idx * 3 + 2];
+			T to = p_values[idx * 3 + 4];
+			T c2 = to + p_values[idx * 3 + 3];
 
 			return interp.bezier(from, c1, c2, to, c);
 
@@ -1905,15 +1910,15 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 		NodePath node_path;
 
 		GLTFNode *node = state.nodes[E->key()];
-		for (int i = 0; i < node->godot_nodes.size(); i++) {
+		for (int n = 0; n < node->godot_nodes.size(); n++) {
 
 			if (node->joints.size()) {
-				Skeleton *sk = (Skeleton *)node->godot_nodes[i];
+				Skeleton *sk = (Skeleton *)node->godot_nodes[n];
 				String path = ap->get_parent()->get_path_to(sk);
-				String bone = sk->get_bone_name(node->joints[i].godot_bone_index);
+				String bone = sk->get_bone_name(node->joints[n].godot_bone_index);
 				node_path = path + ":" + bone;
 			} else {
-				node_path = ap->get_parent()->get_path_to(node->godot_nodes[i]);
+				node_path = ap->get_parent()->get_path_to(node->godot_nodes[n]);
 			}
 
 			for (int i = 0; i < track.rotation_track.times.size(); i++) {
@@ -1947,7 +1952,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 				Vector3 base_scale = Vector3(1, 1, 1);
 
 				if (!track.rotation_track.values.size()) {
-					base_rot = state.nodes[E->key()]->rotation;
+					base_rot = state.nodes[E->key()]->rotation.normalized();
 				}
 
 				if (!track.translation_track.values.size()) {
@@ -1988,11 +1993,12 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 						xform.basis.set_quat_scale(rot, scale);
 						xform.origin = pos;
 
-						Skeleton *skeleton = skeletons[node->joints[i].skin];
-						int bone = node->joints[i].godot_bone_index;
+						Skeleton *skeleton = skeletons[node->joints[n].skin];
+						int bone = node->joints[n].godot_bone_index;
 						xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
 
 						rot = xform.basis.get_rotation_quat();
+						rot.normalize();
 						scale = xform.basis.get_scale();
 						pos = xform.origin;
 					}

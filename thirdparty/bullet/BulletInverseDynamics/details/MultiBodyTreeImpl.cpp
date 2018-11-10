@@ -80,7 +80,7 @@ int MultiBodyTree::MultiBodyImpl::bodyNumDoFs(const JointType &type) const {
 		case FLOATING:
 			return 6;
 	}
-	error_message("unknown joint type %d\n", type);
+	bt_id_error_message("unknown joint type %d\n", type);
 	return 0;
 }
 
@@ -136,13 +136,13 @@ int MultiBodyTree::MultiBodyImpl::generateIndexSets() {
 				q_index += 6;
 				break;
 			default:
-				error_message("unsupported joint type %d\n", body.m_joint_type);
+				bt_id_error_message("unsupported joint type %d\n", body.m_joint_type);
 				return -1;
 		}
 	}
 	// sanity check
 	if (q_index != m_num_dofs) {
-		error_message("internal error, q_index= %d but num_dofs %d\n", q_index, m_num_dofs);
+		bt_id_error_message("internal error, q_index= %d but num_dofs %d\n", q_index, m_num_dofs);
 		return -1;
 	}
 
@@ -155,10 +155,10 @@ int MultiBodyTree::MultiBodyImpl::generateIndexSets() {
 		} else {
 			if (-1 == parent) {
 				// multiple bodies are directly linked to the environment, ie, not a single root
-				error_message("building index sets parent(%zu)= -1 (multiple roots)\n", child);
+				bt_id_error_message("building index sets parent(%zu)= -1 (multiple roots)\n", child);
 			} else {
 				// should never happen
-				error_message(
+				bt_id_error_message(
 					"building index sets. parent_index[%zu]= %d, but m_parent_index.size()= %d\n",
 					child, parent, static_cast<int>(m_parent_index.size()));
 			}
@@ -234,7 +234,7 @@ int MultiBodyTree::MultiBodyImpl::calculateInverseDynamics(const vecx &q, const 
 														   const vecx &dot_u, vecx *joint_forces) {
 	if (q.size() != m_num_dofs || u.size() != m_num_dofs || dot_u.size() != m_num_dofs ||
 		joint_forces->size() != m_num_dofs) {
-		error_message("wrong vector dimension. system has %d DOFs,\n"
+		bt_id_error_message("wrong vector dimension. system has %d DOFs,\n"
 					  "but dim(q)= %d, dim(u)= %d, dim(dot_u)= %d, dim(joint_forces)= %d\n",
 					  m_num_dofs, static_cast<int>(q.size()), static_cast<int>(u.size()),
 					  static_cast<int>(dot_u.size()), static_cast<int>(joint_forces->size()));
@@ -242,7 +242,7 @@ int MultiBodyTree::MultiBodyImpl::calculateInverseDynamics(const vecx &q, const 
 	}
 	// 1. relative kinematics
         if(-1 == calculateKinematics(q,u,dot_u, POSITION_VELOCITY_ACCELERATION)) {
-            error_message("error in calculateKinematics\n");
+            bt_id_error_message("error in calculateKinematics\n");
             return -1;
         }
         // 2. update contributions to equations of motion for every body.
@@ -322,14 +322,14 @@ int MultiBodyTree::MultiBodyImpl::calculateInverseDynamics(const vecx &q, const 
 int MultiBodyTree::MultiBodyImpl::calculateKinematics(const vecx &q, const vecx &u, const vecx& dot_u,
                                                       const KinUpdateType type) {
     	if (q.size() != m_num_dofs || u.size() != m_num_dofs || dot_u.size() != m_num_dofs ) {
-		error_message("wrong vector dimension. system has %d DOFs,\n"
+		bt_id_error_message("wrong vector dimension. system has %d DOFs,\n"
 					  "but dim(q)= %d, dim(u)= %d, dim(dot_u)= %d\n",
 					  m_num_dofs, static_cast<int>(q.size()), static_cast<int>(u.size()),
 					  static_cast<int>(dot_u.size()));
 		return -1;
 	}
         if(type != POSITION_ONLY && type != POSITION_VELOCITY && type != POSITION_VELOCITY_ACCELERATION) {
-            error_message("invalid type %d\n", type);
+            bt_id_error_message("invalid type %d\n", type);
             return -1;
         }
 
@@ -516,13 +516,13 @@ void MultiBodyTree::MultiBodyImpl::addRelativeJacobianComponent(RigidBody&body) 
 
 int MultiBodyTree::MultiBodyImpl::calculateJacobians(const vecx& q, const vecx& u, const KinUpdateType type) {
     if (q.size() != m_num_dofs || u.size() != m_num_dofs) {
-        error_message("wrong vector dimension. system has %d DOFs,\n"
+        bt_id_error_message("wrong vector dimension. system has %d DOFs,\n"
                       "but dim(q)= %d, dim(u)= %d\n",
                       m_num_dofs, static_cast<int>(q.size()), static_cast<int>(u.size()));
         return -1;
     }
     if(type != POSITION_ONLY && type != POSITION_VELOCITY) {
-        error_message("invalid type %d\n", type);
+        bt_id_error_message("invalid type %d\n", type);
         return -1;
     }
 
@@ -606,7 +606,7 @@ static inline int jointNumDoFs(const JointType &type) {
 			return 6;
 	}
 	// this should never happen
-	error_message("invalid joint type\n");
+	bt_id_error_message("invalid joint type\n");
 	// TODO add configurable abort/crash function
 	abort();
 	return 0;
@@ -626,7 +626,7 @@ int MultiBodyTree::MultiBodyImpl::calculateMassMatrix(const vecx &q, const bool 
 
 	if (q.size() != m_num_dofs || mass_matrix->rows() != m_num_dofs ||
 		mass_matrix->cols() != m_num_dofs) {
-		error_message("Dimension error. System has %d DOFs,\n"
+		bt_id_error_message("Dimension error. System has %d DOFs,\n"
 					  "but dim(q)= %d, dim(mass_matrix)= %d x %d\n",
 					  m_num_dofs, static_cast<int>(q.size()), static_cast<int>(mass_matrix->rows()),
 					  static_cast<int>(mass_matrix->cols()));
@@ -734,7 +734,7 @@ int MultiBodyTree::MultiBodyImpl::calculateMassMatrix(const vecx &q, const bool 
 				// 1. for multi-dof joints, rest of the dofs of this body
 				for (int row = col - 1; row >= q_index_min; row--) {
 					if (FLOATING != body.m_joint_type) {
-						error_message("??\n");
+						bt_id_error_message("??\n");
 						return -1;
 					}
 					setSixDoFJacobians(row - q_index_min, Jac_JR, Jac_JT);
@@ -788,7 +788,7 @@ int MultiBodyTree::MultiBodyImpl::calculateMassMatrix(const vecx &q, const bool 
 #define CHECK_IF_BODY_INDEX_IS_VALID(index)														\
 	do {																						   \
 		if (index < 0 || index >= m_num_bodies) {												  \
-			error_message("invalid index %d (num_bodies= %d)\n", index, m_num_bodies);			 \
+			bt_id_error_message("invalid index %d (num_bodies= %d)\n", index, m_num_bodies);			 \
 			return -1;																			 \
 		}																						  \
 	} while (0)

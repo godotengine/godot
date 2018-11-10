@@ -6,18 +6,24 @@ namespace GodotSharpTools.Project
 {
     public static class ProjectGenerator
     {
+        public const string CoreApiProjectName = "GodotSharp";
+        public const string EditorApiProjectName = "GodotSharpEditor";
+        const string CoreApiProjectGuid = "{AEBF0036-DA76-4341-B651-A3F2856AB2FA}";
+        const string EditorApiProjectGuid = "{8FBEC238-D944-4074-8548-B3B524305905}";
+
         public static string GenCoreApiProject(string dir, string[] compileItems)
         {
-            string path = Path.Combine(dir, CoreApiProject + ".csproj");
+            string path = Path.Combine(dir, CoreApiProjectName + ".csproj");
 
             ProjectPropertyGroupElement mainGroup;
-            var root = CreateLibraryProject(CoreApiProject, out mainGroup);
+            var root = CreateLibraryProject(CoreApiProjectName, out mainGroup);
 
             mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
             mainGroup.SetProperty("RootNamespace", "Godot");
+            mainGroup.SetProperty("ProjectGuid", CoreApiProjectGuid);
 
-            GenAssemblyInfoFile(root, dir, CoreApiProject,
-                                new string[] { "[assembly: InternalsVisibleTo(\"" + EditorApiProject + "\")]" },
+            GenAssemblyInfoFile(root, dir, CoreApiProjectName,
+                                new string[] { "[assembly: InternalsVisibleTo(\"" + EditorApiProjectName + "\")]" },
                                 new string[] { "System.Runtime.CompilerServices" });
 
             foreach (var item in compileItems)
@@ -27,33 +33,33 @@ namespace GodotSharpTools.Project
 
             root.Save(path);
 
-            return root.GetGuid().ToString().ToUpper();
+            return CoreApiProjectGuid;
         }
 
-        public static string GenEditorApiProject(string dir, string coreApiHintPath, string[] compileItems)
+        public static string GenEditorApiProject(string dir, string coreApiProjPath, string[] compileItems)
         {
-            string path = Path.Combine(dir, EditorApiProject + ".csproj");
+            string path = Path.Combine(dir, EditorApiProjectName + ".csproj");
 
             ProjectPropertyGroupElement mainGroup;
-            var root = CreateLibraryProject(EditorApiProject, out mainGroup);
+            var root = CreateLibraryProject(EditorApiProjectName, out mainGroup);
 
             mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
             mainGroup.SetProperty("RootNamespace", "Godot");
+            mainGroup.SetProperty("ProjectGuid", EditorApiProjectGuid);
 
-            GenAssemblyInfoFile(root, dir, EditorApiProject);
+            GenAssemblyInfoFile(root, dir, EditorApiProjectName);
 
             foreach (var item in compileItems)
             {
                 root.AddItem("Compile", item.RelativeToPath(dir).Replace("/", "\\"));
             }
 
-            var coreApiRef = root.AddItem("Reference", CoreApiProject);
-            coreApiRef.AddMetadata("HintPath", coreApiHintPath);
+            var coreApiRef = root.AddItem("ProjectReference", coreApiProjPath.Replace("/", "\\"));
             coreApiRef.AddMetadata("Private", "False");
 
             root.Save(path);
 
-            return root.GetGuid().ToString().ToUpper();
+            return EditorApiProjectGuid;
         }
 
         public static string GenGameProject(string dir, string name, string[] compileItems)
@@ -77,13 +83,13 @@ namespace GodotSharpTools.Project
             toolsGroup.AddProperty("WarningLevel", "4");
             toolsGroup.AddProperty("ConsolePause", "false");
 
-            var coreApiRef = root.AddItem("Reference", CoreApiProject);
-            coreApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", CoreApiProject + ".dll"));
+            var coreApiRef = root.AddItem("Reference", CoreApiProjectName);
+            coreApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", CoreApiProjectName + ".dll"));
             coreApiRef.AddMetadata("Private", "False");
 
-            var editorApiRef = root.AddItem("Reference", EditorApiProject);
+            var editorApiRef = root.AddItem("Reference", EditorApiProjectName);
             editorApiRef.Condition = " '$(Configuration)' == 'Tools' ";
-            editorApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", EditorApiProject + ".dll"));
+            editorApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", EditorApiProjectName + ".dll"));
             editorApiRef.AddMetadata("Private", "False");
 
             GenAssemblyInfoFile(root, dir, name);
@@ -181,9 +187,6 @@ namespace GodotSharpTools.Project
                 group.AddItem(groupName, item);
             }
         }
-
-        public const string CoreApiProject = "GodotSharp";
-        public const string EditorApiProject = "GodotSharpEditor";
 
         private const string assemblyInfoTemplate =
 @"using System.Reflection;{0}

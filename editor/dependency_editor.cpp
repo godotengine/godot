@@ -30,9 +30,9 @@
 
 #include "dependency_editor.h"
 
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "editor_node.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
 #include "scene/gui/margin_container.h"
 
 void DependencyEditor::_notification(int p_what) {
@@ -198,12 +198,7 @@ void DependencyEditor::_update_list() {
 		}
 		String name = path.get_file();
 
-		Ref<Texture> icon;
-		if (has_icon(type, "EditorIcons")) {
-			icon = get_icon(type, "EditorIcons");
-		} else {
-			icon = get_icon("Object", "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
 		item->set_text(0, name);
 		item->set_icon(0, icon);
 		item->set_metadata(0, type);
@@ -336,12 +331,9 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 
 		Vector<String> deps = efsd->get_file_deps(i);
-		//print_line(":::"+efsd->get_file_path(i));
 		bool found = false;
 		for (int j = 0; j < deps.size(); j++) {
-			//print_line("\t"+deps[j]+" vs "+editing);
 			if (deps[j] == editing) {
-				//print_line("found");
 				found = true;
 				break;
 			}
@@ -349,13 +341,7 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 		if (!found)
 			continue;
 
-		Ref<Texture> icon;
-		String type = efsd->get_file_type(i);
-		if (!has_icon(type, "EditorIcons")) {
-			icon = get_icon("Object", "EditorIcons");
-		} else {
-			icon = get_icon(type, "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
 
 		owners->add_item(efsd->get_file_path(i), icon);
 	}
@@ -463,7 +449,7 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 		}
 
 		//List this file under this dependency
-		Ref<Texture> icon = has_icon(rd.file_type, "EditorIcons") ? get_icon(rd.file_type, "EditorIcons") : get_icon("Object", "EditorIcons");
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
 		TreeItem *file_item = owners->create_item(tree_items[rd.dependency]);
 		file_item->set_text(0, rd.file);
 		file_item->set_icon(0, icon);
@@ -510,7 +496,7 @@ void DependencyRemoveDialog::ok_pressed() {
 			res->set_path("");
 		}
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
-		print_line("Moving to trash: " + path);
+		print_verbose("Moving to trash: " + path);
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
@@ -518,35 +504,39 @@ void DependencyRemoveDialog::ok_pressed() {
 	}
 
 	if (dirs_to_delete.size() == 0) {
-		//If we only deleted files we should only need to tell the file system about the files we touched.
+		// If we only deleted files we should only need to tell the file system about the files we touched.
 		for (int i = 0; i < files_to_delete.size(); ++i)
 			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
 	} else {
 
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
-			print_line("Moving to trash: " + path);
+			print_verbose("Moving to trash: " + path);
 			Error err = OS::get_singleton()->move_to_trash(path);
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + dirs_to_delete[i] + "\n");
 			}
 		}
 
-		// if some dirs would be deleted, favorite dirs need to be updated
-		Vector<String> previous_favorite_dirs = EditorSettings::get_singleton()->get_favorite_dirs();
-		Vector<String> new_favorite_dirs;
-
-		for (int i = 0; i < previous_favorite_dirs.size(); ++i) {
-			if (dirs_to_delete.find(previous_favorite_dirs[i] + "/") < 0) {
-				new_favorite_dirs.push_back(previous_favorite_dirs[i]);
-			}
-		}
-
-		if (new_favorite_dirs.size() < previous_favorite_dirs.size()) {
-			EditorSettings::get_singleton()->set_favorite_dirs(new_favorite_dirs);
-		}
-
 		EditorFileSystem::get_singleton()->scan_changes();
+	}
+
+	// If some files/dirs would be deleted, favorite dirs need to be updated
+	Vector<String> previous_favorites = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> new_favorites;
+
+	for (int i = 0; i < previous_favorites.size(); ++i) {
+		if (previous_favorites[i].ends_with("/")) {
+			if (dirs_to_delete.find(previous_favorites[i]) < 0)
+				new_favorites.push_back(previous_favorites[i]);
+		} else {
+			if (files_to_delete.find(previous_favorites[i]) < 0)
+				new_favorites.push_back(previous_favorites[i]);
+		}
+	}
+
+	if (new_favorites.size() < previous_favorites.size()) {
+		EditorSettings::get_singleton()->set_favorites(new_favorites);
 	}
 }
 
@@ -567,8 +557,9 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 //////////////
 
-void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> &report) {
+void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Vector<String> &report) {
 
+	mode = p_mode;
 	for_file = p_for_file;
 	set_title(TTR("Error loading:") + " " + p_for_file.get_file());
 	files->clear();
@@ -582,12 +573,7 @@ void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> 
 		if (report[i].get_slice_count("::") > 0)
 			type = report[i].get_slice("::", 1);
 
-		Ref<Texture> icon;
-		if (!has_icon(type, "EditorIcons")) {
-			icon = get_icon("Object", "EditorIcons");
-		} else {
-			icon = get_icon(type, "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
 
 		TreeItem *ti = files->create_item(root);
 		ti->set_text(0, dep);
@@ -599,7 +585,14 @@ void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> 
 
 void DependencyErrorDialog::ok_pressed() {
 
-	EditorNode::get_singleton()->load_scene(for_file, true);
+	switch (mode) {
+		case MODE_SCENE:
+			EditorNode::get_singleton()->load_scene(for_file, true);
+			break;
+		case MODE_RESOURCE:
+			EditorNode::get_singleton()->load_resource(for_file, true);
+			break;
+	}
 }
 
 void DependencyErrorDialog::custom_action(const String &) {
@@ -614,7 +607,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 
 	files = memnew(Tree);
 	files->set_hide_root(true);
-	vb->add_margin_child(TTR("Scene failed to load due to missing dependencies:"), files, true);
+	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_custom_minimum_size(Size2(1, 200));
 	get_ok()->set_text(TTR("Open Anyway"));
@@ -673,7 +666,6 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 		if (!p_parent) {
 			Vector<String> deps = efsd->get_file_deps(i);
-			//print_line(":::"+efsd->get_file_path(i));
 			for (int j = 0; j < deps.size(); j++) {
 
 				if (!refs.has(deps[j])) {
@@ -691,12 +683,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 				String type = efsd->get_file_type(i);
 
-				Ref<Texture> icon;
-				if (has_icon(type, "EditorIcons")) {
-					icon = get_icon(type, "EditorIcons");
-				} else {
-					icon = get_icon("Object", "EditorIcons");
-				}
+				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
 				ti->set_icon(0, icon);
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));

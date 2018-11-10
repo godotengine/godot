@@ -65,14 +65,6 @@ void MeshEditor::_notification(int p_what) {
 			first_enter = false;
 		}
 	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-
-		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
-		Size2 size = get_size();
-
-		//draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
-	}
 }
 
 void MeshEditor::_update_rotation() {
@@ -97,13 +89,11 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 		_update_rotation();
 
 		AABB aabb = mesh->get_aabb();
-		print_line("aabb: " + aabb);
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
 		float m = aabb.get_longest_axis_size();
 		if (m != 0) {
 			m = 1.0 / m;
 			m *= 0.5;
-			//print_line("scale: "+rtos(m));
 			Transform xform;
 			xform.basis.scale(Vector3(m, m, m));
 			xform.origin = -xform.basis.xform(ofs); //-ofs*m;

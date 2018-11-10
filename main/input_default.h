@@ -31,7 +31,7 @@
 #ifndef INPUT_DEFAULT_H
 #define INPUT_DEFAULT_H
 
-#include "os/input.h"
+#include "core/os/input.h"
 
 class InputDefault : public Input {
 
@@ -117,9 +117,11 @@ class InputDefault : public Input {
 	};
 
 	SpeedTrack mouse_speed_track;
+	Map<int, SpeedTrack> touch_speed_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping;
-	CursorShape default_shape = CURSOR_ARROW;
+
+	CursorShape default_shape;
 
 public:
 	enum HatMask {

@@ -29,6 +29,7 @@
 			<argument index="0" name="force" type="Vector2">
 			</argument>
 			<description>
+				Adds a constant directional force without affecting rotation.
 			</description>
 		</method>
 		<method name="add_force">
@@ -48,6 +49,7 @@
 			<argument index="0" name="torque" type="float">
 			</argument>
 			<description>
+				Adds a constant rotational force.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -56,6 +58,7 @@
 			<argument index="0" name="impulse" type="Vector2">
 			</argument>
 			<description>
+				Applies a directional impulse without affecting rotation.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -75,6 +78,7 @@
 			<argument index="0" name="torque" type="float">
 			</argument>
 			<description>
+				Applies a rotational impulse to the body.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -173,14 +177,14 @@
 	</members>
 	<signals>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a body exits contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
@@ -189,7 +193,7 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
@@ -202,7 +206,7 @@
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>

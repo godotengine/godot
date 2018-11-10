@@ -11,8 +11,8 @@
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/2d_transforms.html</link>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -330,6 +330,12 @@
 				Draws a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
+		<method name="force_update_transform">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID">
 			</return>
@@ -570,7 +576,7 @@
 			Disable blending mode. Colors including alpha are written as is. Only applicable for render targets with a transparent background. No lighting will be applied.
 		</constant>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
-			Canvas item transform has changed. Only received if requested.
+			Canvas item transform has changed. Notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			CanvasItem is requested to draw.

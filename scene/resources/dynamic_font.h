@@ -32,10 +32,10 @@
 #define DYNAMIC_FONT_H
 
 #ifdef FREETYPE_ENABLED
-#include "io/resource_loader.h"
-#include "os/mutex.h"
-#include "os/thread_safe.h"
-#include "pair.h"
+#include "core/io/resource_loader.h"
+#include "core/os/mutex.h"
+#include "core/os/thread_safe.h"
+#include "core/pair.h"
 #include "scene/resources/font.h"
 
 #include <ft2build.h>
@@ -285,7 +285,7 @@ public:
 	SelfList<DynamicFont> font_list;
 
 	static Mutex *dynamic_font_mutex;
-	static SelfList<DynamicFont>::List dynamic_fonts;
+	static SelfList<DynamicFont>::List *dynamic_fonts;
 
 	static void initialize_dynamic_fonts();
 	static void finish_dynamic_fonts();

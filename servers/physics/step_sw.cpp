@@ -31,7 +31,7 @@
 #include "step_sw.h"
 #include "joints_sw.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 void StepSW::_populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **p_constraint_island) {
 
@@ -228,7 +228,6 @@ void StepSW::step(SpaceSW *p_space, real_t p_delta, int p_iterations) {
 		profile_begtime = profile_endtime;
 	}
 
-	//print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
 	/* SETUP CONSTRAINT ISLANDS */
 
 	{

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorInterface" inherits="Node" category="Core" version="3.1">
 	<brief_description>
-		Editor interface and main components.
+		Godot editor's interface.
 	</brief_description>
 	<description>
-		Editor interface. Allows saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, as well as information about scenes. Also see [EditorPlugin] and [EditorScript].
+		EditorInterface gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -24,14 +24,14 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the base [Control].
+				Returns the main container of Godot editor's window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
 			<return type="Node">
 			</return>
 			<description>
-				Returns the edited scene's root [Node].
+				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
 		<method name="get_editor_settings">
@@ -52,7 +52,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of the currently opened scenes.
+				Returns an [Array] with the file paths of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_resource_filesystem">
@@ -66,7 +66,7 @@
 			<return type="EditorResourcePreview">
 			</return>
 			<description>
-				Returns the [EditorResourcePreview]\ er.
+				Returns the [EditorResourcePreview].
 			</description>
 		</method>
 		<method name="get_script_editor">

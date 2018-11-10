@@ -7,7 +7,7 @@
 		Contains mouse click information. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/mouse_and_input_coordinates.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/mouse_and_input_coordinates.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -18,7 +18,7 @@
 			Mouse button identifier, one of the BUTTON_* or BUTTON_WHEEL_* constants in [@GlobalScope].
 		</member>
 		<member name="doubleclick" type="bool" setter="set_doubleclick" getter="is_doubleclick">
-			If [code]true[/code] the mouse button's state is a double-click. If [code]false[/code] the mouse button's state is released.
+			If [code]true[/code] the mouse button's state is a double-click.
 		</member>
 		<member name="factor" type="float" setter="set_factor" getter="get_factor">
 			Magnitude. Amount (or delta) of the event. Used for scroll events, indicates scroll amount (vertically or horizontally). Only supported on some platforms, sensitivity varies by platform. May be 0 if not supported.

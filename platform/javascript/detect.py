@@ -25,7 +25,6 @@ def get_opts():
 def get_flags():
     return [
         ('tools', False),
-        ('module_theora_enabled', False),
         # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
@@ -128,6 +127,10 @@ def configure(env):
     # when using WebAssembly (in comparison to asm.js) and works well for
     # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
+
+    # Since we use both memory growth and MEMFS preloading,
+    # this avoids unecessary copying on start-up.
+    env.Append(LINKFLAGS=['--no-heap-copy'])
 
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])

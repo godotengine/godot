@@ -30,6 +30,8 @@
 
 #include "text_editor.h"
 
+#include "editor_node.h"
+
 void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	highlighters[p_highlighter->get_name()] = p_highlighter;
 	highlighter_menu->add_radio_check_item(p_highlighter->get_name());
@@ -64,6 +66,7 @@ void TextEditor::_change_syntax_highlighter(int p_idx) {
 		el = el->next();
 	}
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
+	EditorSettings::get_singleton()->set_project_metadata("text_editor", "syntax_highlighter", p_idx);
 }
 
 void TextEditor::_load_theme_settings() {
@@ -128,7 +131,7 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_color_override("search_result_border_color", search_result_border_color);
 	text_edit->add_color_override("symbol_color", symbol_color);
 
-	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 4));
+	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
 
 	colors_cache.font_color = text_color;
 	colors_cache.symbol_color = symbol_color;
@@ -158,10 +161,7 @@ String TextEditor::get_name() {
 
 Ref<Texture> TextEditor::get_icon() {
 
-	if (get_parent_control() && get_parent_control()->has_icon(text_file->get_class(), "EditorIcons")) {
-		return get_parent_control()->get_icon(text_file->get_class(), "EditorIcons");
-	}
-	return Ref<Texture>();
+	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
 }
 
 RES TextEditor::get_edited_resource() const {
@@ -299,7 +299,7 @@ void TextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 			_load_theme_settings();
-			set_syntax_highlighter(NULL);
+			_change_syntax_highlighter(EditorSettings::get_singleton()->get_project_metadata("text_editor", "syntax_highlighter", 0));
 			break;
 	}
 }
@@ -360,7 +360,7 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_CLONE_DOWN: {
 
-			code_editor->code_lines_down();
+			code_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 
@@ -475,7 +475,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					int to_column = tx->get_selection_to_column();
 
 					if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-						// Right click is outside the seleted text
+						// Right click is outside the selected text
 						tx->deselect();
 					}
 				}

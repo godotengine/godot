@@ -31,7 +31,7 @@
 #ifndef STREAM_PEER_H
 #define STREAM_PEER_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 class StreamPeer : public Reference {
 	GDCLASS(StreamPeer, Reference);
@@ -71,6 +71,7 @@ public:
 	void put_u64(uint64_t p_val);
 	void put_float(float p_val);
 	void put_double(double p_val);
+	void put_string(const String &p_string);
 	void put_utf8_string(const String &p_string);
 	void put_var(const Variant &p_variant);
 
@@ -84,8 +85,8 @@ public:
 	int64_t get_64();
 	float get_float();
 	double get_double();
-	String get_string(int p_bytes);
-	String get_utf8_string(int p_bytes);
+	String get_string(int p_bytes = -1);
+	String get_utf8_string(int p_bytes = -1);
 	Variant get_var();
 
 	StreamPeer() { big_endian = false; }

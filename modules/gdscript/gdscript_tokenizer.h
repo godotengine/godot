@@ -32,11 +32,11 @@
 #define GDSCRIPT_TOKENIZER_H
 
 #include "core/pair.h"
+#include "core/string_db.h"
+#include "core/ustring.h"
+#include "core/variant.h"
+#include "core/vmap.h"
 #include "gdscript_functions.h"
-#include "string_db.h"
-#include "ustring.h"
-#include "variant.h"
-#include "vmap.h"
 
 class GDScriptTokenizer {
 public:
@@ -119,9 +119,10 @@ public:
 		TK_PR_SYNC,
 		TK_PR_MASTER,
 		TK_PR_SLAVE,
+		TK_PR_PUPPET,
 		TK_PR_REMOTESYNC,
 		TK_PR_MASTERSYNC,
-		TK_PR_SLAVESYNC,
+		TK_PR_PUPPETSYNC,
 		TK_BRACKET_OPEN,
 		TK_BRACKET_CLOSE,
 		TK_CURLY_BRACKET_OPEN,

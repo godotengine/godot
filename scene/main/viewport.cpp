@@ -30,9 +30,9 @@
 
 #include "viewport.h"
 
-#include "os/input.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/collision_object.h"
@@ -45,6 +45,7 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/main/timer.h"
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
@@ -185,6 +186,7 @@ public:
 
 Viewport::GUI::GUI() {
 
+	dragging = false;
 	mouse_focus = NULL;
 	mouse_click_grabber = NULL;
 	mouse_focus_button = -1;
@@ -442,24 +444,39 @@ void Viewport::_notification(int p_what) {
 
 						uint64_t frame = get_tree()->get_frame();
 
-						Vector2 point = get_canvas_transform().affine_inverse().xform(pos);
 						Physics2DDirectSpaceState::ShapeResult res[64];
-						int rc = ss2d->intersect_point(point, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
-						for (int i = 0; i < rc; i++) {
+						for (Set<CanvasLayer *>::Element *E = canvas_layers.front(); E; E = E->next()) {
+							Transform2D canvas_transform;
+							ObjectID canvas_layer_id;
+							if (E->get()) {
+								// A descendant CanvasLayer
+								canvas_transform = E->get()->get_transform();
+								canvas_layer_id = E->get()->get_instance_id();
+							} else {
+								// This Viewport's builtin canvas
+								canvas_transform = get_canvas_transform();
+								canvas_layer_id = 0;
+							}
 
-							if (res[i].collider_id && res[i].collider) {
-								CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
-								if (co) {
+							Vector2 point = canvas_transform.affine_inverse().xform(pos);
 
-									Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.find(res[i].collider_id);
-									if (!E) {
-										E = physics_2d_mouseover.insert(res[i].collider_id, frame);
-										co->_mouse_enter();
-									} else {
-										E->get() = frame;
+							int rc = ss2d->intersect_point_on_canvas(point, canvas_layer_id, res, 64, Set<RID>(), 0xFFFFFFFF, true, true, true);
+							for (int i = 0; i < rc; i++) {
+
+								if (res[i].collider_id && res[i].collider) {
+									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
+									if (co) {
+
+										Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.find(res[i].collider_id);
+										if (!E) {
+											E = physics_2d_mouseover.insert(res[i].collider_id, frame);
+											co->_mouse_enter();
+										} else {
+											E->get() = frame;
+										}
+
+										co->_input_event(this, ev, res[i].shape);
 									}
-
-									co->_input_event(this, ev, res[i].shape);
 								}
 							}
 						}
@@ -628,10 +645,8 @@ Rect2 Viewport::get_visible_rect() const {
 	Rect2 r;
 
 	if (size == Size2()) {
-
-		r = Rect2(Point2(), Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height));
+		r = Rect2(Point2(), OS::get_singleton()->get_window_size());
 	} else {
-
 		r = Rect2(Point2(), size);
 	}
 
@@ -700,15 +715,6 @@ void Viewport::set_canvas_transform(const Transform2D &p_transform) {
 
 	canvas_transform = p_transform;
 	VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, find_world_2d()->get_canvas(), canvas_transform);
-
-	Transform2D xform = (global_canvas_transform * canvas_transform).affine_inverse();
-	Size2 ss = get_visible_rect().size;
-	/*SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
-	Vector2 ss2 = ss*xform.get_scale();
-	float panrange = MAX(ss2.x,ss2.y);
-
-	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-*/
 }
 
 Transform2D Viewport::get_canvas_transform() const {
@@ -721,15 +727,6 @@ void Viewport::_update_global_transform() {
 	Transform2D sxform = stretch_transform * global_canvas_transform;
 
 	VisualServer::get_singleton()->viewport_set_global_canvas_transform(viewport, sxform);
-
-	Transform2D xform = (sxform * canvas_transform).affine_inverse();
-	Size2 ss = get_visible_rect().size;
-	/*SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
-	Vector2 ss2 = ss*xform.get_scale();
-	float panrange = MAX(ss2.x,ss2.y);
-
-	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-*/
 }
 
 void Viewport::set_global_canvas_transform(const Transform2D &p_transform) {
@@ -872,6 +869,16 @@ void Viewport::_camera_make_next_current(Camera *p_exclude) {
 	}
 }
 #endif
+
+void Viewport::_canvas_layer_add(CanvasLayer *p_canvas_layer) {
+
+	canvas_layers.insert(p_canvas_layer);
+}
+
+void Viewport::_canvas_layer_remove(CanvasLayer *p_canvas_layer) {
+
+	canvas_layers.erase(p_canvas_layer);
+}
 
 void Viewport::set_transparent_background(bool p_enable) {
 
@@ -1506,12 +1513,6 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	if (Object::cast_to<Viewport>(p_node))
 		return NULL;
 
-	Control *c = Object::cast_to<Control>(p_node);
-
-	if (c) {
-		//print_line("at "+String(c->get_path())+" POS "+c->get_position()+" bt "+p_xform);
-	}
-
 	//subwindows first!!
 
 	if (!p_node->is_visible()) {
@@ -1523,6 +1524,8 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	// matrix.basis_determinant() == 0.0f implies that node does not exist on scene
 	if (matrix.basis_determinant() == 0.0f)
 		return NULL;
+
+	Control *c = Object::cast_to<Control>(p_node);
 
 	if (!c || !c->clips_input() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 
@@ -1654,7 +1657,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				*/
 
 				gui.mouse_focus = _gui_find_control(pos);
-				//print_line("has mf "+itos(gui.mouse_focus!=NULL));
 				gui.mouse_focus_button = mb->get_button_index();
 
 				if (!gui.mouse_focus) {
@@ -1683,11 +1685,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				arr.push_back(gui.mouse_focus->get_class());
 				ScriptDebugger::get_singleton()->send_message("click_ctrl", arr);
 			}
-
-/*if (bool(GLOBAL_DEF("debug/print_clicked_control",false))) {
-
-					print_line(String(gui.mouse_focus->get_path())+" - "+pos);
-				}*/
 #endif
 
 			if (mb->get_button_index() == BUTTON_LEFT) { //assign focus
@@ -1728,6 +1725,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				gui.drag_data = Variant();
+				gui.dragging = false;
 
 				if (gui.drag_preview) {
 					memdelete(gui.drag_preview);
@@ -1757,6 +1755,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 
 				gui.drag_data = Variant();
+				gui.dragging = false;
 				_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
 				//change mouse accordingly
 			}
@@ -1819,10 +1818,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						Control *control = Object::cast_to<Control>(ci);
 						if (control) {
 
+							gui.dragging = true;
 							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos) - gui.drag_accum);
 							if (gui.drag_data.get_type() != Variant::NIL) {
 
 								gui.mouse_focus = NULL;
+							} else {
+								gui.dragging = false;
 							}
 
 							if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
@@ -1863,8 +1865,16 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				MenuButton *popup_menu_parent = NULL;
 				MenuButton *menu_button = Object::cast_to<MenuButton>(over);
 
-				if (popup_menu)
+				if (popup_menu) {
 					popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
+					if (!popup_menu_parent) {
+						// Go through the parents to see if there's a MenuButton at the end.
+						while (Object::cast_to<PopupMenu>(popup_menu->get_parent())) {
+							popup_menu = Object::cast_to<PopupMenu>(popup_menu->get_parent());
+						}
+						popup_menu_parent = Object::cast_to<MenuButton>(popup_menu->get_parent());
+					}
+				}
 
 				// If the mouse is over a menu button, this menu will open automatically
 				// if there is already a pop-up menu open at the same hierarchical level.
@@ -2262,6 +2272,7 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	ERR_EXPLAIN("Drag data must be a value");
 	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
 
+	gui.dragging = true;
 	gui.drag_data = p_data;
 	gui.mouse_focus = NULL;
 
@@ -2701,6 +2712,9 @@ bool Viewport::is_snap_controls_to_pixels_enabled() const {
 	return snap_controls_to_pixels;
 }
 
+bool Viewport::gui_is_dragging() const {
+	return gui.dragging;
+}
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);
@@ -2787,6 +2801,9 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
+	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
+
+	ClassDB::bind_method(D_METHOD("get_modal_stack_top"), &Viewport::get_modal_stack_top);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
@@ -2920,6 +2937,7 @@ Viewport::Viewport() {
 	parent = NULL;
 	listener = NULL;
 	camera = NULL;
+	canvas_layers.insert(NULL); // This eases picking code (interpreted as the canvas of the Viewport)
 	arvr = false;
 	size_override = false;
 	size_override_stretch = false;
@@ -2960,6 +2978,7 @@ Viewport::Viewport() {
 
 	//gui.tooltip_timer->force_parent_owned();
 	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.7);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::REAL, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 	gui.tooltip = NULL;
 	gui.tooltip_label = NULL;

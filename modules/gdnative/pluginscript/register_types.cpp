@@ -30,11 +30,11 @@
 
 #include "register_types.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/os.h"
 #include "scene/main/scene_tree.h"
 
 #include "pluginscript_language.h"

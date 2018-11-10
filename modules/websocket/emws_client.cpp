@@ -55,32 +55,31 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_error(void *obj) {
 
 EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int was_clean) {
 	EMWSClient *client = static_cast<EMWSClient *>(obj);
+	client->_on_close_request(code, String(reason));
 	client->_is_connecting = false;
-	client->_on_disconnect();
+	client->_on_disconnect(was_clean != 0);
 }
 }
 
 Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
+	String proto_string = p_protocols.join(",");
 	String str = "ws://";
-	String proto_string = "";
 
 	if (p_ssl)
 		str = "wss://";
 	str += p_host + ":" + itos(p_port) + p_path;
-	for (int i = 0; i < p_protocols.size(); i++) {
-		proto_string += p_protocols[i];
-		proto_string += ",";
-	}
-	if (proto_string == "")
-		proto_string = "binary,";
-
-	proto_string = proto_string.substr(0, proto_string.length() - 1);
 
 	_is_connecting = true;
 	/* clang-format off */
 	int peer_sock = EM_ASM_INT({
-		var socket = new WebSocket(UTF8ToString($1), UTF8ToString($2).split(","));
+		var proto_str = UTF8ToString($2);
+		var socket = null;
+		if (proto_str) {
+			socket = new WebSocket(UTF8ToString($1), proto_str.split(","));
+		} else {
+			socket = new WebSocket(UTF8ToString($1));
+		}
 		var c_ptr = Module.IDHandler.get($0);
 		socket.binaryType = "arraybuffer";
 
@@ -147,7 +146,7 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 			if (!Module.IDHandler.has($0))
 				return; // Godot Object is gone!
 			var was_clean = 0;
-			if (event.was_clean)
+			if (event.wasClean)
 				was_clean = 1;
 			ccall("_esws_on_close",
 				"void",
@@ -184,9 +183,9 @@ NetworkedMultiplayerPeer::ConnectionStatus EMWSClient::get_connection_status() c
 	return CONNECTION_DISCONNECTED;
 };
 
-void EMWSClient::disconnect_from_host() {
+void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
 
-	_peer->close();
+	_peer->close(p_code, p_reason);
 };
 
 IP_Address EMWSClient::get_connected_host() const {

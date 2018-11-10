@@ -33,13 +33,15 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "os/file_access.h"
-#include "os/memory.h"
+#include "core/os/file_access.h"
+#include "core/os/memory.h"
+
 #include <stdio.h>
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class FileAccessWindows : public FileAccess {
 
 	FILE *f;

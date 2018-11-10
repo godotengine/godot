@@ -69,11 +69,13 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_parent_name_valid;
 	bool is_class_name_valid;
 	bool is_built_in;
+	bool built_in_enabled;
 	int current_language;
 	bool re_check_path;
 	String script_template;
 	Vector<String> template_list;
 
+	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _path_entered(const String &p_path = String());
 	void _lang_changed(int l = 0);
@@ -96,8 +98,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_name, const String &p_base_path);
-
+	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true);
 	ScriptCreateDialog();
 };
 

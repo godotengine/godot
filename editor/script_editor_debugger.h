@@ -33,12 +33,12 @@
 
 #include "core/io/packet_peer.h"
 #include "core/io/tcp_server.h"
-#include "property_editor.h"
+#include "editor/editor_inspector.h"
+#include "editor/property_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
 class Tree;
-class PropertyEditor;
 class EditorNode;
 class ScriptEditorDebuggerVariables;
 class LineEdit;
@@ -88,8 +88,7 @@ class ScriptEditorDebugger : public Control {
 	Set<ObjectID> unfold_cache;
 
 	HSplitContainer *error_split;
-	ItemList *error_list;
-	ItemList *error_stack;
+	Tree *error_tree;
 	Tree *inspect_scene_tree;
 	Button *clearbutton;
 	PopupMenu *item_menu;
@@ -130,7 +129,7 @@ class ScriptEditorDebugger : public Control {
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
-	PropertyEditor *inspector;
+	EditorInspector *inspector;
 
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
@@ -179,8 +178,11 @@ class ScriptEditorDebugger : public Control {
 	void _method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
 
-	void _error_selected(int p_idx);
-	void _error_stack_selected(int p_idx);
+	void _error_activated();
+	void _error_selected();
+
+	void _expand_errors_list();
+	void _collapse_errors_list();
 
 	void _profiler_activate(bool p_enable);
 	void _profiler_seeked();
@@ -191,7 +193,7 @@ class ScriptEditorDebugger : public Control {
 	void _clear_remote_objects();
 	void _clear_errors_list();
 
-	void _error_list_item_rmb_selected(int p_item, const Vector2 &p_pos);
+	void _error_tree_item_rmb_selected(const Vector2 &p_pos);
 	void _item_menu_id_pressed(int p_option);
 
 protected:

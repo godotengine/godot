@@ -54,12 +54,7 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 		if (!obj)
 			continue;
 
-		Ref<Texture> icon;
-
-		if (has_icon(obj->get_class(), "EditorIcons"))
-			icon = get_icon(obj->get_class(), "EditorIcons");
-		else
-			icon = get_icon("Object", "EditorIcons");
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		int index = popup->get_item_count();
 		popup->add_icon_item(icon, E->get().name.capitalize(), objects.size());
@@ -122,12 +117,7 @@ void EditorPath::_notification(int p_what) {
 
 				String type = obj->get_class();
 
-				Ref<Texture> icon;
-
-				if (has_icon(obj->get_class(), "EditorIcons"))
-					icon = get_icon(obj->get_class(), "EditorIcons");
-				else
-					icon = get_icon("Object", "EditorIcons");
+				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 				icon->draw(ci, Point2i(ofs, (size.height - icon->get_height()) / 2));
 

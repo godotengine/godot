@@ -31,9 +31,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 
 class Shader : public Resource {
@@ -78,6 +78,8 @@ public:
 	void set_default_texture_param(const StringName &p_param, const Ref<Texture> &p_texture);
 	Ref<Texture> get_default_texture_param(const StringName &p_param) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
+
+	virtual bool is_text_shader() const;
 
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
 		if (params_cache_dirty)

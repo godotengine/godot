@@ -31,15 +31,16 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "curve.h"
-#include "io/resource_loader.h"
-#include "os/mutex.h"
-#include "os/rw_lock.h"
-#include "os/thread_safe.h"
-#include "rect2.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/math/rect2.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
 #include "scene/resources/color_ramp.h"
+#include "scene/resources/curve.h"
 #include "servers/visual_server.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -217,6 +218,8 @@ public:
 	int get_width() const;
 	int get_height() const;
 	virtual RID get_rid() const;
+
+	virtual void set_path(const String &p_path, bool p_take_over);
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;

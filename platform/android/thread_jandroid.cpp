@@ -30,9 +30,9 @@
 
 #include "thread_jandroid.h"
 
+#include "core/os/memory.h"
 #include "core/safe_refcount.h"
-#include "os/memory.h"
-#include "script_language.h"
+#include "core/script_language.h"
 
 static pthread_key_t _create_thread_id_key() {
 	pthread_key_t key;

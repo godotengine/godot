@@ -30,8 +30,8 @@
 
 #include "popup.h"
 
-#include "engine.h"
-#include "os/keyboard.h"
+#include "core/engine.h"
+#include "core/os/keyboard.h"
 
 void Popup::_gui_input(Ref<InputEvent> p_event) {
 }
@@ -234,15 +234,46 @@ String Popup::get_configuration_warning() const {
 Popup::~Popup() {
 }
 
-void PopupPanel::set_child_rect(Control *p_child) {
-	ERR_FAIL_NULL(p_child);
+Size2 PopupPanel::get_minimum_size() const {
 
 	Ref<StyleBox> p = get_stylebox("panel");
-	p_child->set_anchors_preset(Control::PRESET_WIDE);
-	p_child->set_margin(MARGIN_LEFT, p->get_margin(MARGIN_LEFT));
-	p_child->set_margin(MARGIN_RIGHT, -p->get_margin(MARGIN_RIGHT));
-	p_child->set_margin(MARGIN_TOP, p->get_margin(MARGIN_TOP));
-	p_child->set_margin(MARGIN_BOTTOM, -p->get_margin(MARGIN_BOTTOM));
+
+	Size2 ms;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i));
+		if (!c)
+			continue;
+
+		if (c->is_set_as_toplevel())
+			continue;
+
+		Size2 cms = c->get_combined_minimum_size();
+		ms.x = MAX(cms.x, ms.x);
+		ms.y = MAX(cms.y, ms.y);
+	}
+
+	return ms + p->get_minimum_size();
+}
+
+void PopupPanel::_update_child_rects() {
+
+	Ref<StyleBox> p = get_stylebox("panel");
+
+	Vector2 cpos(p->get_offset());
+	Vector2 csize(get_size() - p->get_minimum_size());
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i));
+		if (!c)
+			continue;
+
+		if (c->is_set_as_toplevel())
+			continue;
+
+		c->set_position(cpos);
+		c->set_size(csize);
+	}
 }
 
 void PopupPanel::_notification(int p_what) {
@@ -250,6 +281,12 @@ void PopupPanel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 
 		get_stylebox("panel")->draw(get_canvas_item(), Rect2(Point2(), get_size()));
+	} else if (p_what == NOTIFICATION_READY) {
+
+		_update_child_rects();
+	} else if (p_what == NOTIFICATION_RESIZED) {
+
+		_update_child_rects();
 	}
 }
 

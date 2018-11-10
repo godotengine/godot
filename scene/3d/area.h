@@ -31,8 +31,8 @@
 #ifndef AREA_H
 #define AREA_H
 
+#include "core/vset.h"
 #include "scene/3d/collision_object.h"
-#include "vset.h"
 
 class Area : public CollisionObject {
 

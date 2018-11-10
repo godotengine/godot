@@ -30,9 +30,9 @@
 
 #include "visual_script_func_nodes.h"
 
-#include "engine.h"
-#include "io/resource_loader.h"
-#include "os/os.h"
+#include "core/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "visual_script_nodes.h"
@@ -394,7 +394,6 @@ void VisualScriptFunctionCall::_update_method_cache() {
 		}
 	}
 
-	//print_line("BASE: "+String(type)+" FUNC: "+String(function));
 	MethodBind *mb = ClassDB::get_method(type, function);
 	if (mb) {
 		use_default_args = mb->get_default_argument_count();

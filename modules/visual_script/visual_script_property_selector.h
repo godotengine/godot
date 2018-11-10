@@ -63,8 +63,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	ObjectID script;
 	Object *instance;
 	bool virtuals_only;
-
-	bool seq_connect = false;
+	bool seq_connect;
 
 	void _item_selected();
 

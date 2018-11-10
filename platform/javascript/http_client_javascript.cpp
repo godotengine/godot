@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/io/http_client.h"
 #include "http_request.h"
-#include "io/http_client.h"
 
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
 
@@ -237,7 +237,7 @@ Error HTTPClient::poll() {
 		case STATUS_CONNECTION_ERROR:
 			return ERR_CONNECTION_ERROR;
 
-		case STATUS_REQUESTING:
+		case STATUS_REQUESTING: {
 
 #ifdef DEBUG_ENABLED
 			if (!has_polled) {
@@ -281,6 +281,10 @@ Error HTTPClient::poll() {
 			godot_xhr_get_response(xhr_id, write.ptr(), polled_response.size());
 			write = PoolByteArray::Write();
 			break;
+		}
+
+		default:
+			ERR_FAIL_V(ERR_BUG);
 	}
 	return OK;
 }

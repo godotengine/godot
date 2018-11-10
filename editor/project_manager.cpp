@@ -30,18 +30,20 @@
 
 #include "project_manager.h"
 
-#include "editor_initialize_ssl.h"
+#include "core/io/config_file.h"
+#include "core/io/resource_saver.h"
+#include "core/io/stream_peer_ssl.h"
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/translation.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
-#include "io/config_file.h"
-#include "io/resource_saver.h"
-#include "io/stream_peer_ssl.h"
-#include "io/zip_io.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/keyboard.h"
-#include "os/os.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -49,9 +51,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
-#include "translation.h"
-#include "version.h"
-#include "version_hash.gen.h"
 
 class ProjectDialog : public ConfirmationDialog {
 
@@ -1000,6 +999,10 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 				_open_project();
 			} break;
+			case KEY_DELETE: {
+
+				_erase_project();
+			} break;
 			case KEY_HOME: {
 
 				for (int i = 0; i < scroll_children->get_child_count(); i++) {
@@ -1309,7 +1312,7 @@ void ProjectManager::_load_recent_projects() {
 		show->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(show);
 		show->connect("pressed", this, "_show_project", varray(path));
-		show->set_tooltip(TTR("Show In File Manager"));
+		show->set_tooltip(TTR("Show in File Manager"));
 
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");
@@ -1390,7 +1393,7 @@ void ProjectManager::_open_project_confirm() {
 			return;
 		}
 
-		print_line("OPENING: " + path + " (" + selected + ")");
+		print_line("Editing project: " + path + " (" + selected + ")");
 
 		List<String> args;
 
@@ -1447,7 +1450,7 @@ void ProjectManager::_run_project_confirm() {
 			return;
 		}
 
-		print_line("OPENING: " + path + " (" + selected + ")");
+		print_line("Running project: " + path + " (" + selected + ")");
 
 		List<String> args;
 
@@ -1513,13 +1516,13 @@ void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<Strin
 
 void ProjectManager::_scan_begin(const String &p_base) {
 
-	print_line("SCAN PROJECTS AT: " + p_base);
+	print_line("Scanning projects at: " + p_base);
 	List<String> projects;
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->change_dir(p_base);
 	_scan_dir(da, 0, 1, &projects);
 	memdelete(da);
-	print_line("found: " + itos(projects.size()) + " projects.");
+	print_line("Found " + itos(projects.size()) + " projects.");
 
 	for (List<String>::Element *E = projects.front(); E; E = E->next()) {
 		String proj = E->get().replace("/", "::");
@@ -1751,7 +1754,11 @@ ProjectManager::ProjectManager() {
 			} break;
 		}
 
+#ifndef OSX_ENABLED
+		// The macOS platform implementation uses its own hiDPI window resizing code
+		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
 		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
+#endif
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
@@ -2054,8 +2061,6 @@ void ProjectListFilter::_bind_methods() {
 }
 
 ProjectListFilter::ProjectListFilter() {
-
-	editor_initialize_certificates(); //for asset sharing
 
 	_current_filter = FILTER_NAME;
 

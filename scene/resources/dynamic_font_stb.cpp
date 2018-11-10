@@ -33,7 +33,7 @@
 #ifndef FREETYPE_ENABLED
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 void DynamicFontData::lock() {
 
@@ -214,7 +214,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 		int advance;
 		stbtt_GetCodepointHMetrics(&font->info, p_char, &advance, 0);
-		//print_line("char has no bitmap: "+itos(p_char)+" but advance is "+itos(advance*scale));
 		Character ch;
 		ch.texture_idx = -1;
 		ch.advance = advance * scale;
@@ -278,8 +277,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		tex_index = i;
 		break;
 	}
-
-	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
 
 	if (tex_index == -1) {
 		//could not find texture to fit, create one
@@ -363,8 +360,6 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	chr.texture_idx = tex_index;
 
 	chr.rect = Rect2(tex_x + rect_margin, tex_y + rect_margin, w, h);
-
-	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" RECT: "+chr.rect+" X OFS: "+itos(xofs)+" Y OFS: "+itos(yofs));
 
 	char_map[p_char] = chr;
 

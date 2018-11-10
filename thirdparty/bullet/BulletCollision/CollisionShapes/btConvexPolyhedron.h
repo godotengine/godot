@@ -54,6 +54,7 @@ ATTRIBUTE_ALIGNED16(class) btConvexPolyhedron
 	btVector3		mE;
 
 	void	initialize();
+	void	initialize2();
 	bool testContainment() const;
 
 	void project(const btTransform& trans, const btVector3& dir, btScalar& minProj, btScalar& maxProj, btVector3& witnesPtMin,btVector3& witnesPtMax) const;

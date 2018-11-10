@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream_player_3d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/3d/area.h"
 #include "scene/3d/camera.h"
 #include "scene/main/viewport.h"
@@ -290,7 +290,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			PhysicsDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask);
+			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
 			Area *area = NULL;
 
 			for (int i = 0; i < areas; i++) {
@@ -417,7 +417,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					}
 				}
 
-				for (int k = 0; k < cc; k++) {
+				for (unsigned int k = 0; k < cc; k++) {
 					output.vol[k] *= multiplier;
 				}
 
@@ -448,7 +448,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
 
-							float center_val[3] = { 0.5, 0.25, 0.16666 };
+							float center_val[3] = { 0.5f, 0.25f, 0.16666f };
 							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
 
 							if (attenuation < 1.0) {
@@ -814,7 +814,7 @@ AudioStreamPlayer3D::AttenuationModel AudioStreamPlayer3D::get_attenuation_model
 
 void AudioStreamPlayer3D::set_out_of_range_mode(OutOfRangeMode p_mode) {
 
-	ERR_FAIL_INDEX(p_mode, 2);
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	out_of_range_mode = p_mode;
 }
 

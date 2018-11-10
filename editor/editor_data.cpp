@@ -30,12 +30,12 @@
 
 #include "editor_data.h"
 
+#include "core/io/resource_loader.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/resource_loader.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "project_settings.h"
 #include "scene/resources/packed_scene.h"
 
 void EditorHistory::cleanup_history() {
@@ -869,7 +869,7 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	return true;
 }
 
-StringName EditorData::script_class_get_base(const String &p_class) {
+StringName EditorData::script_class_get_base(const String &p_class) const {
 
 	if (!ScriptServer::is_global_class(p_class))
 		return StringName();
@@ -895,15 +895,38 @@ Object *EditorData::script_class_instance(const String &p_class) {
 			RES script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
 			if (script.is_valid())
 				obj->set_script(script.get_ref_ptr());
-
-			RES icon = ResourceLoader::load(script_class_get_icon_path(p_class));
-			if (icon.is_valid())
-				obj->set_meta("_editor_icon", icon);
-
 			return obj;
 		}
 	}
 	return NULL;
+}
+
+void EditorData::script_class_set_icon_path(const String &p_class, const String &p_icon_path) {
+	_script_class_icon_paths[p_class] = p_icon_path;
+}
+
+String EditorData::script_class_get_icon_path(const String &p_class) const {
+	if (!ScriptServer::is_global_class(p_class))
+		return String();
+
+	String current = p_class;
+	String ret = _script_class_icon_paths[current];
+	while (ret.empty()) {
+		current = script_class_get_base(current);
+		if (!ScriptServer::is_global_class(current))
+			return String();
+		ret = _script_class_icon_paths.has(current) ? _script_class_icon_paths[current] : String();
+	}
+
+	return ret;
+}
+
+StringName EditorData::script_class_get_name(const String &p_path) const {
+	return _script_class_file_to_path.has(p_path) ? _script_class_file_to_path[p_path] : StringName();
+}
+
+void EditorData::script_class_set_name(const String &p_path, const StringName &p_class) {
+	_script_class_file_to_path[p_path] = p_class;
 }
 
 void EditorData::script_class_save_icon_paths() {
@@ -912,7 +935,8 @@ void EditorData::script_class_save_icon_paths() {
 
 	Dictionary d;
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-		d[E->get()] = _script_class_icon_paths[E->get()];
+		if (ScriptServer::is_global_class(E->get()))
+			d[E->get()] = _script_class_icon_paths[E->get()];
 	}
 
 	ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
@@ -927,8 +951,11 @@ void EditorData::script_class_load_icon_paths() {
 	d.get_key_list(&keys);
 
 	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		String key = E->get().operator String();
-		_script_class_icon_paths[key] = d[key];
+		String name = E->get().operator String();
+		_script_class_icon_paths[name] = d[name];
+
+		String path = ScriptServer::get_global_class_path(name);
+		script_class_set_name(path, name);
 	}
 }
 

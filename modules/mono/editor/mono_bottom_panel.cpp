@@ -31,6 +31,8 @@
 #include "mono_bottom_panel.h"
 
 #include "../csharp_script.h"
+#include "../godotsharp_dirs.h"
+#include "csharp_project.h"
 #include "godotsharp_editor.h"
 
 MonoBottomPanel *MonoBottomPanel::singleton = NULL;
@@ -53,9 +55,9 @@ void MonoBottomPanel::_update_build_tabs_list() {
 
 			build_tabs_list->add_item(item_name, tab->get_icon_texture());
 
-			String item_tooltip = String("Solution: ") + tab->build_info.solution;
-			item_tooltip += String("\nConfiguration: ") + tab->build_info.configuration;
-			item_tooltip += String("\nStatus: ");
+			String item_tooltip = "Solution: " + tab->build_info.solution;
+			item_tooltip += "\nConfiguration: " + tab->build_info.configuration;
+			item_tooltip += "\nStatus: ";
 
 			if (tab->build_exited) {
 				item_tooltip += tab->build_result == MonoBuildTab::RESULT_SUCCESS ? "Succeeded" : "Errored";
@@ -63,7 +65,7 @@ void MonoBottomPanel::_update_build_tabs_list() {
 				item_tooltip += "Running";
 			}
 
-			if (!tab->build_exited || !tab->build_result == MonoBuildTab::RESULT_SUCCESS) {
+			if (!tab->build_exited || tab->build_result == MonoBuildTab::RESULT_ERROR) {
 				item_tooltip += "\nErrors: " + itos(tab->error_count);
 			}
 
@@ -147,6 +149,10 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 }
 
 void MonoBottomPanel::_build_project_pressed() {
+
+	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+	ERR_FAIL_COND(metadata_err != OK);
 
 	GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 
@@ -475,14 +481,14 @@ void MonoBuildTab::_bind_methods() {
 }
 
 MonoBuildTab::MonoBuildTab(const MonoBuildInfo &p_build_info, const String &p_logs_dir) :
-		build_info(p_build_info),
-		logs_dir(p_logs_dir),
 		build_exited(false),
 		issues_list(memnew(ItemList)),
 		error_count(0),
 		warning_count(0),
 		errors_visible(true),
-		warnings_visible(true) {
+		warnings_visible(true),
+		logs_dir(p_logs_dir),
+		build_info(p_build_info) {
 	issues_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	issues_list->connect("item_activated", this, "_issue_activated");
 	add_child(issues_list);

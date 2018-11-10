@@ -6385,150 +6385,6 @@ msgstr "文脈参照ヘルプ"
 msgid "Shader"
 msgstr "シェーダー"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Scalar Constant"
-msgstr "スカラ定数を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Vec Constant"
-msgstr "ベクトル定数を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change RGB Constant"
-msgstr "RGB定数を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Scalar Operator"
-msgstr "スカラ演算子を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Vec Operator"
-msgstr "ベクトル演算子を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Vec Scalar Operator"
-msgstr "ベクトル・スカラ演算子を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change RGB Operator"
-msgstr "RGB演算子を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "回転のみ変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Scalar Function"
-msgstr "スカラ関数を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Change Vec Function"
-msgstr "ベクトル関数を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "スカラUniformを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "ベクトルUniformを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "RGB Uniformを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "規定値を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "XForm Uniformを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "テクスチャUniformを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "キューブマップUniformを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "コメントを変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Add/Remove to Color Ramp"
-msgstr "色の傾斜を付加/消去"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "色変化の傾斜を修正"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Add/Remove to Curve Map"
-msgstr "カーブマップを加える/除去"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "カーブマップを修正"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "入力の名前を変更"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Connect Graph Nodes"
-msgstr "グラフノードを接続"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Disconnect Graph Nodes"
-msgstr "グラフノードを切断"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Shader Graph Node"
-msgstr "シェーダーグラフノードを除去"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Move Shader Graph Node"
-msgstr "シェーダーグラフノードを移動"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "グラフノードを複製"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "シェーダーグラフノードを消去"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "エラー:循環結合リンク"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-#, fuzzy
-msgid "Error: Missing Input Connections"
-msgstr "エラー:入力コネクションが失われています"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "シェーダーグラフノードを追加"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -10414,6 +10270,118 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Change Scalar Constant"
+#~ msgstr "スカラ定数を変更"
+
+#, fuzzy
+#~ msgid "Change Vec Constant"
+#~ msgstr "ベクトル定数を変更"
+
+#, fuzzy
+#~ msgid "Change RGB Constant"
+#~ msgstr "RGB定数を変更"
+
+#, fuzzy
+#~ msgid "Change Scalar Operator"
+#~ msgstr "スカラ演算子を変更"
+
+#, fuzzy
+#~ msgid "Change Vec Operator"
+#~ msgstr "ベクトル演算子を変更"
+
+#, fuzzy
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "ベクトル・スカラ演算子を変更"
+
+#, fuzzy
+#~ msgid "Change RGB Operator"
+#~ msgstr "RGB演算子を変更"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "回転のみ変更"
+
+#, fuzzy
+#~ msgid "Change Scalar Function"
+#~ msgstr "スカラ関数を変更"
+
+#, fuzzy
+#~ msgid "Change Vec Function"
+#~ msgstr "ベクトル関数を変更"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "スカラUniformを変更"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "ベクトルUniformを変更"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "RGB Uniformを変更"
+
+#~ msgid "Change Default Value"
+#~ msgstr "規定値を変更"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "XForm Uniformを変更"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "テクスチャUniformを変更"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "キューブマップUniformを変更"
+
+#~ msgid "Change Comment"
+#~ msgstr "コメントを変更"
+
+#, fuzzy
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "色の傾斜を付加/消去"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "色変化の傾斜を修正"
+
+#, fuzzy
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "カーブマップを加える/除去"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "カーブマップを修正"
+
+#~ msgid "Change Input Name"
+#~ msgstr "入力の名前を変更"
+
+#, fuzzy
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "グラフノードを接続"
+
+#, fuzzy
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "グラフノードを切断"
+
+#, fuzzy
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "シェーダーグラフノードを除去"
+
+#, fuzzy
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "シェーダーグラフノードを移動"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "グラフノードを複製"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "シェーダーグラフノードを消去"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "エラー:循環結合リンク"
+
+#, fuzzy
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "エラー:入力コネクションが失われています"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "シェーダーグラフノードを追加"
 
 #~ msgid "Disabled"
 #~ msgstr "無効"

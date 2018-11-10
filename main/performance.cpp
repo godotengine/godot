@@ -29,13 +29,15 @@
 /*************************************************************************/
 
 #include "performance.h"
-#include "message_queue.h"
-#include "os/os.h"
+
+#include "core/message_queue.h"
+#include "core/os/os.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"
+
 Performance *Performance::singleton = NULL;
 
 void Performance::_bind_methods() {

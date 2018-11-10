@@ -7,7 +7,7 @@
 		A Singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the Project Settings / Input Map tab. Or be set with [InputMap].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -46,6 +46,7 @@
 			</return>
 			<description>
 				If the device has an accelerometer, this will return the acceleration. Otherwise, it returns an empty [Vector3].
+				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
 			</description>
 		</method>
 		<method name="get_action_strength" qualifiers="const">
@@ -54,6 +55,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+				Returns a value between 0 and 1 representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to 1. If the action is mapped to a control that has no axis as the keyboard, the value returned will be 0 or 1.
 			</description>
 		</method>
 		<method name="get_connected_joypads">
@@ -94,6 +96,7 @@
 			<argument index="0" name="axis" type="String">
 			</argument>
 			<description>
+				Returns the index of the provided axis name.
 			</description>
 		</method>
 		<method name="get_joy_axis_string">
@@ -102,6 +105,7 @@
 			<argument index="0" name="axis_index" type="int">
 			</argument>
 			<description>
+				Receives a [code]JOY_AXIS_*[/code] Enum and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_button_index_from_string">
@@ -110,6 +114,7 @@
 			<argument index="0" name="button" type="String">
 			</argument>
 			<description>
+				Returns the index of the provided button name.
 			</description>
 		</method>
 		<method name="get_joy_button_string">
@@ -118,6 +123,7 @@
 			<argument index="0" name="button_index" type="int">
 			</argument>
 			<description>
+				Receives a [code]JOY_BUTTON_*[/code] Enum and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -292,7 +298,9 @@
 			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Set a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See enum [code]CURSOR_*[/code] for the list of shapes.
+				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See enum [code]CURSOR_*[/code] for the list of shapes.
+				[code]image[/code]'s size must be lower than 256x256.
+				[code]hotspot[/code] must be within [code]image[/code]'s size.
 			</description>
 		</method>
 		<method name="set_default_cursor_shape">
@@ -301,6 +309,8 @@
 			<argument index="0" name="shape" type="int" enum="Input.CursorShape" default="0">
 			</argument>
 			<description>
+				Sets the default cursor shape to be used in the viewport instead of [code]CURSOR_ARROW[/code].
+				Note that if you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
@@ -381,7 +391,7 @@
 			Pointing hand cursor. Usually used to indicate the pointer is over a link or other interactable item.
 		</constant>
 		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
-			Cross cursor. Typically appears over regions in which a drawing operation can be performance or for selections.
+			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
 		</constant>
 		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
 			Wait cursor. Indicates that the application is busy performing an operation.

@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "editor_spin_slider.h"
+#include "core/math/expression.h"
+#include "core/os/input.h"
 #include "editor_scale.h"
-#include "math/expression.h"
-#include "os/input.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return rtos(get_value());
@@ -274,7 +274,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult.
+		/* Sorry, I don't like this, it makes navigating the different fields with arrows more difficult.
 		 * Just press enter to edit.
 		 * if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
 			_focus_entered();

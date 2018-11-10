@@ -76,7 +76,6 @@ class BodyPairSW : public ConstraintSW {
 	Contact contacts[MAX_CONTACTS];
 	int contact_count;
 	bool collided;
-	int cc;
 
 	static void _contact_added_callback(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);
 

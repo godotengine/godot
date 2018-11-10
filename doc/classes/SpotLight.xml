@@ -7,7 +7,7 @@
 		A SpotLight light is a type of [Light] node that emits lights in a specific direction, in the shape of a cone. The light is attenuated through the distance and this attenuation can be configured by changing the energy, radius and attenuation parameters of [Light]. TODO: Image of a spotlight.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/3d/lights_and_shadows.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
 	<demos>
 	</demos>

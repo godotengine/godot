@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 
-Import('env')
+import os
+import platform
+import sys
 
+Import('env')
 
 common_server = [\
     "os_server.cpp",\
-    "#platform/x11/crash_handler_x11.cpp",
-    "#platform/x11/power_x11.cpp",
 ]
+
+if sys.platform == "darwin":
+	common_server.append("#platform/osx/crash_handler_osx.mm")
+	common_server.append("#platform/osx/power_osx.cpp")
+	common_server.append("#platform/osx/sem_osx.cpp")
+else:
+	common_server.append("#platform/x11/crash_handler_x11.cpp")
+	common_server.append("#platform/x11/power_x11.cpp")
 
 prog = env.add_program('#bin/godot_server', ['godot_server.cpp'] + common_server)

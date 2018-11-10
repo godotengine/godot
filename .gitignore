@@ -91,15 +91,15 @@ bld/
 *.debug
 *.dSYM
 
+# Visual Studio cache/options directory
+.vs/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
 # Hints for improving IntelliSense, created together with VS project
 cpp.hint
-
-# Visualizers for the VS debugger
-*.natvis
 
 #NUNIT
 *.VisualState.xml
@@ -238,6 +238,7 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+__pycache__/
 
 # KDE
 .directory
@@ -309,6 +310,9 @@ platform/windows/godot_res.res
 # Visual Studio 2017 and Visual Studio Code workspace folder
 /.vs
 /.vscode
+
+# Visual Studio Code workspace file
+*.code-workspace
 
 # Scons progress indicator
 .scons_node_count

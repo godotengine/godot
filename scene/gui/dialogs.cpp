@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "dialogs.h"
+#include "core/print_string.h"
+#include "core/translation.h"
 #include "line_edit.h"
-#include "print_string.h"
-#include "translation.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -535,7 +535,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING, "action")));
 
 	ADD_GROUP("Dialog", "dialog");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
 }
 

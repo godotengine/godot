@@ -233,7 +233,7 @@ namespace cvtt
         {
             __m128 m_values[2];
 
-            inline Float operator+(const Float& other) const
+            inline Float operator+(const Float &other) const
             {
                 Float result;
                 result.m_values[0] = _mm_add_ps(m_values[0], other.m_values[0]);
@@ -281,7 +281,7 @@ namespace cvtt
                 return result;
             }
 
-            inline Float operator/(const Float& other) const
+            inline Float operator/(const Float &other) const
             {
                 Float result;
                 result.m_values[0] = _mm_div_ps(m_values[0], other.m_values[0]);
@@ -302,14 +302,14 @@ namespace cvtt
         {
             __m128i m_value;
 
-            inline Int16CompFlag operator&(const Int16CompFlag& other) const
+            inline Int16CompFlag operator&(const Int16CompFlag &other) const
             {
                 Int16CompFlag result;
                 result.m_value = _mm_and_si128(m_value, other.m_value);
                 return result;
             }
 
-            inline Int16CompFlag operator|(const Int16CompFlag& other) const
+            inline Int16CompFlag operator|(const Int16CompFlag &other) const
             {
                 Int16CompFlag result;
                 result.m_value = _mm_or_si128(m_value, other.m_value);
@@ -338,7 +338,7 @@ namespace cvtt
             return result;
         }
 
-        static Float Select(FloatCompFlag flag, Float a, Float b)
+        static Float Select(const FloatCompFlag &flag, const Float &a, const Float &b)
         {
             Float result;
             for (int i = 0; i < 2; i++)
@@ -347,7 +347,7 @@ namespace cvtt
         }
 
         template<int TSubtype>
-        static VInt16<TSubtype> Select(Int16CompFlag flag, const VInt16<TSubtype> &a, const VInt16<TSubtype> &b)
+        static VInt16<TSubtype> Select(const Int16CompFlag &flag, const VInt16<TSubtype> &a, const VInt16<TSubtype> &b)
         {
             VInt16<TSubtype> result;
             result.m_value = _mm_or_si128(_mm_and_si128(flag.m_value, a.m_value), _mm_andnot_si128(flag.m_value, b.m_value));
@@ -355,7 +355,7 @@ namespace cvtt
         }
 
         template<int TSubtype>
-        static VInt16<TSubtype> SelectOrZero(Int16CompFlag flag, const VInt16<TSubtype> &a)
+        static VInt16<TSubtype> SelectOrZero(const Int16CompFlag &flag, const VInt16<TSubtype> &a)
         {
             VInt16<TSubtype> result;
             result.m_value = _mm_and_si128(flag.m_value, a.m_value);
@@ -363,12 +363,12 @@ namespace cvtt
         }
 
         template<int TSubtype>
-        static void ConditionalSet(VInt16<TSubtype>& dest, Int16CompFlag flag, const VInt16<TSubtype> src)
+        static void ConditionalSet(VInt16<TSubtype> &dest, const Int16CompFlag &flag, const VInt16<TSubtype> &src)
         {
             dest.m_value = _mm_or_si128(_mm_andnot_si128(flag.m_value, dest.m_value), _mm_and_si128(flag.m_value, src.m_value));
         }
 
-        static SInt16 ConditionalNegate(const Int16CompFlag &flag, const SInt16& v)
+        static SInt16 ConditionalNegate(const Int16CompFlag &flag, const SInt16 &v)
         {
             SInt16 result;
             result.m_value = _mm_add_epi16(_mm_xor_si128(flag.m_value, v.m_value), _mm_srli_epi16(flag.m_value, 15));
@@ -376,18 +376,18 @@ namespace cvtt
         }
 
         template<int TSubtype>
-        static void NotConditionalSet(VInt16<TSubtype>& dest, Int16CompFlag flag, const VInt16<TSubtype> src)
+        static void NotConditionalSet(VInt16<TSubtype> &dest, const Int16CompFlag &flag, const VInt16<TSubtype> &src)
         {
             dest.m_value = _mm_or_si128(_mm_and_si128(flag.m_value, dest.m_value), _mm_andnot_si128(flag.m_value, src.m_value));
         }
 
-        static void ConditionalSet(Float& dest, FloatCompFlag flag, const Float src)
+        static void ConditionalSet(Float &dest, const FloatCompFlag &flag, const Float &src)
         {
             for (int i = 0; i < 2; i++)
                 dest.m_values[i] = _mm_or_ps(_mm_andnot_ps(flag.m_values[i], dest.m_values[i]), _mm_and_ps(flag.m_values[i], src.m_values[i]));
         }
 
-        static void NotConditionalSet(Float& dest, FloatCompFlag flag, const Float src)
+        static void NotConditionalSet(Float &dest, const FloatCompFlag &flag, const Float &src)
         {
             for (int i = 0; i < 2; i++)
                 dest.m_values[i] = _mm_or_ps(_mm_and_ps(flag.m_values[i], dest.m_values[i]), _mm_andnot_ps(flag.m_values[i], src.m_values[i]));
@@ -443,7 +443,7 @@ namespace cvtt
             return result;
         }
 
-        static Float Min(Float a, Float b)
+        static Float Min(const Float &a, const Float &b)
         {
             Float result;
             for (int i = 0; i < 2; i++)
@@ -474,7 +474,7 @@ namespace cvtt
             return result;
         }
 
-        static Float Max(Float a, Float b)
+        static Float Max(const Float &a, const Float &b)
         {
             Float result;
             for (int i = 0; i < 2; i++)
@@ -482,7 +482,7 @@ namespace cvtt
             return result;
         }
 
-        static Float Clamp(Float v, float min, float max)
+        static Float Clamp(const Float &v, float min, float max)
         {
             Float result;
             for (int i = 0; i < 2; i++)
@@ -490,7 +490,7 @@ namespace cvtt
             return result;
         }
 
-        static Float Reciprocal(Float v)
+        static Float Reciprocal(const Float &v)
         {
             Float result;
             for (int i = 0; i < 2; i++)
@@ -498,7 +498,7 @@ namespace cvtt
             return result;
         }
 
-        static void ConvertLDRInputs(const PixelBlockU8* inputBlocks, int pxOffset, int channel, UInt15& chOut)
+        static void ConvertLDRInputs(const PixelBlockU8* inputBlocks, int pxOffset, int channel, UInt15 &chOut)
         {
             int16_t values[8];
             for (int i = 0; i < 8; i++)
@@ -507,7 +507,7 @@ namespace cvtt
             chOut.m_value = _mm_set_epi16(values[7], values[6], values[5], values[4], values[3], values[2], values[1], values[0]);
         }
 
-        static void ConvertHDRInputs(const PixelBlockF16* inputBlocks, int pxOffset, int channel, SInt16& chOut)
+        static void ConvertHDRInputs(const PixelBlockF16* inputBlocks, int pxOffset, int channel, SInt16 &chOut)
         {
             int16_t values[8];
             for (int i = 0; i < 8; i++)
@@ -648,7 +648,7 @@ namespace cvtt
             return result;
         }
 
-        static FloatCompFlag LessOrEqual(Float a, Float b)
+        static FloatCompFlag LessOrEqual(const Float &a, const Float &b)
         {
             FloatCompFlag result;
             for (int i = 0; i < 2; i++)
@@ -664,7 +664,7 @@ namespace cvtt
             return result;
         }
 
-        static FloatCompFlag Equal(Float a, Float b)
+        static FloatCompFlag Equal(const Float &a, const Float &b)
         {
             FloatCompFlag result;
             for (int i = 0; i < 2; i++)
@@ -776,7 +776,7 @@ namespace cvtt
             return result;
         }
 
-        static UInt16 RoundAndConvertToU16(Float v, const void* /*roundingMode*/)
+        static UInt16 RoundAndConvertToU16(const Float &v, const void* /*roundingMode*/)
         {
             __m128i lo = _mm_cvtps_epi32(_mm_add_ps(v.m_values[0], _mm_set1_ps(-32768)));
             __m128i hi = _mm_cvtps_epi32(_mm_add_ps(v.m_values[1], _mm_set1_ps(-32768)));
@@ -788,7 +788,7 @@ namespace cvtt
             return result;
         }
 
-        static UInt15 RoundAndConvertToU15(Float v, const void* /*roundingMode*/)
+        static UInt15 RoundAndConvertToU15(const Float &v, const void* /*roundingMode*/)
         {
             __m128i lo = _mm_cvtps_epi32(v.m_values[0]);
             __m128i hi = _mm_cvtps_epi32(v.m_values[1]);
@@ -800,7 +800,7 @@ namespace cvtt
             return result;
         }
 
-        static SInt16 RoundAndConvertToS16(Float v, const void* /*roundingMode*/)
+        static SInt16 RoundAndConvertToS16(const Float &v, const void* /*roundingMode*/)
         {
             __m128i lo = _mm_cvtps_epi32(v.m_values[0]);
             __m128i hi = _mm_cvtps_epi32(v.m_values[1]);
@@ -812,7 +812,7 @@ namespace cvtt
             return result;
         }
 
-        static Float Sqrt(Float f)
+        static Float Sqrt(const Float &f)
         {
             Float result;
             for (int i = 0; i < 2; i++)
@@ -1071,22 +1071,22 @@ namespace cvtt
             return XMultiply(b, a);
         }
 
-        static bool AnySet(Int16CompFlag v)
+        static bool AnySet(const Int16CompFlag &v)
         {
             return _mm_movemask_epi8(v.m_value) != 0;
         }
 
-        static bool AllSet(Int16CompFlag v)
+        static bool AllSet(const Int16CompFlag &v)
         {
             return _mm_movemask_epi8(v.m_value) == 0xffff;
         }
 
-        static bool AnySet(FloatCompFlag v)
+        static bool AnySet(const FloatCompFlag &v)
         {
             return _mm_movemask_ps(v.m_values[0]) != 0 || _mm_movemask_ps(v.m_values[1]) != 0;
         }
 
-        static bool AllSet(FloatCompFlag v)
+        static bool AllSet(const FloatCompFlag &v)
         {
             return _mm_movemask_ps(v.m_values[0]) == 0xf && _mm_movemask_ps(v.m_values[1]) == 0xf;
         }
@@ -1418,6 +1418,16 @@ namespace cvtt
         static bool Int16FlagToFloat(bool v)
         {
             return v;
+        }
+
+        static bool MakeBoolInt16(bool b)
+        {
+            return b;
+        }
+
+        static bool MakeBoolFloat(bool b)
+        {
+            return b;
         }
 
         static bool AndNot(bool a, bool b)
@@ -2562,7 +2572,7 @@ namespace cvtt
 			}
 		};
 
-        void ComputeTweakFactors2(int tweak, int range, float* outFactors)
+        void ComputeTweakFactors(int tweak, int range, float *outFactors)
         {
             int totalUnits = range - 1;
             int minOutsideUnits = ((tweak >> 1) & 1);
@@ -2573,7 +2583,7 @@ namespace cvtt
             outFactors[1] = static_cast<float>(maxOutsideUnits) / static_cast<float>(insideUnits) + 1.0f;
         }
 
-        ParallelMath::Float ScaleHDRValue(ParallelMath::Float v, bool isSigned)
+        ParallelMath::Float ScaleHDRValue(const ParallelMath::Float &v, bool isSigned)
         {
             if (isSigned)
             {
@@ -2591,7 +2601,7 @@ namespace cvtt
                 assert(ParallelMath::Extract(v, i) != -32768)
 #endif
 
-                ParallelMath::Int16CompFlag negative = ParallelMath::Less(v, ParallelMath::MakeSInt16(0));
+            ParallelMath::Int16CompFlag negative = ParallelMath::Less(v, ParallelMath::MakeSInt16(0));
             ParallelMath::UInt15 absComp = ParallelMath::LosslessCast<ParallelMath::UInt15>::Cast(ParallelMath::Select(negative, ParallelMath::SInt16(ParallelMath::MakeSInt16(0) - v), v));
 
             ParallelMath::UInt31 multiplied = ParallelMath::XMultiply(absComp, ParallelMath::MakeUInt15(31));
@@ -2635,7 +2645,7 @@ namespace cvtt
             {
             }
 
-            UnfinishedEndpoints(const MFloat base[TVectorSize], const MFloat offset[TVectorSize])
+            UnfinishedEndpoints(const MFloat *base, const MFloat *offset)
             {
                 for (int ch = 0; ch < TVectorSize; ch++)
                     m_base[ch] = base[ch];
@@ -2651,10 +2661,10 @@ namespace cvtt
                     m_offset[ch] = other.m_offset[ch];
             }
 
-            void FinishHDRUnsigned(int tweak, int range, MSInt16* outEP0, MSInt16* outEP1, ParallelMath::RoundTowardNearestForScope* roundingMode)
+            void FinishHDRUnsigned(int tweak, int range, MSInt16 *outEP0, MSInt16 *outEP1, ParallelMath::RoundTowardNearestForScope *roundingMode)
             {
                 float tweakFactors[2];
-                ComputeTweakFactors2(tweak, range, tweakFactors);
+                ComputeTweakFactors(tweak, range, tweakFactors);
 
                 for (int ch = 0; ch < TVectorSize; ch++)
                 {
@@ -2673,7 +2683,7 @@ namespace cvtt
             void FinishHDRSigned(int tweak, int range, MSInt16* outEP0, MSInt16* outEP1, ParallelMath::RoundTowardNearestForScope* roundingMode)
             {
                 float tweakFactors[2];
-                ComputeTweakFactors2(tweak, range, tweakFactors);
+                ComputeTweakFactors(tweak, range, tweakFactors);
 
                 for (int ch = 0; ch < TVectorSize; ch++)
                 {
@@ -2694,7 +2704,7 @@ namespace cvtt
                 ParallelMath::RoundTowardNearestForScope roundingMode;
 
                 float tweakFactors[2];
-                ComputeTweakFactors2(tweak, range, tweakFactors);
+                ComputeTweakFactors(tweak, range, tweakFactors);
 
                 for (int ch = 0; ch < TVectorSize; ch++)
                 {
@@ -2752,7 +2762,7 @@ namespace cvtt
                     m_values[i] = ParallelMath::MakeFloatZero();
             }
 
-            void Add(const ParallelMath::Float vec[TMatrixSize], ParallelMath::Float weight)
+            void Add(const ParallelMath::Float *vec, const ParallelMath::Float &weight)
             {
                 int index = 0;
                 for (int row = 0; row < TMatrixSize; row++)
@@ -2765,7 +2775,7 @@ namespace cvtt
                 }
             }
 
-            void Product(MFloat outVec[TMatrixSize], const MFloat inVec[TMatrixSize])
+            void Product(MFloat *outVec, const MFloat *inVec)
             {
                 for (int row = 0; row < TMatrixSize; row++)
                 {
@@ -2809,7 +2819,7 @@ namespace cvtt
                 m_maxDist = ParallelMath::MakeFloat(-FLT_MAX);
             }
 
-            void ContributePass(const MFloat value[TVectorSize], int pass, MFloat weight)
+            void ContributePass(const MFloat *value, int pass, const MFloat &weight)
             {
                 if (pass == 0)
                     ContributeCentroid(value, weight);
@@ -2849,7 +2859,7 @@ namespace cvtt
             }
 
         private:
-            void ContributeCentroid(const MFloat value[TVectorSize], MFloat weight)
+            void ContributeCentroid(const MFloat *value, const MFloat &weight)
             {
                 for (int ch = 0; ch < TVectorSize; ch++)
                     m_centroid[ch] = m_centroid[ch] + value[ch] * weight;
@@ -2865,7 +2875,7 @@ namespace cvtt
                     m_centroid[ch] = m_centroid[ch] / denom;
             }
 
-            void ContributeDirection(const MFloat value[TVectorSize], MFloat weight)
+            void ContributeDirection(const MFloat *value, const MFloat &weight)
             {
                 MFloat diff[TVectorSize];
                 for (int ch = 0; ch < TVectorSize; ch++)
@@ -2908,7 +2918,7 @@ namespace cvtt
                     m_direction[ch] = approx[ch] / approxLen;
             }
 
-            void ContributeMinMax(const MFloat value[TVectorSize])
+            void ContributeMinMax(const MFloat *value)
             {
                 MFloat dist = ParallelMath::MakeFloatZero();
                 for (int ch = 0; ch < TVectorSize; ch++)
@@ -2961,7 +2971,7 @@ namespace cvtt
             typedef ParallelMath::UInt31 MUInt31;
 
             template<class TInterpolationEPType, class TColorEPType>
-            void Init(const float channelWeights[TVectorSize], const TInterpolationEPType interpolationEndPoints[2][TVectorSize], const TColorEPType colorSpaceEndpoints[2][TVectorSize], int range)
+            void Init(const float *channelWeights, const TInterpolationEPType interpolationEndPoints[2][TVectorSize], const TColorEPType colorSpaceEndpoints[2][TVectorSize], int range)
             {
                 // In BC6H, the interpolation endpoints are higher-precision than the endpoints in color space.
                 // We need to select indexes using the color-space endpoints.
@@ -3184,7 +3194,7 @@ namespace cvtt
                 ReconstructHDRUnsignedUninverted(InvertSingle(index), pixel);
             }
 
-            void ConditionalInvert(ParallelMath::Int16CompFlag invert)
+            void ConditionalInvert(const ParallelMath::Int16CompFlag &invert)
             {
                 m_isInverted = invert;
             }
@@ -3268,7 +3278,7 @@ namespace cvtt
                 m_wu = 0;
             }
 
-            void ContributePW(const MFloat *pwFloatPixel, const MUInt15 &index, MFloat weight)
+            void ContributePW(const MFloat *pwFloatPixel, const MUInt15 &index, const MFloat &weight)
             {
                 MFloat t = ParallelMath::ToFloat(index) * m_rcpMaxIndex;
 
@@ -3555,7 +3565,7 @@ namespace cvtt
                 ParallelMath::RoundTowardNearestForScope roundingMode;
 
                 float tf[2];
-                ComputeTweakFactors2(tweak, range, tf);
+                ComputeTweakFactors(tweak, range, tf);
 
                 MFloat base = ParallelMath::ToFloat(original[0]);
                 MFloat offs = ParallelMath::ToFloat(original[1]) - base;
@@ -5390,7 +5400,7 @@ namespace cvtt
                 else if (numRefineRounds > MaxRefineRounds)
                     numRefineRounds = MaxRefineRounds;
 
-                bool fastIndexing = (flags & cvtt::Flags::BC6H_FastIndexing);
+                bool fastIndexing = ((flags & cvtt::Flags::BC6H_FastIndexing) != 0);
                 float channelWeightsSq[3];
 
                 ParallelMath::RoundTowardNearestForScope rtn;
@@ -6550,7 +6560,7 @@ namespace cvtt
                 }
             }
 
-            static void TestCounts(uint32_t flags, const int *counts, int nCounts, MUInt15 numElements, const MUInt15 pixels[16][4], const MFloat floatPixels[16][4], const MFloat preWeightedPixels[16][4], bool alphaTest,
+            static void TestCounts(uint32_t flags, const int *counts, int nCounts, const MUInt15 &numElements, const MUInt15 pixels[16][4], const MFloat floatPixels[16][4], const MFloat preWeightedPixels[16][4], bool alphaTest,
                 const MFloat floatSortedInputs[16][4], const MFloat preWeightedFloatSortedInputs[16][4], const float *channelWeights, MFloat &bestError, MUInt15 bestEndpoints[2][3], MUInt15 bestIndexes[16], MUInt15 &bestRange,
                 const ParallelMath::RoundTowardNearestForScope* rtn)
             {

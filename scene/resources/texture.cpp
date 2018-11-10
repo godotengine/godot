@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "texture.h"
-#include "bit_mask.h"
+
+#include "core/core_string_names.h"
+#include "core/io/image_loader.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
-#include "core_string_names.h"
-#include "io/image_loader.h"
+#include "scene/resources/bit_mask.h"
 
 Size2 Texture::get_size() const {
 
@@ -206,6 +207,9 @@ void ImageTexture::set_flags(uint32_t p_flags) {
 
 	flags=p_flags|cube;	*/
 	flags = p_flags;
+	if (w == 0 || h == 0) {
+		return; //uninitialized, do not set to texture
+	}
 	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
 }
 
@@ -422,6 +426,15 @@ ImageTexture::~ImageTexture() {
 
 //////////////////////////////////////////
 
+void StreamTexture::set_path(const String &p_path, bool p_take_over) {
+
+	if (texture.is_valid()) {
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
+
 void StreamTexture::_requested_3d(void *p_ud) {
 
 	StreamTexture *st = (StreamTexture *)p_ud;
@@ -480,7 +493,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 	flags = f->get_32(); //texture flags!
 	uint32_t df = f->get_32(); //data format
 
-/*
+	/*
 	print_line("width: " + itos(tw));
 	print_line("height: " + itos(th));
 	print_line("flags: " + itos(flags));
@@ -1022,30 +1035,12 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 
 	//this might not necessarily work well if using a rect, needs to be fixed properly
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
 
-	Rect2 src = p_src_rect;
-	src.position += (rc.position - margin.position);
-	Rect2 src_c = rc.clip(src);
-	if (src_c.size == Size2())
-		return;
-	Vector2 ofs = (src_c.position - src.position);
-
-	Vector2 scale = p_rect.size / p_src_rect.size;
-	if (scale.x < 0) {
-		float mx = (margin.size.width - margin.position.x);
-		mx -= margin.position.x;
-		ofs.x = -(ofs.x + mx);
-	}
-	if (scale.y < 0) {
-		float my = margin.size.height - margin.position.y;
-		my -= margin.position.y;
-		ofs.y = -(ofs.y + my);
-	}
-	Rect2 dr(p_rect.position + ofs * scale, src_c.size * scale);
+	Rect2 dr;
+	Rect2 src_c;
+	get_rect_region(p_rect, p_src_rect, dr, src_c);
 
 	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose, normal_rid, filter_clip);
@@ -1059,13 +1054,17 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 		return false;
 
 	Rect2 src = p_src_rect;
+	if (src.size == Size2()) {
+		src.size = rc.size;
+	}
+	Vector2 scale = p_rect.size / src.size;
+
 	src.position += (rc.position - margin.position);
 	Rect2 src_c = rc.clip(src);
 	if (src_c.size == Size2())
 		return false;
 	Vector2 ofs = (src_c.position - src.position);
 
-	Vector2 scale = p_rect.size / p_src_rect.size;
 	if (scale.x < 0) {
 		float mx = (margin.size.width - margin.position.x);
 		mx -= margin.position.x;
@@ -1620,7 +1619,7 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -1646,15 +1645,16 @@ void GradientTexture::_queue_update() {
 	if (update_pending)
 		return;
 
+	update_pending = true;
 	call_deferred("_update");
 }
 
 void GradientTexture::_update() {
 
+	update_pending = false;
+
 	if (gradient.is_null())
 		return;
-
-	update_pending = false;
 
 	PoolVector<uint8_t> data;
 	data.resize(width * 4);
@@ -1958,8 +1958,8 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_frame_texture", "get_frame_texture", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::REAL, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01"), "set_frame_delay", "get_frame_delay", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::REAL, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_frame_delay", "get_frame_delay", i);
 	}
 }
 

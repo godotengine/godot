@@ -30,8 +30,8 @@
 
 #include "resource_importer_scene.h"
 
+#include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "io/resource_saver.h"
 #include "scene/resources/packed_scene.h"
 
 #include "scene/3d/collision_shape.h"
@@ -281,12 +281,11 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<ArrayMesh>, Ref<Shape> > &collision_map, LightBakeMode p_light_bake_mode) {
 
-	// children first..
+	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
 		Node *r = _fix_node(p_node->get_child(i), p_root, collision_map, p_light_bake_mode);
 		if (!r) {
-			print_line("was erased...");
 			i--; //was erased
 		}
 	}
@@ -366,32 +365,39 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Array
 			return p_node;
 		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
 		if (mi) {
-			Node *col;
+			Node *col = NULL;
 
 			if (_teststr(name, "colonly")) {
 				col = mi->create_trimesh_collision_node();
-				ERR_FAIL_COND_V(!col, NULL);
+				if (col == NULL) {
+					ERR_PRINTS("Error generating collision for mesh: " + name);
+				} else {
 
-				col->set_name(_fixstr(name, "colonly"));
+					col->set_name(_fixstr(name, "colonly"));
+				}
 			} else {
 				col = mi->create_convex_collision_node();
-				ERR_FAIL_COND_V(!col, NULL);
+				if (col == NULL) {
+					ERR_PRINTS("Error generating collision for mesh: " + name);
+				} else {
 
-				col->set_name(_fixstr(name, "convcolonly"));
+					col->set_name(_fixstr(name, "convcolonly"));
+				}
 			}
 
-			Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
-			p_node->replace_by(col);
-			memdelete(p_node);
-			p_node = col;
+			if (col) {
+				Object::cast_to<Spatial>(col)->set_transform(mi->get_transform());
+				p_node->replace_by(col);
+				memdelete(p_node);
+				p_node = col;
 
-			StaticBody *sb = Object::cast_to<StaticBody>(col);
-			CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
-			colshape->set_name("shape");
-			colshape->set_owner(p_node->get_owner());
+				StaticBody *sb = Object::cast_to<StaticBody>(col);
+				CollisionShape *colshape = Object::cast_to<CollisionShape>(sb->get_child(0));
+				colshape->set_name("shape");
+				colshape->set_owner(p_node->get_owner());
+			}
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			print_line(empty_draw_type);
 			StaticBody *sb = memnew(StaticBody);
 			sb->set_name(_fixstr(name, "colonly"));
 			Object::cast_to<Spatial>(sb)->set_transform(Object::cast_to<Spatial>(p_node)->get_transform());
@@ -723,15 +729,11 @@ void ResourceImporterScene::_filter_anim_tracks(Ref<Animation> anim, Set<String>
 	Ref<Animation> a = anim;
 	ERR_FAIL_COND(!a.is_valid());
 
-	print_line("From Anim " + anim->get_name() + ":");
-
 	for (int j = 0; j < a->get_track_count(); j++) {
 
 		String path = a->track_get_path(j);
 
 		if (!keep.has(path)) {
-
-			print_line("Remove: " + path);
 			a->remove_track(j);
 			j--;
 		}
@@ -899,8 +901,6 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 			}
 
 			meshes[mesh] = transform;
-
-			print_line("mesh transform: " + meshes[mesh]);
 		}
 	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -912,8 +912,6 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
-
-	print_line("node: " + String(p_node->get_name()));
 
 	if (p_make_animations) {
 		if (Object::cast_to<AnimationPlayer>(p_node)) {
@@ -1316,7 +1314,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		if (bool(p_options["external_files/store_in_subdir"])) {
 			String subdir_name = p_source_file.get_file().get_basename();
 			DirAccess *da = DirAccess::open(base_path);
-			print_line("at path " + da->get_current_dir() + " making " + subdir_name);
 			Error err = da->make_dir(subdir_name);
 			memdelete(da);
 			ERR_FAIL_COND_V(err != OK && err != ERR_ALREADY_EXISTS, err);
@@ -1421,7 +1418,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Ref<PackedScene> packer = memnew(PackedScene);
 	packer->pack(scene);
-	print_line("SAVING TO: " + p_save_path + ".scn");
+	print_verbose("Saving scene to: " + p_save_path + ".scn");
 	err = ResourceSaver::save(p_save_path + ".scn", packer); //do not take over, let the changed files reload themselves
 	ERR_FAIL_COND_V(err != OK, err);
 

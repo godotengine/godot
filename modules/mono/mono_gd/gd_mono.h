@@ -142,7 +142,7 @@ class GDMono {
 
 	GDMonoLog *gdmono_log;
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	MonoRegInfo mono_reg_info;
 #endif
 
@@ -170,8 +170,9 @@ public:
 	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);
 	GDMonoAssembly **get_loaded_assembly(const String &p_name);
 
-	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized; }
-	_FORCE_INLINE_ bool is_finalizing_scripts_domain() const { return finalizing_scripts_domain; }
+	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */; }
+
+	_FORCE_INLINE_ bool is_finalizing_scripts_domain() { return finalizing_scripts_domain; }
 
 	_FORCE_INLINE_ MonoDomain *get_scripts_domain() { return scripts_domain; }
 #ifdef TOOLS_ENABLED
@@ -186,7 +187,7 @@ public:
 	_FORCE_INLINE_ GDMonoAssembly *get_editor_tools_assembly() const { return editor_tools_assembly; }
 #endif
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	const MonoRegInfo &get_mono_reg_info() { return mono_reg_info; }
 #endif
 
@@ -198,6 +199,8 @@ public:
 
 	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
 	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly, bool p_refonly = false);
+
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
 
 	void initialize();
@@ -206,12 +209,14 @@ public:
 	~GDMono();
 };
 
-class GDMonoScopeDomain {
+namespace gdmono {
+
+class ScopeDomain {
 
 	MonoDomain *prev_domain;
 
 public:
-	GDMonoScopeDomain(MonoDomain *p_domain) {
+	ScopeDomain(MonoDomain *p_domain) {
 		MonoDomain *prev_domain = mono_domain_get();
 		if (prev_domain != p_domain) {
 			this->prev_domain = prev_domain;
@@ -221,26 +226,43 @@ public:
 		}
 	}
 
-	~GDMonoScopeDomain() {
+	~ScopeDomain() {
 		if (prev_domain)
 			mono_domain_set(prev_domain, false);
 	}
 };
 
-#define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                    \
-	GDMonoScopeDomain __gdmono__scope__domain__(m_mono_domain); \
+class ScopeExitDomainUnload {
+	MonoDomain *domain;
+
+public:
+	ScopeExitDomainUnload(MonoDomain *p_domain) :
+			domain(p_domain) {
+	}
+
+	~ScopeExitDomainUnload() {
+		if (domain)
+			GDMono::get_singleton()->finalize_and_unload_domain(domain);
+	}
+};
+
+} // namespace gdmono
+
+#define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                      \
+	gdmono::ScopeDomain __gdmono__scope__domain__(m_mono_domain); \
 	(void)__gdmono__scope__domain__;
+
+#define _GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(m_mono_domain)                                  \
+	gdmono::ScopeExitDomainUnload __gdmono__scope__exit__domain__unload__(m_mono_domain); \
+	(void)__gdmono__scope__exit__domain__unload__;
 
 class _GodotSharp : public Object {
 	GDCLASS(_GodotSharp, Object)
 
 	friend class GDMono;
 
-	void _dispose_object(Object *p_object);
+	bool _is_domain_finalizing_for_unload(int32_t p_domain_id);
 
-	void _dispose_callback();
-
-	List<Object *> obj_delete_queue;
 	List<NodePath *> np_delete_queue;
 	List<RID *> rid_delete_queue;
 
@@ -260,12 +282,17 @@ public:
 	void attach_thread();
 	void detach_thread();
 
-	bool is_finalizing_domain();
-	bool is_domain_loaded();
+	int32_t get_domain_id();
+	int32_t get_scripts_domain_id();
 
-	void queue_dispose(MonoObject *p_mono_object, Object *p_object);
-	void queue_dispose(NodePath *p_node_path);
-	void queue_dispose(RID *p_rid);
+	bool is_scripts_domain_loaded();
+
+	bool is_domain_finalizing_for_unload();
+	bool is_domain_finalizing_for_unload(int32_t p_domain_id);
+	bool is_domain_finalizing_for_unload(MonoDomain *p_domain);
+
+	bool is_runtime_shutting_down();
+	bool is_runtime_initialized();
 
 	_GodotSharp();
 	~_GodotSharp();

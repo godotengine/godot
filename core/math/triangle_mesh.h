@@ -31,8 +31,9 @@
 #ifndef TRIANGLE_MESH_H
 #define TRIANGLE_MESH_H
 
-#include "face3.h"
-#include "reference.h"
+#include "core/math/face3.h"
+#include "core/reference.h"
+
 class TriangleMesh : public Reference {
 
 	GDCLASS(TriangleMesh, Reference);

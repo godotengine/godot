@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "input.h"
-#include "input_map.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/input_map.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+
 Input *Input::singleton = NULL;
 
 Input *Input::get_singleton() {
@@ -40,7 +42,7 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, 4);
+	ERR_FAIL_INDEX((int)p_mode, 4);
 	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
 }
 

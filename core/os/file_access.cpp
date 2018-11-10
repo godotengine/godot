@@ -32,8 +32,8 @@
 
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
@@ -46,7 +46,6 @@ bool FileAccess::backup_save = false;
 
 FileAccess *FileAccess::create(AccessType p_access) {
 
-	ERR_FAIL_COND_V(!create_func, 0);
 	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, 0);
 
 	FileAccess *ret = create_func[p_access]();
@@ -166,6 +165,7 @@ String FileAccess::fix_path(const String &p_path) const {
 
 			return r_path;
 		} break;
+		case ACCESS_MAX: break; // Can't happen, but silences warning
 	}
 
 	return r_path;

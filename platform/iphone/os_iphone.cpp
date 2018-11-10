@@ -34,7 +34,7 @@
 
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 
 #include "main/main.h"
 
@@ -99,18 +99,19 @@ int OSIPhone::get_current_video_driver() const {
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	video_driver_index = p_video_driver; //this may be misleading
+	video_driver_index = VIDEO_DRIVER_GLES3;
 
+	if (RasterizerGLES3::is_viable() != OK) {
+		return ERR_UNAVAILABLE;
+	}
 	RasterizerGLES3::register_config();
 	RasterizerGLES3::make_current();
 
-	visual_server = memnew(VisualServerRaster());
-	/*
-		FIXME: Reimplement threaded rendering? Or remove?
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
-	};
-	*/
+	}
 
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);

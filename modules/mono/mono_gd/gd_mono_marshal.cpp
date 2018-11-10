@@ -35,20 +35,6 @@
 
 namespace GDMonoMarshal {
 
-#define RETURN_BOXED_STRUCT(m_t, m_var_in)                                    \
-	{                                                                         \
-		const m_t &m_in = m_var_in->operator ::m_t();                         \
-		MARSHALLED_OUT(m_t, m_in, raw);                                       \
-		return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(m_t), raw); \
-	}
-
-#define RETURN_UNBOXED_STRUCT(m_t, m_var_in)               \
-	{                                                      \
-		float *raw = (float *)mono_object_unbox(m_var_in); \
-		MARSHALLED_IN(m_t, raw, ret);                      \
-		return ret;                                        \
-	}
-
 Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 	switch (p_type.type_encoding) {
 		case MONO_TYPE_BOOLEAN:
@@ -252,16 +238,21 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			return BOX_BOOLEAN(val);
 		}
 
+		case MONO_TYPE_CHAR: {
+			uint16_t val = p_var->operator unsigned short();
+			return BOX_UINT16(val);
+		}
+
 		case MONO_TYPE_I1: {
-			char val = p_var->operator signed char();
+			int8_t val = p_var->operator signed char();
 			return BOX_INT8(val);
 		}
 		case MONO_TYPE_I2: {
-			short val = p_var->operator signed short();
+			int16_t val = p_var->operator signed short();
 			return BOX_INT16(val);
 		}
 		case MONO_TYPE_I4: {
-			int val = p_var->operator signed int();
+			int32_t val = p_var->operator signed int();
 			return BOX_INT32(val);
 		}
 		case MONO_TYPE_I8: {
@@ -270,15 +261,15 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		}
 
 		case MONO_TYPE_U1: {
-			char val = p_var->operator unsigned char();
+			uint8_t val = p_var->operator unsigned char();
 			return BOX_UINT8(val);
 		}
 		case MONO_TYPE_U2: {
-			short val = p_var->operator unsigned short();
+			uint16_t val = p_var->operator unsigned short();
 			return BOX_UINT16(val);
 		}
 		case MONO_TYPE_U4: {
-			int val = p_var->operator unsigned int();
+			uint32_t val = p_var->operator unsigned int();
 			return BOX_UINT32(val);
 		}
 		case MONO_TYPE_U8: {
@@ -302,39 +293,105 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		case MONO_TYPE_VALUETYPE: {
 			GDMonoClass *tclass = p_type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2))
-				RETURN_BOXED_STRUCT(Vector2, p_var);
+			if (tclass == CACHED_CLASS(Vector2)) {
+				GDMonoMarshal::M_Vector2 from = MARSHALLED_OUT(Vector2, p_var->operator ::Vector2());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Rect2))
-				RETURN_BOXED_STRUCT(Rect2, p_var);
+			if (tclass == CACHED_CLASS(Rect2)) {
+				GDMonoMarshal::M_Rect2 from = MARSHALLED_OUT(Rect2, p_var->operator ::Rect2());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Transform2D))
-				RETURN_BOXED_STRUCT(Transform2D, p_var);
+			if (tclass == CACHED_CLASS(Transform2D)) {
+				GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var->operator ::Transform2D());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform2D), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Vector3))
-				RETURN_BOXED_STRUCT(Vector3, p_var);
+			if (tclass == CACHED_CLASS(Vector3)) {
+				GDMonoMarshal::M_Vector3 from = MARSHALLED_OUT(Vector3, p_var->operator ::Vector3());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Basis))
-				RETURN_BOXED_STRUCT(Basis, p_var);
+			if (tclass == CACHED_CLASS(Basis)) {
+				GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_var->operator ::Basis());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Basis), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Quat))
-				RETURN_BOXED_STRUCT(Quat, p_var);
+			if (tclass == CACHED_CLASS(Quat)) {
+				GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_var->operator ::Quat());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quat), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Transform))
-				RETURN_BOXED_STRUCT(Transform, p_var);
+			if (tclass == CACHED_CLASS(Transform)) {
+				GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_var->operator ::Transform());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform), &from);
+			}
 
-			if (tclass == CACHED_CLASS(AABB))
-				RETURN_BOXED_STRUCT(AABB, p_var);
+			if (tclass == CACHED_CLASS(AABB)) {
+				GDMonoMarshal::M_AABB from = MARSHALLED_OUT(AABB, p_var->operator ::AABB());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(AABB), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Color))
-				RETURN_BOXED_STRUCT(Color, p_var);
+			if (tclass == CACHED_CLASS(Color)) {
+				GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var->operator ::Color());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Color), &from);
+			}
 
-			if (tclass == CACHED_CLASS(Plane))
-				RETURN_BOXED_STRUCT(Plane, p_var);
+			if (tclass == CACHED_CLASS(Plane)) {
+				GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var->operator ::Plane());
+				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
+			}
 
 			if (mono_class_is_enum(tclass->get_mono_ptr())) {
-				int val = p_var->operator signed int();
-				return BOX_ENUM(tclass->get_mono_ptr(), val);
+				MonoType *enum_basetype = mono_class_enum_basetype(tclass->get_mono_ptr());
+				MonoClass *enum_baseclass = mono_class_from_mono_type(enum_basetype);
+				switch (mono_type_get_type(enum_basetype)) {
+					case MONO_TYPE_BOOLEAN: {
+						MonoBoolean val = p_var->operator bool();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_CHAR: {
+						uint16_t val = p_var->operator unsigned short();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_I1: {
+						int8_t val = p_var->operator signed char();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_I2: {
+						int16_t val = p_var->operator signed short();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_I4: {
+						int32_t val = p_var->operator signed int();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_I8: {
+						int64_t val = p_var->operator int64_t();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_U1: {
+						uint8_t val = p_var->operator unsigned char();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_U2: {
+						uint16_t val = p_var->operator unsigned short();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_U4: {
+						uint32_t val = p_var->operator unsigned int();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					case MONO_TYPE_U8: {
+						uint64_t val = p_var->operator uint64_t();
+						return BOX_ENUM(enum_baseclass, val);
+					}
+					default: {
+						ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
+						ERR_FAIL_V(NULL);
+					}
+				}
 			}
 		} break;
 
@@ -402,7 +459,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return BOX_BOOLEAN(val);
 				}
 				case Variant::INT: {
-					int val = p_var->operator signed int();
+					int32_t val = p_var->operator signed int();
 					return BOX_INT32(val);
 				}
 				case Variant::REAL: {
@@ -416,33 +473,52 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				}
 				case Variant::STRING:
 					return (MonoObject *)mono_string_from_godot(p_var->operator String());
-				case Variant::VECTOR2:
-					RETURN_BOXED_STRUCT(Vector2, p_var);
-				case Variant::RECT2:
-					RETURN_BOXED_STRUCT(Rect2, p_var);
-				case Variant::VECTOR3:
-					RETURN_BOXED_STRUCT(Vector3, p_var);
-				case Variant::TRANSFORM2D:
-					RETURN_BOXED_STRUCT(Transform2D, p_var);
-				case Variant::PLANE:
-					RETURN_BOXED_STRUCT(Plane, p_var);
-				case Variant::QUAT:
-					RETURN_BOXED_STRUCT(Quat, p_var);
-				case Variant::AABB:
-					RETURN_BOXED_STRUCT(AABB, p_var);
-				case Variant::BASIS:
-					RETURN_BOXED_STRUCT(Basis, p_var);
-				case Variant::TRANSFORM:
-					RETURN_BOXED_STRUCT(Transform, p_var);
-				case Variant::COLOR:
-					RETURN_BOXED_STRUCT(Color, p_var);
+				case Variant::VECTOR2: {
+					GDMonoMarshal::M_Vector2 from = MARSHALLED_OUT(Vector2, p_var->operator ::Vector2());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2), &from);
+				}
+				case Variant::RECT2: {
+					GDMonoMarshal::M_Rect2 from = MARSHALLED_OUT(Rect2, p_var->operator ::Rect2());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2), &from);
+				}
+				case Variant::VECTOR3: {
+					GDMonoMarshal::M_Vector3 from = MARSHALLED_OUT(Vector3, p_var->operator ::Vector3());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3), &from);
+				}
+				case Variant::TRANSFORM2D: {
+					GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var->operator ::Transform2D());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform2D), &from);
+				}
+				case Variant::PLANE: {
+					GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var->operator ::Plane());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
+				}
+				case Variant::QUAT: {
+					GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_var->operator ::Quat());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quat), &from);
+				}
+				case Variant::AABB: {
+					GDMonoMarshal::M_AABB from = MARSHALLED_OUT(AABB, p_var->operator ::AABB());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(AABB), &from);
+				}
+				case Variant::BASIS: {
+					GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_var->operator ::Basis());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Basis), &from);
+				}
+				case Variant::TRANSFORM: {
+					GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_var->operator ::Transform());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform), &from);
+				}
+				case Variant::COLOR: {
+					GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var->operator ::Color());
+					return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Color), &from);
+				}
 				case Variant::NODE_PATH:
 					return GDMonoUtils::create_managed_from(p_var->operator NodePath());
 				case Variant::_RID:
 					return GDMonoUtils::create_managed_from(p_var->operator RID());
-				case Variant::OBJECT: {
+				case Variant::OBJECT:
 					return GDMonoUtils::unmanaged_get_managed(p_var->operator Object *());
-				}
 				case Variant::DICTIONARY:
 					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
 				case Variant::ARRAY:
@@ -512,6 +588,9 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 		case MONO_TYPE_BOOLEAN:
 			return (bool)unbox<MonoBoolean>(p_obj);
 
+		case MONO_TYPE_CHAR:
+			return unbox<uint16_t>(p_obj);
+
 		case MONO_TYPE_I1:
 			return unbox<int8_t>(p_obj);
 		case MONO_TYPE_I2:
@@ -545,34 +624,34 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			GDMonoClass *tclass = type.type_class;
 
 			if (tclass == CACHED_CLASS(Vector2))
-				RETURN_UNBOXED_STRUCT(Vector2, p_obj);
+				return MARSHALLED_IN(Vector2, (GDMonoMarshal::M_Vector2 *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Rect2))
-				RETURN_UNBOXED_STRUCT(Rect2, p_obj);
+				return MARSHALLED_IN(Rect2, (GDMonoMarshal::M_Rect2 *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Transform2D))
-				RETURN_UNBOXED_STRUCT(Transform2D, p_obj);
+				return MARSHALLED_IN(Transform2D, (GDMonoMarshal::M_Transform2D *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Vector3))
-				RETURN_UNBOXED_STRUCT(Vector3, p_obj);
+				return MARSHALLED_IN(Vector3, (GDMonoMarshal::M_Vector3 *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Basis))
-				RETURN_UNBOXED_STRUCT(Basis, p_obj);
+				return MARSHALLED_IN(Basis, (GDMonoMarshal::M_Basis *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Quat))
-				RETURN_UNBOXED_STRUCT(Quat, p_obj);
+				return MARSHALLED_IN(Quat, (GDMonoMarshal::M_Quat *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Transform))
-				RETURN_UNBOXED_STRUCT(Transform, p_obj);
+				return MARSHALLED_IN(Transform, (GDMonoMarshal::M_Transform *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(AABB))
-				RETURN_UNBOXED_STRUCT(AABB, p_obj);
+				return MARSHALLED_IN(AABB, (GDMonoMarshal::M_AABB *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Color))
-				RETURN_UNBOXED_STRUCT(Color, p_obj);
+				return MARSHALLED_IN(Color, (GDMonoMarshal::M_Color *)mono_object_unbox(p_obj));
 
 			if (tclass == CACHED_CLASS(Plane))
-				RETURN_UNBOXED_STRUCT(Plane, p_obj);
+				return MARSHALLED_IN(Plane, (GDMonoMarshal::M_Plane *)mono_object_unbox(p_obj));
 
 			if (mono_class_is_enum(tclass->get_mono_ptr()))
 				return unbox<int32_t>(p_obj);
@@ -708,13 +787,13 @@ Array mono_array_to_Array(MonoArray *p_array) {
 	return ret;
 }
 
-// TODO Optimize reading/writing from/to PoolArrays
-
 MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array) {
+	PoolIntArray::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(int32_t), p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-		mono_array_set(ret, int32_t, i, p_array[i]);
+		mono_array_set(ret, int32_t, i, r[i]);
 	}
 
 	return ret;
@@ -726,19 +805,22 @@ PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolIntArray::Write w = ret.write();
+
 	for (int i = 0; i < length; i++) {
-		int32_t elem = mono_array_get(p_array, int32_t, i);
-		ret.set(i, elem);
+		w[i] = mono_array_get(p_array, int32_t, i);
 	}
 
 	return ret;
 }
 
 MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array) {
+	PoolByteArray::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(uint8_t), p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-		mono_array_set(ret, uint8_t, i, p_array[i]);
+		mono_array_set(ret, uint8_t, i, r[i]);
 	}
 
 	return ret;
@@ -750,20 +832,22 @@ PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolByteArray::Write w = ret.write();
 
 	for (int i = 0; i < length; i++) {
-		uint8_t elem = mono_array_get(p_array, uint8_t, i);
-		ret.set(i, elem);
+		w[i] = mono_array_get(p_array, uint8_t, i);
 	}
 
 	return ret;
 }
 
 MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array) {
+	PoolRealArray::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), REAL_T_MONOCLASS, p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-		mono_array_set(ret, real_t, i, p_array[i]);
+		mono_array_set(ret, real_t, i, r[i]);
 	}
 
 	return ret;
@@ -775,20 +859,22 @@ PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolRealArray::Write w = ret.write();
 
 	for (int i = 0; i < length; i++) {
-		real_t elem = mono_array_get(p_array, real_t, i);
-		ret.set(i, elem);
+		w[i] = mono_array_get(p_array, real_t, i);
 	}
 
 	return ret;
 }
 
 MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
+	PoolStringArray::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(String), p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-		MonoString *boxed = mono_string_from_godot(p_array[i]);
+		MonoString *boxed = mono_string_from_godot(r[i]);
 		mono_array_set(ret, MonoString *, i, boxed);
 	}
 
@@ -801,29 +887,24 @@ PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolStringArray::Write w = ret.write();
 
 	for (int i = 0; i < length; i++) {
 		MonoString *elem = mono_array_get(p_array, MonoString *, i);
-		ret.set(i, mono_string_to_godot(elem));
+		w[i] = mono_string_to_godot(elem);
 	}
 
 	return ret;
 }
 
 MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array) {
+	PoolColorArray::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Color), p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-#ifdef YOLOCOPY
-		mono_array_set(ret, Color, i, p_array[i]);
-#else
-		real_t *raw = (real_t *)mono_array_addr_with_size(ret, sizeof(real_t) * 4, i);
-		const Color &elem = p_array[i];
-		raw[0] = elem.r;
-		raw[1] = elem.g;
-		raw[2] = elem.b;
-		raw[3] = elem.a;
-#endif
+		M_Color *raw = (M_Color *)mono_array_addr_with_size(ret, sizeof(M_Color), i);
+		*raw = MARSHALLED_OUT(Color, r[i]);
 	}
 
 	return ret;
@@ -835,28 +916,23 @@ PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolColorArray::Write w = ret.write();
 
 	for (int i = 0; i < length; i++) {
-		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 4, i);
-		MARSHALLED_IN(Color, raw_elem, elem);
-		ret.set(i, elem);
+		w[i] = MARSHALLED_IN(Color, (M_Color *)mono_array_addr_with_size(p_array, sizeof(M_Color), i));
 	}
 
 	return ret;
 }
 
 MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array) {
+	PoolVector2Array::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Vector2), p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-#ifdef YOLOCOPY
-		mono_array_set(ret, Vector2, i, p_array[i]);
-#else
-		real_t *raw = (real_t *)mono_array_addr_with_size(ret, sizeof(real_t) * 2, i);
-		const Vector2 &elem = p_array[i];
-		raw[0] = elem.x;
-		raw[1] = elem.y;
-#endif
+		M_Vector2 *raw = (M_Vector2 *)mono_array_addr_with_size(ret, sizeof(M_Vector2), i);
+		*raw = MARSHALLED_OUT(Vector2, r[i]);
 	}
 
 	return ret;
@@ -868,29 +944,23 @@ PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolVector2Array::Write w = ret.write();
 
 	for (int i = 0; i < length; i++) {
-		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 2, i);
-		MARSHALLED_IN(Vector2, raw_elem, elem);
-		ret.set(i, elem);
+		w[i] = MARSHALLED_IN(Vector2, (M_Vector2 *)mono_array_addr_with_size(p_array, sizeof(M_Vector2), i));
 	}
 
 	return ret;
 }
 
 MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array) {
+	PoolVector3Array::Read r = p_array.read();
+
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(Vector3), p_array.size());
 
 	for (int i = 0; i < p_array.size(); i++) {
-#ifdef YOLOCOPY
-		mono_array_set(ret, Vector3, i, p_array[i]);
-#else
-		real_t *raw = (real_t *)mono_array_addr_with_size(ret, sizeof(real_t) * 3, i);
-		const Vector3 &elem = p_array[i];
-		raw[0] = elem.x;
-		raw[1] = elem.y;
-		raw[2] = elem.z;
-#endif
+		M_Vector3 *raw = (M_Vector3 *)mono_array_addr_with_size(ret, sizeof(M_Vector3), i);
+		*raw = MARSHALLED_OUT(Vector3, r[i]);
 	}
 
 	return ret;
@@ -902,11 +972,10 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 		return ret;
 	int length = mono_array_length(p_array);
 	ret.resize(length);
+	PoolVector3Array::Write w = ret.write();
 
 	for (int i = 0; i < length; i++) {
-		real_t *raw_elem = (real_t *)mono_array_addr_with_size(p_array, sizeof(real_t) * 3, i);
-		MARSHALLED_IN(Vector3, raw_elem, elem);
-		ret.set(i, elem);
+		w[i] = MARSHALLED_IN(Vector3, (M_Vector3 *)mono_array_addr_with_size(p_array, sizeof(M_Vector3), i));
 	}
 
 	return ret;

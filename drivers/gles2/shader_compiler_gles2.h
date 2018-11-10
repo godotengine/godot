@@ -27,15 +27,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef SHADERCOMPILERGLES2_H
 #define SHADERCOMPILERGLES2_H
 
-#include "pair.h"
+#include "core/pair.h"
+#include "core/string_builder.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual/shader_types.h"
 #include "servers/visual_server.h"
-
-#include "string_builder.h"
 
 class ShaderCompilerGLES2 {
 public:

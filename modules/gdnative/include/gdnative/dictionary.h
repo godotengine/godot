@@ -94,6 +94,8 @@ godot_bool GDAPI godot_dictionary_operator_equal(const godot_dictionary *p_self,
 
 godot_string GDAPI godot_dictionary_to_json(const godot_dictionary *p_self);
 
+godot_bool GDAPI godot_dictionary_erase_with_return(godot_dictionary *p_self, const godot_variant *p_key);
+
 #ifdef __cplusplus
 }
 #endif

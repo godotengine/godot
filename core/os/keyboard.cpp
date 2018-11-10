@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "keyboard.h"
-#include "os/os.h"
+
+#include "core/os/os.h"
 
 struct _KeyCodeText {
 	int code;

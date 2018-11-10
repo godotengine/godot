@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "visual_server_scene.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
 /* CAMERA API */
@@ -398,6 +398,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				VSG::scene_render->free(gi_probe->probe_instance);
 
 			} break;
+			default: {}
 		}
 
 		if (instance->base_data) {
@@ -471,6 +472,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				gi_probe->probe_instance = VSG::scene_render->gi_probe_instance_create();
 
 			} break;
+			default: {}
 		}
 
 		VSG::storage->instance_add_dependency(p_base, instance);
@@ -518,6 +520,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 					gi_probe_update_list.remove(&gi_probe->update_element);
 				}
 			} break;
+			default: {}
 		}
 
 		instance->scenario = NULL;
@@ -549,6 +552,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 					gi_probe_update_list.add(&gi_probe->update_element);
 				}
 			} break;
+			default: {}
 		}
 
 		_instance_queue_update(instance, true, true);
@@ -597,8 +601,9 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->update_item.in_list()) {
-		_update_dirty_instance(instance);
+	if (instance->base_type == VS::INSTANCE_MESH) {
+		//may not have been updated yet
+		instance->materials.resize(VSG::storage->mesh_get_surface_count(instance->base));
 	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
@@ -649,6 +654,7 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 			}
 
 		} break;
+		default: {}
 	}
 }
 inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
@@ -825,6 +831,7 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			instance->redraw_if_visible = p_enabled;
 
 		} break;
+		default: {}
 	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {
@@ -902,7 +909,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 			_update_instance_lightmap_captures(p_instance);
 		} else {
 			if (!p_instance->lightmap_capture_data.empty()) {
-				!p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
+				p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
 			}
 		}
 	}
@@ -1016,7 +1023,6 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = VSG::storage->lightmap_capture_get_bounds(p_instance->base);
 
 		} break;
-
 		default: {}
 	}
 
@@ -1180,7 +1186,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
 
-	//	print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
+	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 _FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
@@ -1378,9 +1384,12 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				float y_min = 0.f, y_max = 0.f;
 				float z_min = 0.f, z_max = 0.f;
 
+				// FIXME: z_max_cam is defined, computed, but not used below when setting up
+				// ortho_camera. Commented out for now to fix warnings but should be investigated.
 				float x_min_cam = 0.f, x_max_cam = 0.f;
 				float y_min_cam = 0.f, y_max_cam = 0.f;
-				float z_min_cam = 0.f, z_max_cam = 0.f;
+				float z_min_cam = 0.f;
+				//float z_max_cam = 0.f;
 
 				float bias_scale = 1.0;
 
@@ -1442,7 +1451,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					x_min_cam = x_vec.dot(center) - radius;
 					y_max_cam = y_vec.dot(center) + radius;
 					y_min_cam = y_vec.dot(center) - radius;
-					z_max_cam = z_vec.dot(center) + radius;
+					//z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
 					if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
@@ -1799,11 +1808,12 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 	//light_samplers_culled=0;
 
-	/*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
+	/*
+	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
 	print_line("OTO: "+itos(p_scenario->octree.get_octant_count()));
-	//print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
+	print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
 	print_line("OTP: "+itos(p_scenario->octree.get_pair_count()));
-*/
+	*/
 
 	/* STEP 3 - PROCESS PORTALS, VALIDATE ROOMS */
 	//removed, will replace with culling
@@ -2132,6 +2142,8 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 	Scenario *scenario = p_instance->scenario;
 	ERR_FAIL_COND_V(!scenario, true);
 
+	VisualServerRaster::redraw_request(); //update, so it updates in editor
+
 	if (p_step == 0) {
 
 		if (!VSG::scene_render->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {
@@ -2302,7 +2314,6 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	int size_divisor = 1;
 
 	if (probe->dynamic.compression == RasterizerStorage::GI_PROBE_S3TC) {
-		print_line("S3TC");
 		size_limit = 4;
 		size_divisor = 4;
 	}
@@ -2391,7 +2402,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		probe->dynamic.mipmaps_s3tc.resize(mipmap_count);
 
 		for (int i = 0; i < mipmap_count; i++) {
-			print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
+			//print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
 			probe->dynamic.mipmaps_s3tc.write[i].resize(comp_blocks[i].size());
 			PoolVector<InstanceGIProbeData::CompBlockS3TC>::Write w = probe->dynamic.mipmaps_s3tc.write[i].write();
 			int block_idx = 0;
@@ -2759,7 +2770,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 		} break;
 	}
 }
@@ -2821,7 +2832,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if ((!probe_data->dynamic.light_cache_changes.has(rid) || !(probe_data->dynamic.light_cache_changes[rid] == lc)) && lc.visible) {
+		if ((!probe_data->dynamic.light_cache_changes.has(rid) || probe_data->dynamic.light_cache_changes[rid] != lc) && lc.visible) {
 			//erase light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, -1);
@@ -2834,7 +2845,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if ((!probe_data->dynamic.light_cache.has(rid) || !(probe_data->dynamic.light_cache[rid] == lc)) && lc.visible) {
+		if ((!probe_data->dynamic.light_cache.has(rid) || probe_data->dynamic.light_cache[rid] != lc) && lc.visible) {
 			//add light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, 1);
@@ -3051,7 +3062,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
 		lc.visible = E->get()->visible;
 
-		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
+		if (!probe_data->dynamic.light_cache.has(E->get()->self) || probe_data->dynamic.light_cache[E->get()->self] != lc) {
 			all_equal = false;
 		}
 
@@ -3071,7 +3082,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
 		lc.visible = E->get()->visible;
 
-		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
+		if (!probe_data->dynamic.light_cache.has(E->get()->self) || probe_data->dynamic.light_cache[E->get()->self] != lc) {
 			all_equal = false;
 		}
 
@@ -3154,7 +3165,7 @@ void VisualServerScene::render_probes() {
 			force_lighting = true;
 		}
 
-		if (probe->invalid == false && probe->dynamic.enabled) {
+		if (!probe->invalid && probe->dynamic.enabled) {
 
 			switch (probe->dynamic.updating_stage) {
 				case GI_UPDATE_STAGE_CHECK: {
@@ -3180,7 +3191,7 @@ void VisualServerScene::render_probes() {
 				} break;
 				case GI_UPDATE_STAGE_UPLOADING: {
 
-					// uint64_t us = OS::get_singleton()->get_ticks_usec();
+					//uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 					for (int i = 0; i < (int)probe->dynamic.mipmaps_3d.size(); i++) {
 
@@ -3190,7 +3201,7 @@ void VisualServerScene::render_probes() {
 
 					probe->dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 
-					// print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+					//print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 				} break;
 			}
 		}

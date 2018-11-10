@@ -1,35 +1,38 @@
 #!/usr/bin/env python
 
 Import('env')
+Import('env_modules')
 
-gdn_env = env.Clone()
-gdn_env.add_source_files(env.modules_sources, "gdnative.cpp")
-gdn_env.add_source_files(env.modules_sources, "register_types.cpp")
-gdn_env.add_source_files(env.modules_sources, "android/*.cpp")
-gdn_env.add_source_files(env.modules_sources, "gdnative/*.cpp")
-gdn_env.add_source_files(env.modules_sources, "nativescript/*.cpp")
-gdn_env.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
-gdn_env.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
+env_gdnative = env_modules.Clone()
+env_gdnative.add_source_files(env.modules_sources, "gdnative.cpp")
+env_gdnative.add_source_files(env.modules_sources, "register_types.cpp")
+env_gdnative.add_source_files(env.modules_sources, "android/*.cpp")
+env_gdnative.add_source_files(env.modules_sources, "gdnative/*.cpp")
+env_gdnative.add_source_files(env.modules_sources, "nativescript/*.cpp")
+env_gdnative.add_source_files(env.modules_sources, "gdnative_library_singleton_editor.cpp")
+env_gdnative.add_source_files(env.modules_sources, "gdnative_library_editor_plugin.cpp")
 
-gdn_env.Append(CPPPATH=['#modules/gdnative/include/'])
+env_gdnative.Append(CPPPATH=['#modules/gdnative/include/'])
+
+Export('env_gdnative')
 
 SConscript("net/SCsub")
 SConscript("arvr/SCsub")
 SConscript("pluginscript/SCsub")
 
+
 from platform_methods import run_in_subprocess
 import gdnative_builders
 
-
-_, gensource = gdn_env.CommandNoCache(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
+_, gensource = env_gdnative.CommandNoCache(['include/gdnative_api_struct.gen.h', 'gdnative_api_struct.gen.cpp'],
                                'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_api_struct))
-gdn_env.add_source_files(env.modules_sources, [gensource])
+env_gdnative.add_source_files(env.modules_sources, [gensource])
 
 env.use_ptrcall = True
 
 
 if ARGUMENTS.get('gdnative_wrapper', False):
-    gensource, = gdn_env.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_wrapper_code))
+    gensource, = env_gdnative.CommandNoCache('gdnative_wrapper_code.gen.cpp', 'gdnative_api.json', run_in_subprocess(gdnative_builders.build_gdnative_wrapper_code))
 
     gd_wrapper_env = env.Clone()
     gd_wrapper_env.Append(CPPPATH=['#modules/gdnative/include/'])

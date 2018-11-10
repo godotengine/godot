@@ -487,10 +487,10 @@
 			OpenGL texture format RG with two components and a bitdepth of 8 for each.
 		</constant>
 		<constant name="FORMAT_RGB8" value="4" enum="Format">
-			OpenGL texture format RGB with three components, each with a bitdepth of 8.
+			OpenGL texture format RGB with three components, each with a bitdepth of 8. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGBA8" value="5" enum="Format">
-			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+			OpenGL texture format RGBA with four components, each with a bitdepth of 8. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
 			OpenGL texture format RGBA with four components, each with a bitdepth of 4.
@@ -526,13 +526,13 @@
 			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single exponent.
 		</constant>
 		<constant name="FORMAT_DXT1" value="17" enum="Format">
-			The S3TC texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha. More information can be found at https://www.khronos.org/opengl/wiki/S3_Texture_Compression.
+			The S3TC texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha. More information can be found at https://www.khronos.org/opengl/wiki/S3_Texture_Compression. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_DXT3" value="18" enum="Format">
-			The S3TC texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
+			The S3TC texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_DXT5" value="19" enum="Format">
-			The S3TC texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparency gradients than DXT3.
+			The S3TC texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparency gradients than DXT3. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
 			Texture format that uses Red Green Texture Compression, normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel. More information can be found here https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression.
@@ -541,7 +541,7 @@
 			Texture format that uses Red Green Texture Compression, normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
-			Texture format that uses BPTC compression with unsigned normalized RGBA components. More information can be found at https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression.
+			Texture format that uses BPTC compression with unsigned normalized RGBA components. More information can be found at https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
 			Texture format that uses BPTC compression with signed floating-point RGB components.
@@ -550,7 +550,7 @@
 			Texture format that uses BPTC compression with unsigned floating-point RGB components.
 		</constant>
 		<constant name="FORMAT_PVRTC2" value="25" enum="Format">
-			Texture format used on PowerVR-supported mobile platforms, uses 2 bit color depth with no alpha. More information on PVRTC can be found here https://en.wikipedia.org/wiki/PVRTC.
+			Texture format used on PowerVR-supported mobile platforms, uses 2 bit color depth with no alpha. More information on PVRTC can be found here https://en.wikipedia.org/wiki/PVRTC. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_PVRTC2A" value="26" enum="Format">
 			Same as PVRTC2, but with an alpha component.
@@ -577,13 +577,13 @@
 			Ericsson Texture Compression format 2 variant SIGNED_RG11_EAC, which provides two channels of signed data.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
-			Ericsson Texture Compression format 2 variant RGB8, which is a followup of ETC1 and compresses RGB888 data.
+			Ericsson Texture Compression format 2 variant RGB8, which is a followup of ETC1 and compresses RGB888 data. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
-			Ericsson Texture Compression format 2 variant RGBA8, which compresses RGBA8888 data with full alpha support.
+			Ericsson Texture Compression format 2 variant RGBA8, which compresses RGBA8888 data with full alpha support. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
-			Ericsson Texture Compression format 2 variant RGB8_PUNCHTHROUGH_ALPHA1, which compresses RGBA data to make alpha either fully transparent or fully opaque.
+			Ericsson Texture Compression format 2 variant RGB8_PUNCHTHROUGH_ALPHA1, which compresses RGBA data to make alpha either fully transparent or fully opaque. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_MAX" value="37" enum="Format">
 		</constant>

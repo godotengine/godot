@@ -33,10 +33,10 @@
 
 #include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
+#include "core/os/input.h"
+#include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
-#include "os/input.h"
-#include "os/main_loop.h"
 //#include "power_android.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -51,6 +51,8 @@ typedef void (*GFXInitFunc)(void *ud, bool gl2);
 typedef int (*OpenURIFunc)(const String &);
 typedef String (*GetUserDataDirFunc)();
 typedef String (*GetLocaleFunc)();
+typedef void (*SetClipboardFunc)(const String &);
+typedef String (*GetClipboardFunc)();
 typedef String (*GetModelFunc)();
 typedef int (*GetScreenDPIFunc)();
 typedef String (*GetUniqueIDFunc)();
@@ -119,6 +121,8 @@ private:
 	OpenURIFunc open_uri_func;
 	GetUserDataDirFunc get_user_data_dir_func;
 	GetLocaleFunc get_locale_func;
+	SetClipboardFunc set_clipboard_func;
+	GetClipboardFunc get_clipboard_func;
 	GetModelFunc get_model_func;
 	GetScreenDPIFunc get_screen_dpi_func;
 	ShowVirtualKeyboardFunc show_virtual_keyboard_func;
@@ -140,7 +144,7 @@ private:
 	int video_driver_index;
 
 public:
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
 
@@ -171,9 +175,6 @@ public:
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
-
-	//virtual void set_clipboard(const String& p_text);
-	//virtual String get_clipboard() const;
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
@@ -218,6 +219,8 @@ public:
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
 	virtual String get_locale() const;
+	virtual void set_clipboard(const String &p_text);
+	virtual String get_clipboard() const;
 	virtual String get_model_name() const;
 	virtual int get_screen_dpi(int p_screen = 0) const;
 
@@ -234,8 +237,8 @@ public:
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
 
-	virtual Error native_video_play(String p_path, float p_volume);
-	virtual bool native_video_is_playing();
+	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
+	virtual bool native_video_is_playing() const;
 	virtual void native_video_pause();
 	virtual void native_video_stop();
 
@@ -244,7 +247,7 @@ public:
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
-	OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard, GetClipboardFunc p_get_clipboard, bool p_use_apk_expansion);
 	~OS_Android();
 };
 

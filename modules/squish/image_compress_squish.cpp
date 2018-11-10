@@ -30,7 +30,7 @@
 
 #include "image_compress_squish.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 #include <squish.h>
 
@@ -59,7 +59,7 @@ void image_decompress_squish(Image *p_image) {
 	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
 		squish_flags = squish::kBc5;
 	} else {
-		print_line("Can't decompress unknown format: " + itos(p_image->get_format()));
+		ERR_EXPLAIN("Squish: Can't decompress unknown format: " + itos(p_image->get_format()));
 		ERR_FAIL_COND(true);
 		return;
 	}
@@ -193,8 +193,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 			int src_ofs = p_image->get_mipmap_offset(i);
 			squish::CompressImage(&rb[src_ofs], w, h, &wb[dst_ofs], squish_comp);
 			dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
-			w >>= 1;
-			h >>= 1;
+			w = MAX(w / 2, 1);
+			h = MAX(h / 2, 1);
 		}
 
 		rb = PoolVector<uint8_t>::Read();

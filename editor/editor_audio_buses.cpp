@@ -30,10 +30,10 @@
 
 #include "editor_audio_buses.h"
 
+#include "core/io/resource_saver.h"
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "filesystem_dock.h"
-#include "io/resource_saver.h"
-#include "os/keyboard.h"
 #include "servers/audio_server.h"
 
 void EditorAudioBus::_notification(int p_what) {
@@ -482,10 +482,8 @@ void EditorAudioBus::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
-	print_line("drag fw");
 	TreeItem *item = effects->get_item_at_position(p_point);
 	if (!item) {
-		print_line("no item");
 		return Variant();
 	}
 
@@ -767,10 +765,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		if (!ClassDB::can_instance(E->get()))
 			continue;
 
-		Ref<Texture> icon;
-		if (has_icon(E->get(), "EditorIcons")) {
-			icon = get_icon(E->get(), "EditorIcons");
-		}
+		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(E->get());
 		String name = E->get().operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
 		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E->get());

@@ -30,9 +30,9 @@
 
 #include "image_loader_webp.h"
 
-#include "io/marshalls.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 #include <stdlib.h>
 #include <webp/decode.h>

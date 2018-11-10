@@ -30,7 +30,8 @@
 
 #include "image_loader.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
+
 bool ImageFormatLoader::recognize(const String &p_extension) const {
 
 	List<String> extensions;
@@ -117,7 +118,6 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
-		memdelete(f);
 		return RES();
 	}
 

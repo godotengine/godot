@@ -65,7 +65,7 @@ void cgsem_destroy(cgsem_t *cgsem) {
 	close(cgsem->pipefd[0]);
 }
 
-#include "os/memory.h"
+#include "core/os/memory.h"
 #include <errno.h>
 
 Error SemaphoreOSX::wait() {

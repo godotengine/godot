@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "audio_stream_sample.h"
-#include "io/marshalls.h"
-#include "os/file_access.h"
+#include "core/io/marshalls.h"
+#include "core/os/file_access.h"
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 
@@ -562,13 +562,13 @@ void AudioStreamSample::save_to_wav(String p_path) {
 	PoolVector<uint8_t>::Read read_data = get_data().read();
 	switch (format) {
 		case AudioStreamSample::FORMAT_8_BITS:
-			for (int i = 0; i < data_bytes; i++) {
+			for (unsigned int i = 0; i < data_bytes; i++) {
 				uint8_t data_point = (read_data[i] + 128);
 				file->store_8(data_point);
 			}
 			break;
 		case AudioStreamSample::FORMAT_16_BITS:
-			for (int i = 0; i < data_bytes / 2; i++) {
+			for (unsigned int i = 0; i < data_bytes / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
 				file->store_16(data_point);
 			}

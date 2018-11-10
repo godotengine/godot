@@ -27,11 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef RASTERIZERSTORAGEGLES2_H
 #define RASTERIZERSTORAGEGLES2_H
 
-#include "dvector.h"
-#include "self_list.h"
+#include "core/dvector.h"
+#include "core/self_list.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles2.h"
@@ -42,7 +43,6 @@
 /*
 #include "shaders/blend_shape.glsl.gen.h"
 #include "shaders/canvas.glsl.gen.h"
-#include "shaders/copy.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
 */
 
@@ -156,7 +156,7 @@ public:
 	//////////////////////////////////DATA///////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////
 
-	struct Instanciable : public RID_Data {
+	struct Instantiable : public RID_Data {
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify() {
@@ -186,15 +186,15 @@ public:
 			}
 		}
 
-		Instanciable() {}
+		Instantiable() {}
 
-		virtual ~Instanciable() {}
+		virtual ~Instantiable() {}
 	};
 
-	struct GeometryOwner : public Instanciable {
+	struct GeometryOwner : public Instantiable {
 	};
 
-	struct Geometry : public Instanciable {
+	struct Geometry : public Instantiable {
 
 		enum Type {
 			GEOMETRY_INVALID,
@@ -405,6 +405,9 @@ public:
 
 		String path;
 
+		uint32_t index;
+		uint64_t last_pass;
+
 		struct CanvasItem {
 
 			enum BlendMode {
@@ -426,6 +429,7 @@ public:
 
 			int light_mode;
 			*/
+
 			bool uses_screen_texture;
 			bool uses_screen_uv;
 			bool uses_time;
@@ -490,6 +494,7 @@ public:
 			valid = false;
 			custom_code_id = 0;
 			version = 1;
+			last_pass = 0;
 		}
 	};
 
@@ -562,6 +567,7 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value);
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const;
+	virtual Variant material_get_param_default(RID p_material, const StringName &p_param) const;
 
 	virtual void material_set_line_width(RID p_material, float p_width);
 	virtual void material_set_next_pass(RID p_material, RID p_next_material);
@@ -887,7 +893,7 @@ public:
 
 	/* Light API */
 
-	struct Light : Instanciable {
+	struct Light : Instantiable {
 		VS::LightType type;
 		float param[VS::LIGHT_PARAM_MAX];
 
@@ -949,6 +955,26 @@ public:
 	virtual uint64_t light_get_version(RID p_light) const;
 
 	/* PROBE API */
+
+	struct ReflectionProbe : Instantiable {
+
+		VS::ReflectionProbeUpdateMode update_mode;
+		float intensity;
+		Color interior_ambient;
+		float interior_ambient_energy;
+		float interior_ambient_probe_contrib;
+		float max_distance;
+		Vector3 extents;
+		Vector3 origin_offset;
+		bool interior;
+		bool box_projection;
+		bool enable_shadows;
+		uint32_t cull_mask;
+		int resolution;
+	};
+
+	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
+
 	virtual RID reflection_probe_create();
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode);
@@ -963,10 +989,13 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
+	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution);
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const;
 	virtual VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const;
+
+	virtual int reflection_probe_get_resolution(RID p_probe) const;
 
 	virtual Vector3 reflection_probe_get_extents(RID p_probe) const;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
@@ -1016,6 +1045,21 @@ public:
 	virtual void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data);
 
 	/* LIGHTMAP */
+
+	struct LightmapCapture : public Instantiable {
+
+		PoolVector<LightmapCaptureOctree> octree;
+		AABB bounds;
+		Transform cell_xform;
+		int cell_subdiv;
+		float energy;
+		LightmapCapture() {
+			energy = 1.0;
+			cell_subdiv = 1;
+		}
+	};
+
+	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
 
 	virtual RID lightmap_capture_create();
 	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds);

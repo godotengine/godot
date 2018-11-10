@@ -15,9 +15,11 @@ subject to the following restrictions:
 
 #include "btAlignedAllocator.h"
 
+#ifdef BT_DEBUG_MEMORY_ALLOCATIONS
 int gNumAlignedAllocs = 0;
 int gNumAlignedFree = 0;
 int gTotalBytesAlignedAllocs = 0;//detect memory leaks
+#endif //BT_DEBUG_MEMORY_ALLOCATIONST_DEBUG_ALLOCATIONS
 
 static void *btAllocDefault(size_t size)
 {
@@ -246,7 +248,6 @@ void    btAlignedFreeInternal   (void* ptr,int line,char* filename)
 
 void*	btAlignedAllocInternal	(size_t size, int alignment)
 {
-	gNumAlignedAllocs++;
 	void* ptr;
 	ptr = sAlignedAllocFunc(size, alignment);
 //	printf("btAlignedAllocInternal %d, %x\n",size,ptr);
@@ -260,7 +261,6 @@ void	btAlignedFreeInternal	(void* ptr)
 		return;
 	}
 
-	gNumAlignedFree++;
 //	printf("btAlignedFreeInternal %x\n",ptr);
 	sAlignedFreeFunc(ptr);
 }

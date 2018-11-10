@@ -13,8 +13,8 @@
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [code]Control[/code] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_*_override[/code] methods, like [method add_font_override]. You can override the theme with the inspector.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/gui/index.html</link>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -38,7 +38,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				The node's parent forwards input events to this method. Use it to process and accept inputs on UI elements. See [method accept_event].
+				Use this method to process and accept inputs on UI elements. See [method accept_event].
 				Replaces Godot 2's [code]_input_event[/code].
 			</description>
 		</method>
@@ -76,7 +76,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant in the [member theme] resource the node uses. If the [code]constant[/code] is invalid, Godot clears the override. See [member Theme.INVALID_CONSTANT] for more information.
+				Overrides an integer constant in the [member theme] resource the node uses. If the [code]constant[/code] is invalid, Godot clears the override.
 			</description>
 		</method>
 		<method name="add_font_override">
@@ -229,9 +229,9 @@
 				extends Control
 
 				func get_drag_data(position):
-					var mydata = make_data()
-					set_drag_preview(make_preview(mydata))
-					return mydata
+				    var mydata = make_data()
+				    set_drag_preview(make_preview(mydata))
+				    return mydata
 				[/codeblock]
 			</description>
 		</method>
@@ -723,7 +723,7 @@
 			</description>
 		</signal>
 		<signal name="gui_input">
-			<argument index="0" name="ev" type="Object">
+			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
 				Emitted when the node receives an [InputEvent].

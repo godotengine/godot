@@ -5825,134 +5825,6 @@ msgstr "Kontextusérzékeny Súgó"
 msgid "Shader"
 msgstr "Árnyaló"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Skaláris állandó változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Vec állandó változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "RGB állandó változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Skaláris kezelő változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Vec kezelő változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Vektor skalár kezelő változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "RGB kezelő változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Csak vörös kapcsolása"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Skalár-függvény változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Vektor-függvény változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Egységes-skalár változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Egységes-vektor változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "Egységes-RGB változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Alapérték változtatás"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Szín Gradiens Módosítása"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr ""
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9424,6 +9296,51 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Skaláris állandó változtatás"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Vec állandó változtatás"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "RGB állandó változtatás"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Skaláris kezelő változtatás"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Vec kezelő változtatás"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Vektor skalár kezelő változtatás"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "RGB kezelő változtatás"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Csak vörös kapcsolása"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Skalár-függvény változtatás"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Vektor-függvény változtatás"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Egységes-skalár változtatás"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Egységes-vektor változtatás"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Egységes-RGB változtatás"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Alapérték változtatás"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Szín Gradiens Módosítása"
 
 #~ msgid "Disabled"
 #~ msgstr "Tiltva"

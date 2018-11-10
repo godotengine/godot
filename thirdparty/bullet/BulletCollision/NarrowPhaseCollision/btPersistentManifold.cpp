@@ -16,7 +16,13 @@ subject to the following restrictions:
 
 #include "btPersistentManifold.h"
 #include "LinearMath/btTransform.h"
+#include "LinearMath/btSerializer.h"
 
+#ifdef BT_USE_DOUBLE_PRECISION
+#define btCollisionObjectData btCollisionObjectDoubleData
+#else
+#define btCollisionObjectData btCollisionObjectFloatData
+#endif
 
 btScalar					gContactBreakingThreshold = btScalar(0.02);
 ContactDestroyedCallback	gContactDestroyedCallback = 0;
@@ -33,6 +39,8 @@ btPersistentManifold::btPersistentManifold()
 m_body0(0),
 m_body1(0),
 m_cachedPoints (0),
+m_companionIdA(0),
+m_companionIdB(0),
 m_index1a(0)
 {
 }
@@ -303,6 +311,149 @@ void btPersistentManifold::refreshContactPoints(const btTransform& trA,const btT
 }
 
 
+int	btPersistentManifold::calculateSerializeBufferSize()	const
+{
+	return sizeof(btPersistentManifoldData);
+}
 
+const char*	btPersistentManifold::serialize(const class btPersistentManifold* manifold, void* dataBuffer, class btSerializer* serializer) const
+{
+	btPersistentManifoldData* dataOut = (btPersistentManifoldData*)dataBuffer;
+	memset(dataOut, 0, sizeof(btPersistentManifoldData));
 
+	dataOut->m_body0 = (btCollisionObjectData*)serializer->getUniquePointer((void*)manifold->getBody0());
+	dataOut->m_body1 = (btCollisionObjectData*)serializer->getUniquePointer((void*)manifold->getBody1());
+	dataOut->m_contactBreakingThreshold = manifold->getContactBreakingThreshold();
+	dataOut->m_contactProcessingThreshold = manifold->getContactProcessingThreshold();
+	dataOut->m_numCachedPoints = manifold->getNumContacts();
+	dataOut->m_companionIdA = manifold->m_companionIdA;
+	dataOut->m_companionIdB = manifold->m_companionIdB;
+	dataOut->m_index1a = manifold->m_index1a;
+	dataOut->m_objectType = manifold->m_objectType;
 
+	for (int i = 0; i < this->getNumContacts(); i++)
+	{
+		const btManifoldPoint& pt = manifold->getContactPoint(i);
+		dataOut->m_pointCacheAppliedImpulse[i] = pt.m_appliedImpulse;
+		dataOut->m_pointCacheAppliedImpulseLateral1[i] = pt.m_appliedImpulseLateral1;
+		dataOut->m_pointCacheAppliedImpulseLateral2[i] = pt.m_appliedImpulseLateral2;
+		pt.m_localPointA.serialize(dataOut->m_pointCacheLocalPointA[i]);
+		pt.m_localPointB.serialize(dataOut->m_pointCacheLocalPointB[i]);
+		pt.m_normalWorldOnB.serialize(dataOut->m_pointCacheNormalWorldOnB[i]);
+		dataOut->m_pointCacheDistance[i] = pt.m_distance1;
+		dataOut->m_pointCacheCombinedContactDamping1[i] = pt.m_combinedContactDamping1;
+		dataOut->m_pointCacheCombinedContactStiffness1[i] = pt.m_combinedContactStiffness1;
+		dataOut->m_pointCacheLifeTime[i] = pt.m_lifeTime;
+		dataOut->m_pointCacheFrictionCFM[i] = pt.m_frictionCFM;
+		dataOut->m_pointCacheContactERP[i] = pt.m_contactERP;
+		dataOut->m_pointCacheContactCFM[i] = pt.m_contactCFM;
+		dataOut->m_pointCacheContactPointFlags[i] = pt.m_contactPointFlags;
+		dataOut->m_pointCacheIndex0[i] = pt.m_index0;
+		dataOut->m_pointCacheIndex1[i] = pt.m_index1;
+		dataOut->m_pointCachePartId0[i] = pt.m_partId0;
+		dataOut->m_pointCachePartId1[i] = pt.m_partId1;
+		pt.m_positionWorldOnA.serialize(dataOut->m_pointCachePositionWorldOnA[i]);
+		pt.m_positionWorldOnB.serialize(dataOut->m_pointCachePositionWorldOnB[i]);
+		dataOut->m_pointCacheCombinedFriction[i] = pt.m_combinedFriction;
+		pt.m_lateralFrictionDir1.serialize(dataOut->m_pointCacheLateralFrictionDir1[i]);
+		pt.m_lateralFrictionDir2.serialize(dataOut->m_pointCacheLateralFrictionDir2[i]);
+		dataOut->m_pointCacheCombinedRollingFriction[i] = pt.m_combinedRollingFriction;
+		dataOut->m_pointCacheCombinedSpinningFriction[i] = pt.m_combinedSpinningFriction;
+		dataOut->m_pointCacheCombinedRestitution[i] = pt.m_combinedRestitution;
+		dataOut->m_pointCacheContactMotion1[i] = pt.m_contactMotion1;
+		dataOut->m_pointCacheContactMotion2[i] = pt.m_contactMotion2;
+	}
+	return btPersistentManifoldDataName;
+}
+
+void btPersistentManifold::deSerialize(const struct btPersistentManifoldDoubleData* manifoldDataPtr)
+{
+	m_contactBreakingThreshold = manifoldDataPtr->m_contactBreakingThreshold;
+	m_contactProcessingThreshold = manifoldDataPtr->m_contactProcessingThreshold;
+	m_cachedPoints = manifoldDataPtr->m_numCachedPoints;
+	m_companionIdA = manifoldDataPtr->m_companionIdA;
+	m_companionIdB = manifoldDataPtr->m_companionIdB;
+	//m_index1a = manifoldDataPtr->m_index1a;
+	m_objectType = manifoldDataPtr->m_objectType;
+
+	for (int i = 0; i < this->getNumContacts(); i++)
+	{
+		btManifoldPoint& pt = m_pointCache[i];
+		
+		pt.m_appliedImpulse = manifoldDataPtr->m_pointCacheAppliedImpulse[i];
+		pt.m_appliedImpulseLateral1 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral1[i];
+		pt.m_appliedImpulseLateral2 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral2[i];
+		pt.m_localPointA.deSerializeDouble(manifoldDataPtr->m_pointCacheLocalPointA[i]);
+		pt.m_localPointB.deSerializeDouble(manifoldDataPtr->m_pointCacheLocalPointB[i]);
+		pt.m_normalWorldOnB.deSerializeDouble(manifoldDataPtr->m_pointCacheNormalWorldOnB[i]);
+		pt.m_distance1 = manifoldDataPtr->m_pointCacheDistance[i];
+		pt.m_combinedContactDamping1 = manifoldDataPtr->m_pointCacheCombinedContactDamping1[i];
+		pt.m_combinedContactStiffness1 = manifoldDataPtr->m_pointCacheCombinedContactStiffness1[i];
+		pt.m_lifeTime = manifoldDataPtr->m_pointCacheLifeTime[i];
+		pt.m_frictionCFM = manifoldDataPtr->m_pointCacheFrictionCFM[i];
+		pt.m_contactERP = manifoldDataPtr->m_pointCacheContactERP[i];
+		pt.m_contactCFM = manifoldDataPtr->m_pointCacheContactCFM[i];
+		pt.m_contactPointFlags = manifoldDataPtr->m_pointCacheContactPointFlags[i];
+		pt.m_index0 = manifoldDataPtr->m_pointCacheIndex0[i];
+		pt.m_index1 = manifoldDataPtr->m_pointCacheIndex1[i];
+		pt.m_partId0 = manifoldDataPtr->m_pointCachePartId0[i];
+		pt.m_partId1 = manifoldDataPtr->m_pointCachePartId1[i];
+		pt.m_positionWorldOnA.deSerializeDouble(manifoldDataPtr->m_pointCachePositionWorldOnA[i]);
+		pt.m_positionWorldOnB.deSerializeDouble(manifoldDataPtr->m_pointCachePositionWorldOnB[i]);
+		pt.m_combinedFriction = manifoldDataPtr->m_pointCacheCombinedFriction[i];
+		pt.m_lateralFrictionDir1.deSerializeDouble(manifoldDataPtr->m_pointCacheLateralFrictionDir1[i]);
+		pt.m_lateralFrictionDir2.deSerializeDouble(manifoldDataPtr->m_pointCacheLateralFrictionDir2[i]);
+		pt.m_combinedRollingFriction = manifoldDataPtr->m_pointCacheCombinedRollingFriction[i];
+		pt.m_combinedSpinningFriction = manifoldDataPtr->m_pointCacheCombinedSpinningFriction[i];
+		pt.m_combinedRestitution = manifoldDataPtr->m_pointCacheCombinedRestitution[i];
+		pt.m_contactMotion1 = manifoldDataPtr->m_pointCacheContactMotion1[i];
+		pt.m_contactMotion2 = manifoldDataPtr->m_pointCacheContactMotion2[i];
+	}
+
+}
+
+void btPersistentManifold::deSerialize(const struct btPersistentManifoldFloatData* manifoldDataPtr)
+{
+	m_contactBreakingThreshold = manifoldDataPtr->m_contactBreakingThreshold;
+	m_contactProcessingThreshold = manifoldDataPtr->m_contactProcessingThreshold;
+	m_cachedPoints = manifoldDataPtr->m_numCachedPoints;
+	m_companionIdA = manifoldDataPtr->m_companionIdA;
+	m_companionIdB = manifoldDataPtr->m_companionIdB;
+	//m_index1a = manifoldDataPtr->m_index1a;
+	m_objectType = manifoldDataPtr->m_objectType;
+
+	for (int i = 0; i < this->getNumContacts(); i++)
+	{
+		btManifoldPoint& pt = m_pointCache[i];
+
+		pt.m_appliedImpulse = manifoldDataPtr->m_pointCacheAppliedImpulse[i];
+		pt.m_appliedImpulseLateral1 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral1[i];
+		pt.m_appliedImpulseLateral2 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral2[i];
+		pt.m_localPointA.deSerialize(manifoldDataPtr->m_pointCacheLocalPointA[i]);
+		pt.m_localPointB.deSerialize(manifoldDataPtr->m_pointCacheLocalPointB[i]);
+		pt.m_normalWorldOnB.deSerialize(manifoldDataPtr->m_pointCacheNormalWorldOnB[i]);
+		pt.m_distance1 = manifoldDataPtr->m_pointCacheDistance[i];
+		pt.m_combinedContactDamping1 = manifoldDataPtr->m_pointCacheCombinedContactDamping1[i];
+		pt.m_combinedContactStiffness1 = manifoldDataPtr->m_pointCacheCombinedContactStiffness1[i];
+		pt.m_lifeTime = manifoldDataPtr->m_pointCacheLifeTime[i];
+		pt.m_frictionCFM = manifoldDataPtr->m_pointCacheFrictionCFM[i];
+		pt.m_contactERP = manifoldDataPtr->m_pointCacheContactERP[i];
+		pt.m_contactCFM = manifoldDataPtr->m_pointCacheContactCFM[i];
+		pt.m_contactPointFlags = manifoldDataPtr->m_pointCacheContactPointFlags[i];
+		pt.m_index0 = manifoldDataPtr->m_pointCacheIndex0[i];
+		pt.m_index1 = manifoldDataPtr->m_pointCacheIndex1[i];
+		pt.m_partId0 = manifoldDataPtr->m_pointCachePartId0[i];
+		pt.m_partId1 = manifoldDataPtr->m_pointCachePartId1[i];
+		pt.m_positionWorldOnA.deSerialize(manifoldDataPtr->m_pointCachePositionWorldOnA[i]);
+		pt.m_positionWorldOnB.deSerialize(manifoldDataPtr->m_pointCachePositionWorldOnB[i]);
+		pt.m_combinedFriction = manifoldDataPtr->m_pointCacheCombinedFriction[i];
+		pt.m_lateralFrictionDir1.deSerialize(manifoldDataPtr->m_pointCacheLateralFrictionDir1[i]);
+		pt.m_lateralFrictionDir2.deSerialize(manifoldDataPtr->m_pointCacheLateralFrictionDir2[i]);
+		pt.m_combinedRollingFriction = manifoldDataPtr->m_pointCacheCombinedRollingFriction[i];
+		pt.m_combinedSpinningFriction = manifoldDataPtr->m_pointCacheCombinedSpinningFriction[i];
+		pt.m_combinedRestitution = manifoldDataPtr->m_pointCacheCombinedRestitution[i];
+		pt.m_contactMotion1 = manifoldDataPtr->m_pointCacheContactMotion1[i];
+		pt.m_contactMotion2 = manifoldDataPtr->m_pointCacheContactMotion2[i];
+	}
+
+}

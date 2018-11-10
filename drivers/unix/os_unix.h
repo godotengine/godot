@@ -37,12 +37,10 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/os/os.h"
 #include "drivers/unix/ip_unix.h"
-#include "os/os.h"
 
 class OS_Unix : public OS {
-
-	uint64_t ticks_start;
 
 protected:
 	// UNIX only handles the core functions.
@@ -91,7 +89,7 @@ public:
 	virtual uint64_t get_ticks_usec() const;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
-	virtual Error kill(const ProcessID &p_pid, const int p_max_wait_msec = -1);
+	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
 
 	virtual bool has_environment(const String &p_var) const;

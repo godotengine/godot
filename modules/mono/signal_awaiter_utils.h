@@ -31,8 +31,8 @@
 #ifndef SIGNAL_AWAITER_UTILS_H
 #define SIGNAL_AWAITER_UTILS_H
 
+#include "core/reference.h"
 #include "mono_gc_handle.h"
-#include "reference.h"
 
 namespace SignalAwaiterUtils {
 
@@ -64,7 +64,7 @@ public:
 	}
 #endif
 
-	SignalAwaiterHandle(uint32_t p_managed_handle);
+	SignalAwaiterHandle(MonoObject *p_managed);
 	~SignalAwaiterHandle();
 };
 

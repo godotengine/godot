@@ -123,7 +123,7 @@ public:
 
 private:
 	/// Init a chain that starts from the root to tip
-	static void build_chain(Task *p_task, bool p_force_simple_chain = true);
+	static bool build_chain(Task *p_task, bool p_force_simple_chain = true);
 
 	static void update_chain(const Skeleton *p_sk, ChainItem *p_chain_item);
 

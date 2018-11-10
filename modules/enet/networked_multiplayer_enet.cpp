@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "networked_multiplayer_enet.h"
-#include "io/ip.h"
-#include "io/marshalls.h"
-#include "os/os.h"
+#include "core/io/ip.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
 
 void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 
@@ -100,8 +100,8 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	host = enet_host_create(&address /* the address to bind the server host to */,
 			p_max_clients /* allow up to 32 clients and/or outgoing connections */,
 			channel_count /* allow up to channel_count to be used */,
-			p_in_bandwidth /* limit incoming bandwith if > 0 */,
-			p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+			p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+			p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
 
@@ -144,14 +144,14 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 		host = enet_host_create(&c_client /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
 				channel_count /* allow up to channel_count to be used */,
-				p_in_bandwidth /* limit incoming bandwith if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 	} else {
 		host = enet_host_create(NULL /* create a client host */,
 				1 /* only allow 1 outgoing connection */,
 				channel_count /* allow up to channel_count to be used */,
-				p_in_bandwidth /* limit incoming bandwith if > 0 */,
-				p_out_bandwidth /* limit outgoing bandwith if > 0 */);
+				p_in_bandwidth /* limit incoming bandwidth if > 0 */,
+				p_out_bandwidth /* limit outgoing bandwidth if > 0 */);
 	}
 
 	ERR_FAIL_COND_V(!host, ERR_CANT_CREATE);
@@ -207,13 +207,13 @@ void NetworkedMultiplayerENet::poll() {
 	_pop_current_packet();
 
 	ENetEvent event;
-	/* Wait up to 1000 milliseconds for an event. */
+	/* Keep servicing until there are no available events left in queue. */
 	while (true) {
 
 		if (!host || !active) // Might have been disconnected while emitting a notification
 			return;
 
-		int ret = enet_host_service(host, &event, 1);
+		int ret = enet_host_service(host, &event, 0);
 
 		if (ret < 0) {
 			// Error, do something?
@@ -293,7 +293,7 @@ void NetworkedMultiplayerENet::poll() {
 							encode_uint32(*id, &packet->data[4]);
 							enet_peer_send(E->get(), SYSCH_CONFIG, packet);
 						}
-					} else if (!server) {
+					} else {
 						emit_signal("server_disconnected");
 						close_connection();
 						return;

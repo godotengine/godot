@@ -30,9 +30,9 @@
 
 #include "variant.h"
 
-#include "core_string_names.h"
-#include "object.h"
-#include "script_language.h"
+#include "core/core_string_names.h"
+#include "core/object.h"
+#include "core/script_language.h"
 
 #define CASE_TYPE_ALL(PREFIX, OP) \
 	CASE_TYPE(PREFIX, OP, INT)    \
@@ -521,7 +521,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
 
-				_RETURN((*arr_a == *arr_b) == false);
+				_RETURN(*arr_a != *arr_b);
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {
@@ -1656,13 +1656,13 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 			} else if (p_index == CoreStringNames::singleton->a) {
 				return v->a;
 			} else if (p_index == CoreStringNames::singleton->r8) {
-				return int(v->r * 255.0);
+				return int(Math::round(v->r * 255.0));
 			} else if (p_index == CoreStringNames::singleton->g8) {
-				return int(v->g * 255.0);
+				return int(Math::round(v->g * 255.0));
 			} else if (p_index == CoreStringNames::singleton->b8) {
-				return int(v->b * 255.0);
+				return int(Math::round(v->b * 255.0));
 			} else if (p_index == CoreStringNames::singleton->a8) {
-				return int(v->a * 255.0);
+				return int(Math::round(v->a * 255.0));
 			} else if (p_index == CoreStringNames::singleton->h) {
 				return v->get_h();
 			} else if (p_index == CoreStringNames::singleton->s) {
@@ -3521,7 +3521,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			//not as efficient but..
 			real_t va = a;
 			real_t vb = b;
-			r_dst = (1.0 - c) * va + vb * c;
+			r_dst = va + (vb - va) * c;
 
 		} else {
 			r_dst = a;
@@ -3542,13 +3542,13 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		case INT: {
 			int64_t va = a._data._int;
 			int64_t vb = b._data._int;
-			r_dst = int((1.0 - c) * va + vb * c);
+			r_dst = int(va + (vb - va) * c);
 		}
 			return;
 		case REAL: {
 			real_t va = a._data._real;
 			real_t vb = b._data._real;
-			r_dst = (1.0 - c) * va + vb * c;
+			r_dst = va + (vb - va) * c;
 		}
 			return;
 		case STRING: {
@@ -3556,7 +3556,9 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			String sa = *reinterpret_cast<const String *>(a._data._mem);
 			String sb = *reinterpret_cast<const String *>(b._data._mem);
 			String dst;
-			int csize = sb.length() * c + sa.length() * (1.0 - c);
+			int sa_len = sa.length();
+			int sb_len = sb.length();
+			int csize = sa_len + (sb_len - sa_len) * c;
 			if (csize == 0) {
 				r_dst = "";
 				return;

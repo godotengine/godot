@@ -31,10 +31,10 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "list.h"
-#include "os/main_loop.h"
-#include "ustring.h"
-#include "vector.h"
+#include "core/list.h"
+#include "core/os/main_loop.h"
+#include "core/ustring.h"
+#include "core/vector.h"
 
 class Engine {
 
@@ -125,6 +125,7 @@ public:
 	String get_license_text() const;
 
 	Engine();
+	virtual ~Engine() {}
 };
 
 #endif // ENGINE_H

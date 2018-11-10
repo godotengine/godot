@@ -8,7 +8,7 @@
 		Note that assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -111,7 +111,7 @@
 			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
 			</argument>
 			<description>
-				Adds a [code][right][/code] tag to the tag stack.
+				Adds an alignment tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
 		<method name="push_cell">
@@ -164,6 +164,13 @@
 			</argument>
 			<description>
 				Adds a meta tag to the tag stack. Similar to the bbcode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+			</description>
+		</method>
+		<method name="push_strikethrough">
+			<return type="void">
+			</return>
+			<description>
+				Adds a [code][s][/code] tag to the tag stack.
 			</description>
 		</method>
 		<method name="push_table">
@@ -304,15 +311,17 @@
 		</constant>
 		<constant name="ITEM_UNDERLINE" value="6" enum="ItemType">
 		</constant>
-		<constant name="ITEM_ALIGN" value="7" enum="ItemType">
+		<constant name="ITEM_STRIKETHROUGH" value="7" enum="ItemType">
 		</constant>
-		<constant name="ITEM_INDENT" value="8" enum="ItemType">
+		<constant name="ITEM_ALIGN" value="8" enum="ItemType">
 		</constant>
-		<constant name="ITEM_LIST" value="9" enum="ItemType">
+		<constant name="ITEM_INDENT" value="9" enum="ItemType">
 		</constant>
-		<constant name="ITEM_TABLE" value="10" enum="ItemType">
+		<constant name="ITEM_LIST" value="10" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="11" enum="ItemType">
+		<constant name="ITEM_TABLE" value="11" enum="ItemType">
+		</constant>
+		<constant name="ITEM_META" value="12" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>

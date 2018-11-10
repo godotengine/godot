@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CPUParticles2D" inherits="Node2D" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="convert_from_particles">
+			<return type="void">
+			</return>
+			<argument index="0" name="particles" type="Node">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="restart">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="amount" type="int" setter="set_amount" getter="get_amount">
+		</member>
+		<member name="angle" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="angle_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="angle_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="angular_velocity" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="angular_velocity_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="anim_loop" type="bool" setter="set_particle_flag" getter="get_particle_flag">
+		</member>
+		<member name="anim_offset" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="anim_offset_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="anim_offset_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="anim_speed" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="anim_speed_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color">
+		</member>
+		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
+		</member>
+		<member name="damping" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="damping_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles2D.DrawOrder">
+		</member>
+		<member name="emission_colors" type="PoolColorArray" setter="set_emission_colors" getter="get_emission_colors">
+		</member>
+		<member name="emission_normals" type="PoolVector2Array" setter="set_emission_normals" getter="get_emission_normals">
+		</member>
+		<member name="emission_points" type="PoolVector2Array" setter="set_emission_points" getter="get_emission_points">
+		</member>
+		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents">
+		</member>
+		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles2D.EmissionShape">
+		</member>
+		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
+		</member>
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
+		</member>
+		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
+		</member>
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps">
+		</member>
+		<member name="flag_align_y" type="bool" setter="set_particle_flag" getter="get_particle_flag">
+		</member>
+		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness">
+		</member>
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
+		</member>
+		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity">
+		</member>
+		<member name="hue_variation" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="hue_variation_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="hue_variation_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="initial_velocity" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
+		</member>
+		<member name="linear_accel" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="linear_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="linear_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates">
+		</member>
+		<member name="normalmap" type="Texture" setter="set_normalmap" getter="get_normalmap">
+		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
+		</member>
+		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
+		</member>
+		<member name="radial_accel" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="radial_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="radial_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
+		</member>
+		<member name="scale" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="scale_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
+		</member>
+		<member name="spread" type="float" setter="set_spread" getter="get_spread">
+		</member>
+		<member name="tangential_accel" type="float" setter="set_param" getter="get_param">
+		</member>
+		<member name="tangential_accel_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		</member>
+		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		</member>
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+		</member>
+	</members>
+	<constants>
+		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
+		</constant>
+		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
+		</constant>
+		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
+		</constant>
+		<constant name="PARAM_ANGULAR_VELOCITY" value="1" enum="Parameter">
+		</constant>
+		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
+		</constant>
+		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
+		</constant>
+		<constant name="PARAM_RADIAL_ACCEL" value="4" enum="Parameter">
+		</constant>
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="5" enum="Parameter">
+		</constant>
+		<constant name="PARAM_DAMPING" value="6" enum="Parameter">
+		</constant>
+		<constant name="PARAM_ANGLE" value="7" enum="Parameter">
+		</constant>
+		<constant name="PARAM_SCALE" value="8" enum="Parameter">
+		</constant>
+		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
+		</constant>
+		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
+		</constant>
+		<constant name="PARAM_ANIM_OFFSET" value="11" enum="Parameter">
+		</constant>
+		<constant name="PARAM_MAX" value="12" enum="Parameter">
+		</constant>
+		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="2" enum="Flags">
+		</constant>
+		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
+		</constant>
+		<constant name="EMISSION_SHAPE_CIRCLE" value="1" enum="EmissionShape">
+		</constant>
+		<constant name="EMISSION_SHAPE_RECTANGLE" value="2" enum="EmissionShape">
+		</constant>
+		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
+		</constant>
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
+		</constant>
+	</constants>
+</class>

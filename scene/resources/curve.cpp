@@ -30,7 +30,7 @@
 
 #include "curve.h"
 
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 
 template <class T>
 static _FORCE_INLINE_ T _bezier_interp(real_t t, T start, T control_1, T control_2, T end) {
@@ -491,6 +491,7 @@ void Curve::ensure_default_setup(float p_min, float p_max) {
 
 void Curve::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve::get_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve::clear_points);

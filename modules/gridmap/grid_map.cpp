@@ -29,37 +29,19 @@
 /*************************************************************************/
 
 #include "grid_map.h"
-#include "message_queue.h"
-#include "scene/3d/light.h"
-#include "scene/resources/surface_tool.h"
-#include "servers/visual_server.h"
 
-#include "io/marshalls.h"
-#include "os/os.h"
+#include "core/io/marshalls.h"
+#include "core/message_queue.h"
+#include "scene/3d/light.h"
 #include "scene/resources/mesh_library.h"
+#include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
+#include "servers/visual_server.h"
 
 bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 
 	String name = p_name;
 
-	/*	} else if (name=="cells") {
-		PoolVector<int> cells = p_value;
-		int amount=cells.size();
-		PoolVector<int>::Read r = cells.read();
-		ERR_FAIL_COND_V(amount&1,false); // not even
-		cell_map.clear();
-		for(int i=0;i<amount/3;i++) {
-
-
-			IndexKey ik;
-			ik.key=decode_uint64(&r[i*3]);
-			Cell cell;
-			cell.cell=uint32_t(r[i*+1]);
-			cell_map[ik]=cell;
-
-		}
-		_recreate_octant_data();*/
 	if (name == "data") {
 
 		Dictionary d = p_value;
@@ -80,7 +62,9 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 				cell_map[ik] = cell;
 			}
 		}
+
 		_recreate_octant_data();
+
 	} else if (name == "baked_meshes") {
 
 		clear_baked_meshes();
@@ -103,8 +87,9 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 
 		_recreate_octant_data();
 
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -211,13 +196,17 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 #ifndef DISABLE_DEPRECATED
 void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
 
-	WARN_PRINTS("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
+	ERR_EXPLAIN("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
+	WARN_DEPRECATED
+
 	set_mesh_library(p_theme);
 }
 
 Ref<MeshLibrary> GridMap::get_theme() const {
 
-	WARN_PRINTS("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
+	ERR_EXPLAIN("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
+	WARN_DEPRECATED
+
 	return get_mesh_library();
 }
 #endif // DISABLE_DEPRECATED
@@ -486,8 +475,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		if (!mesh_library.is_valid() || !mesh_library->has_item(c.item))
 			continue;
 
-		//print_line("OCTANT, CELLS: "+itos(ii.cells.size()));
-
 		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
 		Vector3 ofs = _get_offset();
 
@@ -524,8 +511,6 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			if (g.collision_debug.is_valid()) {
 				shapes.write[i].shape->add_vertices_to_array(col_debug, xform * shapes[i].local_transform);
 			}
-
-			//print_line("PHIS x: "+xform);
 		}
 
 		// add the item's navmesh at given xform to GridMap's Navigation ancestor
@@ -614,7 +599,6 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	Octant &g = *octant_map[p_key];
 	PhysicsServer::get_singleton()->body_set_state(g.static_body, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
 	PhysicsServer::get_singleton()->body_set_space(g.static_body, get_world()->get_space());
-	//print_line("BODYPOS: "+get_global_transform());
 
 	if (g.collision_debug_instance.is_valid()) {
 		VS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world()->get_scenario());
@@ -908,7 +892,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
 
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary", PROPERTY_USAGE_NOEDITOR), "set_theme", "get_theme");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary", 0), "set_theme", "get_theme");
 #endif // DISABLE_DEPRECATED
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"), "set_mesh_library", "get_mesh_library");
@@ -1082,11 +1066,8 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		}
 	}
 
-	int ofs = 0;
-
 	for (Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool> > >::Element *E = surface_map.front(); E; E = E->next()) {
 
-		print_line("generating mesh " + itos(ofs++) + "/" + itos(surface_map.size()));
 		Ref<ArrayMesh> mesh;
 		mesh.instance();
 		for (Map<Ref<Material>, Ref<SurfaceTool> >::Element *F = E->get().front(); F; F = F->next()) {

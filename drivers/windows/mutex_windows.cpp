@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "mutex_windows.h"
-#include "os/memory.h"
+
+#include "core/os/memory.h"
 
 #ifdef WINDOWS_ENABLED
 

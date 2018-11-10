@@ -1,34 +1,30 @@
+/* clang-format off */
 [vertex]
 
-
-layout(location=0) in highp vec4 vertex_attrib;
+layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 
 void main() {
 
 	gl_Position = vertex_attrib;
-	gl_Position.z=1.0;
+	gl_Position.z = 1.0;
 }
 
+/* clang-format off */
 [fragment]
 
 #define TWO_PI 6.283185307179586476925286766559
 
 #ifdef SSAO_QUALITY_HIGH
-
 #define NUM_SAMPLES (80)
-
 #endif
 
 #ifdef SSAO_QUALITY_LOW
-
 #define NUM_SAMPLES (15)
-
 #endif
 
 #if !defined(SSAO_QUALITY_LOW) && !defined(SSAO_QUALITY_HIGH)
-
 #define NUM_SAMPLES (40)
-
 #endif
 
 // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower
@@ -43,19 +39,21 @@ void main() {
 // This is the number of turns around the circle that the spiral pattern makes.  This should be prime to prevent
 // taps from lining up.  This particular choice was tuned for NUM_SAMPLES == 9
 
-const int ROTATIONS[] = int[]( 1, 1, 2, 3, 2, 5, 2, 3, 2,
-3, 3, 5, 5, 3, 4, 7, 5, 5, 7,
-9, 8, 5, 5, 7, 7, 7, 8, 5, 8,
-11, 12, 7, 10, 13, 8, 11, 8, 7, 14,
-11, 11, 13, 12, 13, 19, 17, 13, 11, 18,
-19, 11, 11, 14, 17, 21, 15, 16, 17, 18,
-13, 17, 11, 17, 19, 18, 25, 18, 19, 19,
-29, 21, 19, 27, 31, 29, 21, 18, 17, 29,
-31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
-19, 27, 21, 25, 39, 29, 17, 21, 27 );
+const int ROTATIONS[] = int[](
+		1, 1, 2, 3, 2, 5, 2, 3, 2,
+		3, 3, 5, 5, 3, 4, 7, 5, 5, 7,
+		9, 8, 5, 5, 7, 7, 7, 8, 5, 8,
+		11, 12, 7, 10, 13, 8, 11, 8, 7, 14,
+		11, 11, 13, 12, 13, 19, 17, 13, 11, 18,
+		19, 11, 11, 14, 17, 21, 15, 16, 17, 18,
+		13, 17, 11, 17, 19, 18, 25, 18, 19, 19,
+		29, 21, 19, 27, 31, 29, 21, 18, 17, 29,
+		31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
+		19, 27, 21, 25, 39, 29, 17, 21, 27);
+/* clang-format on */
 
 //#define NUM_SPIRAL_TURNS (7)
-const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES-1];
+const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES - 1];
 
 uniform sampler2D source_depth; //texunit:0
 uniform highp usampler2D source_depth_mipmaps; //texunit:1
@@ -90,44 +88,41 @@ vec3 reconstructCSPosition(vec2 S, float z) {
 }
 
 vec3 getPosition(ivec2 ssP) {
-    vec3 P;
-    P.z = texelFetch(source_depth, ssP, 0).r;
+	vec3 P;
+	P.z = texelFetch(source_depth, ssP, 0).r;
 
-    P.z = P.z * 2.0 - 1.0;
+	P.z = P.z * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
-    P.z = ((P.z + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+	P.z = ((P.z + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
 #else
-    P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
+	P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
 #endif
-    P.z = -P.z;
+	P.z = -P.z;
 
-    // Offset to pixel center
-    P = reconstructCSPosition(vec2(ssP) + vec2(0.5), P.z);
-    return P;
+	// Offset to pixel center
+	P = reconstructCSPosition(vec2(ssP) + vec2(0.5), P.z);
+	return P;
 }
 
 /** Reconstructs screen-space unit normal from screen-space position */
 vec3 reconstructCSFaceNormal(vec3 C) {
-    return normalize(cross(dFdy(C), dFdx(C)));
+	return normalize(cross(dFdy(C), dFdx(C)));
 }
-
-
 
 /** Returns a unit vector and a screen-space radius for the tap on a unit disk (the caller should scale by the actual disk radius) */
-vec2 tapLocation(int sampleNumber, float spinAngle, out float ssR){
-    // Radius relative to ssR
-    float alpha = (float(sampleNumber) + 0.5) * (1.0 / float(NUM_SAMPLES));
-    float angle = alpha * (float(NUM_SPIRAL_TURNS) * 6.28) + spinAngle;
+vec2 tapLocation(int sampleNumber, float spinAngle, out float ssR) {
+	// Radius relative to ssR
+	float alpha = (float(sampleNumber) + 0.5) * (1.0 / float(NUM_SAMPLES));
+	float angle = alpha * (float(NUM_SPIRAL_TURNS) * 6.28) + spinAngle;
 
-    ssR = alpha;
-    return vec2(cos(angle), sin(angle));
+	ssR = alpha;
+	return vec2(cos(angle), sin(angle));
 }
-
 
 /** Read the camera-space position of the point at screen-space pixel ssP + unitOffset * ssR.  Assumes length(unitOffset) == 1 */
 vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
-    // Derivation:
-    //  mipLevel = floor(log(ssR / MAX_OFFSET));
+	// Derivation:
+	//  mipLevel = floor(log(ssR / MAX_OFFSET));
 	int mipLevel = clamp(int(floor(log2(ssR))) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
 
 	ivec2 ssP = ivec2(ssR * unitOffset) + ssC;
@@ -138,25 +133,22 @@ vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
 	// Manually clamp to the texture size because texelFetch bypasses the texture unit
 	ivec2 mipP = clamp(ssP >> mipLevel, ivec2(0), (screen_size >> mipLevel) - ivec2(1));
 
-
 	if (mipLevel < 1) {
 		//read from depth buffer
 		P.z = texelFetch(source_depth, mipP, 0).r;
 		P.z = P.z * 2.0 - 1.0;
 #ifdef USE_ORTHOGONAL_PROJECTION
-		P.z = ((P.z + (camera_z_far + camera_z_near)/(camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near))/2.0;
+		P.z = ((P.z + (camera_z_far + camera_z_near) / (camera_z_far - camera_z_near)) * (camera_z_far - camera_z_near)) / 2.0;
 #else
 		P.z = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - P.z * (camera_z_far - camera_z_near));
-
 #endif
 		P.z = -P.z;
 
 	} else {
 		//read from mipmaps
-		uint d = texelFetch(source_depth_mipmaps, mipP, mipLevel-1).r;
-		P.z = -(float(d)/65535.0)*camera_z_far;
+		uint d = texelFetch(source_depth_mipmaps, mipP, mipLevel - 1).r;
+		P.z = -(float(d) / 65535.0) * camera_z_far;
 	}
-
 
 	// Offset to pixel center
 	P = reconstructCSPosition(vec2(ssP) + vec2(0.5), P.z);
@@ -164,72 +156,68 @@ vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR) {
 	return P;
 }
 
-
-
 /** Compute the occlusion due to sample with index \a i about the pixel at \a ssC that corresponds
-    to camera-space point \a C with unit normal \a n_C, using maximum screen-space sampling radius \a ssDiskRadius
+	to camera-space point \a C with unit normal \a n_C, using maximum screen-space sampling radius \a ssDiskRadius
 
-    Note that units of H() in the HPG12 paper are meters, not
-    unitless.  The whole falloff/sampling function is therefore
-    unitless.  In this implementation, we factor out (9 / radius).
+	Note that units of H() in the HPG12 paper are meters, not
+	unitless.  The whole falloff/sampling function is therefore
+	unitless.  In this implementation, we factor out (9 / radius).
 
-    Four versions of the falloff function are implemented below
+	Four versions of the falloff function are implemented below
 */
-float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius,in float p_radius, in int tapIndex, in float randomPatternRotationAngle) {
-    // Offset on the unit disk, spun for this pixel
-    float ssR;
-    vec2 unitOffset = tapLocation(tapIndex, randomPatternRotationAngle, ssR);
-    ssR *= ssDiskRadius;
+float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in float p_radius, in int tapIndex, in float randomPatternRotationAngle) {
+	// Offset on the unit disk, spun for this pixel
+	float ssR;
+	vec2 unitOffset = tapLocation(tapIndex, randomPatternRotationAngle, ssR);
+	ssR *= ssDiskRadius;
 
-    // The occluding point in camera space
-    vec3 Q = getOffsetPosition(ssC, unitOffset, ssR);
+	// The occluding point in camera space
+	vec3 Q = getOffsetPosition(ssC, unitOffset, ssR);
 
-    vec3 v = Q - C;
+	vec3 v = Q - C;
 
-    float vv = dot(v, v);
-    float vn = dot(v, n_C);
+	float vv = dot(v, v);
+	float vn = dot(v, n_C);
 
-    const float epsilon = 0.01;
-    float radius2 = p_radius*p_radius;
+	const float epsilon = 0.01;
+	float radius2 = p_radius * p_radius;
 
-    // A: From the HPG12 paper
-    // Note large epsilon to avoid overdarkening within cracks
-    //return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
+	// A: From the HPG12 paper
+	// Note large epsilon to avoid overdarkening within cracks
+	//return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
 
-    // B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
-    float f=max(radius2 - vv, 0.0);
-    return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
+	// B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
+	float f = max(radius2 - vv, 0.0);
+	return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
 
-    // C: Medium contrast (which looks better at high radii), no division.  Note that the
-    // contribution still falls off with radius^2, but we've adjusted the rate in a way that is
-    // more computationally efficient and happens to be aesthetically pleasing.
-    // return 4.0 * max(1.0 - vv * invRadius2, 0.0) * max(vn - bias, 0.0);
+	// C: Medium contrast (which looks better at high radii), no division.  Note that the
+	// contribution still falls off with radius^2, but we've adjusted the rate in a way that is
+	// more computationally efficient and happens to be aesthetically pleasing.
+	// return 4.0 * max(1.0 - vv * invRadius2, 0.0) * max(vn - bias, 0.0);
 
-    // D: Low contrast, no division operation
-    // return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
+	// D: Low contrast, no division operation
+	// return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
 }
 
-
-
 void main() {
-
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_FragCoord.xy);
 
 	// World space point being shaded
 	vec3 C = getPosition(ssC);
 
-/*	if (C.z <= -camera_z_far*0.999) {
-	       // We're on the skybox
-	       visibility=1.0;
-	       return;
-	}*/
+	/*
+	if (C.z <= -camera_z_far * 0.999) {
+		// We're on the skybox
+		visibility=1.0;
+		return;
+	}
+	*/
 
-	//visibility=-C.z/camera_z_far;
+	//visibility = -C.z / camera_z_far;
 	//return;
 #if 0
-	vec3 n_C = texelFetch(source_normal,ssC,0).rgb * 2.0 - 1.0;
+	vec3 n_C = texelFetch(source_normal, ssC, 0).rgb * 2.0 - 1.0;
 #else
 	vec3 n_C = reconstructCSFaceNormal(C);
 	n_C = -n_C;
@@ -251,7 +239,7 @@ void main() {
 #endif
 	float sum = 0.0;
 	for (int i = 0; i < NUM_SAMPLES; ++i) {
-		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius,i, randomPatternRotationAngle);
+		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius, i, randomPatternRotationAngle);
 	}
 
 	float A = max(0.0, 1.0 - sum * intensity_div_r6 * (5.0 / float(NUM_SAMPLES)));
@@ -271,10 +259,10 @@ void main() {
 
 	sum = 0.0;
 	for (int i = 0; i < NUM_SAMPLES; ++i) {
-		sum += sampleAO(ssC, C, n_C, ssDiskRadius,radius2, i, randomPatternRotationAngle);
+		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius2, i, randomPatternRotationAngle);
 	}
 
-	A= min(A,max(0.0, 1.0 - sum * intensity_div_r62 * (5.0 / float(NUM_SAMPLES))));
+	A = min(A, max(0.0, 1.0 - sum * intensity_div_r62 * (5.0 / float(NUM_SAMPLES))));
 #endif
 	// Bilateral box-filter over a quad for free, respecting depth edges
 	// (the difference that this makes is subtle)
@@ -286,8 +274,4 @@ void main() {
 	}
 
 	visibility = A;
-
 }
-
-
-

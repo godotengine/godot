@@ -7,7 +7,7 @@
 		Direct access object to a space in the [Physics2DServer]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/physics/ray-casting.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -19,7 +19,7 @@
 			</argument>
 			<description>
 				Checks how far the shape can travel toward a point. Note that both the shape and the motion are supplied through a [Physics2DShapeQueryParameters] object. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [1, 1].
-				If the shape can not move, the array will be empty ([code]dir.empty()==true[/code]).
+				If the shape can not move, the array will be empty.
 			</description>
 		</method>
 		<method name="collide_shape">
@@ -47,7 +47,7 @@
 				[code]point[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				If the shape did not intersect anything, then an empty dictionary ([code]dir.empty()==true[/code]) is returned instead.
+				If the shape did not intersect anything, then an empty dictionary is returned instead.
 			</description>
 		</method>
 		<method name="intersect_point">
@@ -61,6 +61,10 @@
 			</argument>
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
+			<argument index="4" name="collide_with_bodies" type="bool" default="true">
+			</argument>
+			<argument index="5" name="collide_with_areas" type="bool" default="false">
+			</argument>
 			<description>
 				Checks whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
@@ -68,7 +72,7 @@
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody]s or [Area]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_ray">
@@ -82,6 +86,10 @@
 			</argument>
 			<argument index="3" name="collision_layer" type="int" default="2147483647">
 			</argument>
+			<argument index="4" name="collide_with_bodies" type="bool" default="true">
+			</argument>
+			<argument index="5" name="collide_with_areas" type="bool" default="false">
+			</argument>
 			<description>
 				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
 				[code]collider[/code]: The colliding object.
@@ -91,8 +99,8 @@
 				[code]position[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				If the ray did not intersect anything, then an empty dictionary ([code]dir.empty()==true[/code]) is returned instead.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
+				If the ray did not intersect anything, then an empty dictionary is returned instead.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody]s or [Area]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -109,7 +117,7 @@
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method Physics2DServer.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				The number of intersections can be limited with the second parameter, to reduce the processing time.
+				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
 			</description>
 		</method>
 	</methods>

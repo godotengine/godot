@@ -37,7 +37,11 @@ typedef void RSA;
 typedef void STACK;
 typedef void BIO;
 
+#if defined(WIN32) || defined(_WIN32)
+#define ossl_inline __inline
+#else
 #define ossl_inline inline
+#endif
 
 #define SSL_METHOD_CALL(f, s, ...)        s->method->func->ssl_##f(s, ##__VA_ARGS__)
 #define X509_METHOD_CALL(f, x, ...)       x->method->x509_##f(x, ##__VA_ARGS__)

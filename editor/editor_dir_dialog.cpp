@@ -30,11 +30,11 @@
 
 #include "editor_dir_dialog.h"
 
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "editor_scale.h"
-#include "os/keyboard.h"
-#include "os/os.h"
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 
 	updating = true;

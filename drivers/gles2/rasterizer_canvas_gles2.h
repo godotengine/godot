@@ -34,6 +34,7 @@
 #include "servers/visual/rasterizer.h"
 
 #include "shaders/canvas.glsl.gen.h"
+#include "shaders/lens_distorted.glsl.gen.h"
 
 // #include "shaders/canvas_shadow.glsl.gen.h"
 
@@ -70,6 +71,7 @@ public:
 		bool canvas_texscreen_used;
 		CanvasShaderGLES2 canvas_shader;
 		// CanvasShadowShaderGLES3 canvas_shadow_shader;
+		LensDistortedShaderGLES2 lens_shader;
 
 		bool using_texture_rect;
 		bool using_ninepatch;
@@ -117,6 +119,7 @@ public:
 
 	void _bind_quad_buffer();
 	void draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src);
+	void draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
 
 	void initialize();
 	void finalize();

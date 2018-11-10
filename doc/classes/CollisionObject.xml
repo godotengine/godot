@@ -191,9 +191,9 @@
 	</members>
 	<signals>
 		<signal name="input_event">
-			<argument index="0" name="camera" type="Object">
+			<argument index="0" name="camera" type="Node">
 			</argument>
-			<argument index="1" name="event" type="Object">
+			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<argument index="2" name="click_position" type="Vector3">
 			</argument>

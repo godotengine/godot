@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import os
 
 Import('env')
+
+import os
 
 iphone_lib = [
     'godot_iphone.cpp',

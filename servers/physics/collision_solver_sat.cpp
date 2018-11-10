@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "collision_solver_sat.h"
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.02
 
@@ -43,12 +43,6 @@ struct _CollectorCallback {
 	Vector3 *prev_axis;
 
 	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
-
-		/*
-		if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-			return;
-		print_line("** A: "+p_point_A+" B: "+p_point_B+" D: "+rtos(p_point_A.distance_to(p_point_B)));
-		*/
 
 		if (swap)
 			callback(p_point_B, p_point_A, userdata);
@@ -104,7 +98,6 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 	Vector3 c = rel_A.cross(rel_B).cross(rel_B);
 
-	//if ( Math::abs(rel_A.dot(c) )<_EDGE_IS_VALID_SUPPORT_TRESHOLD ) {
 	if (Math::abs(rel_A.dot(c)) < CMP_EPSILON) {
 
 		// should handle somehow..
@@ -410,26 +403,13 @@ public:
 				supports_B[i] += best_axis * margin_B;
 			}
 		}
-		/*
-		print_line("best depth: "+rtos(best_depth));
-		print_line("best axis: "+(best_axis));
-		for(int i=0;i<support_count_A;i++) {
 
-			print_line("A-"+itos(i)+": "+supports_A[i]);
-		}
-		for(int i=0;i<support_count_B;i++) {
-
-			print_line("B-"+itos(i)+": "+supports_B[i]);
-		}
-*/
 		callback->normal = best_axis;
 		if (callback->prev_axis)
 			*callback->prev_axis = best_axis;
 		_generate_contacts_from_supports(supports_A, support_count_A, supports_B, support_count_B, callback);
 
 		callback->collided = true;
-		//CollisionSolverSW::CallbackResult cbk=NULL;
-		//cbk(Vector3(),Vector3(),NULL);
 	}
 
 	_FORCE_INLINE_ SeparatorAxisTest(const ShapeA *p_shape_A, const Transform &p_transform_A, const ShapeB *p_shape_B, const Transform &p_transform_B, _CollectorCallback *p_callback, real_t p_margin_A = 0, real_t p_margin_B = 0) {
@@ -444,9 +424,6 @@ public:
 	}
 };
 
-/****** SAT TESTS *******/
-/****** SAT TESTS *******/
-/****** SAT TESTS *******/
 /****** SAT TESTS *******/
 
 typedef void (*CollisionFunc)(const ShapeSW *, const Transform &, const ShapeSW *, const Transform &, _CollectorCallback *p_callback, real_t, real_t);

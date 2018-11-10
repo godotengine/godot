@@ -31,11 +31,12 @@
 #include "polygon_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/file_access.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
-#include "os/file_access.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "scene/2d/skeleton_2d.h"
+
 Node2D *Polygon2DEditor::_get_node() const {
 
 	return node;
@@ -82,7 +83,6 @@ void Polygon2DEditor::_notification(int p_what) {
 
 void Polygon2DEditor::_sync_bones() {
 
-	print_line("syncinc");
 	if (!node->has_node(node->get_skeleton())) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
 		error->popup_centered_minsize();
@@ -100,8 +100,6 @@ void Polygon2DEditor::_sync_bones() {
 
 	Array prev_bones = node->call("_get_bones");
 	node->clear_bones();
-
-	print_line("bones in skeleton: " + itos(skeleton->get_bone_count()));
 
 	for (int i = 0; i < skeleton->get_bone_count(); i++) {
 		NodePath path = skeleton->get_path_to(skeleton->get_bone(i));
@@ -769,6 +767,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						node->set_polygon(uv_new);
 					}
 				} break;
+				default: {}
 			}
 
 			if (bone_painting) {

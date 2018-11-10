@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTERSCENE_H
 #define RESOURCEIMPORTERSCENE_H
 
-#include "io/resource_import.h"
+#include "core/io/resource_import.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape.h"
@@ -116,7 +116,7 @@ class ResourceImporterScene : public ResourceImporter {
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_ENABLE,
-		//LIGHT_BAKE_LIGHTMAPS
+		LIGHT_BAKE_LIGHTMAPS
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);

@@ -30,14 +30,14 @@
 
 #include "export_template_manager.h"
 
+#include "core/io/json.h"
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "core/version.h"
 #include "editor_node.h"
 #include "editor_scale.h"
-#include "io/json.h"
-#include "io/zip_io.h"
-#include "os/dir_access.h"
-#include "version.h"
 
 void ExportTemplateManager::_update_template_list() {
 

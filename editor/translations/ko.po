@@ -5818,134 +5818,6 @@ msgstr "도움말 보기"
 msgid "Shader"
 msgstr "셰이더"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Scalar 상수 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Vec 상수 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "RGB 상수 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Scalar 연산자 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Vec 연산자 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Vec Scalar 연산자 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "RGB 연산자 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "회전만 토글"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Scalar 함수 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Vec 함수 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Scalar uniform 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Vec uniform 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "RGB uniform 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "기본값 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "XForm uniform 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "텍스쳐 uniform 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "큐브맵 uniform 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "주석 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "색상 램프 추가/삭제"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "칼라 램프 수정"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "커브 맵 추가/삭제"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "커브맵 수정"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "입력 이름 변경"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "그래프 노드 연결"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "그래프 노드 연결 해제"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "셰이더 그래프 노드 삭제"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "셰이더 그래프 노드 이동"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "그래프 노드 복제"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "셰이더 그래프 노드 삭제"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "에러: 순환 연결 링크"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "에러: 입력 연결 누락"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "셰이더 그래프 노드 추가"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9560,6 +9432,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Scalar 상수 변경"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Vec 상수 변경"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "RGB 상수 변경"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Scalar 연산자 변경"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Vec 연산자 변경"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Vec Scalar 연산자 변경"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "RGB 연산자 변경"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "회전만 토글"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Scalar 함수 변경"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Vec 함수 변경"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Scalar uniform 변경"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Vec uniform 변경"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "RGB uniform 변경"
+
+#~ msgid "Change Default Value"
+#~ msgstr "기본값 변경"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "XForm uniform 변경"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "텍스쳐 uniform 변경"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "큐브맵 uniform 변경"
+
+#~ msgid "Change Comment"
+#~ msgstr "주석 변경"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "색상 램프 추가/삭제"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "칼라 램프 수정"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "커브 맵 추가/삭제"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "커브맵 수정"
+
+#~ msgid "Change Input Name"
+#~ msgstr "입력 이름 변경"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "그래프 노드 연결"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "그래프 노드 연결 해제"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "셰이더 그래프 노드 삭제"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "셰이더 그래프 노드 이동"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "그래프 노드 복제"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "셰이더 그래프 노드 삭제"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "에러: 순환 연결 링크"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "에러: 입력 연결 누락"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "셰이더 그래프 노드 추가"
 
 #~ msgid "Disabled"
 #~ msgstr "비활성화됨"

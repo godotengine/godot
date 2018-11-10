@@ -97,7 +97,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	int lasti = p2->Contour.size() - 1;
 	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (int i = 0; i < p2->Contour.size(); i++) {
+	for (unsigned int i = 0; i < p2->Contour.size(); i++) {
 
 		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
 		if (cur.distance_to(prev) > 0.5) {
@@ -160,7 +160,6 @@ void SpriteEditor::_update_mesh_data() {
 
 	Vector<Vector<Vector2> > lines = bm->clip_opaque_to_polygons(rect, epsilon);
 
-	print_line("lines: " + itos(lines.size()));
 	uv_lines.clear();
 
 	computed_vertices.clear();
@@ -190,21 +189,6 @@ void SpriteEditor::_update_mesh_data() {
 
 			computed_vertices.push_back(vtx);
 		}
-#if 0
-		Vector<Vector<Vector2> > polys = Geometry::decompose_polygon(lines[j]);
-		print_line("polygon: " + itos(polys.size()));
-
-		for (int i = 0; i < polys.size(); i++) {
-			for (int k = 0; k < polys[i].size(); k++) {
-
-				int idxn = (k + 1) % polys[i].size();
-				uv_lines.push_back(polys[i][k]);
-				uv_lines.push_back(polys[i][idxn]);
-			}
-		}
-#endif
-
-#if 1
 
 		Vector<int> poly = Geometry::triangulate_polygon(lines[j]);
 
@@ -218,14 +202,6 @@ void SpriteEditor::_update_mesh_data() {
 				computed_indices.push_back(poly[idx] + index_ofs);
 			}
 		}
-#endif
-
-#if 0
-		for (int i = 0; i < lines[j].size() - 1; i++) {
-			uv_lines.push_back(lines[j][i]);
-			uv_lines.push_back(lines[j][i + 1]);
-		}
-#endif
 	}
 
 	debug_uv->update();

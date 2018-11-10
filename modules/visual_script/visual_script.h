@@ -31,8 +31,8 @@
 #ifndef VISUAL_SCRIPT_H
 #define VISUAL_SCRIPT_H
 
-#include "os/thread.h"
-#include "script_language.h"
+#include "core/os/thread.h"
+#include "core/script_language.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;
@@ -52,6 +52,7 @@ class VisualScriptNode : public Resource {
 	Array _get_default_input_values() const;
 
 	void validate_input_default_values();
+	void _update_input_ports();
 
 protected:
 	void _notification(int p_what);

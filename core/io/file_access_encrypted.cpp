@@ -30,9 +30,9 @@
 
 #include "file_access_encrypted.h"
 
+#include "core/os/copymem.h"
+#include "core/print_string.h"
 #include "core/variant.h"
-#include "os/copymem.h"
-#include "print_string.h"
 
 #include "thirdparty/misc/aes256.h"
 #include "thirdparty/misc/md5.h"
@@ -43,7 +43,6 @@
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
 
-	//print_line("open and parse!");
 	ERR_FAIL_COND_V(file != NULL, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 

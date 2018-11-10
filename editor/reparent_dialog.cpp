@@ -30,7 +30,7 @@
 
 #include "reparent_dialog.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 

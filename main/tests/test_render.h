@@ -35,7 +35,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestRender {
 

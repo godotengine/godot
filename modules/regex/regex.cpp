@@ -205,6 +205,8 @@ Error RegEx::compile(const String &p_pattern) {
 
 		code = pcre2_compile_16(p, pattern.length(), flags, &err, &offset, cctx);
 
+		pcre2_compile_context_free_16(cctx);
+
 		if (!code) {
 			PCRE2_UCHAR16 buf[256];
 			pcre2_get_error_message_16(err, buf, 256);
@@ -220,6 +222,8 @@ Error RegEx::compile(const String &p_pattern) {
 		PCRE2_SPTR32 p = (PCRE2_SPTR32)pattern.c_str();
 
 		code = pcre2_compile_32(p, pattern.length(), flags, &err, &offset, cctx);
+
+		pcre2_compile_context_free_32(cctx);
 
 		if (!code) {
 			PCRE2_UCHAR32 buf[256];
@@ -285,6 +289,8 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 		if (res < 0) {
 			pcre2_match_data_free_32(match);
+			pcre2_match_context_free_32(mctx);
+
 			return NULL;
 		}
 

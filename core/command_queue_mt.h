@@ -31,11 +31,11 @@
 #ifndef COMMAND_QUEUE_MT_H
 #define COMMAND_QUEUE_MT_H
 
-#include "os/memory.h"
-#include "os/mutex.h"
-#include "os/semaphore.h"
-#include "simple_type.h"
-#include "typedefs.h"
+#include "core/os/memory.h"
+#include "core/os/mutex.h"
+#include "core/os/semaphore.h"
+#include "core/simple_type.h"
+#include "core/typedefs.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

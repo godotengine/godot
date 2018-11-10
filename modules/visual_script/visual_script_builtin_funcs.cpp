@@ -30,13 +30,13 @@
 
 #include "visual_script_builtin_funcs.h"
 
-#include "class_db.h"
-#include "func_ref.h"
-#include "io/marshalls.h"
-#include "math_funcs.h"
-#include "os/os.h"
-#include "reference.h"
-#include "variant_parser.h"
+#include "core/class_db.h"
+#include "core/func_ref.h"
+#include "core/io/marshalls.h"
+#include "core/math/math_funcs.h"
+#include "core/os/os.h"
+#include "core/reference.h"
+#include "core/variant_parser.h"
 
 const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX] = {
 	"sin",
@@ -260,7 +260,12 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case MATH_SQRT: {
 			return PropertyInfo(Variant::REAL, "s");
 		} break;
-		case MATH_ATAN2:
+		case MATH_ATAN2: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::REAL, "y");
+			else
+				return PropertyInfo(Variant::REAL, "x");
+		} break;
 		case MATH_FMOD:
 		case MATH_FPOSMOD: {
 			if (p_idx == 0)
@@ -1144,15 +1149,12 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 		case VisualScriptBuiltinFunc::TEXT_PRINTERR: {
 
 			String str = *p_inputs[0];
-
-			//str+="\n";
 			print_error(str);
 
 		} break;
 		case VisualScriptBuiltinFunc::TEXT_PRINTRAW: {
-			String str = *p_inputs[0];
 
-			//str+="\n";
+			String str = *p_inputs[0];
 			OS::get_singleton()->print("%s", str.utf8().get_data());
 
 		} break;

@@ -31,11 +31,11 @@
 #ifndef AUDIOEFFECTRECORD_H
 #define AUDIOEFFECTRECORD_H
 
+#include "core/io/marshalls.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "core/os/thread.h"
 #include "editor/import/resource_importer_wav.h"
-#include "io/marshalls.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_effect.h"
 #include "servers/audio_server.h"
@@ -49,7 +49,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 
 	bool is_recording;
 	Thread *io_thread;
-	bool thread_active = false;
+	bool thread_active;
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
@@ -66,7 +66,10 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 public:
 	void init();
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
-	virtual bool process_silence();
+	virtual bool process_silence() const;
+
+	AudioEffectRecordInstance() :
+			thread_active(false) {}
 };
 
 class AudioEffectRecord : public AudioEffect {

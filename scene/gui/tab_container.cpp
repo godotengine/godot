@@ -30,7 +30,7 @@
 
 #include "tab_container.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"

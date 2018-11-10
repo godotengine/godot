@@ -30,10 +30,10 @@
 
 #include "gdscript_tokenizer.h"
 
+#include "core/io/marshalls.h"
+#include "core/map.h"
+#include "core/print_string.h"
 #include "gdscript_functions.h"
-#include "io/marshalls.h"
-#include "map.h"
-#include "print_string.h"
 
 const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"Empty",
@@ -112,10 +112,11 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"rpc",
 	"sync",
 	"master",
+	"puppet",
 	"slave",
 	"remotesync",
 	"mastersync",
-	"slavesync",
+	"puppetsync",
 	"'['",
 	"']'",
 	"'{'",
@@ -127,8 +128,8 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"'.'",
 	"'?'",
 	"':'",
-	"'->'",
 	"'$'",
+	"'->'",
 	"'\\n'",
 	"PI",
 	"TAU",
@@ -210,10 +211,11 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_REMOTE, "remote" },
 	{ GDScriptTokenizer::TK_PR_MASTER, "master" },
 	{ GDScriptTokenizer::TK_PR_SLAVE, "slave" },
+	{ GDScriptTokenizer::TK_PR_PUPPET, "puppet" },
 	{ GDScriptTokenizer::TK_PR_SYNC, "sync" },
 	{ GDScriptTokenizer::TK_PR_REMOTESYNC, "remotesync" },
 	{ GDScriptTokenizer::TK_PR_MASTERSYNC, "mastersync" },
-	{ GDScriptTokenizer::TK_PR_SLAVESYNC, "slavesync" },
+	{ GDScriptTokenizer::TK_PR_PUPPETSYNC, "puppetsync" },
 	{ GDScriptTokenizer::TK_PR_CONST, "const" },
 	{ GDScriptTokenizer::TK_PR_ENUM, "enum" },
 	//controlflow
@@ -258,11 +260,11 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_SIGNAL:
 		case TK_PR_REMOTE:
 		case TK_PR_MASTER:
-		case TK_PR_SLAVE:
+		case TK_PR_PUPPET:
 		case TK_PR_SYNC:
 		case TK_PR_REMOTESYNC:
 		case TK_PR_MASTERSYNC:
-		case TK_PR_SLAVESYNC:
+		case TK_PR_PUPPETSYNC:
 			return true;
 
 		// Literal for non-variables only:
@@ -937,7 +939,6 @@ void GDScriptTokenizerText::_advance() {
 						_make_constant(val);
 					} else if (period_found || exponent_found) {
 						double val = str.to_double();
-						//print_line("*%*%*%*% to convert: "+str+" result: "+rtos(val));
 						_make_constant(val);
 					} else {
 						int64_t val = str.to_int64();

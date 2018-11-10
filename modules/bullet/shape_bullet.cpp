@@ -34,8 +34,10 @@
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
+#include "core/project_settings.h"
 #include "shape_owner_bullet.h"
 
+#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <btBulletCollisionCommon.h>
@@ -63,7 +65,8 @@ btCollisionShape *ShapeBullet::prepare(btCollisionShape *p_btShape) const {
 
 void ShapeBullet::notifyShapeChanged() {
 	for (Map<ShapeOwnerBullet *, int>::Element *E = owners.front(); E; E = E->next()) {
-		static_cast<ShapeOwnerBullet *>(E->key())->on_shape_changed(this);
+		ShapeOwnerBullet *owner = static_cast<ShapeOwnerBullet *>(E->key());
+		owner->shape_changed(owner->find_shape(this));
 	}
 }
 
@@ -340,6 +343,9 @@ void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
 }
 
 btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
+	if (!vertices.size())
+		// This is necessary since 0 vertices
+		return prepare(ShapeBullet::create_shape_empty());
 	btCollisionShape *cs(ShapeBullet::create_shape_convex(vertices));
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
@@ -355,7 +361,8 @@ ConcavePolygonShapeBullet::ConcavePolygonShapeBullet() :
 ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 	if (meshShape) {
 		delete meshShape->getMeshInterface();
-		delete meshShape;
+		delete meshShape->getTriangleInfoMap();
+		bulletdelete(meshShape);
 	}
 	faces = PoolVector<Vector3>();
 }
@@ -377,6 +384,7 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 	if (meshShape) {
 		/// Clear previous created shape
 		delete meshShape->getMeshInterface();
+		delete meshShape->getTriangleInfoMap();
 		bulletdelete(meshShape);
 	}
 	int src_face_count = faces.size();
@@ -394,16 +402,22 @@ void ConcavePolygonShapeBullet::setup(PoolVector<Vector3> p_faces) {
 		btVector3 supVec_1;
 		btVector3 supVec_2;
 		for (int i = 0; i < src_face_count; ++i) {
-			G_TO_B(facesr[i * 3], supVec_0);
+			G_TO_B(facesr[i * 3 + 0], supVec_0);
 			G_TO_B(facesr[i * 3 + 1], supVec_1);
 			G_TO_B(facesr[i * 3 + 2], supVec_2);
 
-			shapeInterface->addTriangle(supVec_0, supVec_1, supVec_2);
+			// Inverted from standard godot otherwise btGenerateInternalEdgeInfo generates wrong edge info
+			shapeInterface->addTriangle(supVec_2, supVec_1, supVec_0);
 		}
 
 		const bool useQuantizedAabbCompression = true;
 
 		meshShape = bulletnew(btBvhTriangleMeshShape(shapeInterface, useQuantizedAabbCompression));
+
+		if (GLOBAL_DEF("physics/3d/smooth_trimesh_collision", false)) {
+			btTriangleInfoMap *triangleInfoMap = new btTriangleInfoMap();
+			btGenerateInternalEdgeInfo(meshShape, triangleInfoMap);
+		}
 	} else {
 		meshShape = NULL;
 		ERR_PRINT("The faces count are 0, the mesh shape cannot be created");
@@ -418,6 +432,7 @@ btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_
 		cs = ShapeBullet::create_shape_empty();
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
+	cs->setMargin(0);
 	return cs;
 }
 

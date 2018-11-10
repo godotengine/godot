@@ -147,10 +147,10 @@ Area2PairSW::~Area2PairSW() {
 
 	if (colliding) {
 
-		if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
+		if (area_b->has_area_monitor_callback())
 			area_b->remove_area_from_query(area_a, shape_a, shape_b);
 
-		if (area_a->has_area_monitor_callback() && area_b->is_monitorable())
+		if (area_a->has_area_monitor_callback())
 			area_a->remove_area_from_query(area_b, shape_b, shape_a);
 	}
 

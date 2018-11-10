@@ -31,7 +31,7 @@
 #ifndef EDITOR_IMPORT_PLUGIN_H
 #define EDITOR_IMPORT_PLUGIN_H
 
-#include "io/resource_import.h"
+#include "core/io/resource_import.h"
 
 class EditorImportPlugin : public ResourceImporter {
 	GDCLASS(EditorImportPlugin, Reference)

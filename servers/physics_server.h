@@ -31,8 +31,8 @@
 #ifndef PHYSICS_SERVER_H
 #define PHYSICS_SERVER_H
 
-#include "object.h"
-#include "resource.h"
+#include "core/object.h"
+#include "core/resource.h"
 
 class PhysicsDirectSpaceState;
 
@@ -360,7 +360,6 @@ public:
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
 		BODY_MODE_RIGID,
-		BODY_MODE_SOFT,
 		BODY_MODE_CHARACTER
 	};
 

@@ -42,8 +42,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 	ERR_FAIL_NULL_V(p_source, ERR_INVALID_DATA);
 	ERR_FAIL_NULL_V(p_target, ERR_INVALID_DATA);
 
-	uint32_t awaiter_handle = MonoGCHandle::make_strong_handle(p_awaiter);
-	Ref<SignalAwaiterHandle> sa_con = memnew(SignalAwaiterHandle(awaiter_handle));
+	Ref<SignalAwaiterHandle> sa_con = memnew(SignalAwaiterHandle(p_awaiter));
 #ifdef DEBUG_ENABLED
 	sa_con->set_connection_target(p_target);
 #endif
@@ -119,8 +118,8 @@ void SignalAwaiterHandle::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &SignalAwaiterHandle::_signal_callback, MethodInfo("_signal_callback"));
 }
 
-SignalAwaiterHandle::SignalAwaiterHandle(uint32_t p_managed_handle) :
-		MonoGCHandle(p_managed_handle) {
+SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
+		MonoGCHandle(MonoGCHandle::new_strong_handle(p_managed), STRONG_HANDLE) {
 
 #ifdef DEBUG_ENABLED
 	conn_target_id = 0;
@@ -142,7 +141,7 @@ SignalAwaiterHandle::~SignalAwaiterHandle() {
 
 			if (exc) {
 				GDMonoUtils::set_pending_exception(exc);
-				ERR_FAIL_V();
+				ERR_FAIL();
 			}
 		}
 	}

@@ -89,6 +89,7 @@
 			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled">
+			If [code]true[/code] the [code]LineEdit[/code] will show a clear button if [code]text[/code] is not empty.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code] the context menu will appear when right clicked.
@@ -169,6 +170,7 @@
 			Undoes the previous action.
 		</constant>
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
+			Reverse the last undo action.
 		</constant>
 		<constant name="MENU_MAX" value="7" enum="MenuItems">
 		</constant>

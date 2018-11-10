@@ -30,8 +30,8 @@
 
 #include "message_queue.h"
 
-#include "project_settings.h"
-#include "script_language.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 
 MessageQueue *MessageQueue::singleton = NULL;
 
@@ -50,9 +50,9 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
+		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
@@ -101,9 +101,9 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
+		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
@@ -134,9 +134,9 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
 			type = ObjectDB::get_instance(p_id)->get_class();
-		print_line("failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
+		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings");
+		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 	}
 
@@ -210,8 +210,7 @@ void MessageQueue::statistics() {
 			}
 
 			//object was deleted
-			//WARN_PRINT("Object was deleted while awaiting a callback")
-			//should it print a warning?
+			print_line("Object was deleted while awaiting a callback");
 		} else {
 
 			null_count++;
@@ -226,17 +225,14 @@ void MessageQueue::statistics() {
 	print_line("NULL count: " + itos(null_count));
 
 	for (Map<StringName, int>::Element *E = set_count.front(); E; E = E->next()) {
-
 		print_line("SET " + E->key() + ": " + itos(E->get()));
 	}
 
 	for (Map<StringName, int>::Element *E = call_count.front(); E; E = E->next()) {
-
 		print_line("CALL " + E->key() + ": " + itos(E->get()));
 	}
 
 	for (Map<int, int>::Element *E = notify_count.front(); E; E = E->next()) {
-
 		print_line("NOTIFY " + itos(E->key()) + ": " + itos(E->get()));
 	}
 }
@@ -268,7 +264,6 @@ void MessageQueue::flush() {
 
 	if (buffer_end > buffer_max_used) {
 		buffer_max_used = buffer_end;
-		//statistics();
 	}
 
 	uint32_t read_pos = 0;
@@ -343,6 +338,7 @@ MessageQueue::MessageQueue() {
 	buffer_end = 0;
 	buffer_max_used = 0;
 	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_kb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_kb", PROPERTY_HINT_RANGE, "0,2048,1,or_greater"));
 	buffer_size *= 1024;
 	buffer = memnew_arr(uint8_t, buffer_size);
 }

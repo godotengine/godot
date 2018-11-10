@@ -1,7 +1,38 @@
+/*************************************************************************/
+/*  animation_tree.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_tree.h"
+
 #include "animation_blend_tree.h"
+#include "core/engine.h"
 #include "core/method_bind_ext.gen.inc"
-#include "engine.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
@@ -109,12 +140,12 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
 	//inputs.write[p_input].last_pass = state->last_pass;
-	float activity=0;
+	float activity = 0;
 	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), NULL, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
 	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
 
-	if (activity_ptr && p_input<activity_ptr->size()) {
+	if (activity_ptr && p_input < activity_ptr->size()) {
 		activity_ptr->write[p_input].last_pass = state->last_pass;
 		activity_ptr->write[p_input].activity = activity;
 	}
@@ -161,7 +192,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			case FILTER_IGNORE:
 				break; //will not happen anyway
 			case FILTER_PASS: {
-				//values filtered pass, the rest dont
+				//values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] == 0) //not filtered, does not pass
 						continue;
@@ -175,7 +206,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			} break;
 			case FILTER_STOP: {
 
-				//values filtered dont pass, the rest are blended
+				//values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] > 0) //filtered, does not pass
@@ -261,7 +292,7 @@ String AnimationNode::get_caption() const {
 }
 
 void AnimationNode::add_input(const String &p_name) {
-	//root nodes cant add inputs
+	//root nodes can't add inputs
 	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL)
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
@@ -697,6 +728,28 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
+
+	ObjectID current_animation_player = 0;
+
+	if (player) {
+		current_animation_player = player->get_instance_id();
+	}
+
+	if (last_animation_player != current_animation_player) {
+
+		if (last_animation_player) {
+			Object *old_player = ObjectDB::get_instance(last_animation_player);
+			if (old_player) {
+				old_player->disconnect("caches_cleared", this, "_clear_caches");
+			}
+		}
+
+		if (player) {
+			player->connect("caches_cleared", this, "_clear_caches");
+		}
+
+		last_animation_player = current_animation_player;
+	}
 
 	if (!player) {
 		ERR_PRINT("AnimationTree: path points to a node not an AnimationPlayer, disabling playback");
@@ -1174,7 +1227,7 @@ void AnimationTree::_process_graph(float p_delta) {
 					t->object->set_indexed(t->subpath, t->value);
 
 				} break;
-				default: {} //the rest dont matter
+				default: {} //the rest don't matter
 			}
 		}
 	}
@@ -1197,6 +1250,13 @@ void AnimationTree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_caches();
+		if (last_animation_player) {
+
+			Object *old_player = ObjectDB::get_instance(last_animation_player);
+			if (old_player) {
+				old_player->disconnect("caches_cleared", this, "_clear_caches");
+			}
+		}
 	}
 }
 
@@ -1296,13 +1356,13 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 	if (node->get_input_count() && !input_activity_map.has(p_base_path)) {
 
 		Vector<Activity> activity;
-		for(int i=0;i<node->get_input_count();i++) {
+		for (int i = 0; i < node->get_input_count(); i++) {
 			Activity a;
-			a.last_pass=0;
+			a.last_pass = 0;
 			activity.push_back(a);
 		}
 		input_activity_map[p_base_path] = activity;
-		input_activity_map_get[String(p_base_path).substr(0,String(p_base_path).length()-1)]=&input_activity_map[p_base_path];
+		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
 	}
 
 	List<PropertyInfo> plist;
@@ -1402,14 +1462,14 @@ void AnimationTree::rename_parameter(const String &p_base, const String &p_new_b
 	_update_properties();
 }
 
-float AnimationTree::get_connection_activity(const StringName& p_path,int p_connection) const {
+float AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
 	}
 	const Vector<Activity> *activity = input_activity_map_get[p_path];
 
-	if (!activity || p_connection<0 || p_connection>=activity->size()) {
+	if (!activity || p_connection < 0 || p_connection >= activity->size()) {
 		return 0;
 	}
 
@@ -1419,7 +1479,6 @@ float AnimationTree::get_connection_activity(const StringName& p_path,int p_conn
 
 	return (*activity)[p_connection].activity;
 }
-
 
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &AnimationTree::set_active);
@@ -1447,6 +1506,7 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
+	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
@@ -1468,6 +1528,7 @@ AnimationTree::AnimationTree() {
 	setup_pass = 1;
 	started = true;
 	properties_dirty = true;
+	last_animation_player = 0;
 }
 
 AnimationTree::~AnimationTree() {

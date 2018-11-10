@@ -31,6 +31,7 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
+#include "core/script_language.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
@@ -44,7 +45,6 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/text_file.h"
-#include "script_language.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
@@ -67,7 +67,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void popup(const Vector<String> &p_functions, bool p_dontclear = false);
+	void popup_dialog(const Vector<String> &p_functions, bool p_dontclear = false);
 	ScriptEditorQuickOpen();
 };
 

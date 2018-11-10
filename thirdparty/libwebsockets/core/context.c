@@ -134,7 +134,7 @@ lws_protocol_vh_priv_get(struct lws_vhost *vhost,
 {
 	int n = 0;
 
-	if (!vhost || !vhost->protocol_vh_privs)
+	if (!vhost || !vhost->protocol_vh_privs || !prot)
 		return NULL;
 
 	while (n < vhost->count_protocols && &vhost->protocols[n] != prot)
@@ -808,7 +808,7 @@ lws_create_vhost(struct lws_context *context,
 
 #ifdef LWS_WITH_ACCESS_LOG
 	if (info->log_filepath) {
-		vh->log_fd = open(info->log_filepath,
+		vh->log_fd = lws_open(info->log_filepath,
 				  O_CREAT | O_APPEND | O_RDWR, 0600);
 		if (vh->log_fd == (int)LWS_INVALID_FILE) {
 			lwsl_err("unable to open log filepath %s\n",
@@ -936,24 +936,29 @@ lws_create_event_pipes(struct lws_context *context)
 		wsi->tsi = n;
 		wsi->vhost = NULL;
 		wsi->event_pipe = 1;
+		wsi->desc.sockfd = LWS_SOCK_INVALID;
+		context->pt[n].pipe_wsi = wsi;
+		context->count_wsi_allocated++;
 
-		if (lws_plat_pipe_create(wsi)) {
-			lws_free(wsi);
+		if (lws_plat_pipe_create(wsi))
+			/*
+			 * platform code returns 0 if it actually created pipes
+			 * and initialized pt->dummy_pipe_fds[].  If it used
+			 * some other mechanism outside of signaling in the
+			 * normal event loop, we skip treating the pipe as
+			 * related to dummy_pipe_fds[], adding it to the fds,
+			 * etc.
+			 */
 			continue;
-		}
+
 		wsi->desc.sockfd = context->pt[n].dummy_pipe_fds[0];
 		lwsl_debug("event pipe fd %d\n", wsi->desc.sockfd);
-
-		context->pt[n].pipe_wsi = wsi;
 
 		if (context->event_loop_ops->accept)
 			context->event_loop_ops->accept(wsi);
 
 		if (__insert_wsi_socket_into_fds(context, wsi))
 			return 1;
-
-		//lws_change_pollfd(context->pt[n].pipe_wsi, 0, LWS_POLLIN);
-		context->count_wsi_allocated++;
 	}
 
 	return 0;

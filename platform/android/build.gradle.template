@@ -1,10 +1,11 @@
 buildscript {
 	repositories {
+		google()
 		jcenter()
 		$$GRADLE_REPOSITORY_URLS$$
 	}
 	dependencies {
-		classpath 'com.android.tools.build:gradle:2.3.3'
+		classpath 'com.android.tools.build:gradle:3.2.0'
 		$$GRADLE_CLASSPATH$$
 	}
 }
@@ -13,9 +14,9 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
-    	jcenter()
 	mavenCentral()
 	google()
+	jcenter()
 	$$GRADLE_REPOSITORY_URLS$$
     }
 }
@@ -32,7 +33,7 @@ android {
 	}
 
 	compileSdkVersion 27
-	buildToolsVersion "27.0.3"
+	buildToolsVersion "28.0.3"
 	useLibrary 'org.apache.http.legacy'
 
 	packagingOptions {
@@ -75,9 +76,11 @@ android {
 			$$GRADLE_JNI_DIRS$$
 		]
 	}
+
 	applicationVariants.all { variant ->
-		// ApplicationVariant is undocumented, but this method is widely used; may break with another version of the Android Gradle plugin
-		variant.outputs.get(0).setOutputFile(new File("${projectDir}/../../../bin", "android_${variant.name}.apk"))
+		variant.outputs.all { output ->
+			output.outputFileName = "../../../../../../../bin/android_${variant.name}.apk"
+		}
 	}
 }
 

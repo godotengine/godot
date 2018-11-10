@@ -31,7 +31,8 @@
 #ifdef COREMIDI_ENABLED
 
 #include "core_midi.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
 
 #include <CoreAudio/HostTime.h>
 #include <CoreServices/CoreServices.h>
@@ -50,13 +51,13 @@ Error MIDIDriverCoreMidi::open() {
 	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
 	CFRelease(name);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIClientCreate failed: " + String(GetMacOSStatusErrorString(result)));
+		ERR_PRINTS("MIDIClientCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
 	result = MIDIInputPortCreate(client, CFSTR("Godot Input"), MIDIDriverCoreMidi::read, (void *)this, &port_in);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIInputPortCreate failed: " + String(GetMacOSStatusErrorString(result)));
+		ERR_PRINTS("MIDIInputPortCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
@@ -64,7 +65,7 @@ Error MIDIDriverCoreMidi::open() {
 	for (int i = 0; i < sources; i++) {
 
 		MIDIEndpointRef source = MIDIGetSource(i);
-		if (source != NULL) {
+		if (source) {
 			MIDIPortConnectSource(port_in, source, (void *)this);
 			connected_sources.insert(i, source);
 		}
@@ -90,6 +91,25 @@ void MIDIDriverCoreMidi::close() {
 		MIDIClientDispose(client);
 		client = 0;
 	}
+}
+
+PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
+
+	PoolStringArray list;
+
+	for (int i = 0; i < connected_sources.size(); i++) {
+		MIDIEndpointRef source = connected_sources[i];
+		CFStringRef ref = NULL;
+		char name[256];
+
+		MIDIObjectGetStringProperty(source, kMIDIPropertyDisplayName, &ref);
+		CFStringGetCString(ref, name, sizeof(name), kCFStringEncodingUTF8);
+		CFRelease(ref);
+
+		list.push_back(name);
+	}
+
+	return list;
 }
 
 MIDIDriverCoreMidi::MIDIDriverCoreMidi() {

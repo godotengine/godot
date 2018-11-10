@@ -31,13 +31,13 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "class_db.h"
-#include "map.h"
-#include "node_path.h"
-#include "object.h"
-#include "project_settings.h"
+#include "core/class_db.h"
+#include "core/map.h"
+#include "core/node_path.h"
+#include "core/object.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 #include "scene/main/scene_tree.h"
-#include "script_language.h"
 
 class Viewport;
 class SceneState;
@@ -166,6 +166,7 @@ private:
 	void _propagate_enter_tree();
 	void _propagate_ready();
 	void _propagate_exit_tree();
+	void _propagate_after_exit_tree();
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
@@ -256,6 +257,8 @@ public:
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
+	Node *find_parent(const String &p_mask) const;
+
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, NULL);
 		return data.tree;
@@ -300,7 +303,7 @@ public:
 	String get_filename() const;
 
 	void set_editable_instance(Node *p_node, bool p_editable);
-	bool is_editable_instance(Node *p_node) const;
+	bool is_editable_instance(const Node *p_node) const;
 	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
 	HashMap<NodePath, int> get_editable_instances() const;
 

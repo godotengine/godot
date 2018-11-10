@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "sky_box.h"
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 void Sky::set_radiance_size(RadianceSize p_size) {
 	ERR_FAIL_INDEX(p_size, RADIANCE_SIZE_MAX);

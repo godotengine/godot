@@ -31,7 +31,7 @@
 #ifndef IMAGE_LOADER_BMP_H
 #define IMAGE_LOADER_BMP_H
 
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 class ImageLoaderBMP : public ImageFormatLoader {
 protected:

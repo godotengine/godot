@@ -33,9 +33,9 @@
 #endif
 
 #include "crash_handler_x11.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "main/main.h"
-#include "os/os.h"
-#include "project_settings.h"
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
@@ -45,8 +45,9 @@
 #include <stdlib.h>
 
 static void handle_crash(int sig) {
-	if (OS::get_singleton() == NULL)
-		return;
+	if (OS::get_singleton() == NULL) {
+		abort();
+	}
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
@@ -119,6 +120,7 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+	disable();
 }
 
 void CrashHandler::disable() {

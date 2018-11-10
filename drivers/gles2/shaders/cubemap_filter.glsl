@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
@@ -9,19 +10,26 @@ precision mediump int;
 #endif
 
 attribute highp vec2 vertex; // attrib:0
+/* clang-format on */
 attribute highp vec2 uv; // attrib:4
 
 varying highp vec2 uv_interp;
 
 void main() {
 
-	uv_interp=uv;
-	gl_Position=vec4(vertex,0,1);
+	uv_interp = uv;
+	gl_Position = vec4(vertex, 0, 1);
 }
 
+/* clang-format off */
 [fragment]
 
-#extension GL_ARB_shader_texture_lod : require
+#extension GL_ARB_shader_texture_lod : enable
+
+#ifndef GL_ARB_shader_texture_lod
+#define texture2DLod(img, coord, lod) texture2D(img, coord)
+#define textureCubeLod(img, coord, lod) textureCube(img, coord)
+#endif
 
 #ifdef USE_GLES_OVER_GL
 #define mediump
@@ -36,6 +44,7 @@ uniform sampler2D source_panorama; //texunit:0
 #else
 uniform samplerCube source_cube; //texunit:0
 #endif
+/* clang-format on */
 
 uniform int face_id;
 uniform float roughness;
@@ -60,17 +69,15 @@ uniform sampler2D radical_inverse_vdc_cache; // texunit:1
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
 	vec2 st = vec2(
-	        atan(normal.x, normal.z),
-	        acos(normal.y)
-	);
+			atan(normal.x, normal.z),
+			acos(normal.y));
 
-	if(st.x < 0.0)
-		st.x += M_PI*2.0;
+	if (st.x < 0.0)
+		st.x += M_PI * 2.0;
 
-	st/=vec2(M_PI*2.0,M_PI);
+	st /= vec2(M_PI * 2.0, M_PI);
 
-	return texture2DLod(pano,st,0.0);
-
+	return texture2DLod(pano, st, 0.0);
 }
 
 #endif
@@ -79,24 +86,24 @@ vec3 texelCoordToVec(vec2 uv, int faceID) {
 	mat3 faceUvVectors[6];
 
 	// -x
-	faceUvVectors[0][0] = vec3(0.0, 0.0, 1.0);  // u -> +z
+	faceUvVectors[0][0] = vec3(0.0, 0.0, 1.0); // u -> +z
 	faceUvVectors[0][1] = vec3(0.0, -1.0, 0.0); // v -> -y
 	faceUvVectors[0][2] = vec3(-1.0, 0.0, 0.0); // -x face
 
 	// +x
 	faceUvVectors[1][0] = vec3(0.0, 0.0, -1.0); // u -> -z
 	faceUvVectors[1][1] = vec3(0.0, -1.0, 0.0); // v -> -y
-	faceUvVectors[1][2] = vec3(1.0, 0.0, 0.0);  // +x face
+	faceUvVectors[1][2] = vec3(1.0, 0.0, 0.0); // +x face
 
 	// -y
-	faceUvVectors[2][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
+	faceUvVectors[2][0] = vec3(1.0, 0.0, 0.0); // u -> +x
 	faceUvVectors[2][1] = vec3(0.0, 0.0, -1.0); // v -> -z
 	faceUvVectors[2][2] = vec3(0.0, -1.0, 0.0); // -y face
 
 	// +y
-	faceUvVectors[3][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
-	faceUvVectors[3][1] = vec3(0.0, 0.0, 1.0);  // v -> +z
-	faceUvVectors[3][2] = vec3(0.0, 1.0, 0.0);  // +y face
+	faceUvVectors[3][0] = vec3(1.0, 0.0, 0.0); // u -> +x
+	faceUvVectors[3][1] = vec3(0.0, 0.0, 1.0); // v -> +z
+	faceUvVectors[3][2] = vec3(0.0, 1.0, 0.0); // +y face
 
 	// -z
 	faceUvVectors[4][0] = vec3(-1.0, 0.0, 0.0); // u -> -x
@@ -104,9 +111,9 @@ vec3 texelCoordToVec(vec2 uv, int faceID) {
 	faceUvVectors[4][2] = vec3(0.0, 0.0, -1.0); // -z face
 
 	// +z
-	faceUvVectors[5][0] = vec3(1.0, 0.0, 0.0);  // u -> +x
+	faceUvVectors[5][0] = vec3(1.0, 0.0, 0.0); // u -> +x
 	faceUvVectors[5][1] = vec3(0.0, -1.0, 0.0); // v -> -y
-	faceUvVectors[5][2] = vec3(0.0, 0.0, 1.0);  // +z face
+	faceUvVectors[5][2] = vec3(0.0, 0.0, 1.0); // +z face
 
 	// out = u * s_faceUv[0] + v * s_faceUv[1] + s_faceUv[2].
 	vec3 result = (faceUvVectors[faceID][0] * uv.x) + (faceUvVectors[faceID][1] * uv.y) + faceUvVectors[faceID][2];
@@ -118,7 +125,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N) {
 
 	// Compute distribution direction
 	float Phi = 2.0 * M_PI * Xi.x;
-	float CosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
+	float CosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));
 	float SinTheta = sqrt(1.0 - CosTheta * CosTheta);
 
 	// Convert to spherical direction
@@ -160,28 +167,30 @@ void main() {
 
 		vec3 H = ImportanceSampleGGX(xi, roughness, N);
 		vec3 V = N;
-		vec3 L = normalize(2.0 * dot(V, H) * H - V);
+		vec3 L = (2.0 * dot(V, H) * H - V);
 
 		float NdotL = clamp(dot(N, L), 0.0, 1.0);
 
 		if (NdotL > 0.0) {
 
 #ifdef USE_SOURCE_PANORAMA
-			sum.rgb += texturePanorama(source_panorama, H).rgb * NdotL;
+			vec3 val = texturePanorama(source_panorama, L).rgb;
 #else
-			H.y = -H.y;
-			sum.rgb += textureCubeLod(source_cube, H, 0.0).rgb * NdotL;
+			vec3 val = textureCubeLod(source_cube, L, 0.0).rgb;
 #endif
+			//mix using Linear, to approximate high end back-end
+			val = mix(pow((val + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), val * (1.0 / 12.92), vec3(lessThan(val, vec3(0.04045))));
+
+			sum.rgb += val * NdotL;
 
 			sum.a += NdotL;
-
 		}
-
 	}
 
 	sum /= sum.a;
 
+	vec3 a = vec3(0.055);
+	sum.rgb = mix((vec3(1.0) + a) * pow(sum.rgb, vec3(1.0 / 2.4)) - a, 12.92 * sum.rgb, vec3(lessThan(sum.rgb, vec3(0.0031308))));
+
 	gl_FragColor = vec4(sum.rgb, 1.0);
-
 }
-

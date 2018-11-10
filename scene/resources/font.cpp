@@ -31,8 +31,8 @@
 #include "font.h"
 
 #include "core/io/resource_loader.h"
+#include "core/method_bind_ext.gen.inc"
 #include "core/os/file_access.h"
-#include "method_bind_ext.gen.inc"
 
 void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate, const Color &p_outline_modulate) const {
 	float length = get_string_size(p_text).width;
@@ -178,6 +178,7 @@ PoolVector<int> BitmapFont::_get_kernings() const {
 
 void BitmapFont::_set_textures(const Vector<Variant> &p_textures) {
 
+	textures.clear();
 	for (int i = 0; i < p_textures.size(); i++) {
 		Ref<Texture> tex = p_textures[i];
 		ERR_CONTINUE(!tex.is_valid());

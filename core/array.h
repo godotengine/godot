@@ -31,7 +31,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
+
 class Variant;
 class ArrayPrivate;
 class Object;

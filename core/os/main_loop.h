@@ -31,12 +31,14 @@
 #ifndef MAIN_LOOP_H
 #define MAIN_LOOP_H
 
-#include "os/input_event.h"
-#include "reference.h"
-#include "script_language.h"
+#include "core/os/input_event.h"
+#include "core/reference.h"
+#include "core/script_language.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class MainLoop : public Object {
 
 	GDCLASS(MainLoop, Object);

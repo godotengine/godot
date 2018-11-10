@@ -30,9 +30,14 @@
 
 #include "color_picker.h"
 
-#include "os/input.h"
-#include "os/keyboard.h"
-#include "os/os.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor_settings.h"
+#endif
+
 #include "scene/gui/separator.h"
 #include "scene/main/viewport.h"
 
@@ -52,6 +57,16 @@ void ColorPicker::_notification(int p_what) {
 			bt_add_preset->set_icon(get_icon("add_preset"));
 
 			_update_color();
+
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				PoolColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PoolColorArray());
+
+				for (int i = 0; i < saved_presets.size(); i++) {
+					add_preset(saved_presets[i]);
+				}
+			}
+#endif
 		} break;
 		case NOTIFICATION_PARENTED: {
 
@@ -144,7 +159,10 @@ void ColorPicker::_html_entered(const String &p_html) {
 	if (updating)
 		return;
 
+	float last_alpha = color.a;
 	color = Color::html(p_html);
+	if (!is_editing_alpha())
+		color.a = last_alpha;
 
 	if (!is_inside_tree())
 		return;
@@ -186,9 +204,22 @@ void ColorPicker::_update_presets() {
 
 	preset->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), Rect2(Point2(), preset_size), true);
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		PoolColorArray arr_to_save = PoolColorArray();
+
+		for (int i = 0; i < presets.size(); i++) {
+			preset->draw_rect(Rect2(Point2(size.width * i, 0), size), presets[i]);
+			arr_to_save.insert(i, presets[i]);
+		}
+
+		EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
+	}
+#else
 	for (int i = 0; i < presets.size(); i++) {
 		preset->draw_rect(Rect2(Point2(size.width * i, 0), size), presets[i]);
 	}
+#endif
 }
 
 void ColorPicker::_text_type_toggled() {

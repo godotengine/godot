@@ -31,8 +31,8 @@
 #ifndef BROAD_PHASE_SW_H
 #define BROAD_PHASE_SW_H
 
-#include "aabb.h"
-#include "math_funcs.h"
+#include "core/math/aabb.h"
+#include "core/math/math_funcs.h"
 
 class CollisionObjectSW;
 

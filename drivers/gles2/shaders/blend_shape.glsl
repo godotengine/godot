@@ -1,5 +1,5 @@
+/* clang-format off */
 [vertex]
-
 
 /*
 from VisualServer:
@@ -23,56 +23,57 @@ ARRAY_INDEX=8,
 
 /* INPUT ATTRIBS */
 
-layout(location=0) in highp VFORMAT vertex_attrib;
-layout(location=1) in vec3 normal_attrib;
+layout(location = 0) in highp VFORMAT vertex_attrib;
+/* clang-format on */
+layout(location = 1) in vec3 normal_attrib;
 
 #ifdef ENABLE_TANGENT
-layout(location=2) in vec4 tangent_attrib;
+layout(location = 2) in vec4 tangent_attrib;
 #endif
 
 #ifdef ENABLE_COLOR
-layout(location=3) in vec4 color_attrib;
+layout(location = 3) in vec4 color_attrib;
 #endif
 
 #ifdef ENABLE_UV
-layout(location=4) in vec2 uv_attrib;
+layout(location = 4) in vec2 uv_attrib;
 #endif
 
 #ifdef ENABLE_UV2
-layout(location=5) in vec2 uv2_attrib;
+layout(location = 5) in vec2 uv2_attrib;
 #endif
 
 #ifdef ENABLE_SKELETON
-layout(location=6) in ivec4 bone_attrib;
-layout(location=7) in vec4 weight_attrib;
+layout(location = 6) in ivec4 bone_attrib;
+layout(location = 7) in vec4 weight_attrib;
 #endif
 
 /* BLEND ATTRIBS */
 
 #ifdef ENABLE_BLEND
 
-layout(location=8) in highp VFORMAT vertex_attrib_blend;
-layout(location=9) in vec3 normal_attrib_blend;
+layout(location = 8) in highp VFORMAT vertex_attrib_blend;
+layout(location = 9) in vec3 normal_attrib_blend;
 
 #ifdef ENABLE_TANGENT
-layout(location=10) in vec4 tangent_attrib_blend;
+layout(location = 10) in vec4 tangent_attrib_blend;
 #endif
 
 #ifdef ENABLE_COLOR
-layout(location=11) in vec4 color_attrib_blend;
+layout(location = 11) in vec4 color_attrib_blend;
 #endif
 
 #ifdef ENABLE_UV
-layout(location=12) in vec2 uv_attrib_blend;
+layout(location = 12) in vec2 uv_attrib_blend;
 #endif
 
 #ifdef ENABLE_UV2
-layout(location=13) in vec2 uv2_attrib_blend;
+layout(location = 13) in vec2 uv2_attrib_blend;
 #endif
 
 #ifdef ENABLE_SKELETON
-layout(location=14) in ivec4 bone_attrib_blend;
-layout(location=15) in vec4 weight_attrib_blend;
+layout(location = 14) in ivec4 bone_attrib_blend;
+layout(location = 15) in vec4 weight_attrib_blend;
 #endif
 
 #endif
@@ -110,7 +111,6 @@ uniform float blend_amount;
 
 void main() {
 
-
 #ifdef ENABLE_BLEND
 
 	vertex_out = vertex_attrib_blend + vertex_attrib * blend_amount;
@@ -140,7 +140,6 @@ void main() {
 	uv2_out = uv2_attrib_blend + uv2_attrib * blend_amount;
 #endif
 
-
 #ifdef ENABLE_SKELETON
 
 	bone_out = bone_attrib_blend;
@@ -148,7 +147,6 @@ void main() {
 #endif
 
 #else //ENABLE_BLEND
-
 
 	vertex_out = vertex_attrib * blend_amount;
 
@@ -177,7 +175,6 @@ void main() {
 	uv2_out = uv2_attrib * blend_amount;
 #endif
 
-
 #ifdef ENABLE_SKELETON
 
 	bone_out = bone_attrib;
@@ -188,10 +185,10 @@ void main() {
 	gl_Position = vec4(0.0);
 }
 
+/* clang-format off */
 [fragment]
-
 
 void main() {
 
 }
-
+/* clang-format on */

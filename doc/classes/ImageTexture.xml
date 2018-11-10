@@ -36,7 +36,7 @@
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [code]ImageTexture[/code] from an [Image] with "flags" from [Texture].FLAG_*.
+				Create a new [code]ImageTexture[/code] from an [Image] with "flags" from [Texture].FLAG_*. An sRGB to linear color space conversion can take place, according to [Image].FORMAT_*.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">

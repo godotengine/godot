@@ -3,6 +3,10 @@
 #endif
 #include "core/private.h"
 
+void lws_plat_apply_FD_CLOEXEC(int n)
+{
+}
+
 int
 lws_plat_socket_offset(void)
 {
@@ -54,7 +58,7 @@ time_in_microseconds()
 	memcpy(&datetime, &filetime, sizeof(datetime));
 
 	/* Windows file times are in 100s of nanoseconds. */
-	return (datetime.QuadPart - DELTA_EPOCH_IN_MICROSECS) / 10;
+	return (datetime.QuadPart / 10) - DELTA_EPOCH_IN_MICROSECS;
 }
 
 #ifdef _WIN32_WCE
@@ -229,23 +233,21 @@ _lws_plat_service_tsi(struct lws_context *context, int timeout_ms, int tsi)
 			continue;
 
 		wsi = wsi_from_fd(context, pfd->fd);
-		if (wsi->listener)
+		if (!wsi || wsi->listener)
 			continue;
-		if (!wsi || wsi->sock_send_blocking)
+		if (wsi->sock_send_blocking)
 			continue;
 		pfd->revents = LWS_POLLOUT;
 		n = lws_service_fd(context, pfd);
 		if (n < 0)
 			return -1;
+
+		/* Force WSAWaitForMultipleEvents() to check events and then return immediately. */
+		timeout_ms = 0;
+
 		/* if something closed, retry this slot */
 		if (n)
 			i--;
-
-		/*
-		 * any wsi has truncated, force him signalled
-		 */
-		if (wsi->trunc_len)
-			WSASetEvent(pt->events[0]);
 	}
 
 	/*
@@ -261,9 +263,11 @@ _lws_plat_service_tsi(struct lws_context *context, int timeout_ms, int tsi)
 	}
 
 	if (timeout_ms) {
+		lws_usec_t t;
+
 		lws_pt_lock(pt, __func__);
 		/* don't stay in poll wait longer than next hr timeout */
-		lws_usec_t t =  __lws_hrtimer_service(pt);
+		t =  __lws_hrtimer_service(pt);
 
 		if ((lws_usec_t)timeout_ms * 1000 > t)
 			timeout_ms = (int)(t / 1000);
@@ -310,8 +314,10 @@ _lws_plat_service_tsi(struct lws_context *context, int timeout_ms, int tsi)
 			if (pfd->revents & LWS_POLLHUP)
 				--eIdx;
 
-			if (pfd->revents)
+			if (pfd->revents) {
+				recv(pfd->fd, NULL, 0, 0);
 				lws_service_fd_tsi(context, pfd, tsi);
+			}
 		}
 	}
 
@@ -635,9 +641,20 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
 	HANDLE ret;
 	WCHAR buf[MAX_PATH];
 	lws_fop_fd_t fop_fd;
-	LARGE_INTEGER llFileSize = {0};
+	FILE_STANDARD_INFO fInfo = {0};
 
-	MultiByteToWideChar(CP_UTF8, 0, filename, -1, buf, ARRAY_SIZE(buf));
+	MultiByteToWideChar(CP_UTF8, 0, filename, -1, buf, LWS_ARRAY_SIZE(buf));
+
+#if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0602 // Windows 8 (minimum when UWP_ENABLED, but can be used in Windows builds)
+	CREATEFILE2_EXTENDED_PARAMETERS extParams = {0};
+	extParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+
+	if (((*flags) & 7) == _O_RDONLY) {
+		ret = CreateFile2(buf, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extParams);
+	} else {
+		ret = CreateFile2(buf, GENERIC_WRITE, 0, CREATE_ALWAYS, &extParams);
+	}
+#else
 	if (((*flags) & 7) == _O_RDONLY) {
 		ret = CreateFileW(buf, GENERIC_READ, FILE_SHARE_READ,
 			  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -645,6 +662,7 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
 		ret = CreateFileW(buf, GENERIC_WRITE, 0, NULL,
 			  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	}
+#endif
 
 	if (ret == LWS_INVALID_FILE)
 		goto bail;
@@ -657,9 +675,9 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
 	fop_fd->fd = ret;
 	fop_fd->filesystem_priv = NULL; /* we don't use it */
 	fop_fd->flags = *flags;
-	fop_fd->len = GetFileSize(ret, NULL);
-	if(GetFileSizeEx(ret, &llFileSize))
-		fop_fd->len = llFileSize.QuadPart;
+	fop_fd->len = 0;
+	if(GetFileInformationByHandleEx(ret, FileStandardInfo, &fInfo, sizeof(fInfo)))
+		fop_fd->len = fInfo.EndOfFile.QuadPart;
 
 	fop_fd->pos = 0;
 
@@ -798,7 +816,7 @@ lws_plat_write_file(const char *filename, void *buf, int len)
 {
 	int m, fd;
 
-	fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+	fd = lws_open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 
 	if (fd == -1)
 		return -1;
@@ -812,7 +830,7 @@ lws_plat_write_file(const char *filename, void *buf, int len)
 LWS_VISIBLE int
 lws_plat_read_file(const char *filename, void *buf, int len)
 {
-	int n, fd = open(filename, O_RDONLY);
+	int n, fd = lws_open(filename, O_RDONLY);
 	if (fd == -1)
 		return -1;
 

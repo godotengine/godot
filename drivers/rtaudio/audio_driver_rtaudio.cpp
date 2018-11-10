@@ -30,8 +30,8 @@
 
 #include "audio_driver_rtaudio.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #ifdef RTAUDIO_ENABLED
 
@@ -112,16 +112,14 @@ Error AudioDriverRtAudio::init() {
 
 	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	unsigned int buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	print_verbose("Audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
-	}
+	short int tries = 4;
 
-	short int tries = 2;
-
-	while (tries >= 0) {
+	while (tries > 0) {
 		switch (speaker_mode) {
 			case SPEAKER_MODE_STEREO: parameters.nChannels = 2; break;
+			case SPEAKER_SURROUND_31: parameters.nChannels = 4; break;
 			case SPEAKER_SURROUND_51: parameters.nChannels = 6; break;
 			case SPEAKER_SURROUND_71: parameters.nChannels = 8; break;
 		};
@@ -131,12 +129,14 @@ Error AudioDriverRtAudio::init() {
 			active = true;
 
 			break;
-		} catch (RtAudioError &e) {
+		} catch (RtAudioError) {
 			// try with less channels
 			ERR_PRINT("Unable to open audio, retrying with fewer channels...");
 
 			switch (speaker_mode) {
-				case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_MODE_STEREO; break;
+				case SPEAKER_MODE_STEREO: break; // Required to silence unhandled enum value warning.
+				case SPEAKER_SURROUND_31: speaker_mode = SPEAKER_MODE_STEREO; break;
+				case SPEAKER_SURROUND_51: speaker_mode = SPEAKER_SURROUND_31; break;
 				case SPEAKER_SURROUND_71: speaker_mode = SPEAKER_SURROUND_51; break;
 			}
 

@@ -31,8 +31,8 @@
 #ifndef SHAPE_SW_H
 #define SHAPE_SW_H
 
-#include "bsp_tree.h"
-#include "geometry.h"
+#include "core/math/bsp_tree.h"
+#include "core/math/geometry.h"
 #include "servers/physics_server.h"
 /*
 

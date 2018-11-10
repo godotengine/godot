@@ -31,9 +31,9 @@
 #ifndef PLATFORM_WINDOWS_POWER_WINDOWS_H_
 #define PLATFORM_WINDOWS_POWER_WINDOWS_H_
 
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 
 #include <windows.h>
 

@@ -31,10 +31,10 @@
 #ifndef STREAM_PEER_TCP_H
 #define STREAM_PEER_TCP_H
 
-#include "stream_peer.h"
-
-#include "io/ip.h"
-#include "ip_address.h"
+#include "core/io/ip.h"
+#include "core/io/ip_address.h"
+#include "core/io/net_socket.h"
+#include "core/io/stream_peer.h"
 
 class StreamPeerTCP : public StreamPeer {
 
@@ -51,24 +51,37 @@ public:
 	};
 
 protected:
-	virtual Error _connect(const String &p_address, int p_port);
-	static StreamPeerTCP *(*_create)();
+	Ref<NetSocket> _sock;
+	Status status;
+	IP_Address peer_host;
+	uint16_t peer_port;
+
+	Error _connect(const String &p_address, int p_port);
+	Error _poll_connection();
+	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
+
 	static void _bind_methods();
 
 public:
-	virtual Error connect_to_host(const IP_Address &p_host, uint16_t p_port) = 0;
+	void accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port);
 
-	//read/write from streampeer
+	Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
+	bool is_connected_to_host() const;
+	IP_Address get_connected_host() const;
+	uint16_t get_connected_port() const;
+	void disconnect_from_host();
 
-	virtual bool is_connected_to_host() const = 0;
-	virtual Status get_status() const = 0;
-	virtual void disconnect_from_host() = 0;
-	virtual IP_Address get_connected_host() const = 0;
-	virtual uint16_t get_connected_port() const = 0;
-	virtual void set_no_delay(bool p_enabled) = 0;
+	int get_available_bytes() const;
+	Status get_status();
 
-	static Ref<StreamPeerTCP> create_ref();
-	static StreamPeerTCP *create();
+	void set_no_delay(bool p_enabled);
+
+	// Read/Write from StreamPeer
+	Error put_data(const uint8_t *p_data, int p_bytes);
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	Error get_data(uint8_t *p_buffer, int p_bytes);
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 	StreamPeerTCP();
 	~StreamPeerTCP();

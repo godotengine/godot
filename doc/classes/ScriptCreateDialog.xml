@@ -24,6 +24,8 @@
 			</argument>
 			<argument index="1" name="path" type="String">
 			</argument>
+			<argument index="2" name="built_in_enabled" type="bool" default="true">
+			</argument>
 			<description>
 				Prefills required fields to configure the ScriptCreateDialog for use.
 			</description>
@@ -31,7 +33,7 @@
 	</methods>
 	<signals>
 		<signal name="script_created">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when the user clicks the OK button.

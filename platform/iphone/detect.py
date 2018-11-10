@@ -87,7 +87,7 @@ def configure(env):
     s_compiler_path = '$IPHONEPATH/Developer/usr/bin/'
 
     ccache_path = os.environ.get("CCACHE")
-    if ccache_path == None:
+    if ccache_path is None:
         env['CC'] = compiler_path + 'clang'
         env['CXX'] = compiler_path + 'clang++'
         env['S_compiler'] = s_compiler_path + 'gcc'

@@ -100,6 +100,45 @@ typedef struct godot_variant_call_error {
 	godot_variant_type expected;
 } godot_variant_call_error;
 
+typedef enum godot_variant_operator {
+	// comparison
+	GODOT_VARIANT_OP_EQUAL,
+	GODOT_VARIANT_OP_NOT_EQUAL,
+	GODOT_VARIANT_OP_LESS,
+	GODOT_VARIANT_OP_LESS_EQUAL,
+	GODOT_VARIANT_OP_GREATER,
+	GODOT_VARIANT_OP_GREATER_EQUAL,
+
+	// mathematic
+	GODOT_VARIANT_OP_ADD,
+	GODOT_VARIANT_OP_SUBTRACT,
+	GODOT_VARIANT_OP_MULTIPLY,
+	GODOT_VARIANT_OP_DIVIDE,
+	GODOT_VARIANT_OP_NEGATE,
+	GODOT_VARIANT_OP_POSITIVE,
+	GODOT_VARIANT_OP_MODULE,
+	GODOT_VARIANT_OP_STRING_CONCAT,
+
+	// bitwise
+	GODOT_VARIANT_OP_SHIFT_LEFT,
+	GODOT_VARIANT_OP_SHIFT_RIGHT,
+	GODOT_VARIANT_OP_BIT_AND,
+	GODOT_VARIANT_OP_BIT_OR,
+	GODOT_VARIANT_OP_BIT_XOR,
+	GODOT_VARIANT_OP_BIT_NEGATE,
+
+	// logic
+	GODOT_VARIANT_OP_AND,
+	GODOT_VARIANT_OP_OR,
+	GODOT_VARIANT_OP_XOR,
+	GODOT_VARIANT_OP_NOT,
+
+	// containment
+	GODOT_VARIANT_OP_IN,
+
+	GODOT_VARIANT_OP_MAX,
+} godot_variant_operator;
+
 // reduce extern "C" nesting for VS2013
 #ifdef __cplusplus
 }
@@ -203,6 +242,11 @@ godot_bool GDAPI godot_variant_hash_compare(const godot_variant *p_self, const g
 godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self);
 
 void GDAPI godot_variant_destroy(godot_variant *p_self);
+
+// GDNative core 1.1
+
+godot_string GDAPI godot_variant_get_operator_name(godot_variant_operator p_op);
+void GDAPI godot_variant_evaluate(godot_variant_operator p_op, const godot_variant *p_a, const godot_variant *p_b, godot_variant *r_ret, godot_bool *r_valid);
 
 #ifdef __cplusplus
 }

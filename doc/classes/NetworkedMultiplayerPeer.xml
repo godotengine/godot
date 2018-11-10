@@ -7,7 +7,7 @@
 		Manages the connection to network peers. Assigns unique IDs to each client connected to the server.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/high_level_multiplayer.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -92,13 +92,13 @@
 	</signals>
 	<constants>
 		<constant name="TRANSFER_MODE_UNRELIABLE" value="0" enum="TransferMode">
-			Packets are sent via unordered UDP packets.
+			Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than [code]TRANSFER_MODE_UNRELIABLE_ORDERED[/code]. Use for non-critical data, and always consider whether the order matters.
 		</constant>
 		<constant name="TRANSFER_MODE_UNRELIABLE_ORDERED" value="1" enum="TransferMode">
-			Packets are sent via ordered UDP packets.
+			Packets are not acknowledged, no resend attempts are made for lost packets. Packets are received in the order they were sent in. Potentially faster than [code]TRANSFER_MODE_RELIABLE[/code]. Use for non-critical data or data that would be outdated if received late due to resend attempt(s) anyway, for example movement and positional data.
 		</constant>
 		<constant name="TRANSFER_MODE_RELIABLE" value="2" enum="TransferMode">
-			Packets are sent via TCP packets.
+			Packets must be received and resend attempts should be made until the packets are acknowledged. Packets must be received in the order they were sent in. Most reliable transfer mode, but potentially slowest due to the overhead. Use for critical data that must be transmitted and arrive in order, for example an ability being triggered or a chat message. Consider carefully if the information really is critical, and use sparingly.
 		</constant>
 		<constant name="CONNECTION_DISCONNECTED" value="0" enum="ConnectionStatus">
 			The ongoing connection disconnected.

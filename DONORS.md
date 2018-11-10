@@ -17,67 +17,65 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
-    GameDev.TV <https://www.gamedev.tv>
+    GameDev.TV <https://gdev.tv/godot>
+    Image Campus <https://www.imagecampus.edu.ar>
 
 ## Mini sponsors
 
+    Andrew Dunai
     Brandon Lamb
     Christian Uldall Pedersen
-    Christopher Igoe
     Christoph Woinke
-    E Hewert
+    David Graham
     GameDev.net
     Hein-Pieter van Braam
+    iDev.Network Studios
     Jamal Alyafei
-    Jay Sistar
-    Loreshaper Games
+    Leona Eden
     Matthieu Huvé
     Mike King
     Nathan Warden
     Neal Gompa (Conan Kudo)
-    Pascal Julien
     Patrick Aarstad
-    rottis
     Ruslan Mustakov
-    Sébastien Manin
     Slobodan Milnovic
     Stephan Lanfermann
     Stoney Meyerhoeffer
+    thechris
     Thomas Mathews
     VilliHaukka
 
 ## Gold donors
 
-    3Dexplorer
-    Alexander Otto
     Asdf
     cheese65536
     K9Kraken
-    Kris Michael
     Manuele Finocchiaro
     Nathanael Beisiegel
     Officine Pixel S.n.c.
+    Retro Village
     Zaven Muradyan
 
+    13MHz
     Allen Schade
     Andreas Schüle
     Austen McRae
+    Daniel Lynn
     David Gehrig
-    DeepSquid
-    Fidget Sinner
     Florian Breisch
     Gary Oberbrunner
+    Jay Horton
     Johannes Wuensch
-    Josep G. Camarasa
     Joshua Lesperance
+    Krzysztof Dluzniewski
     Kyle Szklenski
-    Libre-Dépanne
-    Matthew Bennett
+    Mohammad Taleb
+    Moonwards
     Paul LaMotte
     Ranoller
     Sergey
     Svenne Krap
-    Timothy Hagberg
+    Xananax
 
     BanjoNode2D
     Beliar
@@ -92,11 +90,11 @@ generous deed immortalized in the next stable release of Godot Engine.
     Justo Delgado Baudí
     KTL
     Laurence Bannister
+    Markus Wiesner
     paul gruenbacher
     Rami
     Robert Willes
     Robin Arys
-    Rodrigo Loli
     Ronnie Ashlock
     ScottMakesGames
     Thomas Bjarnelöf
@@ -107,50 +105,43 @@ generous deed immortalized in the next stable release of Godot Engine.
     Alessandra Pereyra
     Alexey Dyadchenko
     Amanda Haldy
-    Anthony Ryan
+    Chau Siu Hung
     Chris Brown
     Chris Petrich
-    Chris Wilson
     Cody Parker
-    Corey Auger
     D
     Deadly Lampshade
     E.G.
     Eric
     Eric Monson
+    Ethan Bennis
+    Fidget Sinner
     flesk
-    floopf
     G Barnes
+    Gero
     GGGames.org
     Giovanni Solimeno
     Guilherme Felipe de C. G. da Silva
     Hasen Judy
     Heath Hayes
-    Jan Čejka
-    Jay Horton
     Jeppe Zapp
     joe513
     Juraj Móza
     Justin Arnold
-    Lars Wuethrich
     Leandro Voltolino
-    Lisandro Lorea
-    Markus Wiesner
+    Marius Kamm
     Marvin
-    Mohammad Taleb
-    Neal Barry
+    Nahuel Sacchetti
     Nick Nikitin
     Pablo Cholaky
-    Patrick Schnorbus
     Pete Goodwin
+    ray-tracer
     Ruben Soares Luis
-    Rufus Xavier Sarsaparilla
-    Sindre Sømme
     Sofox
     Stoned Xander
-    Tim Dalporto
     Trent McPheron
-    Wyatt Walker
+    WytRabbit
+    Zachariah Gibbons
 
 ## Silver donors
 
@@ -168,9 +159,9 @@ generous deed immortalized in the next stable release of Godot Engine.
     Artur Barichello
     Aubrey Falconer
     Avencherus
+    Bailey
     Bastian Böhm
     Benedikt
-    Benjamin Beshara
     Ben Vercammen
     Blair Allen
     Brandon
@@ -181,12 +172,10 @@ generous deed immortalized in the next stable release of Godot Engine.
     Chris Chapin
     Christian Baune
     Christian Winter
-    Christopher Schmitt
     Collin Shooltz
     Daniel Johnson
     Daniel Kaplan
     DanielMaximiano
-    Daniel Mircea
     David
     David Cravens
     David May
@@ -196,25 +185,23 @@ generous deed immortalized in the next stable release of Godot Engine.
     Edward Herbert
     Elias Nykrem
     Eric Martini
+    Eric Williams
+    Eugenio Hugo Salgüero Jáñez
     Fabian Becker
     fengjiongmax
-    Francesco Lisi
+    Foomf
     G3Dev sàrl
+    George Lesica
     Gerrit Großkopf
-    Gerrit Procee
     Gilberto K. Otubo
     Greg Olson
-    Guillaume Laforte
     Guldoman
-    Gumichan01
     Heribert Hirth
     Hunter Jones
     ialex32x
-    Ivan Vodopiviz
     Jahn Johansen
     Jaime Ruiz-Borau Vizárraga
-    Jake Huxell
-    Jed
+    Jako Danar
     Jeff Hungerford
     Joel Fivat
     Johan Lindberg
@@ -222,8 +209,9 @@ generous deed immortalized in the next stable release of Godot Engine.
     Jonas Yamazaki
     Jonathan Martin
     Jonathan Nieto
-    Jonathon
+    Jon Bonazza
     Jon Sully
+    Jose Malheiro
     Josh 'Cheeseness' Bush
     Juanfran
     Juan Negrier
@@ -235,14 +223,16 @@ generous deed immortalized in the next stable release of Godot Engine.
     Kevin Kamper Meejach Petersen
     Klavdij Voncina
     Krzysztof Jankowski
+    Krzysztof Sierszecki
+    KsyTek Games
     Linus Lind Lundgren
-    Luc Magitem
+    Loreshaper Games
     Luis Moraes
     Macil
     magodev
-    Manolis Makris
+    Malcolm
     Martin Eigel
-    Martins Odabi
+    Matt Welke
     Max R.R. Collada
     Maxwell
     Mertcan Mermerkaya
@@ -253,25 +243,28 @@ generous deed immortalized in the next stable release of Godot Engine.
     Mikael Olsson
     MoM
     Moritz Laass
+    Moritz Weissenberger
     Natrim
     nee
     Neil Blakey-Milner
     Nick Pavlica
     Niclas Eriksen
+    Nicolás Montaña
     Nicolas SAN AGUSTIN
-    Niko Leopold
+    Nik
     Noi Sek
-    Pablo Seibelt
     Pan Ip
     Pascal Grüter
-    Pat LaBine
     Patrick Nafarrete
     Paul E Hansen
+    Paul Gieske
     Paul Mason
     Paweł Kowal
+    Phillip Ryals
     Pierre-Igor Berthet
     Pietro Vertechi
     Piotr Kaczmarski
+    Prokhorenko Leonid
     Rémi Verschelde
     Richman Stewart
     Roger Burgess
@@ -279,26 +272,23 @@ generous deed immortalized in the next stable release of Godot Engine.
     Roman Tinkov
     Sasori Olkof
     Sootstone
-    Stefan Butucea
-    The K-B
     Theo Cranmore
-    Thibaud Galloy
     Thibault Barbaroux
     Thomas Bell
     Thomas Holmes
     Thomas Kurz
     tiansheng li
+    Tim
     Tom Larrow
-    Tristan Crawford
     Trym Nilsen
+    Tyggve Sollid
     Tyler Stafos
     UltyX
+    Vaiktorg
     Victor
     Viktor Ferenczi
     waka nya
-    werner mendizabal
     Wout Standaert
-    Yu He
 
 ## Bronze donors
 

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "global_defaults.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 void register_iphone_global_defaults() {
 }

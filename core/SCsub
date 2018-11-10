@@ -8,7 +8,6 @@ from platform_methods import run_in_subprocess
 
 env.core_sources = []
 
-
 # Generate global defaults
 gd_call = ""
 gd_inc = ""
@@ -18,7 +17,7 @@ for x in env.global_defaults:
     gd_inc += '#include "platform/' + x + '/globals/global_defaults.h"\n'
     gd_call += "\tregister_" + x + "_global_defaults();\n"
 
-gd_cpp = '#include "project_settings.h"\n'
+gd_cpp = '#include "core/project_settings.h"\n'
 gd_cpp += gd_inc
 gd_cpp += "void ProjectSettings::register_global_defaults() {\n" + gd_call + "\n}\n"
 
@@ -52,13 +51,17 @@ if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
 
 # NOTE: It is safe to generate this file here, since this is still executed serially
 with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write("#include \"project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
+    f.write("#include \"core/project_settings.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
 
 
-# Add required thirdparty code. Header paths are hardcoded, we don't need to append
+# Add required thirdparty code.
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
+
+# Misc thirdparty code: header paths are hardcoded, we don't need to append
 # to the include path (saves a few chars on the compiler invocation for touchy MSVC...)
-thirdparty_dir = "#thirdparty/misc/"
-thirdparty_sources = [
+thirdparty_misc_dir = "#thirdparty/misc/"
+thirdparty_misc_sources = [
     # C sources
     "base64.c",
     "fastlz.c",
@@ -72,10 +75,34 @@ thirdparty_sources = [
     "pcg.cpp",
     "triangulator.cpp",
 ]
-thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-env.add_source_files(env.core_sources, thirdparty_sources)
+thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
+env_thirdparty.add_source_files(env.core_sources, thirdparty_misc_sources)
 
-# Minizip library, can be unbundled in theory
+# Zlib library, can be unbundled
+if env['builtin_zlib']:
+	thirdparty_zlib_dir = "#thirdparty/zlib/"
+	thirdparty_zlib_sources = [
+		"adler32.c",
+		"compress.c",
+		"crc32.c",
+		"deflate.c",
+		"infback.c",
+		"inffast.c",
+		"inflate.c",
+		"inftrees.c",
+		"trees.c",
+		"uncompr.c",
+		"zutil.c",
+	]
+	thirdparty_zlib_sources = [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
+
+	env_thirdparty.Append(CPPPATH=[thirdparty_zlib_dir])
+	# Needs to be available in main env too
+	env.Append(CPPPATH=[thirdparty_zlib_dir])
+
+	env_thirdparty.add_source_files(env.core_sources, thirdparty_zlib_sources)
+
+# Minizip library, could be unbundled in theory
 # However, our version has some custom modifications, so it won't compile with the system one
 thirdparty_minizip_dir = "#thirdparty/minizip/"
 thirdparty_minizip_sources = [
@@ -84,15 +111,50 @@ thirdparty_minizip_sources = [
     "zip.c",
 ]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
-env.add_source_files(env.core_sources, thirdparty_minizip_sources)
+env_thirdparty.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
-if 'builtin_zstd' in env and env['builtin_zstd']:
-    SConscript("#thirdparty/zstd/SCsub")
+# Zstd library, can be unbundled in theory
+# though we currently use some private symbols
+# https://github.com/godotengine/godot/issues/17374
+if env['builtin_zstd']:
+    thirdparty_zstd_dir = "#thirdparty/zstd/"
+    thirdparty_zstd_sources = [
+        "common/entropy_common.c",
+        "common/error_private.c",
+        "common/fse_decompress.c",
+        "common/pool.c",
+        "common/threading.c",
+        "common/xxhash.c",
+        "common/zstd_common.c",
+        "compress/fse_compress.c",
+        "compress/huf_compress.c",
+        "compress/zstd_compress.c",
+        "compress/zstd_double_fast.c",
+        "compress/zstd_fast.c",
+        "compress/zstd_lazy.c",
+        "compress/zstd_ldm.c",
+        "compress/zstdmt_compress.c",
+        "compress/zstd_opt.c",
+        "decompress/huf_decompress.c",
+        "decompress/zstd_decompress.c",
+    ]
+    thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
+
+    env_thirdparty.Append(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
+    env_thirdparty.Append(CCFLAGS="-DZSTD_STATIC_LINKING_ONLY")
+    env.Append(CPPPATH=thirdparty_zstd_dir)
+    # Also needed in main env includes will trigger warnings
+    env.Append(CCFLAGS="-DZSTD_STATIC_LINKING_ONLY")
+
+    env_thirdparty.add_source_files(env.core_sources, thirdparty_zstd_sources)
 
 
 # Godot's own sources
 env.add_source_files(env.core_sources, "*.cpp")
 
+# Certificates
+env.Depends("#core/io/certs_compressed.gen.h", ["#thirdparty/certs/ca-certificates.crt", env.Value(env['builtin_certs']), env.Value(env['system_certs_path'])])
+env.CommandNoCache("#core/io/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", run_in_subprocess(core_builders.make_certs_header))
 
 # Make binders
 env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', run_in_subprocess(make_binders.run))
@@ -114,10 +176,8 @@ SConscript('os/SCsub')
 SConscript('math/SCsub')
 SConscript('io/SCsub')
 SConscript('bind/SCsub')
-SConscript('helper/SCsub')
 
 
 # Build it all as a library
 lib = env.add_library("core", env.core_sources)
 env.Prepend(LIBS=[lib])
-Export('env')

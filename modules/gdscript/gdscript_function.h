@@ -31,13 +31,13 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
-#include "os/thread.h"
-#include "pair.h"
-#include "reference.h"
-#include "script_language.h"
-#include "self_list.h"
-#include "string_db.h"
-#include "variant.h"
+#include "core/os/thread.h"
+#include "core/pair.h"
+#include "core/reference.h"
+#include "core/script_language.h"
+#include "core/self_list.h"
+#include "core/string_db.h"
+#include "core/variant.h"
 
 class GDScriptInstance;
 class GDScript;
@@ -136,6 +136,7 @@ public:
 	enum Opcode {
 		OPCODE_OPERATOR,
 		OPCODE_EXTENDS_TEST,
+		OPCODE_IS_BUILTIN,
 		OPCODE_SET,
 		OPCODE_GET,
 		OPCODE_SET_NAMED,
@@ -224,7 +225,7 @@ private:
 	bool _static;
 	MultiplayerAPI::RPCMode rpc_mode;
 
-	GDScript *_script;
+	Ref<GDScript> _script;
 
 	StringName name;
 	Vector<Variant> constants;
@@ -271,15 +272,13 @@ private:
 public:
 	struct CallState {
 
-		ObjectID instance_id; //by debug only
-		ObjectID script_id;
-
+		ObjectID instance_id;
 		GDScriptInstance *instance;
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
 		uint32_t alloca_size;
-		GDScript *_class;
+		Ref<GDScript> script;
 		int ip;
 		int line;
 		int defarg;
@@ -298,7 +297,7 @@ public:
 	int get_default_argument_addr(int p_idx) const;
 	GDScriptDataType get_return_type() const;
 	GDScriptDataType get_argument_type(int p_idx) const;
-	GDScript *get_script() const { return _script; }
+	GDScript *get_script() const { return const_cast<GDScript *>(_script.ptr()); }
 	StringName get_source() const { return source; }
 
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;

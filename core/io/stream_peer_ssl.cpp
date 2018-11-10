@@ -29,8 +29,11 @@
 /*************************************************************************/
 
 #include "stream_peer_ssl.h"
-#include "os/file_access.h"
-#include "project_settings.h"
+
+#include "core/io/certs_compressed.gen.h"
+#include "core/io/compression.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 
 StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
 
@@ -41,11 +44,18 @@ StreamPeerSSL *StreamPeerSSL::create() {
 
 StreamPeerSSL::LoadCertsFromMemory StreamPeerSSL::load_certs_func = NULL;
 bool StreamPeerSSL::available = false;
-bool StreamPeerSSL::initialize_certs = true;
 
 void StreamPeerSSL::load_certs_from_memory(const PoolByteArray &p_memory) {
 	if (load_certs_func)
 		load_certs_func(p_memory);
+}
+
+void StreamPeerSSL::load_certs_from_file(String p_path) {
+	if (p_path != "") {
+		PoolByteArray certs = get_cert_file_as_array(p_path);
+		if (certs.size() > 0)
+			load_certs_func(certs);
+	}
 }
 
 bool StreamPeerSSL::is_available() {
@@ -60,6 +70,25 @@ bool StreamPeerSSL::is_blocking_handshake_enabled() const {
 	return blocking_handshake;
 }
 
+PoolByteArray StreamPeerSSL::get_cert_file_as_array(String p_path) {
+
+	PoolByteArray out;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (f) {
+		int flen = f->get_len();
+		out.resize(flen + 1);
+		PoolByteArray::Write w = out.write();
+		f->get_buffer(w.ptr(), flen);
+		w[flen] = 0; // Make sure it ends with string terminator
+		memdelete(f);
+#ifdef DEBUG_ENABLED
+		print_verbose(vformat("Loaded certs from '%s'.", p_path));
+#endif
+	}
+
+	return out;
+}
+
 PoolByteArray StreamPeerSSL::get_project_cert_array() {
 
 	PoolByteArray out;
@@ -67,24 +96,21 @@ PoolByteArray StreamPeerSSL::get_project_cert_array() {
 	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificates", PropertyInfo(Variant::STRING, "network/ssl/certificates", PROPERTY_HINT_FILE, "*.crt"));
 
 	if (certs_path != "") {
-
-		FileAccess *f = FileAccess::open(certs_path, FileAccess::READ);
-		if (f) {
-			int flen = f->get_len();
-			out.resize(flen + 1);
-			{
-				PoolByteArray::Write w = out.write();
-				f->get_buffer(w.ptr(), flen);
-				w[flen] = 0; //end f string
-			}
-
-			memdelete(f);
-
-#ifdef DEBUG_ENABLED
-			print_line("Loaded certs from '" + certs_path);
-#endif
-		}
+		// Use certs defined in project settings.
+		return get_cert_file_as_array(certs_path);
 	}
+#ifdef BUILTIN_CERTS_ENABLED
+	else {
+		// Use builtin certs only if user did not override it in project settings.
+		out.resize(_certs_uncompressed_size + 1);
+		PoolByteArray::Write w = out.write();
+		Compression::decompress(w.ptr(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+		w[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+#ifdef DEBUG_ENABLED
+		print_verbose("Loaded builtin certs");
+#endif
+	}
+#endif
 
 	return out;
 }
@@ -102,6 +128,7 @@ void StreamPeerSSL::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 
 	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
 	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
 	BIND_ENUM_CONSTANT(STATUS_ERROR);
 	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);

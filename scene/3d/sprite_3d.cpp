@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "sprite_3d.h"
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -431,7 +431,7 @@ void Sprite3D::_draw() {
 
 	};
 
-	Vector2 src_tsize = Vector2(texture->get_width(), texture->get_height());
+	Vector2 src_tsize = tsize;
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = texture;
@@ -441,10 +441,10 @@ void Sprite3D::_draw() {
 	}
 
 	Vector2 uvs[4] = {
-		final_src_rect.position / tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.position + final_src_rect.size) / tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
 	};
 
 	if (is_flipped_h()) {
@@ -731,7 +731,7 @@ void AnimatedSprite3D::_draw() {
 
 	};
 
-	Vector2 src_tsize = Vector2(texture->get_width(), texture->get_height());
+	Vector2 src_tsize = tsize;
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = texture;
@@ -741,10 +741,10 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Vector2 uvs[4] = {
-		final_src_rect.position / tsize,
-		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / tsize,
-		(final_src_rect.position + final_src_rect.size) / tsize,
-		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / tsize,
+		final_src_rect.position / src_tsize,
+		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
+		(final_src_rect.position + final_src_rect.size) / src_tsize,
+		(final_src_rect.position + Vector2(0, final_src_rect.size.y)) / src_tsize,
 	};
 
 	if (is_flipped_h()) {
@@ -1078,10 +1078,10 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {

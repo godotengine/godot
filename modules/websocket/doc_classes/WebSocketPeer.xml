@@ -15,8 +15,14 @@
 		<method name="close">
 			<return type="void">
 			</return>
+			<argument index="0" name="code" type="int" default="1000">
+			</argument>
+			<argument index="1" name="reason" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
-				Close this WebSocket connection, actively disconnecting the peer.
+				Close this WebSocket connection. [code]code[/code] is the status code for the closure (see RFC6455 section 7.4 for a list of valid status codes). [reason] is the human readable reason for closing the connection (can be any UTF8 string, must be less than 123 bytes).
+				Note: To achieve a clean close, you will need to keep polling until either [signal WebSocketClient.connection_closed] or [signal WebSocketServer.client_disconnected] is received.
+				Note: HTML5 export might not support all status codes. Please refer to browsers-specific documentation for more details.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">

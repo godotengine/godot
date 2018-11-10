@@ -31,12 +31,12 @@
 #ifndef SHADER_LANGUAGE_H
 #define SHADER_LANGUAGE_H
 
-#include "list.h"
-#include "map.h"
-#include "string_db.h"
-#include "typedefs.h"
-#include "ustring.h"
-#include "variant.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/string_db.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
+#include "core/variant.h"
 
 class ShaderLanguage {
 
@@ -548,6 +548,7 @@ public:
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
+	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);

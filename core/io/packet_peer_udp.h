@@ -31,37 +31,55 @@
 #ifndef PACKET_PEER_UDP_H
 #define PACKET_PEER_UDP_H
 
-#include "io/ip.h"
-#include "io/packet_peer.h"
+#include "core/io/ip.h"
+#include "core/io/net_socket.h"
+#include "core/io/packet_peer.h"
 
 class PacketPeerUDP : public PacketPeer {
 	GDCLASS(PacketPeerUDP, PacketPeer);
 
 protected:
-	bool blocking;
+	enum {
+		PACKET_BUFFER_SIZE = 65536
+	};
 
-	static PacketPeerUDP *(*_create)();
+	RingBuffer<uint8_t> rb;
+	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
+	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+	IP_Address packet_ip;
+	int packet_port;
+	int queue_count;
+
+	IP_Address peer_addr;
+	int peer_port;
+	bool blocking;
+	Ref<NetSocket> _sock;
+
 	static void _bind_methods();
 
 	String _get_packet_ip() const;
 
 	Error _set_dest_address(const String &p_address, int p_port);
+	Error _poll();
 
 public:
 	void set_blocking_mode(bool p_enable);
 
-	virtual Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536) = 0;
-	virtual void close() = 0;
-	virtual Error wait() = 0;
-	virtual bool is_listening() const = 0;
-	virtual IP_Address get_packet_address() const = 0;
-	virtual int get_packet_port() const = 0;
-	virtual void set_dest_address(const IP_Address &p_address, int p_port) = 0;
+	Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
+	void close();
+	Error wait();
+	bool is_listening() const;
+	IP_Address get_packet_address() const;
+	int get_packet_port() const;
+	void set_dest_address(const IP_Address &p_address, int p_port);
 
-	static Ref<PacketPeerUDP> create_ref();
-	static PacketPeerUDP *create();
+	Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
+	int get_available_packet_count() const;
+	int get_max_packet_size() const;
 
 	PacketPeerUDP();
+	~PacketPeerUDP();
 };
 
 #endif // PACKET_PEER_UDP_H

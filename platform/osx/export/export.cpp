@@ -29,18 +29,18 @@
 /*************************************************************************/
 
 #include "export.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/io/zip_io.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "io/zip_io.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "platform/osx/logo.gen.h"
-#include "project_settings.h"
 #include "string.h"
-#include "version.h"
 #include <sys/stat.h>
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
@@ -74,7 +74,14 @@ public:
 	virtual String get_os_name() const { return "OSX"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
 
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const { return use_dmg() ? "dmg" : "zip"; }
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+		List<String> list;
+		if (use_dmg()) {
+			list.push_back("dmg");
+		}
+		list.push_back("zip");
+		return list;
+	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
@@ -334,7 +341,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	io2.opaque = &dst_f;
 	zipFile dst_pkg_zip = NULL;
 
-	if (use_dmg()) {
+	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
+	if (export_format == "dmg") {
 		// We're on OSX so we can export to DMG, but first we create our application bundle
 		tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".app");
 		print_line("Exporting to " + tmp_app_path_name);
@@ -380,7 +388,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 		String file = fname;
 
-		print_line("READ: " + file);
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
@@ -394,7 +401,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		file = file.replace_first("osx_template.app/", "");
 
 		if (file == "Contents/Info.plist") {
-			print_line("parse plist");
 			_fix_plist(p_preset, data, pkg_name);
 		}
 
@@ -415,13 +421,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = p_preset->get("application/icon");
 			else
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
-			print_line("icon? " + iconpath);
+
 			if (iconpath != "") {
 				Ref<Image> icon;
 				icon.instance();
 				icon->load(iconpath);
 				if (!icon->empty()) {
-					print_line("loaded?");
 					_make_icon(icon, data);
 				}
 			}
@@ -432,7 +437,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
-			if (use_dmg()) {
+			if (export_format == "dmg") {
 				// write it into our application bundle
 				file = tmp_app_path_name + "/" + file;
 
@@ -464,7 +469,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				fi.internal_fa = info.internal_fa;
 				fi.external_fa = info.external_fa;
 
-				int zerr = zipOpenNewFileInZip(dst_pkg_zip,
+				zipOpenNewFileInZip(dst_pkg_zip,
 						file.utf8().get_data(),
 						&fi,
 						NULL,
@@ -475,9 +480,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
-				print_line("OPEN ERR: " + itos(zerr));
-				zerr = zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
-				print_line("WRITE ERR: " + itos(zerr));
+				zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
 				zipCloseFileInZip(dst_pkg_zip);
 			}
 		}
@@ -496,7 +499,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		ep.step("Making PKG", 1);
 
-		if (use_dmg()) {
+		if (export_format == "dmg") {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 			Vector<SharedObject> shared_objects;
 			err = save_pack(p_preset, pack_path, &shared_objects);

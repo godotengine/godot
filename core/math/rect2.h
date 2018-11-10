@@ -31,7 +31,7 @@
 #ifndef RECT2_H
 #define RECT2_H
 
-#include "vector2.h" // also includes math_funcs and ustring
+#include "core/math/vector2.h" // also includes math_funcs and ustring
 
 struct Transform2D;
 

@@ -31,13 +31,13 @@
 #ifndef VISUAL_SERVER_H
 #define VISUAL_SERVER_H
 
-#include "bsp_tree.h"
-#include "geometry.h"
-#include "image.h"
-#include "object.h"
-#include "rid.h"
-#include "transform_2d.h"
-#include "variant.h"
+#include "core/image.h"
+#include "core/math/bsp_tree.h"
+#include "core/math/geometry.h"
+#include "core/math/transform_2d.h"
+#include "core/object.h"
+#include "core/rid.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -209,6 +209,7 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
+	virtual Variant material_get_param_default(RID p_material, const StringName &p_param) const = 0;
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 
@@ -489,6 +490,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) = 0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
+	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 
 	/* GI PROBE API */
 
@@ -642,7 +644,7 @@ public:
 	virtual void viewport_set_transparent_background(RID p_viewport, bool p_enabled) = 0;
 
 	virtual void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform) = 0;
-	virtual void viewport_set_canvas_layer(RID p_viewport, RID p_canvas, int p_layer) = 0;
+	virtual void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer) = 0;
 
 	virtual void viewport_set_shadow_atlas_size(RID p_viewport, int p_size) = 0;
 	virtual void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) = 0;
@@ -735,7 +737,7 @@ public:
 
 	enum EnvironmentToneMapper {
 		ENV_TONE_MAPPER_LINEAR,
-		ENV_TONE_MAPPER_REINHARDT,
+		ENV_TONE_MAPPER_REINHARD,
 		ENV_TONE_MAPPER_FILMIC,
 		ENV_TONE_MAPPER_ACES
 	};
@@ -863,6 +865,8 @@ public:
 	virtual void canvas_item_set_visible(RID p_item, bool p_visible) = 0;
 	virtual void canvas_item_set_light_mask(RID p_item, int p_mask) = 0;
 
+	virtual void canvas_item_set_update_when_visible(RID p_item, bool p_update) = 0;
+
 	virtual void canvas_item_set_transform(RID p_item, const Transform2D &p_transform) = 0;
 	virtual void canvas_item_set_clip(RID p_item, bool p_clip) = 0;
 	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable) = 0;
@@ -891,7 +895,7 @@ public:
 	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), RID p_texture = RID(), int p_count = -1, RID p_normal_map = RID()) = 0;
 	virtual void canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_texture = RID(), RID p_normal_map = RID()) = 0;
 	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID(), RID p_normal_map = RID()) = 0;
-	virtual void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map, int p_h_frames, int p_v_frames) = 0;
+	virtual void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map) = 0;
 	virtual void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform) = 0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore) = 0;
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) = 0;
@@ -1032,6 +1036,8 @@ public:
 	virtual void set_debug_generate_wireframes(bool p_generate) = 0;
 
 	virtual void call_set_use_vsync(bool p_enable) = 0;
+
+	virtual bool is_low_end() const = 0;
 
 	VisualServer();
 	virtual ~VisualServer();

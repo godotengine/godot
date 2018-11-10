@@ -30,11 +30,11 @@
 
 #include "settings_config_dialog.h"
 
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
 #include "scene/gui/margin_container.h"
 #include "script_editor_debugger.h"
 
@@ -56,11 +56,7 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 
 	String full_name = inspector->get_full_item_path(p_name);
 
-	// Small usability workaround to update the text color settings when the
-	// color theme is changed
-	if (full_name == "text_editor/theme/color_theme") {
-		inspector->get_inspector()->update_tree();
-	} else if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
+	if (full_name == "interface/theme/accent_color" || full_name == "interface/theme/base_color" || full_name == "interface/theme/contrast") {
 		EditorSettings::get_singleton()->set_manually("interface/theme/preset", "Custom"); // set preset to Custom
 	} else if (full_name.begins_with("text_editor/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
@@ -365,7 +361,7 @@ void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
 void EditorSettingsDialog::_focus_current_search_box() {
 
 	Control *tab = tabs->get_current_tab_control();
-	LineEdit *current_search_box;
+	LineEdit *current_search_box = NULL;
 	if (tab == tab_general)
 		current_search_box = search_box;
 	else if (tab == tab_shortcuts)

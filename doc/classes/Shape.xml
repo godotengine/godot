@@ -4,15 +4,19 @@
 		Base class for all 3D shape resources.
 	</brief_description>
 	<description>
-		Base class for all 3D shape resources. All 3D shapes that inherit from this can be set into a [PhysicsBody] or [Area].
+		Base class for all 3D shape resources. Nodes that inherit from this can be used as shapes for a [PhysicsBody] or [Area] objects.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<demos>
 	</demos>
 	<methods>
 	</methods>
+	<members>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

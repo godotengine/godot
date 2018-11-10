@@ -5836,134 +5836,6 @@ msgstr "Bağlamsal Yardım"
 msgid "Shader"
 msgstr "Gölgelendirici"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Basamaklı Sabiti Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Vec Sabitini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "RGB Sabitini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Skaler Operatörünü Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Vec İşletmenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Vec Basamaklı İşletmeni Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "RGB İşletmenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Yalnız Döndürmeye Geçiş Yap"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Basamaklı İşlevi Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Vec İşlevini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Basamaklı Tekdüzenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Vec Tekdüzenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "RGB Tekdüzenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Varsayılan Değeri Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "XForm Tekdüzenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "Doku Tekdüzenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Küp Eşleşme Tekdüzenini Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "Yorumu Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "Renk Yokuşuna Ekle / Kaldır"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Renk Yokuşunu Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Eğri Haritası Ekle / Kaldır"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Eğri Haritasını Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "Giriş Adını Değiştir"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "Çizge Düğümlerini Bağla"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "Çizge Düğümlerinin Bağlantılarını Kes"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Gölgelendirici Çizge Düğümünü Kaldır"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Gölgelendirici Çizge Düğümünü Taşı"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "Grafik Düğüm(lerini) Çoğalt"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Gölgelendirici Çizge Düğümünü Sil"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "Hata: Döngüsel Bağlantı Bağlantısı"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "Hata: Girdi Bağlantıları Eksik"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Gölgelendirici Çizge Düğümü Ekle"
-
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
@@ -9597,6 +9469,102 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Basamaklı Sabiti Değiştir"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Vec Sabitini Değiştir"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "RGB Sabitini Değiştir"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Skaler Operatörünü Değiştir"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Vec İşletmenini Değiştir"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Vec Basamaklı İşletmeni Değiştir"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "RGB İşletmenini Değiştir"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Yalnız Döndürmeye Geçiş Yap"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Basamaklı İşlevi Değiştir"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Vec İşlevini Değiştir"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Basamaklı Tekdüzenini Değiştir"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Vec Tekdüzenini Değiştir"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "RGB Tekdüzenini Değiştir"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Varsayılan Değeri Değiştir"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "XForm Tekdüzenini Değiştir"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "Doku Tekdüzenini Değiştir"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Küp Eşleşme Tekdüzenini Değiştir"
+
+#~ msgid "Change Comment"
+#~ msgstr "Yorumu Değiştir"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "Renk Yokuşuna Ekle / Kaldır"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Renk Yokuşunu Değiştir"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Eğri Haritası Ekle / Kaldır"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Eğri Haritasını Değiştir"
+
+#~ msgid "Change Input Name"
+#~ msgstr "Giriş Adını Değiştir"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "Çizge Düğümlerini Bağla"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "Çizge Düğümlerinin Bağlantılarını Kes"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Gölgelendirici Çizge Düğümünü Kaldır"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Gölgelendirici Çizge Düğümünü Taşı"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "Grafik Düğüm(lerini) Çoğalt"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Gölgelendirici Çizge Düğümünü Sil"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "Hata: Döngüsel Bağlantı Bağlantısı"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "Hata: Girdi Bağlantıları Eksik"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Gölgelendirici Çizge Düğümü Ekle"
 
 #~ msgid "Disabled"
 #~ msgstr "Devre dışı"

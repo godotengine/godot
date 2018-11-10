@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "baked_lightmap.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/os.h"
+#include "core/io/config_file.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
 #include "voxel_light_baker.h"
 
 void BakedLightmapData::set_bounds(const AABB &p_bounds) {
@@ -365,7 +366,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	{
 		bake_bounds = AABB(-extents, extents * 2.0);
 		int subdiv = nearest_power_of_2_templated(int(bake_bounds.get_longest_axis_size() / bake_cell_size));
-		bake_bounds.size[bake_bounds.get_longest_axis_size()] = subdiv * bake_cell_size;
+		bake_bounds.size[bake_bounds.get_longest_axis_index()] = subdiv * bake_cell_size;
 		bake_subdiv = nearest_shift(subdiv) + 1;
 
 		capture_subdiv = bake_subdiv;
@@ -374,9 +375,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			capture_subdiv--;
 			css *= 2.0;
 		}
-
-		print_line("bake subdiv: " + itos(bake_subdiv));
-		print_line("capture subdiv: " + itos(capture_subdiv));
 	}
 
 	baker.begin_bake(bake_subdiv, bake_bounds);
@@ -529,21 +527,60 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 				tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
 			}
 
-			Ref<ImageTexture> tex;
-			String image_path = save_path.plus_file(mesh_name + ".tex");
-			bool set_path = true;
-			if (ResourceCache::has(image_path)) {
-				tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
-				set_path = false;
+			String image_path = save_path.plus_file(mesh_name);
+			Ref<Texture> texture;
+
+			if (ResourceLoader::import) {
+
+				bool srgb = false;
+				if (false && hdr) {
+					//save hdr
+				} else {
+					image_path += ".png";
+					print_line("image path saving png: " + image_path);
+					image->save_png(image_path);
+					srgb = true;
+				}
+
+				if (!FileAccess::exists(image_path + ".import")) {
+					Ref<ConfigFile> config;
+					config.instance();
+					config->set_value("remap", "importer", "texture");
+					config->set_value("remap", "type", "StreamTexture");
+					config->set_value("params", "compress/mode", 2);
+					config->set_value("params", "detect_3d", false);
+					config->set_value("params", "flags/repeat", false);
+					config->set_value("params", "flags/filter", true);
+					config->set_value("params", "flags/mipmaps", false);
+					config->set_value("params", "flags/srgb", srgb);
+
+					config->save(image_path + ".import");
+				}
+
+				ResourceLoader::import(image_path);
+				texture = ResourceLoader::load(image_path); //if already loaded, it will be updated on refocus?
+			} else {
+
+				image_path += ".text";
+				Ref<ImageTexture> tex;
+				bool set_path = true;
+				if (ResourceCache::has(image_path)) {
+					tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
+					set_path = false;
+				}
+
+				if (!tex.is_valid()) {
+					tex.instance();
+				}
+
+				tex->create_from_image(image, tex_flags);
+
+				err = ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
+				if (set_path) {
+					tex->set_path(image_path);
+				}
+				texture = tex;
 			}
-
-			if (!tex.is_valid()) {
-				tex.instance();
-			}
-
-			tex->create_from_image(image, tex_flags);
-
-			err = ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
 			if (err != OK) {
 				if (bake_end_function) {
 					bake_end_function();
@@ -551,10 +588,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 				ERR_FAIL_COND_V(err != OK, BAKE_ERROR_CANT_CREATE_IMAGE);
 			}
 
-			if (set_path) {
-				tex->set_path(image_path);
-			}
-			new_light_data->add_user(E->get().path, tex, E->get().instance_idx);
+			new_light_data->add_user(E->get().path, texture, E->get().instance_idx);
 		}
 	}
 

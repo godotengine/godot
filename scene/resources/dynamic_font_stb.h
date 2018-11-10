@@ -33,8 +33,8 @@
 
 #ifndef FREETYPE_ENABLED
 
+#include "core/io/resource_loader.h"
 #include "font.h"
-#include "io/resource_loader.h"
 
 #include "thirdparty/misc/stb_truetype.h"
 

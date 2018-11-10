@@ -3,6 +3,23 @@
 	<brief_description>
 	</brief_description>
 	<description>
+		The [code]ArrayMesh[/code] is used to construct a [Mesh] by specifying the attributes as arrays. The most basic example is the creation of a single triangle
+		[codeblock]
+		var vertices = PoolVector3Array()
+		vertices.push_back(Vector3(0,1,0))
+		vertices.push_back(Vector3(1,0,0))
+		vertices.push_back(Vector3(0,0,1))
+		# Initialize the ArrayMesh.
+		var arr_mesh = ArrayMesh.new()
+		var arrays = []
+		arrays.resize(ArrayMesh.ARRAY_MAX)
+		arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+		# Create the Mesh.
+		arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var m = MeshInstance.new()
+		m.mesh = arr_mesh
+		[/codeblock]
+		The [code]MeshInstance[/code] is ready to be added to the SceneTree to be shown.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,7 +47,7 @@
 			</argument>
 			<description>
 				Creates a new surface.
-				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. See [Mesh] for details. (As a note, when using indices, it is recommended to only use points, lines or triangles). [method get_surface_count] will become the surf_idx for this new surface.
+				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. See [Mesh] for details. (As a note, when using indices, it is recommended to only use points, lines or triangles). [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
 				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [code]ARRAY_INDEX[/code] if it is used.
 				Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data, and the index array defines the order of the vertices.
 				Godot uses clockwise winding order for front faces of triangle primitive modes.
@@ -64,13 +81,6 @@
 			</argument>
 			<description>
 				Returns the name of the blend shape at this index.
-			</description>
-		</method>
-		<method name="get_surface_count" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the amount of surfaces that the [code]ArrayMesh[/code] holds.
 			</description>
 		</method>
 		<method name="lightmap_unwrap">
@@ -118,24 +128,6 @@
 				Return the length in vertices of the vertex array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
-		<method name="surface_get_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method add_surface_from_arrays]).
-			</description>
-		</method>
-		<method name="surface_get_blend_shape_arrays" qualifiers="const">
-			<return type="Array">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Returns the blend shape arrays for the requested surface.
-			</description>
-		</method>
 		<method name="surface_get_format" qualifiers="const">
 			<return type="int">
 			</return>
@@ -143,15 +135,6 @@
 			</argument>
 			<description>
 				Return the format mask of the requested surface (see [method add_surface_from_arrays]).
-			</description>
-		</method>
-		<method name="surface_get_material" qualifiers="const">
-			<return type="Material">
-			</return>
-			<argument index="0" name="surf_idx" type="int">
-			</argument>
-			<description>
-				Return a [Material] in a given surface. Surface is rendered using this material.
 			</description>
 		</method>
 		<method name="surface_get_name" qualifiers="const">

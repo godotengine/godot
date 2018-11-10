@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "panel.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
 void Panel::_notification(int p_what) {
 

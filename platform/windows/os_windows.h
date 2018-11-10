@@ -31,13 +31,13 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 #include "context_gl_win.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/win_midi.h"
-#include "os/input.h"
-#include "os/os.h"
 #include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -157,7 +157,7 @@ class OS_Windows : public OS {
 
 	void _update_window_style(bool repaint = true);
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual int get_current_video_driver() const;
 
@@ -259,7 +259,7 @@ public:
 	virtual uint64_t get_ticks_usec() const;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false);
-	virtual Error kill(const ProcessID &p_pid, const int p_stop_max_wait_msec = -1);
+	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
 
 	virtual bool has_environment(const String &p_var) const;

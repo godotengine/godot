@@ -38,8 +38,8 @@
 #include "../utils/thread_local.h"
 #include "gd_mono_header.h"
 
-#include "object.h"
-#include "reference.h"
+#include "core/object.h"
+#include "core/reference.h"
 
 #define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
 	if (unlikely(m_exc != NULL)) {                     \
@@ -49,6 +49,7 @@
 
 namespace GDMonoUtils {
 
+typedef void (*GodotObject_Dispose)(MonoObject *, MonoObject **);
 typedef Array *(*Array_GetPtr)(MonoObject *, MonoObject **);
 typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoObject **);
 typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoObject **);
@@ -130,8 +131,9 @@ struct MonoCache {
 	GDMonoClass *class_SyncAttribute;
 	GDMonoClass *class_RemoteSyncAttribute;
 	GDMonoClass *class_MasterSyncAttribute;
-	GDMonoClass *class_SlaveSyncAttribute;
+	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_MasterAttribute;
+	GDMonoClass *class_PuppetAttribute;
 	GDMonoClass *class_SlaveAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
@@ -141,6 +143,7 @@ struct MonoCache {
 	GDMonoField *field_Image_ptr;
 	GDMonoField *field_RID_ptr;
 
+	GodotObject_Dispose methodthunk_GodotObject_Dispose;
 	Array_GetPtr methodthunk_Array_GetPtr;
 	Dictionary_GetPtr methodthunk_Dictionary_GetPtr;
 	IsArrayGenericType methodthunk_MarshalUtils_IsArrayGenericType;
@@ -230,13 +233,15 @@ _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }
 
-MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc);
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
 
-MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc);
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
 
-void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error);
 
 } // namespace GDMonoUtils
 

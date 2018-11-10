@@ -31,9 +31,9 @@
 #include "packed_scene.h"
 
 #include "core/core_string_names.h"
-#include "engine.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
+#include "core/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
@@ -106,7 +106,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		if (i == 0 && base_scene_idx >= 0) {
 			//scene inheritance on root node
-			//print_line("scene inherit");
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), NULL);
 			node = sdata->instance(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
@@ -117,7 +116,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		} else if (n.instance >= 0) {
 			//instance a scene into this node
-			//print_line("instance");
 			if (n.instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
 
 				String path = props[n.instance & FLAG_MASK];
@@ -141,7 +139,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 		} else if (n.type == TYPE_INSTANCED) {
-			//print_line("instanced");
 			//get the node from somewhere, it likely already exists from another instance
 			if (parent) {
 				node = parent->_get_child_by_name(snames[n.name]);
@@ -152,7 +149,6 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 #endif
 			}
 		} else if (ClassDB::is_class_enabled(snames[n.type])) {
-			//print_line("created");
 			//node belongs to this scene and must be created
 			Object *obj = ClassDB::instance(snames[n.type]);
 			if (!Object::cast_to<Node>(obj)) {
@@ -268,7 +264,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			if (n.instance >= 0 || n.type != TYPE_INSTANCED || i == 0) {
-				//if node was not part of instance, must set it's name, parenthood and ownership
+				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
 						parent->_add_child_nocheck(node, snames[n.name]);
@@ -476,6 +472,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
+	StringName type = p_node->get_class();
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
@@ -486,20 +483,22 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		String name = E->get().name;
 		Variant value = p_node->get(E->get().name);
 
-		bool isdefault = ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one());
+		bool isdefault = false;
+		Variant default_value = ClassDB::class_get_default_property_value(type, name);
 
-		if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
-			isdefault = true; //is script default value
+		if (default_value.get_type() != Variant::NIL) {
+			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
-		/*
-		if (nd.instance<0 && ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one())) {
-			continue;
-		}
-		*/
 
-		//print_line("PASSED!");
-		//print_line("at: "+String(p_node->get_name())+"::"+name+": -  nz: "+itos(E->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO)+" no: "+itos(E->get().usage&PROPERTY_USAGE_STORE_IF_NONONE));
-		//print_line("value: "+String(value)+" is zero: "+itos(value.is_zero())+" is one" +itos(value.is_one()));
+		Ref<Script> script = p_node->get_script();
+		if (!isdefault && script.is_valid() && script->get_property_default_value(name, default_value)) {
+			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
+		}
+		// the version above makes more sense, because it does not rely on placeholder or usage flag
+		// in the script, just the default value function.
+		// if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
+		// 	isdefault = true; //is script default value
+		// }
 
 		if (pack_state_stack.size()) {
 			// we are on part of an instanced subscene

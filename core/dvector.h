@@ -31,12 +31,12 @@
 #ifndef DVECTOR_H
 #define DVECTOR_H
 
-#include "os/copymem.h"
-#include "os/memory.h"
-#include "os/rw_lock.h"
-#include "pool_allocator.h"
-#include "safe_refcount.h"
-#include "ustring.h"
+#include "core/os/copymem.h"
+#include "core/os/memory.h"
+#include "core/os/rw_lock.h"
+#include "core/pool_allocator.h"
+#include "core/safe_refcount.h"
+#include "core/ustring.h"
 
 struct MemoryPool {
 
@@ -149,7 +149,7 @@ class PoolVector {
 			}
 		}
 
-		if (old_alloc->refcount.unref() == true) {
+		if (old_alloc->refcount.unref()) {
 			//this should never happen but..
 
 #ifdef DEBUG_ENABLED
@@ -209,7 +209,7 @@ class PoolVector {
 		if (!alloc)
 			return;
 
-		if (alloc->refcount.unref() == false) {
+		if (!alloc->refcount.unref()) {
 			alloc = NULL;
 			return;
 		}

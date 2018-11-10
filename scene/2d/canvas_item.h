@@ -70,6 +70,7 @@ private:
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
+			uint32_t particles_animation : 1;
 			uint32_t invalid_key : 1;
 		};
 
@@ -79,6 +80,14 @@ private:
 			return key < p_key.key;
 		}
 	};
+
+	struct ShaderNames {
+		StringName particles_anim_h_frames;
+		StringName particles_anim_v_frames;
+		StringName particles_anim_loop;
+	};
+
+	static ShaderNames *shader_names;
 
 	struct ShaderData {
 		RID shader;
@@ -95,6 +104,7 @@ private:
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
 		mk.light_mode = light_mode;
+		mk.particles_animation = particles_animation;
 		return mk;
 	}
 
@@ -108,6 +118,11 @@ private:
 
 	BlendMode blend_mode;
 	LightMode light_mode;
+	bool particles_animation;
+
+	int particles_anim_h_frames;
+	int particles_anim_v_frames;
+	bool particles_anim_loop;
 
 protected:
 	static void _bind_methods();
@@ -119,6 +134,17 @@ public:
 
 	void set_light_mode(LightMode p_light_mode);
 	LightMode get_light_mode() const;
+
+	void set_particles_animation(bool p_particles_anim);
+	bool get_particles_animation() const;
+
+	void set_particles_anim_h_frames(int p_frames);
+	int get_particles_anim_h_frames() const;
+	void set_particles_anim_v_frames(int p_frames);
+	int get_particles_anim_v_frames() const;
+
+	void set_particles_anim_loop(bool p_frames);
+	bool get_particles_anim_loop() const;
 
 	static void init_shaders();
 	static void finish_shaders();
@@ -326,6 +352,7 @@ public:
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;
 	RID get_canvas() const;
+	ObjectID get_canvas_layer_instance_id() const;
 	Ref<World2D> get_world_2d() const;
 
 	virtual void set_material(const Ref<Material> &p_material);
@@ -346,7 +373,9 @@ public:
 	void set_notify_transform(bool p_enable);
 	bool is_transform_notification_enabled() const;
 
-	// Used by control nodes to retreive the parent's anchorable area
+	void force_update_transform();
+
+	// Used by control nodes to retrieve the parent's anchorable area
 	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
 
 	int get_canvas_layer() const;

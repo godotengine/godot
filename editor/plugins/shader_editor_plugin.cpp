@@ -37,7 +37,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/property_editor.h"
-#include "scene/resources/shader_graph.h"
 #include "servers/visual/shader_types.h"
 
 /*** SHADER SCRIPT EDITOR ****/
@@ -87,10 +86,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 	Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
-	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
-	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
-	Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 
 	get_text_edit()->add_color_override("background_color", background_color);
 	get_text_edit()->add_color_override("completion_background_color", completion_background_color);
@@ -141,33 +137,15 @@ void ShaderTextEditor::_load_theme_settings() {
 		get_text_edit()->add_keyword_color(E->get(), keyword_color);
 	}
 
-	//colorize core types
-	//Color basetype_color= EDITOR_DEF("text_editor/base_type_color",Color(0.3,0.3,0.0));
-
 	//colorize comments
 	get_text_edit()->add_color_region("/*", "*/", comment_color, false);
 	get_text_edit()->add_color_region("//", "", comment_color, false);
-
-	/*//colorize strings
-	Color string_color = EDITOR_DEF("text_editor/string_color",Color::hex(0x6b6f00ff));
-
-	List<String> strings;
-	shader->get_shader_mode()->get_string_delimiters(&strings);
-
-	for (List<String>::Element *E=strings.front();E;E=E->next()) {
-
-		String string = E->get();
-		String beg = string.get_slice(" ",0);
-		String end = string.get_slice_count(" ")>1?string.get_slice(" ",1):String();
-		get_text_edit()->add_color_region(beg,end,string_color,end=="");
-	}*/
 }
 
 void ShaderTextEditor::_check_shader_mode() {
 
 	String type = ShaderLanguage::get_shader_type(get_text_edit()->get_text());
 
-	print_line("type is: " + type);
 	Shader::Mode mode;
 
 	if (type == "canvas_item") {
@@ -285,7 +263,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->delete_lines();
 		} break;
 		case EDIT_CLONE_DOWN: {
-			shader_editor->code_lines_down();
+			shader_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 
@@ -428,7 +406,7 @@ void ShaderEditor::ensure_select_current() {
 
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
-	if (p_shader.is_null())
+	if (p_shader.is_null() || !p_shader->is_text_shader())
 		return;
 
 	shader = p_shader;
@@ -470,7 +448,6 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			int col, row;
 			TextEdit *tx = shader_editor->get_text_edit();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
-			Vector2 mpos = mb->get_global_position() - tx->get_global_position();
 			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 
 			if (tx->is_right_click_moving_caret()) {
@@ -482,7 +459,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					int to_column = tx->get_selection_to_column();
 
 					if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-						// Right click is outside the seleted text
+						// Right click is outside the selected text
 						tx->deselect();
 					}
 				}
@@ -608,7 +585,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 	Shader *shader = Object::cast_to<Shader>(p_object);
-	return shader != NULL;
+	return shader != NULL && shader->is_text_shader();
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {

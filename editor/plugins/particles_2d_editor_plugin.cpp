@@ -31,9 +31,10 @@
 #include "particles_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "io/image_loader.h"
-#include "scene/3d/particles.h"
+#include "core/io/image_loader.h"
+#include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/particles_material.h"
 
 void Particles2DEditorPlugin::edit(Object *p_object) {
 
@@ -58,8 +59,6 @@ void Particles2DEditorPlugin::make_visible(bool p_visible) {
 
 void Particles2DEditorPlugin::_file_selected(const String &p_file) {
 
-	print_line("file: " + p_file);
-
 	source_emission_file = p_file;
 	emission_mask->popup_centered_minsize();
 }
@@ -73,7 +72,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 				generate_seconds->set_value(1.0);
 			else
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
-			generate_aabb->popup_centered_minsize();
+			generate_visibility_rect->popup_centered_minsize();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
 
@@ -84,6 +83,25 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 
 			emission_mask->popup_centered_minsize();
 		} break;
+		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
+
+			UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+
+			CPUParticles2D *cpu_particles = memnew(CPUParticles2D);
+			cpu_particles->convert_from_particles(particles);
+			cpu_particles->set_name(particles->get_name());
+			cpu_particles->set_transform(particles->get_transform());
+			cpu_particles->set_visible(particles->is_visible());
+			cpu_particles->set_pause_mode(particles->get_pause_mode());
+
+			undo_redo->create_action("Replace Particles by CPUParticles");
+			undo_redo->add_do_method(particles, "replace_by", cpu_particles);
+			undo_redo->add_undo_method(cpu_particles, "replace_by", particles);
+			undo_redo->add_do_reference(cpu_particles);
+			undo_redo->add_undo_reference(particles);
+			undo_redo->commit_action();
+
+		} break;
 	}
 }
 
@@ -93,7 +111,7 @@ void Particles2DEditorPlugin::_generate_visibility_rect() {
 
 	float running = 0.0;
 
-	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
+	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect"), int(time));
 
 	bool was_emitting = particles->is_emitting();
 	if (!was_emitting) {
@@ -357,6 +375,8 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
+	menu->get_popup()->add_separator();
+	menu->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
 	menu->set_text(TTR("Particles"));
 	toolbar->add_child(menu);
 
@@ -376,19 +396,19 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	epoints->set_value(512);
 	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"), epoints);
 
-	generate_aabb = memnew(ConfirmationDialog);
-	generate_aabb->set_title(TTR("Generate Visibility Rect"));
+	generate_visibility_rect = memnew(ConfirmationDialog);
+	generate_visibility_rect->set_title(TTR("Generate Visibility Rect"));
 	VBoxContainer *genvb = memnew(VBoxContainer);
-	generate_aabb->add_child(genvb);
+	generate_visibility_rect->add_child(genvb);
 	generate_seconds = memnew(SpinBox);
 	genvb->add_margin_child(TTR("Generation Time (sec):"), generate_seconds);
 	generate_seconds->set_min(0.1);
 	generate_seconds->set_max(25);
 	generate_seconds->set_value(2);
 
-	toolbar->add_child(generate_aabb);
+	toolbar->add_child(generate_visibility_rect);
 
-	generate_aabb->connect("confirmed", this, "_generate_visibility_rect");
+	generate_visibility_rect->connect("confirmed", this, "_generate_visibility_rect");
 
 	emission_mask = memnew(ConfirmationDialog);
 	emission_mask->set_title(TTR("Generate Visibility Rect"));

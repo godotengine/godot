@@ -30,13 +30,14 @@
 
 #include "visual_script_property_selector.h"
 
+#include "core/os/keyboard.h"
+#include "editor/editor_node.h"
 #include "editor_scale.h"
 #include "modules/visual_script/visual_script.h"
 #include "modules/visual_script/visual_script_builtin_funcs.h"
 #include "modules/visual_script/visual_script_flow_control.h"
 #include "modules/visual_script/visual_script_func_nodes.h"
 #include "modules/visual_script/visual_script_nodes.h"
-#include "os/keyboard.h"
 #include "scene/main/node.h"
 #include "scene/main/viewport.h"
 
@@ -148,7 +149,7 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("PoolColorArray", "EditorIcons")
 		};
 
-		if (!seq_connect && visual_script_generic == false) {
+		if (!seq_connect && !visual_script_generic) {
 			get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/by_type/" + Variant::get_type_name(type), Set<String>(), found, root, search_box);
@@ -176,10 +177,8 @@ void VisualScriptPropertySelector::_update_search() {
 				Ref<Texture> icon;
 				if (E->get().name == "Script Variables") {
 					icon = get_icon("Script", "EditorIcons");
-				} else if (has_icon(E->get().name, "EditorIcons")) {
-					icon = get_icon(E->get().name, "EditorIcons");
 				} else {
-					icon = get_icon("Object", "EditorIcons");
+					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
 				}
 				category->set_icon(0, icon);
 				continue;
@@ -191,15 +190,14 @@ void VisualScriptPropertySelector::_update_search() {
 			if (type_filter.size() && type_filter.find(E->get().type) == -1)
 				continue;
 
-			String get_text_raw = String(TTR("Get")) + String(" ") + E->get().name;
+			// capitalize() also converts underscore to space, we'll match again both possible styles
+			String get_text_raw = String(vformat(TTR("Get %s"), E->get().name));
 			String get_text = get_text_raw.capitalize();
-
-			String set_text_raw = String(TTR("Set ")) + String(" ") + E->get().name;
+			String set_text_raw = String(vformat(TTR("Set %s"), E->get().name));
 			String set_text = set_text_raw.capitalize();
 			String input = search_box->get_text().capitalize();
-			if (input == String() ||
-					get_text_raw.findn(input) != -1 ||
-					get_text.findn(input) != -1) {
+
+			if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
 				TreeItem *item = search_options->create_item(category ? category : root);
 				item->set_text(0, get_text);
 				item->set_metadata(0, E->get().name);
@@ -212,9 +210,7 @@ void VisualScriptPropertySelector::_update_search() {
 				item->set_metadata(2, connecting);
 			}
 
-			if (input == String() ||
-					set_text_raw.findn(input) != -1 &&
-							set_text.findn(input) != -1) {
+			if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
 				TreeItem *item = search_options->create_item(category ? category : root);
 				item->set_text(0, set_text);
 				item->set_metadata(0, E->get().name);
@@ -232,7 +228,7 @@ void VisualScriptPropertySelector::_update_search() {
 		}
 	}
 
-	if (seq_connect == true && visual_script_generic == false) {
+	if (seq_connect && !visual_script_generic) {
 		String text = search_box->get_text();
 		create_visualscript_item(String("VisualScriptCondition"), root, text, String("Condition"));
 		create_visualscript_item(String("VisualScriptSwitch"), root, text, String("Switch"));
@@ -285,15 +281,12 @@ void VisualScriptPropertySelector::_update_search() {
 
 			Ref<Texture> icon;
 			script_methods = false;
-			print_line("name: " + E->get().name);
 			String rep = E->get().name.replace("*", "");
 			if (E->get().name == "*Script Methods") {
 				icon = get_icon("Script", "EditorIcons");
 				script_methods = true;
-			} else if (has_icon(rep, "EditorIcons")) {
-				icon = get_icon(rep, "EditorIcons");
 			} else {
-				icon = get_icon("Object", "EditorIcons");
+				icon = EditorNode::get_singleton()->get_class_icon(rep);
 			}
 			category->set_icon(0, icon);
 
@@ -311,31 +304,36 @@ void VisualScriptPropertySelector::_update_search() {
 			continue;
 
 		MethodInfo mi = E->get();
-		String desc = mi.name.capitalize() + " (";
+		String desc_arguments;
+		if (mi.arguments.size() > 0) {
+			desc_arguments = "(";
+			for (int i = 0; i < mi.arguments.size(); i++) {
+
+				if (i > 0) {
+					desc_arguments += ", ";
+				}
+				if (mi.arguments[i].type == Variant::NIL) {
+					desc_arguments += "var";
+				} else if (mi.arguments[i].name.find(":") != -1) {
+					desc_arguments += mi.arguments[i].name.get_slice(":", 1);
+					mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
+				} else {
+					desc_arguments += Variant::get_type_name(mi.arguments[i].type);
+				}
+			}
+			desc_arguments += ")";
+		}
+		String desc_raw = mi.name + desc_arguments;
+		String desc = desc_raw.capitalize().replace("( ", "(");
 
 		if (search_box->get_text() != String() &&
 				name.findn(search_box->get_text()) == -1 &&
-				desc.findn(search_box->get_text()) == -1)
+				desc.findn(search_box->get_text()) == -1 &&
+				desc_raw.findn(search_box->get_text()) == -1) {
 			continue;
-
-		TreeItem *item = search_options->create_item(category ? category : root);
-
-		for (int i = 0; i < mi.arguments.size(); i++) {
-
-			if (i > 0)
-				desc += ", ";
-
-			if (mi.arguments[i].type == Variant::NIL)
-				desc += "var";
-			else if (mi.arguments[i].name.find(":") != -1) {
-				desc += mi.arguments[i].name.get_slice(":", 1);
-				mi.arguments[i].name = mi.arguments[i].name.get_slice(":", 0);
-			} else
-				desc += Variant::get_type_name(mi.arguments[i].type);
 		}
 
-		desc += ")";
-
+		TreeItem *item = search_options->create_item(category ? category : root);
 		item->set_text(0, desc);
 		item->set_icon(0, get_icon("MemberMethod", "EditorIcons"));
 		item->set_metadata(0, name);
@@ -393,13 +391,13 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 		Vector<String> path = E->get().split("/");
 		bool is_filter = false;
-		for (Set<String>::Element *E = filter.front(); E; E = E->next()) {
-			if (path.size() >= 2 && path[1].findn(E->get()) != -1) {
+		for (Set<String>::Element *F = filter.front(); F; F = F->next()) {
+			if (path.size() >= 2 && path[1].findn(F->get()) != -1) {
 				is_filter = true;
 				break;
 			}
 		}
-		if (is_filter == true) {
+		if (is_filter) {
 			continue;
 		}
 
@@ -421,11 +419,16 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			String basic_type = Variant::get_type_name(vnode_function_call->get_basic_type());
 			type_name = basic_type.capitalize() + " ";
 		}
-		VisualScriptBuiltinFunc *vnode_builtin_function_call = Object::cast_to<VisualScriptBuiltinFunc>(*VisualScriptLanguage::singleton->create_node_from_name(E->get()));
-		if (vnode_builtin_function_call != NULL) {
-			type_name = "Builtin ";
+
+		Vector<String> desc = path[path.size() - 1].replace("(", "( ").replace(")", " )").replace(",", ", ").split(" ");
+		for (size_t i = 0; i < desc.size(); i++) {
+			desc.write[i] = desc[i].capitalize();
+			if (desc[i].ends_with(",")) {
+				desc.write[i] = desc[i].replace(",", ", ");
+			}
 		}
-		item->set_text(0, type_name + path[path.size() - 1].capitalize());
+
+		item->set_text(0, type_name + String("").join(desc));
 		item->set_icon(0, get_icon("VisualScript", "EditorIcons"));
 		item->set_selectable(0, true);
 		item->set_metadata(0, E->get());
@@ -582,6 +585,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	type = Variant::NIL;
 	script = 0;
 	properties = true;
+	visual_script_generic = false;
 	instance = NULL;
 	virtuals_only = p_virtuals_only;
 
@@ -602,6 +606,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	properties = true;
+	visual_script_generic = false;
 	instance = NULL;
 	virtuals_only = false;
 
@@ -621,6 +626,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	type = p_type;
 	script = 0;
 	properties = true;
+	visual_script_generic = false;
 	instance = NULL;
 	virtuals_only = false;
 
@@ -639,6 +645,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	type = Variant::NIL;
 	script = 0;
 	properties = false;
+	visual_script_generic = false;
 	instance = NULL;
 	virtuals_only = false;
 
@@ -657,6 +664,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	type = Variant::NIL;
 	script = 0;
 	properties = true;
+	visual_script_generic = false;
 	instance = p_instance;
 	virtuals_only = false;
 
@@ -725,6 +733,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
+	seq_connect = false;
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
 	help_bit->connect("request_hide", this, "_closed");

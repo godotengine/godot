@@ -294,7 +294,6 @@ void LineBuilder::build() {
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 			uvx1 = current_distance1 / (width * tile_aspect);
 		} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
-			uvx0 = current_distance0 / total_distance;
 			uvx1 = current_distance1 / total_distance;
 		}
 

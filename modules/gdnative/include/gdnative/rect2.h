@@ -77,6 +77,12 @@ godot_bool GDAPI godot_rect2_has_point(const godot_rect2 *p_self, const godot_ve
 
 godot_rect2 GDAPI godot_rect2_grow(const godot_rect2 *p_self, const godot_real p_by);
 
+godot_rect2 GDAPI godot_rect2_grow_individual(const godot_rect2 *p_self, const godot_real p_left, const godot_real p_top, const godot_real p_right, const godot_real p_bottom);
+
+godot_rect2 GDAPI godot_rect2_grow_margin(const godot_rect2 *p_self, const godot_int p_margin, const godot_real p_by);
+
+godot_rect2 GDAPI godot_rect2_abs(const godot_rect2 *p_self);
+
 godot_rect2 GDAPI godot_rect2_expand(const godot_rect2 *p_self, const godot_vector2 *p_to);
 
 godot_bool GDAPI godot_rect2_operator_equal(const godot_rect2 *p_self, const godot_rect2 *p_b);

@@ -31,9 +31,9 @@
 #ifndef BIT_MASK_H
 #define BIT_MASK_H
 
-#include "image.h"
-#include "io/resource_loader.h"
-#include "resource.h"
+#include "core/image.h"
+#include "core/io/resource_loader.h"
+#include "core/resource.h"
 
 class BitMap : public Resource {
 

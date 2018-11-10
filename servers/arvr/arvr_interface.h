@@ -32,7 +32,7 @@
 #define ARVR_INTERFACE_H
 
 #include "core/math/camera_matrix.h"
-#include "os/thread_safe.h"
+#include "core/os/thread_safe.h"
 #include "scene/main/viewport.h"
 #include "servers/arvr_server.h"
 

@@ -65,19 +65,6 @@ void ContextGL_X11::swap_buffers() {
 	glXSwapBuffers(x11_display, x11_window);
 }
 
-/*
-static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
-
-	//print_line(String()+"getting proc of: "+p_function);
-	GLWrapperFuncPtr func=(GLWrapperFuncPtr)glXGetProcAddress( (const GLubyte*) p_function);
-	if (!func) {
-		print_line("Couldn't find function: "+String(p_function));
-	}
-
-	return func;
-
-}*/
-
 static bool ctxErrorOccurred = false;
 static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
 	ctxErrorOccurred = true;
@@ -129,8 +116,13 @@ Error ContextGL_X11::initialize() {
 	};
 
 	int fbcount;
-	GLXFBConfig fbconfig;
+	GLXFBConfig fbconfig = 0;
 	XVisualInfo *vi = NULL;
+
+	XSetWindowAttributes swa;
+	swa.event_mask = StructureNotifyMask;
+	swa.border_pixel = 0;
+	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
 
 	if (OS::get_singleton()->is_layered_allowed()) {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs_layered, &fbcount);
@@ -155,16 +147,10 @@ Error ContextGL_X11::initialize() {
 		}
 		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
 
-		XSetWindowAttributes swa;
-
-		swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-		swa.border_pixel = 0;
 		swa.background_pixmap = None;
 		swa.background_pixel = 0;
 		swa.border_pixmap = None;
-		swa.event_mask = StructureNotifyMask;
-
-		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask | CWBackPixel, &swa);
+		valuemask |= CWBackPixel;
 
 	} else {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
@@ -173,42 +159,21 @@ Error ContextGL_X11::initialize() {
 		vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
 		fbconfig = fbc[0];
-
-		XSetWindowAttributes swa;
-
-		swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-		swa.border_pixel = 0;
-		swa.event_mask = StructureNotifyMask;
-
-		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
 	}
 
-	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
-	set_class_hint(x11_display, x11_window);
-	XMapWindow(x11_display, x11_window);
-
-	int (*oldHandler)(Display *, XErrorEvent *) =
-			XSetErrorHandler(&ctxErrorHandler);
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&ctxErrorHandler);
 
 	switch (context_type) {
-		case GLES_2_0_COMPATIBLE:
 		case OLDSTYLE: {
+
 			p->glx_context = glXCreateContext(x11_display, vi, 0, GL_TRUE);
-		} break;
-		/*
-		case ContextType::GLES_2_0_COMPATIBLE: {
-
-			static int context_attribs[] = {
-				GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-				GLX_CONTEXT_MINOR_VERSION_ARB, 0,
-				None
-			};
-
-			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
-			ERR_EXPLAIN("Could not obtain an OpenGL 3.0 context!");
 			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
 		} break;
-		*/
+		case GLES_2_0_COMPATIBLE: {
+
+			p->glx_context = glXCreateNewContext(x11_display, fbconfig, GLX_RGBA_TYPE, 0, true);
+			ERR_FAIL_COND_V(!p->glx_context, ERR_UNCONFIGURED);
+		} break;
 		case GLES_3_0_COMPATIBLE: {
 
 			static int context_attribs[] = {
@@ -220,23 +185,21 @@ Error ContextGL_X11::initialize() {
 			};
 
 			p->glx_context = glXCreateContextAttribsARB(x11_display, fbconfig, NULL, true, context_attribs);
-			ERR_EXPLAIN("Could not obtain an OpenGL 3.3 context!");
 			ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
 		} break;
 	}
+
+	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
+	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
+
+	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
+	set_class_hint(x11_display, x11_window);
+	XMapWindow(x11_display, x11_window);
 
 	XSync(x11_display, False);
 	XSetErrorHandler(oldHandler);
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
-
-	/*
-	glWrapperInit(wrapper_get_proc_address);
-	glFlush();
-
-	glXSwapBuffers(x11_display,x11_window);
-*/
-	//glXMakeCurrent(x11_display, None, NULL);
 
 	XFree(vi);
 
@@ -310,7 +273,6 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, c
 ContextGL_X11::~ContextGL_X11() {
 	release_current();
 	glXDestroyContext(x11_display, p->glx_context);
-
 	memdelete(p);
 }
 

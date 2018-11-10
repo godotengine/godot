@@ -20,6 +20,22 @@
 				Returns the current value set for this material of a uniform in the shader.
 			</description>
 		</method>
+		<method name="property_can_revert">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="property_get_revert">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_shader_param">
 			<return type="void">
 			</return>

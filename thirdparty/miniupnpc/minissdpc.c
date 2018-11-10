@@ -494,7 +494,6 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 	struct addrinfo hints, *servinfo, *p;
 #endif
 #ifdef _WIN32
-	MIB_IPFORWARDROW ip_forward;
 	unsigned long _ttl = (unsigned long)ttl;
 #endif
 	int linklocal = 1;
@@ -538,61 +537,103 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
  * SSDP multicast traffic */
 /* Get IP associated with the index given in the ip_forward struct
  * in order to give this ip to setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF) */
-	if(!ipv6
-	   && (GetBestRoute(inet_addr("223.255.255.255"), 0, &ip_forward) == NO_ERROR)) {
-		DWORD dwRetVal = 0;
-		PMIB_IPADDRTABLE pIPAddrTable;
-		DWORD dwSize = 0;
-#ifdef DEBUG
-		IN_ADDR IPAddr;
-#endif
-		int i;
-#ifdef DEBUG
-		printf("ifIndex=%lu nextHop=%lx \n", ip_forward.dwForwardIfIndex, ip_forward.dwForwardNextHop);
-#endif
-		pIPAddrTable = (MIB_IPADDRTABLE *) malloc(sizeof (MIB_IPADDRTABLE));
-		if(pIPAddrTable) {
-			if (GetIpAddrTable(pIPAddrTable, &dwSize, 0) == ERROR_INSUFFICIENT_BUFFER) {
-				free(pIPAddrTable);
-				pIPAddrTable = (MIB_IPADDRTABLE *) malloc(dwSize);
-			}
-		}
-		if(pIPAddrTable) {
-			dwRetVal = GetIpAddrTable( pIPAddrTable, &dwSize, 0 );
+	if(!ipv6) {
+		DWORD ifbestidx;
+		SOCKADDR_IN destAddr;
+		memset(&destAddr, 0, sizeof(destAddr));
+		destAddr.sin_family = AF_INET;
+		destAddr.sin_addr.s_addr = inet_addr("223.255.255.255");
+		destAddr.sin_port = 0;
+		if (GetBestInterfaceEx((struct sockaddr *)&destAddr, &ifbestidx) == NO_ERROR) {
+			DWORD dwSize = 0;
+			DWORD dwRetVal = 0;
+			unsigned int i = 0;
+			ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+			ULONG family = AF_INET;
+			LPVOID lpMsgBuf = NULL;
+			PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+			ULONG outBufLen = 0;
+			ULONG Iterations = 0;
+			PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+			PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
+			PIP_ADAPTER_ANYCAST_ADDRESS pAnycast = NULL;
+			PIP_ADAPTER_MULTICAST_ADDRESS pMulticast = NULL;
+			IP_ADAPTER_DNS_SERVER_ADDRESS *pDnServer = NULL;
+			IP_ADAPTER_PREFIX *pPrefix = NULL;
+
+			outBufLen = 15360;
+			do {
+				pAddresses = (IP_ADAPTER_ADDRESSES *) HeapAlloc(GetProcessHeap(), 0, outBufLen);
+				if (pAddresses == NULL) {
+					break;
+				}
+
+				dwRetVal = GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen);
+
+				if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+					HeapFree(GetProcessHeap(), 0, pAddresses);
+					pAddresses = NULL;
+				} else {
+					break;
+				}
+				Iterations++;
+			} while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < 3));
+
 			if (dwRetVal == NO_ERROR) {
+				pCurrAddresses = pAddresses;
+				while (pCurrAddresses) {
 #ifdef DEBUG
-				printf("\tNum Entries: %ld\n", pIPAddrTable->dwNumEntries);
-#endif
-				for (i=0; i < (int) pIPAddrTable->dwNumEntries; i++) {
-#ifdef DEBUG
-					printf("\n\tInterface Index[%d]:\t%ld\n", i, pIPAddrTable->table[i].dwIndex);
-					IPAddr.S_un.S_addr = (u_long) pIPAddrTable->table[i].dwAddr;
-					printf("\tIP Address[%d]:     \t%s\n", i, inet_ntoa(IPAddr) );
-					IPAddr.S_un.S_addr = (u_long) pIPAddrTable->table[i].dwMask;
-					printf("\tSubnet Mask[%d]:    \t%s\n", i, inet_ntoa(IPAddr) );
-					IPAddr.S_un.S_addr = (u_long) pIPAddrTable->table[i].dwBCastAddr;
-					printf("\tBroadCast[%d]:      \t%s (%ld)\n", i, inet_ntoa(IPAddr), pIPAddrTable->table[i].dwBCastAddr);
-					printf("\tReassembly size[%d]:\t%ld\n", i, pIPAddrTable->table[i].dwReasmSize);
-					printf("\tType and State[%d]:", i);
+					printf("\tIfIndex (IPv4 interface): %u\n", pCurrAddresses->IfIndex);
+					printf("\tAdapter name: %s\n", pCurrAddresses->AdapterName);
+					pUnicast = pCurrAddresses->FirstUnicastAddress;
+					if (pUnicast != NULL) {
+						for (i = 0; pUnicast != NULL; i++) {
+							IPAddr.S_un.S_addr = (u_long) pUnicast->Address;
+							printf("\tIP Address[%d]:     \t%s\n", i, inet_ntoa(IPAddr) );
+							pUnicast = pUnicast->Next;
+						}
+						printf("\tNumber of Unicast Addresses: %d\n", i);
+					}
+					pAnycast = pCurrAddresses->FirstAnycastAddress;
+					if (pAnycast) {
+						for (i = 0; pAnycast != NULL; i++) {
+							IPAddr.S_un.S_addr = (u_long) pAnyCast->Address;
+							printf("\tAnycast Address[%d]:     \t%s\n", i, inet_ntoa(IPAddr) );
+							pAnycast = pAnycast->Next;
+						}
+						printf("\tNumber of Anycast Addresses: %d\n", i);
+					}
+					pMulticast = pCurrAddresses->FirstMulticastAddress;
+					if (pMulticast) {
+						for (i = 0; pMulticast != NULL; i++) {
+							IPAddr.S_un.S_addr = (u_long) pMultiCast->Address;
+							printf("\tMulticast Address[%d]:     \t%s\n", i, inet_ntoa(IPAddr) );
+						}
+					}
 					printf("\n");
 #endif
-					if (pIPAddrTable->table[i].dwIndex == ip_forward.dwForwardIfIndex) {
+					pUnicast = pCurrAddresses->FirstUnicastAddress;
+					if (pCurrAddresses->IfIndex == ifbestidx && pUnicast != NULL) {
+						SOCKADDR_IN *ipv4 = (SOCKADDR_IN *)(pUnicast->Address.lpSockaddr);
 						/* Set the address of this interface to be used */
 						struct in_addr mc_if;
 						memset(&mc_if, 0, sizeof(mc_if));
-						mc_if.s_addr = pIPAddrTable->table[i].dwAddr;
+						mc_if.s_addr = ipv4->sin_addr.s_addr;
 						if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) < 0) {
 							PRINT_SOCKET_ERROR("setsockopt");
 						}
-						((struct sockaddr_in *)&sockudp_r)->sin_addr.s_addr = pIPAddrTable->table[i].dwAddr;
+						((struct sockaddr_in *)&sockudp_r)->sin_addr.s_addr = ipv4->sin_addr.s_addr;
 #ifndef DEBUG
 						break;
 #endif
 					}
+					pCurrAddresses = pCurrAddresses->Next;
 				}
 			}
-			free(pIPAddrTable);
-			pIPAddrTable = NULL;
+			if (pAddresses != NULL) {
+				HeapFree(GetProcessHeap(), 0, pAddresses);
+				pAddresses = NULL;
+			}
 		}
 	}
 #endif	/* _WIN32 */

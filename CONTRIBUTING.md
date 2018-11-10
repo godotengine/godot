@@ -70,11 +70,15 @@ Similar rules can be applied when contributing bug fixes - it's always best to
 discuss the implementation in the bug report first if you are not 100% about
 what would be the best fix.
 
+In addition to the following tips, also take a look at the
+[Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
+for an introduction to developing on Godot.
+
 #### Be nice to the git history
 
-Try to make simple PRs with that handle one specific topic. Just like for
-reporting issues, it's better to open 3 different PRs that each address a
-different issue than one big PR with three commits.
+Try to make simple PRs that handle one specific topic. Just like for reporting
+issues, it's better to open 3 different PRs that each address a different issue
+than one big PR with three commits.
 
 When updating your fork with upstream changes, please use ``git pull --rebase``
 to avoid creating "merge commits". Those commits unnecessarily pollute the git

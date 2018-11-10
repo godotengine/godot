@@ -83,7 +83,7 @@ int G6DOFRotationalLimitMotorSW::testLimitValue(real_t test_value) {
 real_t G6DOFRotationalLimitMotorSW::solveAngularLimits(
 		real_t timeStep, Vector3 &axis, real_t jacDiagABInv,
 		BodySW *body0, BodySW *body1) {
-	if (needApplyTorques() == false) return 0.0f;
+	if (!needApplyTorques()) return 0.0f;
 
 	real_t target_velocity = m_targetVelocity;
 	real_t maxMotorForce = m_maxMotorForce;
@@ -497,6 +497,13 @@ void Generic6DOFJointSW::set_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJoi
 			m_angularLimits[p_axis].m_maxLimitForce = p_value;
 
 		} break;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY: {
+			// Not implemented in GodotPhysics backend
+		} break;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT: {
+			// Not implemented in GodotPhysics backend
+		} break;
+		case PhysicsServer::G6DOF_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 }
 
@@ -572,6 +579,13 @@ real_t Generic6DOFJointSW::get_param(Vector3::Axis p_axis, PhysicsServer::G6DOFJ
 			return m_angularLimits[p_axis].m_maxMotorForce;
 
 		} break;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY: {
+			// Not implemented in GodotPhysics backend
+		} break;
+		case PhysicsServer::G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT: {
+			// Not implemented in GodotPhysics backend
+		} break;
+		case PhysicsServer::G6DOF_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 	return 0;
 }
@@ -593,6 +607,10 @@ void Generic6DOFJointSW::set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJoin
 
 			m_angularLimits[p_axis].m_enableMotor = p_value;
 		} break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR: {
+			// Not implemented in GodotPhysics backend
+		} break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
 	}
 }
 bool Generic6DOFJointSW::get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const {
@@ -611,6 +629,10 @@ bool Generic6DOFJointSW::get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJoin
 
 			return m_angularLimits[p_axis].m_enableMotor;
 		} break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR: {
+			// Not implemented in GodotPhysics backend
+		} break;
+		case PhysicsServer::G6DOF_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
 	}
 
 	return 0;

@@ -29,18 +29,19 @@
 /*************************************************************************/
 
 #include "main_loop.h"
-#include "script_language.h"
+
+#include "core/script_language.h"
 
 void MainLoop::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("input_event", "ev"), &MainLoop::input_event);
+	ClassDB::bind_method(D_METHOD("input_event", "event"), &MainLoop::input_event);
 	ClassDB::bind_method(D_METHOD("input_text", "text"), &MainLoop::input_text);
 	ClassDB::bind_method(D_METHOD("init"), &MainLoop::init);
 	ClassDB::bind_method(D_METHOD("iteration", "delta"), &MainLoop::iteration);
 	ClassDB::bind_method(D_METHOD("idle", "delta"), &MainLoop::idle);
 	ClassDB::bind_method(D_METHOD("finish"), &MainLoop::finish);
 
-	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "ev", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_input_text", PropertyInfo(Variant::STRING, "text")));
 	BIND_VMETHOD(MethodInfo("_initialize"));
 	BIND_VMETHOD(MethodInfo("_iteration", PropertyInfo(Variant::REAL, "delta")));

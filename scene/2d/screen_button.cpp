@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "screen_button.h"
-#include "input_map.h"
-#include "os/input.h"
-#include "os/os.h"
+#include "core/input_map.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
 
 void TouchScreenButton::set_texture(const Ref<Texture> &p_texture) {
 

@@ -8,7 +8,7 @@
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<demos>
 	</demos>

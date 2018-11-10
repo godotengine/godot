@@ -83,6 +83,8 @@
 			<argument index="0" name="pack" type="String">
 			</argument>
 			<description>
+				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem (res://). Returns true on success.
+				Note: If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
@@ -100,6 +102,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns true if the specified property exists and its initial value differs from the current value.
 			</description>
 		</method>
 		<method name="property_get_revert">
@@ -108,12 +111,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Returns the initial value of the specified property. Returns null if the property does not exist.
 			</description>
 		</method>
 		<method name="save">
 			<return type="int" enum="Error">
 			</return>
 			<description>
+				Saves the configuration to the project.godot file.
 			</description>
 		</method>
 		<method name="save_custom">
@@ -122,6 +127,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Saves the configuration to a custom file.
 			</description>
 		</method>
 		<method name="set_initial_value">
@@ -157,6 +163,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="">
+		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
 			Scale the boot splash image to the full window length when engine starts (will leave it as default pixel size otherwise).
 		</member>
@@ -174,7 +182,7 @@
 			Name of the project. It is used from both project manager and by the exporters. Overriding this as name.locale allows setting it in multiple languages.
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
-			Allow the project to save to it's own custom user dir (in AppData on windows or ~/.config on unixes). This setting only works for desktop exporters. A name must be set in the "custom_user_dir_name" setting for this to take effect.
+			Allow the project to save to its own custom user dir (in AppData on windows or ~/.config on unixes). This setting only works for desktop exporters. A name must be set in the "custom_user_dir_name" setting for this to take effect.
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
 			Disable printing to stderr on exported build.
@@ -208,7 +216,7 @@
 		<member name="audio/output_latency" type="int" setter="" getter="">
 		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
-			Setting to harcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
+			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>
 		<member name="compression/formats/gzip/compression_level" type="int" setter="" getter="">
 			Default compression level for gzip. Affects compressed scenes and resources.
@@ -224,7 +232,11 @@
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
 		</member>
+		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="">
+		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="">
 		</member>
@@ -364,7 +376,7 @@
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="">
 			Timer setting for incremental search in Tree, IntemList, etc. controls.
 		</member>
-		<member name="gui/timers/text_edit_idle_detect_sec" type="int" setter="" getter="">
+		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="">
 			Timer for detecting idle in the editor.
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
@@ -576,6 +588,14 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="">
 			This is used by servers when used in multi threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
+		<member name="mono/debugger_agent/port" type="int" setter="" getter="">
+		</member>
+		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="">
+		</member>
+		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="">
+		</member>
+		<member name="mono/export/include_scripts_content" type="bool" setter="" getter="">
+		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
@@ -588,17 +608,11 @@
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
 			Default size of packet peer stream for deserializing godot data. Over this size, data is dropped.
 		</member>
-		<member name="network/remote_fs/max_pages" type="int" setter="" getter="">
-			Maximum amount of pages used for remote filesystem (used by debugging).
-		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
 			Amount of read ahead used by remote filesystem. Improves latency.
 		</member>
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="">
 			Page size used by remote filesystem.
-		</member>
-		<member name="network/ssl/certificates" type="String" setter="" getter="">
-			If your game or application uses HTTPS, a certificates file is needed. It must be set here.
 		</member>
 		<member name="node/name_casing" type="int" setter="" getter="">
 			When creating nodes names automatically, set the type of casing in this project. This is mostly an editor setting.
@@ -622,7 +636,7 @@
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than physics FPS.
 		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="">
-			Default background clear color.
+			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
@@ -639,7 +653,7 @@
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
 			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not mesh themselves.
 		</member>
-		<member name="rendering/limits/time/time_rollover_secs" type="int" setter="" getter="">
+		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="">
 			Shaders have a time variable that constantly increases. At some point it needs to be rolled back to zero to avoid numerical errors on shader animations. This setting specifies when.
 		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="">
@@ -655,6 +669,9 @@
 			Size in pixels of the directional shadow.
 		</member>
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="">
+		</member>
+		<member name="rendering/quality/driver/driver_fallback" type="String" setter="" getter="">
+			Whether to allow falling back to other graphics drivers if the preferred driver is not available. Best means use the best working driver (this is the default). Never means never fall back to another driver even if it does not work. This means the project will not run if the preferred driver does not function.
 		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
 		</member>
@@ -675,12 +692,20 @@
 		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="">
-			For reflection probes and panorama backgrounds (sky), use a texure array instead of mipmaps. This reduces jitter noise on reflections, but costs more performance and memory.
+			For reflection probes and panorama backgrounds (sky), use a texture array instead of mipmaps. This reduces jitter noise on reflections, but costs more performance and memory.
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="">
 		</member>
+		<member name="rendering/quality/shading/force_blinn_over_ggx" type="bool" setter="" getter="">
+		</member>
+		<member name="rendering/quality/shading/force_blinn_over_ggx.mobile" type="bool" setter="" getter="">
+		</member>
+		<member name="rendering/quality/shading/force_lambert_over_burley" type="bool" setter="" getter="">
+		</member>
+		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="">
+		</member>
 		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="">
-			Force vertex shading for all rendering. This can increase performance a lot, but also reduces quality inmensely. Can work to optimize on very low end mobile.
+			Force vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can work to optimize on very low end mobile.
 		</member>
 		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="">
 		</member>
@@ -722,6 +747,8 @@
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but syncinc to the main thread can cause a bit more jitter.
+		</member>
+		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="">
 			If the project uses this compression (usually low end mobile), texture importer will import these.

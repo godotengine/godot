@@ -104,9 +104,9 @@ void	btConvexPolyhedron::initialize()
 
 	btHashMap<btInternalVertexPair,btInternalEdge> edges;
 
-	btScalar TotalArea = 0.0f;
 	
-	m_localCenter.setValue(0, 0, 0);
+	
+	
 	for(int i=0;i<m_faces.size();i++)
 	{
 		int numVertices = m_faces[i].m_indices.size();
@@ -172,6 +172,13 @@ void	btConvexPolyhedron::initialize()
 	}
 #endif//USE_CONNECTED_FACES
 
+	initialize2();
+}
+
+void	btConvexPolyhedron::initialize2()
+{
+	m_localCenter.setValue(0, 0, 0);
+	btScalar TotalArea = 0.0f;
 	for(int i=0;i<m_faces.size();i++)
 	{
 		int numVertices = m_faces[i].m_indices.size();
@@ -274,7 +281,6 @@ void	btConvexPolyhedron::initialize()
 	}
 #endif
 }
-
 void btConvexPolyhedron::project(const btTransform& trans, const btVector3& dir, btScalar& minProj, btScalar& maxProj, btVector3& witnesPtMin,btVector3& witnesPtMax) const
 {
 	minProj = FLT_MAX;

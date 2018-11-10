@@ -30,12 +30,32 @@
 
 #include "spatial_editor_gizmos.h"
 
-#include "geometry.h"
-#include "quick_hull.h"
-#include "scene/3d/camera.h"
+#include "core/math/geometry.h"
+#include "core/math/quick_hull.h"
+#include "scene/3d/audio_stream_player_3d.h"
+#include "scene/3d/baked_lightmap.h"
+#include "scene/3d/collision_polygon.h"
+#include "scene/3d/collision_shape.h"
+#include "scene/3d/gi_probe.h"
+#include "scene/3d/light.h"
+#include "scene/3d/listener.h"
+#include "scene/3d/mesh_instance.h"
+#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/particles.h"
+#include "scene/3d/physics_joint.h"
+#include "scene/3d/portal.h"
+#include "scene/3d/position_3d.h"
+#include "scene/3d/ray_cast.h"
+#include "scene/3d/reflection_probe.h"
+#include "scene/3d/room_instance.h"
 #include "scene/3d/soft_body.h"
+#include "scene/3d/spring_arm.h"
+#include "scene/3d/sprite_3d.h"
+#include "scene/3d/vehicle_body.h"
+#include "scene/3d/visibility_notifier.h"
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
+#include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/cylinder_shape.h"
 #include "scene/resources/plane_shape.h"
@@ -44,17 +64,8 @@
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
 
-// Keep small children away from this file.
-// It's so ugly it will eat them alive
-
-// The previous comment is kept only for historical reasons.
-// No children will be harmed by the viewing of this file... hopefully.
-
 #define HANDLE_HALF_SIZE 9.5
 
-bool EditorSpatialGizmo::can_draw() const {
-	return is_editable();
-}
 bool EditorSpatialGizmo::is_editable() const {
 
 	ERR_FAIL_COND_V(!spatial_node, false);
@@ -704,6 +715,7 @@ EditorSpatialGizmo::EditorSpatialGizmo() {
 	instanced = false;
 	spatial_node = NULL;
 	gizmo_plugin = NULL;
+	selectable_icon_size = -1.0f;
 }
 
 EditorSpatialGizmo::~EditorSpatialGizmo() {
@@ -898,7 +910,6 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(lines, material);
-		p_gizmo->add_collision_segments(lines);
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 	}
 
@@ -929,8 +940,6 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(points, material, true);
-		p_gizmo->add_collision_segments(points);
-
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 
 		Vector<Vector3> handles;
@@ -972,38 +981,14 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		p_gizmo->add_lines(points, material);
 
+		float ra = 16 * Math_PI * 2.0 / 64.0;
+		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
+
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, -r));
-
-		Vector<Vector3> collision_segments;
-
-		for (int i = 0; i < 64; i++) {
-
-			float ra = i * Math_PI * 2.0 / 64.0;
-			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
-			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
-			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
-
-			collision_segments.push_back(Vector3(a.x, a.y, -d));
-			collision_segments.push_back(Vector3(b.x, b.y, -d));
-
-			if (i % 16 == 0) {
-
-				collision_segments.push_back(Vector3(a.x, a.y, -d));
-				collision_segments.push_back(Vector3());
-			}
-
-			if (i == 16) {
-
-				handles.push_back(Vector3(a.x, a.y, -d));
-			}
-		}
-
-		collision_segments.push_back(Vector3(0, 0, -r));
-		collision_segments.push_back(Vector3());
+		handles.push_back(Vector3(a.x, a.y, -d));
 
 		p_gizmo->add_handles(handles, get_material("handles"));
-		p_gizmo->add_collision_segments(collision_segments);
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 	}
 }
@@ -1139,7 +1124,6 @@ void AudioStreamPlayer3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) 
 		}
 
 		p_gizmo->add_lines(points, material);
-		p_gizmo->add_collision_segments(points);
 
 		Vector<Vector3> handles;
 		float ha = Math::deg2rad(player->get_emission_angle());
@@ -1334,7 +1318,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
 
@@ -1377,7 +1360,6 @@ void CameraSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		}
 
 		p_gizmo->add_lines(lines, material);
-		p_gizmo->add_collision_segments(lines);
 	}
 }
 
@@ -1722,8 +1704,16 @@ void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		return;
 
 	Skeleton *sk(physical_bone->find_skeleton_parent());
+	if (!sk)
+		return;
+
 	PhysicalBone *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
+	if (!pb)
+		return;
+
 	PhysicalBone *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
+	if (!pbp)
+		return;
 
 	Vector<Vector3> points;
 
@@ -2105,12 +2095,10 @@ void SoftBodySpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	Vector<Vector3> points;
 	soft_body->get_mesh()->generate_debug_mesh_indices(points);
-	soft_body->get_mesh()->clear_cache();
 
 	Ref<Material> material = get_material("shape_material", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_handles(points, get_material("handles"));
 	p_gizmo->add_collision_triangles(tm);
 }
@@ -2427,7 +2415,6 @@ void ParticlesGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	Ref<Material> icon = get_material("particles_icon", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("particles_solid_material", p_gizmo);
@@ -2612,7 +2599,6 @@ void ReflectionProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
-	p_gizmo->add_collision_segments(lines);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
 
@@ -2727,7 +2713,6 @@ void GIProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
 	lines.clear();
 
@@ -2897,7 +2882,6 @@ void BakedIndirectLightGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_collision_segments(lines);
 
 	Vector<Vector3> handles;
 
@@ -3470,10 +3454,9 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		if (points.size() > 3) {
 
-			QuickHull qh;
 			Vector<Vector3> varr = Variant(points);
 			Geometry::MeshData md;
-			Error err = qh.build(varr, md);
+			Error err = QuickHull::build(varr, md);
 			if (err == OK) {
 				Vector<Vector3> points;
 				points.resize(md.edges.size() * 2);
@@ -3486,6 +3469,14 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				p_gizmo->add_collision_segments(points);
 			}
 		}
+	}
+
+	if (Object::cast_to<ConcavePolygonShape>(*s)) {
+
+		Ref<ConcavePolygonShape> cs = s;
+		Ref<ArrayMesh> mesh = cs->get_debug_mesh()->duplicate();
+		mesh->surface_set_material(0, material);
+		p_gizmo->add_mesh(mesh);
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {
@@ -4209,21 +4200,16 @@ void JointSpatialGizmoPlugin::CreateGeneric6DOFJointGizmo(
 	float cs = 0.25;
 
 	for (int ax = 0; ax < 3; ax++) {
-		/*r_points.push_back(p_offset.translated(Vector3(+cs,0,0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(-cs,0,0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(0,+cs,0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(0,-cs,0)).origin);
-		r_points.push_back(p_offset.translated(Vector3(0,0,+cs*2)).origin);
-		r_points.push_back(p_offset.translated(Vector3(0,0,-cs*2)).origin); */
+		float ll = 0;
+		float ul = 0;
+		float lll = 0;
+		float lul = 0;
 
-		float ll;
-		float ul;
-		float lll;
-		float lul;
-
-		int a1, a2, a3;
-		bool enable_ang;
-		bool enable_lin;
+		int a1 = 0;
+		int a2 = 0;
+		int a3 = 0;
+		bool enable_ang = false;
+		bool enable_lin = false;
 
 		switch (ax) {
 			case 0:

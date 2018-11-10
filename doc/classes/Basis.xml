@@ -8,8 +8,8 @@
 		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
-		<link>http://docs.godotengine.org/en/latest/tutorials/math/rotations.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/rotations.html</link>
 	</tutorials>
 	<demos>
 	</demos>

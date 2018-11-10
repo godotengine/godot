@@ -30,9 +30,9 @@
 
 #include "shape_sw.h"
 
-#include "geometry.h"
-#include "quick_hull.h"
-#include "sort.h"
+#include "core/math/geometry.h"
+#include "core/math/quick_hull.h"
+#include "core/sort.h"
 
 #define _POINT_SNAP 0.001953125
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
@@ -1047,7 +1047,7 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 	/** FIND SUPPORT VERTEX **/
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < 3; i++) {
 

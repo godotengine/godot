@@ -30,8 +30,8 @@
 
 #include "resource_importer_obj.h"
 
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
@@ -63,7 +63,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			material_map[current_name] = current;
 		} else if (l.begins_with("Ka ")) {
 			//uv
-			print_line("Warning: Ambient light for material '" + current_name + "' is ignored in PBR");
+			WARN_PRINTS("OBJ: Ambient light for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("Kd ")) {
 			//normal
@@ -119,14 +119,19 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 
 		} else if (l.begins_with("map_Ka ")) {
 			//uv
-			print_line("Warning: Ambient light texture for material '" + current_name + "' is ignored in PBR");
+			WARN_PRINTS("OBJ: Ambient light texture for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("map_Kd ")) {
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -141,7 +146,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -156,7 +166,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -335,8 +350,8 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 				surf_tool->index();
 
-				print_line("current material library " + current_material_library + " has " + itos(material_map.has(current_material_library)));
-				print_line("current material " + current_material + " has " + itos(material_map.has(current_material_library) && material_map[current_material_library].has(current_material)));
+				print_verbose("OBJ: Current material library " + current_material_library + " has " + itos(material_map.has(current_material_library)));
+				print_verbose("OBJ: Current material " + current_material + " has " + itos(material_map.has(current_material_library) && material_map[current_material_library].has(current_material)));
 
 				if (material_map.has(current_material_library) && material_map[current_material_library].has(current_material)) {
 					surf_tool->set_material(material_map[current_material_library][current_material]);
@@ -350,7 +365,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 					mesh->surface_set_name(mesh->get_surface_count() - 1, current_group);
 				}
 
-				print_line("Added surface :" + mesh->surface_get_name(mesh->get_surface_count() - 1));
+				print_verbose("OBJ: Added surface :" + mesh->surface_get_name(mesh->get_surface_count() - 1));
 				surf_tool->clear();
 				surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
 			}

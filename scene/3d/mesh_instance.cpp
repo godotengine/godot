@@ -31,7 +31,7 @@
 #include "mesh_instance.h"
 
 #include "collision_shape.h"
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 #include "physics_body.h"
 #include "scene/resources/material.h"
 #include "scene/scene_string_names.h"
@@ -253,6 +253,11 @@ void MeshInstance::_notification(int p_what) {
 	}
 }
 
+int MeshInstance::get_surface_material_count() const {
+
+	return materials.size();
+}
+
 void MeshInstance::set_surface_material(int p_surface, const Ref<Material> &p_material) {
 
 	ERR_FAIL_INDEX(p_surface, materials.size());
@@ -359,6 +364,7 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance::get_skeleton_path);
 
+	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
 	ClassDB::bind_method(D_METHOD("get_surface_material", "surface"), &MeshInstance::get_surface_material);
 

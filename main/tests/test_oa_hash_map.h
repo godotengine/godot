@@ -31,7 +31,7 @@
 #ifndef TEST_OA_HASH_MAP_H
 #define TEST_OA_HASH_MAP_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestOAHashMap {
 

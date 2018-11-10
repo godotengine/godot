@@ -29,9 +29,12 @@
 /*************************************************************************/
 
 #include "particles_editor_plugin.h"
+
+#include "core/io/resource_loader.h"
 #include "editor/plugins/spatial_editor_plugin.h"
-#include "io/resource_loader.h"
 #include "scene/3d/cpu_particles.h"
+#include "scene/resources/particles_material.h"
+
 bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {
 
 	bool use_normals = emission_fill->get_selected() == 1;
@@ -262,6 +265,7 @@ void ParticlesEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
 		options->set_icon(options->get_popup()->get_icon("Particles", "EditorIcons"));
+		get_tree()->connect("node_removed", this, "_node_removed");
 	}
 }
 
@@ -444,6 +448,7 @@ void ParticlesEditor::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &ParticlesEditor::_menu_option);
 	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
+	ClassDB::bind_method("_node_removed", &ParticlesEditor::_node_removed);
 }
 
 ParticlesEditor::ParticlesEditor() {

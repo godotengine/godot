@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "transform_2d.h" // Includes rect2.h but Rect2 needs Transform2D
+#include "core/math/transform_2d.h" // Includes rect2.h but Rect2 needs Transform2D
 
 bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos, Point2 *r_normal) const {
 

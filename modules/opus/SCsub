@@ -3,7 +3,6 @@
 Import('env')
 Import('env_modules')
 
-
 stub = True
 
 env_opus = env_modules.Clone()
@@ -198,7 +197,10 @@ if env['builtin_opus']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources + opus_sources_silk]
 
-    env_opus.add_source_files(env.modules_sources, thirdparty_sources)
+    # also requires libogg
+    if env['builtin_libogg']:
+        env_opus.Append(CPPPATH=["#thirdparty/libogg"])
+
     env_opus.Append(CFLAGS=["-DHAVE_CONFIG_H"])
 
     thirdparty_include_paths = [
@@ -211,9 +213,9 @@ if env['builtin_opus']:
     ]
     env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
-    # also requires libogg
-    if env['builtin_libogg']:
-        env_opus.Append(CPPPATH=["#thirdparty/libogg"])
+    env_thirdparty = env_opus.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 if not stub:
     # Module files

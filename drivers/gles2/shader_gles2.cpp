@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "shader_gles2.h"
 
-#include "memory.h"
-#include "print_string.h"
-#include "string_builder.h"
-
+#include "core/os/memory.h"
+#include "core/print_string.h"
+#include "core/string_builder.h"
 #include "rasterizer_gles2.h"
 #include "rasterizer_storage_gles2.h"
 
@@ -57,7 +57,7 @@
 
 ShaderGLES2 *ShaderGLES2::active = NULL;
 
-// #define DEBUG_SHADER
+//#define DEBUG_SHADER
 
 #ifdef DEBUG_SHADER
 
@@ -132,6 +132,11 @@ bool ShaderGLES2::bind() {
 
 	ERR_FAIL_COND_V(!version, false);
 
+	if (!version->ok) { //broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
+		glUseProgram(0);
+		return false;
+	}
+
 	glUseProgram(version->id);
 
 	// find out uniform names and locations
@@ -171,73 +176,24 @@ void ShaderGLES2::unbind() {
 	active = NULL;
 }
 
-static String _fix_error_code_line(const String &p_error, int p_code_start, int p_offset) {
+static void _display_error_with_code(const String &p_error, const Vector<const char *> &p_code) {
 
-	int last_find_pos = -1;
-	// NVIDIA
-	String error = p_error;
-	while ((last_find_pos = p_error.find("(", last_find_pos + 1)) != -1) {
+	int line = 1;
+	String total_code;
 
-		int end_pos = last_find_pos + 1;
-
-		while (true) {
-
-			if (p_error[end_pos] >= '0' && p_error[end_pos] <= '9') {
-
-				end_pos++;
-				continue;
-			} else if (p_error[end_pos] == ')') {
-				break;
-			} else {
-
-				end_pos = -1;
-				break;
-			}
-		}
-
-		if (end_pos == -1)
-			continue;
-
-		String numstr = error.substr(last_find_pos + 1, (end_pos - last_find_pos) - 1);
-		String begin = error.substr(0, last_find_pos + 1);
-		String end = error.substr(end_pos, error.length());
-		int num = numstr.to_int() + p_code_start - p_offset;
-		error = begin + itos(num) + end;
+	for (int i = 0; i < p_code.size(); i++) {
+		total_code += String(p_code[i]);
 	}
 
-	// ATI
-	last_find_pos = -1;
-	while ((last_find_pos = p_error.find("ERROR: ", last_find_pos + 1)) != -1) {
+	Vector<String> lines = String(total_code).split("\n");
 
-		last_find_pos += 6;
-		int end_pos = last_find_pos + 1;
+	for (int j = 0; j < lines.size(); j++) {
 
-		while (true) {
-
-			if (p_error[end_pos] >= '0' && p_error[end_pos] <= '9') {
-
-				end_pos++;
-				continue;
-			} else if (p_error[end_pos] == ':') {
-				break;
-			} else {
-
-				end_pos = -1;
-				break;
-			}
-		}
-		continue;
-		if (end_pos == -1)
-			continue;
-
-		String numstr = error.substr(last_find_pos + 1, (end_pos - last_find_pos) - 1);
-		print_line("numstr: " + numstr);
-		String begin = error.substr(0, last_find_pos + 1);
-		String end = error.substr(end_pos, error.length());
-		int num = numstr.to_int() + p_code_start - p_offset;
-		error = begin + itos(num) + end;
+		print_line(itos(line) + ": " + lines[j]);
+		line++;
 	}
-	return error;
+
+	ERR_PRINTS(p_error);
 }
 
 ShaderGLES2::Version *ShaderGLES2::get_current_version() {
@@ -294,7 +250,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		}
 	}
 
-	// keep them around during the functino
+	// keep them around during the function
 	CharString code_string;
 	CharString code_string2;
 	CharString code_globals;
@@ -317,7 +273,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
 			strings.push_back(cc->custom_defines.write[i]);
-			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i]));
+			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i].get_data()));
 		}
 	}
 
@@ -376,9 +332,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			String err_string = get_shader_name() + ": Vertex shader compilation failed:\n";
 
 			err_string += ilogmem;
-			err_string = _fix_error_code_line(err_string, vertex_code_start, define_line_ofs);
 
-			ERR_PRINTS(err_string);
+			_display_error_with_code(err_string, strings);
 
 			Memory::free_static(ilogmem);
 			glDeleteShader(v.vert_id);
@@ -452,9 +407,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			String err_string = get_shader_name() + ": Fragment shader compilation failed:\n";
 
 			err_string += ilogmem;
-			err_string = _fix_error_code_line(err_string, fragment_code_start, define_line_ofs);
 
-			ERR_PRINTS(err_string);
+			_display_error_with_code(err_string, strings);
 
 			Memory::free_static(ilogmem);
 			glDeleteShader(v.frag_id);
@@ -504,9 +458,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		String err_string = get_shader_name() + ": Program linking failed:\n";
 
 		err_string += ilogmem;
-		err_string = _fix_error_code_line(err_string, fragment_code_start, define_line_ofs);
 
-		ERR_PRINTS(err_string);
+		_display_error_with_code(err_string, strings);
 
 		Memory::free_static(ilogmem);
 		glDeleteShader(v.frag_id);
@@ -736,11 +689,6 @@ void ShaderGLES2::use_material(void *p_material) {
 	}
 
 	Version *v = version_map.getptr(conditional_version);
-
-	CustomCode *cc = NULL;
-	if (v) {
-		cc = custom_code_map.getptr(v->code_version);
-	}
 
 	// bind uniforms
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
@@ -1029,7 +977,7 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				value.second.resize(default_arg_size);
 
-				for (int i = 0; i < default_arg_size; i++) {
+				for (size_t i = 0; i < default_arg_size; i++) {
 					if (is_float) {
 						value.second.write[i].real = 0.0;
 					} else {
@@ -1038,8 +986,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				}
 			}
 		}
-
-		// GLint location = get_uniform_location(E->key());
 
 		GLint location;
 		if (v->custom_uniform_locations.has(E->key())) {
@@ -1059,8 +1005,6 @@ void ShaderGLES2::use_material(void *p_material) {
 	// bind textures
 	int tc = material->textures.size();
 	Pair<StringName, RID> *textures = material->textures.ptrw();
-
-	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
 
 	for (int i = 0; i < tc; i++) {
 

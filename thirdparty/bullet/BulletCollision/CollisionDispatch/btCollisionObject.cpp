@@ -16,6 +16,7 @@ subject to the following restrictions:
 
 #include "btCollisionObject.h"
 #include "LinearMath/btSerializer.h"
+#include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"
 
 btCollisionObject::btCollisionObject()
 	:	m_interpolationLinearVelocity(0.f, 0.f, 0.f),
@@ -38,7 +39,7 @@ btCollisionObject::btCollisionObject()
 		m_rollingFriction(0.0f),
         m_spinningFriction(0.f),
 		m_contactDamping(.1),
-		m_contactStiffness(1e4),
+		m_contactStiffness(BT_LARGE_FLOAT),
 		m_internalType(CO_COLLISION_OBJECT),
 		m_userObjectPointer(0),
 		m_userIndex2(-1),
@@ -114,10 +115,18 @@ const char* btCollisionObject::serialize(void* dataBuffer, btSerializer* seriali
 	dataOut->m_ccdSweptSphereRadius = m_ccdSweptSphereRadius;
 	dataOut->m_ccdMotionThreshold = m_ccdMotionThreshold;
 	dataOut->m_checkCollideWith = m_checkCollideWith;
-
-	// Fill padding with zeros to appease msan.
-	memset(dataOut->m_padding, 0, sizeof(dataOut->m_padding));
-
+	if (m_broadphaseHandle)
+	{
+		dataOut->m_collisionFilterGroup = m_broadphaseHandle->m_collisionFilterGroup;
+		dataOut->m_collisionFilterMask = m_broadphaseHandle->m_collisionFilterMask;
+		dataOut->m_uniqueId = m_broadphaseHandle->m_uniqueId;
+	}
+	else
+	{
+		dataOut->m_collisionFilterGroup = 0;
+		dataOut->m_collisionFilterMask = 0;
+		dataOut->m_uniqueId = -1;
+	}
 	return btCollisionObjectDataName;
 }
 

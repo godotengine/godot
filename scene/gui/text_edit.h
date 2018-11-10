@@ -193,7 +193,6 @@ private:
 		int line_number_w;
 		int breakpoint_gutter_width;
 		int fold_gutter_width;
-		Size2 size;
 	} cache;
 
 	Map<int, int> color_region_cache;
@@ -307,8 +306,6 @@ private:
 	float target_v_scroll;
 	float v_scroll_speed;
 
-	bool raised_from_completion;
-
 	String highlighted_word;
 
 	uint64_t last_dblclk;
@@ -373,6 +370,7 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _uncomment_line(int p_line);
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 

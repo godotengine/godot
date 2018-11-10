@@ -31,8 +31,8 @@
 #ifndef VMAP_H
 #define VMAP_H
 
-#include "cowdata.h"
-#include "typedefs.h"
+#include "core/cowdata.h"
+#include "core/typedefs.h"
 
 template <class T, class V>
 class VMap {

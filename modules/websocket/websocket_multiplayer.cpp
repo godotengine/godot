@@ -313,7 +313,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		} else if (to < 0) {
 
 			// All but one, for us if not excluded
-			if (_peer_id != -p_peer_id)
+			if (_peer_id != -(int32_t)p_peer_id)
 				_store_pkt(from, to, in_buffer, data_size);
 
 		} else {

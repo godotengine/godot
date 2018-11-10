@@ -29,12 +29,13 @@
 /*************************************************************************/
 
 #include "animation_track_editor.h"
+
 #include "animation_track_editor_plugins.h"
+#include "core/os/keyboard.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_scale.h"
-#include "os/keyboard.h"
 #include "scene/main/viewport.h"
 #include "servers/audio/audio_stream.h"
 
@@ -772,9 +773,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
 		draw_texture(hsize_icon, hsize_rect.position);
 
-		float keys_from = get_value();
-		float keys_to = keys_from + zoomw / scale;
-
 		{
 			float time_min = 0;
 			float time_max = animation->get_length();
@@ -1255,14 +1253,14 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 				if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-					offset += editor->get_moving_selection_offset();
+					offset = editor->snap_time(offset + editor->get_moving_selection_offset());
 				}
 				offset = offset * scale + limit;
 				if (i < animation->track_get_key_count(track) - 1) {
 
 					float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
 					if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
-						offset_n += editor->get_moving_selection_offset();
+						offset_n = editor->snap_time(offset_n + editor->get_moving_selection_offset());
 					}
 					offset_n = offset_n * scale + limit;
 
@@ -1687,15 +1685,10 @@ void AnimationTrackEdit::_zoom_changed() {
 }
 
 void AnimationTrackEdit::_path_entered(const String &p_text) {
-
-	*block_animation_update_ptr = true;
 	undo_redo->create_action("Change Track Path");
 	undo_redo->add_do_method(animation.ptr(), "track_set_path", track, p_text);
 	undo_redo->add_undo_method(animation.ptr(), "track_set_path", track, animation->track_get_path(track));
 	undo_redo->commit_action();
-	*block_animation_update_ptr = false;
-	update();
-	path->hide();
 }
 
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
@@ -3194,7 +3187,8 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 		case Animation::TYPE_ANIMATION: {
 			value = p_id.value;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);
@@ -3883,9 +3877,7 @@ void AnimationTrackEditor::_move_selection_begin() {
 
 void AnimationTrackEditor::_move_selection(float p_offset) {
 	moving_selection_offset = p_offset;
-	if (snap->is_pressed() && step->get_value() != 0) {
-		moving_selection_offset = Math::stepify(moving_selection_offset, step->get_value());
-	}
+
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();
 	}
@@ -4005,7 +3997,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	// 2- remove overlapped keys
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 
-		float newtime = E->get().pos + motion;
+		float newtime = snap_time(E->get().pos + motion);
 		int idx = animation->track_find_key(E->key().track, newtime, true);
 		if (idx == -1)
 			continue;
@@ -4029,7 +4021,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	// 3-move the keys (re insert them)
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 
-		float newpos = E->get().pos + motion;
+		float newpos = snap_time(E->get().pos + motion);
 		/*
 		if (newpos<0)
 			continue; //no add at the beginning
@@ -4040,7 +4032,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	// 4-(undo) remove inserted keys
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 
-		float newpos = E->get().pos + motion;
+		float newpos = snap_time(E->get().pos + motion);
 		/*
 		if (newpos<0)
 			continue; //no remove what no inserted
@@ -4076,7 +4068,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 
 		float oldpos = E->get().pos;
-		float newpos = oldpos + motion;
+		float newpos = snap_time(oldpos + motion);
 		//if (newpos>=0)
 		undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
 		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
@@ -4088,6 +4080,8 @@ void AnimationTrackEditor::_move_selection_commit() {
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();
 	}
+
+	_update_key_edit();
 }
 void AnimationTrackEditor::_move_selection_cancel() {
 
@@ -4351,7 +4345,8 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					case Animation::TYPE_METHOD: text += " (Methods)"; break;
 					case Animation::TYPE_BEZIER: text += " (Bezier)"; break;
 					case Animation::TYPE_AUDIO: text += " (Audio)"; break;
-					default: {};
+					default: {
+					};
 				}
 
 				TreeItem *it = track_copy_select->create_item(troot);
@@ -4923,8 +4918,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	//this shortcut will be checked from the track itself. so no need to enable it here (will conflict with scenetree dock)
 
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Goto Next Step"), KEY_MASK_CMD | KEY_RIGHT), EDIT_GOTO_NEXT_STEP);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Goto Prev Step"), KEY_MASK_CMD | KEY_LEFT), EDIT_GOTO_PREV_STEP);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KEY_MASK_CMD | KEY_RIGHT), EDIT_GOTO_NEXT_STEP);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Go to Previous Step"), KEY_MASK_CMD | KEY_LEFT), EDIT_GOTO_PREV_STEP);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Optimize Animation"), EDIT_OPTIMIZE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Clean-Up Animation"), EDIT_CLEAN_UP_ANIMATION);

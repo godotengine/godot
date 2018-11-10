@@ -31,8 +31,8 @@
 #ifndef VISUAL_INSTANCE_H
 #define VISUAL_INSTANCE_H
 
-#include "face3.h"
-#include "rid.h"
+#include "core/math/face3.h"
+#include "core/rid.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/material.h"
 /**

@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 #include "csharp_script.h"
 

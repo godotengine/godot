@@ -1260,7 +1260,7 @@
 			The higher, the stronger.
 		</constant>
 		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2" enum="PinJointParam">
-			If above 0, this value is the maximum value for an impulse that this Joint puts on it's ends.
+			If above 0, this value is the maximum value for an impulse that this Joint puts on its ends.
 		</constant>
 		<constant name="HINGE_JOINT_BIAS" value="0" enum="HingeJointParam">
 			The speed with which the two bodies get pulled together when they move in different directions.
@@ -1518,9 +1518,7 @@
 		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
 			Constant for rigid bodies.
 		</constant>
-		<constant name="BODY_MODE_SOFT" value="3" enum="BodyMode">
-		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="4" enum="BodyMode">
+		<constant name="BODY_MODE_CHARACTER" value="3" enum="BodyMode">
 			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">

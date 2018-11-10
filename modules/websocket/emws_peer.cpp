@@ -130,15 +130,17 @@ bool EMWSPeer::is_connected_to_host() const {
 	return peer_sock != -1;
 };
 
-void EMWSPeer::close() {
+void EMWSPeer::close(int p_code, String p_reason) {
 
 	if (peer_sock != -1) {
 		/* clang-format off */
 		EM_ASM({
 			var sock = Module.IDHandler.get($0);
-			sock.close();
+			var code = $1;
+			var reason = UTF8ToString($2);
+			sock.close(code, reason);
 			Module.IDHandler.remove($0);
-		}, peer_sock);
+		}, peer_sock, p_code, p_reason.utf8().get_data());
 		/* clang-format on */
 	}
 	peer_sock = -1;

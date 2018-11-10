@@ -118,14 +118,12 @@ public:
 
 	//! Is limited
 	bool isLimited() {
-		if (m_loLimit >= m_hiLimit) return false;
-		return true;
+		return (m_loLimit < m_hiLimit);
 	}
 
 	//! Need apply correction
 	bool needApplyTorques() {
-		if (m_currentLimit == 0 && m_enableMotor == false) return false;
-		return true;
+		return (m_enableMotor || m_currentLimit != 0);
 	}
 
 	//! calculates  error

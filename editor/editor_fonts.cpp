@@ -37,37 +37,11 @@
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
 
-static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p_charcount, const int *p_chars, const Ref<Texture> &p_texture) {
-
-	Ref<BitmapFont> font(memnew(BitmapFont));
-	font->add_texture(p_texture);
-
-	for (int i = 0; i < p_charcount; i++) {
-
-		const int *c = &p_chars[i * 8];
-
-		int chr = c[0];
-		Rect2 frect;
-		frect.position.x = c[1];
-		frect.position.y = c[2];
-		frect.size.x = c[3];
-		frect.size.y = c[4];
-		Point2 align(c[5], c[6] + p_valign);
-		int advance = c[7];
-
-		font->add_char(chr, 0, frect, align, advance);
-	}
-
-	font->set_height(p_height);
-	font->set_ascent(p_ascent);
-
-	return font;
-}
-
 #define MAKE_FALLBACKS(m_name)          \
 	m_name->add_fallback(FontArabic);   \
 	m_name->add_fallback(FontHebrew);   \
 	m_name->add_fallback(FontThai);     \
+	m_name->add_fallback(FontHindi);    \
 	m_name->add_fallback(FontJapanese); \
 	m_name->add_fallback(FontFallback);
 
@@ -203,6 +177,12 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	FontThai->set_hinting(font_hinting);
 	FontThai->set_font_ptr(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
 	FontThai->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> FontHindi;
+	FontHindi.instance();
+	FontHindi->set_hinting(font_hinting);
+	FontHindi->set_font_ptr(_font_NotoSansDevanagariUI_Regular, _font_NotoSansDevanagariUI_Regular_size);
+	FontHindi->set_force_autohinter(true); //just looks better..i think?
 
 	/* Hack */
 

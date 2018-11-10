@@ -33,16 +33,16 @@
 #include "java_glue.h"
 #include "android/asset_manager_jni.h"
 #include "audio_driver_jandroid.h"
+#include "core/engine.h"
 #include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "dir_access_jandroid.h"
-#include "engine.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
 #include "java_class_wrapper.h"
 #include "main/input_default.h"
 #include "main/main.h"
 #include "os_android.h"
-#include "project_settings.h"
 #include "thread_jandroid.h"
 #include <unistd.h>
 
@@ -589,8 +589,6 @@ TST tst;
 
 static bool initialized = false;
 static int step = 0;
-static bool resized = false;
-static bool resized_reload = false;
 static Size2 new_size;
 static Vector3 accelerometer;
 static Vector3 gravity;
@@ -607,6 +605,8 @@ static jobject _godot_instance;
 static jmethodID _openURI = 0;
 static jmethodID _getDataDir = 0;
 static jmethodID _getLocale = 0;
+static jmethodID _getClipboard = 0;
+static jmethodID _setClipboard = 0;
 static jmethodID _getModel = 0;
 static jmethodID _getScreenDPI = 0;
 static jmethodID _showKeyboard = 0;
@@ -644,6 +644,19 @@ static String _get_locale() {
 	JNIEnv *env = ThreadAndroid::get_env();
 	jstring s = (jstring)env->CallObjectMethod(godot_io, _getLocale);
 	return String(env->GetStringUTFChars(s, NULL));
+}
+
+static String _get_clipboard() {
+	JNIEnv *env = ThreadAndroid::get_env();
+	jstring s = (jstring)env->CallObjectMethod(_godot_instance, _getClipboard);
+	return String(env->GetStringUTFChars(s, NULL));
+}
+
+static void _set_clipboard(const String &p_text) {
+
+	JNIEnv *env = ThreadAndroid::get_env();
+	jstring jStr = env->NewStringUTF(p_text.utf8().get_data());
+	env->CallVoidMethod(_godot_instance, _setClipboard, jStr);
 }
 
 static String _get_model() {
@@ -774,8 +787,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		_setKeepScreenOn = env->GetMethodID(cls, "setKeepScreenOn", "(Z)V");
 		_alertDialog = env->GetMethodID(cls, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 		_getGLESVersionCode = env->GetMethodID(cls, "getGLESVersionCode", "()I");
+		_getClipboard = env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
+		_setClipboard = env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 
-		jclass clsio = env->FindClass("org/godotengine/godot/Godot");
 		if (cls) {
 			jclass c = env->GetObjectClass(gob);
 			_openURI = env->GetMethodID(c, "openURI", "(Ljava/lang/String;)I");
@@ -807,7 +821,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		AudioDriverAndroid::setup(gob);
 	}
 
-	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, p_use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, _set_clipboard, _get_clipboard, p_use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
@@ -870,7 +884,7 @@ static void _initialize_java_modules() {
 				ERR_CONTINUE(!initialize);
 			}
 			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, _godot_instance);
-			jobject gob = env->NewGlobalRef(obj);
+			env->NewGlobalRef(obj);
 		}
 	}
 }
@@ -914,13 +928,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 
 	if (os_android)
 		os_android->set_display_size(Size2(width, height));
-
-	/*input_mutex->lock();
-	resized=true;
-	if (reload)
-		resized_reload=true;
-	new_size=Size2(width,height);
-	input_mutex->unlock();*/
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {
@@ -969,7 +976,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, job
 
 	os_android->process_gyroscope(gyroscope);
 
-	if (os_android->main_loop_iterate() == true) {
+	if (os_android->main_loop_iterate()) {
 
 		jclass cls = env->FindClass("org/godotengine/godot/Godot");
 		jmethodID _finish = env->GetMethodID(cls, "forceQuit", "()V");

@@ -30,7 +30,7 @@
 
 #include "bit_mask.h"
 
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 void BitMap::create(const Size2 &p_size) {
 
@@ -183,7 +183,6 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 	unsigned int count = 0;
 	Set<Point2i> case9s;
 	Set<Point2i> case6s;
-	int i;
 	Vector<Vector2> _points;
 	do {
 		int sv = 0;
@@ -492,18 +491,14 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 		}
 	} while (reenter || popped);
 
-#ifdef DEBUG_ENABLED
-	print_line("max stack size: " + itos(stack.size()));
-#endif
+	print_verbose("BitMap: Max stack size: " + itos(stack.size()));
 }
 
 Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
+	print_verbose("BitMap: Rect: " + r);
 
-#ifdef DEBUG_ENABLED
-	print_line("Rect: " + r);
-#endif
 	Point2i from;
 	Ref<BitMap> fill;
 	fill.instance();
@@ -515,13 +510,9 @@ Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, fl
 			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
 
 				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
-#ifdef DEBUG_ENABLED
-				print_line("pre reduce: " + itos(polygon.size()));
-#endif
+				print_verbose("BitMap: Pre reduce: " + itos(polygon.size()));
 				polygon = reduce(polygon, r, p_epsilon);
-#ifdef DEBUG_ENABLED
-				print_line("post reduce: " + itos(polygon.size()));
-#endif
+				print_verbose("BitMap: Post reduce: " + itos(polygon.size()));
 				polygons.push_back(polygon);
 				fill_bits(this, fill, Point2i(j, i), r);
 			}

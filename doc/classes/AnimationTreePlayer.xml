@@ -618,7 +618,7 @@
 			Once set, Animation nodes can be added to the AnimationTreePlayer.
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode">
-			The thread in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
+			The thread in which to update animations. Default value: [code]ANIMATION_PROCESS_IDLE[/code].
 		</member>
 	</members>
 	<constants>

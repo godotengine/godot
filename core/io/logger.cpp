@@ -30,9 +30,9 @@
 
 #include "logger.h"
 
-#include "os/dir_access.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 // va_copy was defined in the C99, but not in C++ standards before C++11.
 // When you compile C++ without --std=c++<XX> option, compilers still define
@@ -43,6 +43,10 @@
 #else
 #define va_copy(d, s) ((d) = (s))
 #endif
+#endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define sprintf sprintf_s
 #endif
 
 bool Logger::should_log(bool p_err) {
