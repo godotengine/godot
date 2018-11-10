@@ -300,7 +300,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 	}
 
 	node->set_cell(p_pos.x, p_pos.y, p_value, p_flip_h, p_flip_v, p_transpose);
-	if (manual_autotile || node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE) {
+	if (manual_autotile || (p_value != -1 && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
 		if (current != -1) {
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
 		}
