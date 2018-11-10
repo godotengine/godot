@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <GLES2/gl2.h>
-//#include <GLES3/gl3.h>
 
 struct ContextGL_SDL_Private {
 	SDL_GLContext gl_context;
