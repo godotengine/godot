@@ -167,7 +167,8 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	return "m_" + p_id;
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
 }
 
 static String f2sp0(float p_float) {
