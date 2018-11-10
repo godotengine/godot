@@ -196,6 +196,12 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 	ERR_PRINTS(p_error);
 }
 
+static String _mkid(const String &p_id) {
+
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
+}
+
 ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 
 	Version *_v = version_map.getptr(conditional_version);
@@ -492,15 +498,15 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	if (cc) {
 		// uniforms
 		for (int i = 0; i < cc->custom_uniforms.size(); i++) {
-			StringName native_uniform_name = "m_" + cc->custom_uniforms[i];
-			GLint location = glGetUniformLocation(v.id, ((String)native_uniform_name).ascii().get_data());
+			String native_uniform_name = _mkid(cc->custom_uniforms[i]);
+			GLint location = glGetUniformLocation(v.id, (native_uniform_name).ascii().get_data());
 			v.custom_uniform_locations[cc->custom_uniforms[i]] = location;
 		}
 
 		// textures
 		for (int i = 0; i < cc->texture_uniforms.size(); i++) {
-			StringName native_uniform_name = "m_" + cc->texture_uniforms[i];
-			GLint location = glGetUniformLocation(v.id, ((String)native_uniform_name).ascii().get_data());
+			String native_uniform_name = _mkid(cc->texture_uniforms[i]);
+			GLint location = glGetUniformLocation(v.id, (native_uniform_name).ascii().get_data());
 			v.custom_uniform_locations[cc->texture_uniforms[i]] = location;
 		}
 	}
