@@ -166,6 +166,14 @@
 				Returns whether or not the item at the specified index is disabled
 			</description>
 		</method>
+		<method name="is_item_icon_transposed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_item_selectable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -285,6 +293,16 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<argument index="1" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_icon_transposed">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="rect" type="bool">
 			</argument>
 			<description>
 			</description>
