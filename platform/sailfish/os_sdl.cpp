@@ -245,6 +245,14 @@ void OS_SDL::finalize() {
 		memdelete(debugger_connection_console);
 	}
 	*/
+	// AudioDriverManager::finish();
+	// for( int i = 0; i < get_audio_driver_count(); i++ )
+	// {
+	// 	AudioDriverManager::get_driver(i)->finish();
+	// }
+	
+	audioresource_release(audio_resource);
+	audioresource_free(audio_resource);
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
@@ -1382,9 +1390,9 @@ OS_SDL::OS_SDL() {
 	is_audio_resource_acquired = false;
 #endif
 
-#ifdef ALSA_ENABLED
-	AudioDriverManager::add_driver(&driver_alsa);
-#endif
+// #ifdef ALSA_ENABLED
+// 	AudioDriverManager::add_driver(&driver_alsa);
+// #endif
 
 	minimized = false;
 	// xim_style = 0L;

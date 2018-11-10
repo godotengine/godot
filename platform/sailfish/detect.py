@@ -19,7 +19,7 @@ def can_build():
     # Check the minimal dependencies
     sdl_error = os.system("pkg-config --version > /dev/null")
     if (sdl_error):
-        print("pkg-config not found.. SDL disabled.")
+        print("pkg-config not found...")
         return False
 
     sdl_error = os.system("pkg-config sdl2 --modversion > /dev/null ")
@@ -49,7 +49,7 @@ def get_opts():
         BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
-        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'yes', ('yes', 'no', 'full')),
+        EnumVariable('debug_symbols', 'Add debug symbols to release version', 'no', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file with the debug symbols', False),
         BoolVariable('touch', 'Enable touch events', True),
         BoolVariable('tools', 'Enable editor tools', False),
@@ -63,6 +63,7 @@ def get_flags():
         ('builtin_libpng', False),
         ('builtin_openssl', False),
         ('builtin_zlib', False),
+        ('builtin_libvpx', False)
     ]
 
 
@@ -215,13 +216,13 @@ def configure(env):
         env.ParseConfig('pkg-config libpcre2-32 --cflags --libs')
 
     ## Flags
-
-    if (os.system("pkg-config --exists alsa") == 0): # 0 means found
-        print("Enabling ALSA")
-        env.Append(CPPFLAGS=["-DALSA_ENABLED"])
-        env.ParseConfig('pkg-config alsa --cflags --libs')
-    else:
-        print("ALSA libraries not found, disabling driver")
+    # if env['alsa']:
+    #     if (os.system("pkg-config --exists alsa") == 0): # 0 means found
+    #         print("Enabling ALSA")
+    #         env.Append(CPPFLAGS=["-DALSA_ENABLED"])
+    #         env.ParseConfig('pkg-config alsa --cflags --libs')
+    #     else:
+    #         print("ALSA libraries not found, disabling driver")
 
     if env['pulseaudio']:
         if (os.system("pkg-config --exists libpulse-simple") == 0): # 0 means found

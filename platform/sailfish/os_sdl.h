@@ -119,10 +119,6 @@ class OS_SDL : public OS_Unix {
 	JoypadLinux *joypad;
 #endif
 
-#ifdef ALSA_ENABLED
-	AudioDriverALSA driver_alsa;
-#endif
-
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 	audioresource_t      *audio_resource;
