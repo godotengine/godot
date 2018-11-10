@@ -326,7 +326,6 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 - (void)windowDidBecomeKey:(NSNotification *)notification {
 	//_GodotInputWindowFocus(window, GL_TRUE);
 	//_GodotPlatformSetCursorMode(window, window->cursorMode);
-	[OS_OSX::singleton->context update];
 
 	if (OS_OSX::singleton->get_main_loop()) {
 		get_mouse_pos(
@@ -1238,6 +1237,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
 	window_view = [[GodotContentView alloc] init];
+	[window_view setWantsLayer:TRUE];
 
 	float displayScale = 1.0;
 	if (is_hidpi_allowed()) {
