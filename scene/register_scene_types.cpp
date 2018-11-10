@@ -343,6 +343,7 @@ void register_scene_types() {
 	ClassDB::register_class<ColorPicker>();
 	ClassDB::register_class<ColorPickerButton>();
 	ClassDB::register_class<RichTextLabel>();
+	ClassDB::register_class<RichTextEffect>();
 	ClassDB::register_class<PopupDialog>();
 	ClassDB::register_class<WindowDialog>();
 	ClassDB::register_class<AcceptDialog>();
