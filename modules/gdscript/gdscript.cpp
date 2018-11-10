@@ -469,8 +469,15 @@ bool GDScript::_update_exports() {
 			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
 				E->get()->set_build_failed(true);
 			}
+			return false;
 		}
 	} else {
+		if (!valid) {
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->set_build_failed(true);
+			}
+			return false;
+		}
 	}
 
 	if (base_cache.is_valid()) {
