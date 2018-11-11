@@ -219,6 +219,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
+		stream_playback->stop();
 		active = false;
 		set_process_internal(false);
 	}
