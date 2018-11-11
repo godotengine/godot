@@ -467,7 +467,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String type = p_data[1];
 		Array properties = p_data[2];
 
-		bool is_new_object = false;
 		if (remote_objects.has(id)) {
 			debugObj = remote_objects[id];
 		} else {
@@ -475,7 +474,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			debugObj->remote_object_id = id;
 			debugObj->type_name = type;
 			remote_objects[id] = debugObj;
-			is_new_object = true;
 			debugObj->connect("value_edited", this, "_scene_tree_property_value_edited");
 		}
 
