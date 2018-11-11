@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "file_dialog.h"
+
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "scene/gui/label.h"
@@ -596,7 +597,7 @@ void FileDialog::set_current_file(const String &p_file) {
 	int lp = p_file.find_last(".");
 	if (lp != -1) {
 		file->select(0, lp);
-		if (file->is_inside_tree())
+		if (file->is_inside_tree() && !get_tree()->is_node_being_edited(file))
 			file->grab_focus();
 	}
 }
