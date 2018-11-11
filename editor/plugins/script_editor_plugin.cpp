@@ -2895,7 +2895,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	restoring_layout = false;
 	waiting_update_names = false;
 	pending_auto_reload = false;
-	auto_reload_running_scripts = false;
+	auto_reload_running_scripts = true;
 	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/open_scripts/show_members_overview");
 	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
 	editor = p_editor;
