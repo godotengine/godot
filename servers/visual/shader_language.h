@@ -534,6 +534,7 @@ public:
 	static String get_token_text(Token p_token);
 
 	static bool is_token_datatype(TokenType p_type);
+	static bool is_token_variable_datatype(TokenType p_type);
 	static DataType get_token_datatype(TokenType p_type);
 	static bool is_token_interpolation(TokenType p_type);
 	static DataInterpolation get_token_interpolation(TokenType p_type);

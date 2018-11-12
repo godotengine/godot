@@ -691,6 +691,30 @@ String ShaderLanguage::token_debug(const String &p_code) {
 	return output;
 }
 
+bool ShaderLanguage::is_token_variable_datatype(TokenType p_type) {
+	return (
+			p_type == TK_TYPE_VOID ||
+			p_type == TK_TYPE_BOOL ||
+			p_type == TK_TYPE_BVEC2 ||
+			p_type == TK_TYPE_BVEC3 ||
+			p_type == TK_TYPE_BVEC4 ||
+			p_type == TK_TYPE_INT ||
+			p_type == TK_TYPE_IVEC2 ||
+			p_type == TK_TYPE_IVEC3 ||
+			p_type == TK_TYPE_IVEC4 ||
+			p_type == TK_TYPE_UINT ||
+			p_type == TK_TYPE_UVEC2 ||
+			p_type == TK_TYPE_UVEC3 ||
+			p_type == TK_TYPE_UVEC4 ||
+			p_type == TK_TYPE_FLOAT ||
+			p_type == TK_TYPE_VEC2 ||
+			p_type == TK_TYPE_VEC3 ||
+			p_type == TK_TYPE_VEC4 ||
+			p_type == TK_TYPE_MAT2 ||
+			p_type == TK_TYPE_MAT3 ||
+			p_type == TK_TYPE_MAT4);
+}
+
 bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 
 	return (
@@ -3563,6 +3587,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				}
 			}
 
+			if (!is_token_variable_datatype(tk.type)) {
+				_set_error("Invalid data type for variable (samplers not allowed)");
+				return ERR_PARSE_ERROR;
+			}
+
 			DataType type = get_token_datatype(tk.type);
 
 			tk = _get_token();
@@ -4215,6 +4244,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (!is_token_datatype(tk.type)) {
 					_set_error("Expected function, uniform or varying ");
+					return ERR_PARSE_ERROR;
+				}
+
+				if (!is_token_variable_datatype(tk.type)) {
+					_set_error("Invalid data type for function return (samplers not allowed)");
 					return ERR_PARSE_ERROR;
 				}
 
