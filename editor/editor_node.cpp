@@ -3150,34 +3150,33 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 		script = p_object;
 	}
 
-	StringName name;
-	String icon_path;
 	if (script.is_valid()) {
-		name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
-		icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-		name = script->get_instance_base_type();
-	}
+		StringName name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
+		if (icon_path.length())
+			return ResourceLoader::load(icon_path);
 
-	if (gui_base->has_icon(p_object->get_class(), "EditorIcons"))
-		return gui_base->get_icon(p_object->get_class(), "EditorIcons");
-
-	if (icon_path.length())
-		return ResourceLoader::load(icon_path);
-
-	if (p_object->has_meta("_editor_icon"))
-		return p_object->get_meta("_editor_icon");
-
-	if (name != StringName()) {
-		const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
-		for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
-			const Vector<EditorData::CustomType> &ct = E->value();
-			for (int i = 0; i < ct.size(); ++i) {
-				if (ct[i].name == name && ct[i].icon.is_valid()) {
-					return ct[i].icon;
+		// should probably be deprecated in 4.x
+		StringName base = script->get_instance_base_type();
+		if (base != StringName()) {
+			const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
+			for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
+				const Vector<EditorData::CustomType> &ct = E->value();
+				for (int i = 0; i < ct.size(); ++i) {
+					if (ct[i].name == base && ct[i].icon.is_valid()) {
+						return ct[i].icon;
+					}
 				}
 			}
 		}
 	}
+
+	// should probably be deprecated in 4.x
+	if (p_object->has_meta("_editor_icon"))
+		return p_object->get_meta("_editor_icon");
+
+	if (gui_base->has_icon(p_object->get_class(), "EditorIcons"))
+		return gui_base->get_icon(p_object->get_class(), "EditorIcons");
 
 	if (p_fallback.length())
 		return gui_base->get_icon(p_fallback, "EditorIcons");
