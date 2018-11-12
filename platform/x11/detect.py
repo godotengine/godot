@@ -149,7 +149,7 @@ def configure(env):
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
 
-    # Check for gcc version > 4 before adding -no-pie
+    # Check for gcc version > 5 before adding -no-pie
     import re
     import subprocess
     proc = subprocess.Popen([env['CXX'], '--version'], stdout=subprocess.PIPE)
@@ -157,7 +157,7 @@ def configure(env):
     match = re.search('[0-9][0-9.]*', stdout)
     if match is not None:
         version = match.group().split('.')
-        if (version[0] > '4'):
+        if (version[0] > '5'):
             env.Append(CCFLAGS=['-fpie'])
             env.Append(LINKFLAGS=['-no-pie'])
 
