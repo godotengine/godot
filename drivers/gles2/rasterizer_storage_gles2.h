@@ -60,20 +60,12 @@ public:
 
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
-		// bool use_anisotropic_filter;
-
-		bool hdr_supported;
-
-		bool use_rgba_2d_shadows;
-
-		// float anisotropic_level;
 
 		int max_texture_image_units;
 		int max_texture_size;
 
-		bool generate_wireframes;
-
-		bool use_texture_array_environment;
+		// TODO implement wireframe in GLES2
+		// bool generate_wireframes;
 
 		Set<String> extensions;
 
@@ -83,7 +75,6 @@ public:
 
 		bool keep_original_textures;
 
-		bool no_depth_prepass;
 		bool force_vertex_shading;
 	} config;
 
@@ -272,31 +263,28 @@ public:
 		void *detect_normal_ud;
 
 		Texture() {
-			flags = 0;
-			width = 0;
-			height = 0;
 			alloc_width = 0;
 			alloc_height = 0;
-			format = Image::FORMAT_L8;
-
 			target = 0;
 
-			data_size = 0;
-			total_data_size = 0;
-			ignore_mipmaps = false;
-
-			compressed = false;
-
-			active = false;
-
-			tex_id = 0;
-
 			stored_cube_sides = 0;
-
-			proxy = NULL;
-
+			ignore_mipmaps = false;
 			render_target = NULL;
-
+			flags = width = height = 0;
+			tex_id = 0;
+			data_size = 0;
+			format = Image::FORMAT_L8;
+			active = false;
+			compressed = false;
+			total_data_size = 0;
+			mipmaps = 0;
+			detect_3d = NULL;
+			detect_3d_ud = NULL;
+			detect_srgb = NULL;
+			detect_srgb_ud = NULL;
+			detect_normal = NULL;
+			detect_normal_ud = NULL;
+			proxy = NULL;
 			redraw_if_visible = false;
 		}
 

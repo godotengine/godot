@@ -1209,6 +1209,8 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::SKELETON_TEXTURE_SIZE, p_skeleton_tex_size);
 
+	state.current_main_tex = 0;
+
 	for (int i = 0; i < tc; i++) {
 
 		glActiveTexture(GL_TEXTURE0 + i);
@@ -1239,6 +1241,9 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		t = t->get_ptr();
 
 		glBindTexture(t->target, t->tex_id);
+		if (i == 0) {
+			state.current_main_tex = t->tex_id;
+		}
 	}
 	state.scene_shader.use_material((void *)p_material);
 

@@ -2401,6 +2401,8 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
 	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno");
+
+	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 }
 
 VisualServer::~VisualServer() {
