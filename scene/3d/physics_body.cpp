@@ -1167,7 +1167,8 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		}
 	}
 
-	Vector3 motion = (floor_velocity + lv) * get_physics_process_delta_time();
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	Vector3 motion = (floor_velocity + lv) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 
 	on_floor = false;
 	on_ceiling = false;
