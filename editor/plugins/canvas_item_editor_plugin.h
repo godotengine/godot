@@ -64,7 +64,10 @@ public:
 
 	Dictionary undo_state;
 
-	CanvasItemEditorSelectedItem() { prev_rot = 0; }
+	CanvasItemEditorSelectedItem() :
+			prev_anchors() {
+		prev_rot = 0;
+	}
 };
 
 class CanvasItemEditor : public VBoxContainer {

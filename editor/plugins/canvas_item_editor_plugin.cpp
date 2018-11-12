@@ -4504,6 +4504,46 @@ void CanvasItemEditor::focus_selection() {
 
 CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
+	key_pos = true;
+	key_rot = true;
+	key_scale = false;
+
+	show_grid = false;
+	show_origin = true;
+	show_viewport = true;
+	show_helpers = false;
+	show_rulers = true;
+	show_guides = true;
+	show_edit_locks = true;
+	zoom = 1;
+	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
+	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
+	grid_offset = Point2();
+	grid_step = Point2(10, 10);
+	grid_step_multiplier = 0;
+	snap_rotation_offset = 0;
+	snap_rotation_step = 15 / (180 / Math_PI);
+	snap_active = false;
+	snap_node_parent = true;
+	snap_node_anchors = true;
+	snap_node_sides = true;
+	snap_node_center = true;
+	snap_other_nodes = true;
+	snap_grid = true;
+	snap_guides = true;
+	snap_rotation = false;
+	snap_pixel = false;
+
+	skeleton_show_bones = true;
+
+	drag_type = DRAG_NONE;
+	drag_from = Vector2();
+	drag_to = Vector2();
+	dragged_guide_pos = Point2();
+	dragged_guide_index = -1;
+
+	bone_last_frame = 0;
+
 	bone_list_dirty = false;
 	tool = TOOL_SELECT;
 	undo_redo = p_editor->get_undo_redo();
@@ -4826,48 +4866,10 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	multiply_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/multiply_grid_step", TTR("Multiply grid step by 2"), KEY_KP_MULTIPLY);
 	divide_grid_step_shortcut = ED_SHORTCUT("canvas_item_editor/divide_grid_step", TTR("Divide grid step by 2"), KEY_KP_DIVIDE);
 
-	key_pos = true;
-	key_rot = true;
-	key_scale = false;
-
-	show_grid = false;
-	show_origin = true;
-	show_viewport = true;
-	show_helpers = false;
-	show_rulers = true;
-	show_guides = true;
-	show_edit_locks = true;
-	zoom = 1;
-	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
-	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
-	grid_offset = Point2();
-	grid_step = Point2(10, 10);
-	grid_step_multiplier = 0;
-	snap_rotation_offset = 0;
-	snap_rotation_step = 15 / (180 / Math_PI);
-	snap_active = false;
-	snap_node_parent = true;
-	snap_node_anchors = true;
-	snap_node_sides = true;
-	snap_node_center = true;
-	snap_other_nodes = true;
-	snap_grid = true;
-	snap_guides = true;
-	snap_rotation = false;
-	snap_pixel = false;
-	skeleton_show_bones = true;
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	singleton = this;
 
 	set_process_unhandled_key_input(true);
-
-	drag_type = DRAG_NONE;
-	drag_from = Vector2();
-	drag_to = Vector2();
-	dragged_guide_pos = Point2();
-	dragged_guide_index = -1;
-
-	bone_last_frame = 0;
 
 	// Update the menus' checkboxes
 	call_deferred("set_state", get_state());

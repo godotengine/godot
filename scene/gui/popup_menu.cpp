@@ -1425,6 +1425,7 @@ PopupMenu::PopupMenu() {
 	set_hide_on_item_selection(true);
 	set_hide_on_checkable_item_selection(true);
 	set_hide_on_multistate_item_selection(false);
+	set_hide_on_window_lose_focus(true);
 
 	submenu_timer = memnew(Timer);
 	submenu_timer->set_wait_time(0.3);
