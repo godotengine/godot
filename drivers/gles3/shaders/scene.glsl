@@ -949,6 +949,18 @@ LIGHT_SHADER_CODE
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
 
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+	vec3 H = normalize(V + L);
+#endif
+
+#if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+	float cNdotH = max(dot(N, H), 0.0);
+#endif
+
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+	float cLdotH = max(dot(L, H), 0.0);
+#endif
+
 	if (metallic < 1.0) {
 #if defined(DIFFUSE_OREN_NAYAR)
 		vec3 diffuse_brdf_NL;
@@ -983,13 +995,9 @@ LIGHT_SHADER_CODE
 #elif defined(DIFFUSE_BURLEY)
 
 		{
-
-			vec3 H = normalize(V + L);
-			float cLdotH = max(0.0, dot(L, H));
-
-			float FD90 = 0.5 + 2.0 * cLdotH * cLdotH * roughness;
-			float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotV);
-			float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotL);
+			float FD90_minus_1 = 2.0 * cLdotH * cLdotH * roughness - 0.5;
+			float FdV = 1.0 + FD90_minus_1 * SchlickFresnel(cNdotV);
+			float FdL = 1.0 + FD90_minus_1 * SchlickFresnel(cNdotL);
 			diffuse_brdf_NL = (1.0 / M_PI) * FdV * FdL * cNdotL;
 			/*
 			float energyBias = mix(roughness, 0.0, 0.5);
@@ -1026,13 +1034,9 @@ LIGHT_SHADER_CODE
 #if defined(SPECULAR_BLINN)
 
 		//normalized blinn
-		vec3 H = normalize(V + L);
-		float cNdotH = max(dot(N, H), 0.0);
-		float cVdotH = max(dot(V, H), 0.0);
-		float cLdotH = max(dot(L, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float blinn = pow(cNdotH, shininess);
-		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
+		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
 		float intensity = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
@@ -1043,7 +1047,7 @@ LIGHT_SHADER_CODE
 		float cRdotV = max(0.0, dot(R, V));
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
+		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
 		float intensity = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 		specular_light += light_color * intensity * specular_blob_intensity * attenuation;
@@ -1062,11 +1066,6 @@ LIGHT_SHADER_CODE
 
 #elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
-
-		vec3 H = normalize(V + L);
-
-		float cNdotH = max(dot(N, H), 0.0);
-		float cLdotH = max(dot(L, H), 0.0);
 
 #if defined(LIGHT_USE_ANISOTROPY)
 
@@ -1095,23 +1094,17 @@ LIGHT_SHADER_CODE
 #endif
 
 #if defined(LIGHT_USE_CLEARCOAT)
-		if (clearcoat_gloss > 0.0) {
-#if !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN)
-			vec3 H = normalize(V + L);
-#endif
+
 #if !defined(SPECULAR_SCHLICK_GGX)
-			float cNdotH = max(dot(N, H), 0.0);
-			float cLdotH = max(dot(L, H), 0.0);
-			float cLdotH5 = SchlickFresnel(cLdotH);
+		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-			float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
-			float Fr = mix(.04, 1.0, cLdotH5);
-			float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
+		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
+		float Fr = mix(.04, 1.0, cLdotH5);
+		float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
 
-			float specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
+		float specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
 
-			specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
-		}
+		specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 #endif
 	}
 
