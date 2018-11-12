@@ -1017,7 +1017,7 @@ void AudioServer::update() {
 
 void AudioServer::load_default_bus_layout() {
 
-	if (FileAccess::exists("res://default_bus_layout.tres")) {
+	if (ResourceLoader::exists("res://default_bus_layout.tres")) {
 		Ref<AudioBusLayout> default_layout = ResourceLoader::load("res://default_bus_layout.tres");
 		if (default_layout.is_valid()) {
 			set_bus_layout(default_layout);
