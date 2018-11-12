@@ -4840,6 +4840,21 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 				if (tokenizer->is_token_literal(0, true)) {
 					enum_name = tokenizer->get_token_literal();
+
+					if (current_class->constant_expressions.has(enum_name)) {
+						_set_error("A constant named '" + String(enum_name) + "' already exists in this class (at line: " +
+								   itos(current_class->constant_expressions[enum_name].expression->line) + ").");
+						return;
+					}
+
+					for (int i = 0; i < current_class->variables.size(); i++) {
+						if (current_class->variables[i].identifier == enum_name) {
+							_set_error("A variable named '" + String(enum_name) + "' already exists in this class (at line: " +
+									   itos(current_class->variables[i].line) + ").");
+							return;
+						}
+					}
+
 					tokenizer->advance();
 				}
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_CURLY_BRACKET_OPEN) {
@@ -4866,25 +4881,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						return;
 					} else { // tokenizer->is_token_literal(0, true)
-						ClassNode::Constant constant;
-
 						StringName const_id = tokenizer->get_token_literal();
 
-						if (current_class->constant_expressions.has(const_id)) {
-							_set_error("A constant named '" + String(const_id) + "' already exists in this class (at line: " +
-									   itos(current_class->constant_expressions[const_id].expression->line) + ").");
-							return;
-						}
-
-						for (int i = 0; i < current_class->variables.size(); i++) {
-							if (current_class->variables[i].identifier == const_id) {
-								_set_error("A variable named '" + String(const_id) + "' already exists in this class (at line: " +
-										   itos(current_class->variables[i].line) + ").");
-								return;
-							}
-						}
-
 						tokenizer->advance();
+
+						ConstantNode *enum_value_expr;
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 							tokenizer->advance();
@@ -4902,23 +4903,20 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								return;
 							}
 
-							ConstantNode *subexpr_const = static_cast<ConstantNode *>(subexpr);
+							enum_value_expr = static_cast<ConstantNode *>(subexpr);
 
-							if (subexpr_const->value.get_type() != Variant::INT) {
+							if (enum_value_expr->value.get_type() != Variant::INT) {
 								_set_error("Expected an int value for enum");
 								return;
 							}
 
-							last_assign = subexpr_const->value;
-
-							constant.expression = subexpr_const;
+							last_assign = enum_value_expr->value;
 
 						} else {
 							last_assign = last_assign + 1;
-							ConstantNode *cn = alloc_node<ConstantNode>();
-							cn->value = last_assign;
-							cn->datatype = _type_from_variant(cn->value);
-							constant.expression = cn;
+							enum_value_expr = alloc_node<ConstantNode>();
+							enum_value_expr->value = last_assign;
+							enum_value_expr->datatype = _type_from_variant(enum_value_expr->value);
 						}
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
@@ -4926,14 +4924,29 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 
 						if (enum_name != "") {
-							const ConstantNode *cn = static_cast<const ConstantNode *>(constant.expression);
-							enum_dict[const_id] = cn->value;
-						}
+							enum_dict[const_id] = enum_value_expr->value;
+						} else {
+							if (current_class->constant_expressions.has(const_id)) {
+								_set_error("A constant named '" + String(const_id) + "' already exists in this class (at line: " +
+										   itos(current_class->constant_expressions[const_id].expression->line) + ").");
+								return;
+							}
 
-						constant.type.has_type = true;
-						constant.type.kind = DataType::BUILTIN;
-						constant.type.builtin_type = Variant::INT;
-						p_class->constant_expressions.insert(const_id, constant);
+							for (int i = 0; i < current_class->variables.size(); i++) {
+								if (current_class->variables[i].identifier == const_id) {
+									_set_error("A variable named '" + String(const_id) + "' already exists in this class (at line: " +
+											   itos(current_class->variables[i].line) + ").");
+									return;
+								}
+							}
+
+							ClassNode::Constant constant;
+							constant.type.has_type = true;
+							constant.type.kind = DataType::BUILTIN;
+							constant.type.builtin_type = Variant::INT;
+							constant.expression = enum_value_expr;
+							p_class->constant_expressions.insert(const_id, constant);
+						}
 					}
 				}
 
