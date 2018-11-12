@@ -106,6 +106,7 @@ class EditorPropertyPath : public EditorProperty {
 	Vector<String> extensions;
 	bool folder;
 	bool global;
+	bool save_mode;
 	EditorFileDialog *dialog;
 	LineEdit *path;
 	Button *path_edit;
@@ -120,6 +121,7 @@ protected:
 
 public:
 	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global);
+	void set_save_mode();
 	virtual void update_property();
 	EditorPropertyPath();
 };

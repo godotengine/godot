@@ -37,6 +37,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_properties.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
@@ -66,7 +67,7 @@ private:
 	ItemList *presets;
 
 	LineEdit *name;
-	LineEdit *export_path;
+	EditorPropertyPath *export_path;
 	EditorInspector *parameters;
 	CheckButton *runnable;
 
@@ -110,7 +111,7 @@ private:
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
-	void _export_path_changed(const String &p_string);
+	void _export_path_changed(const StringName &p_property, const Variant &p_value);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
 	void _duplicate_preset();
@@ -161,6 +162,9 @@ protected:
 
 public:
 	void popup_export();
+
+	void set_export_path(const String &p_value);
+	String get_export_path();
 
 	ProjectExportDialog();
 	~ProjectExportDialog();
