@@ -566,38 +566,55 @@ void OS_SDL::process_events() {
 	while (SDL_PollEvent(&event)) {
 
 		if (event.type == SDL_WINDOWEVENT) {
-
+			if(OS::get_singleton()->is_stdout_verbose())
+				OS::get_singleton()->print("SDL WindowEvent: ");
 			switch (event.window.event) {
 				case SDL_WINDOWEVENT_EXPOSED:
 					Main::force_redraw();
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_EXPOSED;\n");
 					break;
 				case SDL_WINDOWEVENT_MINIMIZED:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_MINIMIZED;\n");
 					minimized = true;
+					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 					break;
 				case SDL_WINDOWEVENT_LEAVE:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_LEAVE;\n");
 					if (main_loop && !mouse_mode_grab)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
+					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 					if (input)
 						input->set_mouse_in_window(false);
 					break;
 				case SDL_WINDOWEVENT_ENTER:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_ENTER;\n");
 					if (main_loop && !mouse_mode_grab)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 					if (input)
 						input->set_mouse_in_window(true);
 					break;
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 					// FIXME: Mot sure if we should handle the mouse grabbing manually or if SDL will handle it. Test.
 					break;
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_SIZE_CHANGED;\n");
 					window_size = get_window_size();
 					current_videomode.width = window_size.x;
 					current_videomode.height = window_size.y;
 					break;
 				case SDL_WINDOWEVENT_CLOSE:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_CLOSE;\n");
 					main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 					break;
 			}
@@ -672,6 +689,128 @@ void OS_SDL::process_events() {
 			continue;
 		}
 
+#if defined(TOUCH_ENABLED)
+		/*if( event.type ==  SDL_FINGERDOWN || event.type == SDL_FINGERUP )
+		{
+			// if(OS::get_singleton()->is_stdout_verbose())
+			// 	print_line("SDL_FINGERDOW | SDL_FINGERUP");
+			// InputEvent input_event;
+			Ref<InputEventScreenTouch> input_event;
+			input_event.instance()
+			input_event.ID = ++event_id;
+			input_event.device = 0;
+
+			InputEvent mouse_event;
+			mouse_event.ID = ++event_id;
+			mouse_event.device = 0;
+
+			int index = (int)event.tfinger.fingerId;
+			Point2i pos = Point2i(event.tfinger.x, event.tfinger.y);
+
+			bool is_begin = event.type ==  SDL_FINGERDOWN;
+
+			bool translate = false;
+			if (is_begin) {
+				++num_touches;
+				if (num_touches == 1) {
+					touch_mouse_index = index;
+					translate = true;
+				}
+			} else {
+				--num_touches;
+				if (num_touches == 0) {
+					translate = true;
+				} else if (num_touches < 0) { // Defensive
+					num_touches = 0;
+				}
+				touch_mouse_index = -1;
+			}
+
+			input_event.type = InputEvent::SCREEN_TOUCH;
+			input_event.screen_touch.index = index;
+			input_event.screen_touch.x = pos.x;
+			input_event.screen_touch.y = pos.y;
+			input_event.screen_touch.pressed = is_begin;
+
+			if (translate) {
+				mouse_event.type = InputEvent::MOUSE_BUTTON;
+				mouse_event.mouse_button.x = pos.x;
+				mouse_event.mouse_button.y = pos.y;
+				mouse_event.mouse_button.global_x = pos.x;
+				mouse_event.mouse_button.global_y = pos.y;
+				input->set_mouse_pos(pos);
+				mouse_event.mouse_button.button_index = 1;
+				mouse_event.mouse_button.pressed = is_begin;
+				last_mouse_pos = pos;
+			}
+
+			if (is_begin) {
+				if (touch.state.has(index)) // Defensive
+					break;
+				touch.state[index] = pos;
+				input->parse_input_event(input_event);
+				input->parse_input_event(mouse_event);
+			} else {
+				if (!touch.state.has(index)) // Defensive
+					break;
+				touch.state.erase(index);
+				input->parse_input_event(input_event);
+				input->parse_input_event(mouse_event);
+			}
+		}
+
+		if( event.type ==  SDL_FINGERMOTION )
+		{
+			// if(OS::get_singleton()->is_stdout_verbose())
+				// print_line("SDL_FINGERMOTION");
+
+			InputEvent input_event;
+			input_event.ID = ++event_id;
+			input_event.device = 0;
+
+			InputEvent mouse_event;
+			mouse_event.ID = ++event_id;
+			mouse_event.device = 0;
+
+			int index = (int)event.tfinger.fingerId;
+			Point2i pos = Point2i(event.tfinger.x, event.tfinger.y);
+
+			Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
+			if (!curr_pos_elem) 
+			// {// Defensive
+				//if( OS::get_singleton()->is_stdout_verbose() )
+				//	print_line("Cant drag!");
+				break;
+			// }
+
+			if (curr_pos_elem->value() != pos) 
+			{
+				input_event.type = InputEvent::SCREEN_DRAG;
+				input_event.screen_drag.index = index;
+				input_event.screen_drag.x = pos.x;
+				input_event.screen_drag.y = pos.y;
+				input_event.screen_drag.relative_x = pos.x - curr_pos_elem->value().x;
+				input_event.screen_drag.relative_y = pos.y - curr_pos_elem->value().y;
+				input->parse_input_event(input_event);
+
+				if (index == touch_mouse_index) 
+				{
+					mouse_event.type = InputEvent::MOUSE_MOTION;
+					mouse_event.mouse_motion.x = pos.x;
+					mouse_event.mouse_motion.y = pos.y;
+					mouse_event.mouse_motion.global_x = pos.x;
+					mouse_event.mouse_motion.global_y = pos.y;
+					input->set_mouse_pos(pos);
+					mouse_event.mouse_motion.relative_x = pos.x - last_mouse_pos.x;
+					mouse_event.mouse_motion.relative_y = pos.y - last_mouse_pos.y;
+					last_mouse_pos = pos;
+					input->parse_input_event(mouse_event);
+				}
+
+				curr_pos_elem->value() = pos;
+			}
+		}*/
+#endif
 		/*if (event.type == SDL_MOUSEWHEEL) {
 			last_timestamp = event.wheel.timestamp;
 
@@ -1171,7 +1310,7 @@ void OS_SDL::run() {
 
 		process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
+		// joypad->process_joypads();
 #endif
 		if (Main::iteration() == true)
 			break;
