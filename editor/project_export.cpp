@@ -946,6 +946,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_export_pck_zip_selected", &ProjectExportDialog::_export_pck_zip_selected);
 	ClassDB::bind_method("_open_export_template_manager", &ProjectExportDialog::_open_export_template_manager);
 	ClassDB::bind_method("_validate_export_path", &ProjectExportDialog::_validate_export_path);
+	ClassDB::bind_method("_export_path_changed", &ProjectExportDialog::_export_path_changed);
 	ClassDB::bind_method("_export_project", &ProjectExportDialog::_export_project);
 	ClassDB::bind_method("_export_project_to_path", &ProjectExportDialog::_export_project_to_path);
 	ClassDB::bind_method("_export_all", &ProjectExportDialog::_export_all);
