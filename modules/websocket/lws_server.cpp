@@ -31,6 +31,7 @@
 
 #include "lws_server.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 
 Error LWSServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_api) {
 
@@ -67,6 +68,10 @@ bool LWSServer::is_listening() const {
 	return context != NULL;
 }
 
+int LWSServer::get_max_packet_size() const {
+	return (1 << _out_buf_size) - PROTO_SIZE;
+}
+
 int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
 
 	LWSPeer::PeerData *peer_data = (LWSPeer::PeerData *)user;
@@ -85,7 +90,7 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			int32_t id = _gen_unique_id();
 
 			Ref<LWSPeer> peer = Ref<LWSPeer>(memnew(LWSPeer));
-			peer->set_wsi(wsi);
+			peer->set_wsi(wsi, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 			_peer_map[id] = peer;
 
 			peer_data->peer_id = id;
@@ -192,6 +197,10 @@ void LWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 }
 
 LWSServer::LWSServer() {
+	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSS_IN_BUF) - 1) + 10;
+	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_IN_PKT) - 1);
+	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSS_OUT_BUF) - 1) + 10;
+	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSS_OUT_PKT) - 1);
 	context = NULL;
 	_lws_ref = NULL;
 }

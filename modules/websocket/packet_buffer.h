@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  emws_server.cpp                                                      */
+/*  packet_buffer.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,61 +27,96 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifdef JAVASCRIPT_ENABLED
 
-#include "emws_server.h"
-#include "core/os/os.h"
+#ifndef PACKET_BUFFER_H
+#define PACKET_BUFFER_H
 
-Error EMWSServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_api) {
+#include "core/os/copymem.h"
+#include "core/ring_buffer.h"
 
-	return FAILED;
-}
+template <class T>
+class PacketBuffer {
 
-bool EMWSServer::is_listening() const {
-	return false;
-}
+private:
+	typedef struct {
+		uint32_t size;
+		T info;
+	} _Packet;
 
-void EMWSServer::stop() {
-}
+	RingBuffer<_Packet> _packets;
+	RingBuffer<uint8_t> _payload;
 
-bool EMWSServer::has_peer(int p_id) const {
-	return false;
-}
+public:
+	Error write_packet(const uint8_t *p_payload, uint32_t p_size, const T *p_info) {
+#ifdef TOOLS_ENABLED
+		// Verbose buffer warnings
+		if (p_payload && _payload.space_left() < p_size) {
+			ERR_PRINT("Buffer payload full! Dropping data.");
+			ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		}
+		if (p_info && _packets.space_left() < 1) {
+			ERR_PRINT("Too many packets in queue! Dropping data.");
+			ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		}
+#else
+		ERR_FAIL_COND_V(p_payload && _payload.space_left() < p_size, ERR_OUT_OF_MEMORY);
+		ERR_FAIL_COND_V(p_info && _packets.space_left() < 1, ERR_OUT_OF_MEMORY);
+#endif
 
-Ref<WebSocketPeer> EMWSServer::get_peer(int p_id) const {
-	return NULL;
-}
+		// If p_info is NULL, only the payload is written
+		if (p_info) {
+			_Packet p;
+			p.size = p_size;
+			copymem(&p.info, p_info, sizeof(T));
+			_packets.write(p);
+		}
 
-PoolVector<String> EMWSServer::get_protocols() const {
-	PoolVector<String> out;
+		// If p_payload is NULL, only the packet information is written.
+		if (p_payload) {
+			_payload.write((const uint8_t *)p_payload, p_size);
+		}
 
-	return out;
-}
+		return OK;
+	}
 
-IP_Address EMWSServer::get_peer_address(int p_peer_id) const {
+	Error read_packet(uint8_t *r_payload, int p_bytes, T *r_info, int &r_read) {
+		ERR_FAIL_COND_V(_packets.data_left() < 1, ERR_UNAVAILABLE);
+		_Packet p;
+		_packets.read(&p, 1);
+		ERR_FAIL_COND_V(_payload.data_left() < p.size, ERR_BUG);
+		ERR_FAIL_COND_V(p_bytes < p.size, ERR_OUT_OF_MEMORY);
 
-	return IP_Address();
-}
+		r_read = p.size;
+		copymem(r_info, &p.info, sizeof(T));
+		_payload.read(r_payload, p.size);
+		return OK;
+	}
 
-int EMWSServer::get_peer_port(int p_peer_id) const {
+	void discard_payload(int p_size) {
+		_packets.decrease_write(p_size);
+	}
 
-	return 0;
-}
+	void resize(int p_pkt_shift, int p_buf_shift) {
+		_packets.resize(p_pkt_shift);
+		_payload.resize(p_buf_shift);
+	}
 
-void EMWSServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
-}
+	int packets_left() const {
+		return _packets.data_left();
+	}
 
-void EMWSServer::poll() {
-}
+	void clear() {
+		_payload.resize(0);
+		_packets.resize(0);
+	}
 
-int EMWSServer::get_max_packet_size() const {
-	return 0;
-}
+	PacketBuffer() {
+		clear();
+	}
 
-EMWSServer::EMWSServer() {
-}
+	~PacketBuffer() {
+		clear();
+	}
+};
 
-EMWSServer::~EMWSServer() {
-}
-
-#endif // JAVASCRIPT_ENABLED
+#endif // PACKET_BUFFER_H
