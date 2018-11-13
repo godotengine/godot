@@ -17,7 +17,7 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
-			<argument index="1" name="strength" type="float" default="1.0f">
+			<argument index="1" name="strength" type="float">
 			</argument>
 			<description>
 				This will simulate pressing the specified action. The strength can be used for non-boolean actions.

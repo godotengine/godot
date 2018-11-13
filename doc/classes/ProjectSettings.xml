@@ -608,6 +608,22 @@
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
 			Default size of packet peer stream for deserializing godot data. Over this size, data is dropped.
 		</member>
+		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_client/max_in_packets" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_client/max_out_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_client/max_out_packets" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_in_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_in_packets" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_out_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_out_packets" type="int" setter="" getter="">
+		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
 			Amount of read ahead used by remote filesystem. Improves latency.
 		</member>

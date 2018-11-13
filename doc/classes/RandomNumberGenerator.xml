@@ -10,20 +10,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="randi">
-			<return type="int">
-			</return>
-			<description>
-				Generates pseudo-random 32-bit integer between '0' and '4294967295'.
-			</description>
-		</method>
-		<method name="randf">
-			<return type="float">
-			</return>
-			<description>
-				Generates pseudo-random float between '0.0' and '1.0'.
-			</description>
-		</method>
 		<method name="rand_range">
 			<return type="float">
 			</return>
@@ -35,11 +21,25 @@
 				Generates pseudo-random float between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
+		<method name="randf">
+			<return type="float">
+			</return>
+			<description>
+				Generates pseudo-random float between '0.0' and '1.0'.
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int">
+			</return>
+			<description>
+				Generates pseudo-random 32-bit integer between '0' and '4294967295'.
+			</description>
+		</method>
 		<method name="randomize">
 			<return type="void">
 			</return>
 			<description>
-				Setups a time-based seed to generator. 
+				Setups a time-based seed to generator.
 			</description>
 		</method>
 	</methods>
