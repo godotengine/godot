@@ -282,6 +282,7 @@ public:
 	}
 
 	//do not use from outside audio thread
+	bool thread_has_channel_mix_buffer(int p_bus, int p_buffer) const;
 	AudioFrame *thread_get_channel_mix_buffer(int p_bus, int p_buffer);
 	int thread_get_mix_buffer_size() const;
 	int thread_find_bus_index(const StringName &p_name);
