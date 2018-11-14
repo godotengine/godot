@@ -338,6 +338,7 @@ private:
 		StringName particles_anim_loop;
 		StringName depth_min_layers;
 		StringName depth_max_layers;
+		StringName depth_flip;
 		StringName uv1_blend_sharpness;
 		StringName uv2_blend_sharpness;
 		StringName grow;
@@ -407,6 +408,8 @@ private:
 	bool deep_parallax;
 	int deep_parallax_min_layers;
 	int deep_parallax_max_layers;
+	bool depth_parallax_flip_tangent;
+	bool depth_parallax_flip_binormal;
 
 	bool proximity_fade_enabled;
 	float proximity_fade_distance;
@@ -500,6 +503,12 @@ public:
 
 	void set_depth_deep_parallax_max_layers(int p_layer);
 	int get_depth_deep_parallax_max_layers() const;
+
+	void set_depth_deep_parallax_flip_tangent(bool p_flip);
+	bool get_depth_deep_parallax_flip_tangent() const;
+
+	void set_depth_deep_parallax_flip_binormal(bool p_flip);
+	bool get_depth_deep_parallax_flip_binormal() const;
 
 	void set_subsurface_scattering_strength(float p_subsurface_scattering_strength);
 	float get_subsurface_scattering_strength() const;
