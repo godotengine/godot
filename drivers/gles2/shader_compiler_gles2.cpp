@@ -361,6 +361,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->functions.size(); i++) {
 				SL::FunctionNode *fnode = snode->functions[i].function;
+				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 

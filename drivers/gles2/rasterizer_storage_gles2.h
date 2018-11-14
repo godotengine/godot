@@ -150,20 +150,12 @@ public:
 	struct Instantiable : public RID_Data {
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
-		_FORCE_INLINE_ void instance_change_notify() {
+		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
+
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-
 			while (instances) {
-				instances->self()->base_changed();
-				instances = instances->next();
-			}
-		}
 
-		_FORCE_INLINE_ void instance_material_change_notify() {
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-
-			while (instances) {
-				instances->self()->base_material_changed();
+				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
 		}
@@ -661,7 +653,7 @@ public:
 			SelfList<MultiMesh> *mm = multimeshes.first();
 
 			while (mm) {
-				mm->self()->instance_material_change_notify();
+				mm->self()->instance_change_notify(false, true);
 				mm = mm->next();
 			}
 		}

@@ -612,7 +612,7 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 		VSG::storage->material_remove_instance_owner(instance->materials[p_surface], instance);
 	}
 	instance->materials.write[p_surface] = p_material;
-	instance->base_material_changed();
+	instance->base_changed(false, true);
 
 	if (instance->materials[p_surface].is_valid()) {
 		VSG::storage->material_add_instance_owner(instance->materials[p_surface], instance);
@@ -840,7 +840,7 @@ void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instanc
 	ERR_FAIL_COND(!instance);
 
 	instance->cast_shadows = p_shadow_casting_setting;
-	instance->base_material_changed(); // to actually compute if shadows are visible or not
+	instance->base_changed(false, true); // to actually compute if shadows are visible or not
 }
 void VisualServerScene::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 
@@ -851,7 +851,7 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 		VSG::storage->material_remove_instance_owner(instance->material_override, instance);
 	}
 	instance->material_override = p_material;
-	instance->base_material_changed();
+	instance->base_changed(false, true);
 
 	if (instance->material_override.is_valid()) {
 		VSG::storage->material_add_instance_owner(instance->material_override, instance);
@@ -1264,12 +1264,14 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 	}
 }
 
-void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
+bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
+
+	bool animated_material_found = false;
 
 	switch (VSG::storage->light_get_type(p_instance->base)) {
 
@@ -1301,6 +1303,10 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					Instance *instance = instance_shadow_cull_result[i];
 					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 						continue;
+					}
+
+					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+						animated_material_found = true;
 					}
 
 					float max, min;
@@ -1558,6 +1564,10 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 								SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 								j--;
 							} else {
+								if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+									animated_material_found = true;
+								}
+
 								instance->depth = near_plane.distance_to(instance->transform.origin);
 								instance->depth_layer = 0;
 							}
@@ -1609,6 +1619,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 								SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 								j--;
 							} else {
+								if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+									animated_material_found = true;
+								}
 								instance->depth = near_plane.distance_to(instance->transform.origin);
 								instance->depth_layer = 0;
 							}
@@ -1645,6 +1658,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 					j--;
 				} else {
+					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+						animated_material_found = true;
+					}
 					instance->depth = near_plane.distance_to(instance->transform.origin);
 					instance->depth_layer = 0;
 				}
@@ -1655,6 +1671,8 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 		} break;
 	}
+
+	return animated_material_found;
 }
 
 void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
@@ -2096,7 +2114,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			if (redraw) {
 				//must redraw!
-				_light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
 			}
 		}
 	}
@@ -3244,11 +3262,13 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 
 			bool can_cast_shadows = true;
+			bool is_animated = false;
 
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_OFF) {
 				can_cast_shadows = false;
 			} else if (p_instance->material_override.is_valid()) {
 				can_cast_shadows = VSG::storage->material_casts_shadows(p_instance->material_override);
+				is_animated = VSG::storage->material_is_animated(p_instance->material_override);
 			} else {
 
 				if (p_instance->base_type == VS::INSTANCE_MESH) {
@@ -3263,12 +3283,15 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
-								break;
-							}
+							} else {
 
-							if (VSG::storage->material_casts_shadows(mat)) {
-								cast_shadows = true;
-								break;
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
 							}
 						}
 
@@ -3290,12 +3313,15 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
-								break;
-							}
 
-							if (VSG::storage->material_casts_shadows(mat)) {
-								cast_shadows = true;
-								break;
+							} else {
+
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
 							}
 						}
 
@@ -3311,6 +3337,10 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 						can_cast_shadows = true;
 					} else {
 						can_cast_shadows = false;
+					}
+
+					if (mat.is_valid() && VSG::storage->material_is_animated(mat)) {
+						is_animated = true;
 					}
 				} else if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
 
@@ -3331,12 +3361,15 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
-								break;
-							}
+							} else {
 
-							if (VSG::storage->material_casts_shadows(mat)) {
-								cast_shadows = true;
-								break;
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
 							}
 						}
 					}
@@ -3356,6 +3389,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 				geom->can_cast_shadows = can_cast_shadows;
 			}
+
+			geom->material_is_animated = is_animated;
 		}
 	}
 

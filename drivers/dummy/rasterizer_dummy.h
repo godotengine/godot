@@ -584,22 +584,12 @@ public:
 
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
-		_FORCE_INLINE_ void instance_change_notify() {
+		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) {
 
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
 
-				instances->self()->base_changed();
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_material_change_notify() {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				instances->self()->base_material_changed();
+				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
 		}

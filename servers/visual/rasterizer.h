@@ -120,9 +120,7 @@ public:
 		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
 
 		virtual void base_removed() = 0;
-		virtual void base_changed() = 0;
-		virtual void base_material_changed() = 0;
-
+		virtual void base_changed(bool p_aabb, bool p_materials) = 0;
 		InstanceBase() :
 				dependency_item(this) {
 
