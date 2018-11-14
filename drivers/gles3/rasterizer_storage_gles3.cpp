@@ -1903,6 +1903,10 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	p_shader->uniforms.clear();
 
+	if (p_shader->code == String()) {
+		return; //just invalid, but no error
+	}
+
 	ShaderCompilerGLES3::GeneratedCode gen_code;
 	ShaderCompilerGLES3::IdentifierActions *actions = NULL;
 
