@@ -2069,8 +2069,22 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 			if (intype == "ViewportTexture") {
 
+				Resource *r = Object::cast_to<Resource>(get_edited_object());
+				if (r && r->get_path().is_resource_file()) {
+					EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
+					return;
+				}
+
+				if (r && !r->is_local_to_scene()) {
+					EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on this resource because it's not set as local to scene.\nPlease switch on the 'local to scene' property on it (and all resources containing it up to a node)."));
+					return;
+				}
+
 				if (!scene_tree) {
 					scene_tree = memnew(SceneTreeDialog);
+					Vector<StringName> valid_types;
+					valid_types.push_back("Viewport");
+					scene_tree->get_scene_tree()->set_valid_types(valid_types);
 					scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 					add_child(scene_tree);
 					scene_tree->connect("selected", this, "_viewport_selected");
