@@ -1,6 +1,7 @@
 import os
 import platform
 import sys
+from compat import decode_utf8
 
 
 def is_active():
@@ -154,6 +155,7 @@ def configure(env):
     import subprocess
     proc = subprocess.Popen([env['CXX'], '--version'], stdout=subprocess.PIPE)
     (stdout, _) = proc.communicate()
+    stdout = decode_utf8(stdout)
     match = re.search('[0-9][0-9.]*', stdout)
     if match is not None:
         version = match.group().split('.')
