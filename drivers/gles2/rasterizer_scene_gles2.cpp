@@ -752,13 +752,14 @@ void RasterizerSceneGLES2::environment_set_fog(RID p_env, bool p_enable, const C
 	env->fog_sun_amount = p_sun_amount;
 }
 
-void RasterizerSceneGLES2::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
+void RasterizerSceneGLES2::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->fog_depth_enabled = p_enable;
 	env->fog_depth_begin = p_depth_begin;
+	env->fog_depth_end = p_depth_end;
 	env->fog_depth_curve = p_depth_curve;
 	env->fog_transmit_enabled = p_transmit;
 	env->fog_transmit_curve = p_transmit_curve;
@@ -2059,7 +2060,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	if (p_env && !p_shadow && p_env->fog_enabled && (p_env->fog_depth_enabled || p_env->fog_height_enabled)) {
 		state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, p_env->fog_depth_enabled);
 		state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, p_env->fog_height_enabled);
-		fog_max_distance = p_projection.get_z_far();
+		if (p_env->fog_depth_end > 0) {
+			fog_max_distance = p_env->fog_depth_end;
+		} else {
+			fog_max_distance = p_projection.get_z_far();
+		}
 		using_fog = true;
 	}
 
