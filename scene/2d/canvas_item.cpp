@@ -123,8 +123,6 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
 		code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
 
-		code += "\tVERTEX.xy /= TEXTURE_PIXEL_SIZE * vec2(h_frames, v_frames);\n";
-
 		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
 		code += "\tif (particles_anim_loop) {\n";
