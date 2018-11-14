@@ -328,13 +328,14 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 }
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	Ref<Theme> theme;
+	Ref<Theme> theme = Theme::get_default();
+	/* Using the default theme since the properties below are meant for editor only
 	if (data.theme.is_valid()) {
 
 		theme = data.theme;
 	} else {
 		theme = Theme::get_default();
-	}
+	}*/
 
 	{
 		List<StringName> names;
