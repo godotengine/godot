@@ -162,6 +162,7 @@ private:
 
 	bool fog_depth_enabled;
 	float fog_depth_begin;
+	float fog_depth_end;
 	float fog_depth_curve;
 
 	bool fog_transmit_enabled;
@@ -364,6 +365,9 @@ public:
 
 	void set_fog_depth_begin(float p_distance);
 	float get_fog_depth_begin() const;
+
+	void set_fog_depth_end(float p_distance);
+	float get_fog_depth_end() const;
 
 	void set_fog_depth_curve(float p_curve);
 	float get_fog_depth_curve() const;

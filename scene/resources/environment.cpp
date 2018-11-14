@@ -761,7 +761,7 @@ float Environment::get_fog_sun_amount() const {
 void Environment::set_fog_depth_enabled(bool p_enabled) {
 
 	fog_depth_enabled = p_enabled;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 bool Environment::is_fog_depth_enabled() const {
 
@@ -771,17 +771,28 @@ bool Environment::is_fog_depth_enabled() const {
 void Environment::set_fog_depth_begin(float p_distance) {
 
 	fog_depth_begin = p_distance;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 float Environment::get_fog_depth_begin() const {
 
 	return fog_depth_begin;
 }
 
+void Environment::set_fog_depth_end(float p_distance) {
+
+	fog_depth_end = p_distance;
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+}
+
+float Environment::get_fog_depth_end() const {
+
+	return fog_depth_end;
+}
+
 void Environment::set_fog_depth_curve(float p_curve) {
 
 	fog_depth_curve = p_curve;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 float Environment::get_fog_depth_curve() const {
 
@@ -791,7 +802,7 @@ float Environment::get_fog_depth_curve() const {
 void Environment::set_fog_transmit_enabled(bool p_enabled) {
 
 	fog_transmit_enabled = p_enabled;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 bool Environment::is_fog_transmit_enabled() const {
 
@@ -801,7 +812,7 @@ bool Environment::is_fog_transmit_enabled() const {
 void Environment::set_fog_transmit_curve(float p_curve) {
 
 	fog_transmit_curve = p_curve;
-	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
+	VS::get_singleton()->environment_set_fog_depth(environment, fog_depth_enabled, fog_depth_begin, fog_depth_end, fog_depth_curve, fog_transmit_enabled, fog_transmit_curve);
 }
 float Environment::get_fog_transmit_curve() const {
 
@@ -900,6 +911,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_depth_begin", "distance"), &Environment::set_fog_depth_begin);
 	ClassDB::bind_method(D_METHOD("get_fog_depth_begin"), &Environment::get_fog_depth_begin);
 
+	ClassDB::bind_method(D_METHOD("set_fog_depth_end", "distance"), &Environment::set_fog_depth_end);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_end"), &Environment::get_fog_depth_end);
+
 	ClassDB::bind_method(D_METHOD("set_fog_depth_curve", "curve"), &Environment::set_fog_depth_curve);
 	ClassDB::bind_method(D_METHOD("get_fog_depth_curve"), &Environment::get_fog_depth_curve);
 
@@ -928,6 +942,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_sun_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fog_sun_amount", "get_fog_sun_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_depth_enabled"), "set_fog_depth_enabled", "is_fog_depth_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1"), "set_fog_depth_begin", "get_fog_depth_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater"), "set_fog_depth_end", "get_fog_depth_end");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_depth_curve", PROPERTY_HINT_EXP_EASING), "set_fog_depth_curve", "get_fog_depth_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_transmit_enabled"), "set_fog_transmit_enabled", "is_fog_transmit_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fog_transmit_curve", PROPERTY_HINT_EXP_EASING), "set_fog_transmit_curve", "get_fog_transmit_curve");
@@ -1269,6 +1284,7 @@ Environment::Environment() {
 	fog_depth_enabled = true;
 
 	fog_depth_begin = 10;
+	fog_depth_end = 0;
 	fog_depth_curve = 1;
 
 	fog_transmit_enabled = false;

@@ -98,6 +98,8 @@ layout(std140) uniform SceneData { // ubo:0
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
+	highp float fog_depth_end;
+	mediump float fog_density;
 	highp float fog_depth_curve;
 	bool fog_transmit_enabled;
 	highp float fog_transmit_curve;
@@ -675,6 +677,8 @@ layout(std140) uniform SceneData {
 
 	bool fog_depth_enabled;
 	highp float fog_depth_begin;
+	highp float fog_depth_end;
+	mediump float fog_density;
 	highp float fog_depth_curve;
 	bool fog_transmit_enabled;
 	highp float fog_transmit_curve;
@@ -2033,10 +2037,11 @@ FRAGMENT_SHADER_CODE
 		//apply fog
 
 		if (fog_depth_enabled) {
+			float fog_far = fog_depth_end > 0 ? fog_depth_end : z_far;
 
-			float fog_z = smoothstep(fog_depth_begin, z_far, length(vertex));
+			float fog_z = smoothstep(fog_depth_begin, fog_far, length(vertex));
 
-			fog_amount = pow(fog_z, fog_depth_curve);
+			fog_amount = pow(fog_z, fog_depth_curve) * fog_density;
 			if (fog_transmit_enabled) {
 				vec3 total_light = emission + ambient_light + specular_light + diffuse_light;
 				float transmit = pow(fog_z, fog_transmit_curve);

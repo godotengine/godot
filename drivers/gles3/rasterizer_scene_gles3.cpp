@@ -934,13 +934,14 @@ void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, const C
 	env->fog_sun_amount = p_sun_amount;
 }
 
-void RasterizerSceneGLES3::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
+void RasterizerSceneGLES3::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->fog_depth_enabled = p_enable;
 	env->fog_depth_begin = p_depth_begin;
+	env->fog_depth_end = p_depth_end;
 	env->fog_depth_curve = p_depth_curve;
 	env->fog_transmit_enabled = p_transmit;
 	env->fog_transmit_curve = p_transmit_curve;
@@ -2568,6 +2569,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.fog_color_enabled[1] = linear_fog.g;
 		state.ubo_data.fog_color_enabled[2] = linear_fog.b;
 		state.ubo_data.fog_color_enabled[3] = (!p_no_fog && env->fog_enabled) ? 1.0 : 0.0;
+		state.ubo_data.fog_density = linear_fog.a;
 
 		Color linear_sun = env->fog_sun_color.to_linear();
 		state.ubo_data.fog_sun_color_amount[0] = linear_sun.r;
@@ -2576,6 +2578,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.fog_sun_color_amount[3] = env->fog_sun_amount;
 		state.ubo_data.fog_depth_enabled = env->fog_depth_enabled;
 		state.ubo_data.fog_depth_begin = env->fog_depth_begin;
+		state.ubo_data.fog_depth_end = env->fog_depth_end;
 		state.ubo_data.fog_depth_curve = env->fog_depth_curve;
 		state.ubo_data.fog_transmit_enabled = env->fog_transmit_enabled;
 		state.ubo_data.fog_transmit_curve = env->fog_transmit_curve;
