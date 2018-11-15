@@ -231,7 +231,6 @@ public:
 	void _tile_set_meta(int p_id, const Variant &key, const Variant &value);
 	Variant _tile_get_meta(int p_id, const Variant &key) const;
 
-
 	void remove_tile(int p_id);
 
 	bool has_tile(int p_id) const;
