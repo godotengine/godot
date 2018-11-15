@@ -41,7 +41,11 @@ bool ConvexPolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, dou
 
 void ConvexPolygonShape2D::_update_shape() {
 
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(), points);
+	Vector<Vector2> final_points = points;
+	if (Geometry::is_polygon_clockwise(final_points)) { //needs to be counter clockwise
+		final_points.invert();
+	}
+	Physics2DServer::get_singleton()->shape_set_data(get_rid(), final_points);
 	emit_changed();
 }
 
@@ -55,6 +59,7 @@ void ConvexPolygonShape2D::set_point_cloud(const Vector<Vector2> &p_points) {
 void ConvexPolygonShape2D::set_points(const Vector<Vector2> &p_points) {
 
 	points = p_points;
+
 	_update_shape();
 }
 

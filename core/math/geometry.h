@@ -800,6 +800,21 @@ public:
 		return Vector<Vector<Vector2> >();
 	}
 
+	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3)
+			return false;
+		const Vector2 *p = p_polygon.ptr();
+		real_t sum = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			sum += (v2.x - v1.x) * (v2.y + v1.y);
+		}
+
+		return sum > 0.0f;
+	}
+
 	static PoolVector<PoolVector<Face3> > separate_objects(PoolVector<Face3> p_array);
 
 	static PoolVector<Face3> wrap_geometry(PoolVector<Face3> p_array, real_t *p_error = NULL); ///< create a "wrap" that encloses the given geometry

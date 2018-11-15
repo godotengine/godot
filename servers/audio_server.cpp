@@ -460,6 +460,14 @@ void AudioServer::_mix_step() {
 	to_mix = buffer_size;
 }
 
+bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
+	if (p_bus < 0 || p_bus >= buses.size())
+		return false;
+	if (p_buffer < 0 || p_buffer >= buses[p_bus]->channels.size())
+		return false;
+	return true;
+}
+
 AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) {
 
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), NULL);

@@ -153,13 +153,19 @@ CPUParticles2D::DrawOrder CPUParticles2D::get_draw_order() const {
 	return draw_order;
 }
 
-void CPUParticles2D::_generate_mesh_texture() {
+void CPUParticles2D::_update_mesh_texture() {
 
+	Size2 tex_size;
+	if (texture.is_valid()) {
+		tex_size = texture->get_size();
+	} else {
+		tex_size = Size2(1, 1);
+	}
 	PoolVector<Vector2> vertices;
-	vertices.push_back(Vector2(-0.5, -0.5));
-	vertices.push_back(Vector2(0.5, -0.5));
-	vertices.push_back(Vector2(0.5, 0.5));
-	vertices.push_back(Vector2(-0.5, 0.5));
+	vertices.push_back(-tex_size * 0.5);
+	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, 0));
+	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
+	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
 	PoolVector<Vector2> uvs;
 	uvs.push_back(Vector2(0, 0));
 	uvs.push_back(Vector2(1, 0));
@@ -193,6 +199,7 @@ void CPUParticles2D::set_texture(const Ref<Texture> &p_texture) {
 
 	texture = p_texture;
 	update();
+	_update_mesh_texture();
 }
 
 Ref<Texture> CPUParticles2D::get_texture() const {
@@ -234,9 +241,12 @@ String CPUParticles2D::get_configuration_warning() const {
 	CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
 	if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
-		if (warnings != String())
-			warnings += "\n";
-		warnings += "- " + TTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+		if (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
+				get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid()) {
+			if (warnings != String())
+				warnings += "\n";
+			warnings += "- " + TTR("CPUParticles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+		}
 	}
 
 	return warnings;
@@ -1396,7 +1406,7 @@ CPUParticles2D::CPUParticles2D() {
 	update_mutex = Mutex::create();
 #endif
 
-	_generate_mesh_texture();
+	_update_mesh_texture();
 }
 
 CPUParticles2D::~CPUParticles2D() {

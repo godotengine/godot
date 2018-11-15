@@ -299,6 +299,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->particles_anim_loop = "particles_anim_loop";
 	shader_names->depth_min_layers = "depth_min_layers";
 	shader_names->depth_max_layers = "depth_max_layers";
+	shader_names->depth_flip = "depth_flip";
 
 	shader_names->grow = "grow";
 
@@ -532,6 +533,7 @@ void SpatialMaterial::_update_shader() {
 		code += "uniform float depth_scale;\n";
 		code += "uniform int depth_min_layers;\n";
 		code += "uniform int depth_max_layers;\n";
+		code += "uniform vec2 depth_flip;\n";
 	}
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += "varying vec3 uv1_triplanar_pos;\n";
@@ -697,7 +699,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
 		code += "\t{\n";
-		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT,-BINORMAL,NORMAL));\n"; //binormal is negative due to mikktpsace
+		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,BINORMAL*depth_flip.y,NORMAL));\n"; //binormal is negative due to mikktpsace
 
 		if (deep_parallax) {
 			code += "\t\tfloat num_layers = mix(float(depth_max_layers),float(depth_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
@@ -1584,6 +1586,28 @@ int SpatialMaterial::get_depth_deep_parallax_max_layers() const {
 	return deep_parallax_max_layers;
 }
 
+void SpatialMaterial::set_depth_deep_parallax_flip_tangent(bool p_flip) {
+
+	depth_parallax_flip_tangent = p_flip;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->depth_flip, Vector2(depth_parallax_flip_tangent ? -1 : 1, depth_parallax_flip_binormal ? -1 : 1));
+}
+
+bool SpatialMaterial::get_depth_deep_parallax_flip_tangent() const {
+
+	return depth_parallax_flip_tangent;
+}
+
+void SpatialMaterial::set_depth_deep_parallax_flip_binormal(bool p_flip) {
+
+	depth_parallax_flip_binormal = p_flip;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->depth_flip, Vector2(depth_parallax_flip_tangent ? -1 : 1, depth_parallax_flip_binormal ? -1 : 1));
+}
+
+bool SpatialMaterial::get_depth_deep_parallax_flip_binormal() const {
+
+	return depth_parallax_flip_binormal;
+}
+
 void SpatialMaterial::set_grow_enabled(bool p_enable) {
 	grow_enabled = p_enable;
 	_queue_shader_change();
@@ -1910,6 +1934,12 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_max_layers", "layer"), &SpatialMaterial::set_depth_deep_parallax_max_layers);
 	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_max_layers"), &SpatialMaterial::get_depth_deep_parallax_max_layers);
 
+	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_flip_tangent", "flip"), &SpatialMaterial::set_depth_deep_parallax_flip_tangent);
+	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_flip_tangent"), &SpatialMaterial::get_depth_deep_parallax_flip_tangent);
+
+	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_flip_binormal", "flip"), &SpatialMaterial::set_depth_deep_parallax_flip_binormal);
+	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_flip_binormal"), &SpatialMaterial::get_depth_deep_parallax_flip_binormal);
+
 	ClassDB::bind_method(D_METHOD("set_grow", "amount"), &SpatialMaterial::set_grow);
 	ClassDB::bind_method(D_METHOD("get_grow"), &SpatialMaterial::get_grow);
 
@@ -2045,6 +2075,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_deep_parallax"), "set_depth_deep_parallax", "is_depth_deep_parallax_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_min_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_depth_deep_parallax_min_layers", "get_depth_deep_parallax_min_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_max_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_depth_deep_parallax_max_layers", "get_depth_deep_parallax_max_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_flip_tangent"), "set_depth_deep_parallax_flip_tangent", "get_depth_deep_parallax_flip_tangent");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_flip_binormal"), "set_depth_deep_parallax_flip_binormal", "get_depth_deep_parallax_flip_binormal");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "depth_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_DEPTH);
 
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
@@ -2244,8 +2276,11 @@ SpatialMaterial::SpatialMaterial() :
 	set_grow(0.0);
 
 	deep_parallax = false;
+	depth_parallax_flip_tangent = false;
+	depth_parallax_flip_binormal = true;
 	set_depth_deep_parallax_min_layers(8);
 	set_depth_deep_parallax_max_layers(32);
+	set_depth_deep_parallax_flip_tangent(false); //also sets binormal
 
 	detail_uv = DETAIL_UV_1;
 	blend_mode = BLEND_MODE_MIX;

@@ -797,12 +797,7 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 		} break;
 		case PARAM_SCALE: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_texture, p_texture);
-
-			Ref<CurveTexture> curve_tex = p_texture;
-			if (curve_tex.is_valid()) {
-				curve_tex->ensure_default_setup();
-			}
-
+			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_HUE_VARIATION: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->hue_variation_texture, p_texture);
