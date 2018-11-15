@@ -1973,6 +1973,7 @@ SceneTree::SceneTree() {
 
 	root = memnew(Viewport);
 	root->set_name("root");
+	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid())
 		root->set_world(Ref<World>(memnew(World)));
 
