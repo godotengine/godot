@@ -167,8 +167,34 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+
+	Transform2D xform = get_global_transform();
+
+	if (stretch) {
+		Transform2D scale_xf;
+		scale_xf.scale(Vector2(shrink, shrink));
+		xform *= scale_xf;
+	}
+
+	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
+
+	for (int i = 0; i < get_child_count(); i++) {
+
+		Viewport *c = Object::cast_to<Viewport>(get_child(i));
+		if (!c || c->is_input_disabled())
+			continue;
+
+		c->unhandled_input(ev);
+	}
+}
+
 void ViewportContainer::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &ViewportContainer::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_input", "event"), &ViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &ViewportContainer::set_stretch);
 	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &ViewportContainer::is_stretch_enabled);
