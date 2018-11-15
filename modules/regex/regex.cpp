@@ -178,13 +178,17 @@ void RegEx::clear() {
 
 	if (sizeof(CharType) == 2) {
 
-		if (code)
+		if (code) {
 			pcre2_code_free_16((pcre2_code_16 *)code);
+			code = NULL;
+		}
 
 	} else {
 
-		if (code)
+		if (code) {
 			pcre2_code_free_32((pcre2_code_32 *)code);
+			code = NULL;
+		}
 	}
 }
 
