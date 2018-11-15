@@ -114,6 +114,7 @@ private:
 		Color modulate;
 		AutotileData autotile_data;
 		int z_index;
+		Dictionary meta;
 
 		// Default modulate for back-compat
 		explicit TileData() :
@@ -224,6 +225,12 @@ public:
 
 	void tile_set_z_index(int p_id, int p_z_index);
 	int tile_get_z_index(int p_id) const;
+
+	void tile_set_meta(int p_id, const Dictionary &p_meta);
+	Dictionary tile_get_meta(int p_id) const;
+	void _tile_set_meta(int p_id, const Variant &key, const Variant &value);
+	Variant _tile_get_meta(int p_id, const Variant &key) const;
+
 
 	void remove_tile(int p_id);
 
