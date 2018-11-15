@@ -123,6 +123,8 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
 		code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
 
+		code += "\tVERTEX.xy /= vec2(h_frames, v_frames);\n";
+
 		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
 		code += "\tif (particles_anim_loop) {\n";
@@ -134,7 +136,7 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\tfloat frame_w = 1.0 / h_frames;\n";
 		code += "\tfloat frame_h = 1.0 / v_frames;\n";
 		code += "\tUV.x = UV.x * frame_w + frame_w * float(frame % particles_anim_h_frames);\n";
-		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_v_frames);\n";
+		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_h_frames);\n";
 
 		code += "}\n";
 	}
