@@ -1766,6 +1766,15 @@ int Image::get_image_required_mipmaps(int p_width, int p_height, Format p_format
 	return mm;
 }
 
+int Image::get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap) {
+
+	if (p_mipmap <= 0) {
+		return 0;
+	}
+	int mm;
+	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmap - 1);
+}
+
 bool Image::is_compressed() const {
 	return format > FORMAT_RGBE9995;
 }
