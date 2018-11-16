@@ -1510,12 +1510,17 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
 
-			control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
+			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+				control->emit_signal(SceneStringNames::get_singleton()->gui_input, ev); //signal should be first, so it's possible to override an event (and then accept it)
+			}
 			if (gui.key_event_accepted)
 				break;
 			if (!control->is_inside_tree())
 				break;
-			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+
+			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+				control->call_multilevel(SceneStringNames::get_singleton()->_gui_input, ev);
+			}
 
 			if (!control->is_inside_tree() || control->is_set_as_toplevel())
 				break;
