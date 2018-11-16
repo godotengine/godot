@@ -333,7 +333,7 @@ void UndoRedo::clear_history() {
 	while (actions.size())
 		_pop_history_tail();
 
-	//version++;
+	version++;
 }
 
 String UndoRedo::get_current_action_name() const {
