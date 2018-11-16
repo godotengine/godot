@@ -84,7 +84,7 @@ uniform highp mat4 world_transform;
 
 uniform highp float time;
 
-uniform float normal_mult;
+
 
 #ifdef RENDER_DEPTH
 uniform float light_bias;
@@ -330,11 +330,10 @@ void main() {
 
 #endif
 
-	vec3 normal = normal_attrib * normal_mult;
+	vec3 normal = normal_attrib;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 	vec3 tangent = tangent_attrib.xyz;
-	tangent *= normal_mult;
 	float binormalf = tangent_attrib.a;
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
