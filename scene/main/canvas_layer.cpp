@@ -164,7 +164,9 @@ void CanvasLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
 
-			VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+			if (is_inside_tree())
+				VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
+
 		} break;
 	}
 }
