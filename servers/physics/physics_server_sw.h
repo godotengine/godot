@@ -51,6 +51,8 @@ class PhysicsServerSW : public PhysicsServer {
 	int active_objects;
 	int collision_pairs;
 
+	bool flushing_queries;
+
 	StepSW *stepper;
 	Set<const SpaceSW *> active_spaces;
 
@@ -364,6 +366,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const { return flushing_queries; }
 
 	int get_process_info(ProcessInfo p_info);
 

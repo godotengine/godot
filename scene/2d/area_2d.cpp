@@ -399,7 +399,7 @@ void Area2D::set_monitoring(bool p_enable) {
 	if (p_enable == monitoring)
 		return;
 	if (locked) {
-		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_monitoring\",true/false)");
+		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitoring\",true/false)");
 	}
 	ERR_FAIL_COND(locked);
 
@@ -424,10 +424,10 @@ bool Area2D::is_monitoring() const {
 
 void Area2D::set_monitorable(bool p_enable) {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	if (locked || Physics2DServer::get_singleton()->is_flushing_queries()) {
+		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitorable\",true/false)");
 	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND(locked || Physics2DServer::get_singleton()->is_flushing_queries());
 
 	if (p_enable == monitorable)
 		return;

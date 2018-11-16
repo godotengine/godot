@@ -1715,6 +1715,8 @@ void Object::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi);
 	}
 
+	ClassDB::bind_method(D_METHOD("set_deferred", "property", "value"), &Object::set_deferred);
+
 	ClassDB::bind_method(D_METHOD("callv", "method", "arg_array"), &Object::callv);
 
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
@@ -1769,6 +1771,10 @@ void Object::_bind_methods() {
 void Object::call_deferred(const StringName &p_method, VARIANT_ARG_DECLARE) {
 
 	MessageQueue::get_singleton()->push_call(this, p_method, VARIANT_ARG_PASS);
+}
+
+void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
+	MessageQueue::get_singleton()->push_set(this, p_property, p_value);
 }
 
 void Object::set_block_signals(bool p_block) {

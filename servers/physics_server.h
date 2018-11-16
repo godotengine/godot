@@ -744,6 +744,8 @@ public:
 	virtual void flush_queries() = 0;
 	virtual void finish() = 0;
 
+	virtual bool is_flushing_queries() const = 0;
+
 	enum ProcessInfo {
 
 		INFO_ACTIVE_OBJECTS,

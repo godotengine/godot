@@ -397,6 +397,8 @@ public:
 	virtual void flush_queries();
 	virtual void finish();
 
+	virtual bool is_flushing_queries() const { return false; }
+
 	virtual int get_process_info(ProcessInfo p_info);
 
 	CollisionObjectBullet *get_collisin_object(RID p_object) const;

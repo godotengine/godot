@@ -36,6 +36,12 @@
 #include "core/project_settings.h"
 #include "core/script_language.h"
 
+#define FLUSH_QUERY_CHECK                                                                                                                        \
+	if (flushing_queries) {                                                                                                                      \
+		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead"); \
+		ERR_FAIL();                                                                                                                              \
+	}
+
 RID Physics2DServerSW::_shape_create(ShapeType p_shape) {
 
 	Shape2DSW *shape = NULL;
@@ -401,6 +407,8 @@ void Physics2DServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, co
 
 void Physics2DServerSW::area_set_shape_disabled(RID p_area, int p_shape, bool p_disabled) {
 
+	FLUSH_QUERY_CHECK
+
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -539,6 +547,8 @@ void Physics2DServerSW::area_set_pickable(RID p_area, bool p_pickable) {
 
 void Physics2DServerSW::area_set_monitorable(RID p_area, bool p_monitorable) {
 
+	FLUSH_QUERY_CHECK
+
 	Area2DSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -616,6 +626,8 @@ RID Physics2DServerSW::body_get_space(RID p_body) const {
 };
 
 void Physics2DServerSW::body_set_mode(RID p_body, BodyMode p_mode) {
+
+	FLUSH_QUERY_CHECK
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -718,6 +730,8 @@ void Physics2DServerSW::body_clear_shapes(RID p_body) {
 }
 
 void Physics2DServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+
+	FLUSH_QUERY_CHECK
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -1348,6 +1362,8 @@ void Physics2DServerSW::flush_queries() {
 	if (!active)
 		return;
 
+	flushing_queries = true;
+
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
 	for (Set<const Space2DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
@@ -1355,6 +1371,8 @@ void Physics2DServerSW::flush_queries() {
 		Space2DSW *space = (Space2DSW *)E->get();
 		space->call_queries();
 	}
+
+	flushing_queries = false;
 
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
 
@@ -1434,6 +1452,7 @@ Physics2DServerSW::Physics2DServerSW() {
 	active_objects = 0;
 	collision_pairs = 0;
 	using_threads = int(ProjectSettings::get_singleton()->get("physics/2d/thread_model")) == 2;
+	flushing_queries = false;
 };
 
 Physics2DServerSW::~Physics2DServerSW(){
