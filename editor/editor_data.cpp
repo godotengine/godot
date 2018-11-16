@@ -946,16 +946,18 @@ void EditorData::script_class_save_icon_paths() {
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
-	Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
-	List<Variant> keys;
-	d.get_key_list(&keys);
+	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+		Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+		List<Variant> keys;
+		d.get_key_list(&keys);
 
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		String name = E->get().operator String();
-		_script_class_icon_paths[name] = d[name];
+		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			String name = E->get().operator String();
+			_script_class_icon_paths[name] = d[name];
 
-		String path = ScriptServer::get_global_class_path(name);
-		script_class_set_name(path, name);
+			String path = ScriptServer::get_global_class_path(name);
+			script_class_set_name(path, name);
+		}
 	}
 }
 
