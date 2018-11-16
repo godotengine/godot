@@ -608,7 +608,7 @@ class CanvasItemEditorViewport : public Control {
 
 	EditorNode *editor;
 	EditorData *editor_data;
-	CanvasItemEditor *canvas;
+	CanvasItemEditor *canvas_item_editor;
 	Node2D *preview_node;
 	AcceptDialog *accept;
 	WindowDialog *selector;
@@ -642,7 +642,7 @@ public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
-	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas);
+	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();
 };
 

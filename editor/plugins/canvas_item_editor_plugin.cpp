@@ -5070,19 +5070,13 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 		editor_data->get_undo_redo().add_do_property(child, "polygon", list);
 	}
 
-	// locate at preview position
-	Point2 pos = Point2(0, 0);
-	if (parent && parent->has_method("get_global_position")) {
-		pos = parent->call("get_global_position");
-	}
-	Transform2D trans = canvas->get_canvas_transform();
-	Point2 target_position = (p_point - trans.get_origin()) / trans.get_scale().x - pos;
-	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "NinePatchRect") {
-		target_position -= texture_size / 2;
-	}
+	// Compute the global position
+	Transform2D xform = canvas_item_editor->get_canvas_transform();
+	Point2 target_position = xform.affine_inverse().xform(p_point);
+
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
-	target_position = canvas->snap_point(target_position);
-	editor_data->get_undo_redo().add_do_method(child, "set_position", target_position);
+	target_position = canvas_item_editor->snap_point(target_position);
+	editor_data->get_undo_redo().add_do_method(child, "set_global_position", target_position);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
@@ -5117,8 +5111,8 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 
 	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
 	if (parent_ci) {
-		Vector2 target_pos = canvas->get_canvas_transform().affine_inverse().xform(p_point);
-		target_pos = canvas->snap_point(target_pos);
+		Vector2 target_pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(p_point);
+		target_pos = canvas_item_editor->snap_point(target_pos);
 		target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
 		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_position", target_pos);
 	}
@@ -5238,7 +5232,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				if (!preview_node->get_parent()) { // create preview only once
 					_create_preview(files);
 				}
-				Transform2D trans = canvas->get_canvas_transform();
+				Transform2D trans = canvas_item_editor->get_canvas_transform();
 				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
 				label->set_text(vformat(TTR("Adding %s..."), default_type));
 			}
@@ -5333,7 +5327,7 @@ void CanvasItemEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_mouse_exit"), &CanvasItemEditorViewport::_on_mouse_exit);
 }
 
-CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas) {
+CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor) {
 	default_type = "Sprite";
 	// Node2D
 	types.push_back("Sprite");
@@ -5348,7 +5342,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	target_node = NULL;
 	editor = p_node;
 	editor_data = editor->get_scene_tree_dock()->get_editor_data();
-	canvas = p_canvas;
+	canvas_item_editor = p_canvas_item_editor;
 	preview_node = memnew(Node2D);
 
 	accept = memnew(AcceptDialog);
