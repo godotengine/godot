@@ -2497,6 +2497,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	Environment *env = NULL;
 
 	int viewport_width, viewport_height;
+	bool probe_interior = false;
 
 	if (p_reflection_probe.is_valid()) {
 		ReflectionProbeInstance *probe = reflection_probe_instance_owner.getornull(p_reflection_probe);
@@ -2513,6 +2514,8 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 		viewport_width = probe->probe_ptr->resolution;
 		viewport_height = probe->probe_ptr->resolution;
+
+		probe_interior = probe->probe_ptr->interior;
 
 	} else {
 		state.render_no_shadows = false;
@@ -2622,6 +2625,10 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		if (sky && sky->panorama.is_valid()) {
 			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy);
 		}
+	}
+
+	if (probe_interior) {
+		env_radiance_tex = 0; //do not use radiance texture on interiors
 	}
 
 	// render opaque things first

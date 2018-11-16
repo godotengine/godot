@@ -4341,6 +4341,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
+	if (probe && probe->probe_ptr->interior) {
+		env_radiance_tex = 0; //for rendering probe interiors, radiance must not be used.
+	}
+
 	state.texscreen_copied = false;
 
 	glBlendEquation(GL_FUNC_ADD);
