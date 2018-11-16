@@ -797,7 +797,10 @@ void RigidBodyBullet::reload_shapes() {
 	const btScalar mass = invMass == 0 ? 0 : 1 / invMass;
 
 	if (mainShape) {
-		btVector3 inertia;
+		// inertia initialised zero here because some of bullet's collision
+		// shapes incorrectly do not set the vector in calculateLocalIntertia.
+		// Arbitrary zero is preferable to undefined behaviour.
+		btVector3 inertia(0, 0, 0);
 		mainShape->calculateLocalInertia(mass, inertia);
 		btBody->setMassProps(mass, inertia);
 	}
