@@ -159,6 +159,74 @@ CSGBrush *CSGShape::_get_brush() {
 	return brush;
 }
 
+int CSGShape::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	return surface.vertices.size() / 3;
+}
+
+int CSGShape::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
+	// always 3
+	return 3;
+}
+
+void CSGShape::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	Vector3 v = surface.verticesw[iFace * 3 + iVert];
+	fvPosOut[0] = v.x;
+	fvPosOut[1] = v.y;
+	fvPosOut[2] = v.z;
+}
+
+void CSGShape::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	Vector3 n = surface.normalsw[iFace * 3 + iVert];
+	fvNormOut[0] = n.x;
+	fvNormOut[1] = n.y;
+	fvNormOut[2] = n.z;
+}
+
+void CSGShape::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	Vector2 t = surface.uvsw[iFace * 3 + iVert];
+	fvTexcOut[0] = t.x;
+	fvTexcOut[1] = t.y;
+}
+
+void CSGShape::mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert) {
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	int i = (iFace * 3 + iVert) * 4;
+
+	// Godot seems to want the tangent flipped because our handedness is reversed..
+	surface.tansw[i++] = -fvTangent[0];
+	surface.tansw[i++] = -fvTangent[1];
+	surface.tansw[i++] = -fvTangent[2];
+	surface.tansw[i++] = fSign;
+}
+
+void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
+		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
+
+	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+
+	int i = iFace * 3 + iVert;
+	Vector3 normal = surface.normalsw[i];
+	Vector3 tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
+	Vector3 bitangent = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
+	float d = bitangent.dot(normal.cross(tangent));
+
+	// Godot seems to want the tangent flipped because our handedness is reversed..
+	i *= 4;
+	surface.tansw[i++] = -tangent.x;
+	surface.tansw[i++] = -tangent.y;
+	surface.tansw[i++] = -tangent.z;
+	surface.tansw[i++] = d < 0 ? -1 : 1;
+}
+
 void CSGShape::_update_shape() {
 
 	if (parent)
@@ -211,6 +279,9 @@ void CSGShape::_update_shape() {
 		surfaces.write[i].vertices.resize(face_count[i] * 3);
 		surfaces.write[i].normals.resize(face_count[i] * 3);
 		surfaces.write[i].uvs.resize(face_count[i] * 3);
+		if (calculate_tangents) {
+			surfaces.write[i].tans.resize(face_count[i] * 3 * 4);
+		}
 		surfaces.write[i].last_added = 0;
 
 		if (i != surfaces.size() - 1) {
@@ -220,6 +291,9 @@ void CSGShape::_update_shape() {
 		surfaces.write[i].verticesw = surfaces.write[i].vertices.write();
 		surfaces.write[i].normalsw = surfaces.write[i].normals.write();
 		surfaces.write[i].uvsw = surfaces.write[i].uvs.write();
+		if (calculate_tangents) {
+			surfaces.write[i].tansw = surfaces.write[i].tans.write();
+		}
 	}
 
 	//fill arrays
@@ -274,9 +348,19 @@ void CSGShape::_update_shape() {
 					normal = -normal;
 				}
 
-				surfaces[idx].verticesw[last + order[j]] = v;
-				surfaces[idx].uvsw[last + order[j]] = n->faces[i].uvs[j];
-				surfaces[idx].normalsw[last + order[j]] = normal;
+				int k = last + order[j];
+				surfaces[idx].verticesw[k] = v;
+				surfaces[idx].uvsw[k] = n->faces[i].uvs[j];
+				surfaces[idx].normalsw[k] = normal;
+
+				if (calculate_tangents) {
+					// zero out our tangents for now
+					k *= 4;
+					surfaces[idx].tansw[k++] = 0.0;
+					surfaces[idx].tansw[k++] = 0.0;
+					surfaces[idx].tansw[k++] = 0.0;
+					surfaces[idx].tansw[k++] = 0.0;
+				}
 			}
 
 			surfaces.write[idx].last_added += 3;
@@ -287,20 +371,43 @@ void CSGShape::_update_shape() {
 	//create surfaces
 
 	for (int i = 0; i < surfaces.size(); i++) {
+		// calculate tangents for this surface
+		bool have_tangents = calculate_tangents;
+		if (have_tangents) {
+			SMikkTSpaceInterface mkif;
+			mkif.m_getNormal = mikktGetNormal;
+			mkif.m_getNumFaces = mikktGetNumFaces;
+			mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
+			mkif.m_getPosition = mikktGetPosition;
+			mkif.m_getTexCoord = mikktGetTexCoord;
+			mkif.m_setTSpace = mikktSetTSpaceDefault;
+			mkif.m_setTSpaceBasic = NULL;
 
+			SMikkTSpaceContext msc;
+			msc.m_pInterface = &mkif;
+			msc.m_pUserData = &surfaces.write[i];
+			have_tangents = genTangSpaceDefault(&msc);
+		}
+
+		// unset write access
 		surfaces.write[i].verticesw = PoolVector<Vector3>::Write();
 		surfaces.write[i].normalsw = PoolVector<Vector3>::Write();
 		surfaces.write[i].uvsw = PoolVector<Vector2>::Write();
+		surfaces.write[i].tansw = PoolVector<float>::Write();
 
 		if (surfaces[i].last_added == 0)
 			continue;
 
+		// and convert to surface array
 		Array array;
 		array.resize(Mesh::ARRAY_MAX);
 
 		array[Mesh::ARRAY_VERTEX] = surfaces[i].vertices;
 		array[Mesh::ARRAY_NORMAL] = surfaces[i].normals;
 		array[Mesh::ARRAY_TEX_UV] = surfaces[i].uvs;
+		if (have_tangents) {
+			array[Mesh::ARRAY_TANGENT] = surfaces[i].tans;
+		}
 
 		int idx = root_mesh->get_surface_count();
 		root_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
@@ -400,6 +507,15 @@ CSGShape::Operation CSGShape::get_operation() const {
 	return operation;
 }
 
+void CSGShape::set_calculate_tangents(bool p_calculate_tangents) {
+	calculate_tangents = p_calculate_tangents;
+	_make_dirty();
+}
+
+bool CSGShape::is_calculating_tangents() const {
+	return calculate_tangents;
+}
+
 void CSGShape::_validate_property(PropertyInfo &property) const {
 	if (is_inside_tree() && property.name.begins_with("use_collision") && !is_root_shape()) {
 		//hide collision if not root
@@ -421,9 +537,13 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
 	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
 
+	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape::set_calculate_tangents);
+	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape::is_calculating_tangents);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
@@ -438,6 +558,7 @@ CSGShape::CSGShape() {
 	use_collision = false;
 	operation = OPERATION_UNION;
 	snap = 0.001;
+	calculate_tangents = true;
 }
 
 CSGShape::~CSGShape() {
