@@ -1754,9 +1754,9 @@ String _File::get_line() const {
 	return f->get_line();
 }
 
-Vector<String> _File::get_csv_line(String delim) const {
+Vector<String> _File::get_csv_line(const String &p_delim) const {
 	ERR_FAIL_COND_V(!f, Vector<String>());
-	return f->get_csv_line(delim);
+	return f->get_csv_line(p_delim);
 }
 
 /**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
@@ -1853,6 +1853,11 @@ void _File::store_line(const String &p_string) {
 	f->store_line(p_string);
 }
 
+void _File::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
+	ERR_FAIL_COND(!f);
+	f->store_csv_line(p_values, p_delim);
+}
+
 void _File::store_buffer(const PoolVector<uint8_t> &p_buffer) {
 
 	ERR_FAIL_COND(!f);
@@ -1936,6 +1941,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_real"), &_File::get_real);
 	ClassDB::bind_method(D_METHOD("get_buffer", "len"), &_File::get_buffer);
 	ClassDB::bind_method(D_METHOD("get_line"), &_File::get_line);
+	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &_File::get_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("get_as_text"), &_File::get_as_text);
 	ClassDB::bind_method(D_METHOD("get_md5", "path"), &_File::get_md5);
 	ClassDB::bind_method(D_METHOD("get_sha256", "path"), &_File::get_sha256);
@@ -1943,7 +1949,6 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_endian_swap", "enable"), &_File::set_endian_swap);
 	ClassDB::bind_method(D_METHOD("get_error"), &_File::get_error);
 	ClassDB::bind_method(D_METHOD("get_var"), &_File::get_var);
-	ClassDB::bind_method(D_METHOD("get_csv_line", "delim"), &_File::get_csv_line, DEFVAL(","));
 
 	ClassDB::bind_method(D_METHOD("store_8", "value"), &_File::store_8);
 	ClassDB::bind_method(D_METHOD("store_16", "value"), &_File::store_16);
@@ -1954,6 +1959,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &_File::store_real);
 	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), &_File::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &_File::store_line);
+	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &_File::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &_File::store_string);
 	ClassDB::bind_method(D_METHOD("store_var", "value"), &_File::store_var);
 
