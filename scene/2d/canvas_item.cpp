@@ -376,6 +376,9 @@ bool CanvasItem::is_visible_in_tree() const {
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
+	if (p_visible && first_draw) { //avoid propagating it twice
+		first_draw = false;
+	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible)
