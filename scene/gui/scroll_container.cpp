@@ -246,7 +246,7 @@ void ScrollContainer::_notification(int p_what) {
 			size.y -= h_scroll->get_minimum_size().y;
 
 		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) //scrolls may have been moved out for reasons
-			size.x -= h_scroll->get_minimum_size().x;
+			size.x -= v_scroll->get_minimum_size().x;
 
 		for (int i = 0; i < get_child_count(); i++) {
 
