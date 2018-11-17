@@ -118,6 +118,9 @@ public:
 			TYPE_DICTIONARY,
 			TYPE_SELF,
 			TYPE_OPERATOR,
+			TYPE_MATCH,
+			TYPE_PATTERN,
+			TYPE_PATTERN_BRANCH,
 			TYPE_CONTROL_FLOW,
 			TYPE_LOCAL_VAR,
 			TYPE_CAST,
@@ -419,11 +422,21 @@ public:
 		StringName bind;
 		Map<ConstantNode *, PatternNode *> dictionary;
 		Vector<PatternNode *> array;
+
+		PatternNode() {
+			constant = NULL;
+			type = TYPE_PATTERN;
+		}
 	};
 
 	struct PatternBranchNode : public Node {
 		Vector<PatternNode *> patterns;
 		BlockNode *body;
+
+		PatternBranchNode() {
+			type = TYPE_PATTERN_BRANCH;
+			body = NULL;
+		}
 	};
 
 	struct MatchNode : public Node {
@@ -436,6 +449,11 @@ public:
 		};
 
 		Vector<CompiledPatternBranch> compiled_pattern_branches;
+
+		MatchNode() {
+			val_to_match = NULL;
+			type = TYPE_MATCH;
+		}
 	};
 
 	struct ControlFlowNode : public Node {
@@ -458,11 +476,14 @@ public:
 		MatchNode *match;
 
 		ControlFlowNode *_else; //used for if
+
 		ControlFlowNode() {
 			type = TYPE_CONTROL_FLOW;
 			cf_type = CF_IF;
 			body = NULL;
+			match = NULL;
 			body_else = NULL;
+			_else = NULL;
 		}
 	};
 

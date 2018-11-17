@@ -76,6 +76,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/project_manager.h"
+#include "modules/gdscript/gdscript_ast_builder.h"
 #endif
 
 /* Static members */
@@ -284,6 +285,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --doctool <path>                 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                     Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                Build the scripting solutions (e.g. for C# projects).\n");
+	OS::get_singleton()->print("  --output-ast <ast-file>          Parses the script file and exports AST as JSON for further analysis\n");
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
@@ -1276,8 +1278,10 @@ bool Main::start() {
 	String script;
 	String test;
 	String _export_preset;
+	String ast_file;
 	bool export_debug = false;
 	bool check_only = false;
+	bool outputAst = false;
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 
@@ -1304,8 +1308,9 @@ bool Main::start() {
 				script = args[i + 1];
 			} else if (args[i] == "--test") {
 				test = args[i + 1];
+			}
 #ifdef TOOLS_ENABLED
-			} else if (args[i] == "--doctool") {
+			else if (args[i] == "--doctool") {
 				doc_tool = args[i + 1];
 				for (int j = i + 2; j < args.size(); j++)
 					removal_docs.push_back(args[j]);
@@ -1326,8 +1331,17 @@ bool Main::start() {
 					return false;
 				}
 				export_debug = true;
+			} else if(args[i] == "--output-ast") {
+				outputAst = true;
+				if (i + 1 < args.size()) {
+					ast_file = args[i + 1];
+				} else {
+					ERR_PRINT("ast_file not specified");
+					return false;
+				}
+			}
 #endif
-			} else {
+			else {
 				// The parameter does not match anything known, don't skip the next argument
 				parsed_pair = false;
 			}
@@ -1387,8 +1401,8 @@ bool Main::start() {
 		return false;
 	}
 
-#endif
 
+#endif
 	if (_export_preset != "") {
 		if (game_path == "") {
 			String err = "Command line param ";
@@ -1418,7 +1432,7 @@ bool Main::start() {
 
 #endif
 
-	} else if (script != "") {
+	} else if (script != "" && !outputAst) {
 
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_EXPLAIN("Can't load script: " + script);
@@ -1443,7 +1457,6 @@ bool Main::start() {
 			script_loop->set_init_script(script_res);
 			main_loop = script_loop;
 		} else {
-
 			return false;
 		}
 
@@ -1571,10 +1584,43 @@ bool Main::start() {
 
 					sml->get_root()->add_child(E->get());
 				}
-			}
+						}
 		}
 
 #ifdef TOOLS_ENABLED
+		if(outputAst) {
+			GDScriptASTBuilder astBuilder;
+
+			print_line("reading script file: " + script);
+			FileAccess *f = FileAccess::open(script, FileAccess::READ);
+			String code;
+			if (f) {
+				while(!f->eof_reached()) {
+					code = code + f->get_line() + "\n";
+				}
+			} else {
+				ERR_PRINT("script not found");
+				return false;
+			}
+			print_line("building AST... ");
+			bool result = astBuilder.build(code);
+			if(!result) {
+				ERR_PRINT("failed to build ast:");
+				ERR_PRINTS(astBuilder.GetError());
+				return false;
+			}
+			print_line("AST built!");
+			print_line("saving to " + ast_file);
+			f = FileAccess::open(ast_file, FileAccess::WRITE);
+			if(!f) {
+				ERR_PRINT("failed to open output file");
+				return false;
+			}
+			f->store_string(astBuilder.GetResult());
+			f->close();
+			print_line("ast saved to file");
+			return true;
+		}
 
 		EditorNode *editor_node = NULL;
 		if (editor) {
