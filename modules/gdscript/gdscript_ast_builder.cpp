@@ -20,8 +20,7 @@ bool GDScriptASTBuilder::build(const String& code) {
 				m_parser.get_error();
 			return false;
 		}
-		GDScriptParser::Node *root = (GDScriptParser::Node*)m_parser.get_parse_tree();
-		serialize(root);
+		serialize(m_parser.get_parse_tree());
 		return true;
 	}
 
@@ -1048,7 +1047,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		endObject();
 	}
 
-	void GDScriptASTBuilder::node_prefix(GDScriptParser::Node* node) {
+	void GDScriptASTBuilder::node_prefix(const GDScriptParser::Node* node) {
 		if(!node) {
 			null();
 			return;
@@ -1128,11 +1127,11 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		serialize(node->column);
 	}
 
-	void GDScriptASTBuilder::node_suffix(GDScriptParser::Node* node) {
+	void GDScriptASTBuilder::node_suffix(const GDScriptParser::Node* node) {
 		endObject();
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::ClassNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::ClassNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1195,7 +1194,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::FunctionNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::FunctionNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1254,7 +1253,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::BuiltInFunctionNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::BuiltInFunctionNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1267,7 +1266,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::BlockNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::BlockNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1296,7 +1295,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::IdentifierNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::IdentifierNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1317,7 +1316,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::TypeNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::TypeNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1330,7 +1329,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::ConstantNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::ConstantNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1346,7 +1345,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::ArrayNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::ArrayNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1362,7 +1361,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::DictionaryNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::DictionaryNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1378,7 +1377,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::SelfNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::SelfNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1387,7 +1386,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::OperatorNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::OperatorNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1406,7 +1405,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::PatternNode::PatternType pattern) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::PatternNode::PatternType pattern) {
 		switch(pattern) {
 			case GDScriptParser::PatternNode::PT_CONSTANT:
 				serialize(L"PT_CONSTANT");
@@ -1443,7 +1442,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		endObject();
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::PatternNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::PatternNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1470,7 +1469,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::PatternBranchNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::PatternBranchNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1483,7 +1482,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::MatchNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::MatchNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1499,7 +1498,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::ControlFlowNode::CFType type) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::ControlFlowNode::CFType type) {
 		switch(type) {
 			case GDScriptParser::ControlFlowNode::CF_IF:
 				serialize(L"CF_IF");
@@ -1530,7 +1529,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		}
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::ControlFlowNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::ControlFlowNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1558,7 +1557,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::LocalVarNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::LocalVarNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1586,7 +1585,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::CastNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::CastNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1605,7 +1604,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::AssertNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::AssertNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1618,7 +1617,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::BreakpointNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::BreakpointNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1627,7 +1626,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::NewLineNode* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::NewLineNode* node) {
 		if(!node) {
 			null();
 			return;
@@ -1636,62 +1635,62 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		node_suffix(node);
 	}
 
-	void GDScriptASTBuilder::serialize(GDScriptParser::Node* node) {
+	void GDScriptASTBuilder::serialize(const GDScriptParser::Node* node) {
 		if(!node) {
 			null();
 			return;
 		}
 		switch(node->type) {
 			case GDScriptParser::Node::TYPE_CLASS:
-				serialize(static_cast<GDScriptParser::ClassNode *>(node));
+				serialize(static_cast<const GDScriptParser::ClassNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_FUNCTION:
-				serialize(static_cast<GDScriptParser::FunctionNode *>(node));
+				serialize(static_cast<const GDScriptParser::FunctionNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_BUILT_IN_FUNCTION:
-				serialize(static_cast<GDScriptParser::BuiltInFunctionNode *>(node));
+				serialize(static_cast<const GDScriptParser::BuiltInFunctionNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_BLOCK:
-				serialize(static_cast<GDScriptParser::BlockNode *>(node));
+				serialize(static_cast<const GDScriptParser::BlockNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_IDENTIFIER:
-				serialize(static_cast<GDScriptParser::IdentifierNode *>(node));
+				serialize(static_cast<const GDScriptParser::IdentifierNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_TYPE:
-				serialize(static_cast<GDScriptParser::TypeNode *>(node));
+				serialize(static_cast<const GDScriptParser::TypeNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_CONSTANT:
-				serialize(static_cast<GDScriptParser::ConstantNode *>(node));
+				serialize(static_cast<const GDScriptParser::ConstantNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_ARRAY:
-				serialize(static_cast<GDScriptParser::ArrayNode *>(node));
+				serialize(static_cast<const GDScriptParser::ArrayNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_DICTIONARY:
-				serialize(static_cast<GDScriptParser::DictionaryNode *>(node));
+				serialize(static_cast<const GDScriptParser::DictionaryNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_SELF:
-				serialize(static_cast<GDScriptParser::SelfNode *>(node));
+				serialize(static_cast<const GDScriptParser::SelfNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_OPERATOR:
-				serialize(static_cast<GDScriptParser::OperatorNode *>(node));
+				serialize(static_cast<const GDScriptParser::OperatorNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_CONTROL_FLOW:
-				serialize(static_cast<GDScriptParser::ControlFlowNode *>(node));
+				serialize(static_cast<const GDScriptParser::ControlFlowNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_LOCAL_VAR:
-				serialize(static_cast<GDScriptParser::LocalVarNode *>(node));
+				serialize(static_cast<const GDScriptParser::LocalVarNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_CAST:
-				serialize(static_cast<GDScriptParser::CastNode *>(node));
+				serialize(static_cast<const GDScriptParser::CastNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_ASSERT:
-				serialize(static_cast<GDScriptParser::AssertNode *>(node));
+				serialize(static_cast<const GDScriptParser::AssertNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_BREAKPOINT:
-				serialize(static_cast<GDScriptParser::BreakpointNode *>(node));
+				serialize(static_cast<const GDScriptParser::BreakpointNode *>(node));
 				break;
 			case GDScriptParser::Node::TYPE_NEWLINE:
-				serialize(static_cast<GDScriptParser::NewLineNode *>(node));
+				serialize(static_cast<const GDScriptParser::NewLineNode *>(node));
 				break;
 			default:
 				assert(false);
