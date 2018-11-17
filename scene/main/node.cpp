@@ -1237,6 +1237,28 @@ void Node::remove_child(Node *p_child) {
 	}
 }
 
+void Node::adopt_child(Node *p_child, bool p_legible_unique_name) {
+
+	if (p_child == this) {
+		ERR_EXPLAIN("Can't add '" + p_child->get_name() + "' as a child to itself.")
+		ERR_FAIL_COND(p_child == this); // adding to itself!
+	}
+
+	if (data.blocked > 0) {
+		ERR_EXPLAIN("Parent node is busy setting up children, adopt_node() failed.");
+		ERR_FAIL_COND(data.blocked > 0);
+	}
+
+	Node *parent = p_child->get_parent();
+	if (parent) {
+		parent->remove_child(p_child);
+	}
+
+	/* Validate name */
+	_validate_child_name(p_child, p_legible_unique_name);
+	_add_child_nocheck(p_child, p_child->data.name);
+}
+
 int Node::get_child_count() const {
 
 	return data.children.size();
@@ -2653,6 +2675,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("adopt_child", "node", "legible_unique_name"), &Node::adopt_child, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
