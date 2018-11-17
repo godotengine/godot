@@ -201,10 +201,9 @@ void CSGShape::mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const flo
 
 	int i = (iFace * 3 + iVert) * 4;
 
-	// Godot seems to want the tangent flipped because our handedness is reversed..
-	surface.tansw[i++] = -fvTangent[0];
-	surface.tansw[i++] = -fvTangent[1];
-	surface.tansw[i++] = -fvTangent[2];
+	surface.tansw[i++] = fvTangent[0];
+	surface.tansw[i++] = fvTangent[1];
+	surface.tansw[i++] = fvTangent[2];
 	surface.tansw[i++] = fSign;
 }
 
@@ -219,11 +218,10 @@ void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const f
 	Vector3 bitangent = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
 	float d = bitangent.dot(normal.cross(tangent));
 
-	// Godot seems to want the tangent flipped because our handedness is reversed..
 	i *= 4;
-	surface.tansw[i++] = -tangent.x;
-	surface.tansw[i++] = -tangent.y;
-	surface.tansw[i++] = -tangent.z;
+	surface.tansw[i++] = tangent.x;
+	surface.tansw[i++] = tangent.y;
+	surface.tansw[i++] = tangent.z;
 	surface.tansw[i++] = d < 0 ? -1 : 1;
 }
 

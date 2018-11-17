@@ -699,7 +699,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
 		code += "\t{\n";
-		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,BINORMAL*depth_flip.y,NORMAL));\n"; //binormal is negative due to mikktpsace
+		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,BINORMAL*depth_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace
 
 		if (deep_parallax) {
 			code += "\t\tfloat num_layers = mix(float(depth_max_layers),float(depth_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
@@ -2277,7 +2277,7 @@ SpatialMaterial::SpatialMaterial() :
 
 	deep_parallax = false;
 	depth_parallax_flip_tangent = false;
-	depth_parallax_flip_binormal = true;
+	depth_parallax_flip_binormal = false;
 	set_depth_deep_parallax_min_layers(8);
 	set_depth_deep_parallax_max_layers(32);
 	set_depth_deep_parallax_flip_tangent(false); //also sets binormal
