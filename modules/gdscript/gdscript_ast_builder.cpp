@@ -1182,8 +1182,9 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		key(L"end_line");
 		serialize(node->end_line);
 
-		key(L"owner");
-		serialize(node->owner);
+		// circular reference
+		// key(L"owner");
+		// serialize(node->owner);
 
 		key(L"initializer");
 		serialize(node->initializer);
