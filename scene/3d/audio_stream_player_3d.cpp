@@ -641,6 +641,7 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 void AudioStreamPlayer3D::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
+		active = true;
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);

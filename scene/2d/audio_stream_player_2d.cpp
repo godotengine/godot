@@ -323,6 +323,7 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	}
 
 	if (stream_playback.is_valid()) {
+		active = true;
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);
