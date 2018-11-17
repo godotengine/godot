@@ -17,10 +17,11 @@
 			</return>
 			<argument index="0" name="action" type="String">
 			</argument>
-			<argument index="1" name="strength" type="float">
+			<argument index="1" name="strength" type="float" default="1.0">
 			</argument>
 			<description>
-				This will simulate pressing the specified action. The strength can be used for non-boolean actions.
+				This will simulate pressing the specified action.
+				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
 			</description>
 		</method>
 		<method name="action_release">
