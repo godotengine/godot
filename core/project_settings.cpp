@@ -307,7 +307,7 @@ void ProjectSettings::_convert_to_last_version() {
  *    If a project file is found, load it or fail.
  *    If nothing was found, error out.
  */
-Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
+Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
 
 	// If looking for files in a network client, use it directly
 
@@ -448,6 +448,18 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	_convert_to_last_version();
 
 	return OK;
+}
+
+Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards) {
+	Error err = _setup(p_path, p_main_pack, p_upwards);
+	if (err == OK) {
+		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
+		if (custom_settings != "") {
+			_load_settings_text(custom_settings);
+		}
+	}
+
+	return err;
 }
 
 bool ProjectSettings::has_setting(String p_var) const {
@@ -995,6 +1007,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
+	GLOBAL_DEF("application/config/project_settings_override", "");
 
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
