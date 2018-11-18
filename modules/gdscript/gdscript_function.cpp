@@ -477,56 +477,53 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(dst, 3);
 
 #ifdef DEBUG_ENABLED
-				if (a->get_type() != Variant::OBJECT || a->operator Object *() == NULL) {
-
-					err_text = "Left operand of 'is' is not an instance of anything.";
-					OPCODE_BREAK;
-				}
 				if (b->get_type() != Variant::OBJECT || b->operator Object *() == NULL) {
 
 					err_text = "Right operand of 'is' is not a class.";
 					OPCODE_BREAK;
 				}
 #endif
-				Object *obj_A = *a;
-				Object *obj_B = *b;
-
-				GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
 
 				bool extends_ok = false;
+				if (a->get_type() == Variant::OBJECT && a->operator Object *() != NULL) {
+					Object *obj_A = *a;
+					Object *obj_B = *b;
 
-				if (scr_B) {
-					//if B is a script, the only valid condition is that A has an instance which inherits from the script
-					//in other situation, this shoul return false.
+					GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
 
-					if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
+					if (scr_B) {
+						//if B is a script, the only valid condition is that A has an instance which inherits from the script
+						//in other situation, this shoul return false.
 
-						GDScript *cmp = static_cast<GDScript *>(obj_A->get_script_instance()->get_script().ptr());
-						//bool found=false;
-						while (cmp) {
+						if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
 
-							if (cmp == scr_B) {
-								//inherits from script, all ok
-								extends_ok = true;
-								break;
+							GDScript *cmp = static_cast<GDScript *>(obj_A->get_script_instance()->get_script().ptr());
+							//bool found=false;
+							while (cmp) {
+
+								if (cmp == scr_B) {
+									//inherits from script, all ok
+									extends_ok = true;
+									break;
+								}
+
+								cmp = cmp->_base;
 							}
-
-							cmp = cmp->_base;
 						}
-					}
 
-				} else {
+					} else {
 
-					GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(obj_B);
+						GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(obj_B);
 
 #ifdef DEBUG_ENABLED
-					if (!nc) {
+						if (!nc) {
 
-						err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
-						OPCODE_BREAK;
-					}
+							err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
+							OPCODE_BREAK;
+						}
 #endif
-					extends_ok = ClassDB::is_parent_class(obj_A->get_class_name(), nc->get_name());
+						extends_ok = ClassDB::is_parent_class(obj_A->get_class_name(), nc->get_name());
+					}
 				}
 
 				*dst = extends_ok;
