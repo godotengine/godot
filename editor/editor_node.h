@@ -235,6 +235,7 @@ private:
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
 	int tab_closing;
+	int previous_num_open;
 
 	bool exiting;
 
