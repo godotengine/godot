@@ -6432,6 +6432,10 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 	StringName native;
 	if (p_base_type.kind == DataType::GDSCRIPT) {
 		base_gdscript = p_base_type.script_type;
+		if (base_gdscript.is_null() || !base_gdscript->is_valid()) {
+			// GDScript wasn't properly compíled, don't bother trying
+			return false;
+		}
 	} else if (p_base_type.kind == DataType::SCRIPT) {
 		base_script = p_base_type.script_type;
 	} else if (p_base_type.kind == DataType::NATIVE) {
@@ -6470,6 +6474,12 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 			return true;
 		}
 		base_script = base_script->get_base_script();
+	}
+
+	if (native == StringName()) {
+		// Empty native class, might happen in some Script implementations
+		// Just ignore it
+		return false;
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -6914,6 +6924,10 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 	Ref<GDScript> gds;
 	if (base_type.kind == DataType::GDSCRIPT) {
 		gds = base_type.script_type;
+		if (gds.is_null() || !gds->is_valid()) {
+			// GDScript wasn't properly compíled, don't bother trying
+			return false;
+		}
 	}
 
 	Ref<Script> scr;
@@ -6974,6 +6988,12 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		base_type = _type_from_variant(scr.operator Variant());
 		native = scr->get_instance_base_type();
 		scr = scr->get_base_script();
+	}
+
+	if (native == StringName()) {
+		// Empty native class, might happen in some Script implementations
+		// Just ignore it
+		return false;
 	}
 
 	// Check ClassDB
