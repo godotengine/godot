@@ -102,8 +102,11 @@
 		<method name="clear_history">
 			<return type="void">
 			</return>
+			<argument index="0" name="increase_version" type="bool" default="true">
+			</argument>
 			<description>
 				Clear the undo/redo history and associated references.
+				Passing [code]false[/code] to [code]increase_version[/code] will prevent the version number to be increased from this.
 			</description>
 		</method>
 		<method name="commit_action">
