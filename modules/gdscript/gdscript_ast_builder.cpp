@@ -1537,7 +1537,7 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		}
 		node_prefix(node);
 
-		key(L"type");
+		key(L"cf_type");
 		serialize(node->cf_type);
 
 		key(L"arguments");
