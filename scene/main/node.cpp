@@ -157,7 +157,7 @@ void Node::_notification(int p_notification) {
 			// kill children as cleanly as possible
 			while (data.children.size()) {
 
-				Node *child = data.children[0];
+				Node *child = data.children[data.children.size() - 1]; //begin from the end because its faster and more consistent with creation
 				remove_child(child);
 				memdelete(child);
 			}
@@ -1182,13 +1182,24 @@ void Node::remove_child(Node *p_child) {
 		ERR_FAIL_COND(data.blocked > 0);
 	}
 
+	int child_count = data.children.size();
+	Node **children = data.children.ptrw();
 	int idx = -1;
-	for (int i = 0; i < data.children.size(); i++) {
 
-		if (data.children[i] == p_child) {
+	if (p_child->data.pos >= 0 && p_child->data.pos < child_count) {
+		if (children[p_child->data.pos] == p_child) {
+			idx = p_child->data.pos;
+		}
+	}
 
-			idx = i;
-			break;
+	if (idx == -1) { //maybe removed while unparenting or something and index was not updated, so just in case the above fails, try this.
+		for (int i = 0; i < child_count; i++) {
+
+			if (children[i] == p_child) {
+
+				idx = i;
+				break;
+			}
 		}
 	}
 
@@ -1205,10 +1216,14 @@ void Node::remove_child(Node *p_child) {
 
 	data.children.remove(idx);
 
-	for (int i = idx; i < data.children.size(); i++) {
+	//update pointer and size
+	child_count = data.children.size();
+	children = data.children.ptrw();
 
-		data.children[i]->data.pos = i;
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+	for (int i = idx; i < child_count; i++) {
+
+		children[i]->data.pos = i;
+		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = NULL;
