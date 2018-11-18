@@ -605,7 +605,6 @@ bool RasterizerSceneGLES2::reflection_probe_instance_postprocess_step(RID p_inst
 
 	size >>= 1;
 	int mipmaps = 6;
-	int mm_level = mipmaps - 1;
 
 	storage->shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_SOURCE_PANORAMA, false);
 	storage->shaders.cubemap_filter.bind();
@@ -627,8 +626,6 @@ bool RasterizerSceneGLES2::reflection_probe_instance_postprocess_step(RID p_inst
 		}
 
 		size >>= 1;
-
-		mm_level--;
 
 		lod++;
 	}
