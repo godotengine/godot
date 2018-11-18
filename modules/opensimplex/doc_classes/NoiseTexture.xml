@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NoiseTexture" inherits="Texture" category="Core" version="3.1">
+	<brief_description>
+		[OpenSimplexNoise] filled texture.
+	</brief_description>
+	<description>
+		Uses an [OpenSimplexNoise] to fill the texture data. You can specify the texture size but keep in mind that larger textures will take longer to generate and seamless noise only works with square sized textures.
+		NoiseTexture can also generate normalmap textures.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="as_normalmap" type="bool" setter="set_as_normalmap" getter="is_normalmap">
+			If true, the resulting texture contains a normal map created from the original noise interpreted as a bump map.
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height">
+			Height of the generated texture.
+		</member>
+		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise">
+			The [OpenSimplexNoise] instance used to generate the noise.
+		</member>
+		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless">
+			Whether the texture can be tiled without visible seams or not. Seamless textures take longer to generate.
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width">
+			Width of the generated texture.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

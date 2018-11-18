@@ -128,13 +128,8 @@ class ProjectListFilter : public HBoxContainer {
 private:
 	friend class ProjectManager;
 
-	enum Command {
-		CMD_CLEAR_FILTER,
-	};
-
 	OptionButton *filter_option;
 	LineEdit *search_box;
-	ToolButton *clear_search_button;
 
 	enum FilterOption {
 		FILTER_NAME,
@@ -142,7 +137,6 @@ private:
 	};
 	FilterOption _current_filter;
 
-	void _command(int p_command);
 	void _search_text_changed(const String &p_newtext);
 	void _setup_filters();
 	void _filter_option_selected(int p_idx);

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 font loader (body).                                           */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -366,13 +366,15 @@
   }
 
 
-  FT_LOCAL_DEF( FT_Error )
-  T1_Set_MM_Blend( T1_Face    face,
+  static FT_Error
+  t1_set_mm_blend( T1_Face    face,
                    FT_UInt    num_coords,
                    FT_Fixed*  coords )
   {
     PS_Blend  blend = face->blend;
     FT_UInt   n, m;
+
+    FT_Bool  have_diff = 0;
 
 
     if ( !blend )
@@ -405,8 +407,35 @@
 
         result = FT_MulFix( result, factor );
       }
-      blend->weight_vector[n] = result;
+
+      if ( blend->weight_vector[n] != result )
+      {
+        blend->weight_vector[n] = result;
+        have_diff               = 1;
+      }
     }
+
+    /* return value -1 indicates `no change' */
+    return have_diff ? FT_Err_Ok : -1;
+  }
+
+
+  FT_LOCAL_DEF( FT_Error )
+  T1_Set_MM_Blend( T1_Face    face,
+                   FT_UInt    num_coords,
+                   FT_Fixed*  coords )
+  {
+    FT_Error  error;
+
+
+    error = t1_set_mm_blend( face, num_coords, coords );
+    if ( error )
+      return error;
+
+    if ( num_coords )
+      face->root.face_flags |= FT_FACE_FLAG_VARIATION;
+    else
+      face->root.face_flags &= ~FT_FACE_FLAG_VARIATION;
 
     return FT_Err_Ok;
   }
@@ -452,6 +481,7 @@
                     FT_UInt   num_coords,
                     FT_Long*  coords )
   {
+    FT_Error  error;
     PS_Blend  blend = face->blend;
     FT_UInt   n, p;
     FT_Fixed  final_blends[T1_MAX_MM_DESIGNS];
@@ -518,7 +548,28 @@
       final_blends[n] = the_blend;
     }
 
-    return T1_Set_MM_Blend( face, blend->num_axis, final_blends );
+    error = t1_set_mm_blend( face, blend->num_axis, final_blends );
+    if ( error )
+      return error;
+
+    if ( num_coords )
+      face->root.face_flags |= FT_FACE_FLAG_VARIATION;
+    else
+      face->root.face_flags &= ~FT_FACE_FLAG_VARIATION;
+
+    return FT_Err_Ok;
+  }
+
+
+  /* MM fonts don't have named instances, so only the design is reset */
+
+  FT_LOCAL_DEF( FT_Error )
+  T1_Reset_MM_Blend( T1_Face  face,
+                     FT_UInt  instance_index )
+  {
+    FT_UNUSED( instance_index );
+
+    return T1_Set_MM_Blend( face, 0, NULL );
   }
 
 
@@ -1266,7 +1317,7 @@
     if ( ft_isdigit( *cur ) || *cur == '[' )
     {
       T1_Encoding  encode          = &face->type1.encoding;
-      FT_Int       count, n;
+      FT_Int       count, array_size, n;
       PS_Table     char_table      = &loader->encoding_table;
       FT_Memory    memory          = parser->root.memory;
       FT_Error     error;
@@ -1283,13 +1334,12 @@
       else
         count = (FT_Int)T1_ToInt( parser );
 
-      /* only composite fonts (which we don't support) */
-      /* can have larger values                        */
+      array_size = count;
       if ( count > 256 )
       {
-        FT_ERROR(( "parse_encoding: invalid encoding array size\n" ));
-        parser->root.error = FT_THROW( Invalid_File_Format );
-        return;
+        FT_TRACE2(( "parse_encoding:"
+                    " only using first 256 encoding array entries\n" ));
+        array_size = 256;
       }
 
       T1_Skip_Spaces( parser );
@@ -1305,18 +1355,18 @@
       }
 
       /* we use a T1_Table to store our charnames */
-      loader->num_chars = encode->num_chars = count;
-      if ( FT_NEW_ARRAY( encode->char_index, count )     ||
-           FT_NEW_ARRAY( encode->char_name,  count )     ||
+      loader->num_chars = encode->num_chars = array_size;
+      if ( FT_NEW_ARRAY( encode->char_index, array_size )     ||
+           FT_NEW_ARRAY( encode->char_name,  array_size )     ||
            FT_SET_ERROR( psaux->ps_table_funcs->init(
-                           char_table, count, memory ) ) )
+                           char_table, array_size, memory ) ) )
       {
         parser->root.error = error;
         return;
       }
 
       /* We need to `zero' out encoding_table.elements */
-      for ( n = 0; n < count; n++ )
+      for ( n = 0; n < array_size; n++ )
       {
         char*  notdef = (char *)".notdef";
 
@@ -1409,11 +1459,14 @@
 
             len = (FT_UInt)( parser->root.cursor - cur );
 
-            parser->root.error = T1_Add_Table( char_table, charcode,
-                                               cur, len + 1 );
-            if ( parser->root.error )
-              return;
-            char_table->elements[charcode][len] = '\0';
+            if ( n < array_size )
+            {
+              parser->root.error = T1_Add_Table( char_table, charcode,
+                                                 cur, len + 1 );
+              if ( parser->root.error )
+                return;
+              char_table->elements[charcode][len] = '\0';
+            }
 
             n++;
           }
@@ -2438,6 +2491,24 @@
       type1->encoding.code_first = min_char;
       type1->encoding.code_last  = max_char;
       type1->encoding.num_chars  = loader.num_chars;
+    }
+
+    /* some sanitizing to avoid overflows later on; */
+    /* the upper limits are ad-hoc values           */
+    if ( priv->blue_shift > 1000 || priv->blue_shift < 0 )
+    {
+      FT_TRACE2(( "T1_Open_Face:"
+                  " setting unlikely BlueShift value %d to default (7)\n",
+                  priv->blue_shift ));
+      priv->blue_shift = 7;
+    }
+
+    if ( priv->blue_fuzz > 1000 || priv->blue_fuzz < 0 )
+    {
+      FT_TRACE2(( "T1_Open_Face:"
+                  " setting unlikely BlueFuzz value %d to default (1)\n",
+                  priv->blue_fuzz ));
+      priv->blue_fuzz = 1;
     }
 
   Exit:

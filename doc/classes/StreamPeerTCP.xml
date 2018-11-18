@@ -4,7 +4,7 @@
 		TCP Stream peer.
 	</brief_description>
 	<description>
-		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a tcp server.
+		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a TCP server.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -43,7 +43,7 @@
 				Return the port of this peer.
 			</description>
 		</method>
-		<method name="get_status" qualifiers="const">
+		<method name="get_status">
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
@@ -54,6 +54,7 @@
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this peer is currently connected to a host, [code]false[code] otherwise.
 			</description>
 		</method>
 		<method name="set_no_delay">
@@ -78,7 +79,7 @@
 			A status representing a [code]StreamPeerTCP[/code] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A staus representing a [code]StreamPeerTCP[/code] in error state.
+			A status representing a [code]StreamPeerTCP[/code] in error state.
 		</constant>
 	</constants>
 </class>

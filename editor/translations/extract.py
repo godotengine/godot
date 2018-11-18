@@ -54,6 +54,8 @@ msgstr ""
 
 def process_file(f, fname):
 
+    global main_po, unique_str, unique_loc
+
     l = f.readline()
     lc = 1
     while (l):
@@ -86,7 +88,7 @@ def process_file(f, fname):
                 unique_str.append(msg)
                 unique_loc[msg] = [location]
             elif (not location in unique_loc[msg]):
-                # Add additional location to previous occurence too
+                # Add additional location to previous occurrence too
                 msg_pos = main_po.find('\nmsgid "' + msg + '"')
                 if (msg_pos == -1):
                     print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")

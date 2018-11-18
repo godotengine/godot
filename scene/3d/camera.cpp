@@ -30,10 +30,11 @@
 
 #include "camera.h"
 
-#include "camera_matrix.h"
+#include "collision_object.h"
+#include "core/engine.h"
+#include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
-
 void Camera::_update_audio_listener_state() {
 }
 
@@ -74,10 +75,7 @@ void Camera::_update_camera() {
 	if (!is_inside_tree())
 		return;
 
-	Transform tr = get_camera_transform();
-	tr.origin += tr.basis.get_axis(1) * v_offset;
-	tr.origin += tr.basis.get_axis(0) * h_offset;
-	VisualServer::get_singleton()->camera_set_transform(camera, tr);
+	VisualServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 
 	// here goes listener stuff
 	/*
@@ -143,7 +141,10 @@ void Camera::_notification(int p_what) {
 
 Transform Camera::get_camera_transform() const {
 
-	return get_global_transform().orthonormalized();
+	Transform tr = get_global_transform().orthonormalized();
+	tr.origin += tr.basis.get_axis(1) * v_offset;
+	tr.origin += tr.basis.get_axis(0) * h_offset;
+	return tr;
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -313,6 +314,32 @@ bool Camera::is_position_behind(const Vector3 &p_pos) const {
 	return eyedir.dot(p_pos) < (eyedir.dot(t.origin) + near);
 }
 
+Vector<Vector3> Camera::get_near_plane_points() const {
+	if (!is_inside_tree()) {
+		ERR_EXPLAIN("Camera is not inside scene.");
+		ERR_FAIL_COND_V(!is_inside_tree(), Vector<Vector3>());
+	}
+
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+
+	CameraMatrix cm;
+
+	if (mode == PROJECTION_ORTHOGONAL)
+		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+	else
+		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+
+	Vector3 endpoints[8];
+	cm.get_endpoints(Transform(), endpoints);
+
+	Vector<Vector3> points;
+	points.push_back(Vector3());
+	for (int i = 0; i < 4; i++) {
+		points.push_back(endpoints[i + 4]);
+	}
+	return points;
+}
+
 Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
 	if (!is_inside_tree()) {
@@ -468,6 +495,10 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
+
+	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera::set_cull_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera::get_cull_mask_bit);
+
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
@@ -480,8 +511,8 @@ void Camera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fov", PROPERTY_HINT_RANGE, "1,179,0.1"), "set_fov", "get_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "near"), "set_znear", "get_znear");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "far"), "set_zfar", "get_zfar");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "near", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01,or_greater"), "set_znear", "get_znear");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "far", PROPERTY_HINT_EXP_RANGE, "0.1,8192,0.1,or_greater"), "set_zfar", "get_zfar");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
@@ -522,11 +553,13 @@ Camera::Projection Camera::get_projection() const {
 void Camera::set_fov(float p_fov) {
 	fov = p_fov;
 	_update_camera_mode();
+	_change_notify("fov");
 }
 
 void Camera::set_size(float p_size) {
 	size = p_size;
 	_update_camera_mode();
+	_change_notify("size");
 }
 
 void Camera::set_znear(float p_znear) {
@@ -548,6 +581,20 @@ void Camera::set_cull_mask(uint32_t p_layers) {
 uint32_t Camera::get_cull_mask() const {
 
 	return layers;
+}
+
+void Camera::set_cull_mask_bit(int p_layer, bool p_enable) {
+	ERR_FAIL_INDEX(p_layer, 32);
+	if (p_enable) {
+		set_cull_mask(layers | (1 << p_layer));
+	} else {
+		set_cull_mask(layers & (~(1 << p_layer)));
+	}
+}
+
+bool Camera::get_cull_mask_bit(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, 32, false);
+	return (layers & (1 << p_layer));
 }
 
 Vector<Plane> Camera::get_frustum() const {
@@ -613,9 +660,231 @@ Camera::Camera() {
 	velocity_tracker.instance();
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
+	set_disable_scale(true);
 }
 
 Camera::~Camera() {
 
 	VisualServer::get_singleton()->free(camera);
+}
+
+////////////////////////////////////////
+
+void ClippedCamera::set_margin(float p_margin) {
+	margin = p_margin;
+}
+float ClippedCamera::get_margin() const {
+	return margin;
+}
+void ClippedCamera::set_process_mode(ProcessMode p_mode) {
+
+	if (process_mode == p_mode) {
+		return;
+	}
+	set_process_internal(p_mode == CLIP_PROCESS_IDLE);
+	set_physics_process_internal(p_mode == CLIP_PROCESS_PHYSICS);
+}
+ClippedCamera::ProcessMode ClippedCamera::get_process_mode() const {
+	return process_mode;
+}
+
+Transform ClippedCamera::get_camera_transform() const {
+
+	Transform t = Camera::get_camera_transform();
+	t.origin += -t.basis.get_axis(Vector3::AXIS_Z).normalized() * clip_offset;
+	return t;
+}
+
+void ClippedCamera::_notification(int p_what) {
+	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
+
+		Spatial *parent = Object::cast_to<Spatial>(get_parent());
+		if (!parent) {
+			return;
+		}
+
+		PhysicsDirectSpaceState *dspace = get_world()->get_direct_space_state();
+		ERR_FAIL_COND(!dspace); // most likely physics set to threads
+
+		Vector3 cam_fw = -get_global_transform().basis.get_axis(Vector3::AXIS_Z).normalized();
+		Vector3 cam_pos = get_global_transform().origin;
+		Vector3 parent_pos = parent->get_global_transform().origin;
+
+		Plane parent_plane(parent_pos, cam_fw);
+
+		if (parent_plane.is_point_over(cam_pos)) {
+			//cam is beyond parent plane
+			return;
+		}
+
+		Vector3 ray_from = parent_plane.project(cam_pos);
+
+		clip_offset = 0; //reset by defau;t
+
+		{ //check if points changed
+			Vector<Vector3> local_points = get_near_plane_points();
+
+			bool all_equal = true;
+
+			for (int i = 0; i < 5; i++) {
+				if (points[i] != local_points[i]) {
+					all_equal = false;
+					break;
+				}
+			}
+
+			if (!all_equal) {
+				PhysicsServer::get_singleton()->shape_set_data(pyramid_shape, local_points);
+				points = local_points;
+			}
+		}
+
+		Transform xf = get_global_transform();
+		xf.origin = ray_from;
+		xf.orthonormalize();
+
+		float csafe, cunsafe;
+		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
+			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from).normalized() * csafe);
+		}
+
+		_update_camera();
+	}
+
+	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
+		update_gizmo();
+	}
+}
+
+void ClippedCamera::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask = p_mask;
+}
+
+uint32_t ClippedCamera::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void ClippedCamera::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
+bool ClippedCamera::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
+}
+
+void ClippedCamera::add_exception_rid(const RID &p_rid) {
+
+	exclude.insert(p_rid);
+}
+
+void ClippedCamera::add_exception(const Object *p_object) {
+
+	ERR_FAIL_NULL(p_object);
+	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
+	if (!co)
+		return;
+	add_exception_rid(co->get_rid());
+}
+
+void ClippedCamera::remove_exception_rid(const RID &p_rid) {
+
+	exclude.erase(p_rid);
+}
+
+void ClippedCamera::remove_exception(const Object *p_object) {
+
+	ERR_FAIL_NULL(p_object);
+	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
+	if (!co)
+		return;
+	remove_exception_rid(co->get_rid());
+}
+
+void ClippedCamera::clear_exceptions() {
+
+	exclude.clear();
+}
+
+void ClippedCamera::set_clip_to_areas(bool p_clip) {
+
+	clip_to_areas = p_clip;
+}
+
+bool ClippedCamera::is_clip_to_areas_enabled() const {
+
+	return clip_to_areas;
+}
+
+void ClippedCamera::set_clip_to_bodies(bool p_clip) {
+
+	clip_to_bodies = p_clip;
+}
+
+bool ClippedCamera::is_clip_to_bodies_enabled() const {
+
+	return clip_to_bodies;
+}
+
+void ClippedCamera::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &ClippedCamera::set_margin);
+	ClassDB::bind_method(D_METHOD("get_margin"), &ClippedCamera::get_margin);
+
+	ClassDB::bind_method(D_METHOD("set_process_mode", "process_mode"), &ClippedCamera::set_process_mode);
+	ClassDB::bind_method(D_METHOD("get_process_mode"), &ClippedCamera::get_process_mode);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &ClippedCamera::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &ClippedCamera::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &ClippedCamera::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &ClippedCamera::get_collision_mask_bit);
+
+	ClassDB::bind_method(D_METHOD("add_exception_rid", "rid"), &ClippedCamera::add_exception_rid);
+	ClassDB::bind_method(D_METHOD("add_exception", "node"), &ClippedCamera::add_exception);
+
+	ClassDB::bind_method(D_METHOD("remove_exception_rid", "rid"), &ClippedCamera::remove_exception_rid);
+	ClassDB::bind_method(D_METHOD("remove_exception", "node"), &ClippedCamera::remove_exception);
+
+	ClassDB::bind_method(D_METHOD("set_clip_to_areas", "enable"), &ClippedCamera::set_clip_to_areas);
+	ClassDB::bind_method(D_METHOD("is_clip_to_areas_enabled"), &ClippedCamera::is_clip_to_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_clip_to_bodies", "enable"), &ClippedCamera::set_clip_to_bodies);
+	ClassDB::bind_method(D_METHOD("is_clip_to_bodies_enabled"), &ClippedCamera::is_clip_to_bodies_enabled);
+
+	ClassDB::bind_method(D_METHOD("clear_exceptions"), &ClippedCamera::clear_exceptions);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "margin", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_mode", "get_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Clip To", "clip_to");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_areas", "is_clip_to_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_to_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_clip_to_bodies", "is_clip_to_bodies_enabled");
+
+	BIND_ENUM_CONSTANT(CLIP_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(CLIP_PROCESS_IDLE);
+}
+ClippedCamera::ClippedCamera() {
+	margin = 0;
+	clip_offset = 0;
+	process_mode = CLIP_PROCESS_PHYSICS;
+	set_physics_process_internal(true);
+	collision_mask = 1;
+	set_notify_local_transform(Engine::get_singleton()->is_editor_hint());
+	points.resize(5);
+	pyramid_shape = PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON);
+	clip_to_areas = false;
+	clip_to_bodies = true;
+}
+ClippedCamera::~ClippedCamera() {
+	PhysicsServer::get_singleton()->free(pyramid_shape);
 }

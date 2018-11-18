@@ -30,11 +30,11 @@
 
 #include "test_shader_lang.h"
 
-#include "os/file_access.h"
-#include "os/main_loop.h"
-#include "os/os.h"
+#include "core/os/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/visual/shader_language.h"
@@ -194,6 +194,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			code = vnode->name;
 
 		} break;
+		case SL::Node::TYPE_VARIABLE_DECLARATION: {
+			// FIXME: Implement
+		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
 			return get_constant_text(cnode->datatype, cnode->values);
@@ -321,8 +324,8 @@ MainLoop *test() {
 	dt["fragment"].built_ins["ALBEDO"] = SL::TYPE_VEC3;
 	dt["fragment"].can_discard = true;
 
-	Set<String> rm;
-	rm.insert("popo");
+	Vector<StringName> rm;
+	rm.push_back("popo");
 	Set<String> types;
 	types.insert("spatial");
 

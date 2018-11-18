@@ -60,6 +60,7 @@ public:
 
 	Dictionary get_stored_values(bool p_with_order = false);
 
+	Node *create_instance(bool p_replace = false, const Ref<PackedScene> &p_custom_scene = Ref<PackedScene>());
 	void replace_by_instance(const Ref<PackedScene> &p_custom_scene = Ref<PackedScene>());
 
 	InstancePlaceholder();

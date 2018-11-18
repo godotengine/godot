@@ -28,16 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vector3.h"
+// Circular dependency between Vector3 and Basis :/
+#include "core/math/vector3.h"
 
 #ifndef MATRIX3_H
 #define MATRIX3_H
 
-#include "quat.h"
+#include "core/math/quat.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class Basis {
 public:
 	Vector3 elements[3];
@@ -84,9 +86,11 @@ public:
 	void rotate(const Quat &p_quat);
 	Basis rotated(const Quat &p_quat) const;
 
-	Vector3 get_rotation() const;
+	Vector3 get_rotation_euler() const;
 	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
+	Quat get_rotation_quat() const;
+	Vector3 get_rotation() const { return get_rotation_euler(); };
 
 	Vector3 rotref_posscale_decomposition(Basis &rotref) const;
 
@@ -110,7 +114,6 @@ public:
 	void scale_local(const Vector3 &p_scale);
 	Basis scaled_local(const Vector3 &p_scale) const;
 
-	void set_scale(const Vector3 &p_scale);
 	Vector3 get_scale() const;
 	Vector3 get_scale_abs() const;
 	Vector3 get_scale_local() const;
@@ -154,6 +157,8 @@ public:
 	bool is_orthogonal() const;
 	bool is_diagonal() const;
 	bool is_rotation() const;
+
+	Basis slerp(const Basis &target, const real_t &t) const;
 
 	operator String() const;
 
@@ -228,10 +233,13 @@ public:
 	operator Quat() const { return get_quat(); }
 
 	Basis(const Quat &p_quat) { set_quat(p_quat); };
+	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
+
 	Basis(const Vector3 &p_euler) { set_euler(p_euler); }
+	Basis(const Vector3 &p_euler, const Vector3 &p_scale) { set_euler_scale(p_euler, p_scale); }
+
 	Basis(const Vector3 &p_axis, real_t p_phi) { set_axis_angle(p_axis, p_phi); }
 	Basis(const Vector3 &p_axis, real_t p_phi, const Vector3 &p_scale) { set_axis_angle_scale(p_axis, p_phi, p_scale); }
-	Basis(const Quat &p_quat, const Vector3 &p_scale) { set_quat_scale(p_quat, p_scale); }
 
 	_FORCE_INLINE_ Basis(const Vector3 &row0, const Vector3 &row1, const Vector3 &row2) {
 		elements[0] = row0;

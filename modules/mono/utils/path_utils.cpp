@@ -30,10 +30,10 @@
 
 #include "path_utils.h"
 
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #ifdef WINDOWS_ENABLED
 #define ENV_PATH_SEP ";"
@@ -88,7 +88,7 @@ void fix_path(const String &p_path, String &r_out) {
 bool rel_path_to_abs(const String &p_existing_path, String &r_abs_path) {
 #ifdef WINDOWS_ENABLED
 	CharType ret[_MAX_PATH];
-	if (_wfullpath(ret, p_existing_path.c_str(), _MAX_PATH)) {
+	if (::_wfullpath(ret, p_existing_path.c_str(), _MAX_PATH)) {
 		String abspath = String(ret).replace("\\", "/");
 		int pos = abspath.find(":/");
 		if (pos != -1) {
@@ -99,10 +99,12 @@ bool rel_path_to_abs(const String &p_existing_path, String &r_abs_path) {
 		return true;
 	}
 #else
-	char ret[PATH_MAX];
-	if (realpath(p_existing_path.utf8().get_data(), ret)) {
+	char *resolved_path = ::realpath(p_existing_path.utf8().get_data(), NULL);
+	if (resolved_path) {
 		String retstr;
-		if (!retstr.parse_utf8(ret)) {
+		bool success = !retstr.parse_utf8(resolved_path);
+		::free(resolved_path);
+		if (success) {
 			r_abs_path = retstr;
 			return true;
 		}

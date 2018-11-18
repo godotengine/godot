@@ -40,13 +40,13 @@
 
 #define MBEDTLS_ERR_MD4_HW_ACCEL_FAILED                   -0x002D  /**< MD4 hardware accelerator failed */
 
-#if !defined(MBEDTLS_MD4_ALT)
-// Regular implementation
-//
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#if !defined(MBEDTLS_MD4_ALT)
+// Regular implementation
+//
 
 /**
  * \brief          MD4 context structure
@@ -63,6 +63,10 @@ typedef struct
     unsigned char buffer[64];   /*!< data block being processed */
 }
 mbedtls_md4_context;
+
+#else  /* MBEDTLS_MD4_ALT */
+#include "md4_alt.h"
+#endif /* MBEDTLS_MD4_ALT */
 
 /**
  * \brief          Initialize MD4 context
@@ -237,18 +241,6 @@ MBEDTLS_DEPRECATED void mbedtls_md4_process( mbedtls_md4_context *ctx,
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
-
-#ifdef __cplusplus
-}
-#endif
-
-#else  /* MBEDTLS_MD4_ALT */
-#include "md4_alt.h"
-#endif /* MBEDTLS_MD4_ALT */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \brief          Output = MD4( input buffer )

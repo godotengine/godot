@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "spatial_velocity_tracker.h"
-#include "engine.h"
+#include "core/engine.h"
 
 void SpatialVelocityTracker::set_track_physics_step(bool p_track_physics_step) {
 
@@ -53,11 +53,11 @@ void SpatialVelocityTracker::update_position(const Vector3 &p_position) {
 	if (position_history_len == 0 || position_history[0].frame != ph.frame) { //in same frame, use latest
 		position_history_len = MIN(position_history.size(), position_history_len + 1);
 		for (int i = position_history_len - 1; i > 0; i--) {
-			position_history[i] = position_history[i - 1];
+			position_history.write[i] = position_history[i - 1];
 		}
 	}
 
-	position_history[0] = ph;
+	position_history.write[0] = ph;
 }
 Vector3 SpatialVelocityTracker::get_tracked_linear_velocity() const {
 
@@ -114,7 +114,7 @@ void SpatialVelocityTracker::reset(const Vector3 &p_new_pos) {
 		ph.frame = Engine::get_singleton()->get_idle_frame_ticks();
 	}
 
-	position_history[0] = ph;
+	position_history.write[0] = ph;
 	position_history_len = 1;
 }
 

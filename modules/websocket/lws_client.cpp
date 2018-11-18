@@ -32,6 +32,8 @@
 #include "lws_client.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer_ssl.h"
+#include "core/project_settings.h"
+#include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
@@ -47,12 +49,10 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 
 	ERR_FAIL_COND_V(!addr.is_valid(), ERR_INVALID_PARAMETER);
 
-	// prepare protocols
-	if (p_protocols.size() == 0) // default to binary protocol
-		p_protocols.append("binary");
+	// Prepare protocols
 	_lws_make_protocols(this, &LWSClient::_lws_gd_callback, p_protocols, &_lws_ref);
 
-	// init lws client
+	// Init lws client
 	struct lws_context_creation_info info;
 	struct lws_client_connect_info i;
 
@@ -77,20 +77,11 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		ERR_FAIL_V(FAILED);
 	}
 
-	char abuf[1024];
-	char hbuf[1024];
-	char pbuf[2048];
-	String addr_str = (String)addr;
-	strncpy(abuf, addr_str.ascii().get_data(), 1024);
-	strncpy(hbuf, p_host.utf8().get_data(), 1024);
-	strncpy(pbuf, p_path.utf8().get_data(), 2048);
-
 	i.context = context;
-	i.protocol = _lws_ref->lws_names;
-	i.address = abuf;
-	i.host = hbuf;
-	i.path = pbuf;
-	i.port = p_port;
+	if (p_protocols.size() > 0)
+		i.protocol = _lws_ref->lws_names;
+	else
+		i.protocol = NULL;
 
 	if (p_ssl) {
 		i.ssl_connection = LCCSCF_USE_SSL;
@@ -100,9 +91,23 @@ Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		i.ssl_connection = 0;
 	}
 
+	// These CharStrings needs to survive till we call lws_client_connect_via_info
+	CharString addr_ch = ((String)addr).ascii();
+	CharString host_ch = p_host.utf8();
+	CharString path_ch = p_path.utf8();
+	i.address = addr_ch.get_data();
+	i.host = host_ch.get_data();
+	i.path = path_ch.get_data();
+	i.port = p_port;
+
 	lws_client_connect_via_info(&i);
+
 	return OK;
 };
+
+int LWSClient::get_max_packet_size() const {
+	return (1 << _out_buf_size) - PROTO_SIZE;
+}
 
 void LWSClient::poll() {
 
@@ -124,31 +129,31 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 		} break;
 
 		case LWS_CALLBACK_CLIENT_ESTABLISHED:
-			peer->set_wsi(wsi);
+			peer->set_wsi(wsi, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 			peer_data->peer_id = 0;
-			peer_data->in_size = 0;
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbw.resize(16);
-			peer_data->rbr.resize(16);
 			peer_data->force_close = false;
+			peer_data->clean_close = false;
 			_on_connect(lws_get_protocol(wsi)->name);
 			break;
 
 		case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 			_on_error();
 			destroy_context();
-			return -1; // we should close the connection (would probably happen anyway)
+			return -1; // We should close the connection (would probably happen anyway)
 
-		case LWS_CALLBACK_CLOSED:
-			peer_data->in_count = 0;
-			peer_data->out_count = 0;
-			peer_data->rbw.resize(0);
-			peer_data->rbr.resize(0);
+		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
+			int code;
+			String reason = peer->get_close_reason(in, len, code);
+			peer_data->clean_close = true;
+			_on_close_request(code, reason);
+			return 0;
+		}
+
+		case LWS_CALLBACK_CLIENT_CLOSED:
 			peer->close();
 			destroy_context();
-			_on_disconnect();
-			return 0; // we can end here
+			_on_disconnect(peer_data->clean_close);
+			return 0; // We can end here
 
 		case LWS_CALLBACK_CLIENT_RECEIVE:
 			peer->read_wsi(in, len);
@@ -157,8 +162,10 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			break;
 
 		case LWS_CALLBACK_CLIENT_WRITEABLE:
-			if (peer_data->force_close)
+			if (peer_data->force_close) {
+				peer->send_close_status(wsi);
 				return -1;
+			}
 
 			peer->write_wsi();
 			break;
@@ -186,13 +193,12 @@ NetworkedMultiplayerPeer::ConnectionStatus LWSClient::get_connection_status() co
 	return CONNECTION_CONNECTING;
 }
 
-void LWSClient::disconnect_from_host() {
+void LWSClient::disconnect_from_host(int p_code, String p_reason) {
 
 	if (context == NULL)
 		return;
 
-	_peer->close();
-	destroy_context();
+	_peer->close(p_code, p_reason);
 };
 
 IP_Address LWSClient::get_connected_host() const {
@@ -206,6 +212,11 @@ uint16_t LWSClient::get_connected_port() const {
 };
 
 LWSClient::LWSClient() {
+	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
+	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
+	_out_buf_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_BUF) - 1) + 10;
+	_out_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_OUT_PKT) - 1);
+
 	context = NULL;
 	_lws_ref = NULL;
 	_peer = Ref<LWSPeer>(memnew(LWSPeer));
@@ -215,6 +226,7 @@ LWSClient::~LWSClient() {
 
 	invalidate_lws_ref(); // We do not want any more callback
 	disconnect_from_host();
+	destroy_context();
 	_peer = Ref<LWSPeer>();
 };
 

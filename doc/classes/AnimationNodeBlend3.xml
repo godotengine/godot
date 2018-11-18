@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeBlend3" inherits="AnimationNode" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

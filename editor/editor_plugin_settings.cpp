@@ -30,17 +30,20 @@
 
 #include "editor_plugin_settings.h"
 
+#include "core/io/config_file.h"
+#include "core/os/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/project_settings.h"
 #include "editor_node.h"
-#include "io/config_file.h"
-#include "os/file_access.h"
-#include "os/main_loop.h"
-#include "project_settings.h"
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
+	} else if (p_what == Node::NOTIFICATION_READY) {
+		plugin_config_dialog->connect("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
+		plugin_list->connect("button_pressed", this, "_cell_button_pressed");
 	}
 }
 
@@ -114,7 +117,7 @@ void EditorPluginSettings::update_plugins() {
 
 			TreeItem *item = plugin_list->create_item(root);
 			item->set_text(0, name);
-			item->set_tooltip(0, "Name: " + name + "\nPath: " + path + "\nMain Script: " + script);
+			item->set_tooltip(0, "Name: " + name + "\nPath: " + path + "\nMain Script: " + script + "\nDescription: " + description);
 			item->set_metadata(0, d);
 			item->set_text(1, version);
 			item->set_metadata(1, script);
@@ -124,6 +127,7 @@ void EditorPluginSettings::update_plugins() {
 			item->set_range_config(3, 0, 1, 1);
 			item->set_text(3, "Inactive,Active");
 			item->set_editable(3, true);
+			item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
 
 			if (EditorNode::get_singleton()->is_addon_plugin_enabled(d)) {
 				item->set_custom_color(3, get_color("success_color", "Editor"));
@@ -164,17 +168,44 @@ void EditorPluginSettings::_plugin_activity_changed() {
 		ti->set_custom_color(3, get_color("disabled_font_color", "Editor"));
 }
 
+void EditorPluginSettings::_create_clicked() {
+	plugin_config_dialog->config("");
+	plugin_config_dialog->popup_centered();
+}
+
+void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	if (!item)
+		return;
+	if (p_id == BUTTON_PLUGIN_EDIT) {
+		if (p_column == 4) {
+			String dir = item->get_metadata(0);
+			plugin_config_dialog->config("res://addons/" + dir + "/plugin.cfg");
+			plugin_config_dialog->popup_centered();
+		}
+	}
+}
+
 void EditorPluginSettings::_bind_methods() {
 
 	ClassDB::bind_method("update_plugins", &EditorPluginSettings::update_plugins);
+	ClassDB::bind_method("_create_clicked", &EditorPluginSettings::_create_clicked);
 	ClassDB::bind_method("_plugin_activity_changed", &EditorPluginSettings::_plugin_activity_changed);
+	ClassDB::bind_method("_cell_button_pressed", &EditorPluginSettings::_cell_button_pressed);
 }
 
 EditorPluginSettings::EditorPluginSettings() {
 
+	plugin_config_dialog = memnew(PluginConfigDialog);
+	plugin_config_dialog->config("");
+	add_child(plugin_config_dialog);
+
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	title_hb->add_child(memnew(Label(TTR("Installed Plugins:"))));
 	title_hb->add_spacer();
+	create_plugin = memnew(Button(TTR("Create")));
+	create_plugin->connect("pressed", this, "_create_clicked");
+	title_hb->add_child(create_plugin);
 	update_list = memnew(Button(TTR("Update")));
 	update_list->connect("pressed", this, "update_plugins");
 	title_hb->add_child(update_list);
@@ -182,19 +213,22 @@ EditorPluginSettings::EditorPluginSettings() {
 
 	plugin_list = memnew(Tree);
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	plugin_list->set_columns(4);
+	plugin_list->set_columns(5);
 	plugin_list->set_column_titles_visible(true);
 	plugin_list->set_column_title(0, TTR("Name:"));
 	plugin_list->set_column_title(1, TTR("Version:"));
 	plugin_list->set_column_title(2, TTR("Author:"));
 	plugin_list->set_column_title(3, TTR("Status:"));
+	plugin_list->set_column_title(4, TTR("Edit:"));
 	plugin_list->set_column_expand(0, true);
 	plugin_list->set_column_expand(1, false);
 	plugin_list->set_column_expand(2, false);
 	plugin_list->set_column_expand(3, false);
+	plugin_list->set_column_expand(4, false);
 	plugin_list->set_column_min_width(1, 100 * EDSCALE);
 	plugin_list->set_column_min_width(2, 250 * EDSCALE);
 	plugin_list->set_column_min_width(3, 80 * EDSCALE);
+	plugin_list->set_column_min_width(4, 40 * EDSCALE);
 	plugin_list->set_hide_root(true);
 	plugin_list->connect("item_edited", this, "_plugin_activity_changed");
 

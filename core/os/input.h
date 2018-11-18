@@ -31,9 +31,9 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "object.h"
-#include "os/main_loop.h"
-#include "os/thread_safe.h"
+#include "core/object.h"
+#include "core/os/main_loop.h"
+#include "core/os/thread_safe.h"
 
 class Input : public Object {
 
@@ -113,12 +113,13 @@ public:
 	virtual Vector3 get_magnetometer() const = 0;
 	virtual Vector3 get_gyroscope() const = 0;
 
-	virtual void action_press(const StringName &p_action) = 0;
+	virtual void action_press(const StringName &p_action, float p_strength = 1.f) = 0;
 	virtual void action_release(const StringName &p_action) = 0;
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	virtual bool is_emulating_touchscreen() const = 0;
+	virtual bool is_emulating_touch_from_mouse() const = 0;
+	virtual bool is_emulating_mouse_from_touch() const = 0;
 
 	virtual CursorShape get_default_cursor_shape() = 0;
 	virtual void set_default_cursor_shape(CursorShape p_shape) = 0;

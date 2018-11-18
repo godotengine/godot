@@ -30,6 +30,8 @@
 
 #include "navigation.h"
 
+#define USE_ENTRY_POINT
+
 void Navigation::_navmesh_link(int p_id) {
 
 	ERR_FAIL_COND(!navmesh_map.has(p_id));
@@ -73,7 +75,7 @@ void Navigation::_navmesh_link(int p_id) {
 			Vector3 ep = nm.xform.xform(r[idx]);
 			center += ep;
 			e.point = _get_point(ep);
-			p.edges[j] = e;
+			p.edges.write[j] = e;
 
 			if (j >= 2) {
 				Vector3 epa = nm.xform.xform(r[indices[j - 2]]);
@@ -118,18 +120,16 @@ void Navigation::_navmesh_link(int p_id) {
 					ConnectionPending pending;
 					pending.polygon = &p;
 					pending.edge = j;
-					p.edges[j].P = C->get().pending.push_back(pending);
+					p.edges.write[j].P = C->get().pending.push_back(pending);
 					continue;
-					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
-				//ERR_CONTINUE(C->get().B!=NULL); //wut
 
 				C->get().B = &p;
 				C->get().B_edge = j;
-				C->get().A->edges[C->get().A_edge].C = &p;
-				C->get().A->edges[C->get().A_edge].C_edge = j;
-				p.edges[j].C = C->get().A;
-				p.edges[j].C_edge = C->get().A_edge;
+				C->get().A->edges.write[C->get().A_edge].C = &p;
+				C->get().A->edges.write[C->get().A_edge].C_edge = j;
+				p.edges.write[j].C = C->get().A;
+				p.edges.write[j].C_edge = C->get().A_edge;
 				//connection successful.
 			}
 		}
@@ -165,10 +165,10 @@ void Navigation::_navmesh_unlink(int p_id) {
 			} else if (C->get().B) {
 				//disconnect
 
-				C->get().B->edges[C->get().B_edge].C = NULL;
-				C->get().B->edges[C->get().B_edge].C_edge = -1;
-				C->get().A->edges[C->get().A_edge].C = NULL;
-				C->get().A->edges[C->get().A_edge].C_edge = -1;
+				C->get().B->edges.write[C->get().B_edge].C = NULL;
+				C->get().B->edges.write[C->get().B_edge].C_edge = -1;
+				C->get().A->edges.write[C->get().A_edge].C = NULL;
+				C->get().A->edges.write[C->get().A_edge].C_edge = -1;
 
 				if (C->get().A == &E->get()) {
 
@@ -185,11 +185,11 @@ void Navigation::_navmesh_unlink(int p_id) {
 
 					C->get().B = cp.polygon;
 					C->get().B_edge = cp.edge;
-					C->get().A->edges[C->get().A_edge].C = cp.polygon;
-					C->get().A->edges[C->get().A_edge].C_edge = cp.edge;
-					cp.polygon->edges[cp.edge].C = C->get().A;
-					cp.polygon->edges[cp.edge].C_edge = C->get().A_edge;
-					cp.polygon->edges[cp.edge].P = NULL;
+					C->get().A->edges.write[C->get().A_edge].C = cp.polygon;
+					C->get().A->edges.write[C->get().A_edge].C_edge = cp.edge;
+					cp.polygon->edges.write[cp.edge].C = C->get().A;
+					cp.polygon->edges.write[cp.edge].C_edge = C->get().A_edge;
+					cp.polygon->edges.write[cp.edge].P = NULL;
 				}
 
 			} else {
@@ -312,7 +312,6 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 
 	if (!begin_poly || !end_poly) {
 
-		//print_line("No Path Path");
 		return Vector<Vector3>(); //no path
 	}
 
@@ -320,9 +319,8 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 
 		Vector<Vector3> path;
 		path.resize(2);
-		path[0] = begin_point;
-		path[1] = end_point;
-		//print_line("Direct Path");
+		path.write[0] = begin_point;
+		path.write[1] = end_point;
 		return path;
 	}
 
@@ -335,7 +333,18 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 		if (begin_poly->edges[i].C) {
 
 			begin_poly->edges[i].C->prev_edge = begin_poly->edges[i].C_edge;
+#ifdef USE_ENTRY_POINT
+			Vector3 edge[2] = {
+				_get_vertex(begin_poly->edges[i].point),
+				_get_vertex(begin_poly->edges[(i + 1) % begin_poly->edges.size()].point)
+			};
+
+			Vector3 entry = Geometry::get_closest_point_to_segment(begin_poly->entry, edge);
+			begin_poly->edges[i].C->distance = begin_poly->entry.distance_to(entry);
+			begin_poly->edges[i].C->entry = entry;
+#else
 			begin_poly->edges[i].C->distance = begin_poly->center.distance_to(begin_poly->edges[i].C->center);
+#endif
 			open_list.push_back(begin_poly->edges[i].C);
 
 			if (begin_poly->edges[i].C == end_poly) {
@@ -347,7 +356,6 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 	while (!found_route) {
 
 		if (open_list.size() == 0) {
-			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list
@@ -361,10 +369,33 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 			Polygon *p = E->get();
 
 			float cost = p->distance;
+#ifdef USE_ENTRY_POINT
+			int es = p->edges.size();
+
+			float shortest_distance = 1e30;
+
+			for (int i = 0; i < es; i++) {
+				Polygon::Edge &e = p->edges.write[i];
+
+				if (!e.C)
+					continue;
+
+				Vector3 edge[2] = {
+					_get_vertex(p->edges[i].point),
+					_get_vertex(p->edges[(i + 1) % es].point)
+				};
+
+				Vector3 edge_point = Geometry::get_closest_point_to_segment(p->entry, edge);
+				float dist = p->entry.distance_to(edge_point);
+				if (dist < shortest_distance)
+					shortest_distance = dist;
+			}
+
+			cost += shortest_distance;
+#else
 			cost += p->center.distance_to(end_point);
-
+#endif
 			if (cost < least_cost) {
-
 				least_cost_poly = E;
 				least_cost = cost;
 			}
@@ -375,7 +406,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 
 		for (int i = 0; i < p->edges.size(); i++) {
 
-			Polygon::Edge &e = p->edges[i];
+			Polygon::Edge &e = p->edges.write[i];
 
 			if (!e.C)
 				continue;
@@ -532,7 +563,6 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	float closest_point_d = 1e20;
-	NavMesh *closest_navmesh = NULL;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
 
@@ -551,12 +581,10 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 						closest_point = inters;
 						use_collision = true;
 						closest_point_d = p_from.distance_to(inters);
-						closest_navmesh = p.owner;
 					} else if (closest_point_d > inters.distance_to(p_from)) {
 
 						closest_point = inters;
 						closest_point_d = p_from.distance_to(inters);
-						closest_navmesh = p.owner;
 					}
 				}
 			}
@@ -574,15 +602,10 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 
 						closest_point_d = d;
 						closest_point = b;
-						closest_navmesh = p.owner;
 					}
 				}
 			}
 		}
-	}
-
-	if (closest_navmesh && closest_navmesh->owner) {
-		//print_line("navmesh is: "+Object::cast_to<Node>(closest_navmesh->owner)->get_name());
 	}
 
 	return closest_point;

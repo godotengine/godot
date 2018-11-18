@@ -34,8 +34,8 @@
 
 // FIXME: Will be removed, kept as reference for new implementation
 #if 0
-#include "geometry.h"
-#include "project_settings.h"
+#include "core/math/geometry.h"
+#include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"
 
 void Room::_notification(int p_what) {

@@ -30,9 +30,9 @@
 
 #include "editor_import_collada.h"
 
+#include "core/os/os.h"
 #include "editor/collada/collada.h"
 #include "editor/editor_node.h"
-#include "os/os.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"
@@ -119,7 +119,6 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_n
 
 	Collada::NodeJoint *joint = static_cast<Collada::NodeJoint *>(p_node);
 
-	print_line("populating joint " + joint->name);
 	p_skeleton->add_bone(p_node->name);
 	if (p_parent >= 0)
 		p_skeleton->set_bone_parent(r_bone, p_parent);
@@ -137,8 +136,7 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton, Collada::Node *p_n
 		p_skeleton->set_bone_rest(r_bone, collada.fix_transform(collada.state.bone_rest_map[joint->sid]));
 		//should map this bone to something for animation?
 	} else {
-		print_line("no rest: " + joint->sid);
-		WARN_PRINT("Joint has no rest...");
+		WARN_PRINT("Collada: Joint has no rest.");
 	}
 
 	int id = r_bone++;
@@ -323,7 +321,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 			} else {
 				//mesh since nothing else
 				node = memnew(MeshInstance);
-				Object::cast_to<MeshInstance>(node)->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
+				//Object::cast_to<MeshInstance>(node)->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
 			}
 		} break;
 		case Collada::Node::TYPE_SKELETON: {
@@ -339,7 +337,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 	NodeMap nm;
 	nm.node = node;
 	node_map[p_node->id] = nm;
-	node_name_map[p_node->name] = p_node->id;
+	node_name_map[node->get_name()] = p_node->id;
 	Transform xf = p_node->default_transform;
 
 	xf = collada.fix_transform(xf) * p_node->post_transform;
@@ -490,123 +488,6 @@ Error ColladaImport::_create_material(const String &p_target) {
 
 	material_cache[p_target] = material;
 	return OK;
-}
-
-static void _generate_normals(const PoolVector<int> &p_indices, const PoolVector<Vector3> &p_vertices, PoolVector<Vector3> &r_normals) {
-
-	r_normals.resize(p_vertices.size());
-	PoolVector<Vector3>::Write narrayw = r_normals.write();
-
-	int iacount = p_indices.size() / 3;
-	PoolVector<int>::Read index_arrayr = p_indices.read();
-	PoolVector<Vector3>::Read vertex_arrayr = p_vertices.read();
-
-	for (int idx = 0; idx < iacount; idx++) {
-
-		Vector3 v[3] = {
-			vertex_arrayr[index_arrayr[idx * 3 + 0]],
-			vertex_arrayr[index_arrayr[idx * 3 + 1]],
-			vertex_arrayr[index_arrayr[idx * 3 + 2]]
-		};
-
-		Vector3 normal = Plane(v[0], v[1], v[2]).normal;
-
-		narrayw[index_arrayr[idx * 3 + 0]] += normal;
-		narrayw[index_arrayr[idx * 3 + 1]] += normal;
-		narrayw[index_arrayr[idx * 3 + 2]] += normal;
-	}
-
-	int vlen = p_vertices.size();
-
-	for (int idx = 0; idx < vlen; idx++) {
-		narrayw[idx].normalize();
-	}
-}
-
-static void _generate_tangents_and_binormals(const PoolVector<int> &p_indices, const PoolVector<Vector3> &p_vertices, const PoolVector<Vector3> &p_uvs, const PoolVector<Vector3> &p_normals, PoolVector<real_t> &r_tangents) {
-
-	int vlen = p_vertices.size();
-
-	Vector<Vector3> tangents;
-	tangents.resize(vlen);
-	Vector<Vector3> binormals;
-	binormals.resize(vlen);
-
-	int iacount = p_indices.size() / 3;
-
-	PoolVector<int>::Read index_arrayr = p_indices.read();
-	PoolVector<Vector3>::Read vertex_arrayr = p_vertices.read();
-	PoolVector<Vector3>::Read narrayr = p_normals.read();
-	PoolVector<Vector3>::Read uvarrayr = p_uvs.read();
-
-	for (int idx = 0; idx < iacount; idx++) {
-
-		Vector3 v1 = vertex_arrayr[index_arrayr[idx * 3 + 0]];
-		Vector3 v2 = vertex_arrayr[index_arrayr[idx * 3 + 1]];
-		Vector3 v3 = vertex_arrayr[index_arrayr[idx * 3 + 2]];
-
-		Vector3 w1 = uvarrayr[index_arrayr[idx * 3 + 0]];
-		Vector3 w2 = uvarrayr[index_arrayr[idx * 3 + 1]];
-		Vector3 w3 = uvarrayr[index_arrayr[idx * 3 + 2]];
-
-		real_t x1 = v2.x - v1.x;
-		real_t x2 = v3.x - v1.x;
-		real_t y1 = v2.y - v1.y;
-		real_t y2 = v3.y - v1.y;
-		real_t z1 = v2.z - v1.z;
-		real_t z2 = v3.z - v1.z;
-
-		real_t s1 = w2.x - w1.x;
-		real_t s2 = w3.x - w1.x;
-		real_t t1 = w2.y - w1.y;
-		real_t t2 = w3.y - w1.y;
-
-		real_t r = (s1 * t2 - s2 * t1);
-
-		Vector3 tangent;
-		Vector3 binormal;
-
-		if (r == 0) {
-
-			binormal = Vector3();
-			tangent = Vector3();
-		} else {
-			tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-					(t2 * z1 - t1 * z2) * r)
-							  .normalized();
-			binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-					(s1 * z2 - s2 * z1) * r)
-							   .normalized();
-		}
-
-		tangents[index_arrayr[idx * 3 + 0]] += tangent;
-		binormals[index_arrayr[idx * 3 + 0]] += binormal;
-		tangents[index_arrayr[idx * 3 + 1]] += tangent;
-		binormals[index_arrayr[idx * 3 + 1]] += binormal;
-		tangents[index_arrayr[idx * 3 + 2]] += tangent;
-		binormals[index_arrayr[idx * 3 + 2]] += binormal;
-
-		//print_line(itos(idx)+" tangent: "+tangent);
-		//print_line(itos(idx)+" binormal: "+binormal);
-	}
-
-	r_tangents.resize(vlen * 4);
-	PoolVector<real_t>::Write tarrayw = r_tangents.write();
-
-	for (int idx = 0; idx < vlen; idx++) {
-		Vector3 tangent = tangents[idx];
-		Vector3 bingen = narrayr[idx].cross(tangent);
-		float dir;
-		if (bingen.dot(binormals[idx]) < 0)
-			dir = -1.0;
-		else
-			dir = +1.0;
-
-		tarrayw[idx * 4 + 0] = tangent.x;
-		tarrayw[idx * 4 + 1] = tangent.y;
-		tarrayw[idx * 4 + 2] = tangent.z;
-		tarrayw[idx * 4 + 3] = dir;
-	}
 }
 
 Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_mesh, const Map<String, Collada::NodeGeometry::Material> &p_material_map, const Collada::MeshData &meshdata, const Transform &p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_controller, const Collada::MorphControllerData *p_morph_data, Vector<Ref<ArrayMesh> > p_morph_meshes, bool p_use_compression, bool p_use_mesh_material) {
@@ -800,7 +681,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					total += weights[i].weight;
 				if (total)
 					for (int i = 0; i < weights.size(); i++)
-						weights[i].weight /= total;
+						weights.write[i].weight /= total;
 
 				if (weights.size() == 0 || total == 0) { //if nothing, add a weight to bone 0
 					//no weights assigned
@@ -987,7 +868,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 		vertex_array.resize(vertex_set.size());
 		for (Set<Collada::Vertex>::Element *F = vertex_set.front(); F; F = F->next()) {
 
-			vertex_array[F->get().idx] = F->get();
+			vertex_array.write[F->get().idx] = F->get();
 		}
 
 		if (has_weights) {
@@ -996,9 +877,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 			Transform local_xform = p_local_xform;
 			for (int i = 0; i < vertex_array.size(); i++) {
 
-				vertex_array[i].vertex = local_xform.xform(vertex_array[i].vertex);
-				vertex_array[i].normal = local_xform.basis.xform(vertex_array[i].normal).normalized();
-				vertex_array[i].tangent.normal = local_xform.basis.xform(vertex_array[i].tangent.normal).normalized();
+				vertex_array.write[i].vertex = local_xform.xform(vertex_array[i].vertex);
+				vertex_array.write[i].normal = local_xform.basis.xform(vertex_array[i].normal).normalized();
+				vertex_array.write[i].tangent.normal = local_xform.basis.xform(vertex_array[i].tangent.normal).normalized();
 				if (local_xform_mirror) {
 					//i shouldn't do this? wtf?
 					//vertex_array[i].normal*=-1.0;
@@ -1028,7 +909,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 						material = material_cache[target];
 
 				} else if (p.material != "") {
-					print_line("Warning, unreferenced material in geometry instance: " + p.material);
+					WARN_PRINTS("Collada: Unreferenced material in geometry instance: " + p.material);
 				}
 			}
 
@@ -1061,13 +942,13 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					//float sum=0.0;
 					for (int l = 0; l < VS::ARRAY_WEIGHTS_SIZE; l++) {
 						if (l < vertex_array[k].weights.size()) {
-							weights[l] = vertex_array[k].weights[l].weight;
-							bones[l] = vertex_array[k].weights[l].bone_idx;
+							weights.write[l] = vertex_array[k].weights[l].weight;
+							bones.write[l] = vertex_array[k].weights[l].bone_idx;
 							//sum += vertex_array[k].weights[l].weight;
 						} else {
 
-							weights[l] = 0;
-							bones[l] = 0;
+							weights.write[l] = 0;
+							bones.write[l] = 0;
 						}
 					}
 
@@ -1286,7 +1167,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 						String str = joint_src->sarray[i];
 						ERR_FAIL_COND_V(!bone_remap_map.has(str), ERR_INVALID_DATA);
-						bone_remap[i] = bone_remap_map[str];
+						bone_remap.write[i] = bone_remap_map[str];
 					}
 				}
 
@@ -1352,7 +1233,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh_cache[meshid] = mesh;
 				} else {
 
-					print_line("Warning, will not import geometry: " + meshid);
+					WARN_PRINTS("Collada: Will not import geometry: " + meshid);
 				}
 			}
 
@@ -1379,7 +1260,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 							mi->set_surface_material(i, material);
 						} else if (matname != "") {
-							print_line("Warning, unreferenced material in geometry instance: " + matname);
+							WARN_PRINTS("Collada: Unreferenced material in geometry instance: " + matname);
 						}
 					}
 				}
@@ -1506,7 +1387,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 										const Vector<int> &rt = collada.state.referenced_tracks[track_name];
 
 										for (int rti = 0; rti < rt.size(); rti++) {
-											Collada::AnimationTrack *at = &collada.state.animation_tracks[rt[rti]];
+											Collada::AnimationTrack *at = &collada.state.animation_tracks.write[rt[rti]];
 
 											at->target = E->key();
 											at->param = "morph/" + collada.state.mesh_name_map[mesh_name];
@@ -1540,8 +1421,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 	for (int i = 0; i < collada.state.animation_tracks.size(); i++) {
 
-		Collada::AnimationTrack &at = collada.state.animation_tracks[i];
-		//print_line("CHANNEL: "+at.target+" PARAM: "+at.param);
+		const Collada::AnimationTrack &at = collada.state.animation_tracks[i];
 
 		String node;
 
@@ -1551,7 +1431,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 				node = node_name_map[at.target];
 			} else {
-				print_line("Couldn't find node: " + at.target);
+				WARN_PRINTS("Collada: Couldn't find node: " + at.target);
 				continue;
 			}
 		} else {
@@ -1570,7 +1450,6 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 	}
 
 	create_animation(-1, p_make_tracks_in_all_bones, p_import_value_tracks);
-	//print_line("clipcount: "+itos(collada.state.animation_clips.size()));
 	for (int i = 0; i < collada.state.animation_clips.size(); i++)
 		create_animation(i, p_make_tracks_in_all_bones, p_import_value_tracks);
 }
@@ -1580,11 +1459,8 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	Ref<Animation> animation = Ref<Animation>(memnew(Animation));
 
 	if (p_clip == -1) {
-
-		//print_line("default");
 		animation->set_name("default");
 	} else {
-		//print_line("clip name: "+collada.state.animation_clips[p_clip].name);
 		animation->set_name(collada.state.animation_clips[p_clip].name);
 	}
 
@@ -1658,7 +1534,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		}
 	}
 
-	//print_line("anim len: "+rtos(anim_length));
 	animation->set_length(anim_length);
 
 	bool tracks_found = false;
@@ -1698,7 +1573,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 		if (nm.anim_tracks.size() == 1) {
 			//use snapshot keys from anim track instead, because this was most likely exported baked
-			Collada::AnimationTrack &at = collada.state.animation_tracks[nm.anim_tracks.front()->get()];
+			const Collada::AnimationTrack &at = collada.state.animation_tracks[nm.anim_tracks.front()->get()];
 			snapshots.clear();
 			for (int i = 0; i < at.keys.size(); i++)
 				snapshots.push_back(at.keys[i].time);
@@ -1723,7 +1598,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 				found_anim = true;
 
-				Collada::AnimationTrack &at = collada.state.animation_tracks[ET->get()];
+				const Collada::AnimationTrack &at = collada.state.animation_tracks[ET->get()];
 
 				int xform_idx = -1;
 				for (int j = 0; j < cn->xform_list.size(); j++) {
@@ -1736,7 +1611,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				if (xform_idx == -1) {
-					print_line("couldn't find matching node " + at.target + " xform for track " + at.param);
+					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param);
 					continue;
 				}
 
@@ -1745,27 +1620,22 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				Vector<float> data = at.get_value_at_time(snapshots[i]);
 				ERR_CONTINUE(data.empty());
 
-				Collada::Node::XForm &xf = cn->xform_list[xform_idx];
+				Collada::Node::XForm &xf = cn->xform_list.write[xform_idx];
 
 				if (at.component == "ANGLE") {
 					ERR_CONTINUE(data.size() != 1);
 					ERR_CONTINUE(xf.op != Collada::Node::XForm::OP_ROTATE);
 					ERR_CONTINUE(xf.data.size() < 4);
-					xf.data[3] = data[0];
+					xf.data.write[3] = data[0];
 				} else if (at.component == "X" || at.component == "Y" || at.component == "Z") {
 					int cn = at.component[0] - 'X';
 					ERR_CONTINUE(cn >= xf.data.size());
 					ERR_CONTINUE(data.size() > 1);
-					xf.data[cn] = data[0];
+					xf.data.write[cn] = data[0];
 				} else if (data.size() == xf.data.size()) {
-
 					xf.data = data;
 				} else {
-
-					if (data.size() != xf.data.size()) {
-						print_line("component " + at.component + " datasize " + itos(data.size()) + " xfdatasize " + itos(xf.data.size()));
-					}
-
+					ERR_EXPLAIN("Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()));
 					ERR_CONTINUE(data.size() != xf.data.size());
 				}
 			}
@@ -1781,12 +1651,11 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
 				} else {
 
-					ERR_PRINT("INVALID SKELETON!!!!");
+					ERR_PRINT("Collada: Invalid skeleton");
 				}
 			}
 
-			Quat q = xform.basis;
-			q.normalize();
+			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
 			Vector3 l = xform.origin;
 
@@ -1813,8 +1682,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			if (E->get())
 				continue;
 
-			//print_line("BONE LACKS ANIM: "+E->key());
-
 			NodeMap &nm = node_map[E->key()];
 			String path = scene->get_path_to(nm.node);
 			ERR_CONTINUE(nm.bone < 0);
@@ -1824,7 +1691,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			Collada::Node *cn = collada.state.scene_map[E->key()];
 			if (cn->ignore_anim) {
-				print_line("warning, ignoring animation on node: " + path);
+				WARN_PRINTS("Collada: Ignoring animation on node: " + path);
 				continue;
 			}
 
@@ -1838,8 +1705,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
 
-			Quat q = xform.basis;
-			q.normalize();
+			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
 			Vector3 l = xform.origin;
 
@@ -1864,7 +1730,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					continue;
 			}
 
-			Collada::AnimationTrack &at = collada.state.animation_tracks[ti];
+			const Collada::AnimationTrack &at = collada.state.animation_tracks[ti];
 
 			// take snapshots
 			if (!collada.state.scene_map.has(at.target))
@@ -1891,10 +1757,9 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 				} else if (data.size() == 16) {
 					//matrix
-					print_line("value keys for matrices not supported");
+					WARN_PRINT("Collada: Value keys for matrices not supported.");
 				} else {
-
-					print_line("don't know what to do with this amount of value keys: " + itos(data.size()));
+					WARN_PRINTS("Collada: Unexpected amount of value keys: " + itos(data.size()));
 				}
 
 				animation->track_insert_key(track, time, value);
@@ -1967,7 +1832,7 @@ Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_
 			if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {
 
 				if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
-					state.animations[i]->set_loop(true);
+					state.animations.write[i]->set_loop(true);
 				}
 			}
 
@@ -1996,7 +1861,6 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String &p_path
 	if (state.animations.size() == 0)
 		return Ref<Animation>();
 	Ref<Animation> anim = state.animations[0];
-	print_line("Anim Load OK");
 	String base = p_path.get_basename().to_lower();
 	if (p_flags & IMPORT_ANIMATION_DETECT_LOOP) {
 

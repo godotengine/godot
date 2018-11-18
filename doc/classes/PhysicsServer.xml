@@ -149,6 +149,18 @@
 				Removes a shape from an area. It does not delete the shape, so it can be reassigned later.
 			</description>
 		</method>
+		<method name="area_set_area_monitor_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="receiver" type="Object">
+			</argument>
+			<argument index="2" name="method" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="area_set_collision_layer">
 			<return type="void">
 			</return>
@@ -187,6 +199,16 @@
 				3: Instance ID of the object that entered/exited the area.
 				4: The shape index of the object that entered/exited the area.
 				5: The shape index of the area where the object entered/exited.
+			</description>
+		</method>
+		<method name="area_set_monitorable">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="monitorable" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="area_set_param">
@@ -272,6 +294,16 @@
 				Sets the transform matrix for an area.
 			</description>
 		</method>
+		<method name="body_add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_add_collision_exception">
 			<return type="void">
 			</return>
@@ -281,6 +313,18 @@
 			</argument>
 			<description>
 				Adds a body to the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="body_add_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="force" type="Vector3">
+			</argument>
+			<argument index="2" name="position" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_add_shape">
@@ -294,6 +338,26 @@
 			</argument>
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
+			</description>
+		</method>
+		<method name="body_add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="torque" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="body_apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="impulse" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_apply_impulse">
@@ -605,7 +669,7 @@
 			<argument index="3" name="userdata" type="Variant" default="null">
 			</argument>
 			<description>
-				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force integration]).
+				Sets the function used to calculate physics for an object, if that object allows it (see [method body_set_omit_force_integration]).
 			</description>
 		</method>
 		<method name="body_set_kinematic_safe_margin">
@@ -1196,7 +1260,7 @@
 			The higher, the stronger.
 		</constant>
 		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2" enum="PinJointParam">
-			If above 0, this value is the maximum value for an impulse that this Joint puts on it's ends.
+			If above 0, this value is the maximum value for an impulse that this Joint puts on its ends.
 		</constant>
 		<constant name="HINGE_JOINT_BIAS" value="0" enum="HingeJointParam">
 			The speed with which the two bodies get pulled together when they move in different directions.
@@ -1331,31 +1395,37 @@
 		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4" enum="G6DOFJointAxisParam">
 			The amount of damping that happens at the linear motion across the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="5" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY" value="5" enum="G6DOFJointAxisParam">
+			The velocity that the joint's linear motor will attempt to reach.
+		</constant>
+		<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="G6DOFJointAxisParam">
+			The maximum force that the linear motor can apply while trying to reach the target velocity.
+		</constant>
+		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="7" enum="G6DOFJointAxisParam">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="6" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="8" enum="G6DOFJointAxisParam">
 			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="7" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="9" enum="G6DOFJointAxisParam">
 			A factor that gets multiplied onto all rotations across the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="8" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="10" enum="G6DOFJointAxisParam">
 			The amount of rotational damping across the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="9" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="11" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="10" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="12" enum="G6DOFJointAxisParam">
 			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="11" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="13" enum="G6DOFJointAxisParam">
 			When correcting the crossing of limits in rotation across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="12" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="14" enum="G6DOFJointAxisParam">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="13" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
 			Maximum acceleration for the motor at the axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
@@ -1366,6 +1436,9 @@
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a rotational motor across these axes.
+		</constant>
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="3" enum="G6DOFJointAxisFlag">
+			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
 			The [Shape] is a [PlaneShape].
@@ -1382,16 +1455,19 @@
 		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
 			The [Shape] is a [CapsuleShape].
 		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="5" enum="ShapeType">
+		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
+			The [Shape] is a [CylinderShape].
+		</constant>
+		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
 			The [Shape] is a [ConvexPolygonShape].
 		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="6" enum="ShapeType">
+		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			The [Shape] is a [ConcavePolygonShape].
 		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="7" enum="ShapeType">
+		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
 			The [Shape] is a [HeightMapShape].
 		</constant>
-		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
+		<constant name="SHAPE_CUSTOM" value="9" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY" value="0" enum="AreaParameter">
@@ -1442,9 +1518,7 @@
 		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
 			Constant for rigid bodies.
 		</constant>
-		<constant name="BODY_MODE_SOFT" value="3" enum="BodyMode">
-		</constant>
-		<constant name="BODY_MODE_CHARACTER" value="4" enum="BodyMode">
+		<constant name="BODY_MODE_CHARACTER" value="3" enum="BodyMode">
 			Constant for rigid bodies in character mode. In this mode, a body can not rotate, and only its linear velocity is affected by physics.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">

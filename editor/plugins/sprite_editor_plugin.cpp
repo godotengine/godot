@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  sprite_editor_plugin.cpp                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "sprite_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
@@ -67,7 +97,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	int lasti = p2->Contour.size() - 1;
 	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (int i = 0; i < p2->Contour.size(); i++) {
+	for (unsigned int i = 0; i < p2->Contour.size(); i++) {
 
 		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
 		if (cur.distance_to(prev) > 0.5) {
@@ -130,7 +160,6 @@ void SpriteEditor::_update_mesh_data() {
 
 	Vector<Vector<Vector2> > lines = bm->clip_opaque_to_polygons(rect, epsilon);
 
-	print_line("lines: " + itos(lines.size()));
 	uv_lines.clear();
 
 	computed_vertices.clear();
@@ -139,7 +168,7 @@ void SpriteEditor::_update_mesh_data() {
 
 	Size2 img_size = Vector2(image->get_width(), image->get_height());
 	for (int j = 0; j < lines.size(); j++) {
-		lines[j] = expand(lines[j], rect, epsilon);
+		lines.write[j] = expand(lines[j], rect, epsilon);
 
 		int index_ofs = computed_vertices.size();
 
@@ -160,21 +189,6 @@ void SpriteEditor::_update_mesh_data() {
 
 			computed_vertices.push_back(vtx);
 		}
-#if 0
-		Vector<Vector<Vector2> > polys = Geometry::decompose_polygon(lines[j]);
-		print_line("polygon: " + itos(polys.size()));
-
-		for (int i = 0; i < polys.size(); i++) {
-			for (int k = 0; k < polys[i].size(); k++) {
-
-				int idxn = (k + 1) % polys[i].size();
-				uv_lines.push_back(polys[i][k]);
-				uv_lines.push_back(polys[i][idxn]);
-			}
-		}
-#endif
-
-#if 1
 
 		Vector<int> poly = Geometry::triangulate_polygon(lines[j]);
 
@@ -188,14 +202,6 @@ void SpriteEditor::_update_mesh_data() {
 				computed_indices.push_back(poly[idx] + index_ofs);
 			}
 		}
-#endif
-
-#if 0
-		for (int i = 0; i < lines[j].size() - 1; i++) {
-			uv_lines.push_back(lines[j][i]);
-			uv_lines.push_back(lines[j][i + 1]);
-		}
-#endif
 	}
 
 	debug_uv->update();

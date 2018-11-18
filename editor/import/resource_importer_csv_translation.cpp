@@ -30,10 +30,10 @@
 
 #include "resource_importer_csv_translation.h"
 
-#include "compressed_translation.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "translation.h"
+#include "core/compressed_translation.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/translation.h"
 
 String ResourceImporterCSVTranslation::get_importer_name() const {
 
@@ -119,7 +119,7 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 		if (key != "") {
 
 			for (int i = 1; i < line.size(); i++) {
-				translations[i - 1]->add_message(key, line[i]);
+				translations.write[i - 1]->add_message(key, line[i]);
 			}
 		}
 

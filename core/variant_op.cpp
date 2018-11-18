@@ -30,9 +30,9 @@
 
 #include "variant.h"
 
-#include "core_string_names.h"
-#include "object.h"
-#include "script_language.h"
+#include "core/core_string_names.h"
+#include "core/object.h"
+#include "core/script_language.h"
 
 #define CASE_TYPE_ALL(PREFIX, OP) \
 	CASE_TYPE(PREFIX, OP, INT)    \
@@ -521,7 +521,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
 				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
 
-				_RETURN((*arr_a == *arr_b) == false);
+				_RETURN(*arr_a != *arr_b);
 			}
 
 			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {
@@ -1459,13 +1459,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->a = p_value._data._int / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._int, v->get_s(), v->get_v());
+					v->set_hsv(p_value._data._int, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._int, v->get_v());
+					v->set_hsv(v->get_h(), p_value._data._int, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int);
+					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int, v->a);
 					valid = true;
 				}
 			} else if (p_value.type == Variant::REAL) {
@@ -1495,13 +1495,13 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->a = p_value._data._real / 255.0;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._real, v->get_s(), v->get_v());
+					v->set_hsv(p_value._data._real, v->get_s(), v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._real, v->get_v());
+					v->set_hsv(v->get_h(), p_value._data._real, v->get_v(), v->a);
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_s(), p_value._data._real);
+					v->set_hsv(v->get_h(), v->get_s(), p_value._data._real, v->a);
 					valid = true;
 				}
 			}
@@ -1656,13 +1656,13 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 			} else if (p_index == CoreStringNames::singleton->a) {
 				return v->a;
 			} else if (p_index == CoreStringNames::singleton->r8) {
-				return int(v->r * 255.0);
+				return int(Math::round(v->r * 255.0));
 			} else if (p_index == CoreStringNames::singleton->g8) {
-				return int(v->g * 255.0);
+				return int(Math::round(v->g * 255.0));
 			} else if (p_index == CoreStringNames::singleton->b8) {
-				return int(v->b * 255.0);
+				return int(Math::round(v->b * 255.0));
 			} else if (p_index == CoreStringNames::singleton->a8) {
-				return int(v->a * 255.0);
+				return int(Math::round(v->a * 255.0));
 			} else if (p_index == CoreStringNames::singleton->h) {
 				return v->get_h();
 			} else if (p_index == CoreStringNames::singleton->s) {
@@ -2117,15 +2117,15 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				} else if (*str == "h") {
 					valid = true;
-					v->set_hsv(p_value, v->get_s(), v->get_v());
+					v->set_hsv(p_value, v->get_s(), v->get_v(), v->a);
 					return;
 				} else if (*str == "s") {
 					valid = true;
-					v->set_hsv(v->get_h(), p_value, v->get_v());
+					v->set_hsv(v->get_h(), p_value, v->get_v(), v->a);
 					return;
 				} else if (*str == "v") {
 					valid = true;
-					v->set_hsv(v->get_h(), v->get_s(), p_value);
+					v->set_hsv(v->get_h(), v->get_s(), p_value, v->a);
 					return;
 				} else if (*str == "r8") {
 					valid = true;
@@ -3417,8 +3417,17 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 
 Variant Variant::duplicate(bool deep) const {
 	switch (type) {
-		// case OBJECT:
-		// 	return operator Object *()->duplicate();
+		case OBJECT: {
+			/*  breaks stuff :(
+			if (deep && !_get_obj().ref.is_null()) {
+				Ref<Resource> resource = _get_obj().ref;
+				if (resource.is_valid()) {
+					return resource->duplicate(true);
+				}
+			}
+			*/
+			return *this;
+		} break;
 		case DICTIONARY:
 			return operator Dictionary().duplicate(deep);
 		case ARRAY:
@@ -3512,7 +3521,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			//not as efficient but..
 			real_t va = a;
 			real_t vb = b;
-			r_dst = (1.0 - c) * va + vb * c;
+			r_dst = va + (vb - va) * c;
 
 		} else {
 			r_dst = a;
@@ -3533,13 +3542,13 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		case INT: {
 			int64_t va = a._data._int;
 			int64_t vb = b._data._int;
-			r_dst = int((1.0 - c) * va + vb * c);
+			r_dst = int(va + (vb - va) * c);
 		}
 			return;
 		case REAL: {
 			real_t va = a._data._real;
 			real_t vb = b._data._real;
-			r_dst = (1.0 - c) * va + vb * c;
+			r_dst = va + (vb - va) * c;
 		}
 			return;
 		case STRING: {
@@ -3547,7 +3556,9 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			String sa = *reinterpret_cast<const String *>(a._data._mem);
 			String sb = *reinterpret_cast<const String *>(b._data._mem);
 			String dst;
-			int csize = sb.length() * c + sa.length() * (1.0 - c);
+			int sa_len = sa.length();
+			int sb_len = sb.length();
+			int csize = sa_len + (sb_len - sa_len) * c;
 			if (csize == 0) {
 				r_dst = "";
 				return;

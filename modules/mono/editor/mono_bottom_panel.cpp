@@ -31,6 +31,8 @@
 #include "mono_bottom_panel.h"
 
 #include "../csharp_script.h"
+#include "../godotsharp_dirs.h"
+#include "csharp_project.h"
 #include "godotsharp_editor.h"
 
 MonoBottomPanel *MonoBottomPanel::singleton = NULL;
@@ -53,9 +55,9 @@ void MonoBottomPanel::_update_build_tabs_list() {
 
 			build_tabs_list->add_item(item_name, tab->get_icon_texture());
 
-			String item_tooltip = String("Solution: ") + tab->build_info.solution;
-			item_tooltip += String("\nConfiguration: ") + tab->build_info.configuration;
-			item_tooltip += String("\nStatus: ");
+			String item_tooltip = "Solution: " + tab->build_info.solution;
+			item_tooltip += "\nConfiguration: " + tab->build_info.configuration;
+			item_tooltip += "\nStatus: ";
 
 			if (tab->build_exited) {
 				item_tooltip += tab->build_result == MonoBuildTab::RESULT_SUCCESS ? "Succeeded" : "Errored";
@@ -63,7 +65,7 @@ void MonoBottomPanel::_update_build_tabs_list() {
 				item_tooltip += "Running";
 			}
 
-			if (!tab->build_exited || !tab->build_result == MonoBuildTab::RESULT_SUCCESS) {
+			if (!tab->build_exited || tab->build_result == MonoBuildTab::RESULT_ERROR) {
 				item_tooltip += "\nErrors: " + itos(tab->error_count);
 			}
 
@@ -73,7 +75,7 @@ void MonoBottomPanel::_update_build_tabs_list() {
 
 			if (no_current_tab || current_tab == i) {
 				build_tabs_list->select(i);
-				_build_tab_item_selected(i);
+				_build_tabs_item_selected(i);
 			}
 		}
 	}
@@ -105,21 +107,27 @@ void MonoBottomPanel::show_build_tab() {
 	ERR_PRINT("Builds tab not found");
 }
 
-void MonoBottomPanel::_build_tab_item_selected(int p_idx) {
+void MonoBottomPanel::_build_tabs_item_selected(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, build_tabs->get_tab_count());
+
 	build_tabs->set_current_tab(p_idx);
+	if (!build_tabs->is_visible())
+		build_tabs->set_visible(true);
+
+	warnings_btn->set_visible(true);
+	errors_btn->set_visible(true);
+	view_log_btn->set_visible(true);
 }
 
-void MonoBottomPanel::_build_tab_changed(int p_idx) {
+void MonoBottomPanel::_build_tabs_nothing_selected() {
 
-	if (p_idx < 0 || p_idx >= build_tabs->get_tab_count()) {
-		warnings_btn->set_visible(false);
-		errors_btn->set_visible(false);
-	} else {
-		warnings_btn->set_visible(true);
-		errors_btn->set_visible(true);
-	}
+	if (build_tabs->get_tab_count() != 0) // just in case
+		build_tabs->set_visible(false);
+
+	warnings_btn->set_visible(false);
+	errors_btn->set_visible(false);
+	view_log_btn->set_visible(false);
 }
 
 void MonoBottomPanel::_warnings_toggled(bool p_pressed) {
@@ -142,10 +150,30 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 
 void MonoBottomPanel::_build_project_pressed() {
 
+	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+	ERR_FAIL_COND(metadata_err != OK);
+
 	GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 
 	MonoReloadNode::get_singleton()->restart_reload_timer();
 	CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);
+}
+
+void MonoBottomPanel::_view_log_pressed() {
+
+	if (build_tabs_list->is_anything_selected()) {
+		Vector<int> selected_items = build_tabs_list->get_selected_items();
+		CRASH_COND(selected_items.size() != 1);
+		int selected_item = selected_items[0];
+
+		MonoBuildTab *build_tab = Object::cast_to<MonoBuildTab>(build_tabs->get_tab_control(selected_item));
+		ERR_FAIL_NULL(build_tab);
+
+		String log_dirpath = build_tab->get_build_info().get_log_dirpath();
+
+		OS::get_singleton()->shell_open(log_dirpath.plus_file("msbuild_log.txt"));
+	}
 }
 
 void MonoBottomPanel::_notification(int p_what) {
@@ -163,10 +191,11 @@ void MonoBottomPanel::_notification(int p_what) {
 void MonoBottomPanel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_build_project_pressed"), &MonoBottomPanel::_build_project_pressed);
+	ClassDB::bind_method(D_METHOD("_view_log_pressed"), &MonoBottomPanel::_view_log_pressed);
 	ClassDB::bind_method(D_METHOD("_warnings_toggled", "pressed"), &MonoBottomPanel::_warnings_toggled);
 	ClassDB::bind_method(D_METHOD("_errors_toggled", "pressed"), &MonoBottomPanel::_errors_toggled);
-	ClassDB::bind_method(D_METHOD("_build_tab_item_selected", "idx"), &MonoBottomPanel::_build_tab_item_selected);
-	ClassDB::bind_method(D_METHOD("_build_tab_changed", "idx"), &MonoBottomPanel::_build_tab_changed);
+	ClassDB::bind_method(D_METHOD("_build_tabs_item_selected", "idx"), &MonoBottomPanel::_build_tabs_item_selected);
+	ClassDB::bind_method(D_METHOD("_build_tabs_nothing_selected"), &MonoBottomPanel::_build_tabs_nothing_selected);
 }
 
 MonoBottomPanel::MonoBottomPanel(EditorNode *p_editor) {
@@ -223,6 +252,15 @@ MonoBottomPanel::MonoBottomPanel(EditorNode *p_editor) {
 		errors_btn->connect("toggled", this, "_errors_toggled");
 		toolbar_hbc->add_child(errors_btn);
 
+		toolbar_hbc->add_spacer();
+
+		view_log_btn = memnew(Button);
+		view_log_btn->set_text(TTR("View log"));
+		view_log_btn->set_focus_mode(FOCUS_NONE);
+		view_log_btn->set_visible(false);
+		view_log_btn->connect("pressed", this, "_view_log_pressed");
+		toolbar_hbc->add_child(view_log_btn);
+
 		HSplitContainer *hsc = memnew(HSplitContainer);
 		hsc->set_h_size_flags(SIZE_EXPAND_FILL);
 		hsc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -230,14 +268,14 @@ MonoBottomPanel::MonoBottomPanel(EditorNode *p_editor) {
 
 		build_tabs_list = memnew(ItemList);
 		build_tabs_list->set_h_size_flags(SIZE_EXPAND_FILL);
-		build_tabs_list->connect("item_selected", this, "_build_tab_item_selected");
+		build_tabs_list->connect("item_selected", this, "_build_tabs_item_selected");
+		build_tabs_list->connect("nothing_selected", this, "_build_tabs_nothing_selected");
 		hsc->add_child(build_tabs_list);
 
 		build_tabs = memnew(TabContainer);
 		build_tabs->set_tab_align(TabContainer::ALIGN_LEFT);
 		build_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
 		build_tabs->set_tabs_visible(false);
-		build_tabs->connect("tab_changed", this, "_build_tab_changed");
 		hsc->add_child(build_tabs);
 	}
 }
@@ -443,14 +481,14 @@ void MonoBuildTab::_bind_methods() {
 }
 
 MonoBuildTab::MonoBuildTab(const MonoBuildInfo &p_build_info, const String &p_logs_dir) :
-		build_info(p_build_info),
-		logs_dir(p_logs_dir),
 		build_exited(false),
 		issues_list(memnew(ItemList)),
 		error_count(0),
 		warning_count(0),
 		errors_visible(true),
-		warnings_visible(true) {
+		warnings_visible(true),
+		logs_dir(p_logs_dir),
+		build_info(p_build_info) {
 	issues_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	issues_list->connect("item_activated", this, "_issue_activated");
 	add_child(issues_list);

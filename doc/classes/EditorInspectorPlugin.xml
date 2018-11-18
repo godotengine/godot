@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorInspectorPlugin" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_custom_control">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_property_editor">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="editor" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_property_editor_for_multiple_properties">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="properties" type="PoolStringArray">
+			</argument>
+			<argument index="2" name="editor" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_handle" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="parse_begin" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="parse_category" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="category" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="parse_end" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="parse_property" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<argument index="2" name="path" type="String">
+			</argument>
+			<argument index="3" name="hint" type="int">
+			</argument>
+			<argument index="4" name="hint_text" type="String">
+			</argument>
+			<argument index="5" name="usage" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

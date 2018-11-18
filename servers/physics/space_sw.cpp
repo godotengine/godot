@@ -31,15 +31,25 @@
 #include "space_sw.h"
 
 #include "collision_solver_sw.h"
+#include "core/project_settings.h"
 #include "physics_server_sw.h"
-#include "project_settings.h"
 
-_FORCE_INLINE_ static bool _can_collide_with(CollisionObjectSW *p_object, uint32_t p_collision_mask) {
+_FORCE_INLINE_ static bool _can_collide_with(CollisionObjectSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
-	return p_object->get_collision_layer() & p_collision_mask;
+	if (!(p_object->get_collision_layer() & p_collision_mask)) {
+		return false;
+	}
+
+	if (p_object->get_type() == CollisionObjectSW::TYPE_AREA && !p_collide_with_areas)
+		return false;
+
+	if (p_object->get_type() == CollisionObjectSW::TYPE_BODY && !p_collide_with_bodies)
+		return false;
+
+	return true;
 }
 
-int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	ERR_FAIL_COND_V(space->locked, false);
 	int amount = space->broadphase->cull_point(p_point, space->intersection_query_results, SpaceSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
@@ -52,7 +62,7 @@ int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResu
 		if (cc >= p_result_max)
 			break;
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		//area can't be picked by ray (default)
@@ -83,7 +93,7 @@ int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResu
 	return cc;
 }
 
-bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_pick_ray) {
+bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
 
 	ERR_FAIL_COND_V(space->locked, false);
 
@@ -95,7 +105,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, SpaceSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
-	//todo, create another array tha references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
+	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
 
 	bool collided = false;
 	Vector3 res_point, res_normal;
@@ -105,7 +115,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		if (p_pick_ray && !(static_cast<CollisionObjectSW *>(space->intersection_query_results[i])->is_ray_pickable()))
@@ -161,7 +171,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 	return true;
 }
 
-int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transform &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transform &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	if (p_result_max <= 0)
 		return 0;
@@ -182,7 +192,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 		if (cc >= p_result_max)
 			break;
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		//area can't be picked by ray (default)
@@ -212,7 +222,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 	return cc;
 }
 
-bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, ShapeRestInfo *r_info) {
+bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
 
 	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
@@ -220,11 +230,6 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 	AABB aabb = p_xform.xform(shape->get_aabb());
 	aabb = aabb.merge(AABB(aabb.position + p_motion, aabb.size)); //motion
 	aabb = aabb.grow(p_margin);
-
-	/*
-	if (p_motion!=Vector3())
-		print_line(p_motion);
-	*/
 
 	int amount = space->broadphase->cull_aabb(aabb, space->intersection_query_results, SpaceSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -242,7 +247,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
@@ -257,7 +262,6 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 		Transform col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?
 		if (CollisionSolverSW::solve_distance(&mshape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
-			//print_line("failed motion cast (no collision)");
 			continue;
 		}
 
@@ -265,7 +269,6 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 		sep_axis = p_motion.normalized();
 
 		if (!CollisionSolverSW::solve_distance(shape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, aabb, &sep_axis)) {
-			//print_line("failed motion cast (no collision)");
 			return false;
 		}
 
@@ -288,7 +291,6 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 
 			if (collided) {
 
-				//print_line(itos(i)+": "+rtos(ofs));
 				hi = ofs;
 			} else {
 
@@ -326,7 +328,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 	return true;
 }
 
-bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	if (p_result_max <= 0)
 		return 0;
@@ -356,7 +358,7 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		const CollisionObjectSW *col_obj = space->intersection_query_results[i];
@@ -365,9 +367,6 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 		if (p_exclude.has(col_obj->get_self())) {
 			continue;
 		}
-
-		//print_line("AGAINST: "+itos(col_obj->get_self().get_id())+":"+itos(shape_idx));
-		//print_line("THE ABBB: "+(col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).xform(col_obj->get_shape(shape_idx)->get_aabb()));
 
 		if (CollisionSolverSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, NULL, p_margin)) {
 			collided = true;
@@ -405,7 +404,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 	rd->best_object = rd->object;
 	rd->best_shape = rd->shape;
 }
-bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask) {
+bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
 	ShapeSW *shape = static_cast<PhysicsServerSW *>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
@@ -422,7 +421,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 
 	for (int i = 0; i < amount; i++) {
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
 		const CollisionObjectSW *col_obj = space->intersection_query_results[i];
@@ -541,7 +540,154 @@ int SpaceSW::_cull_aabb_for_body(BodySW *p_body, const AABB &p_aabb) {
 	return amount;
 }
 
-bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer::MotionResult *r_result) {
+int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, real_t p_margin) {
+
+	AABB body_aabb;
+
+	bool shapes_found = false;
+
+	for (int i = 0; i < p_body->get_shape_count(); i++) {
+
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
+			body_aabb = p_body->get_shape_aabb(i);
+			shapes_found = true;
+		} else {
+			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		return 0;
+	}
+	// Undo the currently transform the physics server is aware of and apply the provided one
+	body_aabb = p_transform.xform(p_body->get_inv_transform().xform(body_aabb));
+	body_aabb = body_aabb.grow(p_margin);
+
+	Transform body_transform = p_transform;
+
+	for (int i = 0; i < p_result_max; i++) {
+		//reset results
+		r_results[i].collision_depth = 0;
+	}
+
+	int rays_found = 0;
+
+	{
+		// raycast AND separate
+
+		const int max_results = 32;
+		int recover_attempts = 4;
+		Vector3 sr[max_results * 2];
+		PhysicsServerSW::CollCbkData cbk;
+		cbk.max = max_results;
+		PhysicsServerSW::CollCbkData *cbkptr = &cbk;
+		CollisionSolverSW::CallbackResult cbkres = PhysicsServerSW::_shape_col_cbk;
+
+		do {
+
+			Vector3 recover_motion;
+
+			bool collided = false;
+
+			int amount = _cull_aabb_for_body(p_body, body_aabb);
+			int ray_index = 0;
+
+			for (int j = 0; j < p_body->get_shape_count(); j++) {
+				if (p_body->is_shape_set_as_disabled(j))
+					continue;
+
+				ShapeSW *body_shape = p_body->get_shape(j);
+
+				if (body_shape->get_type() != PhysicsServer::SHAPE_RAY)
+					continue;
+
+				Transform body_shape_xform = body_transform * p_body->get_shape_transform(j);
+
+				for (int i = 0; i < amount; i++) {
+
+					const CollisionObjectSW *col_obj = intersection_query_results[i];
+					int shape_idx = intersection_query_subindex_results[i];
+
+					cbk.amount = 0;
+					cbk.ptr = sr;
+
+					if (CollisionObjectSW::TYPE_BODY == col_obj->get_type()) {
+						const BodySW *b = static_cast<const BodySW *>(col_obj);
+						if (p_infinite_inertia && PhysicsServer::BODY_MODE_STATIC != b->get_mode() && PhysicsServer::BODY_MODE_KINEMATIC != b->get_mode()) {
+							continue;
+						}
+					}
+
+					ShapeSW *against_shape = col_obj->get_shape(shape_idx);
+					if (CollisionSolverSW::solve_static(body_shape, body_shape_xform, against_shape, col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), cbkres, cbkptr, NULL, p_margin)) {
+						if (cbk.amount > 0) {
+							collided = true;
+						}
+
+						if (ray_index < p_result_max) {
+							PhysicsServer::SeparationResult &result = r_results[ray_index];
+
+							for (int k = 0; k < cbk.amount; k++) {
+								Vector3 a = sr[k * 2 + 0];
+								Vector3 b = sr[k * 2 + 1];
+
+								recover_motion += (b - a) * 0.4;
+
+								float depth = a.distance_to(b);
+								if (depth > result.collision_depth) {
+
+									result.collision_depth = depth;
+									result.collision_point = b;
+									result.collision_normal = (b - a).normalized();
+									result.collision_local_shape = shape_idx;
+									result.collider = col_obj->get_self();
+									result.collider_id = col_obj->get_instance_id();
+									//result.collider_metadata = col_obj->get_shape_metadata(shape_idx);
+									if (col_obj->get_type() == CollisionObjectSW::TYPE_BODY) {
+										BodySW *body = (BodySW *)col_obj;
+
+										Vector3 rel_vec = b - body->get_transform().get_origin();
+										//result.collider_velocity = Vector3(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
+										result.collider_velocity = body->get_linear_velocity() + (body->get_angular_velocity()).cross(body->get_transform().origin - rel_vec); // * mPos);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				ray_index++;
+			}
+
+			rays_found = MAX(ray_index, rays_found);
+
+			if (!collided || recover_motion == Vector3()) {
+				break;
+			}
+
+			body_transform.origin += recover_motion;
+			body_aabb.position += recover_motion;
+
+			recover_attempts--;
+		} while (recover_attempts);
+	}
+
+	//optimize results (remove non colliding)
+	for (int i = 0; i < rays_found; i++) {
+		if (r_results[i].collision_depth == 0) {
+			rays_found--;
+			SWAP(r_results[i], r_results[rays_found]);
+		}
+	}
+
+	r_recover_motion = body_transform.origin - p_transform.origin;
+	return rays_found;
+}
+
+bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes) {
 
 	//give me back regular physics engine logic
 	//this is madness
@@ -555,13 +701,23 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		r_result->collider_shape = 0;
 	}
 	AABB body_aabb;
+	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		return false;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
@@ -597,6 +753,10 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 				Transform body_shape_xform = body_transform * p_body->get_shape_transform(j);
 				ShapeSW *body_shape = p_body->get_shape(j);
+				if (p_exclude_raycast_shapes && body_shape->get_type() == PhysicsServer::SHAPE_RAY) {
+					continue;
+				}
+
 				for (int i = 0; i < amount; i++) {
 
 					const CollisionObjectSW *col_obj = intersection_query_results[i];
@@ -655,6 +815,10 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 			Transform body_shape_xform = body_transform * p_body->get_shape_transform(j);
 			ShapeSW *body_shape = p_body->get_shape(j);
 
+			if (p_exclude_raycast_shapes && body_shape->get_type() == PhysicsServer::SHAPE_RAY) {
+				continue;
+			}
+
 			Transform body_shape_xform_inv = body_shape_xform.affine_inverse();
 			MotionShapeSW mshape;
 			mshape.shape = body_shape;
@@ -677,13 +841,11 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				Transform col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 				//test initial overlap, does it collide if going all the way?
 				if (CollisionSolverSW::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
-					//print_line("failed motion cast (no collision)");
 					continue;
 				}
 				sep_axis = p_motion.normalized();
 
 				if (!CollisionSolverSW::solve_distance(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
-					//print_line("failed motion cast (no collision)");
 					stuck = true;
 					break;
 				}
@@ -707,7 +869,6 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 
 					if (collided) {
 
-						//print_line(itos(i)+": "+rtos(ofs));
 						hi = ofs;
 					} else {
 
@@ -1042,6 +1203,7 @@ SpaceSW::SpaceSW() {
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI));
 	body_time_to_sleep = GLOBAL_DEF("physics/3d/time_before_sleep", 0.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/time_before_sleep", PropertyInfo(Variant::REAL, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 	body_angular_velocity_damp_ratio = 10;
 
 	broadphase = BroadPhaseSW::create_func();

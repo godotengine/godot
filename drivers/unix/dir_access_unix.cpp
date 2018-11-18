@@ -32,17 +32,18 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#ifndef ANDROID_ENABLED
-#include <sys/statvfs.h>
-#endif
-
 #include "core/list.h"
-#include "os/memory.h"
-#include "print_string.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef ANDROID_ENABLED
+#include <sys/statvfs.h>
+#endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
@@ -59,7 +60,7 @@ Error DirAccessUnix::list_dir_begin() {
 
 	//char real_current_dir_name[2048]; //is this enough?!
 	//getcwd(real_current_dir_name,2048);
-	//chdir(curent_path.utf8().get_data());
+	//chdir(current_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());
 	//chdir(real_current_dir_name);
 	if (!dir_stream)
@@ -308,7 +309,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// prev_dir is the directory we are changing out of
 	String prev_dir;
 	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name, 2048);
+	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
 	if (prev_dir.parse_utf8(real_current_dir_name))
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 
@@ -329,7 +330,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	// the directory exists, so set current_dir to try_dir
 	current_dir = try_dir;
-	chdir(prev_dir.utf8().get_data());
+	ERR_FAIL_COND_V(chdir(prev_dir.utf8().get_data()) != 0, ERR_BUG);
 	return OK;
 }
 
@@ -390,7 +391,7 @@ size_t DirAccessUnix::get_space_left() {
 
 	return vfs.f_bfree * vfs.f_bsize;
 #else
-#warning THIS IS BROKEN
+	// FIXME: Implement this.
 	return 0;
 #endif
 };
@@ -404,7 +405,7 @@ DirAccessUnix::DirAccessUnix() {
 
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name, 2048);
+	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == NULL);
 	if (current_dir.parse_utf8(real_current_dir_name))
 		current_dir = real_current_dir_name;
 

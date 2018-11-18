@@ -100,13 +100,6 @@ int WebSocketMultiplayerPeer::get_available_packet_count() const {
 	return _incoming_packets.size();
 }
 
-int WebSocketMultiplayerPeer::get_max_packet_size() const {
-
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
-
-	return MAX_PACKET_SIZE;
-}
-
 Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	r_buffer_size = 0;
@@ -313,7 +306,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		} else if (to < 0) {
 
 			// All but one, for us if not excluded
-			if (_peer_id != -p_peer_id)
+			if (_peer_id != -(int32_t)p_peer_id)
 				_store_pkt(from, to, in_buffer, data_size);
 
 		} else {

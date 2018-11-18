@@ -38,6 +38,8 @@ class SpriteBase3D : public GeometryInstance {
 
 	GDCLASS(SpriteBase3D, GeometryInstance);
 
+	mutable Ref<TriangleMesh> triangle_mesh; //cached
+
 public:
 	enum DrawFlags {
 		FLAG_TRANSPARENT,
@@ -133,6 +135,7 @@ public:
 
 	virtual AABB get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	Ref<TriangleMesh> generate_triangle_mesh() const;
 
 	SpriteBase3D();
 	~SpriteBase3D();
@@ -192,7 +195,6 @@ class AnimatedSprite3D : public SpriteBase3D {
 	int frame;
 
 	bool centered;
-	Point2 offset;
 
 	float timeout;
 

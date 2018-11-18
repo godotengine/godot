@@ -31,11 +31,11 @@
 #ifndef EDITOR_FILE_SERVER_H
 #define EDITOR_FILE_SERVER_H
 
-#include "io/file_access_network.h"
-#include "io/packet_peer.h"
-#include "io/tcp_server.h"
-#include "object.h"
-#include "os/thread.h"
+#include "core/io/file_access_network.h"
+#include "core/io/packet_peer.h"
+#include "core/io/tcp_server.h"
+#include "core/object.h"
+#include "core/os/thread.h"
 
 class EditorFileServer : public Object {
 

@@ -1,8 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationPolygon" inherits="Resource" category="Core" version="3.1">
 	<brief_description>
+		A node that has methods to draw outlines or use indices of vertices to create navigation polygons.
 	</brief_description>
 	<description>
+		There are two ways to create polygons. Either by using the [method add_outline] method or using the [method add_polygon] method.
+		Using [method add_outline]:
+		[code]
+		var polygon = NavigationPolygon.new()
+		var outline = PoolVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
+		polygon.add_outline(outline)
+		polygon.make_polygons_from_outlines()
+		$NavigationPolygonInstance.navpoly = polygon
+		[/code]
+		Using [method add_polygon] and indices of the vertices array.
+		[code]
+		var polygon = NavigationPolygon.new()
+		var vertices = PoolVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
+		polygon.set_vertices(vertices)
+		var indices = PoolIntArray(0, 3, 1)
+		polygon.add_polygon(indices)
+		$NavigationPolygonInstance.navpoly = polygon
+		[/code]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +34,7 @@
 			<argument index="0" name="outline" type="PoolVector2Array">
 			</argument>
 			<description>
+				Appends a [PoolVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
 			</description>
 		</method>
 		<method name="add_outline_at_index">
@@ -25,6 +45,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
+				Adds a [PoolVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed position. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
 			</description>
 		</method>
 		<method name="add_polygon">
@@ -33,18 +54,21 @@
 			<argument index="0" name="polygon" type="PoolIntArray">
 			</argument>
 			<description>
+				Adds a polygon using the indices of the vertices you get when calling [method get_vertices].
 			</description>
 		</method>
 		<method name="clear_outlines">
 			<return type="void">
 			</return>
 			<description>
+				Clears the array of the outlines, but it doesn't clear the vertices and the polygons that were created by them.
 			</description>
 		</method>
 		<method name="clear_polygons">
 			<return type="void">
 			</return>
 			<description>
+				Clears the array of polygons, but it doesn't clear the array of outlines and vertices.
 			</description>
 		</method>
 		<method name="get_outline" qualifiers="const">
@@ -53,12 +77,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns a [PoolVector2Array] containing the vertices of an outline that was created in the editor or by script.
 			</description>
 		</method>
 		<method name="get_outline_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of outlines that were created in the editor or by script.
 			</description>
 		</method>
 		<method name="get_polygon">
@@ -67,24 +93,28 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns a [PoolIntArray] containing the indices of the vertices of a created polygon.
 			</description>
 		</method>
 		<method name="get_polygon_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the count of all polygons.
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
 			<return type="PoolVector2Array">
 			</return>
 			<description>
+				Returns a [PoolVector2Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
 		<method name="make_polygons_from_outlines">
 			<return type="void">
 			</return>
 			<description>
+				Creates polygons from the outlines added in the editor or by script.
 			</description>
 		</method>
 		<method name="remove_outline">
@@ -93,6 +123,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Removes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
 			</description>
 		</method>
 		<method name="set_outline">
@@ -103,6 +134,7 @@
 			<argument index="1" name="outline" type="PoolVector2Array">
 			</argument>
 			<description>
+				Changes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
 			</description>
 		</method>
 		<method name="set_vertices">
@@ -111,6 +143,7 @@
 			<argument index="0" name="vertices" type="PoolVector2Array">
 			</argument>
 			<description>
+				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
 			</description>
 		</method>
 	</methods>

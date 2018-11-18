@@ -68,11 +68,13 @@ if env['builtin_bullet']:
         , "BulletCollision/CollisionShapes/btEmptyShape.cpp"
         , "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.cpp"
         , "BulletCollision/CollisionShapes/btMinkowskiSumShape.cpp"
+        , "BulletCollision/CollisionShapes/btMiniSDF.cpp"
         , "BulletCollision/CollisionShapes/btMultimaterialTriangleMeshShape.cpp"
         , "BulletCollision/CollisionShapes/btMultiSphereShape.cpp"
         , "BulletCollision/CollisionShapes/btOptimizedBvh.cpp"
         , "BulletCollision/CollisionShapes/btPolyhedralConvexShape.cpp"
         , "BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.cpp"
+        , "BulletCollision/CollisionShapes/btSdfCollisionShape.cpp"
         , "BulletCollision/CollisionShapes/btShapeHull.cpp"
         , "BulletCollision/CollisionShapes/btSphereShape.cpp"
         , "BulletCollision/CollisionShapes/btStaticPlaneShape.cpp"
@@ -184,8 +186,12 @@ if env['builtin_bullet']:
 
     thirdparty_sources = [thirdparty_dir + file for file in bullet2_src]
 
-    env_bullet.add_source_files(env.modules_sources, thirdparty_sources)
     env_bullet.Append(CPPPATH=[thirdparty_dir])
+
+    env_thirdparty = env_bullet.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
 
 # Godot source files
 env_bullet.add_source_files(env.modules_sources, "*.cpp")

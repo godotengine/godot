@@ -1,4 +1,5 @@
 using System;
+using DotNet.Globbing;
 using Microsoft.Build.Construction;
 
 namespace GodotSharpTools.Project
@@ -7,7 +8,10 @@ namespace GodotSharpTools.Project
     {
         public static bool HasItem(this ProjectRootElement root, string itemType, string include)
         {
-            string includeNormalized = include.NormalizePath();
+            GlobOptions globOptions = new GlobOptions();
+            globOptions.Evaluation.CaseInsensitive = false;
+
+            string normalizedInclude = include.NormalizePath();
 
             foreach (var itemGroup in root.ItemGroups)
             {
@@ -16,10 +20,14 @@ namespace GodotSharpTools.Project
 
                 foreach (var item in itemGroup.Items)
                 {
-                    if (item.ItemType == itemType)
+                    if (item.ItemType != itemType)
+                        continue;
+
+                    var glob = Glob.Parse(item.Include.NormalizePath(), globOptions);
+
+                    if (glob.IsMatch(normalizedInclude))
                     {
-                        if (item.Include.NormalizePath() == includeNormalized)
-                            return true;
+                        return true;
                     }
                 }
             }

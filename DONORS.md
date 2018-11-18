@@ -17,258 +17,278 @@ generous deed immortalized in the next stable release of Godot Engine.
 ## Gold sponsors
 
     Gamblify <https://www.gamblify.com>
-    GameDev.TV <https://www.gamedev.tv>
-    Skirmish <https://skirmish.io>
+    GameDev.TV <https://gdev.tv/godot>
+    Image Campus <https://www.imagecampus.edu.ar>
 
 ## Mini sponsors
 
-    Andreas
+    Andrew Dunai
     Brandon Lamb
     Christian Uldall Pedersen
-    Christopher Igoe
     Christoph Woinke
-    codetrotter
-    E Hewert
+    David Graham
+    GameDev.net
     Hein-Pieter van Braam
-    Igors Vaitkus
+    iDev.Network Studios
     Jamal Alyafei
-    Jay Sistar
+    Leona Eden
     Matthieu Huvé
     Mike King
     Nathan Warden
     Neal Gompa (Conan Kudo)
-    Pascal Julien
+    Patrick Aarstad
     Ruslan Mustakov
-    Sébastien Manin
     Slobodan Milnovic
     Stephan Lanfermann
     Stoney Meyerhoeffer
+    thechris
     Thomas Mathews
+    VilliHaukka
 
 ## Gold donors
 
-    3Dexplorer
-    Alexander Otto
     Asdf
     cheese65536
-    Jake Bo
-    Kris Michael
+    K9Kraken
     Manuele Finocchiaro
+    Nathanael Beisiegel
     Officine Pixel S.n.c.
-    Rémi Verschelde
+    Retro Village
     Zaven Muradyan
 
+    13MHz
     Allen Schade
     Andreas Schüle
     Austen McRae
-    Benjamin Botwin
-    Bernhard Liebl
-    Catalin Moldovan
-    DeepSquid
+    Daniel Lynn
+    David Gehrig
     Florian Breisch
     Gary Oberbrunner
+    Jay Horton
     Johannes Wuensch
-    Josep G. Camarasa
     Joshua Lesperance
-    Libre-Dépanne
-    Matthew Bennett
+    Krzysztof Dluzniewski
+    Kyle Szklenski
+    Mohammad Taleb
+    Moonwards
+    Paul LaMotte
     Ranoller
-    Rob Messick
+    Sergey
     Svenne Krap
-    Timothy Hagberg
+    Xananax
 
     BanjoNode2D
-    Brandon
+    Beliar
     Chris Serino
+    Christian Padilla
     Conrad Curry
     Craig Smith
+    Daniel Egger
     David Churchill
     Dean Harmon
-    Dexter Miguel
-    Garrett Dockins
-    Guilherme Felipe de C. G. da Silva
-    Harman Bains
     John
     Justo Delgado Baudí
-    Karsten Bock
+    KTL
     Laurence Bannister
+    Markus Wiesner
+    paul gruenbacher
     Rami
     Robert Willes
     Robin Arys
-    Rufus Sasparilla
+    Ronnie Ashlock
     ScottMakesGames
-    Testus Maximus
     Thomas Bjarnelöf
     Wojciech Chojnacki
-    Xavier Tan
+    Xavier PATRICELLI
     Zaq Poi
 
     Alessandra Pereyra
     Alexey Dyadchenko
     Amanda Haldy
+    Chau Siu Hung
     Chris Brown
-    Chris Wilson
+    Chris Petrich
     Cody Parker
     D
-    Daniel Eliasinski
+    Deadly Lampshade
+    E.G.
+    Eric
     Eric Monson
+    Ethan Bennis
+    Fidget Sinner
     flesk
-    François Cantin
     G Barnes
+    Gero
     GGGames.org
+    Giovanni Solimeno
+    Guilherme Felipe de C. G. da Silva
+    Hasen Judy
     Heath Hayes
     Jeppe Zapp
-    Jeremi Biernacki
     joe513
-    John O'Mahoney
-    Jordan M Lucas
     Juraj Móza
     Justin Arnold
     Leandro Voltolino
-    Lisandro Lorea
-    Marco Andrew Cafolla
-    Markus Wiesner
+    Marius Kamm
     Marvin
+    Nahuel Sacchetti
     Nick Nikitin
     Pablo Cholaky
-    Patrick Schnorbus
     Pete Goodwin
-    Phyronnaz
-    Simon De Greve
+    ray-tracer
+    Ruben Soares Luis
     Sofox
-    Ted
-    Travis Womack
+    Stoned Xander
     Trent McPheron
-    Vladimir
+    WytRabbit
+    Zachariah Gibbons
 
 ## Silver donors
 
     1D_Inc
     Adam  Carr
     Adam Smeltzer
+    Adisibio
     Alder Stefano
     Alessandro Senese
-    Álvaro Domínguez López
-    Andrea Badii
-    Andrew Thomas
+    Alexander Koppe
+    Anders Jensen-Urstad
     Anthony Bongiovanni
     Arda Erol
     Arthur S. Muszynski
+    Artur Barichello
     Aubrey Falconer
     Avencherus
+    Bailey
     Bastian Böhm
     Benedikt
-    Benjamin Beshara
     Ben Vercammen
     Blair Allen
-    Bryanna M
+    Brandon
     Bryan Stevenson
+    Carl Winder
     Carwyn Edwards
     Casey Foote
     Chris Chapin
     Christian Baune
     Christian Winter
     Collin Shooltz
-    Daniel Egger
+    Daniel Johnson
     Daniel Kaplan
-    Daniel Langegger
-    Daniel Mircea
+    DanielMaximiano
     David
     David Cravens
     David May
+    Disktra
     Dominik Wetzel
+    Duy Kevin Nguyen
+    Edward Herbert
+    Elias Nykrem
     Eric Martini
+    Eric Williams
+    Eugenio Hugo Salgüero Jáñez
     Fabian Becker
     fengjiongmax
-    Francesco Lisi
-    Frédéric Alix
+    Foomf
     G3Dev sàrl
-    Geequlim
+    George Lesica
     Gerrit Großkopf
-    Gerrit Procee
     Gilberto K. Otubo
+    Greg Olson
     Guldoman
     Heribert Hirth
-    hubert jenkins
     Hunter Jones
     ialex32x
-    Ivan Vodopiviz
+    Jahn Johansen
     Jaime Ruiz-Borau Vizárraga
-    Jed
+    Jako Danar
     Jeff Hungerford
     Joel Fivat
     Johan Lindberg
+    Jonas Rudlang
     Jonas Yamazaki
     Jonathan Martin
     Jonathan Nieto
-    Jonathon
+    Jon Bonazza
+    Jon Sully
+    Jose Malheiro
     Josh 'Cheeseness' Bush
+    Juanfran
     Juan Negrier
     Judd
-    JuDelCo
     Julian Murgia
     Justin Luk
     KC Chan
     Kevin Boyer
     Kevin Kamper Meejach Petersen
     Klavdij Voncina
-    Lars pfeffer
+    Krzysztof Jankowski
+    Krzysztof Sierszecki
+    KsyTek Games
     Linus Lind Lundgren
+    Loreshaper Games
+    Luis Moraes
     Macil
     magodev
+    Malcolm
     Martin Eigel
-    Matthew Fitzpatrick
-    Matthias Hölzl
+    Matt Welke
     Max R.R. Collada
-    memoryruins
+    Maxwell
+    Mertcan Mermerkaya
     mhilbrunner
     Michael Dürwald
     Michael Gringauz
     Michael Labbe
     Mikael Olsson
     MoM
-    monokrome
     Moritz Laass
+    Moritz Weissenberger
+    Natrim
     nee
     Neil Blakey-Milner
+    Nick Pavlica
     Niclas Eriksen
-    Nik Lee
-    Niko Leopold
-    nivardus
+    Nicolás Montaña
+    Nicolas SAN AGUSTIN
+    Nik
     Noi Sek
-    Oleg Tyshchenko
-    Pablo Seibelt
     Pan Ip
-    Pat LaBine
+    Pascal Grüter
     Patrick Nafarrete
-    Patric Vormstein
+    Paul E Hansen
+    Paul Gieske
     Paul Mason
     Paweł Kowal
+    Phillip Ryals
     Pierre-Igor Berthet
     Pietro Vertechi
     Piotr Kaczmarski
+    Prokhorenko Leonid
+    Rémi Verschelde
     Richman Stewart
     Roger Burgess
     Roger Smith
     Roman Tinkov
-    Ryan Whited
     Sasori Olkof
-    Scott D. Yelich
     Sootstone
     Theo Cranmore
     Thibault Barbaroux
     Thomas Bell
-    Thomas Herzog & Xananax
+    Thomas Holmes
     Thomas Kurz
+    tiansheng li
+    Tim
     Tom Larrow
+    Trym Nilsen
+    Tyggve Sollid
     Tyler Stafos
     UltyX
-    Victor Gonzalez Fernandez
-    Victor Holt
+    Vaiktorg
+    Victor
     Viktor Ferenczi
-    werner mendizabal
+    waka nya
     Wout Standaert
-    Yu He
 
 ## Bronze donors
 

@@ -31,7 +31,7 @@
 #ifndef SHADERCOMPILERGLES3_H
 #define SHADERCOMPILERGLES3_H
 
-#include "pair.h"
+#include "core/pair.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual/shader_types.h"
 #include "servers/visual_server.h"
@@ -52,6 +52,7 @@ public:
 
 		Vector<CharString> defines;
 		Vector<StringName> texture_uniforms;
+		Vector<ShaderLanguage::DataType> texture_types;
 		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
 
 		Vector<uint32_t> uniform_offsets;

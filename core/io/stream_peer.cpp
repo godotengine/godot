@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "stream_peer.h"
-#include "io/marshalls.h"
+
+#include "core/io/marshalls.h"
 
 Error StreamPeer::_put_data(const PoolVector<uint8_t> &p_data) {
 
@@ -208,6 +209,12 @@ void StreamPeer::put_double(double p_val) {
 	}
 	put_data(buf, 8);
 }
+void StreamPeer::put_string(const String &p_string) {
+
+	CharString cs = p_string.ascii();
+	put_u32(cs.length());
+	put_data((const uint8_t *)cs.get_data(), cs.length());
+}
 void StreamPeer::put_utf8_string(const String &p_string) {
 
 	CharString cs = p_string.utf8();
@@ -324,6 +331,8 @@ double StreamPeer::get_double() {
 }
 String StreamPeer::get_string(int p_bytes) {
 
+	if (p_bytes < 0)
+		p_bytes = get_u32();
 	ERR_FAIL_COND_V(p_bytes < 0, String());
 
 	Vector<char> buf;
@@ -331,11 +340,13 @@ String StreamPeer::get_string(int p_bytes) {
 	ERR_FAIL_COND_V(err != OK, String());
 	err = get_data((uint8_t *)&buf[0], p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
-	buf[p_bytes] = 0;
+	buf.write[p_bytes] = 0;
 	return buf.ptr();
 }
 String StreamPeer::get_utf8_string(int p_bytes) {
 
+	if (p_bytes < 0)
+		p_bytes = get_u32();
 	ERR_FAIL_COND_V(p_bytes < 0, String());
 
 	Vector<uint8_t> buf;
@@ -385,6 +396,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("put_u64", "value"), &StreamPeer::put_u64);
 	ClassDB::bind_method(D_METHOD("put_float", "value"), &StreamPeer::put_float);
 	ClassDB::bind_method(D_METHOD("put_double", "value"), &StreamPeer::put_double);
+	ClassDB::bind_method(D_METHOD("put_string", "value"), &StreamPeer::put_string);
 	ClassDB::bind_method(D_METHOD("put_utf8_string", "value"), &StreamPeer::put_utf8_string);
 	ClassDB::bind_method(D_METHOD("put_var", "value"), &StreamPeer::put_var);
 
@@ -398,8 +410,8 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_u64"), &StreamPeer::get_u64);
 	ClassDB::bind_method(D_METHOD("get_float"), &StreamPeer::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &StreamPeer::get_double);
-	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string);
-	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string);
+	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_var"), &StreamPeer::get_var);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");

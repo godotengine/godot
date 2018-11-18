@@ -19,6 +19,7 @@
 			<argument index="1" name="icon" type="Texture" default="null">
 			</argument>
 			<description>
+				Adds a new tab.
 			</description>
 		</method>
 		<method name="ensure_tab_visible">
@@ -27,6 +28,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Moves the Scroll view to make the tab visible.
 			</description>
 		</method>
 		<method name="get_offset_buttons_visible" qualifiers="const">
@@ -35,10 +37,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_select_with_rmb" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if select with right mouse button is enabled.
+			</description>
+		</method>
 		<method name="get_tab_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of tabs.
 			</description>
 		</method>
 		<method name="get_tab_disabled" qualifiers="const">
@@ -47,6 +57,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the tab at index [code]tab_idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="get_tab_icon" qualifiers="const">
@@ -55,6 +66,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+				Returns the [Texture] for the tab at index [code]tab_idx[/code] or null if the tab has no [Texture].
 			</description>
 		</method>
 		<method name="get_tab_offset" qualifiers="const">
@@ -78,12 +90,14 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+				Returns the title of the tab at index [code]tab_idx[/code]. Tab titles default to the name of the indexed child node, but this can be overridden with [method set_tab_title].
 			</description>
 		</method>
 		<method name="get_tabs_rearrange_group" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the [code]Tabs[/code] rearrange group id.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -103,6 +117,16 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
+				Removes tab at index [code]tab_idx[/code]
+			</description>
+		</method>
+		<method name="set_select_with_rmb">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code] enables selecting a tab with right mouse button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -113,6 +137,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+				If [code]disabled[/code] is false, hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -123,6 +148,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
+				Sets an icon for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">
@@ -133,6 +159,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
+				Sets a title for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
@@ -141,17 +168,21 @@
 			<argument index="0" name="group_id" type="int">
 			</argument>
 			<description>
+				Defines rearrange group id, choose for each [code]Tabs[/code] the same value to enable tab drag between [code]Tabs[/code]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+			Select tab at index [code]tab_idx[/code].
 		</member>
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled">
+			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled">
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign">
+			The alignment of all tabs. See enum [code]TabAlign[/code] constants for details.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
 		</member>
@@ -196,10 +227,13 @@
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0" enum="TabAlign">
+			Align the tabs to the left.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1" enum="TabAlign">
+			Align the tabs to the center.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2" enum="TabAlign">
+			Align the tabs to the right.
 		</constant>
 		<constant name="ALIGN_MAX" value="3" enum="TabAlign">
 		</constant>

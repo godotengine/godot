@@ -31,8 +31,8 @@
 #ifndef VISUAL_INSTANCE_H
 #define VISUAL_INSTANCE_H
 
-#include "face3.h"
-#include "rid.h"
+#include "core/math/face3.h"
+#include "core/rid.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/material.h"
 /**
@@ -72,6 +72,9 @@ public:
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
+
+	void set_layer_mask_bit(int p_layer, bool p_enable);
+	bool get_layer_mask_bit(int p_layer) const;
 
 	VisualInstance();
 	~VisualInstance();

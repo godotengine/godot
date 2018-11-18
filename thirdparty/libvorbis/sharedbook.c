@@ -11,11 +11,11 @@
  ********************************************************************
 
  function: basic shared codebook operations
- last mod: $Id: sharedbook.c 19457 2015-03-03 00:15:29Z giles $
 
  ********************************************************************/
 
 #include <stdlib.h>
+#include <limits.h>
 #include <math.h>
 #include <string.h>
 #include <ogg/ogg.h>
@@ -158,25 +158,34 @@ ogg_uint32_t *_make_words(char *l,long n,long sparsecount){
    that's portable and totally safe against roundoff, but I haven't
    thought of it.  Therefore, we opt on the side of caution */
 long _book_maptype1_quantvals(const static_codebook *b){
-  long vals=floor(pow((float)b->entries,1.f/b->dim));
+  long vals;
+  if(b->entries<1){
+    return(0);
+  }
+  vals=floor(pow((float)b->entries,1.f/b->dim));
 
   /* the above *should* be reliable, but we'll not assume that FP is
      ever reliable when bitstream sync is at stake; verify via integer
      means that vals really is the greatest value of dim for which
      vals^b->bim <= b->entries */
   /* treat the above as an initial guess */
+  if(vals<1){
+    vals=1;
+  }
   while(1){
     long acc=1;
     long acc1=1;
     int i;
     for(i=0;i<b->dim;i++){
+      if(b->entries/vals<acc)break;
       acc*=vals;
-      acc1*=vals+1;
+      if(LONG_MAX/(vals+1)<acc1)acc1=LONG_MAX;
+      else acc1*=vals+1;
     }
-    if(acc<=b->entries && acc1>b->entries){
+    if(i>=b->dim && acc<=b->entries && acc1>b->entries){
       return(vals);
     }else{
-      if(acc>b->entries){
+      if(i<b->dim || acc>b->entries){
         vals--;
       }else{
         vals++;

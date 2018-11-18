@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType Multiple Masters and GX var services (specification).   */
 /*                                                                         */
-/*  Copyright 2003-2017 by                                                 */
+/*  Copyright 2003-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -48,11 +48,15 @@ FT_BEGIN_HEADER
                             FT_UInt   num_coords,
                             FT_Long*  coords );
 
+  /* use return value -1 to indicate that the new coordinates  */
+  /* are equal to the current ones; no changes are thus needed */
   typedef FT_Error
   (*FT_Set_Var_Design_Func)( FT_Face    face,
                              FT_UInt    num_coords,
                              FT_Fixed*  coords );
 
+  /* use return value -1 to indicate that the new coordinates  */
+  /* are equal to the current ones; no changes are thus needed */
   typedef FT_Error
   (*FT_Set_MM_Blend_Func)( FT_Face   face,
                            FT_UInt   num_coords,
@@ -62,6 +66,10 @@ FT_BEGIN_HEADER
   (*FT_Get_Var_Design_Func)( FT_Face    face,
                              FT_UInt    num_coords,
                              FT_Fixed*  coords );
+
+  typedef FT_Error
+  (*FT_Set_Instance_Func)( FT_Face  face,
+                           FT_UInt  instance_index );
 
   typedef FT_Error
   (*FT_Get_MM_Blend_Func)( FT_Face   face,
@@ -88,6 +96,7 @@ FT_BEGIN_HEADER
     FT_Get_MM_Var_Func      get_mm_var;
     FT_Set_Var_Design_Func  set_var_design;
     FT_Get_Var_Design_Func  get_var_design;
+    FT_Set_Instance_Func    set_instance;
 
     /* for internal use; only needed for code sharing between modules */
     FT_Get_Var_Blend_Func   get_var_blend;
@@ -97,27 +106,29 @@ FT_BEGIN_HEADER
 
 #ifndef FT_CONFIG_OPTION_PIC
 
-#define FT_DEFINE_SERVICE_MULTIMASTERSREC( class_,           \
-                                           get_mm_,          \
-                                           set_mm_design_,   \
-                                           set_mm_blend_,    \
-                                           get_mm_blend_,    \
-                                           get_mm_var_,      \
-                                           set_var_design_,  \
-                                           get_var_design_,  \
-                                           get_var_blend_,   \
-                                           done_blend_     ) \
-  static const FT_Service_MultiMastersRec  class_ =          \
-  {                                                          \
-    get_mm_,                                                 \
-    set_mm_design_,                                          \
-    set_mm_blend_,                                           \
-    get_mm_blend_,                                           \
-    get_mm_var_,                                             \
-    set_var_design_,                                         \
-    get_var_design_,                                         \
-    get_var_blend_,                                          \
-    done_blend_                                              \
+#define FT_DEFINE_SERVICE_MULTIMASTERSREC( class_,          \
+                                           get_mm_,         \
+                                           set_mm_design_,  \
+                                           set_mm_blend_,   \
+                                           get_mm_blend_,   \
+                                           get_mm_var_,     \
+                                           set_var_design_, \
+                                           get_var_design_, \
+                                           set_instance_,   \
+                                           get_var_blend_,  \
+                                           done_blend_ )    \
+  static const FT_Service_MultiMastersRec  class_ =         \
+  {                                                         \
+    get_mm_,                                                \
+    set_mm_design_,                                         \
+    set_mm_blend_,                                          \
+    get_mm_blend_,                                          \
+    get_mm_var_,                                            \
+    set_var_design_,                                        \
+    get_var_design_,                                        \
+    set_instance_,                                          \
+    get_var_blend_,                                         \
+    done_blend_                                             \
   };
 
 #else /* FT_CONFIG_OPTION_PIC */
@@ -130,6 +141,7 @@ FT_BEGIN_HEADER
                                            get_mm_var_,          \
                                            set_var_design_,      \
                                            get_var_design_,      \
+                                           set_instance_,        \
                                            get_var_blend_,       \
                                            done_blend_ )         \
   void                                                           \
@@ -142,6 +154,7 @@ FT_BEGIN_HEADER
     clazz->get_mm_var     = get_mm_var_;                         \
     clazz->set_var_design = set_var_design_;                     \
     clazz->get_var_design = get_var_design_;                     \
+    clazz->set_instance   = set_instance_;                       \
     clazz->get_var_blend  = get_var_blend_;                      \
     clazz->done_blend     = done_blend_;                         \
   }

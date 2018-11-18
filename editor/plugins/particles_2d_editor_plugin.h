@@ -34,7 +34,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
-
 #include "scene/2d/particles_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/file_dialog.h"
@@ -47,7 +46,8 @@ class Particles2DEditorPlugin : public EditorPlugin {
 
 		MENU_GENERATE_VISIBILITY_RECT,
 		MENU_LOAD_EMISSION_MASK,
-		MENU_CLEAR_EMISSION_MASK
+		MENU_CLEAR_EMISSION_MASK,
+		MENU_OPTION_CONVERT_TO_CPU_PARTICLES
 	};
 
 	enum EmissionMode {
@@ -66,7 +66,7 @@ class Particles2DEditorPlugin : public EditorPlugin {
 
 	SpinBox *epoints;
 
-	ConfirmationDialog *generate_aabb;
+	ConfirmationDialog *generate_visibility_rect;
 	SpinBox *generate_seconds;
 
 	ConfirmationDialog *emission_mask;

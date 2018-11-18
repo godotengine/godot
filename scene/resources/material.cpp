@@ -34,6 +34,8 @@
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
+	ERR_FAIL_COND(p_pass == this);
+
 	if (next_pass == p_pass)
 		return;
 
@@ -143,13 +145,44 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+bool ShaderMaterial::property_can_revert(const String &p_name) {
+	if (shader.is_valid()) {
+
+		StringName pr = shader->remap_param(p_name);
+		if (pr) {
+			Variant default_value = VisualServer::get_singleton()->material_get_param_default(_get_material(), pr);
+			Variant current_value;
+			_get(p_name, current_value);
+			return default_value.get_type() != Variant::NIL && default_value != current_value;
+		}
+	}
+	return false;
+}
+
+Variant ShaderMaterial::property_get_revert(const String &p_name) {
+	Variant r_ret;
+	if (shader.is_valid()) {
+		StringName pr = shader->remap_param(p_name);
+		if (pr) {
+			r_ret = VisualServer::get_singleton()->material_get_param_default(_get_material(), pr);
+		}
+	}
+	return r_ret;
+}
+
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
+
+	if (shader.is_valid()) {
+		shader->disconnect("changed", this, "_shader_changed");
+	}
 
 	shader = p_shader;
 
 	RID rid;
-	if (shader.is_valid())
+	if (shader.is_valid()) {
 		rid = shader->get_rid();
+		shader->connect("changed", this, "_shader_changed");
+	}
 
 	VS::get_singleton()->material_set_shader(_get_material(), rid);
 	_change_notify(); //properties for shader exposed
@@ -171,12 +204,19 @@ Variant ShaderMaterial::get_shader_param(const StringName &p_param) const {
 	return VS::get_singleton()->material_get_param(_get_material(), p_param);
 }
 
+void ShaderMaterial::_shader_changed() {
+	_change_notify(); //update all properties
+}
+
 void ShaderMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shader", "shader"), &ShaderMaterial::set_shader);
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_param", "param", "value"), &ShaderMaterial::set_shader_param);
 	ClassDB::bind_method(D_METHOD("get_shader_param", "param"), &ShaderMaterial::get_shader_param);
+	ClassDB::bind_method(D_METHOD("_shader_changed"), &ShaderMaterial::_shader_changed);
+	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ShaderMaterial::property_can_revert);
+	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ShaderMaterial::property_get_revert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }
@@ -259,6 +299,7 @@ void SpatialMaterial::init_shaders() {
 	shader_names->particles_anim_loop = "particles_anim_loop";
 	shader_names->depth_min_layers = "depth_min_layers";
 	shader_names->depth_max_layers = "depth_max_layers";
+	shader_names->depth_flip = "depth_flip";
 
 	shader_names->grow = "grow";
 
@@ -387,9 +428,17 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_USE_VERTEX_LIGHTING]) {
 		code += ",vertex_lighting";
 	}
-
 	if (flags[FLAG_TRIPLANAR_USE_WORLD] && (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR])) {
 		code += ",world_vertex_coords";
+	}
+	if (flags[FLAG_DONT_RECEIVE_SHADOWS]) {
+		code += ",shadows_disabled";
+	}
+	if (flags[FLAG_DISABLE_AMBIENT_LIGHT]) {
+		code += ",ambient_light_disabled";
+	}
+	if (flags[FLAG_ENSURE_CORRECT_NORMALS]) {
+		code += ",ensure_correct_normals";
 	}
 	code += ";\n";
 
@@ -404,7 +453,7 @@ void SpatialMaterial::_update_shader() {
 	if (proximity_fade_enabled) {
 		code += "uniform float proximity_fade_distance;\n";
 	}
-	if (distance_fade_enabled) {
+	if (distance_fade != DISTANCE_FADE_DISABLED) {
 		code += "uniform float distance_fade_min;\n";
 		code += "uniform float distance_fade_max;\n";
 	}
@@ -484,6 +533,7 @@ void SpatialMaterial::_update_shader() {
 		code += "uniform float depth_scale;\n";
 		code += "uniform int depth_min_layers;\n";
 		code += "uniform int depth_max_layers;\n";
+		code += "uniform vec2 depth_flip;\n";
 	}
 	if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += "varying vec3 uv1_triplanar_pos;\n";
@@ -512,7 +562,9 @@ void SpatialMaterial::_update_shader() {
 
 	if (flags[FLAG_SRGB_VERTEX_COLOR]) {
 
-		code += "\tCOLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );\n";
+		code += "\tif (!OUTPUT_IS_SRGB) {\n";
+		code += "\t\tCOLOR.rgb = mix( pow((COLOR.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), COLOR.rgb* (1.0 / 12.92), lessThan(COLOR.rgb,vec3(0.04045)) );\n";
+		code += "\t}\n";
 	}
 	if (flags[FLAG_USE_POINT_SIZE]) {
 
@@ -535,9 +587,20 @@ void SpatialMaterial::_update_shader() {
 		case BILLBOARD_ENABLED: {
 
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],CAMERA_MATRIX[1],CAMERA_MATRIX[2],WORLD_MATRIX[3]);\n";
+
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz),0,0,0),vec4(0,length(WORLD_MATRIX[1].xyz),0,0),vec4(0,0,length(WORLD_MATRIX[2].xyz),0),vec4(0,0,0,1));\n";
+			}
 		} break;
 		case BILLBOARD_FIXED_Y: {
+
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat4(CAMERA_MATRIX[0],WORLD_MATRIX[1],vec4(normalize(cross(CAMERA_MATRIX[0].xyz,WORLD_MATRIX[1].xyz)),0.0),WORLD_MATRIX[3]);\n";
+
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(WORLD_MATRIX[0].xyz),0,0,0),vec4(0,1,0,0),vec4(0,0,length(WORLD_MATRIX[2].xyz),0),vec4(0,0,0,1));\n";
+			} else {
+				code += "\tMODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(1,0,0,0),vec4(0,1.0/length(WORLD_MATRIX[1].xyz),0,0),vec4(0,0,1,0),vec4(0,0,0,1));\n";
+			}
 		} break;
 		case BILLBOARD_PARTICLES: {
 
@@ -549,13 +612,11 @@ void SpatialMaterial::_update_shader() {
 			code += "\tMODELVIEW_MATRIX = INV_CAMERA_MATRIX * mat_world;\n";
 
 			//handle animation
-			code += "\tint particle_total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
-			code += "\tint particle_frame = int(INSTANCE_CUSTOM.y * float(particle_total_frames));\n";
-			code += "\tif (particles_anim_loop) particle_frame=clamp(particle_frame,0,particle_total_frames-1); else particle_frame=abs(particle_frame)%particle_total_frames;\n";
+			code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+			code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+			code += "\tif (!particles_anim_loop) particle_frame=clamp(particle_frame,0.0,particle_total_frames-1.0); else particle_frame=mod(particle_frame,float(particle_total_frames));\n";
 			code += "\tUV /= vec2(float(particles_anim_h_frames),float(particles_anim_v_frames));\n";
-			code += "\tUV += vec2(float(particle_frame % particles_anim_h_frames) / float(particles_anim_h_frames),float(particle_frame / particles_anim_h_frames) / float(particles_anim_v_frames));\n";
-			//handle rotation
-			//	code += "\tmat4 rotation = mat4("
+			code += "\tUV += vec2(mod(particle_frame,float(particles_anim_h_frames)) / float(particles_anim_h_frames), floor(particle_frame / float(particles_anim_h_frames)) / float(particles_anim_v_frames));\n";
 		} break;
 	}
 
@@ -638,7 +699,7 @@ void SpatialMaterial::_update_shader() {
 
 	if (features[FEATURE_DEPTH_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //depthmap not supported with triplanar
 		code += "\t{\n";
-		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT,-BINORMAL,NORMAL));\n"; //binormal is negative due to mikktpsace
+		code += "\t\tvec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*depth_flip.x,BINORMAL*depth_flip.y,NORMAL));\n"; //binormal is negative due to mikktpsace
 
 		if (deep_parallax) {
 			code += "\t\tfloat num_layers = mix(float(depth_max_layers),float(depth_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";
@@ -754,19 +815,60 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALBEDO *= 1.0 - ref_amount;\n";
 		code += "\tALPHA = 1.0;\n";
 
-	} else if (features[FEATURE_TRANSPARENT] || flags[FLAG_USE_ALPHA_SCISSOR] || distance_fade_enabled || proximity_fade_enabled) {
+	} else if (features[FEATURE_TRANSPARENT] || flags[FLAG_USE_ALPHA_SCISSOR] || (distance_fade == DISTANCE_FADE_PIXEL_ALPHA) || proximity_fade_enabled) {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
-	if (proximity_fade_enabled) {
+	if (!VisualServer::get_singleton()->is_low_end() && proximity_fade_enabled) {
 		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
 		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
 		code += "\tworld_pos.xyz/=world_pos.w;\n";
 		code += "\tALPHA*=clamp(1.0-smoothstep(world_pos.z+proximity_fade_distance,world_pos.z,VERTEX.z),0.0,1.0);\n";
 	}
 
-	if (distance_fade_enabled) {
-		code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+	if (distance_fade != DISTANCE_FADE_DISABLED) {
+		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
+
+			if (!VisualServer::get_singleton()->is_low_end()) {
+				code += "\t{\n";
+				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
+					code += "\t\tfloat fade_distance = abs((INV_CAMERA_MATRIX * WORLD_MATRIX[3]).z);\n";
+
+				} else {
+					code += "\t\tfloat fade_distance=-VERTEX.z;\n";
+				}
+
+				code += "\t\tfloat fade=clamp(smoothstep(distance_fade_min,distance_fade_max,fade_distance),0.0,1.0);\n";
+				code += "\t\tint x = int(FRAGCOORD.x) % 4;\n";
+				code += "\t\tint y = int(FRAGCOORD.y) % 4;\n";
+				code += "\t\tint index = x + y * 4;\n";
+				code += "\t\tfloat limit = 0.0;\n\n";
+				code += "\t\tif (x < 8) {\n";
+				code += "\t\t\tif (index == 0) limit = 0.0625;\n";
+				code += "\t\t\tif (index == 1) limit = 0.5625;\n";
+				code += "\t\t\tif (index == 2) limit = 0.1875;\n";
+				code += "\t\t\tif (index == 3) limit = 0.6875;\n";
+				code += "\t\t\tif (index == 4) limit = 0.8125;\n";
+				code += "\t\t\tif (index == 5) limit = 0.3125;\n";
+				code += "\t\t\tif (index == 6) limit = 0.9375;\n";
+				code += "\t\t\tif (index == 7) limit = 0.4375;\n";
+				code += "\t\t\tif (index == 8) limit = 0.25;\n";
+				code += "\t\t\tif (index == 9) limit = 0.75;\n";
+				code += "\t\t\tif (index == 10) limit = 0.125;\n";
+				code += "\t\t\tif (index == 11) limit = 0.625;\n";
+				code += "\t\t\tif (index == 12) limit = 1.0;\n";
+				code += "\t\t\tif (index == 13) limit = 0.5;\n";
+				code += "\t\t\tif (index == 14) limit = 0.875;\n";
+				code += "\t\t\tif (index == 15) limit = 0.375;\n";
+				code += "\t\t}\n\n";
+				code += "\tif (fade < limit)\n";
+				code += "\t\tdiscard;\n";
+				code += "\t}\n\n";
+			}
+
+		} else {
+			code += "\tALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+		}
 	}
 
 	if (features[FEATURE_RIM]) {
@@ -853,7 +955,7 @@ void SpatialMaterial::_update_shader() {
 
 		if (flags[FLAG_UV1_USE_TRIPLANAR]) {
 
-			code += "\tvec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal);\n";
+			code += "\tvec4 detail_mask_tex = triplanar_texture(texture_detail_mask,uv1_power_normal,uv1_triplanar_pos);\n";
 		} else {
 			code += "\tvec4 detail_mask_tex = texture(texture_detail_mask,base_uv);\n";
 		}
@@ -1271,6 +1373,12 @@ void SpatialMaterial::_validate_feature(const String &text, Feature feature, Pro
 	}
 }
 
+void SpatialMaterial::_validate_high_end(const String &text, PropertyInfo &property) const {
+	if (property.name.begins_with(text)) {
+		property.usage |= PROPERTY_USAGE_HIGH_END_GFX;
+	}
+}
+
 void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("normal", FEATURE_NORMAL_MAPPING, property);
 	_validate_feature("emission", FEATURE_EMISSION, property);
@@ -1284,6 +1392,12 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	_validate_feature("refraction", FEATURE_REFRACTION, property);
 	_validate_feature("detail", FEATURE_DETAIL, property);
 
+	_validate_high_end("refraction", property);
+	_validate_high_end("subsurf_scatter", property);
+	_validate_high_end("anisotropy", property);
+	_validate_high_end("clearcoat", property);
+	_validate_high_end("depth", property);
+
 	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
 		property.usage = 0;
 	}
@@ -1296,7 +1410,7 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && !distance_fade_enabled) {
+	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
 		property.usage = 0;
 	}
 
@@ -1429,13 +1543,13 @@ int SpatialMaterial::get_particles_anim_v_frames() const {
 	return particles_anim_v_frames;
 }
 
-void SpatialMaterial::set_particles_anim_loop(int p_frames) {
+void SpatialMaterial::set_particles_anim_loop(bool p_loop) {
 
-	particles_anim_loop = p_frames;
-	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, p_frames);
+	particles_anim_loop = p_loop;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_loop, particles_anim_loop);
 }
 
-int SpatialMaterial::get_particles_anim_loop() const {
+bool SpatialMaterial::get_particles_anim_loop() const {
 
 	return particles_anim_loop;
 }
@@ -1470,6 +1584,28 @@ void SpatialMaterial::set_depth_deep_parallax_max_layers(int p_layer) {
 int SpatialMaterial::get_depth_deep_parallax_max_layers() const {
 
 	return deep_parallax_max_layers;
+}
+
+void SpatialMaterial::set_depth_deep_parallax_flip_tangent(bool p_flip) {
+
+	depth_parallax_flip_tangent = p_flip;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->depth_flip, Vector2(depth_parallax_flip_tangent ? -1 : 1, depth_parallax_flip_binormal ? -1 : 1));
+}
+
+bool SpatialMaterial::get_depth_deep_parallax_flip_tangent() const {
+
+	return depth_parallax_flip_tangent;
+}
+
+void SpatialMaterial::set_depth_deep_parallax_flip_binormal(bool p_flip) {
+
+	depth_parallax_flip_binormal = p_flip;
+	VS::get_singleton()->material_set_param(_get_material(), shader_names->depth_flip, Vector2(depth_parallax_flip_tangent ? -1 : 1, depth_parallax_flip_binormal ? -1 : 1));
+}
+
+bool SpatialMaterial::get_depth_deep_parallax_flip_binormal() const {
+
+	return depth_parallax_flip_binormal;
 }
 
 void SpatialMaterial::set_grow_enabled(bool p_enable) {
@@ -1617,15 +1753,15 @@ float SpatialMaterial::get_proximity_fade_distance() const {
 	return proximity_fade_distance;
 }
 
-void SpatialMaterial::set_distance_fade(bool p_enable) {
+void SpatialMaterial::set_distance_fade(DistanceFadeMode p_mode) {
 
-	distance_fade_enabled = p_enable;
+	distance_fade = p_mode;
 	_queue_shader_change();
 	_change_notify();
 }
-bool SpatialMaterial::is_distance_fade_enabled() const {
+SpatialMaterial::DistanceFadeMode SpatialMaterial::get_distance_fade() const {
 
-	return distance_fade_enabled;
+	return distance_fade;
 }
 
 void SpatialMaterial::set_distance_fade_max_distance(float p_distance) {
@@ -1786,7 +1922,7 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_particles_anim_v_frames", "frames"), &SpatialMaterial::set_particles_anim_v_frames);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_v_frames"), &SpatialMaterial::get_particles_anim_v_frames);
 
-	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "frames"), &SpatialMaterial::set_particles_anim_loop);
+	ClassDB::bind_method(D_METHOD("set_particles_anim_loop", "loop"), &SpatialMaterial::set_particles_anim_loop);
 	ClassDB::bind_method(D_METHOD("get_particles_anim_loop"), &SpatialMaterial::get_particles_anim_loop);
 
 	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax", "enable"), &SpatialMaterial::set_depth_deep_parallax);
@@ -1797,6 +1933,12 @@ void SpatialMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_max_layers", "layer"), &SpatialMaterial::set_depth_deep_parallax_max_layers);
 	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_max_layers"), &SpatialMaterial::get_depth_deep_parallax_max_layers);
+
+	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_flip_tangent", "flip"), &SpatialMaterial::set_depth_deep_parallax_flip_tangent);
+	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_flip_tangent"), &SpatialMaterial::get_depth_deep_parallax_flip_tangent);
+
+	ClassDB::bind_method(D_METHOD("set_depth_deep_parallax_flip_binormal", "flip"), &SpatialMaterial::set_depth_deep_parallax_flip_binormal);
+	ClassDB::bind_method(D_METHOD("get_depth_deep_parallax_flip_binormal"), &SpatialMaterial::get_depth_deep_parallax_flip_binormal);
 
 	ClassDB::bind_method(D_METHOD("set_grow", "amount"), &SpatialMaterial::set_grow);
 	ClassDB::bind_method(D_METHOD("get_grow"), &SpatialMaterial::get_grow);
@@ -1831,8 +1973,8 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &SpatialMaterial::set_proximity_fade_distance);
 	ClassDB::bind_method(D_METHOD("get_proximity_fade_distance"), &SpatialMaterial::get_proximity_fade_distance);
 
-	ClassDB::bind_method(D_METHOD("set_distance_fade", "enabled"), &SpatialMaterial::set_distance_fade);
-	ClassDB::bind_method(D_METHOD("is_distance_fade_enabled"), &SpatialMaterial::is_distance_fade_enabled);
+	ClassDB::bind_method(D_METHOD("set_distance_fade", "mode"), &SpatialMaterial::set_distance_fade);
+	ClassDB::bind_method(D_METHOD("get_distance_fade"), &SpatialMaterial::get_distance_fade);
 
 	ClassDB::bind_method(D_METHOD("set_distance_fade_max_distance", "distance"), &SpatialMaterial::set_distance_fade_max_distance);
 	ClassDB::bind_method(D_METHOD("get_distance_fade_max_distance"), &SpatialMaterial::get_distance_fade_max_distance);
@@ -1849,6 +1991,9 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_world_triplanar"), "set_flag", "get_flag", FLAG_TRIPLANAR_USE_WORLD);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_fixed_size"), "set_flag", "get_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_albedo_tex_force_srgb"), "set_flag", "get_flag", FLAG_ALBEDO_TEXTURE_FORCE_SRGB);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_do_not_receive_shadows"), "set_flag", "get_flag", FLAG_DONT_RECEIVE_SHADOWS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_ensure_correct_normals"), "set_flag", "get_flag", FLAG_ENSURE_CORRECT_NORMALS);
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
@@ -1862,6 +2007,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "params_grow"), "set_grow_enabled", "is_grow_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_grow_amount", PROPERTY_HINT_RANGE, "-16,10,0.01"), "set_grow", "get_grow");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_use_alpha_scissor"), "set_flag", "get_flag", FLAG_USE_ALPHA_SCISSOR);
@@ -1929,6 +2075,8 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_deep_parallax"), "set_depth_deep_parallax", "is_depth_deep_parallax_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_min_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_depth_deep_parallax_min_layers", "get_depth_deep_parallax_min_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_max_layers", PROPERTY_HINT_RANGE, "1,32,1"), "set_depth_deep_parallax_max_layers", "get_depth_deep_parallax_max_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_flip_tangent"), "set_depth_deep_parallax_flip_tangent", "get_depth_deep_parallax_flip_tangent");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "depth_flip_binormal"), "set_depth_deep_parallax_flip_binormal", "get_depth_deep_parallax_flip_binormal");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "depth_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_DEPTH);
 
 	ADD_GROUP("Subsurf Scatter", "subsurf_scatter_");
@@ -1971,7 +2119,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("Distance Fade", "distance_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enable"), "set_distance_fade", "is_distance_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "distance_fade_max_distance", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_distance_fade_max_distance", "get_distance_fade_max_distance");
 
@@ -2031,6 +2179,7 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_SRGB_VERTEX_COLOR);
 	BIND_ENUM_CONSTANT(FLAG_USE_POINT_SIZE);
 	BIND_ENUM_CONSTANT(FLAG_FIXED_SIZE);
+	BIND_ENUM_CONSTANT(FLAG_BILLBOARD_KEEP_SCALE);
 	BIND_ENUM_CONSTANT(FLAG_UV1_USE_TRIPLANAR);
 	BIND_ENUM_CONSTANT(FLAG_UV2_USE_TRIPLANAR);
 	BIND_ENUM_CONSTANT(FLAG_AO_ON_UV2);
@@ -2038,6 +2187,9 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_USE_ALPHA_SCISSOR);
 	BIND_ENUM_CONSTANT(FLAG_TRIPLANAR_USE_WORLD);
 	BIND_ENUM_CONSTANT(FLAG_ALBEDO_TEXTURE_FORCE_SRGB);
+	BIND_ENUM_CONSTANT(FLAG_DONT_RECEIVE_SHADOWS);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_AMBIENT_LIGHT);
+	BIND_ENUM_CONSTANT(FLAG_ENSURE_CORRECT_NORMALS);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -2065,15 +2217,20 @@ void SpatialMaterial::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(EMISSION_OP_ADD);
 	BIND_ENUM_CONSTANT(EMISSION_OP_MULTIPLY);
+
+	BIND_ENUM_CONSTANT(DISTANCE_FADE_DISABLED);
+	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_ALPHA);
+	BIND_ENUM_CONSTANT(DISTANCE_FADE_PIXEL_DITHER);
+	BIND_ENUM_CONSTANT(DISTANCE_FADE_OBJECT_DITHER);
 }
 
 SpatialMaterial::SpatialMaterial() :
 		element(this) {
 
-	//initialize to right values
+	// Initialize to the same values as the shader
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
-	set_roughness(0.0);
+	set_roughness(1.0);
 	set_metallic(0.0);
 	set_emission(Color(0, 0, 0));
 	set_emission_energy(1.0);
@@ -2103,7 +2260,7 @@ SpatialMaterial::SpatialMaterial() :
 	emission_op = EMISSION_OP_ADD;
 
 	proximity_fade_enabled = false;
-	distance_fade_enabled = false;
+	distance_fade = DISTANCE_FADE_DISABLED;
 	set_proximity_fade_distance(1);
 	set_distance_fade_min_distance(0);
 	set_distance_fade_max_distance(10);
@@ -2119,8 +2276,11 @@ SpatialMaterial::SpatialMaterial() :
 	set_grow(0.0);
 
 	deep_parallax = false;
+	depth_parallax_flip_tangent = false;
+	depth_parallax_flip_binormal = true;
 	set_depth_deep_parallax_min_layers(8);
 	set_depth_deep_parallax_max_layers(32);
+	set_depth_deep_parallax_flip_tangent(false); //also sets binormal
 
 	detail_uv = DETAIL_UV_1;
 	blend_mode = BLEND_MODE_MIX;

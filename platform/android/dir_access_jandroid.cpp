@@ -31,8 +31,8 @@
 #ifndef ANDROID_NATIVE_ACTIVITY
 
 #include "dir_access_jandroid.h"
+#include "core/print_string.h"
 #include "file_access_jandroid.h"
-#include "print_string.h"
 #include "thread_jandroid.h"
 
 jobject DirAccessJAndroid::io = NULL;
@@ -153,7 +153,6 @@ String DirAccessJAndroid::get_current_dir() {
 
 bool DirAccessJAndroid::file_exists(String p_file) {
 
-	JNIEnv *env = ThreadAndroid::get_env();
 	String sd;
 	if (current_dir == "")
 		sd = p_file;

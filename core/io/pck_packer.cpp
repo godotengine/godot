@@ -31,6 +31,7 @@
 #include "pck_packer.h"
 
 #include "core/os/file_access.h"
+#include "core/version.h"
 
 static uint64_t _align(uint64_t p_n, int p_alignment) {
 
@@ -70,9 +71,9 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 	alignment = p_alignment;
 
 	file->store_32(0x43504447); // MAGIC
-	file->store_32(0); // # version
-	file->store_32(0); // # major
-	file->store_32(0); // # minor
+	file->store_32(1); // # version
+	file->store_32(VERSION_MAJOR); // # major
+	file->store_32(VERSION_MINOR); // # minor
 	file->store_32(0); // # revision
 
 	for (int i = 0; i < 16; i++) {
@@ -120,7 +121,7 @@ Error PCKPacker::flush(bool p_verbose) {
 	for (int i = 0; i < files.size(); i++) {
 
 		file->store_pascal_string(files[i].path);
-		files[i].offset_offset = file->get_position();
+		files.write[i].offset_offset = file->get_position();
 		file->store_64(0); // offset
 		file->store_64(files[i].size); // size
 

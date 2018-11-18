@@ -5,7 +5,7 @@
 /*    PostScript name table processing for TrueType and OpenType fonts     */
 /*    (body).                                                              */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -473,8 +473,8 @@
   /*    idx    :: The glyph index.                                         */
   /*                                                                       */
   /* <InOut>                                                               */
-  /*    PSname :: The address of a string pointer.  Will be NULL in case   */
-  /*              of error, otherwise it is a pointer to the glyph name.   */
+  /*    PSname :: The address of a string pointer.  Undefined in case of   */
+  /*              error, otherwise it is a pointer to the glyph name.      */
   /*                                                                       */
   /*              You must not modify the returned string!                 */
   /*                                                                       */

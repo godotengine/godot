@@ -61,20 +61,18 @@ private:
 
 	static GodotSharpBuilds *singleton;
 
-	friend class GDMono;
-	static void _register_internal_calls();
-
 public:
 	enum BuildTool {
 		MSBUILD_MONO,
 #ifdef WINDOWS_ENABLED
-		MSBUILD
-#else
-		XBUILD // Deprecated
+		MSBUILD_VS,
 #endif
+		XBUILD // Deprecated
 	};
 
 	_FORCE_INLINE_ static GodotSharpBuilds *get_singleton() { return singleton; }
+
+	static void register_internal_calls();
 
 	static void show_build_error_dialog(const String &p_message);
 
@@ -86,10 +84,10 @@ public:
 	bool build(const MonoBuildInfo &p_build_info);
 	bool build_async(const MonoBuildInfo &p_build_info, GodotSharpBuild_ExitCallback p_callback = NULL);
 
-	static bool build_api_sln(const String &p_name, const String &p_api_sln_dir, const String &p_config);
+	static bool build_api_sln(const String &p_api_sln_dir, const String &p_config);
 	static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name, APIAssembly::Type p_api_type);
 
-	static bool make_api_sln(APIAssembly::Type p_api_type);
+	static bool make_api_assembly(APIAssembly::Type p_api_type);
 
 	static bool build_project_blocking(const String &p_config);
 

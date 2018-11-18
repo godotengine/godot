@@ -31,12 +31,12 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "aabb.h"
-#include "list.h"
-#include "map.h"
-#include "print_string.h"
-#include "variant.h"
-#include "vector3.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/print_string.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -478,7 +478,7 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 					splits++;
 				}
 			} else {
-				/* check againt AABB where child should be */
+				/* check against AABB where child should be */
 
 				AABB aabb = p_octant->aabb;
 				aabb.size *= 0.5;

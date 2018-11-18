@@ -31,9 +31,9 @@
 #ifndef LINE_BUILDER_H
 #define LINE_BUILDER_H
 
-#include "color.h"
+#include "core/color.h"
+#include "core/math/vector2.h"
 #include "line_2d.h"
-#include "math_2d.h"
 #include "scene/resources/color_ramp.h"
 
 class LineBuilder {

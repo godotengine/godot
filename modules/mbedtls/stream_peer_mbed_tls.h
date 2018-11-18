@@ -31,14 +31,14 @@
 #ifndef STREAM_PEER_OPEN_SSL_H
 #define STREAM_PEER_OPEN_SSL_H
 
-#include "io/stream_peer_ssl.h"
+#include "core/io/stream_peer_ssl.h"
 
-#include "mbedtls/config.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/debug.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/net.h"
-#include "mbedtls/ssl.h"
+#include <mbedtls/config.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/debug.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/net.h>
+#include <mbedtls/ssl.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,8 +48,6 @@ private:
 	Status status;
 	String hostname;
 
-	bool connected;
-
 	Ref<StreamPeer> base;
 
 	static StreamPeerSSL *_create_func();
@@ -57,15 +55,19 @@ private:
 
 	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
 	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
+	void _cleanup();
 
 protected:
 	static mbedtls_x509_crt cacert;
+
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	mbedtls_ssl_context ssl;
 	mbedtls_ssl_config conf;
 
 	static void _bind_methods();
+
+	Error _do_handshake();
 
 public:
 	virtual void poll();

@@ -99,6 +99,8 @@
 			</argument>
 			<argument index="2" name="can_be_hidden" type="bool" default="true">
 			</argument>
+			<argument index="3" name="wrap_index" type="int" default="0">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -128,6 +130,13 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="get_breakpoints" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Return an array containing the line number of each breakpoint.
 			</description>
 		</method>
 		<method name="get_keyword_color" qualifiers="const">
@@ -263,6 +272,13 @@
 				Perform redo operation.
 			</description>
 		</method>
+		<method name="remove_breakpoints">
+			<return type="void">
+			</return>
+			<description>
+				Removes all the breakpoints (without firing "breakpoint_toggled" signal).
+			</description>
+		</method>
 		<method name="search" qualifiers="const">
 			<return type="PoolIntArray">
 			</return>
@@ -342,6 +358,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled">
+			If [code]true[/code] the breakpoint gutter is visible.
+		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
 			If [code]true[/code] the caret (visual cursor) blinks.
 		</member>
@@ -384,7 +403,7 @@
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
 			If [code]true[/code], enables text wrapping when it goes beyond he edge of what is visible.
 		</member>
-		<member name="wrap_lines" type="bool" setter="set_wrap" getter="is_wrapping">
+		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled">
 		</member>
 	</members>
 	<signals>
@@ -507,6 +526,8 @@
 		<theme_item name="number_color" type="Color">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
+		</theme_item>
+		<theme_item name="safe_line_number_color" type="Color">
 		</theme_item>
 		<theme_item name="selection_color" type="Color">
 		</theme_item>

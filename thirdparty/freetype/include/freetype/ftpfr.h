@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing PFR-specific data (specification only).   */
 /*                                                                         */
-/*  Copyright 2002-2017 by                                                 */
+/*  Copyright 2002-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -71,7 +71,7 @@ FT_BEGIN_HEADER
   *
   *    ametrics_x_scale ::
   *      A 16.16 fixed-point number used to scale distance expressed
-  *      in metrics units to device sub-pixels.  This is equivalent to
+  *      in metrics units to device subpixels.  This is equivalent to
   *      `face->size->x_scale', but for metrics only.  Optional (parameter
   *      can be NULL).
   *
@@ -123,7 +123,7 @@ FT_BEGIN_HEADER
   *    mode, which always returns distances converted to outline units.
   *
   *    You can use the value of the `x_scale' and `y_scale' parameters
-  *    returned by @FT_Get_PFR_Metrics to scale these to device sub-pixels.
+  *    returned by @FT_Get_PFR_Metrics to scale these to device subpixels.
   */
   FT_EXPORT( FT_Error )
   FT_Get_PFR_Kerning( FT_Face     face,
@@ -154,7 +154,7 @@ FT_BEGIN_HEADER
   *
   * @note:
   *    You can use the `x_scale' or `y_scale' results of @FT_Get_PFR_Metrics
-  *    to convert the advance to device sub-pixels (i.e., 1/64th of pixels).
+  *    to convert the advance to device subpixels (i.e., 1/64th of pixels).
   */
   FT_EXPORT( FT_Error )
   FT_Get_PFR_Advance( FT_Face   face,

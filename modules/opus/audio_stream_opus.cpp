@@ -142,7 +142,7 @@ Error AudioStreamPlaybackOpus::_load_stream() {
 		} break;
 		case OP_EBADLINK: // - Failed to find old data after seeking.
 		case OP_EBADTIMESTAMP: // - Timestamp failed the validity checks.
-		case OP_EBADHEADER: { // - Invalid or mising Opus bitstream header.
+		case OP_EBADHEADER: { // - Invalid or missing Opus bitstream header.
 			memdelete(f);
 			f = NULL;
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
@@ -208,7 +208,7 @@ Error AudioStreamPlaybackOpus::set_file(const String &p_file) {
 		} break;
 		case OP_EBADLINK: // - Failed to find old data after seeking.
 		case OP_EBADTIMESTAMP: // - Timestamp failed the validity checks.
-		case OP_EBADHEADER: { // - Invalid or mising Opus bitstream header.
+		case OP_EBADHEADER: { // - Invalid or missing Opus bitstream header.
 			memdelete(f);
 			f = NULL;
 			ERR_FAIL_V(ERR_FILE_CORRUPT);

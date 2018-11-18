@@ -107,7 +107,7 @@ public:
 		m_motorCFM               = 0.f;
 		m_enableMotor            = false;
 		m_targetVelocity         = 0;
-		m_maxMotorForce          = 0.1f;
+		m_maxMotorForce          = 6.0f;
 		m_servoMotor             = false;
 		m_servoTarget            = 0;
 		m_enableSpring           = false;

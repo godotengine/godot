@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "convex_polygon_shape.h"
-#include "quick_hull.h"
+#include "core/math/quick_hull.h"
 #include "servers/physics_server.h"
 
 Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
@@ -38,16 +38,15 @@ Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
 
 	if (points.size() > 3) {
 
-		QuickHull qh;
 		Vector<Vector3> varr = Variant(points);
 		Geometry::MeshData md;
-		Error err = qh.build(varr, md);
+		Error err = QuickHull::build(varr, md);
 		if (err == OK) {
 			Vector<Vector3> lines;
 			lines.resize(md.edges.size() * 2);
 			for (int i = 0; i < md.edges.size(); i++) {
-				lines[i * 2 + 0] = md.vertices[md.edges[i].a];
-				lines[i * 2 + 1] = md.vertices[md.edges[i].b];
+				lines.write[i * 2 + 0] = md.vertices[md.edges[i].a];
+				lines.write[i * 2 + 1] = md.vertices[md.edges[i].b];
 			}
 			return lines;
 		}

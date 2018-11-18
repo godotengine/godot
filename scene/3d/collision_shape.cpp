@@ -38,9 +38,9 @@
 #include "scene/resources/sphere_shape.h"
 #include "servers/visual_server.h"
 //TODO: Implement CylinderShape and HeightMapShape?
+#include "core/math/quick_hull.h"
 #include "mesh_instance.h"
 #include "physics_body.h"
-#include "quick_hull.h"
 
 void CollisionShape::make_convex_from_brothers() {
 

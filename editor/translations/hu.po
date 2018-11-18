@@ -2,351 +2,500 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
+# Árpád Horváth <horvatha4@googlemail.com>, 2018.
 # Nagy Lajos <neutron9707@gmail.com>, 2017.
-# Sandor Domokos <sandor.domokos@gmail.com>, 2017.
+# Sandor Domokos <sandor.domokos@gmail.com>, 2017-2018.
 # Varga Dániel <danikah.danikah@gmail.com>, 2016-2018.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-02-24 12:37+0000\n"
-"Last-Translator: Varga Dániel <danikah.danikah@gmail.com>\n"
+"PO-Revision-Date: 2018-06-17 07:39+0000\n"
+"Last-Translator: Árpád Horváth <horvatha4@googlemail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.20-dev\n"
+"X-Generator: Weblate 3.0.1\n"
 
-#: editor/animation_editor.cpp
-msgid "Disabled"
-msgstr "Tiltva"
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+"Érvénytelen típus argumentum a convert()-hez használjon TYPE_* konstansokat."
 
-#: editor/animation_editor.cpp
-msgid "All Selection"
-msgstr "Minden Kiválasztás"
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#: modules/mono/glue/glue_header.h
+#: modules/visual_script/visual_script_builtin_funcs.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
 
-#: editor/animation_editor.cpp
-msgid "Anim Change Keyframe Time"
-msgstr "Animáció Kulcsképkocka Idő Változtatása"
+#: core/math/expression.cpp
+msgid "Invalid input %i (not passed) in expression"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Change Transition"
-msgstr "Animáció Átmenet Váltás"
+#: core/math/expression.cpp
+msgid "self can't be used because instance is null (not passed)"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Change Transform"
-msgstr "Animáció Transzformáció Váltás"
+#: core/math/expression.cpp
+msgid "Invalid operands to operator %s, %s and %s."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Change Keyframe Value"
-msgstr "Animáció Kulcsképkocka Érték"
+#: core/math/expression.cpp
+msgid "Invalid index of type %s for base type %s"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Change Call"
-msgstr "Animáció Hívás Váltás"
+#: core/math/expression.cpp
+msgid "Invalid named index '%s' for base type %s"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Add Track"
-msgstr "Animáció Nyomvonal Hozzáadása"
+#: core/math/expression.cpp
+#, fuzzy
+msgid "Invalid arguments to construct '%s'"
+msgstr ""
+"Érvénytelen típus argumentum a convert()-hez használjon TYPE_* konstansokat."
 
-#: editor/animation_editor.cpp
+#: core/math/expression.cpp
+msgid "On call to '%s':"
+msgstr ""
+
+#: editor/animation_bezier_editor.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr "Ingyenes"
+
+#: editor/animation_bezier_editor.cpp
+msgid "Balanced"
+msgstr ""
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Mirror"
+msgstr "Hiba!"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Insert Key Here"
+msgstr "Kulcs Beszúrása"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Duplicate Selected Key(s)"
+msgstr "Kiválasztás megkettőzés"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Delete Selected Key(s)"
+msgstr "Törli a kiválasztott fájlokat?"
+
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Animáció Kulcs Megkettőzése"
+msgstr "Animáció kulcsok megkettőzése"
 
-#: editor/animation_editor.cpp
-msgid "Move Anim Track Up"
-msgstr "Animáció Nyomvonal Felfelé Mozgatása"
-
-#: editor/animation_editor.cpp
-msgid "Move Anim Track Down"
-msgstr "Animáció Nyomvonal Lefelé Mozgatása"
-
-#: editor/animation_editor.cpp
-msgid "Remove Anim Track"
-msgstr "Animáció Nyomvonal Eltávolítása"
-
-#: editor/animation_editor.cpp
-msgid "Set Transitions to:"
-msgstr "Átmenet beállítása erre:"
-
-#: editor/animation_editor.cpp
-msgid "Anim Track Rename"
-msgstr "Animáció Nyomvonal Átnevezése"
-
-#: editor/animation_editor.cpp
-msgid "Anim Track Change Interpolation"
-msgstr "Animáció Nyomvonal Interpoláció Változtatása"
-
-#: editor/animation_editor.cpp
-msgid "Anim Track Change Value Mode"
-msgstr "Animáció Nyomvonal Érték Mód Változtatása"
-
-#: editor/animation_editor.cpp
-msgid "Anim Track Change Wrap Mode"
-msgstr "Animáció Nyomvonal Takarási Mód Változtatása"
-
-#: editor/animation_editor.cpp
-msgid "Edit Node Curve"
-msgstr "Node Görbe Szerkesztése"
-
-#: editor/animation_editor.cpp
-msgid "Edit Selection Curve"
-msgstr "Kiválasztás Görbe Szerkesztése"
-
-#: editor/animation_editor.cpp
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Animáció Kulcs Törlése"
+msgstr "Animáció kulcs törlés"
 
-#: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Duplicate Selection"
-msgstr "Kiválasztás Megkettőzése"
+#: editor/animation_track_editor.cpp
+msgid "Anim Change Keyframe Time"
+msgstr "Animáció kulcsképkocka idő változtatás"
 
-#: editor/animation_editor.cpp
-msgid "Duplicate Transposed"
-msgstr "Áthelyezettek Megkettőzése"
+#: editor/animation_track_editor.cpp
+msgid "Anim Change Transition"
+msgstr "Animáció átmenet változtatása"
 
-#: editor/animation_editor.cpp
-msgid "Remove Selection"
-msgstr "Kiválasztás Eltávolítása"
+#: editor/animation_track_editor.cpp
+msgid "Anim Change Transform"
+msgstr "Animáció transzformáció változtatás"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
+msgid "Anim Change Keyframe Value"
+msgstr "Animáció kulcsképkocka érték változtatás"
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Change Call"
+msgstr "Animáció hívás változtatás"
+
+#: editor/animation_track_editor.cpp
+msgid "Property Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "3D Transform Track"
+msgstr "UV Térkép Transzformálása"
+
+#: editor/animation_track_editor.cpp
+msgid "Call Method Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Bezier Curve Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Audio Playback Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Playback Track"
+msgstr "Animáció lejátszásának leállítása. (S)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
+msgstr "Animáció nyomvonal hozzáadás"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Length Time (seconds)"
+msgstr "Animáció hossza (másodpercben)."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Looping"
+msgstr "Animáció nagyítás."
+
+#: editor/animation_track_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Functions:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Audio Clips:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Clips:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle this track on/off."
+msgstr "Zavarmentes mód váltása."
+
+#: editor/animation_track_editor.cpp
+msgid "Update Mode (How this property is set)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Interpolation Mode"
+msgstr "Animáció Node"
+
+#: editor/animation_track_editor.cpp
+msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Remove this track."
+msgstr "Kiválasztott nyomvonal eltávolítása."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Time (s): "
+msgstr "Áttűnési Idő (mp):"
+
+#: editor/animation_track_editor.cpp
 msgid "Continuous"
 msgstr "Folyamatos"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Discrete"
 msgstr "Diszkrét"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Trigger"
 msgstr "Érzékelő"
 
-#: editor/animation_editor.cpp
-msgid "Anim Add Key"
-msgstr "Animáció Kulcs Hozzáadása"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Capture"
+msgstr "Jövő"
 
-#: editor/animation_editor.cpp
-msgid "Anim Move Keys"
-msgstr "Animáció Kulcs Mozgatása"
+#: editor/animation_track_editor.cpp
+msgid "Nearest"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Scale Selection"
-msgstr "Kiválasztás Átméretezése"
-
-#: editor/animation_editor.cpp
-msgid "Scale From Cursor"
-msgstr "Átméretezés A Kurzortól"
-
-#: editor/animation_editor.cpp
-msgid "Goto Next Step"
-msgstr "Ugrás A Következő Lépésre"
-
-#: editor/animation_editor.cpp
-msgid "Goto Prev Step"
-msgstr "Ugrás Az Előző Lépésre"
-
-#: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
+#: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
 msgstr "Lineáris"
 
-#: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Állandó"
+#: editor/animation_track_editor.cpp
+msgid "Cubic"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "In"
-msgstr "Be"
+#: editor/animation_track_editor.cpp
+msgid "Clamp Loop Interp"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Out"
-msgstr "Ki"
+#: editor/animation_track_editor.cpp
+msgid "Wrap Loop Interp"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "In-Out"
-msgstr "Be-Ki"
+#: editor/animation_track_editor.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Insert Key"
+msgstr "Kulcs Beszúrása"
 
-#: editor/animation_editor.cpp
-msgid "Out-In"
-msgstr "Ki-Be"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Duplicate Key(s)"
+msgstr "Animáció kulcsok megkettőzése"
 
-#: editor/animation_editor.cpp
-msgid "Transitions"
-msgstr "Átmenetek"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Delete Key(s)"
+msgstr "Animáció kulcs törlés"
 
-#: editor/animation_editor.cpp
-msgid "Optimize Animation"
-msgstr "Animáció Optimalizálása"
+#: editor/animation_track_editor.cpp
+msgid "Remove Anim Track"
+msgstr "Animáció nyomvonal eltávolítás"
 
-#: editor/animation_editor.cpp
-msgid "Clean-Up Animation"
-msgstr "Animáció Megtisztítása"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Létrehoz ÚJ nyomvonalat %s -hez és beilleszti a kulcsot?"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
 msgstr "Létrehoz %d ÚJ nyomvonalat és beilleszti a kulcsokat?"
 
-#: editor/animation_editor.cpp editor/create_dialog.cpp
-#: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/animation_track_editor.cpp editor/create_dialog.cpp
+#: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
+#: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
 msgstr "Létrehozás"
 
-#: editor/animation_editor.cpp
-msgid "Anim Create & Insert"
-msgstr "Animáció Létrehozása És Beillesztése"
-
-#: editor/animation_editor.cpp
-msgid "Anim Insert Track & Key"
-msgstr "Animáció Nyomvonal És Kulcs Beillesztése"
-
-#: editor/animation_editor.cpp
-msgid "Anim Insert Key"
-msgstr "Animáció Kulcs Beillesztése"
-
-#: editor/animation_editor.cpp
-msgid "Change Anim Len"
-msgstr "Animáció Hossz Változtatása"
-
-#: editor/animation_editor.cpp
-msgid "Change Anim Loop"
-msgstr "Animáció Loop Megváltoztatása"
-
-#: editor/animation_editor.cpp
-msgid "Anim Create Typed Value Key"
-msgstr "Animáció Típusos Érték Kulcs Létrehozása"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Anim Insert"
-msgstr "Animáció Beilleszt"
+msgstr "Animáció beillesztés"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
+msgid "AnimationPlayer can't animate itself, only other players."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Create & Insert"
+msgstr "Animáció létrehozás és beillesztés"
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Insert Track & Key"
+msgstr "Animáció nyomvonal és kulcs beillesztés"
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Insert Key"
+msgstr "Animáció kulcs beillesztés"
+
+#: editor/animation_track_editor.cpp
+msgid "Transform tracks only apply to Spatial-based nodes."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid ""
+"Audio tracks can only point to nodes of type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Animation tracks can only point to AnimationPlayer nodes."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "An animation player can't animate itself, only other players."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Track path is invalid, so can't add a key."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Track is not of type Spatial, can't insert key"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Track path is invalid, so can't add a method key."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Method not found in object: "
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Move Keys"
+msgstr "Animáció kulcs mozgatás"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Clipboard is empty"
+msgstr "Az erőforrás vágólap üres!"
+
+#: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Animáció Kulcsok Nyújtása"
+msgstr "Animáció kulcsok nyújtás"
 
-#: editor/animation_editor.cpp
-msgid "Anim Add Call Track"
-msgstr "Animáció Hívási Nyomvonal Hozzáadása"
+#: editor/animation_track_editor.cpp
+msgid ""
+"This option does not work for Bezier editing, as it's only a single track."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Animation zoom."
-msgstr "Animáció nagyítás."
+#: editor/animation_track_editor.cpp
+msgid "Only show tracks from nodes selected in tree."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Length (s):"
-msgstr "Hossz (mp):"
+#: editor/animation_track_editor.cpp
+msgid "Group tracks by node or display them as plain list."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Animation length (in seconds)."
-msgstr "Animáció hossza (másodpercben)."
-
-#: editor/animation_editor.cpp
-msgid "Step (s):"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Snap (s): "
 msgstr "Lépés (mp):"
 
-#: editor/animation_editor.cpp
-msgid "Cursor step snap (in seconds)."
-msgstr "Kurzor hozzáillesztése a lépésekhez (másodpercben)."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation step value."
+msgstr "Az animációs fa érvényes."
 
-#: editor/animation_editor.cpp
-msgid "Enable/Disable looping in animation."
-msgstr "Az animáció ismétlésének engedélyezése/tiltása."
+#: editor/animation_track_editor.cpp editor/editor_properties.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
+#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+msgid "Edit"
+msgstr "Szerkesztés"
 
-#: editor/animation_editor.cpp
-msgid "Add new tracks."
-msgstr "Új nyomvonalak hozzáadása."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation properties."
+msgstr "AnimációFa"
 
-#: editor/animation_editor.cpp
-msgid "Move current track up."
-msgstr "Jelenlegi nyomvonal felfelé mozgatása."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Copy Tracks"
+msgstr "Paraméterek Másolása"
 
-#: editor/animation_editor.cpp
-msgid "Move current track down."
-msgstr "Jelenlegi nyomvonal lefelé mozgatása."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Paste Tracks"
+msgstr "Paraméterek Beillesztése"
 
-#: editor/animation_editor.cpp
-msgid "Remove selected track."
-msgstr "Kiválasztott nyomvonal eltávolítása."
+#: editor/animation_track_editor.cpp
+msgid "Scale Selection"
+msgstr "Kiválasztás átméretezés"
 
-#: editor/animation_editor.cpp
-msgid "Track tools"
-msgstr "Nyomvonal eszközök"
+#: editor/animation_track_editor.cpp
+msgid "Scale From Cursor"
+msgstr "Átméretezés a kurzortól"
 
-#: editor/animation_editor.cpp
-msgid "Enable editing of individual keys by clicking them."
-msgstr "Engedélyezi az egyes kulcsok szerkesztését rákattintással."
+#: editor/animation_track_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Duplicate Selection"
+msgstr "Kiválasztás megkettőzés"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
+msgid "Duplicate Transposed"
+msgstr "Áthelyezettek megkettőzés"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Delete Selection"
+msgstr "Kijelölés Középre"
+
+#: editor/animation_track_editor.cpp
+msgid "Goto Next Step"
+msgstr "Ugrás a következő lépésre"
+
+#: editor/animation_track_editor.cpp
+msgid "Goto Prev Step"
+msgstr "Ugrás az előző lépésre"
+
+#: editor/animation_track_editor.cpp
+msgid "Optimize Animation"
+msgstr "Animáció optimalizálás"
+
+#: editor/animation_track_editor.cpp
+msgid "Clean-Up Animation"
+msgstr "Animáció megtisztítás"
+
+#: editor/animation_track_editor.cpp
+msgid "Pick the node that will be animated:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Use Bezier Curves"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
 msgstr "Animáció Optimalizáló"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
 msgstr "Max. Lineáris Hiba:"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
 msgstr "Max. Szög Hiba:"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
 msgstr "Max. Optimalizálható Szög:"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Optimize"
 msgstr "Optimalizálás"
 
-#: editor/animation_editor.cpp
-msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
-"Válasszon egy AnimationPlayer-t a Jelenetfából, hogy animációkat "
-"szerkeszthessen."
-
-#: editor/animation_editor.cpp
-msgid "Key"
-msgstr "Kulcs"
-
-#: editor/animation_editor.cpp
-msgid "Transition"
-msgstr "Átmenet"
-
-#: editor/animation_editor.cpp
-msgid "Scale Ratio:"
-msgstr "Méretezési arány:"
-
-#: editor/animation_editor.cpp
-msgid "Call Functions in Which Node?"
-msgstr "Melyik Node-ban Hívjon Funkciókat?"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
 msgstr "Érvénytelen kulcsok eltávolítása"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
 msgstr "Megoldatlan és üres nyomvonalak eltávolítása"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
 msgstr "Összes animáció tisztítása"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
 msgstr "Animáció(k) Tisztítása (NEM VISSZAVONHATÓ!)"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Clean-Up"
 msgstr "Tisztítás"
+
+#: editor/animation_track_editor.cpp
+msgid "Scale Ratio:"
+msgstr "Méretezési arány:"
+
+#: editor/animation_track_editor.cpp
+msgid "Select tracks to copy:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp editor/editor_properties.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Copy"
+msgstr "Másolás"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -368,7 +517,7 @@ msgstr "Sorra Ugrás"
 msgid "Line Number:"
 msgstr "Sor Száma:"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Nincs Találat"
 
@@ -384,7 +533,7 @@ msgstr "Pontos Egyezés"
 msgid "Whole Words"
 msgstr "Teljes Szavak"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
 msgstr "Lecserélés"
 
@@ -396,17 +545,26 @@ msgstr "Mind Lecserélése"
 msgid "Selection Only"
 msgstr "Csak Kiválsztás"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Zoom In"
 msgstr "Nagyítás"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Zoom Out"
 msgstr "Kicsinyítés"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Reset Zoom"
 msgstr "Nagyítás Visszaállítása"
+
+#: editor/code_editor.cpp
+msgid "Warnings:"
+msgstr ""
+
+#: editor/code_editor.cpp
+#, fuzzy
+msgid "Zoom:"
+msgstr "Nagyítás"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -439,7 +597,8 @@ msgid "Add"
 msgstr "Hozzáad"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -470,7 +629,7 @@ msgid "Oneshot"
 msgstr "Egyszeri"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
-#: editor/export_template_manager.cpp
+#: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -492,25 +651,59 @@ msgid "Connect '%s' to '%s'"
 msgstr "'%s' Csatlakoztatása '%s'-hez"
 
 #: editor/connections_dialog.cpp
-msgid "Connecting Signal:"
-msgstr "Csatlakoztató Jelzés:"
-
-#: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
 msgstr "'%s' Lecsatlakoztatása '%s'-ról"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
+#, fuzzy
+msgid "Disconnect all from signal: '%s'"
+msgstr "'%s' Lecsatlakoztatása '%s'-ról"
+
+#: editor/connections_dialog.cpp
+msgid "Connect..."
 msgstr "Kapcsolás..."
 
 #: editor/connections_dialog.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
 msgstr "Szétkapcsol"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Connect Signal: "
+msgstr "Csatlakoztató Jelzés:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Edit Connection: "
+msgstr "Kapcsolathiba"
+
+#: editor/connections_dialog.cpp
+msgid "Are you sure you want to remove all connections from the \""
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
 msgstr "Jelzések"
+
+#: editor/connections_dialog.cpp
+msgid "Are you sure you want to remove all connections from this signal?"
+msgstr ""
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Disconnect All"
+msgstr "Szétkapcsol"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Edit..."
+msgstr "Szerkesztés"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Go To Method"
+msgstr "Metódusok"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -534,22 +727,25 @@ msgstr "Kedvencek:"
 msgid "Recent:"
 msgstr "Legutóbbi:"
 
-#: editor/create_dialog.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Keresés:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Találatok:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
 msgstr "Leírás:"
 
@@ -566,8 +762,8 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
-"'%s' Jelenet éppen szerkesztés alatt ál.\n"
-"A változások nem lépnek érvénybe, ha csak újra nem tölti a jelenetet."
+"'%s' Scene éppen szerkesztés alatt áll.\n"
+"A változások újratöltés után lépnek érvénybe."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -611,7 +807,9 @@ msgstr "Csere Forrás Keresése:"
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp editor/filesystem_dock.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp scene/gui/file_dialog.cpp
+#: editor/quick_open.cpp editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Open"
 msgstr "Megnyit"
 
@@ -632,7 +830,7 @@ msgstr ""
 "Az eltávolítandó fájlokat szükségelik más források a működésükhöz.\n"
 "Eltávolítja őket ennek ellenére? (nem visszavonható)"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/export_template_manager.cpp
 msgid "Cannot remove:"
 msgstr "Nem eltávolítható:"
 
@@ -700,9 +898,13 @@ msgstr "Szótár Érték Módosítása"
 msgid "Thanks from the Godot community!"
 msgstr "Köszönet a Godot közösségétől!"
 
-#: editor/editor_about.cpp
-msgid "Thanks!"
-msgstr "Kösz!"
+#: editor/editor_about.cpp editor/editor_node.cpp editor/inspector_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/script_create_dialog.cpp scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -879,6 +1081,7 @@ msgid "Bus options"
 msgstr "Busz beállítások"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Megkettőzés"
@@ -920,12 +1123,12 @@ msgid "Move Audio Bus"
 msgstr "Hangbusz Áthelyezése"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
-msgstr "Hangbusz Elrendezés Mentése Másként.."
+msgid "Save Audio Bus Layout As..."
+msgstr "Hangbusz Elrendezés Mentése Másként..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
-msgstr "Új Elrendezés Helye.."
+msgid "Location for New Layout..."
+msgstr "Új Elrendezés Helye..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -947,7 +1150,8 @@ msgstr "Busz Hozzáadása"
 msgid "Create a new Bus Layout."
 msgstr "Új Buszelrendezés létrehozása."
 
-#: editor/editor_audio_buses.cpp editor/property_editor.cpp
+#: editor/editor_audio_buses.cpp editor/editor_properties.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Betöltés"
@@ -957,7 +1161,6 @@ msgid "Load an existing Bus Layout."
 msgstr "Meglévő Busz Elrendezés betöltése."
 
 #: editor/editor_audio_buses.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
 msgstr "Mentés Másként"
 
@@ -995,22 +1198,6 @@ msgstr ""
 "Érvénytelen név. Nem ütközhet egy már meglévő globális konstans névvel."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Invalid Path."
-msgstr "Érvénytelen Elérési Út."
-
-#: editor/editor_autoload_settings.cpp
-msgid "File does not exist."
-msgstr "A fájl nem létezik."
-
-#: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Nincs az erőforrás elérési útban."
-
-#: editor/editor_autoload_settings.cpp
-msgid "Add AutoLoad"
-msgstr "AutoLoad Hozzáadása"
-
-#: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
 msgstr "Már létezik '%s' AutoLoad!"
 
@@ -1038,6 +1225,22 @@ msgstr "Engedélyezés"
 msgid "Rearrange Autoloads"
 msgstr "AutoLoad-ok Átrendezése"
 
+#: editor/editor_autoload_settings.cpp
+msgid "Invalid Path."
+msgstr "Érvénytelen Elérési Út."
+
+#: editor/editor_autoload_settings.cpp
+msgid "File does not exist."
+msgstr "A fájl nem létezik."
+
+#: editor/editor_autoload_settings.cpp
+msgid "Not in resource path."
+msgstr "Nincs az erőforrás elérési útban."
+
+#: editor/editor_autoload_settings.cpp
+msgid "Add AutoLoad"
+msgstr "AutoLoad Hozzáadása"
+
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Path:"
@@ -1045,7 +1248,7 @@ msgstr "Útvonal:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
-msgstr "Node Neve:"
+msgstr "Node neve:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
 #: editor/project_manager.cpp editor/settings_config_dialog.cpp
@@ -1058,17 +1261,17 @@ msgstr "Egyke"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr "Jelenet Frissítése"
+msgstr "Scene Frissítése"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
-msgstr "Helyi módosítások eltárolása.."
+msgid "Storing local changes..."
+msgstr "Helyi módosítások eltárolása..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
-msgstr "Jelenet frissítése.."
+msgid "Updating scene..."
+msgstr "Scene frissítése..."
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/editor_properties.cpp
 msgid "[empty]"
 msgstr "[üres]"
 
@@ -1130,12 +1333,18 @@ msgid "Copy Path"
 msgstr "Útvonal másolása"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Open In File Manager"
+msgstr "Mutat Fájlkezelőben"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#: editor/project_manager.cpp
 msgid "Show In File Manager"
 msgstr "Mutat Fájlkezelőben"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
-msgstr "Új Mappa.."
+msgid "New Folder..."
+msgstr "Új Mappa..."
 
 #: editor/editor_file_dialog.cpp
 msgid "Refresh"
@@ -1166,7 +1375,7 @@ msgid "Open a File or Directory"
 msgstr "Fájl vagy Könyvtár Megnyitása"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Mentés"
@@ -1219,7 +1428,8 @@ msgstr "Ugrás a szülőmappába"
 msgid "Directories & Files:"
 msgstr "Könyvtárak és Fájlok:"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
+#: editor/plugins/style_box_editor_plugin.cpp
 msgid "Preview:"
 msgstr "Előnézet:"
 
@@ -1371,20 +1581,28 @@ msgstr ""
 "Ennek a metódusnak jelenleg nincs leírása. Segítsen minket azzal, hogy "
 "[color=$color][url=$url]hozzájárul eggyel[/url][/color]!"
 
-#: editor/editor_help.cpp
-msgid "Search Text"
-msgstr "Keresés a Szövegben"
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Property: "
+msgstr "Tulajdonságok"
 
-#: editor/editor_help.cpp
-msgid "Find"
-msgstr "Keres"
+#: editor/editor_inspector.cpp editor/property_editor.cpp
+msgid "Set"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Set Multiple:"
+msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Kimenet:"
 
-#: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_editor_debugger.cpp
+#: editor/editor_log.cpp editor/editor_profiler.cpp
+#: editor/editor_properties.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/property_editor.cpp editor/scene_tree_dock.cpp
+#: editor/script_editor_debugger.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Clear"
@@ -1394,18 +1612,17 @@ msgstr "Töröl"
 msgid "Clear Output"
 msgstr "Kimenet Törlése"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr "Projekt export nem sikerült, hibakód %d."
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Hiba történt az erőforrás mentésekor!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
-msgstr "Erőforrás Mentése Másként.."
-
-#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
-msgid "I see.."
-msgstr "Értem.."
+msgid "Save Resource As..."
+msgstr "Erőforrás Mentése Másként..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1419,9 +1636,9 @@ msgstr "Kért fájl formátum ismeretlen:"
 msgid "Error while saving."
 msgstr "Hiba történt mentés közben."
 
-#: editor/editor_node.cpp
-msgid "Can't open '%s'."
-msgstr "'%s' nem nyitható meg."
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Can't open '%s'. The file could have been moved or deleted."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -1441,7 +1658,7 @@ msgstr "Hiba történt '%s' betöltése közben."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr "Jelenet Mentése"
+msgstr "Scene mentése"
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
@@ -1460,12 +1677,8 @@ msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
-"Nem sikerült a jelenet mentése. Valószínű, hogy a függőségei (példányok vagy "
-"öröklések) nem voltak kielégíthetők."
-
-#: editor/editor_node.cpp
-msgid "Failed to load resource."
-msgstr "Nem sikerült betölteni az erőforrást."
+"Nem sikerült a Scene mentése. Valószínű, hogy a függőségei (példányok vagy "
+"öröklések) nem voltak megfelelőek."
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -1516,10 +1729,9 @@ msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it will not be kept when saving the current scene."
 msgstr ""
-"Ez az erőforrás egy olyan jelenethez tartozik, amit példányosítottak, vagy "
-"amit örökölt a jelenet.\n"
-"A rajta végzett módosítások nem lesznek megtartva a jelenlegi jelenet "
-"elmentésekor."
+"Ez az erőforrás egy olyan Scene-hez tartozik amit példányosítottak vagy "
+"örökölt.\n"
+"A módosítások nem lesznek megtartva a jelenlegi Scene mentésekor."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1554,44 +1766,8 @@ msgstr ""
 "megértse ezt a munkafolyamatot."
 
 #: editor/editor_node.cpp
-msgid "Expand all properties"
-msgstr "Összes tulajdonság kibontása"
-
-#: editor/editor_node.cpp
-msgid "Collapse all properties"
-msgstr "Összes tulajdonság összecsukása"
-
-#: editor/editor_node.cpp
-msgid "Copy Params"
-msgstr "Paraméterek Másolása"
-
-#: editor/editor_node.cpp
-msgid "Paste Params"
-msgstr "Paraméterek Beillesztése"
-
-#: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "Paste Resource"
-msgstr "Erőforrás Beillesztése"
-
-#: editor/editor_node.cpp
-msgid "Copy Resource"
-msgstr "Erőforrás Másolása"
-
-#: editor/editor_node.cpp
-msgid "Make Built-In"
-msgstr "Integrálás"
-
-#: editor/editor_node.cpp
-msgid "Make Sub-Resources Unique"
-msgstr "Tegye Az Al-Erőforrásokat Egyedivé"
-
-#: editor/editor_node.cpp
-msgid "Open in Help"
-msgstr "Megnyitás Súgóban"
-
-#: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr "Nincs meghatározva jelenet a futtatáshoz."
+msgstr "Nincs meghatározva Scene a futtatáshoz."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1609,8 +1785,7 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"A kiválasztott '%s' jelenet nem létezik, kiválaszt most egy érvényes "
-"jelenetet?\n"
+"A kiválasztott '%s' Scene nem létezik, kiválaszt most egy érvényeset?\n"
 "Ezt megváltoztathatja később a \"Projekt Beállításokban\" az \"Alkalmazás\" "
 "kategóriában."
 
@@ -1620,15 +1795,15 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"A kiválasztott '%s' jelenet nem egy jelenetfájl, kiválaszt most egy érvényes "
-"jelenetet?\n"
+"A kiválasztott '%s' Scene nem egy Scene fájl, kiválaszt most egy "
+"érvényeset?\n"
 "Ezt megváltoztathatja később a \"Projekt Beállításokban\" az \"Alkalmazás\" "
 "kategóriában."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
 msgstr ""
-"A jelenlegi jelenet soha nem volt még mentve, mentse el a futtatás előtt."
+"A jelenlegi Scene soha nem volt még mentve, mentse el a futtatás előtt."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1636,19 +1811,19 @@ msgstr "Az alprocesszt nem lehetett elindítani!"
 
 #: editor/editor_node.cpp
 msgid "Open Scene"
-msgstr "Jelenet Megnyitása"
+msgstr "Scene megnyitás"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr "Alap Jelenet Megnyitása"
+msgstr "Alap Scene megnyitás"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
-msgstr "Jelenet Gyors Megnyitása.."
+msgid "Quick Open Scene..."
+msgstr "Jelenet gyors megnyitása..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
-msgstr "Szkript Gyors Megnyitása.."
+msgid "Quick Open Script..."
+msgstr "Szkript gyors megnyitás..."
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -1659,8 +1834,8 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Bezárás előtt menti a '%s'-n végzett módosításokat?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
-msgstr "Jelenet Mentése Másként.."
+msgid "Save Scene As..."
+msgstr "Scene mentés másként..."
 
 #: editor/editor_node.cpp
 msgid "No"
@@ -1672,27 +1847,27 @@ msgstr "Igen"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr "Ez a jelenet soha nem volt mentve. Menti futtatás előtt?"
+msgstr "Ez a Scene még soha nem volt mentve. Menti futtatás előtt?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr "Ezt a műveletet nem lehet végrehajtani jelenet nélkül."
+msgstr "Ezt a műveletet nem lehet végrehajtani egy Scene nélkül."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr "Mesh Könyvtár Exportálása"
+msgstr "Mesh könyvtár exportálás"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "Ezt a műveletet nem lehet végrehajtani gyökér node nélkül."
+msgstr "Ezt a műveletet nem lehet végrehajtani gyökér Node nélkül."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "Tile Set Exportálása"
+msgstr "Tile Set exportálás"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr "Ezt a műveletet nem lehet végrehajtani egy kiválaszott node nélkül."
+msgstr "Ezt a műveletet nem lehet végrehajtani egy kiválaszott Node nélkül."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
@@ -1711,8 +1886,8 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Ez a művelet nem vonható vissza. Visszaállítja mindenképp?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
-msgstr "Jelenet Gyors Futtatása.."
+msgid "Quick Run Scene..."
+msgstr "Scene gyors futtatás..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1732,13 +1907,12 @@ msgstr "Mentés és Kilépés"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
-"Elmenti a következő jelenet(ek)en végzett változtatásokat kilépés előtt?"
+msgstr "Elmenti a következő Scene(ek)en végzett változtatásokat kilépés előtt?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Elmenti a következő jelenet(ek)en végzett változtatásokat a Projektkezelő "
+"Elmenti a következő Scene(ek)en végzett változtatásokat a Projektkezelő "
 "megnyitása előtt?"
 
 #: editor/editor_node.cpp
@@ -1787,23 +1961,17 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"A(z) '%s' jelenet automatikusan be lett importálva, ezért nem módosítható.\n"
-"Ahhoz, hogy változtatásokat végezhessen rajta, egy új, azt öröklő jelenetet "
-"hozhat létre."
-
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "Ugh"
-msgstr "Hoppá"
+"A(z) '%s' Scene automatikusan be lett importálva, ezért nem módosítható.\n"
+"Változtatások végzéséhez egy új öröklött Scene-t hozhat létre."
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"Hiba történt a jelenet betöltésekor, benne kell, hogy legyen a projekt "
-"útvonalában. Használja az 'import' lehetőséget a jelenet megnyitására, majd "
-"mentse el a projekt útvonalán belülre."
+"Hiba történt a Scene betöltésekor, benne kell lennnie a projekt útvonalában. "
+"Használja az 'import' lehetőséget a Scene megnyitására, majd mentse el a "
+"projekt útvonalán belülre."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
@@ -1827,8 +1995,18 @@ msgid "Default"
 msgstr "Alapértelmezett"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Play This Scene"
+msgstr "Scene futtatás"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Close Tab"
+msgstr "A Többi Lap Bezárása"
+
+#: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr "Jelenet Fül Váltása"
+msgstr "Scene fül váltás"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
@@ -1875,52 +2053,52 @@ msgid "Previous tab"
 msgstr "Előző fül"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
-msgstr "Fájlok Szűrése.."
+msgid "Filter Files..."
+msgstr "Fájlok Szűrése..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr "Műveletek a jelenet fájlokkal."
+msgstr "Műveletek Scene fájlokkal."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr "Új Jelenet"
+msgstr "Új Scene"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
-msgstr "Új Örökölt Jelenet.."
+msgid "New Inherited Scene..."
+msgstr "Új örökölt Jelenet..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
-msgstr "Jelenet Megnyitása.."
+msgid "Open Scene..."
+msgstr "Jelenet megnyitása..."
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr "Jelenet Mentése"
+msgstr "Scene mentés"
 
 #: editor/editor_node.cpp
 msgid "Save all Scenes"
-msgstr "Minden Jelenet Mentése"
+msgstr "Minden Scene mentés"
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr "Jelenet Bezárása"
+msgstr "Scene bezárás"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
 msgstr "Legutóbbi Megnyitása"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
-msgstr "Átkonvertálás.."
+msgid "Convert To..."
+msgstr "Átkonvertálás..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
-msgstr "MeshLibrary-ra.."
+msgid "MeshLibrary..."
+msgstr "MeshLibrary-ra..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
-msgstr "TileSet-re.."
+msgid "TileSet..."
+msgstr "TileSet-re..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -1934,11 +2112,11 @@ msgstr "Mégis"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr "Jelenet Visszaállítása"
+msgstr "Scene visszaállítás"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "Egyéb projekt- vagy jelenet-szintű eszközök."
+msgstr "Egyéb projekt- vagy Scene-szintű eszközök."
 
 #: editor/editor_node.cpp
 msgid "Project"
@@ -1948,10 +2126,6 @@ msgstr "Projekt"
 msgid "Project Settings"
 msgstr "Projekt Beállítások"
 
-#: editor/editor_node.cpp
-msgid "Run Script"
-msgstr "Szkript Futtatása"
-
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "Exportálás"
@@ -1959,6 +2133,11 @@ msgstr "Exportálás"
 #: editor/editor_node.cpp
 msgid "Tools"
 msgstr "Eszközök"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Project Data Folder"
+msgstr "Megnyitja a Projektkezelőt?"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -1982,7 +2161,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr "Kis Telepítés Hálózati FR-rel"
+msgstr "Kis Telepítés Hálózati FS-sel"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2009,7 +2188,7 @@ msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
-"Az ütközési alakzatok és a fénysugárkövető node-ok (mind 2D-hez és 3D-hez) "
+"Az ütközési alakzatok és a fénysugárkövető Node-ok (mind 2D-hez és 3D-hez) "
 "láthatóak lesznek a játék futásakor, ha ez az opció be van kapcsolva."
 
 #: editor/editor_node.cpp
@@ -2026,7 +2205,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr "Jelenet Változtatások Szinkronizálása"
+msgstr "Jelenet változtatások szinkronizálása"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2072,6 +2251,20 @@ msgstr "Szerkesztő Elrendezés"
 msgid "Toggle Fullscreen"
 msgstr "Teljes Képernyő"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Editor Data/Settings Folder"
+msgstr "Szerkesztő Beállítások"
+
+#: editor/editor_node.cpp
+msgid "Open Editor Data Folder"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Editor Settings Folder"
+msgstr "Szerkesztő Beállítások"
+
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
 msgstr "Export Sablonok Kezelése"
@@ -2087,7 +2280,8 @@ msgstr "Osztályok"
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "Keresés"
 
@@ -2125,31 +2319,41 @@ msgstr "Szünetelteti a jelenetet"
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr "Jelenet Szüneteltetése"
+msgstr "Scene szüneteltetés"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
 msgstr "Leállítja a jelenetet."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_profiler.cpp
 msgid "Stop"
 msgstr "Leállítás"
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr "Szerkesztett jelenet futtatása."
+msgstr "Szerkesztett Scene futtatása."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr "Jelenet Futtatása"
+msgstr "Scene futtatás"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr "Tetszőleges jelenet futtatása"
+msgstr "Tetszőleges Scene futtatás"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr "Tetszőleges Jelenet Futtatása"
+msgstr "Tetszőleges Scene futtatás"
+
+#: editor/editor_node.cpp
+msgid "Changing the video driver requires restarting the editor."
+msgstr ""
+
+#: editor/editor_node.cpp editor/project_settings_editor.cpp
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Save & Restart"
+msgstr "Mentés és Kilépés"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"
@@ -2171,42 +2375,6 @@ msgstr "Frissítési Forgó Kikapcsolása"
 msgid "Inspector"
 msgstr "Megfigyelő"
 
-#: editor/editor_node.cpp
-msgid "Create a new resource in memory and edit it."
-msgstr "Új erőforrás létrehozása a memóriában, majd annak szerkesztése."
-
-#: editor/editor_node.cpp
-msgid "Load an existing resource from disk and edit it."
-msgstr "Meglévő erőforrás betöltése a lemezről, majd annak szerkesztése."
-
-#: editor/editor_node.cpp
-msgid "Save the currently edited resource."
-msgstr "A jelenleg szerkesztett erőforrás elmentése."
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
-msgstr "Mentés Másként.."
-
-#: editor/editor_node.cpp
-msgid "Go to the previous edited object in history."
-msgstr "Ugrás az előzőleg módosított objektumra a történelemben."
-
-#: editor/editor_node.cpp
-msgid "Go to the next edited object in history."
-msgstr "Ugrás a következő módosított objektumra a történelemben."
-
-#: editor/editor_node.cpp
-msgid "History of recently edited objects."
-msgstr "A nemrég módosított objektumok történelme."
-
-#: editor/editor_node.cpp
-msgid "Object properties."
-msgstr "Objektumtulajdonságok."
-
-#: editor/editor_node.cpp
-msgid "Changes may be lost!"
-msgstr "Néhány változtatás elveszhet!"
-
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
@@ -2221,6 +2389,11 @@ msgid "FileSystem"
 msgstr "Fájlrendszer"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand Bottom Panel"
+msgstr "Összes kibontása"
+
+#: editor/editor_node.cpp scene/resources/visual_shader.cpp
 msgid "Output"
 msgstr "Kimenet"
 
@@ -2293,23 +2466,28 @@ msgid "Creating Mesh Previews"
 msgstr "Háló Előnézetek Létrehozása"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
-msgstr "Indexkép.."
+msgid "Thumbnail..."
+msgstr "Indexkép..."
+
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Edit Plugin"
+msgstr "Sokszög Szerkesztése"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "Telepített Bővítmények:"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Update"
 msgstr "Frissítés"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
 msgstr "Verzió:"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Author:"
 msgstr "Szerző:"
 
@@ -2317,13 +2495,16 @@ msgstr "Szerző:"
 msgid "Status:"
 msgstr "Állapot:"
 
-#: editor/editor_profiler.cpp
-msgid "Stop Profiling"
-msgstr "Profilozás Leállítása"
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Edit:"
+msgstr "Szerkesztés"
 
-#: editor/editor_profiler.cpp
-msgid "Start Profiling"
-msgstr "Profilozás Indítása"
+#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Start"
+msgstr "Start!"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -2369,6 +2550,103 @@ msgstr "Idő"
 msgid "Calls"
 msgstr "Hívások"
 
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "On"
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid "Layer"
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid "Bit %d, value %d"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "[Empty]"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
+msgid "Assign.."
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Pick a Viewport"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "New %s"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Make Unique"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Show in File System"
+msgstr ""
+
+#: editor/editor_properties.cpp
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Paste"
+msgstr "Beillesztés"
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Convert To %s"
+msgstr ""
+
+#: editor/editor_properties.cpp
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Open Editor"
+msgstr "Megnyitás Szerkesztőben"
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Selected node is not a Viewport!"
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+msgid "Size: "
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+msgid "Page: "
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+#, fuzzy
+msgid "New Key:"
+msgstr "Új név:"
+
+#: editor/editor_properties_array_dict.cpp
+#, fuzzy
+msgid "New Value:"
+msgstr "Új név:"
+
+#: editor/editor_properties_array_dict.cpp
+msgid "Add Key/Value Pair"
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Item"
+msgstr ""
+
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
 msgstr "Válasszon készüléket a listából"
@@ -2387,7 +2665,7 @@ msgstr "Írja a logikát a _run() metódusba."
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr "Már létezik szerkesztett jelenet."
+msgstr "Már létezik a szerkesztett Scene."
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
@@ -2405,17 +2683,13 @@ msgstr "Nem sikerült a szkript futtatása:"
 msgid "Did you forget the '_run' method?"
 msgstr "Nem felejtette el a '_run' metódust?"
 
-#: editor/editor_settings.cpp
-msgid "Default (Same as Editor)"
-msgstr "Alapértelmezett (Ugyanaz, Mint a Szerkesztőnek)"
-
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Válassza Ki Az Importálandó Node-okat"
+msgstr "Válassza ki az importálandó Node-okat"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr "Jelenet Elérési Útja:"
+msgstr "Scene elérési Út:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
@@ -2434,6 +2708,7 @@ msgid "(Installed)"
 msgstr "(Telepítve)"
 
 #: editor/export_template_manager.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
 msgstr "Letöltés"
 
@@ -2446,8 +2721,8 @@ msgid "(Current)"
 msgstr "(Jelenlegi)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
-msgstr "Tükrök letöltése, kérjük várjon.."
+msgid "Retrieving mirrors, please wait..."
+msgstr "Tükrök letöltése, kérjük várjon..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2458,7 +2733,8 @@ msgid "Can't open export templates zip."
 msgstr "Nem nyitható meg az export sablon zip."
 
 #: editor/export_template_manager.cpp
-msgid "Invalid version.txt format inside templates."
+#, fuzzy
+msgid "Invalid version.txt format inside templates: %s."
 msgstr "Érvénytelen version.txt formátum a sablonokban."
 
 #: editor/export_template_manager.cpp
@@ -2520,12 +2796,18 @@ msgid "Download Complete."
 msgstr "A Letöltés Befejeződött."
 
 #: editor/export_template_manager.cpp
+msgid ""
+"Templates installation failed. The problematic templates archives can be "
+"found at '%s'."
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid "Error requesting url: "
 msgstr "Hiba történt az url lekérdezésekor: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
-msgstr "Csatlakozás Tükörhöz.."
+msgid "Connecting to Mirror..."
+msgstr "Csatlakozás Tükörhöz..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -2541,8 +2823,8 @@ msgstr "Nem Megoldható"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
-msgstr "Csatlakozás.."
+msgid "Connecting..."
+msgstr "Csatlakozás..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't Connect"
@@ -2554,8 +2836,8 @@ msgstr "Csatlakozva"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
-msgstr "Lekérdezés.."
+msgid "Requesting..."
+msgstr "Lekérdezés..."
 
 #: editor/export_template_manager.cpp
 msgid "Downloading"
@@ -2598,7 +2880,8 @@ msgid "Download Templates"
 msgstr "Sablonok Letöltése"
 
 #: editor/export_template_manager.cpp
-msgid "Select mirror from list: "
+#, fuzzy
+msgid "Select mirror from list: (Shift+Click: Open in Browser)"
 msgstr "Válasszon tükröt a listából: "
 
 #: editor/file_type_cache.cpp
@@ -2612,11 +2895,13 @@ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
 msgstr "Nem lehet '%s'-t elérni, mivel nem létezik a fájlrendszerben!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails"
+#, fuzzy
+msgid "View items as a grid of thumbnails."
 msgstr "Elemek kirajzolása indexképek rácsába"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a list"
+#, fuzzy
+msgid "View items as a list."
 msgstr "Elemek listázása"
 
 #: editor/filesystem_dock.cpp
@@ -2689,33 +2974,50 @@ msgstr "Összes kibontása"
 msgid "Collapse all"
 msgstr "Összes összecsukása"
 
-#: editor/filesystem_dock.cpp
-msgid "Rename.."
-msgstr "Átnevezés.."
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Átnevezés..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
-msgstr "Áthelyezés.."
+msgid "Move To..."
+msgstr "Áthelyezés..."
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
-msgstr "Jelenet(ek) Megnyitása"
+msgstr "Scene(k) megnyitás"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "Példány"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
-msgstr "Függőségek Szerkesztése.."
+msgid "Edit Dependencies..."
+msgstr "Függőségek Szerkesztése..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
-msgstr "Tulajdonosok Megtekintése.."
+msgid "View Owners..."
+msgstr "Tulajdonosok Megtekintése..."
 
 #: editor/filesystem_dock.cpp
-msgid "Duplicate.."
-msgstr "Megkettőzés.."
+msgid "Duplicate..."
+msgstr "Megkettőzés..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Script..."
+msgstr "Szkript gyors megnyitás..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Resource..."
+msgstr "Erőforrás Mentése Másként..."
+
+#: editor/filesystem_dock.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Átnevezés"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2730,30 +3032,141 @@ msgid "Re-Scan Filesystem"
 msgstr "Fájlrendszer Újra-vizsgálata"
 
 #: editor/filesystem_dock.cpp
-msgid "Toggle folder status as Favorite"
+#, fuzzy
+msgid "Toggle folder status as Favorite."
 msgstr "Mappa Kedvencnek jelölése / Kedvenc jelölés visszavonása"
 
 #: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
+msgid "Show current scene file."
 msgstr ""
-"Kiválasztott jelenet(ek) példányosítása a kiválasztott Node gyermekeként."
+
+#: editor/filesystem_dock.cpp
+msgid "Instance the selected scene(s) as child of the selected node."
+msgstr "Kiválasztott Scene(k) példányosítása a kiválasztott Node gyermekeként."
+
+#: editor/filesystem_dock.cpp
+msgid "Enter tree-view."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Search files"
+msgstr "Osztályok Keresése"
 
 #: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Fájlok Vizsgálata,\n"
-"Kérem Várjon.."
+"Kérem Várjon..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Move"
 msgstr "Áthelyezés"
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Rename"
-msgstr "Átnevezés"
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "There is already file or folder with the same name in this location."
+msgstr "Egy fájl vagy mappa már létezik a megadott névvel."
+
+#: editor/filesystem_dock.cpp
+msgid "Overwrite"
+msgstr ""
+
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Create Script"
+msgstr "Szkript Létrehozása"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Find in files"
+msgstr "%d további fájl"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Find: "
+msgstr "Keres"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Whole words"
+msgstr "Teljes Szavak"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Match case"
+msgstr "Pontos Egyezés"
+
+#: editor/find_in_files.cpp
+msgid "Folder: "
+msgstr ""
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Filter: "
+msgstr "Szűrők..."
+
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find..."
+msgstr "Keresés..."
+
+#: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
+msgid "Replace..."
+msgstr "Csere..."
+
+#: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "Mégse"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Replace: "
+msgstr "Lecserélés"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Replace all (no undo)"
+msgstr "Mind Lecserélése"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Searching..."
+msgstr "Mentés..."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Search complete"
+msgstr "Keresés a Szövegben"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Group name already exists."
+msgstr "HIBA: Animáció név már létezik!"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "invalid Group name."
+msgstr "Érvénytelen név."
+
+#: editor/groups_editor.cpp editor/node_dock.cpp
+msgid "Groups"
+msgstr "Csoportok"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Nodes not in Group"
+msgstr "Hozzáadás Csoporthoz"
+
+#: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+msgid "Filter nodes"
+msgstr ""
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Nodes in Group"
+msgstr "Hozzáadás Csoporthoz"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -2762,6 +3175,11 @@ msgstr "Hozzáadás Csoporthoz"
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
 msgstr "Eltávolítás Csoportból"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Manage Groups"
+msgstr "Csoportok"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -2804,13 +3222,13 @@ msgid "Import as Multiple Scenes+Materials"
 msgstr "Importálás Több Jelentként és Anyagokként"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
+#: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr "Jelenet Importálása"
+msgstr "Scene importálás"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
-msgstr "Jelenet Importálása.."
+msgid "Importing Scene..."
+msgstr "Jelenet importálása..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -2821,8 +3239,8 @@ msgid "Generating for Mesh: "
 msgstr "Létrehozás a Következő Hálóhoz: "
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
-msgstr "Tetszőleges Szkript Futtatása.."
+msgid "Running Custom Script..."
+msgstr "Tetszőleges Szkript Futtatása..."
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -2838,8 +3256,8 @@ msgid "Error running post-import script:"
 msgstr "Hiba történt az importálás utána szkript futtatásakor:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
-msgstr "Mentés.."
+msgid "Saving..."
+msgstr "Mentés..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -2858,24 +3276,135 @@ msgid "Import As:"
 msgstr "Importálás Mint:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
-msgstr "Beépített Beállítások.."
+msgid "Preset..."
+msgstr "Beépített Beállítások..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
 msgstr "Újraimportálás"
+
+#: editor/inspector_dock.cpp
+msgid "Failed to load resource."
+msgstr "Nem sikerült betölteni az erőforrást."
+
+#: editor/inspector_dock.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr "Rendben"
+
+#: editor/inspector_dock.cpp
+msgid "Expand all properties"
+msgstr "Összes tulajdonság kibontása"
+
+#: editor/inspector_dock.cpp
+msgid "Collapse all properties"
+msgstr "Összes tulajdonság összecsukása"
+
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Save As..."
+msgstr "Mentés Másként..."
+
+#: editor/inspector_dock.cpp
+msgid "Copy Params"
+msgstr "Paraméterek Másolása"
+
+#: editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Paraméterek Beillesztése"
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Edit Resource Clipboard"
+msgstr "Az erőforrás vágólap üres!"
+
+#: editor/inspector_dock.cpp
+msgid "Copy Resource"
+msgstr "Erőforrás Másolása"
+
+#: editor/inspector_dock.cpp
+msgid "Make Built-In"
+msgstr "Integrálás"
+
+#: editor/inspector_dock.cpp
+msgid "Make Sub-Resources Unique"
+msgstr "Tegye Az Al-Erőforrásokat Egyedivé"
+
+#: editor/inspector_dock.cpp
+msgid "Open in Help"
+msgstr "Megnyitás Súgóban"
+
+#: editor/inspector_dock.cpp
+msgid "Create a new resource in memory and edit it."
+msgstr "Új erőforrás létrehozása a memóriában, majd annak szerkesztése."
+
+#: editor/inspector_dock.cpp
+msgid "Load an existing resource from disk and edit it."
+msgstr "Meglévő erőforrás betöltése a lemezről, majd annak szerkesztése."
+
+#: editor/inspector_dock.cpp
+msgid "Go to the previous edited object in history."
+msgstr "Ugrás az előzőleg módosított objektumra a történelemben."
+
+#: editor/inspector_dock.cpp
+msgid "Go to the next edited object in history."
+msgstr "Ugrás a következő módosított objektumra a történelemben."
+
+#: editor/inspector_dock.cpp
+msgid "History of recently edited objects."
+msgstr "A nemrég módosított objektumok történelme."
+
+#: editor/inspector_dock.cpp
+msgid "Object properties."
+msgstr "Objektumtulajdonságok."
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Filter properties"
+msgstr "Objektumtulajdonságok."
+
+#: editor/inspector_dock.cpp
+msgid "Changes may be lost!"
+msgstr "Néhány változtatás elveszhet!"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "MultiNode Beállítás"
 
 #: editor/node_dock.cpp
-msgid "Groups"
-msgstr "Csoportok"
-
-#: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
 msgstr "Válasszon ki egy Node-ot a Jelzések és Csoportok módosításához."
+
+#: editor/plugin_config_dialog.cpp
+#, fuzzy
+msgid "Edit a Plugin"
+msgstr "Sokszög Szerkesztése"
+
+#: editor/plugin_config_dialog.cpp
+#, fuzzy
+msgid "Create a Plugin"
+msgstr "Sokszög Létrehozása"
+
+#: editor/plugin_config_dialog.cpp
+#, fuzzy
+msgid "Plugin Name:"
+msgstr "Bővítmények"
+
+#: editor/plugin_config_dialog.cpp
+msgid "Subfolder:"
+msgstr ""
+
+#: editor/plugin_config_dialog.cpp
+msgid "Language:"
+msgstr ""
+
+#: editor/plugin_config_dialog.cpp
+msgid "Script Name:"
+msgstr ""
+
+#: editor/plugin_config_dialog.cpp
+msgid "Activate now?"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -2922,6 +3451,147 @@ msgstr ""
 msgid "Delete points"
 msgstr "Pontok Törlése"
 
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Add Animation"
+msgstr "Animáció Hozzáadása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Load.."
+msgstr "Betöltés"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid ""
+"AnimationTree is inactive.\n"
+"Activate to enable playback, check node warnings if activation fails."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Set the blending position within the space"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Create points."
+msgstr "Pontok Törlése"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Erase points."
+msgstr "Jobb Egérgomb: Pont Törlése."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Point"
+msgstr "Pont Mozgatása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Open Animation Node"
+msgstr "Animáció Node"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Triangle already exists"
+msgstr "HIBA: Animáció név már létezik!"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "BlendSpace2D does not belong to an AnimationTree node."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "No triangles exist, so no blending can take place."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Create triangles by connecting points."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Erase points and triangles."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Generate blend triangles automatically (instead of manually)"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Illesztés"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Edit Filters"
+msgstr "Szűrők Szerkesztése"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Output node can't be added to the blend tree."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Unable to connect, port may be in use or connection may be invalid."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "No animation player set, so unable to retrieve track names."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Player path set is invalid, so unable to retrieve track names."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/root_motion_editor_plugin.cpp
+msgid ""
+"Animation player has no valid root node path, so unable to retrieve track "
+"names."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node.."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/root_motion_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Filtered Tracks:"
+msgstr "Szűrők Szerkesztése"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Enable filtering"
+msgstr ""
+
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
 msgstr "Automatikus Lejátszás Váltása"
@@ -2948,22 +3618,19 @@ msgid "Remove Animation"
 msgstr "Animáció Eltávolítása"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: Invalid animation name!"
+#, fuzzy
+msgid "Invalid animation name!"
 msgstr "HIBA: Érvénytelen animáció név!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: Animation name already exists!"
+#, fuzzy
+msgid "Animation name already exists!"
 msgstr "HIBA: Animáció név már létezik!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
 msgstr "Animáció Átnevezése"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Add Animation"
-msgstr "Animáció Hozzáadása"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -2982,11 +3649,13 @@ msgid "Duplicate Animation"
 msgstr "Animáció Megkettőzése"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation to copy!"
+#, fuzzy
+msgid "No animation to copy!"
 msgstr "HIBA: Nincs másolható animáció!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation resource on clipboard!"
+#, fuzzy
+msgid "No animation resource on clipboard!"
 msgstr "HIBA: Nincs animációs erőforrás a vágólapon!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -2998,7 +3667,8 @@ msgid "Paste Animation"
 msgstr "Animáció Beillesztése"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation to edit!"
+#, fuzzy
+msgid "No animation to edit!"
 msgstr "HIBA: Nincs animáció szerkesztésre!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -3031,20 +3701,27 @@ msgid "Scale animation playback globally for the node."
 msgstr "Animáció lejátszás skálázása globálisan a Node-nak."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create new animation in player."
-msgstr "Új animáció létrehozása a lejátszóban."
+msgid "Animation Tools"
+msgstr "Animációs Eszközök"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load animation from disk."
-msgstr "Animáció betöltése a lemezről."
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Animation"
+msgstr "Animáció"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load an animation from disk."
-msgstr "Animáció betöltése a lemezről."
+msgid "New"
+msgstr "Új"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save the current animation"
-msgstr "Jelenlegi animáció elmentése"
+#, fuzzy
+msgid "Edit Transitions..."
+msgstr "Átmenetek"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Open in Inspector"
+msgstr "Megnyitás Szerkesztőben"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3053,18 +3730,6 @@ msgstr "A lejátszóban lévő animációk listájának megjelenítése."
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
 msgstr "Lejátszás Betöltéskor"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Edit Target Blend Times"
-msgstr "Cél Keverési Idők Módosítása"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Animation Tools"
-msgstr "Animációs Eszközök"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Copy Animation"
-msgstr "Animáció Másolása"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
@@ -3115,6 +3780,11 @@ msgid "Include Gizmos (3D)"
 msgstr "Kihatás Gizmókra Is (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Pin AnimationPlayer"
+msgstr "Animáció Beillesztése"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
 msgstr "Új Animáció Létrehozása"
 
@@ -3124,6 +3794,7 @@ msgstr "Animáció Neve:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
@@ -3141,160 +3812,212 @@ msgstr "Következő (Auto Sor):"
 msgid "Cross-Animation Blend Times"
 msgstr "Animációk Közötti Keverési Idők"
 
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Animation"
-msgstr "Animáció"
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "End"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Immediate"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Sync"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "At End"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Travel"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Start and end nodes are needed for a sub-transition."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "No playback resource set at path: %s."
+msgstr "Nincs az erőforrás elérési útban."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid ""
+"Select and move nodes.\n"
+"RMB to add new nodes.\n"
+"Shift+LMB to create connections."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Create new nodes."
+msgstr "Új %s Létrehozása"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Connect nodes."
+msgstr "Csatlakoztatás Node-hoz:"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Remove selected node or transition"
+msgstr "Kiválasztott nyomvonal eltávolítása."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Toggle autoplay this animation on start, restart or seek to zero."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set the end animation. This is useful for sub-transitions."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition: "
+msgstr "Átmenet"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "AnimationTree"
+msgstr "AnimációFa"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
 msgstr "Új név:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Edit Filters"
-msgstr "Szűrők Szerkesztése"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
 msgstr "Skála:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
 msgstr "Előtűnés (mp):"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade Out (s):"
 msgstr "Elhalványulás (mp):"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend"
 msgstr "Keverés"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix"
 msgstr "Mixelés"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Auto Restart:"
 msgstr "Automatikus Újraindítás:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
 msgstr "Újraindítás (mp):"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Random Restart (s):"
 msgstr "Véletlenszerű Újraindítás (mp):"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Start!"
 msgstr "Start!"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
 msgstr "Mennyiség:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "Keverés:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 0:"
 msgstr "Keverés 0:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 1:"
 msgstr "Keverés 1:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "X-Fade Time (s):"
 msgstr "Áttűnési Idő (mp):"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Current:"
 msgstr "Jelenlegi:"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Add Input"
 msgstr "Bemenet Hozzáadása"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
 msgstr "Automatikus Léptetés Tisztítása"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
 msgstr "Automatikus Léptetés Beállítása"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Delete Input"
 msgstr "Bemenet Törlése"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
 msgstr "Az animációs fa érvényes."
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
 msgstr "Az animációs fa érvénytelen."
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Animációs Node"
+msgstr "Animáció Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
 msgstr "Egyszeri Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
 msgstr "Mixelő Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
 msgstr "Keverés2 Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
 msgstr "Keverés3 Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
 msgstr "Keverés4 Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr "IdőSkála Node"
+msgstr "Időskála Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
 msgstr "IdőKereső Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
 msgstr "Átmenet Node"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
-msgstr "Animációk Importálása.."
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Import Animations..."
+msgstr "Animációk Importálása..."
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr "Node Szűrők Módosítása"
+msgstr "Node szűrők szerkesztés"
 
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
-msgstr "Szűrők.."
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "AnimationTree"
-msgstr "AnimationTree"
-
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr "Ingyenes"
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Filters..."
+msgstr "Szűrők..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -3351,12 +4074,18 @@ msgid "Asset Download Error:"
 msgstr "Eszköz Letöltési Hiba:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr "Lekérés:"
+#, fuzzy
+msgid "Downloading (%s / %s)..."
+msgstr "Letöltés"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
-msgstr "Megoldás.."
+#, fuzzy
+msgid "Downloading..."
+msgstr "Letöltés"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Resolving..."
+msgstr "Megoldás..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
@@ -3379,20 +4108,22 @@ msgid "Download for this asset is already in progress!"
 msgstr "Ennek az eszköznek a letöltése már folyamatban van!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "first"
+#, fuzzy
+msgid "First"
 msgstr "első"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr "előző"
+#, fuzzy
+msgid "Previous"
+msgstr "Előző fül"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr "következő"
+msgid "Next"
+msgstr "Következő"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr "utolsó"
+msgid "Last"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -3422,8 +4153,8 @@ msgid "Site:"
 msgstr "Oldal:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
-msgstr "Támogatás.."
+msgid "Support..."
+msgstr "Támogatás..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -3431,7 +4162,7 @@ msgstr "Hivatalos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr "Tesztelés Alatt"
+msgstr "Tesztelés"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -3468,7 +4199,7 @@ msgid "Bake Lightmaps"
 msgstr "Fény Besütése"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview"
 msgstr "Előnézet"
 
@@ -3477,12 +4208,10 @@ msgid "Configure Snap"
 msgstr "Illesztés Beállítása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr "Rács Eltolás:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr "Rács Léptetés:"
 
@@ -3493,14 +4222,6 @@ msgstr "Forgatási Eltolás:"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Forgatási Léptetés:"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move Pivot"
-msgstr "Forgatási Pont Mozgatása"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move Action"
-msgstr "Mozgási Művelet"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
@@ -3531,11 +4252,28 @@ msgid "Create new horizontal and vertical guides"
 msgstr "Új vízszintes és függőleges vezetővonalak létrehozása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Edit IK Chain"
-msgstr "IK Lánc Szerkesztése"
+#, fuzzy
+msgid "Move pivot"
+msgstr "Forgatási Pont Mozgatása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Edit CanvasItem"
+#, fuzzy
+msgid "Rotate CanvasItem"
+msgstr "CanvasItem Szerkesztése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move anchor"
+msgstr "Mozgási Művelet"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Resize CanvasItem"
+msgstr "CanvasItem Szerkesztése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem"
 msgstr "CanvasItem Szerkesztése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3553,6 +4291,21 @@ msgstr "Horgonyok Módosítása"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
 msgstr "Póz Beillesztése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Zoom out"
+msgstr "Kicsinyítés"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Zoom reset"
+msgstr "Kicsinyítés"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Zoom in"
+msgstr "Nagyítás"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -3602,7 +4355,8 @@ msgid "Pan Mode"
 msgstr "Pásztázás Mód"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggles snapping"
+#, fuzzy
+msgid "Toggle snapping."
 msgstr "Illesztés be- és kikapcsolása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3610,7 +4364,8 @@ msgid "Use Snap"
 msgstr "Illesztés Használata"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snapping options"
+#, fuzzy
+msgid "Snapping Options"
 msgstr "Illesztési beállítások"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3622,6 +4377,7 @@ msgid "Use Rotation Snap"
 msgstr "Forgatási Illesztés Használata"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Illesztés Beállítása..."
 
@@ -3643,15 +4399,20 @@ msgstr "Illesztés szülőhöz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node anchor"
-msgstr "Illesztés node horgonyhoz"
+msgstr "Illesztés Node horgonyhoz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to node sides"
-msgstr "Illesztés node oldalakhoz"
+msgstr "Illesztés Node oldalakhoz"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snap to node center"
+msgstr "Illesztés Node horgonyhoz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
-msgstr "Illesztés más node-okhoz"
+msgstr "Illesztés más Node-okhoz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to guides"
@@ -3676,14 +4437,6 @@ msgid "Restores the object's children's ability to be selected."
 msgstr "Újra kiválaszthatóvá teszi az objektum gyermekeit."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Make Bones"
-msgstr "Csontok Létrehozása"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Clear Bones"
-msgstr "Csontok Törlése"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
 msgstr "Csontok Mutatása"
 
@@ -3694,6 +4447,15 @@ msgstr "IK Lánc Létrehozása"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
 msgstr "IK Lánc Törlése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Make Custom Bone(s) from Node(s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Custom Bones"
+msgstr "Csontok Törlése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3718,6 +4480,14 @@ msgid "Show Guides"
 msgstr "Vezetővonalak Megjelenítése"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Origin"
+msgstr "Origó Megjelenítése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Viewport"
+msgstr "Nézet Megjelenítése"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Kijelölés Középre"
 
@@ -3730,12 +4500,9 @@ msgid "Layout"
 msgstr "Elrendezés"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys"
+#, fuzzy
+msgid "Insert keys."
 msgstr "Kulcsok Beszúrása"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Key"
-msgstr "Kulcs Beszúrása"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -3748,14 +4515,6 @@ msgstr "Póz Másolása"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
 msgstr "Póz Törlése"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Drag pivot from mouse position"
-msgstr "Forgatási pont húzása az egér helyétől"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Set pivot at mouse position"
-msgstr "Forgatási pont beállítása az egér helyére"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -3773,23 +4532,19 @@ msgstr "%s Hozzáadása"
 msgid "Adding %s..."
 msgstr "%s Hozzáadása..."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "Rendben"
-
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr "Nem lehet több node-ot példányosítani gyökér nélkül."
+msgstr "Nem lehet több Node-ot példányosítani gyökér nélkül."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr "Node Létrehozása"
+msgstr "Node létrehozás"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr "Hiba történt a jelenet példányosításkor %s-ből"
+msgstr "Hiba történt a Scene példányosításkor %s-ből"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -3811,27 +4566,20 @@ msgstr "Poly3D Létrehozása"
 msgid "Set Handle"
 msgstr "Fogantyú Beállítása"
 
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Remove item %d?"
-msgstr "%d elem eltávolítása?"
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#, fuzzy
+msgid "CPUParticles"
+msgstr "Részecskék"
 
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Item"
-msgstr "Elem Hozzáadása"
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Create Emission Points From Mesh"
+msgstr "Kibocsátási Pontok Létrehozása A Mesh Alapján"
 
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Remove Selected Item"
-msgstr "Kijelölt Elem Eltávolítása"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Import from Scene"
-msgstr "Importálás Jelenetből"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Update from Scene"
-msgstr "Frissítés Jelenetből"
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Create Emission Points From Node"
+msgstr "Kibocsátási pontok létrehozása a Node alapján"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat0"
@@ -3901,15 +4649,6 @@ msgstr "Tartsa lenyomva a Shift gombot az érintők egyenkénti szerkesztéséhe
 msgid "Bake GI Probe"
 msgstr "GI Szonda Besütése"
 
-#: editor/plugins/gradient_editor_plugin.cpp
-msgid "Add/Remove Color Ramp Point"
-msgstr "Szín Gradiens Pont Hozzáadása / Eltávolítása"
-
-#: editor/plugins/gradient_editor_plugin.cpp
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Szín Gradiens Módosítása"
-
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
 msgstr "%d elem"
@@ -3927,8 +4666,8 @@ msgid ""
 "No OccluderPolygon2D resource on this node.\n"
 "Create and assign one?"
 msgstr ""
-"Nincs OccluderPolygon2D erőforrás ezen a node-on.\n"
-"Létrehoz egyet és hozzárendeli a node-hoz?"
+"Nincs OccluderPolygon2D erőforrás ezen a Node-on.\n"
+"Létrehoz egyet és hozzárendeli a Node-hoz?"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -3968,7 +4707,7 @@ msgstr "Statikus Konvex Test Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
-msgstr "Ez nem hajtható végre a jelenet gyökerén!"
+msgstr "Ez nem hajtható végre a gyökér Scene-en!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Shape"
@@ -3995,6 +4734,7 @@ msgid "No mesh to debug."
 msgstr "Nincs mesh a hibakereséshez."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr "A modellnek nincs UV-je ezen a rétegen"
 
@@ -4006,6 +4746,10 @@ msgstr "MeshInstance-nak nincs Mesh-e!"
 msgid "Mesh has not surface to create outlines from!"
 msgstr ""
 "A Mesh-nek nincsenek felszínei, ami alapján körvonalakat lehetni készíteni!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr "A Háló-primitív típusa nem háromszög (PRIMITIVE_TRIANGLES)!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4036,8 +4780,8 @@ msgid "Create Convex Collision Sibling"
 msgstr "Konvex Ütközési Testvér Létrehozása"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
-msgstr "Körvonalháló Létrehozása.."
+msgid "Create Outline Mesh..."
+msgstr "Körvonalháló Létrehozása..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4058,6 +4802,27 @@ msgstr "Körvonalháló Készítése"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
 msgstr "Körvonal Mérete:"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Remove item %d?"
+msgstr "%d elem eltávolítása?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item"
+msgstr "Elem Hozzáadása"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Remove Selected Item"
+msgstr "Kijelölt Elem Eltávolítása"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Import from Scene"
+msgstr "Importálás Jelenetből"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Update from Scene"
+msgstr "Frissítés Jelenetből"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
@@ -4160,70 +4925,6 @@ msgstr "Véletlenszerű Skálázás:"
 msgid "Populate"
 msgstr "Kitöltés"
 
-#: editor/plugins/navigation_mesh_editor_plugin.cpp
-msgid "Bake!"
-msgstr "Besütés!"
-
-#: editor/plugins/navigation_mesh_editor_plugin.cpp
-msgid "Bake the navigation mesh."
-msgstr "A navigációs mesh besütése."
-
-#: editor/plugins/navigation_mesh_editor_plugin.cpp
-msgid "Clear the navigation mesh."
-msgstr "Navigációs háló törlése."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Setting up Configuration..."
-msgstr "Konfiguráció beállítása…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Calculating grid size..."
-msgstr "Rácsméret kiszámítása…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Creating heightfield..."
-msgstr "Magasságmező létrehozása…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Marking walkable triangles..."
-msgstr "Járható háromszögek megjelölése…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Constructing compact heightfield..."
-msgstr "Kompakt magasságmező kiépítése…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Eroding walkable area..."
-msgstr "Járható terület lepusztítása…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Partitioning..."
-msgstr "Particionálás…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Creating contours..."
-msgstr "Kontúrok létrehozása…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Creating polymesh..."
-msgstr "Polymesh létrehozása…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Converting to native navigation mesh..."
-msgstr "Átkonvertálás natív navigációs hálóra…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Navigációs Háló Generátor Beállítás:"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Parsing Geometry..."
-msgstr "Geometria Elemzése…"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Done!"
-msgstr "Kész!"
-
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Navigációs Sokszög Létrehozása"
@@ -4242,8 +4943,8 @@ msgid "Error loading image:"
 msgstr "Hiba a kép betöltésekor:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
-msgstr "Nem létezik egyetlen pixel sem >128-as átlátszósággal a képben.."
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Nem létezik egyetlen pixel sem >128-as átlátszósággal a képben..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generate Visibility Rect"
@@ -4284,18 +4985,6 @@ msgid "Emission Colors"
 msgstr "Kibocsátási Színek"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry."
-msgstr "A Node nem tartalmaz geometriát."
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry (faces)."
-msgstr "A Node nem tartalmaz geometriát (oldalakat)."
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr "Egy 'ParticlesMaterial' típusú feldolgozó anyag szükséges."
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Az oldalak nem tartalmaznak területet!"
 
@@ -4304,16 +4993,12 @@ msgid "No faces!"
 msgstr "Nincsenek oldalak!"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "AABB Generálása"
+msgid "Node does not contain geometry."
+msgstr "A Node nem tartalmaz geometriát."
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emission Points From Mesh"
-msgstr "Kibocsátási Pontok Létrehozása A Mesh Alapján"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emission Points From Node"
-msgstr "Kibocsátási Pontok Létrehozása A Node Alapján"
+msgid "Node does not contain geometry (faces)."
+msgstr "A Node nem tartalmaz geometriát (oldalakat)."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4338,6 +5023,19 @@ msgstr "Mennyiség"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
 msgstr "Kibocsátási Forrás: "
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr "Egy 'ParticlesMaterial' típusú feldolgozó anyag szükséges."
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "AABB Generálása"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles"
+msgstr "Konvertálás Nagybetűsre"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
@@ -4416,6 +5114,22 @@ msgstr "Pont Törlése"
 msgid "Close Curve"
 msgstr "Görbe Lezárása"
 
+#: editor/plugins/path_2d_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp editor/plugins/theme_editor_plugin.cpp
+#: editor/project_export.cpp
+msgid "Options"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Mirror Handle Angles"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Mirror Handle Lengths"
+msgstr ""
+
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
 msgstr "Görbe Pont #"
@@ -4448,17 +5162,93 @@ msgstr "Ki-Vezérlő Pont Eltávolítása"
 msgid "Remove In-Control Point"
 msgstr "Be-Vezérlő Pont Eltávolítása"
 
+#: editor/plugins/physical_bone_plugin.cpp
+#, fuzzy
+msgid "Move joint"
+msgstr "Pont Mozgatása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"The skeleton property of the Polygon2D does not point to a Skeleton2D node"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Sync bones"
+msgstr "Csontok Mutatása"
+
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
 msgstr "UV Térkép Létrehozása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon & UV"
+msgstr "Sokszög Létrehozása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Split point with itself."
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Split can't form an existing edge."
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split already exists."
+msgstr "Már létezik '%s' AutoLoad!"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Add Split"
+msgstr "Pont hozzáadása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid Split: "
+msgstr "Érvénytelen Elérési Út."
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Split"
+msgstr "Pont eltávolítása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
 msgstr "UV Térkép Transzformálása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint bone weights"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
 msgstr "2D UV Sokszög Szerkesztő"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "UV"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Poly"
+msgstr "Sokszög Szerkesztése"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Splits"
+msgstr "Útvonal Felosztása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Bones"
+msgstr "Csontok Létrehozása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
+msgstr "Sokszög Létrehozása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Point"
@@ -4489,12 +5279,24 @@ msgid "Scale Polygon"
 msgstr "Sokszög Skálázása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/property_editor.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Edit"
-msgstr "Szerkesztés"
+msgid "Connect two points to make a split"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Select a split to erase it"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint weights with specified intensity"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "UnPaint weights with specified intensity"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Radius:"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
@@ -4509,9 +5311,9 @@ msgid "Clear UV"
 msgstr "UV Törlése"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Illesztés"
+#, fuzzy
+msgid "Grid Settings"
+msgstr "Szerkesztő Beállítások"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -4520,6 +5322,36 @@ msgstr "Illesztés Engedélyezése"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
 msgstr "Rács"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Configure Grid:"
+msgstr "Illesztés Beállítása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Offset X:"
+msgstr "Rács Eltolás:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Offset Y:"
+msgstr "Rács Eltolás:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Step X:"
+msgstr "Rács Léptetés:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Step Y:"
+msgstr "Rács Léptetés:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Sync Bones to Polygon"
+msgstr "Sokszög Skálázása"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -4543,6 +5375,10 @@ msgid "Resource clipboard is empty!"
 msgstr "Az erőforrás vágólap üres!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+msgid "Paste Resource"
+msgstr "Erőforrás Beillesztése"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr "Megnyitás Szerkesztőben"
@@ -4564,15 +5400,17 @@ msgid "Load Resource"
 msgstr "Erőforrás Betöltése"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Paste"
-msgstr "Beillesztés"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ResourcePreloader"
-msgstr "ResourcePreloader"
+msgstr "ForrásElőtöltö"
+
+#: editor/plugins/root_motion_editor_plugin.cpp
+msgid "AnimationTree has no path set to an AnimationPlayer"
+msgstr ""
+
+#: editor/plugins/root_motion_editor_plugin.cpp
+#, fuzzy
+msgid "Path to AnimationPlayer is invalid"
+msgstr "Az animációs fa érvénytelen."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -4581,6 +5419,21 @@ msgstr "Legutóbbi Fájlok Törlése"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close and save changes?"
 msgstr "Bezárja és menti a változásokat?"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Error writing TextFile:"
+msgstr "Hiba TileSet mentésekor!"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Error could not load file."
+msgstr "Nem sikerült létrehozni a mappát."
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Error saving file!"
+msgstr "Hiba TileSet mentésekor!"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4599,16 +5452,35 @@ msgid "Error importing"
 msgstr "Hiba importáláskor"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "New TextFile..."
+msgstr "Új Mappa..."
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Open File"
+msgstr "Fálj Megnyitása"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Save File As..."
+msgstr "Mentés Másként..."
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "Téma Importálása"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
-msgstr "Téma Mentése Másként.."
+msgid "Save Theme As..."
+msgstr "Téma Mentése Másként..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
 msgstr " Osztály Referencia"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Toggle alphabetical sorting of the method list."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -4639,8 +5511,9 @@ msgid "File"
 msgstr "Fájl"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New"
-msgstr "Új"
+#, fuzzy
+msgid "New TextFile"
+msgstr "Fájlok Megtekintése"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -4665,6 +5538,11 @@ msgstr "Előző Előzmény"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
 msgstr "Következő Előzmény"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Theme"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -4697,11 +5575,6 @@ msgstr "Futtatás"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
 msgstr "Szkript Panel Megjelenítése"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Keresés.."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4758,10 +5631,6 @@ msgid "Discard"
 msgstr "Elvetés"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Create Script"
-msgstr "Szkript Létrehozása"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
@@ -4782,46 +5651,72 @@ msgid "Debugger"
 msgstr "Hibakereső"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Search results"
+msgstr "Keresés Súgóban"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Search in files"
+msgstr "Osztályok Keresése"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
-"A beépített szkriptek csak akkor szerkeszthetőek, amikor az a jelenet, "
-"amihez tartoznak, éppen be van töltve"
+"A beépített szkriptek csak akkor szerkeszthetőek, amikor az a Scene amihez "
+"tartoznak éppen be van töltve"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Line"
+msgstr "Sor:"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "(ignore)"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Csak a fájlrendszerből eredő erőforrásokat lehet bedobni."
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Lookup Symbol"
+msgstr "Szimbólum Befejezése"
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
 msgstr "Szín Választása"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
 msgstr "Kis- és Nagybetűk Konvertálása"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
 msgstr "Mind Nagybetű"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Lowercase"
 msgstr "Mind Kisbetű"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Capitalize"
 msgstr "Szó Eleji Nagybetű"
+
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Syntax Highlighter"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Kivágás"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Copy"
-msgstr "Másolás"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -4910,16 +5805,17 @@ msgid "Find Previous"
 msgstr "Előző Keresése"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Csere.."
+#, fuzzy
+msgid "Find in files..."
+msgstr "Fájlok Szűrése..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
-msgstr "Ugrás Funkcióra.."
+msgid "Goto Function..."
+msgstr "Ugrás Funkcióra..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
-msgstr "Ugrás Sorra.."
+msgid "Goto Line..."
+msgstr "Ugrás Sorra..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
@@ -4927,131 +5823,43 @@ msgstr "Kontextusérzékeny Súgó"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
-msgstr "Shader"
+msgstr "Árnyaló"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Skeleton2D"
+msgstr "Egyke"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Make Rest Pose (From Bones)"
 msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Bones to Rest Pose"
 msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
+#: editor/plugins/skeleton_editor_plugin.cpp
+#, fuzzy
+msgid "Create physical bones"
+msgstr "Navigációs Háló Létrehozása"
+
+#: editor/plugins/skeleton_editor_plugin.cpp
+#, fuzzy
+msgid "Skeleton"
+msgstr "Egyke"
+
+#: editor/plugins/skeleton_editor_plugin.cpp
+msgid "Create physical skeleton"
 msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr ""
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr ""
+#: editor/plugins/skeleton_ik_editor_plugin.cpp
+#, fuzzy
+msgid "Play IK"
+msgstr "Játék"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -5079,7 +5887,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Plane Transform."
-msgstr ""
+msgstr "Megnéz a Síklap transzformációját."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
@@ -5178,15 +5986,15 @@ msgid "Align with view"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Lock View Rotation"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5231,7 +6039,12 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Doppler Enable"
-msgstr ""
+msgstr "Doppler engedélyezése"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Cinematic Preview"
+msgstr "Háló Előnézetek Létrehozása"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -5361,6 +6174,11 @@ msgid "Tool Scale"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap To Floor"
+msgstr "Rácshoz illesztés"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr ""
 
@@ -5369,11 +6187,11 @@ msgid "Transform"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
+msgid "Snap object to floor"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
+msgid "Transform Dialog..."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5401,6 +6219,10 @@ msgid "4 Viewports"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Gizmos"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
 msgstr ""
 
@@ -5411,10 +6233,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Skeleton Gizmo visibility"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5476,6 +6294,51 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Post"
 msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Sprite is empty!"
+msgstr "A háló üres!"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Can't convert a sprite using animation frames to mesh."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't replace by mesh."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Sprite"
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to 2D Mesh"
+msgstr "Konvertálás Nagybetűsre"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create 2D Mesh"
+msgstr "Körvonalháló Készítése"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Simplification: "
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Grow (Pixels): "
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Update Preview"
+msgstr "Előnézet"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Settings:"
+msgstr "Szerkesztő Beállítások"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -5545,14 +6408,6 @@ msgstr ""
 msgid "SpriteFrames"
 msgstr ""
 
-#: editor/plugins/style_box_editor_plugin.cpp
-msgid "StyleBox Preview:"
-msgstr ""
-
-#: editor/plugins/style_box_editor_plugin.cpp
-msgid "StyleBox"
-msgstr ""
-
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
 msgstr ""
@@ -5578,26 +6433,19 @@ msgid "Auto Slice"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Offset:"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Step:"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Separation:"
+msgid "Sep.:"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region"
-msgstr ""
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region Editor"
+msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5613,11 +6461,6 @@ msgid "Add All"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove Item"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
 msgstr ""
 
@@ -5626,7 +6469,7 @@ msgid "Remove All"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
+msgid "Edit theme..."
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5674,6 +6517,14 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Radio Item"
+msgstr "Rádió Elem"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Checked Radio Item"
+msgstr ""
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr ""
 
@@ -5681,12 +6532,8 @@ msgstr ""
 msgid "Many"
 msgstr ""
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-msgid "Options"
-msgstr ""
-
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+msgid "Has,Many,Options"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5709,7 +6556,7 @@ msgstr ""
 msgid "Icon"
 msgstr ""
 
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Style"
 msgstr ""
 
@@ -5722,12 +6569,17 @@ msgid "Color"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Theme"
-msgstr ""
+msgid "Constant"
+msgstr "Állandó"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
 msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Fix Invalid Tiles"
+msgstr "Érvénytelen név."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -5750,12 +6602,9 @@ msgid "Erase TileMap"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Erase selection"
-msgstr ""
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Find tile"
-msgstr ""
+#, fuzzy
+msgid "Find Tile"
+msgstr "Következő Keresése"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
@@ -5778,6 +6627,11 @@ msgid "Pick Tile"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Move Selection"
+msgstr "Kiválasztás eltávolítás"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
 msgstr ""
 
@@ -5794,11 +6648,38 @@ msgid "Rotate 270 degrees"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Could not find tile:"
+msgid "Add Texture(s) to TileSet"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Item name or ID:"
+#, fuzzy
+msgid "Remove current Texture from TileSet"
+msgstr "Jelenlegi tétel eltávolítása"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Create from Scene"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Merge from Scene"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Select sub-tile to use as icon, this will be also used on invalid autotile "
+"bindings."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display tile's names (hold Alt Key)"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Remove Selected Textue and ALL TILES wich uses it?"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -5810,48 +6691,66 @@ msgid "Merge from scene?"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
-msgstr ""
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from Scene"
-msgstr ""
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Merge from Scene"
-msgstr ""
-
-#: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Error"
-msgstr ""
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Autotiles"
+msgid " file(s) was not added because was already on the list."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+"Drag handles to edit Rect.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
-"RMB: set bit off."
+"RMB: set bit off.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select current edited sub-tile."
+msgid ""
+"Select current edited sub-tile.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change its priority."
+msgid ""
+"Select sub-tile to use as icon, this will be also used on invalid autotile "
+"bindings.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
-#: editor/progress_dialog.cpp scene/gui/dialogs.cpp
-msgid "Cancel"
-msgstr "Mégse"
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Select sub-tile to change its priority.\n"
+"Click on another Tile to edit it."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "This property can't be changed."
+msgstr "Ezt a műveletet nem lehet végrehajtani egy Scene nélkül."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Tile Set"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Vertex"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Fragment"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Light"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "VisualShader"
+msgstr "Árnyaló"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -5866,7 +6765,7 @@ msgid "Delete preset '%s'?"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted: "
+msgid "Export templates for this platform are missing/corrupted:"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -5874,7 +6773,7 @@ msgid "Presets"
 msgstr ""
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
+msgid "Add..."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -5940,10 +6839,6 @@ msgid "Export templates for this platform are missing:"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr ""
-
-#: editor/project_export.cpp
 msgid "Export With Debug"
 msgstr ""
 
@@ -5952,7 +6847,7 @@ msgid "The path does not exist."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' file."
+msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5960,8 +6855,20 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
+msgid "Please choose a 'project.godot' or '.zip' file."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Directory already contains a Godot project."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Invalid Project Name."
+msgstr "Érvénytelen projektnév."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -6039,6 +6946,10 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Project Installation Path:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -6149,7 +7060,9 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6161,7 +7074,20 @@ msgid "Rename Input Action Event"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Change Action deadzone"
+msgstr "Animáció Nevének Megváltoztatása:"
+
+#: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "All Devices"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Device"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
@@ -6177,7 +7103,7 @@ msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
+msgid "Press a Key..."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6205,19 +7131,19 @@ msgid "Wheel Down Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 6"
+msgid "Wheel Left Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 7"
+msgid "Wheel Right Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 8"
+msgid "X Button 1"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 9"
+msgid "X Button 2"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6242,10 +7168,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Add Event"
-msgstr ""
-
-#: editor/project_settings_editor.cpp
-msgid "Device"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6293,7 +7215,9 @@ msgid "Delete Item"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6358,14 +7282,18 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Általános"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
+msgstr ""
+
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Editor must be restarted for changes to take effect"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6374,6 +7302,15 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action:"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Action"
+msgstr "Mozgási Művelet"
+
+#: editor/project_settings_editor.cpp
+msgid "Deadzone"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6437,10 +7374,6 @@ msgid "AutoLoad"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "Pick a Viewport"
-msgstr ""
-
-#: editor/property_editor.cpp
 msgid "Ease In"
 msgstr ""
 
@@ -6461,11 +7394,11 @@ msgid "Easing Out-In"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "File.."
+msgid "File..."
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "Dir.."
+msgid "Dir..."
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6477,31 +7410,7 @@ msgid "Select Node"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "New Script"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "New %s"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Make Unique"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Show in File System"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Convert To %s"
-msgstr ""
-
-#: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Selected node is not a Viewport!"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6510,18 +7419,6 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "On"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "[Empty]"
-msgstr ""
-
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Set"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6546,6 +7443,132 @@ msgstr ""
 
 #: editor/pvrtc_compress.cpp
 msgid "Can't load back converted image using PVRTC tool:"
+msgstr ""
+
+#: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Batch Rename"
+msgstr "Átnevezés"
+
+#: editor/rename_dialog.cpp
+msgid "Prefix"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Suffix"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Advanced options"
+msgstr "Illesztési beállítások"
+
+#: editor/rename_dialog.cpp
+msgid "Substitute"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Node name"
+msgstr "Node neve:"
+
+#: editor/rename_dialog.cpp
+msgid "Node's parent name, if available"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Node type"
+msgstr "Node neve:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Current scene name"
+msgstr "Még nem mentette az aktuális jelenetet. Megnyitja mindenképp?"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Root node name"
+msgstr "Átnevezés"
+
+#: editor/rename_dialog.cpp
+msgid ""
+"Sequential integer counter.\n"
+"Compare counter options."
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Per Level counter"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "If set the counter restarts for each group of child nodes"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Initial value for the counter"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Step"
+msgstr "Lépés (mp):"
+
+#: editor/rename_dialog.cpp
+msgid "Ammount by which counter is incremented for each node"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Padding"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid ""
+"Minium number of digits for the counter.\n"
+"Missing digits are padded with leading zeros."
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expressions"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Post-Process"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Keep"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "CamelCase to under_scored"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "under_scored to CamelCase"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Case"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "To Lowercase"
+msgstr "Mind Kisbetű"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "To Uppercase"
+msgstr "Mind Nagybetű"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Reset"
+msgstr "Nagyítás Visszaállítása"
+
+#: editor/rename_dialog.cpp editor/script_editor_debugger.cpp
+msgid "Error"
 msgstr ""
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
@@ -6584,11 +7607,6 @@ msgstr ""
 msgid "Scene Run Settings"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
-#: scene/gui/dialogs.cpp
-msgid "OK"
-msgstr ""
-
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
@@ -6605,6 +7623,10 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -6636,7 +7658,7 @@ msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
+msgid "Save New Scene As..."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -6648,12 +7670,33 @@ msgid "Load As Placeholder"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Discard Instancing"
+#, fuzzy
+msgid "Make Local"
+msgstr "Csontok Létrehozása"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Create Root Node:"
+msgstr "Node létrehozás"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "2D Scene"
+msgstr "Jelenet"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "3D Scene"
+msgstr "Jelenet"
+
+#: editor/scene_tree_dock.cpp
+msgid "User Interface"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Makes Sense!"
-msgstr ""
+#, fuzzy
+msgid "Custom Node"
+msgstr "Node-ok Másolása"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -6661,6 +7704,10 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -6706,18 +7753,15 @@ msgid "Change Type"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach Script"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Make Scene Root"
+msgstr "Scene mentés"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
 msgstr ""
 
@@ -6740,10 +7784,6 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Filter nodes"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
 msgstr ""
 
@@ -6763,17 +7803,10 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp
-msgid "Clear!"
-msgstr ""
-
 #: editor/scene_tree_editor.cpp
-msgid "Toggle Spatial Visible"
-msgstr ""
-
-#: editor/scene_tree_editor.cpp
-msgid "Toggle CanvasItem Visible"
-msgstr ""
+#, fuzzy
+msgid "Toggle Visible"
+msgstr "Rejtett Fájlok Megjelenítése"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
@@ -6781,7 +7814,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connection(s) and group(s)\n"
+"Node has connection(s) and group(s).\n"
 "Click to show signals dock."
 msgstr ""
 
@@ -6797,24 +7830,31 @@ msgid ""
 "Click to show groups dock."
 msgstr ""
 
-#: editor/scene_tree_editor.cpp
-msgid "Open script"
-msgstr ""
+#: editor/scene_tree_editor.cpp editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Open Script"
+msgstr "Szkript Futtatása"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is locked.\n"
-"Click to unlock"
+"Click to unlock it."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Children are not selectable.\n"
-"Click to make selectable"
+"Click to make selectable."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -6852,6 +7892,11 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 msgid "N/A"
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Open Script/Choose Location"
+msgstr "Szkript Szerkesztő Megnyitása"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -7090,10 +8135,22 @@ msgid "Change Camera Size"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
-msgid "Change Sphere Shape Radius"
+msgid "Change Notifier AABB"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Change Probe Extents"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "Change Sphere Shape Radius"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Box Shape Extents"
 msgstr ""
 
@@ -7106,19 +8163,34 @@ msgid "Change Capsule Shape Height"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Cylinder Shape Radius"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Change Cylinder Shape Height"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
 msgstr ""
 
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Notifier Extents"
-msgstr ""
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Change Cylinder Radius"
+msgstr "Keverési Idő Módosítása"
 
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Particles AABB"
-msgstr ""
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Change Cylinder Height"
+msgstr "Keverési Idő Módosítása"
 
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Probe Extents"
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Change Torus Inner Radius"
+msgstr "Horgonyok és Margók Módosítása"
+
+#: modules/csg/csg_gizmos.cpp
+msgid "Change Torus Outer Radius"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -7174,17 +8246,6 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-#: modules/visual_script/visual_script_builtin_funcs.cpp
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"Érvénytelen típus argumentum a convert()-hez használjon TYPE_* konstansokat."
-
-#: modules/gdscript/gdscript_functions.cpp modules/mono/glue/glue_header.h
-#: modules/visual_script/visual_script_builtin_funcs.cpp
-msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
-
-#: modules/gdscript/gdscript_functions.cpp
 msgid "step argument is zero!"
 msgstr ""
 
@@ -7222,7 +8283,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
-msgstr "Következő Sík"
+msgstr "Következő Síklap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Previous Plane"
@@ -7247,6 +8308,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Fill Selection"
+msgstr "Minden kiválasztás"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
@@ -7329,11 +8395,20 @@ msgid "Clear Selection"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Fill Selection"
+msgstr "Minden kiválasztás"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
+msgstr ""
+
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
@@ -7384,9 +8459,78 @@ msgstr ""
 msgid "Warnings"
 msgstr ""
 
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Fájlok Megtekintése"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
+
+#: modules/recast/navigation_mesh_editor_plugin.cpp
+msgid "Bake!"
+msgstr "Besütés!"
+
+#: modules/recast/navigation_mesh_editor_plugin.cpp
+msgid "Bake the navigation mesh."
+msgstr "A navigációs mesh besütése."
+
+#: modules/recast/navigation_mesh_editor_plugin.cpp
+msgid "Clear the navigation mesh."
+msgstr "Navigációs háló törlése."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Setting up Configuration..."
+msgstr "Konfiguráció beállítása…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Calculating grid size..."
+msgstr "Rácsméret kiszámítása…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Creating heightfield..."
+msgstr "Magasságmező létrehozása…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Marking walkable triangles..."
+msgstr "Járható háromszögek megjelölése…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Constructing compact heightfield..."
+msgstr "Kompakt magasságmező kiépítése…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Eroding walkable area..."
+msgstr "Járható terület lepusztítása…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Partitioning..."
+msgstr "Particionálás…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Creating contours..."
+msgstr "Kontúrok létrehozása…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Creating polymesh..."
+msgstr "Polymesh létrehozása…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Converting to native navigation mesh..."
+msgstr "Átkonvertálás natív navigációs hálóra…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Navigation Mesh Generator Setup:"
+msgstr "Navigációs Háló Generátor Beállítás:"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Parsing Geometry..."
+msgstr "Geometria Elemzése…"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Done!"
+msgstr "Kész!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7442,10 +8586,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Type"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Functions:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -7557,36 +8697,14 @@ msgid "Connect Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Condition"
-msgstr ""
+#, fuzzy
+msgid "Connect Node Data"
+msgstr "Csatlakoztatás Node-hoz:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Sequence"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Switch"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Iterator"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "While"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Return"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Call"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Get"
-msgstr ""
+#, fuzzy
+msgid "Connect Node Sequence"
+msgstr "Csatlakoztatás Node-hoz:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
@@ -7613,23 +8731,15 @@ msgid "Remove Function"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Edit Variable"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Edit Signal"
+msgid "Editing Variable:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Editing Variable:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -7676,6 +8786,11 @@ msgstr ""
 msgid "Paste Nodes"
 msgstr ""
 
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Member"
+msgstr "Tagok"
+
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
 msgstr ""
@@ -7698,7 +8813,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr ""
+msgstr "Az út nem vezeti a csomópontot!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
@@ -7728,6 +8843,19 @@ msgstr ""
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
+msgstr ""
+
+#: modules/visual_script/visual_script_property_selector.cpp
+#, fuzzy
+msgid "Search VisualScript"
+msgstr "Keresés Súgóban"
+
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get"
+msgstr ""
+
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Set "
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -7776,8 +8904,8 @@ msgstr ""
 
 #: scene/2d/collision_object_2d.cpp
 msgid ""
-"This node has no children shapes, so it can't interact with the space.\n"
-"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
 
@@ -7858,6 +8986,19 @@ msgstr ""
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 
+#: scene/2d/skeleton_2d.cpp
+msgid "This Bone2D chain should end at a Skeleton2D node."
+msgstr ""
+
+#: scene/2d/skeleton_2d.cpp
+msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
+msgstr ""
+
+#: scene/2d/skeleton_2d.cpp
+msgid ""
+"This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
+msgstr ""
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
@@ -7918,8 +9059,8 @@ msgstr ""
 
 #: scene/3d/collision_object.cpp
 msgid ""
-"This node has no children shapes, so it can't interact with the space.\n"
-"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
 
@@ -7978,8 +9119,29 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "This body will be ignored until you set a mesh"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid ""
+"Size changes to SoftBody will be overriden by the physics engine when "
+"running.\n"
+"Change the size in children collision shapes instead."
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp
@@ -7993,6 +9155,49 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
+
+#: scene/animation/animation_blend_tree.cpp
+msgid "On BlendTree node '%s', animation not found: '%s'"
+msgstr ""
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Animation not found: '%s'"
+msgstr "Animációs Eszközök"
+
+#: scene/animation/animation_tree.cpp
+msgid "In node '%s', invalid animation: '%s'."
+msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Invalid animation: '%s'."
+msgstr "HIBA: Érvénytelen animáció név!"
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Nothing connected to input '%s' of node '%s'."
+msgstr "'%s' Lecsatlakoztatása '%s'-ról"
+
+#: scene/animation/animation_tree.cpp
+msgid "A root AnimationNode for the graph is not set."
+msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Path to an AnimationPlayer node containing animations is not set."
+msgstr ""
+"Válasszon egy AnimationPlayer-t a Jelenetfából, hogy animációkat "
+"szerkeszthessen."
+
+#: scene/animation/animation_tree.cpp
+msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
+msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "AnimationPlayer root is not a valid node."
+msgstr "Az animációs fa érvénytelen."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -8066,6 +9271,230 @@ msgstr "Hiba a betűtípus betöltésekor."
 msgid "Invalid font size."
 msgstr "Érvénytelen betűtípus méret."
 
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Input"
+msgstr "Bemenet Hozzáadása"
+
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr ""
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for shader."
+msgstr "Érvénytelen betűtípus méret."
+
+#: servers/visual/shader_language.cpp
+msgid "Assignment to function."
+msgstr ""
+
+#: servers/visual/shader_language.cpp
+msgid "Assignment to uniform."
+msgstr ""
+
+#: servers/visual/shader_language.cpp
+msgid "Varyings can only be assigned in vertex function."
+msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Skaláris állandó változtatás"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Vec állandó változtatás"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "RGB állandó változtatás"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Skaláris kezelő változtatás"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Vec kezelő változtatás"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Vektor skalár kezelő változtatás"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "RGB kezelő változtatás"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Csak vörös kapcsolása"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Skalár-függvény változtatás"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Vektor-függvény változtatás"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Egységes-skalár változtatás"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Egységes-vektor változtatás"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Egységes-RGB változtatás"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Alapérték változtatás"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Szín Gradiens Módosítása"
+
+#~ msgid "Disabled"
+#~ msgstr "Tiltva"
+
+#~ msgid "Move Anim Track Up"
+#~ msgstr "Animáció nyomvonal felfelé mozgatás"
+
+#~ msgid "Move Anim Track Down"
+#~ msgstr "Animáció nyomvonal lefelé mozgatás"
+
+#~ msgid "Set Transitions to:"
+#~ msgstr "Átmenet beállítása erre:"
+
+#~ msgid "Anim Track Rename"
+#~ msgstr "Animáció nyomvonal átnevezés"
+
+#~ msgid "Anim Track Change Interpolation"
+#~ msgstr "Animáció nyomvonal interpoláció változtatás"
+
+#~ msgid "Anim Track Change Value Mode"
+#~ msgstr "Animáció nyomvonal érték mód változtatás"
+
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Animáció nyomvonal takarási mód változtatás"
+
+#~ msgid "Edit Node Curve"
+#~ msgstr "Node görbe szerkesztés"
+
+#~ msgid "Edit Selection Curve"
+#~ msgstr "Kiválasztás görbe szerkesztés"
+
+#~ msgid "Anim Add Key"
+#~ msgstr "Animáció kulcs hozzáadás"
+
+#~ msgid "In"
+#~ msgstr "Be"
+
+#~ msgid "Out"
+#~ msgstr "Ki"
+
+#~ msgid "In-Out"
+#~ msgstr "Be-Ki"
+
+#~ msgid "Out-In"
+#~ msgstr "Ki-Be"
+
+#~ msgid "Change Anim Len"
+#~ msgstr "Animáció hossz változtatás"
+
+#~ msgid "Change Anim Loop"
+#~ msgstr "Animáció hurok változtatás"
+
+#~ msgid "Anim Create Typed Value Key"
+#~ msgstr "Animáció típusos érték kulcs létrehozás"
+
+#~ msgid "Anim Add Call Track"
+#~ msgstr "Animációhoz hívási nyomvonal hozzáadása"
+
+#~ msgid "Length (s):"
+#~ msgstr "Hossz (mp):"
+
+#~ msgid "Cursor step snap (in seconds)."
+#~ msgstr "Kurzor hozzáillesztése a lépésekhez (másodpercben)."
+
+#~ msgid "Enable/Disable looping in animation."
+#~ msgstr "Az animáció ismétlésének engedélyezése/tiltása."
+
+#~ msgid "Add new tracks."
+#~ msgstr "Új nyomvonalak hozzáadása."
+
+#~ msgid "Move current track up."
+#~ msgstr "Jelenlegi nyomvonal felfelé mozgatása."
+
+#~ msgid "Move current track down."
+#~ msgstr "Jelenlegi nyomvonal lefelé mozgatása."
+
+#~ msgid "Track tools"
+#~ msgstr "Nyomvonal eszközök"
+
+#~ msgid "Enable editing of individual keys by clicking them."
+#~ msgstr "Engedélyezi az egyes kulcsok szerkesztését rákattintással."
+
+#~ msgid "Key"
+#~ msgstr "Kulcs"
+
+#~ msgid "Call Functions in Which Node?"
+#~ msgstr "Melyik Node-ban hívjon funkciókat?"
+
+#~ msgid "Thanks!"
+#~ msgstr "Kösz!"
+
+#~ msgid "I see..."
+#~ msgstr "Értem..."
+
+#~ msgid "Can't open '%s'."
+#~ msgstr "'%s' nem nyitható meg."
+
+#~ msgid "Ugh"
+#~ msgstr "Hoppá"
+
+#~ msgid "Save the currently edited resource."
+#~ msgstr "A jelenleg szerkesztett erőforrás elmentése."
+
+#~ msgid "Stop Profiling"
+#~ msgstr "Profilozás Leállítása"
+
+#~ msgid "Start Profiling"
+#~ msgstr "Profilozás Indítása"
+
+#~ msgid "Default (Same as Editor)"
+#~ msgstr "Alapértelmezett (Ugyanaz, Mint a Szerkesztőnek)"
+
+#~ msgid "Create new animation in player."
+#~ msgstr "Új animáció létrehozása a lejátszóban."
+
+#~ msgid "Load animation from disk."
+#~ msgstr "Animáció betöltése a lemezről."
+
+#~ msgid "Load an animation from disk."
+#~ msgstr "Animáció betöltése a lemezről."
+
+#~ msgid "Save the current animation"
+#~ msgstr "Jelenlegi animáció elmentése"
+
+#~ msgid "Edit Target Blend Times"
+#~ msgstr "Cél Keverési Idők Módosítása"
+
+#~ msgid "Copy Animation"
+#~ msgstr "Animáció Másolása"
+
+#~ msgid "Fetching:"
+#~ msgstr "Lekérés:"
+
+#~ msgid "prev"
+#~ msgstr "előző"
+
+#~ msgid "next"
+#~ msgstr "következő"
+
+#~ msgid "last"
+#~ msgstr "utolsó"
+
+#~ msgid "Edit IK Chain"
+#~ msgstr "IK Lánc Szerkesztése"
+
+#~ msgid "Drag pivot from mouse position"
+#~ msgstr "Forgatási pont húzása az egér helyétől"
+
+#~ msgid "Set pivot at mouse position"
+#~ msgstr "Forgatási pont beállítása az egér helyére"
+
+#~ msgid "Add/Remove Color Ramp Point"
+#~ msgstr "Szín Gradiens Pont Hozzáadása / Eltávolítása"
+
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "
 #~ "identifier."
@@ -8075,9 +9504,6 @@ msgstr "Érvénytelen betűtípus méret."
 
 #~ msgid "Can't write file."
 #~ msgstr "Nem lehet fájlt írni."
-
-#~ msgid "Next"
-#~ msgstr "Következő"
 
 #~ msgid "Not found!"
 #~ msgstr "Nincs Találat!"

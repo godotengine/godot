@@ -42,6 +42,7 @@ void CollisionPolygon2DEditor::_set_node(Node *p_polygon) {
 
 CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
+	node = NULL;
 }
 
 CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node) :

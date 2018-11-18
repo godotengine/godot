@@ -30,13 +30,22 @@
 
 #include "godot_result_callbacks.h"
 
+#include "area_bullet.h"
 #include "bullet_types_converter.h"
 #include "collision_object_bullet.h"
 #include "rigid_body_bullet.h"
+#include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>
 
 /**
 	@author AndreaCatania
 */
+
+bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
+	if (!colObj1Wrap->getCollisionObject()->getCollisionShape()->isCompound()) {
+		btAdjustInternalEdgeContacts(cp, colObj1Wrap, colObj0Wrap, partId1, index1);
+	}
+	return true;
+}
 
 bool GodotFilterCallback::test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask) {
 	return body0_collision_layer & body1_collision_mask || body1_collision_layer & body0_collision_mask;
@@ -51,11 +60,23 @@ bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
-		if (m_pickRay && gObj->is_ray_pickable()) {
-			return true;
-		} else if (m_exclude->has(gObj->get_self())) {
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
+		if (m_pickRay && !gObj->is_ray_pickable()) {
 			return false;
 		}
+
+		if (m_exclude->has(gObj->get_self())) {
+			return false;
+		}
+
 		return true;
 	} else {
 		return false;
@@ -110,7 +131,7 @@ bool GodotKinClosestConvexResultCallback::needsCollision(btBroadphaseProxy *prox
 			if (gObj->getType() == CollisionObjectBullet::TYPE_AREA)
 				return false;
 
-			if (m_self_object->has_collision_exception(gObj))
+			if (m_self_object->has_collision_exception(gObj) || gObj->has_collision_exception(m_self_object))
 				return false;
 		}
 		return true;
@@ -124,6 +145,15 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -134,9 +164,11 @@ bool GodotClosestConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0)
 }
 
 btScalar GodotClosestConvexResultCallback::addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
-	btScalar res = btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
-	m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
-	return res;
+	if (convexResult.m_localShapeInfo)
+		m_shapeId = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+	else
+		m_shapeId = 0;
+	return btCollisionWorld::ClosestConvexResultCallback::addSingleResult(convexResult, normalInWorldSpace);
 }
 
 bool GodotAllContactResultCallback::needsCollision(btBroadphaseProxy *proxy0) const {
@@ -144,6 +176,15 @@ bool GodotAllContactResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -189,6 +230,15 @@ bool GodotContactPairContactResultCallback::needsCollision(btBroadphaseProxy *pr
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -218,6 +268,15 @@ bool GodotRestInfoContactResultCallback::needsCollision(btBroadphaseProxy *proxy
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
+
+		if (CollisionObjectBullet::TYPE_AREA == gObj->getType()) {
+			if (!collide_with_areas)
+				return false;
+		} else {
+			if (!collide_with_bodies)
+				return false;
+		}
+
 		if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -260,10 +319,19 @@ void GodotDeepPenetrationContactResultCallback::addContactPoint(const btVector3 
 
 	if (m_penetration_distance > depth) { // Has penetration?
 
-		bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
+		const bool isSwapped = m_manifoldPtr->getBody0() != m_body0Wrap->getCollisionObject();
 		m_penetration_distance = depth;
 		m_other_compound_shape_index = isSwapped ? m_index0 : m_index1;
-		m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
 		m_pointWorld = isSwapped ? (pointInWorldOnB + (normalOnBInWorld * depth)) : pointInWorldOnB;
+
+		const btCollisionObjectWrapper *bw0 = m_body0Wrap;
+		if (isSwapped)
+			bw0 = m_body1Wrap;
+
+		if (bw0->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE) {
+			m_pointNormalWorld = bw0->m_worldTransform.getBasis().transpose() * btVector3(0, 0, 1);
+		} else {
+			m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
+		}
 	}
 }

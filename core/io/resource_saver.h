@@ -31,7 +31,7 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -46,7 +46,7 @@ public:
 	virtual ~ResourceFormatSaver() {}
 };
 
-typedef void (*ResourceSavedCallback)(const String &p_path);
+typedef void (*ResourceSavedCallback)(Ref<Resource> p_resource, const String &p_path);
 
 class ResourceSaver {
 

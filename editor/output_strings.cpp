@@ -87,6 +87,7 @@ void OutputStrings::_notification(int p_what) {
 			float h_ofs = (int)h_scroll->get_value();
 			Point2 icon_ofs = Point2(0, (font_height - (int)icon_error->get_height()) / 2);
 
+			FontDrawer drawer(font, Color(1, 1, 1));
 			while (E && ofs.y < (size_height - (int)margin.y)) {
 
 				String str = E->get().text;

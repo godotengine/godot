@@ -31,11 +31,11 @@
 #ifndef THREADED_ARRAY_PROCESSOR_H
 #define THREADED_ARRAY_PROCESSOR_H
 
-#include "os/mutex.h"
-#include "os/os.h"
-#include "os/thread.h"
-#include "safe_refcount.h"
-#include "thread_safe.h"
+#include "core/os/mutex.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/os/thread_safe.h"
+#include "core/safe_refcount.h"
 
 template <class C, class U>
 struct ThreadArrayProcessData {
@@ -80,7 +80,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	threads.resize(OS::get_singleton()->get_processor_count());
 
 	for (int i = 0; i < threads.size(); i++) {
-		threads[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U> >, &data);
+		threads.write[i] = Thread::create(process_array_thread<ThreadArrayProcessData<C, U> >, &data);
 	}
 
 	for (int i = 0; i < threads.size(); i++) {

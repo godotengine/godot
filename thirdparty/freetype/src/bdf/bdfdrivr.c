@@ -813,7 +813,7 @@ THE SOFTWARE.
 
     bitmap->rows  = glyph.bbx.height;
     bitmap->width = glyph.bbx.width;
-    if ( glyph.bpr > INT_MAX )
+    if ( glyph.bpr > FT_INT_MAX )
       FT_TRACE1(( "BDF_Glyph_Load: too large pitch %d is truncated\n",
                    glyph.bpr ));
     bitmap->pitch = (int)glyph.bpr; /* same as FT_Bitmap.pitch */

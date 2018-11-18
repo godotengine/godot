@@ -30,8 +30,7 @@
 
 #include "base_button.h"
 
-#include "os/keyboard.h"
-#include "print_string.h"
+#include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
@@ -60,7 +59,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		if (status.disabled || b->get_button_index() != 1)
+		if (status.disabled || ((1 << (b->get_button_index() - 1)) & button_mask) == 0)
 			return;
 
 		if (status.pressing_button)
@@ -316,6 +315,14 @@ void BaseButton::set_disabled(bool p_disabled) {
 		return;
 
 	status.disabled = p_disabled;
+	if (p_disabled) {
+		if (!toggle_mode) {
+			status.pressed = false;
+		}
+		status.press_attempt = false;
+		status.pressing_inside = false;
+		status.pressing_button = 0;
+	}
 	update();
 	_change_notify("disabled");
 }
@@ -361,8 +368,9 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		return DRAW_DISABLED;
 	};
 
-	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
-	if (status.press_attempt == false && status.hovering && !status.pressed) {
+	if (!status.press_attempt && status.hovering) {
+		if (status.pressed)
+			return DRAW_HOVER_PRESSED;
 
 		return DRAW_HOVER;
 	} else {
@@ -406,6 +414,16 @@ void BaseButton::set_action_mode(ActionMode p_mode) {
 BaseButton::ActionMode BaseButton::get_action_mode() const {
 
 	return action_mode;
+}
+
+void BaseButton::set_button_mask(int p_mask) {
+
+	button_mask = p_mask;
+}
+
+int BaseButton::get_button_mask() const {
+
+	return button_mask;
 }
 
 void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
@@ -496,6 +514,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_disabled"), &BaseButton::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_action_mode", "mode"), &BaseButton::set_action_mode);
 	ClassDB::bind_method(D_METHOD("get_action_mode"), &BaseButton::get_action_mode);
+	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
+	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
 	ClassDB::bind_method(D_METHOD("set_enabled_focus_mode", "mode"), &BaseButton::set_enabled_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_enabled_focus_mode"), &BaseButton::get_enabled_focus_mode);
@@ -513,10 +533,11 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
 	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_enabled_focus_mode", "get_enabled_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
@@ -525,6 +546,7 @@ void BaseButton::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
 	BIND_ENUM_CONSTANT(DRAW_HOVER);
 	BIND_ENUM_CONSTANT(DRAW_DISABLED);
+	BIND_ENUM_CONSTANT(DRAW_HOVER_PRESSED);
 
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
@@ -542,6 +564,7 @@ BaseButton::BaseButton() {
 	set_focus_mode(FOCUS_ALL);
 	enabled_focus_mode = FOCUS_ALL;
 	action_mode = ACTION_MODE_BUTTON_RELEASE;
+	button_mask = BUTTON_MASK_LEFT;
 }
 
 BaseButton::~BaseButton() {

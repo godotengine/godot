@@ -48,6 +48,40 @@
 				Returns all the vertices that make up the faces of the mesh. Each three vertices represent one triangle.
 			</description>
 		</method>
+		<method name="get_surface_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the amount of surfaces that the [code]Mesh[/code] holds.
+			</description>
+		</method>
+		<method name="surface_get_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Returns the arrays for the vertices, normals, uvs, etc. that make up the requested surface (see [method ArrayMesh.add_surface_from_arrays]).
+			</description>
+		</method>
+		<method name="surface_get_blend_shape_arrays" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Returns the blend shape arrays for the requested surface.
+			</description>
+		</method>
+		<method name="surface_get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Return a [Material] in a given surface. Surface is rendered using this material.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint">
@@ -121,25 +155,34 @@
 		</constant>
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
 		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="97792" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
+			Array of vertices.
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
+			Array of normals.
 		</constant>
 		<constant name="ARRAY_TANGENT" value="2" enum="ArrayType">
+			Array of tangents as an array of floats, 4 floats per tangent.
 		</constant>
 		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
+			Array of colors.
 		</constant>
 		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
+			Array of UV coordinates.
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
+			Array of second set of UV coordinates.
 		</constant>
 		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
+			Array of bone data.
 		</constant>
 		<constant name="ARRAY_WEIGHTS" value="7" enum="ArrayType">
+			Array of weights.
 		</constant>
 		<constant name="ARRAY_INDEX" value="8" enum="ArrayType">
+			Array of indices.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
 		</constant>

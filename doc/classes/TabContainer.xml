@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TabContainer" inherits="Control" category="Core" version="3.1">
+<class name="TabContainer" inherits="Container" category="Core" version="3.1">
 	<brief_description>
 		Tabbed Container.
 	</brief_description>
@@ -82,6 +82,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the [code]TabContainer[/code] rearrange group id.
 			</description>
 		</method>
 		<method name="set_popup">
@@ -132,6 +133,7 @@
 			<argument index="0" name="group_id" type="int">
 			</argument>
 			<description>
+				Defines rearrange group id, choose for each [code]TabContainer[/code] the same value to enable tab drag between [code]TabContainer[/code]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
 		</method>
 	</methods>
@@ -140,6 +142,7 @@
 			The current tab index. When set, this index's [Control] node's [code]visible[/code] property is set to [code]true[/code] and all others are set to [code]false[/code].
 		</member>
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled">
+			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
 		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="TabContainer.TabAlign">
 			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
@@ -171,10 +174,13 @@
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0" enum="TabAlign">
+			Align the tabs to the left.
 		</constant>
 		<constant name="ALIGN_CENTER" value="1" enum="TabAlign">
+			Align the tabs to the center.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2" enum="TabAlign">
+			Align the tabs to the right.
 		</constant>
 	</constants>
 	<theme_items>

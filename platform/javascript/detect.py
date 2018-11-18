@@ -1,5 +1,4 @@
 import os
-import string
 import sys
 
 
@@ -26,7 +25,6 @@ def get_opts():
 def get_flags():
     return [
         ('tools', False),
-        ('module_theora_enabled', False),
         # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
@@ -39,7 +37,7 @@ def configure(env):
 
     ## Build type
 
-    if env['target'] == 'release' or env['target'] == 'profile':
+    if env['target'] != 'debug':
         # Use -Os to prioritize optimizing for reduced file size. This is
         # particularly valuable for the web platform because it directly
         # decreases download time.
@@ -48,17 +46,11 @@ def configure(env):
         # run-time performance.
         env.Append(CCFLAGS=['-Os'])
         env.Append(LINKFLAGS=['-Os'])
-        if env['target'] == 'profile':
+        if env['target'] == 'release_debug':
+            env.Append(CPPDEFINES=['DEBUG_ENABLED'])
+            # Retain function names for backtraces at the cost of file size.
             env.Append(LINKFLAGS=['--profiling-funcs'])
-
-    elif env['target'] == 'release_debug':
-        env.Append(CPPDEFINES=['DEBUG_ENABLED'])
-        env.Append(CCFLAGS=['-O2'])
-        env.Append(LINKFLAGS=['-O2'])
-        # Retain function names for backtraces at the cost of file size.
-        env.Append(LINKFLAGS=['--profiling-funcs'])
-
-    elif env['target'] == 'debug':
+    else:
         env.Append(CPPDEFINES=['DEBUG_ENABLED'])
         env.Append(CCFLAGS=['-O1', '-g'])
         env.Append(LINKFLAGS=['-O1', '-g'])
@@ -135,6 +127,10 @@ def configure(env):
     # when using WebAssembly (in comparison to asm.js) and works well for
     # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
+
+    # Since we use both memory growth and MEMFS preloading,
+    # this avoids unecessary copying on start-up.
+    env.Append(LINKFLAGS=['--no-heap-copy'])
 
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.
     env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])

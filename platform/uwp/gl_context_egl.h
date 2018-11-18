@@ -34,14 +34,21 @@
 #include <wrl.h>
 
 #include "EGL/egl.h"
+#include "core/error_list.h"
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "error_list.h"
-#include "os/os.h"
 
 using namespace Windows::UI::Core;
 
 class ContextEGL : public ContextGL {
 
+public:
+	enum Driver {
+		GLES_2_0,
+		GLES_3_0,
+	};
+
+private:
 	CoreWindow ^ window;
 
 	EGLDisplay mEglDisplay;
@@ -53,6 +60,8 @@ class ContextEGL : public ContextGL {
 
 	bool vsync;
 
+	Driver driver;
+
 public:
 	virtual void release_current();
 
@@ -62,16 +71,16 @@ public:
 	virtual int get_window_height();
 	virtual void swap_buffers();
 
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
+	virtual void set_use_vsync(bool use) { vsync = use; }
+	virtual bool is_using_vsync() const { return vsync; }
 
 	virtual Error initialize();
 	void reset();
 
 	void cleanup();
 
-	ContextEGL(CoreWindow ^ p_window);
-	~ContextEGL();
+	ContextEGL(CoreWindow ^ p_window, Driver p_driver);
+	virtual ~ContextEGL();
 };
 
 #endif

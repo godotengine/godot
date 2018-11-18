@@ -53,7 +53,7 @@ public:
 
 	virtual void poll() = 0;
 	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>()) = 0;
-	virtual void disconnect_from_host() = 0;
+	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") = 0;
 	virtual IP_Address get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
 
@@ -62,7 +62,8 @@ public:
 
 	void _on_peer_packet();
 	void _on_connect(String p_protocol);
-	void _on_disconnect();
+	void _on_close_request(int p_code, String p_reason);
+	void _on_disconnect(bool p_was_clean);
 	void _on_error();
 
 	WebSocketClient();

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "visual_server_scene.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
 /* CAMERA API */
@@ -398,6 +398,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				VSG::scene_render->free(gi_probe->probe_instance);
 
 			} break;
+			default: {}
 		}
 
 		if (instance->base_data) {
@@ -471,6 +472,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				gi_probe->probe_instance = VSG::scene_render->gi_probe_instance_create();
 
 			} break;
+			default: {}
 		}
 
 		VSG::storage->instance_add_dependency(p_base, instance);
@@ -518,6 +520,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 					gi_probe_update_list.remove(&gi_probe->update_element);
 				}
 			} break;
+			default: {}
 		}
 
 		instance->scenario = NULL;
@@ -549,6 +552,7 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 					gi_probe_update_list.add(&gi_probe->update_element);
 				}
 			} break;
+			default: {}
 		}
 
 		_instance_queue_update(instance, true, true);
@@ -589,7 +593,7 @@ void VisualServerScene::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	}
 
 	ERR_FAIL_INDEX(p_shape, instance->blend_values.size());
-	instance->blend_values[p_shape] = p_weight;
+	instance->blend_values.write[p_shape] = p_weight;
 }
 
 void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surface, RID p_material) {
@@ -597,8 +601,9 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->update_item.in_list()) {
-		_update_dirty_instance(instance);
+	if (instance->base_type == VS::INSTANCE_MESH) {
+		//may not have been updated yet
+		instance->materials.resize(VSG::storage->mesh_get_surface_count(instance->base));
 	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
@@ -606,8 +611,8 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 	if (instance->materials[p_surface].is_valid()) {
 		VSG::storage->material_remove_instance_owner(instance->materials[p_surface], instance);
 	}
-	instance->materials[p_surface] = p_material;
-	instance->base_material_changed();
+	instance->materials.write[p_surface] = p_material;
+	instance->base_changed(false, true);
 
 	if (instance->materials[p_surface].is_valid()) {
 		VSG::storage->material_add_instance_owner(instance->materials[p_surface], instance);
@@ -649,6 +654,7 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 			}
 
 		} break;
+		default: {}
 	}
 }
 inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
@@ -820,6 +826,12 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			instance->baked_light = p_enabled;
 
 		} break;
+		case VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE: {
+
+			instance->redraw_if_visible = p_enabled;
+
+		} break;
+		default: {}
 	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {
@@ -828,7 +840,7 @@ void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instanc
 	ERR_FAIL_COND(!instance);
 
 	instance->cast_shadows = p_shadow_casting_setting;
-	instance->base_material_changed(); // to actually compute if shadows are visible or not
+	instance->base_changed(false, true); // to actually compute if shadows are visible or not
 }
 void VisualServerScene::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 
@@ -839,7 +851,7 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 		VSG::storage->material_remove_instance_owner(instance->material_override, instance);
 	}
 	instance->material_override = p_material;
-	instance->base_material_changed();
+	instance->base_changed(false, true);
 
 	if (instance->material_override.is_valid()) {
 		VSG::storage->material_add_instance_owner(instance->material_override, instance);
@@ -897,7 +909,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 			_update_instance_lightmap_captures(p_instance);
 		} else {
 			if (!p_instance->lightmap_capture_data.empty()) {
-				!p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
+				p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
 			}
 		}
 	}
@@ -1011,7 +1023,6 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = VSG::storage->lightmap_capture_get_bounds(p_instance->base);
 
 		} break;
-
 		default: {}
 	}
 
@@ -1175,7 +1186,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
 
-	//	print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
+	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 _FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
@@ -1248,14 +1259,19 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 
 			Vector3 dir = to_cell_xform.basis.xform(cone_traces[i]).normalized();
 			Color capture = _light_capture_voxel_cone_trace(octree_r.ptr(), pos, dir, cone_aperture, cell_subdiv);
-			p_instance->lightmap_capture_data[i] += capture;
+			p_instance->lightmap_capture_data.write[i] += capture;
 		}
 	}
 }
 
-void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
+bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
+
+	Transform light_transform = p_instance->transform;
+	light_transform.orthonormalize(); //scale does not count on lights
+
+	bool animated_material_found = false;
 
 	switch (VSG::storage->light_get_type(p_instance->base)) {
 
@@ -1287,6 +1303,10 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					Instance *instance = instance_shadow_cull_result[i];
 					if (!instance->visible || !((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 						continue;
+					}
+
+					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+						animated_material_found = true;
 					}
 
 					float max, min;
@@ -1359,7 +1379,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				// obtain the light frustm ranges (given endpoints)
 
-				Transform transform = p_instance->transform.orthonormalized(); //discard scale and stabilize light
+				Transform transform = light_transform; //discard scale and stabilize light
 
 				Vector3 x_vec = transform.basis.get_axis(Vector3::AXIS_X).normalized();
 				Vector3 y_vec = transform.basis.get_axis(Vector3::AXIS_Y).normalized();
@@ -1370,9 +1390,12 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				float y_min = 0.f, y_max = 0.f;
 				float z_min = 0.f, z_max = 0.f;
 
+				// FIXME: z_max_cam is defined, computed, but not used below when setting up
+				// ortho_camera. Commented out for now to fix warnings but should be investigated.
 				float x_min_cam = 0.f, x_max_cam = 0.f;
 				float y_min_cam = 0.f, y_max_cam = 0.f;
-				float z_min_cam = 0.f, z_max_cam = 0.f;
+				float z_min_cam = 0.f;
+				//float z_max_cam = 0.f;
 
 				float bias_scale = 1.0;
 
@@ -1434,7 +1457,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					x_min_cam = x_vec.dot(center) - radius;
 					y_max_cam = y_vec.dot(center) + radius;
 					y_min_cam = y_vec.dot(center) - radius;
-					z_max_cam = z_vec.dot(center) + radius;
+					//z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
 
 					if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
@@ -1456,20 +1479,20 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				light_frustum_planes.resize(6);
 
 				//right/left
-				light_frustum_planes[0] = Plane(x_vec, x_max);
-				light_frustum_planes[1] = Plane(-x_vec, -x_min);
+				light_frustum_planes.write[0] = Plane(x_vec, x_max);
+				light_frustum_planes.write[1] = Plane(-x_vec, -x_min);
 				//top/bottom
-				light_frustum_planes[2] = Plane(y_vec, y_max);
-				light_frustum_planes[3] = Plane(-y_vec, -y_min);
+				light_frustum_planes.write[2] = Plane(y_vec, y_max);
+				light_frustum_planes.write[3] = Plane(-y_vec, -y_min);
 				//near/far
-				light_frustum_planes[4] = Plane(z_vec, z_max + 1e6);
-				light_frustum_planes[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
+				light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
+				light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
 
 				int cull_count = p_scenario->octree.cull_convex(light_frustum_planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
-				Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+				Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 
 				for (int j = 0; j < cull_count; j++) {
 
@@ -1524,14 +1547,14 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 						float z = i == 0 ? -1 : 1;
 						Vector<Plane> planes;
 						planes.resize(5);
-						planes[0] = p_instance->transform.xform(Plane(Vector3(0, 0, z), radius));
-						planes[1] = p_instance->transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
-						planes[2] = p_instance->transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
-						planes[3] = p_instance->transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
-						planes[4] = p_instance->transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
+						planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
+						planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, z).normalized(), radius));
+						planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, z).normalized(), radius));
+						planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, z).normalized(), radius));
+						planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 						int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
-						Plane near_plane(p_instance->transform.origin, p_instance->transform.basis.get_axis(2) * z);
+						Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 						for (int j = 0; j < cull_count; j++) {
 
@@ -1541,12 +1564,16 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 								SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 								j--;
 							} else {
+								if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+									animated_material_found = true;
+								}
+
 								instance->depth = near_plane.distance_to(instance->transform.origin);
 								instance->depth_layer = 0;
 							}
 						}
 
-						VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), p_instance->transform, radius, 0, i);
+						VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i);
 						VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 					}
 				} break;
@@ -1577,7 +1604,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 							Vector3(0, -1, 0)
 						};
 
-						Transform xform = p_instance->transform * Transform().looking_at(view_normals[i], view_up[i]);
+						Transform xform = light_transform * Transform().looking_at(view_normals[i], view_up[i]);
 
 						Vector<Plane> planes = cm.get_projection_planes(xform);
 
@@ -1592,6 +1619,9 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 								SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 								j--;
 							} else {
+								if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+									animated_material_found = true;
+								}
 								instance->depth = near_plane.distance_to(instance->transform.origin);
 								instance->depth_layer = 0;
 							}
@@ -1602,7 +1632,7 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					}
 
 					//restore the regular DP matrix
-					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), p_instance->transform, radius, 0, 0);
+					VSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0);
 
 				} break;
 			}
@@ -1616,10 +1646,10 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			CameraMatrix cm;
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
-			Vector<Plane> planes = cm.get_projection_planes(p_instance->transform);
+			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
-			Plane near_plane(p_instance->transform.origin, -p_instance->transform.basis.get_axis(2));
+			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
 
 				Instance *instance = instance_shadow_cull_result[j];
@@ -1628,20 +1658,26 @@ void VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					SWAP(instance_shadow_cull_result[j], instance_shadow_cull_result[cull_count]);
 					j--;
 				} else {
+					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
+						animated_material_found = true;
+					}
 					instance->depth = near_plane.distance_to(instance->transform.origin);
 					instance->depth_layer = 0;
 				}
 			}
 
-			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, p_instance->transform, radius, 0, 0);
+			VSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0);
 			VSG::scene_render->render_shadow(light->instance, p_shadow_atlas, 0, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 
 		} break;
 	}
+
+	return animated_material_found;
 }
 
 void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
-	// render to mono camera
+// render to mono camera
+#ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.getornull(p_camera);
 	ERR_FAIL_COND(!camera);
@@ -1674,7 +1710,9 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 		} break;
 	}
 
-	_render_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), -1);
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_render_scene(camera->transform, camera_matrix, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+#endif
 }
 
 void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
@@ -1684,7 +1722,6 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	ERR_FAIL_COND(!camera);
 
 	/* SETUP CAMERA, we are ignoring type and FOV here */
-	bool ortho = false;
 	float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 	CameraMatrix camera_matrix = p_interface->get_projection_for_eye(p_eye, aspect, camera->znear, camera->zfar);
 
@@ -1693,10 +1730,79 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
 
-	_render_scene(cam_transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), -1);
+	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
+	if (p_eye == ARVRInterface::EYE_LEFT) {
+		///@TODO possibly move responsibility for this into our ARVRServer or ARVRInterface?
+
+		// Center our transform, we assume basis is equal.
+		Transform mono_transform = cam_transform;
+		Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
+		mono_transform.origin += right_transform.origin;
+		mono_transform.origin *= 0.5;
+
+		// We need to combine our projection frustums for culling.
+		// Ideally we should use our clipping planes for this and combine them,
+		// however our shadow map logic uses our projection matrix.
+		// Note: as our left and right frustums should be mirrored, we don't need our right projection matrix.
+
+		// - get some base values we need
+		float eye_dist = (mono_transform.origin - cam_transform.origin).length();
+		float z_near = camera_matrix.get_z_near(); // get our near plane
+		float z_far = camera_matrix.get_z_far(); // get our far plane
+		float width = (2.0 * z_near) / camera_matrix.matrix[0][0];
+		float x_shift = width * camera_matrix.matrix[2][0];
+		float height = (2.0 * z_near) / camera_matrix.matrix[1][1];
+		float y_shift = height * camera_matrix.matrix[2][1];
+
+		// printf("Eye_dist = %f, Near = %f, Far = %f, Width = %f, Shift = %f\n", eye_dist, z_near, z_far, width, x_shift);
+
+		// - calculate our near plane size (horizontal only, right_near is mirrored)
+		float left_near = -eye_dist - ((width - x_shift) * 0.5);
+
+		// - calculate our far plane size (horizontal only, right_far is mirrored)
+		float left_far = -eye_dist - (z_far * (width - x_shift) * 0.5 / z_near);
+		float left_far_right_eye = eye_dist - (z_far * (width + x_shift) * 0.5 / z_near);
+		if (left_far > left_far_right_eye) {
+			// on displays smaller then double our iod, the right eye far frustrum can overtake the left eyes.
+			left_far = left_far_right_eye;
+		}
+
+		// - figure out required z-shift
+		float slope = (left_far - left_near) / (z_far - z_near);
+		float z_shift = (left_near / slope) - z_near;
+
+		// - figure out new vertical near plane size (this will be slightly oversized thanks to our z-shift)
+		float top_near = (height - y_shift) * 0.5;
+		top_near += (top_near / z_near) * z_shift;
+		float bottom_near = -(height + y_shift) * 0.5;
+		bottom_near += (bottom_near / z_near) * z_shift;
+
+		// printf("Left_near = %f, Left_far = %f, Top_near = %f, Bottom_near = %f, Z_shift = %f\n", left_near, left_far, top_near, bottom_near, z_shift);
+
+		// - generate our frustum
+		CameraMatrix combined_matrix;
+		combined_matrix.set_frustum(left_near, -left_near, bottom_near, top_near, z_near + z_shift, z_far + z_shift);
+
+		// and finally move our camera back
+		Transform apply_z_shift;
+		apply_z_shift.origin = Vector3(0.0, 0.0, z_shift); // z negative is forward so this moves it backwards
+		mono_transform *= apply_z_shift;
+
+		// now prepare our scene with our adjusted transform projection matrix
+		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	} else if (p_eye == ARVRInterface::EYE_MONO) {
+		// For mono render, prepare as per usual
+		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	}
+
+	// And render our scene...
+	_render_scene(cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void VisualServerScene::_render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
+	// Note, in stereo rendering:
+	// - p_cam_transform will be a transform in the middle of our two eyes
+	// - p_cam_projection is a wider frustrum that encompasses both eyes
 
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
@@ -1713,25 +1819,26 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	int cull_count = scenario->octree.cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
+	instance_cull_count = scenario->octree.cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
 
 	//light_samplers_culled=0;
 
-	/*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
+	/*
+	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
 	print_line("OTO: "+itos(p_scenario->octree.get_octant_count()));
-	//print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
+	print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
 	print_line("OTP: "+itos(p_scenario->octree.get_pair_count()));
-*/
+	*/
 
 	/* STEP 3 - PROCESS PORTALS, VALIDATE ROOMS */
 	//removed, will replace with culling
 
 	/* STEP 4 - REMOVE FURTHER CULLED OBJECTS, ADD LIGHTS */
 
-	for (int i = 0; i < cull_count; i++) {
+	for (int i = 0; i < instance_cull_count; i++) {
 
 		Instance *ins = instance_cull_result[i];
 
@@ -1799,6 +1906,10 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(ins->base_data);
 
+			if (ins->redraw_if_visible) {
+				VisualServerRaster::redraw_request();
+			}
+
 			if (ins->base_type == VS::INSTANCE_PARTICLES) {
 				//particles visible? process them
 				VSG::storage->particles_request_process(ins->base);
@@ -1815,7 +1926,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 					InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 
-					ins->light_instances[l++] = light->instance;
+					ins->light_instances.write[l++] = light->instance;
 				}
 
 				geom->lighting_dirty = false;
@@ -1830,7 +1941,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 					InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(E->get()->base_data);
 
-					ins->reflection_probe_instances[l++] = reflection_probe->instance;
+					ins->reflection_probe_instances.write[l++] = reflection_probe->instance;
 				}
 
 				geom->reflection_dirty = false;
@@ -1845,7 +1956,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 					InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(E->get()->base_data);
 
-					ins->gi_probe_instances[l++] = gi_probe->probe_instance;
+					ins->gi_probe_instances.write[l++] = gi_probe->probe_instance;
 				}
 
 				geom->gi_probes_dirty = false;
@@ -1857,8 +1968,8 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 		if (!keep) {
 			// remove, no reason to keep
-			cull_count--;
-			SWAP(instance_cull_result[i], instance_cull_result[cull_count]);
+			instance_cull_count--;
+			SWAP(instance_cull_result[i], instance_cull_result[instance_cull_count]);
 			i--;
 			ins->last_render_pass = 0; // make invalid
 		} else {
@@ -1870,7 +1981,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	/* STEP 5 - PROCESS LIGHTS */
 
 	RID *directional_light_ptr = &light_instance_cull_result[light_cull_count];
-	int directional_light_count = 0;
+	directional_light_count = 0;
 
 	// directional lights
 	{
@@ -2003,10 +2114,15 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 			if (redraw) {
 				//must redraw!
-				_light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
 			}
 		}
 	}
+}
+
+void VisualServerScene::_render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
 	/* ENVIRONMENT */
 
@@ -2018,12 +2134,14 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 	else
 		environment = scenario->fallback_environment;
 
-	/* STEP 6 - PROCESS GEOMETRY AND DRAW SCENE*/
+	/* PROCESS GEOMETRY AND DRAW SCENE */
 
-	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
+
+#ifndef _3D_DISABLED
 
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
@@ -2033,6 +2151,7 @@ void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
 	else
 		environment = scenario->fallback_environment;
 	VSG::scene_render->render_scene(Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+#endif
 }
 
 bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int p_step) {
@@ -2040,6 +2159,8 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 	InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
 	Scenario *scenario = p_instance->scenario;
 	ERR_FAIL_COND_V(!scenario, true);
+
+	VisualServerRaster::redraw_request(); //update, so it updates in editor
 
 	if (p_step == 0) {
 
@@ -2093,7 +2214,8 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 			shadow_atlas = scenario->reflection_probe_shadow_atlas;
 		}
 
-		_render_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
+		_render_scene(xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
 		//do roughness postprocess step until it believes it's done
@@ -2210,7 +2332,6 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	int size_divisor = 1;
 
 	if (probe->dynamic.compression == RasterizerStorage::GI_PROBE_S3TC) {
-		print_line("S3TC");
 		size_limit = 4;
 		size_divisor = 4;
 	}
@@ -2280,7 +2401,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 
 			uint32_t key = blockz * blockw * blockh + blocky * blockw + blockx;
 
-			Map<uint32_t, InstanceGIProbeData::CompBlockS3TC> &cmap = comp_blocks[mipmap];
+			Map<uint32_t, InstanceGIProbeData::CompBlockS3TC> &cmap = comp_blocks.write[mipmap];
 
 			if (!cmap.has(key)) {
 
@@ -2299,9 +2420,9 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		probe->dynamic.mipmaps_s3tc.resize(mipmap_count);
 
 		for (int i = 0; i < mipmap_count; i++) {
-			print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
-			probe->dynamic.mipmaps_s3tc[i].resize(comp_blocks[i].size());
-			PoolVector<InstanceGIProbeData::CompBlockS3TC>::Write w = probe->dynamic.mipmaps_s3tc[i].write();
+			//print_line("S3TC level: " + itos(i) + " blocks: " + itos(comp_blocks[i].size()));
+			probe->dynamic.mipmaps_s3tc.write[i].resize(comp_blocks[i].size());
+			PoolVector<InstanceGIProbeData::CompBlockS3TC>::Write w = probe->dynamic.mipmaps_s3tc.write[i].write();
 			int block_idx = 0;
 
 			for (Map<uint32_t, InstanceGIProbeData::CompBlockS3TC>::Element *E = comp_blocks[i].front(); E; E = E->next()) {
@@ -2667,7 +2788,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 					light->energy[2] += int32_t(light_b * att * ((cell->albedo) & 0xFF) / 255.0);
 				}
 			}
-			// print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+			//print_line("BAKE TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 		} break;
 	}
 }
@@ -2729,7 +2850,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if ((!probe_data->dynamic.light_cache_changes.has(rid) || !(probe_data->dynamic.light_cache_changes[rid] == lc)) && lc.visible) {
+		if ((!probe_data->dynamic.light_cache_changes.has(rid) || probe_data->dynamic.light_cache_changes[rid] != lc) && lc.visible) {
 			//erase light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, -1);
@@ -2742,7 +2863,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 		RID rid = E->key();
 		const InstanceGIProbeData::LightCache &lc = E->get();
 
-		if ((!probe_data->dynamic.light_cache.has(rid) || !(probe_data->dynamic.light_cache[rid] == lc)) && lc.visible) {
+		if ((!probe_data->dynamic.light_cache.has(rid) || probe_data->dynamic.light_cache[rid] != lc) && lc.visible) {
 			//add light data
 
 			_bake_gi_probe_light(header, cells, local_data, leaves, leaf_count, lc, 1);
@@ -2769,7 +2890,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 			int level_cell_count = probe_data->dynamic.level_cell_lists[i].size();
 			const uint32_t *level_cells = probe_data->dynamic.level_cell_lists[i].ptr();
 
-			PoolVector<uint8_t>::Write lw = probe_data->dynamic.mipmaps_3d[stage].write();
+			PoolVector<uint8_t>::Write lw = probe_data->dynamic.mipmaps_3d.write[stage].write();
 			uint8_t *mipmapw = lw.ptr();
 
 			uint32_t sizes[3] = { header->width >> stage, header->height >> stage, header->depth >> stage };
@@ -2798,7 +2919,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 		for (int mmi = 0; mmi < mipmap_count; mmi++) {
 
-			PoolVector<uint8_t>::Write mmw = probe_data->dynamic.mipmaps_3d[mmi].write();
+			PoolVector<uint8_t>::Write mmw = probe_data->dynamic.mipmaps_3d.write[mmi].write();
 			int block_count = probe_data->dynamic.mipmaps_s3tc[mmi].size();
 			PoolVector<InstanceGIProbeData::CompBlockS3TC>::Read mmr = probe_data->dynamic.mipmaps_s3tc[mmi].read();
 
@@ -2959,7 +3080,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
 		lc.visible = E->get()->visible;
 
-		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
+		if (!probe_data->dynamic.light_cache.has(E->get()->self) || probe_data->dynamic.light_cache[E->get()->self] != lc) {
 			all_equal = false;
 		}
 
@@ -2979,7 +3100,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 		lc.transform = probe_data->dynamic.light_to_cell_xform * E->get()->transform;
 		lc.visible = E->get()->visible;
 
-		if (!probe_data->dynamic.light_cache.has(E->get()->self) || !(probe_data->dynamic.light_cache[E->get()->self] == lc)) {
+		if (!probe_data->dynamic.light_cache.has(E->get()->self) || probe_data->dynamic.light_cache[E->get()->self] != lc) {
 			all_equal = false;
 		}
 
@@ -3062,7 +3183,7 @@ void VisualServerScene::render_probes() {
 			force_lighting = true;
 		}
 
-		if (probe->invalid == false && probe->dynamic.enabled) {
+		if (!probe->invalid && probe->dynamic.enabled) {
 
 			switch (probe->dynamic.updating_stage) {
 				case GI_UPDATE_STAGE_CHECK: {
@@ -3088,7 +3209,7 @@ void VisualServerScene::render_probes() {
 				} break;
 				case GI_UPDATE_STAGE_UPLOADING: {
 
-					// uint64_t us = OS::get_singleton()->get_ticks_usec();
+					//uint64_t us = OS::get_singleton()->get_ticks_usec();
 
 					for (int i = 0; i < (int)probe->dynamic.mipmaps_3d.size(); i++) {
 
@@ -3098,7 +3219,7 @@ void VisualServerScene::render_probes() {
 
 					probe->dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 
-					// print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
+					//print_line("UPLOAD TIME: " + rtos((OS::get_singleton()->get_ticks_usec() - us) / 1000000.0));
 				} break;
 			}
 		}
@@ -3131,7 +3252,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 			if (new_blend_shape_count != p_instance->blend_values.size()) {
 				p_instance->blend_values.resize(new_blend_shape_count);
 				for (int i = 0; i < new_blend_shape_count; i++) {
-					p_instance->blend_values[i] = 0;
+					p_instance->blend_values.write[i] = 0;
 				}
 			}
 		}
@@ -3141,11 +3262,13 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 			InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
 
 			bool can_cast_shadows = true;
+			bool is_animated = false;
 
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_OFF) {
 				can_cast_shadows = false;
 			} else if (p_instance->material_override.is_valid()) {
 				can_cast_shadows = VSG::storage->material_casts_shadows(p_instance->material_override);
+				is_animated = VSG::storage->material_is_animated(p_instance->material_override);
 			} else {
 
 				if (p_instance->base_type == VS::INSTANCE_MESH) {
@@ -3160,12 +3283,15 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
-								break;
-							}
+							} else {
 
-							if (VSG::storage->material_casts_shadows(mat)) {
-								cast_shadows = true;
-								break;
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
 							}
 						}
 
@@ -3187,12 +3313,15 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
-								break;
-							}
 
-							if (VSG::storage->material_casts_shadows(mat)) {
-								cast_shadows = true;
-								break;
+							} else {
+
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
 							}
 						}
 
@@ -3208,6 +3337,10 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 						can_cast_shadows = true;
 					} else {
 						can_cast_shadows = false;
+					}
+
+					if (mat.is_valid() && VSG::storage->material_is_animated(mat)) {
+						is_animated = true;
 					}
 				} else if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
 
@@ -3228,12 +3361,15 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
-								break;
-							}
+							} else {
 
-							if (VSG::storage->material_casts_shadows(mat)) {
-								cast_shadows = true;
-								break;
+								if (VSG::storage->material_casts_shadows(mat)) {
+									cast_shadows = true;
+								}
+
+								if (VSG::storage->material_is_animated(mat)) {
+									is_animated = true;
+								}
 							}
 						}
 					}
@@ -3253,6 +3389,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 				geom->can_cast_shadows = can_cast_shadows;
 			}
+
+			geom->material_is_animated = is_animated;
 		}
 	}
 

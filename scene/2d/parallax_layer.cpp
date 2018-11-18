@@ -30,7 +30,7 @@
 
 #include "parallax_layer.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
@@ -120,7 +120,6 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 
 	if (mirroring.x) {
 		double den = mirroring.x * p_scale;
-		double before = new_ofs.x;
 		new_ofs.x -= den * ceil(new_ofs.x / den);
 	}
 

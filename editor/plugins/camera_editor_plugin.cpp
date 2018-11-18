@@ -32,18 +32,6 @@
 
 #include "spatial_editor_plugin.h"
 
-void CameraEditor::_notification(int p_what) {
-
-	switch (p_what) {
-
-		/*		case NOTIFICATION_PROCESS: {
-
-			if (preview->is_pressed() && node)
-				node->call("make_current");
-
-		} break;*/
-	}
-}
 void CameraEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {

@@ -34,134 +34,62 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "editor/property_editor.h"
-#include "scene/animation/animation_tree_player.h"
+#include "scene/animation/animation_tree.h"
 #include "scene/gui/button.h"
+#include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
-class AnimationTreeEditor : public Control {
+class AnimationTreeNodeEditorPlugin : public VBoxContainer {
+	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer)
+public:
+	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
+	virtual void edit(const Ref<AnimationNode> &p_node) = 0;
+};
 
-	GDCLASS(AnimationTreeEditor, Control);
+class AnimationTreeEditor : public VBoxContainer {
 
-	static const char *_node_type_names[];
+	GDCLASS(AnimationTreeEditor, VBoxContainer);
 
-	enum ClickType {
-		CLICK_NONE,
-		CLICK_NAME,
-		CLICK_NODE,
-		CLICK_INPUT_SLOT,
-		CLICK_OUTPUT_SLOT,
-		CLICK_PARAMETER
-	};
+	ScrollContainer *path_edit;
+	HBoxContainer *path_hb;
 
-	enum {
+	AnimationTree *tree;
+	PanelContainer *editor_base;
 
-		MENU_GRAPH_CLEAR = 100,
-		MENU_IMPORT_ANIMATIONS = 101,
-		NODE_DISCONNECT,
-		NODE_RENAME,
-		NODE_ERASE,
-		NODE_ADD_INPUT,
-		NODE_DELETE_INPUT,
-		NODE_SET_AUTOADVANCE,
-		NODE_CLEAR_AUTOADVANCE
-	};
+	Vector<String> button_path;
+	Vector<String> edited_path;
+	Vector<AnimationTreeNodeEditorPlugin *> editors;
 
-	bool renaming_edit;
-	StringName edited_node;
-	bool updating_edit;
-	Popup *edit_dialog;
-	HSlider *edit_scroll[2];
-	LineEdit *edit_line[4];
-	OptionButton *edit_option;
-	Label *edit_label[4];
-	Button *edit_button;
-	Button *filter_button;
-	CheckButton *edit_check;
-	EditorFileDialog *file_dialog;
-	int file_op;
+	void _update_path();
+	void _about_to_show_root();
+	ObjectID current_root;
 
-	void _popup_edit_dialog();
+	void _path_button_pressed(int p_path);
 
-	void _setup_edit_dialog(const StringName &p_node);
-	PopupMenu *master_anim_popup;
-	PopupMenu *node_popup;
-	PopupMenu *add_popup;
-	HScrollBar *h_scroll;
-	VScrollBar *v_scroll;
-	MenuButton *add_menu;
-
-	CustomPropertyEditor *property_editor;
-
-	AnimationTreePlayer *anim_tree;
-	List<StringName> order;
-	Set<StringName> active_nodes;
-
-	int last_x, last_y;
-
-	Point2 offset;
-	ClickType click_type;
-	Point2 click_pos;
-	StringName click_node;
-	int click_slot;
-	Point2 click_motion;
-	ClickType rclick_type;
-	StringName rclick_node;
-	int rclick_slot;
-
-	Button *play_button;
-
-	Size2 _get_maximum_size();
-	Size2 get_node_size(const StringName &p_node) const;
-	void _draw_node(const StringName &p_node);
-
-	AcceptDialog *filter_dialog;
-	Tree *filter;
-
-	void _draw_cos_line(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color);
-	void _update_scrollbars();
-	void _scroll_moved(float);
-	void _play_toggled();
-	/*
-	void _node_param_changed();
-	void _node_add_callback();
-	void _node_add(VisualServer::AnimationTreeNodeType p_type);
-	void _node_edit_property(const StringName& p_node);
-*/
-
-	void _master_anim_menu_item(int p_item);
-	void _node_menu_item(int p_item);
-	void _add_menu_item(int p_item);
-
-	void _filter_edited();
-	void _find_paths_for_filter(const StringName &p_node, Set<String> &paths);
-	void _edit_filters();
-
-	void _edit_oneshot_start();
-	void _edit_dialog_animation_changed();
-	void _edit_dialog_edit_animation();
-	void _edit_dialog_changeds(String);
-	void _edit_dialog_changede(String);
-	void _edit_dialog_changedf(float);
-	void _edit_dialog_changed();
-	void _dialog_changed() const;
-	ClickType _locate_click(const Point2 &p_click, StringName *p_node_id, int *p_slot_index) const;
-	Point2 _get_slot_pos(const StringName &p_node_id, bool p_input, int p_slot);
-
-	StringName _add_node(int p_item);
-	void _file_dialog_selected(String p_path);
+	static Vector<String> get_animation_list();
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(Ref<InputEvent> p_event);
 	static void _bind_methods();
 
+	static AnimationTreeEditor *singleton;
+
 public:
-	virtual Size2 get_minimum_size() const;
-	void edit(AnimationTreePlayer *p_anim_tree);
+	AnimationTree *get_tree() { return tree; }
+	void add_plugin(AnimationTreeNodeEditorPlugin *p_editor);
+	void remove_plugin(AnimationTreeNodeEditorPlugin *p_editor);
+
+	String get_base_path();
+
+	bool can_edit(const Ref<AnimationNode> &p_node) const;
+
+	void edit_path(const Vector<String> &p_path);
+	Vector<String> get_edited_path() const;
+
+	void enter_editor(const String &p_path = "");
+	static AnimationTreeEditor *get_singleton() { return singleton; }
+	void edit(AnimationTree *p_tree);
 	AnimationTreeEditor();
 };
 
@@ -174,7 +102,7 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "AnimTree"; }
+	virtual String get_name() const { return "AnimationTree"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

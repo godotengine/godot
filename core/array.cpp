@@ -30,10 +30,10 @@
 
 #include "array.h"
 
-#include "hashfuncs.h"
-#include "object.h"
-#include "variant.h"
-#include "vector.h"
+#include "core/hashfuncs.h"
+#include "core/object.h"
+#include "core/variant.h"
+#include "core/vector.h"
 
 class ArrayPrivate {
 public:
@@ -72,7 +72,7 @@ void Array::_unref() const {
 
 Variant &Array::operator[](int p_idx) {
 
-	return _p->array[p_idx];
+	return _p->array.write[p_idx];
 }
 
 const Variant &Array::operator[](int p_idx) const {
@@ -259,7 +259,7 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 
 	ERR_FAIL_NULL_V(p_obj, *this);
 
-	SortArray<Variant, _ArrayVariantSortCustom> avs;
+	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
 	avs.compare.obj = p_obj;
 	avs.compare.func = p_function;
 	avs.sort(_p->array.ptrw(), _p->array.size());
@@ -355,11 +355,58 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
+Variant Array::min() const {
+
+	Variant minval;
+	for (int i = 0; i < size(); i++) {
+		if (i == 0) {
+			minval = get(i);
+		} else {
+			bool valid;
+			Variant ret;
+			Variant test = get(i);
+			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
+			if (!valid) {
+				return Variant(); //not a valid comparison
+			}
+			if (bool(ret)) {
+				//is less
+				minval = test;
+			}
+		}
+	}
+	return minval;
+}
+
+Variant Array::max() const {
+
+	Variant maxval;
+	for (int i = 0; i < size(); i++) {
+		if (i == 0) {
+			maxval = get(i);
+		} else {
+			bool valid;
+			Variant ret;
+			Variant test = get(i);
+			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
+			if (!valid) {
+				return Variant(); //not a valid comparison
+			}
+			if (bool(ret)) {
+				//is less
+				maxval = test;
+			}
+		}
+	}
+	return maxval;
+}
+
 Array::Array(const Array &p_from) {
 
 	_p = NULL;
 	_ref(p_from);
 }
+
 Array::Array() {
 
 	_p = memnew(ArrayPrivate);

@@ -4,10 +4,14 @@
 import codecs
 import sys
 import os
+import re
 import xml.etree.ElementTree as ET
 
 input_list = []
 cur_file = ""
+
+# http(s)://docs.godotengine.org/<langcode>/<tag>/path/to/page.html(#fragment-tag)
+godot_docs_pattern = re.compile('^http(?:s)?:\/\/docs\.godotengine\.org\/(?:[a-zA-Z0-9\.\-_]*)\/(?:[a-zA-Z0-9\.\-_]*)\/(.*)\.html(#.*)?$')
 
 for arg in sys.argv[1:]:
     if arg.endswith(os.sep):
@@ -106,6 +110,7 @@ def make_class_list(class_list, columns):
 
     f.close()
 
+
 def rstize_text(text, cclass):
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
@@ -154,9 +159,19 @@ def rstize_text(text, cclass):
             text = pre_text + "\n\n" + post_text
             pos += 2
 
+    next_brac_pos = text.find('[')
+
+    # Escape \ character, otherwise it ends up as an escape character in rst
+    pos = 0
+    while True:
+        pos = text.find('\\', pos, next_brac_pos)
+        if pos == -1:
+            break
+        text = text[:pos] + "\\\\" + text[pos + 1:]
+        pos += 2
+
     # Escape * character to avoid interpreting it as emphasis
     pos = 0
-    next_brac_pos = text.find('[');
     while True:
         pos = text.find('*', pos, next_brac_pos)
         if pos == -1:
@@ -258,15 +273,17 @@ def rstize_text(text, cclass):
             elif cmd == 'code':
                 tag_text = '``'
                 inside_code = True
+            elif cmd.startswith('enum '):
+                tag_text = make_enum(cmd[5:])
             else:
                 tag_text = make_type(tag_text)
                 escape_post = True
 
         # Properly escape things like `[Node]s`
-        if escape_post and post_text and post_text[0].isalnum(): # not punctuation, escape
+        if escape_post and post_text and post_text[0].isalnum():  # not punctuation, escape
             post_text = '\ ' + post_text
 
-        next_brac_pos = post_text.find('[',0)
+        next_brac_pos = post_text.find('[', 0)
         iter_pos = 0
         while not inside_code:
             iter_pos = post_text.find('*', iter_pos, next_brac_pos)
@@ -286,45 +303,85 @@ def rstize_text(text, cclass):
             else:
                 iter_pos += 1
 
-
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
     return text
 
 
+def format_table(f, pp):
+    longest_t = 0
+    longest_s = 0
+    for s in pp:
+        sl = len(s[0])
+        if (sl > longest_s):
+            longest_s = sl
+        tl = len(s[1])
+        if (tl > longest_t):
+            longest_t = tl
+
+    sep = "+"
+    for i in range(longest_s + 2):
+        sep += "-"
+    sep += "+"
+    for i in range(longest_t + 2):
+        sep += "-"
+    sep += "+\n"
+    f.write(sep)
+    for s in pp:
+        rt = s[0]
+        while (len(rt) < longest_s):
+            rt += " "
+        st = s[1]
+        while (len(st) < longest_t):
+            st += " "
+        f.write("| " + rt + " | " + st + " |\n")
+        f.write(sep)
+    f.write('\n')
+
+
 def make_type(t):
     global class_names
     if t in class_names:
-        return ':ref:`' + t + '<class_' + t.lower() + '>`'
+        return ':ref:`' + t + '<class_' + t + '>`'
     return t
+
 
 def make_enum(t):
     global class_names
     p = t.find(".")
+    # Global enums such as Error are relative to @GlobalScope.
     if p >= 0:
         c = t[0:p]
-        e = t[p+1:]
-        if c in class_names:
-            return ':ref:`' + e + '<enum_' + c.lower() + '_' + e.lower() + '>`'
+        e = t[p + 1:]
+        # Variant enums live in GlobalScope but still use periods.
+        if c == "Variant":
+            c = "@GlobalScope"
+            e = "Variant." + e
+    else:
+        # Things in GlobalScope don't have a period.
+        c = "@GlobalScope"
+        e = t
+    if c in class_names:
+        return ':ref:`' + e + '<enum_' + c + '_' + e + '>`'
     return t
+
 
 def make_method(
         f,
-        name,
-        m,
-        declare,
         cname,
+        method_data,
+        declare,
         event=False,
         pp=None
 ):
-    if (declare or pp == None):
+    if (declare or pp is None):
         t = '- '
     else:
         t = ""
 
     ret_type = 'void'
-    args = list(m)
+    args = list(method_data)
     mdata = {}
     mdata['argidx'] = []
     for a in args:
@@ -340,16 +397,19 @@ def make_method(
 
     if not event:
         if -1 in mdata['argidx']:
-            t += make_type(mdata[-1].attrib['type'])
+            if 'enum' in mdata[-1].attrib:
+                t += make_enum(mdata[-1].attrib['enum'])
+            else:
+                t += make_type(mdata[-1].attrib['type'])
         else:
             t += 'void'
         t += ' '
 
-    if declare or pp == None:
+    if declare or pp is None:
 
-        s = '**' + m.attrib['name'] + '** '
+        s = '**' + method_data.attrib['name'] + '** '
     else:
-        s = ':ref:`' + m.attrib['name'] + '<class_' + cname + "_" + m.attrib['name'] + '>` '
+        s = ':ref:`' + method_data.attrib['name'] + '<class_' + cname + "_" + method_data.attrib['name'] + '>` '
 
     s += '**(**'
     argfound = False
@@ -362,7 +422,10 @@ def make_method(
         else:
             s += ' '
 
-        s += make_type(arg.attrib['type'])
+        if 'enum' in arg.attrib:
+            s += make_enum(arg.attrib['enum'])
+        else:
+            s += make_type(arg.attrib['type'])
         if 'name' in arg.attrib:
             s += ' ' + arg.attrib['name']
         else:
@@ -373,8 +436,8 @@ def make_method(
 
     s += ' **)**'
 
-    if 'qualifiers' in m.attrib:
-        s += ' ' + m.attrib['qualifiers']
+    if 'qualifiers' in method_data.attrib:
+        s += ' ' + method_data.attrib['qualifiers']
 
     if (not declare):
         if (pp != None):
@@ -383,6 +446,37 @@ def make_method(
             f.write("- " + t + " " + s + "\n")
     else:
         f.write(t + s + "\n")
+
+
+def make_properties(
+        f,
+        cname,
+        prop_data,
+        description=False,
+        pp=None
+):
+    t = ""
+    if 'enum' in prop_data.attrib:
+        t += make_enum(prop_data.attrib['enum'])
+    else:
+        t += make_type(prop_data.attrib['type'])
+
+    if description:
+        s = '**' + prop_data.attrib['name'] + '**'
+        setget = []
+        if 'setter' in prop_data.attrib and prop_data.attrib['setter'] != '' and not prop_data.attrib['setter'].startswith('_'):
+            setget.append(("*Setter*", prop_data.attrib['setter'] + '(value)'))
+        if 'getter' in prop_data.attrib and prop_data.attrib['getter'] != '' and not prop_data.attrib['getter'].startswith('_'):
+            setget.append(('*Getter*', prop_data.attrib['getter'] + '()'))
+    else:
+        s = ':ref:`' + prop_data.attrib['name'] + '<class_' + cname + "_" + prop_data.attrib['name'] + '>`'
+
+    if (pp != None):
+        pp.append((t, s))
+    elif description:
+        f.write('- ' + t + ' ' + s + '\n\n')
+        if len(setget) > 0:
+            format_table(f, setget)
 
 
 def make_heading(title, underline):
@@ -402,6 +496,8 @@ def make_rst_class(node):
     f.write(".. _class_" + name + ":\n\n")
     f.write(make_heading(name, '='))
 
+    # Inheritance tree
+    # Ascendents
     if 'inherits' in node.attrib:
         inh = node.attrib['inherits'].strip()
         f.write('**Inherits:** ')
@@ -418,16 +514,15 @@ def make_rst_class(node):
                 inh = inode.attrib['inherits'].strip()
             else:
                 inh = None
-
         f.write("\n\n")
 
+    # Descendents
     inherited = []
     for cn in classes:
         c = classes[cn]
         if 'inherits' in c.attrib:
             if (c.attrib['inherits'].strip() == name):
                 inherited.append(c.attrib['name'])
-
     if (len(inherited)):
         f.write('**Inherited By:** ')
         for i in range(len(inherited)):
@@ -435,83 +530,59 @@ def make_rst_class(node):
                 f.write(", ")
             f.write(make_type(inherited[i]))
         f.write("\n\n")
+
+    # Category
     if 'category' in node.attrib:
         f.write('**Category:** ' + node.attrib['category'].strip() + "\n\n")
 
+    # Brief description
     f.write(make_heading('Brief Description', '-'))
     briefd = node.find('brief_description')
     if briefd != None:
         f.write(rstize_text(briefd.text.strip(), name) + "\n\n")
 
-    methods = node.find('methods')
+    # Properties overview
+    members = node.find('members')
+    if members != None and len(list(members)) > 0:
+        f.write(make_heading('Properties', '-'))
+        ml = []
+        for m in list(members):
+            make_properties(f, name, m, False, ml)
+        format_table(f, ml)
 
+    # Methods overview
+    methods = node.find('methods')
     if methods != None and len(list(methods)) > 0:
-        f.write(make_heading('Member Functions', '-'))
+        f.write(make_heading('Methods', '-'))
         ml = []
         for m in list(methods):
-            make_method(f, node.attrib['name'], m, False, name, False, ml)
-        longest_t = 0
-        longest_s = 0
-        for s in ml:
-            sl = len(s[0])
-            if (sl > longest_s):
-                longest_s = sl
-            tl = len(s[1])
-            if (tl > longest_t):
-                longest_t = tl
+            make_method(f, name, m, False, False, ml)
+        format_table(f, ml)
 
-        sep = "+"
-        for i in range(longest_s + 2):
-            sep += "-"
-        sep += "+"
-        for i in range(longest_t + 2):
-            sep += "-"
-        sep += "+\n"
-        f.write(sep)
-        for s in ml:
-            rt = s[0]
-            while (len(rt) < longest_s):
-                rt += " "
-            st = s[1]
-            while (len(st) < longest_t):
-                st += " "
-            f.write("| " + rt + " | " + st + " |\n")
-            f.write(sep)
-        f.write('\n')
+    # Theme properties
+    theme_items = node.find('theme_items')
+    if theme_items != None and len(list(theme_items)) > 0:
+        f.write(make_heading('Theme Properties', '-'))
+        ml = []
+        for m in list(theme_items):
+            make_properties(f, name, m, False, ml)
+        format_table(f, ml)
 
+    # Signals
     events = node.find('signals')
     if events != None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
         for m in list(events):
             f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
-            make_method(f, node.attrib['name'], m, True, name, True)
+            make_method(f, name, m, True, True)
             f.write('\n')
             d = m.find('description')
-            if d == None or d.text.strip() == '':
+            if d is None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
 
-        f.write('\n')
-
-    members = node.find('members')
-    if members != None and len(list(members)) > 0:
-        f.write(make_heading('Member Variables', '-'))
-
-        for c in list(members):
-            # Leading two spaces necessary to prevent breaking the <ul>
-            f.write("  .. _class_" + name + "_" + c.attrib['name'] + ":\n\n")
-            s = '- '
-            if 'enum' in c.attrib:
-                s += make_enum(c.attrib['enum']) + ' '
-            else:
-                s += make_type(c.attrib['type']) + ' '
-            s += '**' + c.attrib['name'] + '**'
-            if c.text.strip() != '':
-                s += ' - ' + rstize_text(c.text.strip(), name)
-            f.write(s + '\n\n')
-        f.write('\n')
-
+    # Constants and enums
     constants = node.find('constants')
     consts = []
     enum_names = set()
@@ -524,23 +595,12 @@ def make_rst_class(node):
             else:
                 consts.append(c)
 
-    if len(consts) > 0:
-        f.write(make_heading('Numeric Constants', '-'))
-        for c in list(consts):
-            s = '- '
-            s += '**' + c.attrib['name'] + '**'
-            if 'value' in c.attrib:
-                s += ' = **' + c.attrib['value'] + '**'
-            if c.text.strip() != '':
-                s += ' --- ' + rstize_text(c.text.strip(), name)
-            f.write(s + '\n')
-        f.write('\n')
-
+    # Enums
     if len(enum_names) > 0:
-        f.write(make_heading('Enums', '-'))
+        f.write(make_heading('Enumerations', '-'))
         for e in enum_names:
-            f.write("  .. _enum_" + name + "_" + e + ":\n\n")
-            f.write("enum **" + e + "**\n\n")
+            f.write(".. _enum_" + name + "_" + e + ":\n\n")
+            f.write("enum **" + e + "**:\n\n")
             for c in enums:
                 if c.attrib['enum'] != e:
                     continue
@@ -550,30 +610,76 @@ def make_rst_class(node):
                     s += ' = **' + c.attrib['value'] + '**'
                 if c.text.strip() != '':
                     s += ' --- ' + rstize_text(c.text.strip(), name)
-                f.write(s + '\n')
-            f.write('\n')
-        f.write('\n')
+                f.write(s + '\n\n')
 
+    # Constants
+    if len(consts) > 0:
+        f.write(make_heading('Constants', '-'))
+        for c in list(consts):
+            s = '- '
+            s += '**' + c.attrib['name'] + '**'
+            if 'value' in c.attrib:
+                s += ' = **' + c.attrib['value'] + '**'
+            if c.text.strip() != '':
+                s += ' --- ' + rstize_text(c.text.strip(), name)
+            f.write(s + '\n\n')
+
+    # Class description
     descr = node.find('description')
     if descr != None and descr.text.strip() != '':
         f.write(make_heading('Description', '-'))
         f.write(rstize_text(descr.text.strip(), name) + "\n\n")
 
+    # Online tutorials
+    global godot_docs_pattern
+    tutorials = node.find('tutorials')
+    if tutorials != None and len(tutorials) > 0:
+        f.write(make_heading('Tutorials', '-'))
+        for t in tutorials:
+            link = t.text.strip()
+            match = godot_docs_pattern.search(link);
+            if match:
+                groups = match.groups()
+                if match.lastindex == 2:
+                    # Doc reference with fragment identifier: emit direct link to section with reference to page, for example:
+                    # `#calling-javascript-from-script in Exporting For Web`
+                    f.write("- `" + groups[1] + " <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n\n")
+                    # Commented out alternative: Instead just emit:
+                    # `Subsection in Exporting For Web`
+                    # f.write("- `Subsection <../" + groups[0] + ".html" + groups[1] + ">`_ in :doc:`../" + groups[0] + "`\n\n")
+                elif match.lastindex == 1:
+                    # Doc reference, for example:
+                    # `Math`
+                    f.write("- :doc:`../" + groups[0] + "`\n\n")
+            else:
+                # External link, for example:
+                # `http://enet.bespin.org/usergroup0.html`
+                f.write("- `" + link + " <" + link + ">`_\n\n")
+
+    # Property descriptions
+    members = node.find('members')
+    if members != None and len(list(members)) > 0:
+        f.write(make_heading('Property Descriptions', '-'))
+        for m in list(members):
+            f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
+            make_properties(f, name, m, True)
+            if m.text.strip() != '':
+                f.write(rstize_text(m.text.strip(), name))
+                f.write('\n\n')
+
+    # Method descriptions
     methods = node.find('methods')
     if methods != None and len(list(methods)) > 0:
-        f.write(make_heading('Member Function Description', '-'))
+        f.write(make_heading('Method Descriptions', '-'))
         for m in list(methods):
             f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
-            make_method(f, node.attrib['name'], m, True, name)
+            make_method(f, name, m, True)
             f.write('\n')
             d = m.find('description')
-            if d == None or d.text.strip() == '':
+            if d is None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
-        f.write('\n')
-
-    f.close()
 
 
 file_list = []

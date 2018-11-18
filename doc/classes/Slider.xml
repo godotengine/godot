@@ -17,6 +17,8 @@
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
 		</member>
+		<member name="scrollable" type="bool" setter="set_scrollable" getter="is_scrollable">
+		</member>
 		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks">
 		</member>
 		<member name="ticks_on_borders" type="bool" setter="set_ticks_on_borders" getter="get_ticks_on_borders">

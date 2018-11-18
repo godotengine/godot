@@ -31,10 +31,11 @@
 #ifndef SCRIPT_DEBUGGER_REMOTE_H
 #define SCRIPT_DEBUGGER_REMOTE_H
 
-#include "io/packet_peer.h"
-#include "io/stream_peer_tcp.h"
-#include "list.h"
-#include "script_language.h"
+#include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/list.h"
+#include "core/os/os.h"
+#include "core/script_language.h"
 
 class ScriptDebuggerRemote : public ScriptDebugger {
 
@@ -98,6 +99,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint64_t last_msec;
 	uint64_t msec_count;
 
+	OS::ProcessID allow_focus_steal_pid;
+
 	bool locking; //hack to avoid a deadloop
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 
@@ -132,6 +135,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	Vector<FrameData> profile_frame_data;
 
 	void _put_variable(const String &p_name, const Variant &p_variable);
+
+	void _save_node(ObjectID id, const String &p_path);
 
 public:
 	struct ResourceUsage {
@@ -168,6 +173,8 @@ public:
 	virtual void profiling_start();
 	virtual void profiling_end();
 	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+
+	void set_allow_focus_steal_pid(OS::ProcessID p_pid);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

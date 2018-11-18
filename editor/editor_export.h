@@ -31,16 +31,16 @@
 #ifndef EDITOR_EXPORT_H
 #define EDITOR_EXPORT_H
 
-#include "os/dir_access.h"
-#include "resource.h"
+#include "core/os/dir_access.h"
+#include "core/resource.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/texture.h"
 
-class EditorProgress;
 class FileAccess;
 class EditorExportPlatform;
 class EditorFileSystemDirectory;
+struct EditorProgress;
 
 class EditorExportPreset : public Reference {
 
@@ -57,6 +57,7 @@ private:
 	ExportFilter export_filter;
 	String include_filter;
 	String exclude_filter;
+	String export_path;
 
 	String exporter;
 	Set<String> selected_files;
@@ -113,6 +114,9 @@ public:
 
 	void set_custom_features(const String &p_custom_features);
 	String get_custom_features() const;
+
+	void set_export_path(const String &p_path);
+	String get_export_path() const;
 
 	const List<PropertyInfo> &get_properties() const { return properties; }
 
@@ -241,9 +245,12 @@ public:
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
 
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const = 0;
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;
+	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 	virtual void get_platform_features(List<String> *r_features) = 0;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) = 0;
 
 	EditorExportPlatform();
 };
@@ -373,7 +380,6 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 
 	Set<String> extra_features;
 
-	bool use64;
 	int chmod_flags;
 
 public:
@@ -386,7 +392,7 @@ public:
 	virtual Ref<Texture> get_logo() const;
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const;
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	void set_extension(const String &p_extension, const String &p_feature_key = "default");
@@ -402,6 +408,7 @@ public:
 
 	void add_platform_feature(const String &p_feature);
 	virtual void get_platform_features(List<String> *r_features);
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features);
 
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);

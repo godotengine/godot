@@ -31,9 +31,9 @@
 #ifndef GDMONOMARSHAL_H
 #define GDMONOMARSHAL_H
 
+#include "core/variant.h"
 #include "gd_mono.h"
 #include "gd_mono_utils.h"
-#include "variant.h"
 
 namespace GDMonoMarshal {
 
@@ -97,8 +97,12 @@ _FORCE_INLINE_ MonoString *mono_string_from_godot(const String &p_string) {
 MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_type);
 MonoObject *variant_to_mono_object(const Variant *p_var);
 
-_FORCE_INLINE_ MonoObject *variant_to_mono_object(Variant p_var) {
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var) {
 	return variant_to_mono_object(&p_var);
+}
+
+_FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var, const ManagedType &p_type) {
+	return variant_to_mono_object(&p_var, p_type);
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
@@ -143,83 +147,271 @@ PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array);
 MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array);
 PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array);
 
-// Dictionary
+// Structures
 
-MonoObject *Dictionary_to_mono_object(const Dictionary &p_dict);
-Dictionary mono_object_to_Dictionary(MonoObject *p_dict);
+namespace InteropLayout {
 
-#ifdef YOLO_COPY
-#define MARSHALLED_OUT(m_t, m_in, m_out) m_t *m_out = (m_t *)&m_in;
-#define MARSHALLED_IN(m_t, m_in, m_out) m_t m_out = *reinterpret_cast<m_t *>(m_in);
+enum {
+	MATCHES_float = (sizeof(float) == sizeof(uint32_t)),
+
+	MATCHES_double = (sizeof(double) == sizeof(uint64_t)),
+
+#ifdef REAL_T_IS_DOUBLE
+	MATCHES_real_t = (sizeof(real_t) == sizeof(uint64_t)),
 #else
-
-// Expects m_in to be of type float*
-
-#define MARSHALLED_OUT(m_t, m_in, m_out) MARSHALLED_OUT_##m_t(m_in, m_out)
-#define MARSHALLED_IN(m_t, m_in, m_out) MARSHALLED_IN_##m_t(m_in, m_out)
-
-// Vector2
-
-#define MARSHALLED_OUT_Vector2(m_in, m_out) real_t m_out[2] = { m_in.x, m_in.y };
-#define MARSHALLED_IN_Vector2(m_in, m_out) Vector2 m_out(m_in[0], m_in[1]);
-
-// Rect2
-
-#define MARSHALLED_OUT_Rect2(m_in, m_out) real_t m_out[4] = { m_in.position.x, m_in.position.y, m_in.size.width, m_in.size.height };
-#define MARSHALLED_IN_Rect2(m_in, m_out) Rect2 m_out(m_in[0], m_in[1], m_in[2], m_in[3]);
-
-// Transform2D
-
-#define MARSHALLED_OUT_Transform2D(m_in, m_out) real_t m_out[6] = { m_in[0].x, m_in[0].y, m_in[1].x, m_in[1].y, m_in[2].x, m_in[2].y };
-#define MARSHALLED_IN_Transform2D(m_in, m_out) Transform2D m_out(m_in[0], m_in[1], m_in[2], m_in[3], m_in[4], m_in[5]);
-
-// Vector3
-
-#define MARSHALLED_OUT_Vector3(m_in, m_out) real_t m_out[3] = { m_in.x, m_in.y, m_in.z };
-#define MARSHALLED_IN_Vector3(m_in, m_out) Vector3 m_out(m_in[0], m_in[1], m_in[2]);
-
-// Basis
-
-#define MARSHALLED_OUT_Basis(m_in, m_out) real_t m_out[9] = { \
-	m_in[0].x, m_in[0].y, m_in[0].z,                          \
-	m_in[1].x, m_in[1].y, m_in[1].z,                          \
-	m_in[2].x, m_in[2].y, m_in[2].z                           \
-};
-#define MARSHALLED_IN_Basis(m_in, m_out) Basis m_out(m_in[0], m_in[1], m_in[2], m_in[3], m_in[4], m_in[5], m_in[6], m_in[7], m_in[8]);
-
-// Quat
-
-#define MARSHALLED_OUT_Quat(m_in, m_out) real_t m_out[4] = { m_in.x, m_in.y, m_in.z, m_in.w };
-#define MARSHALLED_IN_Quat(m_in, m_out) Quat m_out(m_in[0], m_in[1], m_in[2], m_in[3]);
-
-// Transform
-
-#define MARSHALLED_OUT_Transform(m_in, m_out) real_t m_out[12] = { \
-	m_in.basis[0].x, m_in.basis[0].y, m_in.basis[0].z,             \
-	m_in.basis[1].x, m_in.basis[1].y, m_in.basis[1].z,             \
-	m_in.basis[2].x, m_in.basis[2].y, m_in.basis[2].z,             \
-	m_in.origin.x, m_in.origin.y, m_in.origin.z                    \
-};
-#define MARSHALLED_IN_Transform(m_in, m_out) Transform m_out(                                   \
-		Basis(m_in[0], m_in[1], m_in[2], m_in[3], m_in[4], m_in[5], m_in[6], m_in[7], m_in[8]), \
-		Vector3(m_in[9], m_in[10], m_in[11]));
-
-// AABB
-
-#define MARSHALLED_OUT_AABB(m_in, m_out) real_t m_out[6] = { m_in.position.x, m_in.position.y, m_in.position.z, m_in.size.x, m_in.size.y, m_in.size.z };
-#define MARSHALLED_IN_AABB(m_in, m_out) AABB m_out(Vector3(m_in[0], m_in[1], m_in[2]), Vector3(m_in[3], m_in[4], m_in[5]));
-
-// Color
-
-#define MARSHALLED_OUT_Color(m_in, m_out) real_t m_out[4] = { m_in.r, m_in.g, m_in.b, m_in.a };
-#define MARSHALLED_IN_Color(m_in, m_out) Color m_out(m_in[0], m_in[1], m_in[2], m_in[3]);
-
-// Plane
-
-#define MARSHALLED_OUT_Plane(m_in, m_out) real_t m_out[4] = { m_in.normal.x, m_in.normal.y, m_in.normal.z, m_in.d };
-#define MARSHALLED_IN_Plane(m_in, m_out) Plane m_out(m_in[0], m_in[1], m_in[2], m_in[3]);
-
+	MATCHES_real_t = (sizeof(real_t) == sizeof(uint32_t)),
 #endif
+
+	MATCHES_Vector2 = (MATCHES_real_t && (sizeof(Vector2) == (sizeof(real_t) * 2)) &&
+					   offsetof(Vector2, x) == (sizeof(real_t) * 0) &&
+					   offsetof(Vector2, y) == (sizeof(real_t) * 1)),
+
+	MATCHES_Rect2 = (MATCHES_Vector2 && (sizeof(Rect2) == (sizeof(Vector2) * 2)) &&
+					 offsetof(Rect2, position) == (sizeof(Vector2) * 0) &&
+					 offsetof(Rect2, size) == (sizeof(Vector2) * 1)),
+
+	MATCHES_Transform2D = (MATCHES_Vector2 && (sizeof(Transform2D) == (sizeof(Vector2) * 3))), // No field offset required, it stores an array
+
+	MATCHES_Vector3 = (MATCHES_real_t && (sizeof(Vector3) == (sizeof(real_t) * 3)) &&
+					   offsetof(Vector3, x) == (sizeof(real_t) * 0) &&
+					   offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
+					   offsetof(Vector3, z) == (sizeof(real_t) * 2)),
+
+	MATCHES_Basis = (MATCHES_Vector3 && (sizeof(Basis) == (sizeof(Vector3) * 3))), // No field offset required, it stores an array
+
+	MATCHES_Quat = (MATCHES_real_t && (sizeof(Quat) == (sizeof(real_t) * 4)) &&
+					offsetof(Quat, x) == (sizeof(real_t) * 0) &&
+					offsetof(Quat, y) == (sizeof(real_t) * 1) &&
+					offsetof(Quat, z) == (sizeof(real_t) * 2) &&
+					offsetof(Quat, w) == (sizeof(real_t) * 3)),
+
+	MATCHES_Transform = (MATCHES_Basis && MATCHES_Vector3 && (sizeof(Transform) == (sizeof(Basis) + sizeof(Vector3))) &&
+						 offsetof(Transform, basis) == 0 &&
+						 offsetof(Transform, origin) == sizeof(Basis)),
+
+	MATCHES_AABB = (MATCHES_Vector3 && (sizeof(AABB) == (sizeof(Vector3) * 2)) &&
+					offsetof(AABB, position) == (sizeof(Vector3) * 0) &&
+					offsetof(AABB, size) == (sizeof(Vector3) * 1)),
+
+	MATCHES_Color = (MATCHES_float && (sizeof(Color) == (sizeof(float) * 4)) &&
+					 offsetof(Color, r) == (sizeof(float) * 0) &&
+					 offsetof(Color, g) == (sizeof(float) * 1) &&
+					 offsetof(Color, b) == (sizeof(float) * 2) &&
+					 offsetof(Color, a) == (sizeof(float) * 3)),
+
+	MATCHES_Plane = (MATCHES_Vector3 && MATCHES_real_t && (sizeof(Plane) == (sizeof(Vector3) + sizeof(real_t))) &&
+					 offsetof(Plane, normal) == 0 &&
+					 offsetof(Plane, d) == sizeof(Vector3))
+};
+
+// In the future we may force this if we want to ref return these structs
+#ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
+// Sometimes clang-format can be an ass
+GD_STATIC_ASSERT(MATCHES_Vector2 &&MATCHES_Rect2 &&MATCHES_Transform2D &&MATCHES_Vector3 &&
+				MATCHES_Basis &&MATCHES_Quat &&MATCHES_Transform &&MATCHES_AABB &&MATCHES_Color &&MATCHES_Plane);
+#endif
+
+} // namespace InteropLayout
+
+#pragma pack(push, 1)
+
+struct M_Vector2 {
+	real_t x, y;
+
+	static _FORCE_INLINE_ Vector2 convert_to(const M_Vector2 &p_from) {
+		return Vector2(p_from.x, p_from.y);
+	}
+
+	static _FORCE_INLINE_ M_Vector2 convert_from(const Vector2 &p_from) {
+		M_Vector2 ret = { p_from.x, p_from.y };
+		return ret;
+	}
+};
+
+struct M_Rect2 {
+	M_Vector2 position;
+	M_Vector2 size;
+
+	static _FORCE_INLINE_ Rect2 convert_to(const M_Rect2 &p_from) {
+		return Rect2(M_Vector2::convert_to(p_from.position),
+				M_Vector2::convert_to(p_from.size));
+	}
+
+	static _FORCE_INLINE_ M_Rect2 convert_from(const Rect2 &p_from) {
+		M_Rect2 ret = { M_Vector2::convert_from(p_from.position), M_Vector2::convert_from(p_from.size) };
+		return ret;
+	}
+};
+
+struct M_Transform2D {
+	M_Vector2 elements[3];
+
+	static _FORCE_INLINE_ Transform2D convert_to(const M_Transform2D &p_from) {
+		return Transform2D(p_from.elements[0].x, p_from.elements[0].y,
+				p_from.elements[1].x, p_from.elements[1].y,
+				p_from.elements[2].x, p_from.elements[2].y);
+	}
+
+	static _FORCE_INLINE_ M_Transform2D convert_from(const Transform2D &p_from) {
+		M_Transform2D ret = {
+			M_Vector2::convert_from(p_from.elements[0]),
+			M_Vector2::convert_from(p_from.elements[1]),
+			M_Vector2::convert_from(p_from.elements[2])
+		};
+		return ret;
+	}
+};
+
+struct M_Vector3 {
+	real_t x, y, z;
+
+	static _FORCE_INLINE_ Vector3 convert_to(const M_Vector3 &p_from) {
+		return Vector3(p_from.x, p_from.y, p_from.z);
+	}
+
+	static _FORCE_INLINE_ M_Vector3 convert_from(const Vector3 &p_from) {
+		M_Vector3 ret = { p_from.x, p_from.y, p_from.z };
+		return ret;
+	}
+};
+
+struct M_Basis {
+	M_Vector3 elements[3];
+
+	static _FORCE_INLINE_ Basis convert_to(const M_Basis &p_from) {
+		return Basis(M_Vector3::convert_to(p_from.elements[0]),
+				M_Vector3::convert_to(p_from.elements[1]),
+				M_Vector3::convert_to(p_from.elements[2]));
+	}
+
+	static _FORCE_INLINE_ M_Basis convert_from(const Basis &p_from) {
+		M_Basis ret = {
+			M_Vector3::convert_from(p_from.elements[0]),
+			M_Vector3::convert_from(p_from.elements[1]),
+			M_Vector3::convert_from(p_from.elements[2])
+		};
+		return ret;
+	}
+};
+
+struct M_Quat {
+	real_t x, y, z, w;
+
+	static _FORCE_INLINE_ Quat convert_to(const M_Quat &p_from) {
+		return Quat(p_from.x, p_from.y, p_from.z, p_from.w);
+	}
+
+	static _FORCE_INLINE_ M_Quat convert_from(const Quat &p_from) {
+		M_Quat ret = { p_from.x, p_from.y, p_from.z, p_from.w };
+		return ret;
+	}
+};
+
+struct M_Transform {
+	M_Basis basis;
+	M_Vector3 origin;
+
+	static _FORCE_INLINE_ Transform convert_to(const M_Transform &p_from) {
+		return Transform(M_Basis::convert_to(p_from.basis), M_Vector3::convert_to(p_from.origin));
+	}
+
+	static _FORCE_INLINE_ M_Transform convert_from(const Transform &p_from) {
+		M_Transform ret = { M_Basis::convert_from(p_from.basis), M_Vector3::convert_from(p_from.origin) };
+		return ret;
+	}
+};
+
+struct M_AABB {
+	M_Vector3 position;
+	M_Vector3 size;
+
+	static _FORCE_INLINE_ AABB convert_to(const M_AABB &p_from) {
+		return AABB(M_Vector3::convert_to(p_from.position), M_Vector3::convert_to(p_from.size));
+	}
+
+	static _FORCE_INLINE_ M_AABB convert_from(const AABB &p_from) {
+		M_AABB ret = { M_Vector3::convert_from(p_from.position), M_Vector3::convert_from(p_from.size) };
+		return ret;
+	}
+};
+
+struct M_Color {
+	float r, g, b, a;
+
+	static _FORCE_INLINE_ Color convert_to(const M_Color &p_from) {
+		return Color(p_from.r, p_from.g, p_from.b, p_from.a);
+	}
+
+	static _FORCE_INLINE_ M_Color convert_from(const Color &p_from) {
+		M_Color ret = { p_from.r, p_from.g, p_from.b, p_from.a };
+		return ret;
+	}
+};
+
+struct M_Plane {
+	M_Vector3 normal;
+	real_t d;
+
+	static _FORCE_INLINE_ Plane convert_to(const M_Plane &p_from) {
+		return Plane(M_Vector3::convert_to(p_from.normal), p_from.d);
+	}
+
+	static _FORCE_INLINE_ M_Plane convert_from(const Plane &p_from) {
+		M_Plane ret = { M_Vector3::convert_from(p_from.normal), p_from.d };
+		return ret;
+	}
+};
+
+#pragma pack(pop)
+
+#define DECL_TYPE_MARSHAL_TEMPLATES(m_type)                                             \
+	template <int>                                                                      \
+	_FORCE_INLINE_ m_type marshalled_in_##m_type##_impl(const M_##m_type *p_from);      \
+                                                                                        \
+	template <>                                                                         \
+	_FORCE_INLINE_ m_type marshalled_in_##m_type##_impl<0>(const M_##m_type *p_from) {  \
+		return M_##m_type::convert_to(*p_from);                                         \
+	}                                                                                   \
+                                                                                        \
+	template <>                                                                         \
+	_FORCE_INLINE_ m_type marshalled_in_##m_type##_impl<1>(const M_##m_type *p_from) {  \
+		return *reinterpret_cast<const m_type *>(p_from);                               \
+	}                                                                                   \
+                                                                                        \
+	_FORCE_INLINE_ m_type marshalled_in_##m_type(const M_##m_type *p_from) {            \
+		return marshalled_in_##m_type##_impl<InteropLayout::MATCHES_##m_type>(p_from);  \
+	}                                                                                   \
+                                                                                        \
+	template <int>                                                                      \
+	_FORCE_INLINE_ M_##m_type marshalled_out_##m_type##_impl(const m_type &p_from);     \
+                                                                                        \
+	template <>                                                                         \
+	_FORCE_INLINE_ M_##m_type marshalled_out_##m_type##_impl<0>(const m_type &p_from) { \
+		return M_##m_type::convert_from(p_from);                                        \
+	}                                                                                   \
+                                                                                        \
+	template <>                                                                         \
+	_FORCE_INLINE_ M_##m_type marshalled_out_##m_type##_impl<1>(const m_type &p_from) { \
+		return *reinterpret_cast<const M_##m_type *>(&p_from);                          \
+	}                                                                                   \
+                                                                                        \
+	_FORCE_INLINE_ M_##m_type marshalled_out_##m_type(const m_type &p_from) {           \
+		return marshalled_out_##m_type##_impl<InteropLayout::MATCHES_##m_type>(p_from); \
+	}
+
+DECL_TYPE_MARSHAL_TEMPLATES(Vector2)
+DECL_TYPE_MARSHAL_TEMPLATES(Rect2)
+DECL_TYPE_MARSHAL_TEMPLATES(Transform2D)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
+DECL_TYPE_MARSHAL_TEMPLATES(Basis)
+DECL_TYPE_MARSHAL_TEMPLATES(Quat)
+DECL_TYPE_MARSHAL_TEMPLATES(Transform)
+DECL_TYPE_MARSHAL_TEMPLATES(AABB)
+DECL_TYPE_MARSHAL_TEMPLATES(Color)
+DECL_TYPE_MARSHAL_TEMPLATES(Plane)
+
+#define MARSHALLED_IN(m_type, m_from_ptr) (GDMonoMarshal::marshalled_in_##m_type(m_from_ptr))
+#define MARSHALLED_OUT(m_type, m_from) (GDMonoMarshal::marshalled_out_##m_type(m_from))
 
 } // namespace GDMonoMarshal
 

@@ -57,113 +57,113 @@
 			return m_val;                                                                   \
 	}
 
-_ALWAYS_INLINE_ uint32_t _atomic_conditional_increment_impl(register uint32_t *pw){
+_ALWAYS_INLINE_ uint32_t _atomic_conditional_increment_impl(volatile uint32_t *pw){
 
 	ATOMIC_CONDITIONAL_INCREMENT_BODY(pw, LONG, InterlockedCompareExchange, uint32_t)
 }
 
-_ALWAYS_INLINE_ uint32_t _atomic_decrement_impl(register uint32_t *pw) {
+_ALWAYS_INLINE_ uint32_t _atomic_decrement_impl(volatile uint32_t *pw) {
 
 	return InterlockedDecrement((LONG volatile *)pw);
 }
 
-_ALWAYS_INLINE_ uint32_t _atomic_increment_impl(register uint32_t *pw) {
+_ALWAYS_INLINE_ uint32_t _atomic_increment_impl(volatile uint32_t *pw) {
 
 	return InterlockedIncrement((LONG volatile *)pw);
 }
 
-_ALWAYS_INLINE_ uint32_t _atomic_sub_impl(register uint32_t *pw, register uint32_t val) {
+_ALWAYS_INLINE_ uint32_t _atomic_sub_impl(volatile uint32_t *pw, volatile uint32_t val) {
 
 	return InterlockedExchangeAdd((LONG volatile *)pw, -(int32_t)val) - val;
 }
 
-_ALWAYS_INLINE_ uint32_t _atomic_add_impl(register uint32_t *pw, register uint32_t val) {
+_ALWAYS_INLINE_ uint32_t _atomic_add_impl(volatile uint32_t *pw, volatile uint32_t val) {
 
 	return InterlockedAdd((LONG volatile *)pw, val);
 }
 
-_ALWAYS_INLINE_ uint32_t _atomic_exchange_if_greater_impl(register uint32_t *pw, register uint32_t val){
+_ALWAYS_INLINE_ uint32_t _atomic_exchange_if_greater_impl(volatile uint32_t *pw, volatile uint32_t val){
 
 	ATOMIC_EXCHANGE_IF_GREATER_BODY(pw, val, LONG, InterlockedCompareExchange, uint32_t)
 }
 
-_ALWAYS_INLINE_ uint64_t _atomic_conditional_increment_impl(register uint64_t *pw){
+_ALWAYS_INLINE_ uint64_t _atomic_conditional_increment_impl(volatile uint64_t *pw){
 
 	ATOMIC_CONDITIONAL_INCREMENT_BODY(pw, LONGLONG, InterlockedCompareExchange64, uint64_t)
 }
 
-_ALWAYS_INLINE_ uint64_t _atomic_decrement_impl(register uint64_t *pw) {
+_ALWAYS_INLINE_ uint64_t _atomic_decrement_impl(volatile uint64_t *pw) {
 
 	return InterlockedDecrement64((LONGLONG volatile *)pw);
 }
 
-_ALWAYS_INLINE_ uint64_t _atomic_increment_impl(register uint64_t *pw) {
+_ALWAYS_INLINE_ uint64_t _atomic_increment_impl(volatile uint64_t *pw) {
 
 	return InterlockedIncrement64((LONGLONG volatile *)pw);
 }
 
-_ALWAYS_INLINE_ uint64_t _atomic_sub_impl(register uint64_t *pw, register uint64_t val) {
+_ALWAYS_INLINE_ uint64_t _atomic_sub_impl(volatile uint64_t *pw, volatile uint64_t val) {
 
 	return InterlockedExchangeAdd64((LONGLONG volatile *)pw, -(int64_t)val) - val;
 }
 
-_ALWAYS_INLINE_ uint64_t _atomic_add_impl(register uint64_t *pw, register uint64_t val) {
+_ALWAYS_INLINE_ uint64_t _atomic_add_impl(volatile uint64_t *pw, volatile uint64_t val) {
 
 	return InterlockedAdd64((LONGLONG volatile *)pw, val);
 }
 
-_ALWAYS_INLINE_ uint64_t _atomic_exchange_if_greater_impl(register uint64_t *pw, register uint64_t val){
+_ALWAYS_INLINE_ uint64_t _atomic_exchange_if_greater_impl(volatile uint64_t *pw, volatile uint64_t val){
 
 	ATOMIC_EXCHANGE_IF_GREATER_BODY(pw, val, LONGLONG, InterlockedCompareExchange64, uint64_t)
 }
 
 // The actual advertised functions; they'll call the right implementation
 
-uint32_t atomic_conditional_increment(register uint32_t *pw) {
+uint32_t atomic_conditional_increment(volatile uint32_t *pw) {
 	return _atomic_conditional_increment_impl(pw);
 }
 
-uint32_t atomic_decrement(register uint32_t *pw) {
+uint32_t atomic_decrement(volatile uint32_t *pw) {
 	return _atomic_decrement_impl(pw);
 }
 
-uint32_t atomic_increment(register uint32_t *pw) {
+uint32_t atomic_increment(volatile uint32_t *pw) {
 	return _atomic_increment_impl(pw);
 }
 
-uint32_t atomic_sub(register uint32_t *pw, register uint32_t val) {
+uint32_t atomic_sub(volatile uint32_t *pw, volatile uint32_t val) {
 	return _atomic_sub_impl(pw, val);
 }
 
-uint32_t atomic_add(register uint32_t *pw, register uint32_t val) {
+uint32_t atomic_add(volatile uint32_t *pw, volatile uint32_t val) {
 	return _atomic_add_impl(pw, val);
 }
 
-uint32_t atomic_exchange_if_greater(register uint32_t *pw, register uint32_t val) {
+uint32_t atomic_exchange_if_greater(volatile uint32_t *pw, volatile uint32_t val) {
 	return _atomic_exchange_if_greater_impl(pw, val);
 }
 
-uint64_t atomic_conditional_increment(register uint64_t *pw) {
+uint64_t atomic_conditional_increment(volatile uint64_t *pw) {
 	return _atomic_conditional_increment_impl(pw);
 }
 
-uint64_t atomic_decrement(register uint64_t *pw) {
+uint64_t atomic_decrement(volatile uint64_t *pw) {
 	return _atomic_decrement_impl(pw);
 }
 
-uint64_t atomic_increment(register uint64_t *pw) {
+uint64_t atomic_increment(volatile uint64_t *pw) {
 	return _atomic_increment_impl(pw);
 }
 
-uint64_t atomic_sub(register uint64_t *pw, register uint64_t val) {
+uint64_t atomic_sub(volatile uint64_t *pw, volatile uint64_t val) {
 	return _atomic_sub_impl(pw, val);
 }
 
-uint64_t atomic_add(register uint64_t *pw, register uint64_t val) {
+uint64_t atomic_add(volatile uint64_t *pw, volatile uint64_t val) {
 	return _atomic_add_impl(pw, val);
 }
 
-uint64_t atomic_exchange_if_greater(register uint64_t *pw, register uint64_t val) {
+uint64_t atomic_exchange_if_greater(volatile uint64_t *pw, volatile uint64_t val) {
 	return _atomic_exchange_if_greater_impl(pw, val);
 }
 #endif

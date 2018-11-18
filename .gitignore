@@ -17,6 +17,8 @@ platform/android/java/build.gradle
 platform/android/java/AndroidManifest.xml
 platform/android/java/libs/*
 platform/android/java/assets
+platform/android/java/.idea/*
+platform/android/java/*.iml
 
 # General c++ generated files
 *.lib
@@ -44,6 +46,7 @@ gmon.out
 # QT project files
 *.config
 *.creator
+*.creator.*
 *.files
 *.includes
 
@@ -88,15 +91,15 @@ bld/
 *.debug
 *.dSYM
 
+# Visual Studio cache/options directory
+.vs/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
 # Hints for improving IntelliSense, created together with VS project
 cpp.hint
-
-# Visualizers for the VS debugger
-*.natvis
 
 #NUNIT
 *.VisualState.xml
@@ -235,6 +238,7 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+__pycache__/
 
 # KDE
 .directory
@@ -288,6 +292,7 @@ logo.h
 TAGS
 !TAGS/
 tags
+*.tags
 !tags/
 gtags.files
 GTAGS
@@ -305,6 +310,9 @@ platform/windows/godot_res.res
 # Visual Studio 2017 and Visual Studio Code workspace folder
 /.vs
 /.vscode
+
+# Visual Studio Code workspace file
+*.code-workspace
 
 # Scons progress indicator
 .scons_node_count

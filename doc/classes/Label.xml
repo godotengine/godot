@@ -30,7 +30,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total length of the text.
+				Returns the total number of printable characters in the text (excluding spaces and newlines).
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">
@@ -105,6 +105,8 @@
 		<theme_item name="font_color" type="Color">
 		</theme_item>
 		<theme_item name="font_color_shadow" type="Color">
+		</theme_item>
+		<theme_item name="font_outline_modulate" type="Color">
 		</theme_item>
 		<theme_item name="line_spacing" type="int">
 		</theme_item>

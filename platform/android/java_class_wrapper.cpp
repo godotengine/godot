@@ -554,7 +554,6 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 
 	jstring name2 = (jstring)env->CallObjectMethod(obj, Class_getName);
 	String str_type = env->GetStringUTFChars(name2, NULL);
-	print_line("name: " + str_type);
 	env->DeleteLocalRef(name2);
 	uint32_t t = 0;
 
@@ -1191,9 +1190,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		env->DeleteLocalRef(obj);
 		env->DeleteLocalRef(param_types);
 		env->DeleteLocalRef(return_type);
-
-		//args[i] = _jobject_to_variant(env, obj);
-		//print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 	};
 
 	env->DeleteLocalRef(methods);
@@ -1210,7 +1206,6 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		jstring name = (jstring)env->CallObjectMethod(obj, Field_getName);
 		String str_field = env->GetStringUTFChars(name, NULL);
 		env->DeleteLocalRef(name);
-		print_line("FIELD: " + str_field);
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
 		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
 

@@ -37,9 +37,7 @@
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
 #include "main/input_default.h"
-#include "power_haiku.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
 class OS_Haiku : public OS_Unix {
@@ -48,10 +46,9 @@ private:
 	HaikuDirectWindow *window;
 	MainLoop *main_loop;
 	InputDefault *input;
-	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_video_mode;
-	PowerHaiku *power_manager;
+	int video_driver_index;
 
 #ifdef MEDIA_KIT_ENABLED
 	AudioDriverMediaKit driver_media_kit;
@@ -66,6 +63,7 @@ private:
 protected:
 	virtual int get_video_driver_count() const;
 	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual int get_current_video_driver() const;
 
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();

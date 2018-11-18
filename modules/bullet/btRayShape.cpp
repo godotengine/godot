@@ -30,7 +30,7 @@
 
 #include "btRayShape.h"
 
-#include "math/math_funcs.h"
+#include "core/math/math_funcs.h"
 
 #include <LinearMath/btAabbUtil2.h>
 

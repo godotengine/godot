@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Anti-aliasing renderer interface (body).                             */
 /*                                                                         */
-/*  Copyright 2000-2017 by                                                 */
+/*  Copyright 2000-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -97,74 +97,17 @@
                             const FT_Vector*  origin,
                             FT_Render_Mode    required_mode )
   {
-    FT_Error     error;
+    FT_Error     error   = FT_Err_Ok;
     FT_Outline*  outline = &slot->outline;
     FT_Bitmap*   bitmap  = &slot->bitmap;
     FT_Memory    memory  = render->root.memory;
-    FT_BBox      cbox;
     FT_Pos       x_shift = 0;
     FT_Pos       y_shift = 0;
-    FT_Pos       x_left, y_top;
-    FT_Pos       width, height, pitch;
     FT_Int       hmul    = ( mode == FT_RENDER_MODE_LCD );
     FT_Int       vmul    = ( mode == FT_RENDER_MODE_LCD_V );
 
     FT_Raster_Params  params;
 
-    FT_Bool  have_outline_shifted = FALSE;
-    FT_Bool  have_buffer          = FALSE;
-
-#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-
-    FT_LcdFiveTapFilter      lcd_weights        = { 0 };
-    FT_Bool                  have_custom_weight = FALSE;
-    FT_Bitmap_LcdFilterFunc  lcd_filter_func    = NULL;
-
-
-    if ( slot->face )
-    {
-      FT_Char  i;
-
-
-      for ( i = 0; i < FT_LCD_FILTER_FIVE_TAPS; i++ )
-        if ( slot->face->internal->lcd_weights[i] != 0 )
-        {
-          have_custom_weight = TRUE;
-          break;
-        }
-    }
-
-    /*
-     * The LCD filter can be set library-wide and per-face.  Face overrides
-     * library.  If the face filter weights are all zero (the default), it
-     * means that the library default should be used.
-     */
-    if ( have_custom_weight )
-    {
-      /*
-       * A per-font filter is set.  It always uses the default 5-tap
-       * in-place FIR filter.
-       */
-      ft_memcpy( lcd_weights,
-                 slot->face->internal->lcd_weights,
-                 FT_LCD_FILTER_FIVE_TAPS );
-      lcd_filter_func = ft_lcd_filter_fir;
-    }
-    else
-    {
-      /*
-       * The face's lcd_weights is {0, 0, 0, 0, 0}, meaning `use library
-       * default'.  If the library is set to use no LCD filtering
-       * (lcd_filter_func == NULL), `lcd_filter_func' here is also set to
-       * NULL and the tests further below pass over the filtering process.
-       */
-      ft_memcpy( lcd_weights,
-                 slot->library->lcd_weights,
-                 FT_LCD_FILTER_FIVE_TAPS );
-      lcd_filter_func = slot->library->lcd_filter_func;
-    }
-
-#endif /*FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
     /* check glyph image format */
     if ( slot->format != render->glyph_format )
@@ -180,100 +123,6 @@
       goto Exit;
     }
 
-    if ( origin )
-    {
-      x_shift = origin->x;
-      y_shift = origin->y;
-    }
-
-    /* compute the control box, and grid fit it */
-    /* taking into account the origin shift     */
-    FT_Outline_Get_CBox( outline, &cbox );
-
-#ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-
-    /* add minimal padding for LCD rendering */
-    if ( hmul )
-    {
-      cbox.xMax += 21;
-      cbox.xMin -= 21;
-    }
-
-    if ( vmul )
-    {
-      cbox.yMax += 21;
-      cbox.yMin -= 21;
-    }
-
-#else /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
-
-    /* add minimal padding for LCD filter depending on specific weights */
-    if ( lcd_filter_func )
-    {
-      if ( hmul )
-      {
-        cbox.xMax += lcd_weights[4] ? 43
-                                    : lcd_weights[3] ? 22 : 0;
-        cbox.xMin -= lcd_weights[0] ? 43
-                                    : lcd_weights[1] ? 22 : 0;
-      }
-
-      if ( vmul )
-      {
-        cbox.yMax += lcd_weights[4] ? 43
-                                    : lcd_weights[3] ? 22 : 0;
-        cbox.yMin -= lcd_weights[0] ? 43
-                                    : lcd_weights[1] ? 22 : 0;
-      }
-    }
-
-#endif /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
-
-    cbox.xMin = FT_PIX_FLOOR( cbox.xMin + x_shift );
-    cbox.yMin = FT_PIX_FLOOR( cbox.yMin + y_shift );
-    cbox.xMax = FT_PIX_CEIL( cbox.xMax + x_shift );
-    cbox.yMax = FT_PIX_CEIL( cbox.yMax + y_shift );
-
-    x_shift -= cbox.xMin;
-    y_shift -= cbox.yMin;
-
-    x_left  = cbox.xMin >> 6;
-    y_top   = cbox.yMax >> 6;
-
-    width  = (FT_ULong)( cbox.xMax - cbox.xMin ) >> 6;
-    height = (FT_ULong)( cbox.yMax - cbox.yMin ) >> 6;
-
-    pitch = width;
-    if ( hmul )
-    {
-      width *= 3;
-      pitch  = FT_PAD_CEIL( width, 4 );
-    }
-
-    if ( vmul )
-      height *= 3;
-
-    /*
-     * XXX: on 16bit system, we return an error for huge bitmap
-     * to prevent an overflow.
-     */
-    if ( x_left > FT_INT_MAX || y_top > FT_INT_MAX ||
-         x_left < FT_INT_MIN || y_top < FT_INT_MIN )
-    {
-      error = FT_THROW( Invalid_Pixel_Size );
-      goto Exit;
-    }
-
-    /* Required check is (pitch * height < FT_ULONG_MAX),        */
-    /* but we care realistic cases only.  Always pitch <= width. */
-    if ( width > 0x7FFF || height > 0x7FFF )
-    {
-      FT_ERROR(( "ft_smooth_render_generic: glyph too large: %u x %u\n",
-                 width, height ));
-      error = FT_THROW( Raster_Overflow );
-      goto Exit;
-    }
-
     /* release old bitmap buffer */
     if ( slot->internal->flags & FT_GLYPH_OWN_BITMAP )
     {
@@ -281,30 +130,30 @@
       slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
     }
 
+    ft_glyphslot_preset_bitmap( slot, mode, origin );
+
     /* allocate new one */
-    if ( FT_ALLOC( bitmap->buffer, (FT_ULong)( pitch * height ) ) )
+    if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, bitmap->pitch ) )
       goto Exit;
-    else
-      have_buffer = TRUE;
 
     slot->internal->flags |= FT_GLYPH_OWN_BITMAP;
 
-    slot->format      = FT_GLYPH_FORMAT_BITMAP;
-    slot->bitmap_left = (FT_Int)x_left;
-    slot->bitmap_top  = (FT_Int)y_top;
+    x_shift = 64 * -slot->bitmap_left;
+    y_shift = 64 * -slot->bitmap_top;
+    if ( bitmap->pixel_mode == FT_PIXEL_MODE_LCD_V )
+      y_shift += 64 * (FT_Int)bitmap->rows / 3;
+    else
+      y_shift += 64 * (FT_Int)bitmap->rows;
 
-    bitmap->pixel_mode = FT_PIXEL_MODE_GRAY;
-    bitmap->num_grays  = 256;
-    bitmap->width      = (unsigned int)width;
-    bitmap->rows       = (unsigned int)height;
-    bitmap->pitch      = pitch;
+    if ( origin )
+    {
+      x_shift += origin->x;
+      y_shift += origin->y;
+    }
 
     /* translate outline to render it into the bitmap */
     if ( x_shift || y_shift )
-    {
       FT_Outline_Translate( outline, x_shift, y_shift );
-      have_outline_shifted = TRUE;
-    }
 
     /* set up parameters */
     params.target = bitmap;
@@ -351,29 +200,46 @@
     if ( error )
       goto Exit;
 
-    if ( lcd_filter_func )
-      lcd_filter_func( bitmap, mode, lcd_weights );
+    /* finally apply filtering */
+    if ( hmul || vmul )
+    {
+      FT_Byte*                 lcd_weights;
+      FT_Bitmap_LcdFilterFunc  lcd_filter_func;
+
+
+      /* Per-face LCD filtering takes priority if set up. */
+      if ( slot->face && slot->face->internal->lcd_filter_func )
+      {
+        lcd_weights     = slot->face->internal->lcd_weights;
+        lcd_filter_func = slot->face->internal->lcd_filter_func;
+      }
+      else
+      {
+        lcd_weights     = slot->library->lcd_weights;
+        lcd_filter_func = slot->library->lcd_filter_func;
+      }
+
+      if ( lcd_filter_func )
+        lcd_filter_func( bitmap, mode, lcd_weights );
+    }
 
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
     if ( hmul )  /* lcd */
     {
       FT_Byte*  line;
-      FT_Byte*  temp;
-      FT_Int    i, j;
+      FT_Byte*  temp = NULL;
+      FT_UInt   i, j;
+
+      unsigned int  height = bitmap->rows;
+      unsigned int  width  = bitmap->width;
+      int           pitch  = bitmap->pitch;
 
 
       /* Render 3 separate monochrome bitmaps, shifting the outline  */
       /* by 1/3 pixel.                                               */
       width /= 3;
 
-      FT_Outline_Translate( outline,  21, 0 );
-
-      error = render->raster_render( render->raster, &params );
-      if ( error )
-        goto Exit;
-
-      FT_Outline_Translate( outline, -21, 0 );
       bitmap->buffer += width;
 
       error = render->raster_render( render->raster, &params );
@@ -381,14 +247,20 @@
         goto Exit;
 
       FT_Outline_Translate( outline, -21, 0 );
+      x_shift        -= 21;
       bitmap->buffer += width;
 
       error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
 
-      FT_Outline_Translate( outline,  21, 0 );
+      FT_Outline_Translate( outline,  42, 0 );
+      x_shift        += 42;
       bitmap->buffer -= 2 * width;
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
 
       /* XXX: Rearrange the bytes according to FT_PIXEL_MODE_LCD.    */
       /* XXX: It is more efficient to render every third byte above. */
@@ -398,7 +270,7 @@
 
       for ( i = 0; i < height; i++ )
       {
-        line = bitmap->buffer + i * pitch;
+        line = bitmap->buffer + i * (FT_ULong)pitch;
         for ( j = 0; j < width; j++ )
         {
           temp[3 * j    ] = line[j];
@@ -412,59 +284,58 @@
     }
     else if ( vmul )  /* lcd_v */
     {
+      int  pitch  = bitmap->pitch;
+
+
       /* Render 3 separate monochrome bitmaps, shifting the outline  */
       /* by 1/3 pixel. Triple the pitch to render on each third row. */
       bitmap->pitch *= 3;
       bitmap->rows  /= 3;
 
-      FT_Outline_Translate( outline, 0,  21 );
-      bitmap->buffer += 2 * pitch;
-
-      error = render->raster_render( render->raster, &params );
-      if ( error )
-        goto Exit;
-
-      FT_Outline_Translate( outline, 0, -21 );
-      bitmap->buffer -= pitch;
-
-      error = render->raster_render( render->raster, &params );
-      if ( error )
-        goto Exit;
-
-      FT_Outline_Translate( outline, 0, -21 );
-      bitmap->buffer -= pitch;
+      bitmap->buffer += pitch;
 
       error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
 
       FT_Outline_Translate( outline, 0,  21 );
+      y_shift        += 21;
+      bitmap->buffer += pitch;
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
+
+      FT_Outline_Translate( outline, 0, -42 );
+      y_shift        -= 42;
+      bitmap->buffer -= 2 * pitch;
+
+      error = render->raster_render( render->raster, &params );
+      if ( error )
+        goto Exit;
 
       bitmap->pitch /= 3;
       bitmap->rows  *= 3;
     }
     else  /* grayscale */
-    {
       error = render->raster_render( render->raster, &params );
-      if ( error )
-        goto Exit;
-    }
 
 #endif /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
-    /* everything is fine; don't deallocate buffer */
-    have_buffer = FALSE;
-
-    error = FT_Err_Ok;
-
   Exit:
-    if ( have_outline_shifted )
-      FT_Outline_Translate( outline, -x_shift, -y_shift );
-    if ( have_buffer )
+    if ( !error )
+    {
+      /* everything is fine; the glyph is now officially a bitmap */
+      slot->format = FT_GLYPH_FORMAT_BITMAP;
+    }
+    else if ( slot->internal->flags & FT_GLYPH_OWN_BITMAP )
     {
       FT_FREE( bitmap->buffer );
       slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
     }
+
+    if ( x_shift || y_shift )
+      FT_Outline_Translate( outline, -x_shift, -y_shift );
 
     return error;
   }
@@ -492,14 +363,8 @@
                         FT_Render_Mode    mode,
                         const FT_Vector*  origin )
   {
-    FT_Error  error;
-
-    error = ft_smooth_render_generic( render, slot, mode, origin,
-                                      FT_RENDER_MODE_LCD );
-    if ( !error )
-      slot->bitmap.pixel_mode = FT_PIXEL_MODE_LCD;
-
-    return error;
+    return ft_smooth_render_generic( render, slot, mode, origin,
+                                     FT_RENDER_MODE_LCD );
   }
 
 
@@ -510,14 +375,8 @@
                           FT_Render_Mode    mode,
                           const FT_Vector*  origin )
   {
-    FT_Error  error;
-
-    error = ft_smooth_render_generic( render, slot, mode, origin,
-                                      FT_RENDER_MODE_LCD_V );
-    if ( !error )
-      slot->bitmap.pixel_mode = FT_PIXEL_MODE_LCD_V;
-
-    return error;
+    return ft_smooth_render_generic( render, slot, mode, origin,
+                                     FT_RENDER_MODE_LCD_V );
   }
 
 

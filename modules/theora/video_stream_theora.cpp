@@ -30,8 +30,8 @@
 
 #include "video_stream_theora.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
@@ -332,8 +332,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 		int w;
 		int h;
-		w = (ti.pic_x + ti.frame_width + 1 & ~1) - (ti.pic_x & ~1);
-		h = (ti.pic_y + ti.frame_height + 1 & ~1) - (ti.pic_y & ~1);
+		w = ((ti.pic_x + ti.frame_width + 1) & ~1) - (ti.pic_x & ~1);
+		h = ((ti.pic_y + ti.frame_height + 1) & ~1) - (ti.pic_y & ~1);
 		size.x = w;
 		size.y = h;
 
@@ -387,7 +387,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 	thread_sem->post();
 #endif
 
-	//print_line("play "+rtos(p_delta));
 	time += p_delta;
 
 	if (videobuf_time > get_time()) {
@@ -440,17 +439,9 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 					}
 				}
 
-				int tr = vorbis_synthesis_read(&vd, ret - to_read);
-
-				if (vd.granulepos >= 0) {
-					//print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
-				}
-
-				//print_line("mix audio!");
+				vorbis_synthesis_read(&vd, ret - to_read);
 
 				audio_frames_wrote += ret - to_read;
-
-				//print_line("AGP: "+itos(vd.granulepos)+" added "+itos(ret-to_read));
 
 			} else {
 
@@ -460,7 +451,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 						vorbis_synthesis_blockin(&vd, &vb);
 					}
 				} else { /* we need more data; break out to suck in another page */
-					//printf("need moar data\n");
 					break;
 				};
 			}
@@ -729,4 +719,46 @@ void VideoStreamTheora::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file"), &VideoStreamTheora::get_file);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_file", "get_file");
+}
+
+////////////
+
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		return RES();
+	}
+
+	VideoStreamTheora *stream = memnew(VideoStreamTheora);
+	stream->set_file(p_path);
+
+	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);
+
+	if (r_error) {
+		*r_error = OK;
+	}
+
+	return ogv_stream;
+}
+
+void ResourceFormatLoaderTheora::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("ogv");
+}
+
+bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
+
+	return ClassDB::is_parent_class(p_type, "VideoStream");
+}
+
+String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
+
+	String el = p_path.get_extension().to_lower();
+	if (el == "ogv")
+		return "VideoStreamTheora";
+	return "";
 }

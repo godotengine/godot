@@ -18,6 +18,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "src/dsp/dsp.h"
 #include "src/enc/vp8i_enc.h"
 #include "src/utils/utils.h"
 
@@ -169,6 +170,12 @@ int WebPPlaneDistortion(const uint8_t* src, size_t src_stride,
   return 1;
 }
 
+#ifdef WORDS_BIGENDIAN
+#define BLUE_OFFSET 3   // uint32_t 0x000000ff is 0x00,00,00,ff in memory
+#else
+#define BLUE_OFFSET 0   // uint32_t 0x000000ff is 0xff,00,00,00 in memory
+#endif
+
 int WebPPictureDistortion(const WebPPicture* src, const WebPPicture* ref,
                           int type, float results[5]) {
   int w, h, c;
@@ -195,8 +202,10 @@ int WebPPictureDistortion(const WebPPicture* src, const WebPPicture* ref,
     float distortion;
     const size_t stride0 = 4 * (size_t)p0.argb_stride;
     const size_t stride1 = 4 * (size_t)p1.argb_stride;
-    if (!WebPPlaneDistortion((const uint8_t*)p0.argb + c, stride0,
-                             (const uint8_t*)p1.argb + c, stride1,
+    // results are reported as BGRA
+    const int offset = c ^ BLUE_OFFSET;
+    if (!WebPPlaneDistortion((const uint8_t*)p0.argb + offset, stride0,
+                             (const uint8_t*)p1.argb + offset, stride1,
                              w, h, 4, type, &distortion, results + c)) {
       goto Error;
     }
@@ -213,6 +222,8 @@ int WebPPictureDistortion(const WebPPicture* src, const WebPPicture* ref,
   WebPPictureFree(&p1);
   return ok;
 }
+
+#undef BLUE_OFFSET
 
 #else  // defined(WEBP_DISABLE_STATS)
 int WebPPlaneDistortion(const uint8_t* src, size_t src_stride,

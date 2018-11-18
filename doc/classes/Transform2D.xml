@@ -143,18 +143,18 @@
 			</description>
 		</method>
 		<method name="xform">
-			<return type="var">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
 				Transforms the given [Vector2] or [Rect2] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
-			<return type="var">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="v" type="var">
+			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
 				Inverse-transforms the given [Vector2] or [Rect2] by this transform.
@@ -173,5 +173,11 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="IDENTITY" value="Transform2D( 1, 0, 0, 1, 0, 0 )">
+		</constant>
+		<constant name="FLIP_X" value="Transform2D( -1, 0, 0, 1, 0, 0 )">
+		</constant>
+		<constant name="FLIP_Y" value="Transform2D( 1, 0, 0, -1, 0, 0 )">
+		</constant>
 	</constants>
 </class>

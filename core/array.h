@@ -31,7 +31,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
+
 class Variant;
 class ArrayPrivate;
 class Object;
@@ -89,6 +90,9 @@ public:
 	Variant pop_front();
 
 	Array duplicate(bool p_deep = false) const;
+
+	Variant min() const;
+	Variant max() const;
 
 	Array(const Array &p_from);
 	Array();

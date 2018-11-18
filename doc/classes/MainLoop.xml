@@ -47,7 +47,7 @@
 		<method name="_input_event" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="ev" type="InputEvent">
+			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
 			</description>
@@ -91,7 +91,7 @@
 		<method name="input_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="ev" type="InputEvent">
+			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
 			</description>
@@ -133,6 +133,8 @@
 		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="90">
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="91">
+		</constant>
+		<constant name="NOTIFICATION_CRASH" value="92">
 		</constant>
 	</constants>
 </class>

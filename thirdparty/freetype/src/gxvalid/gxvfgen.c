@@ -5,7 +5,7 @@
 /*    Generate feature registry data for gxv `feat' validator.             */
 /*    This program is derived from gxfeatreg.c in gxlayout.                */
 /*                                                                         */
-/*  Copyright 2004-2017 by                                                 */
+/*  Copyright 2004-2018 by                                                 */
 /*  Masatake YAMATO and Redhat K.K.                                        */
 /*                                                                         */
 /*  This file may only be used,                                            */
@@ -21,7 +21,7 @@
 /*  gxfeatreg.c                                                            */
 /*                                                                         */
 /*    Database of font features pre-defined by Apple Computer, Inc.        */
-/*    http://developer.apple.com/fonts/Registry/                           */
+/*    https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html */
 /*    (body).                                                              */
 /*                                                                         */
 /*  Copyright 2003 by                                                      */

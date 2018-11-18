@@ -54,6 +54,8 @@ class Physics2DServerSW : public Physics2DServer {
 
 	bool using_threads;
 
+	bool flushing_queries;
+
 	Step2DSW *stepper;
 	Set<const Space2DSW *> active_spaces;
 
@@ -144,6 +146,9 @@ public:
 	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
+	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_ID);
+	virtual ObjectID area_get_canvas_instance_id(RID p_area) const;
+
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
 	virtual void area_set_transform(RID p_area, const Transform2D &p_transform);
 
@@ -188,6 +193,9 @@ public:
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
+	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_ID);
+	virtual uint32_t body_get_canvas_instance_id(RID p_body) const;
+
 	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode);
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
@@ -209,8 +217,12 @@ public:
 	virtual void body_set_applied_torque(RID p_body, real_t p_torque);
 	virtual real_t body_get_applied_torque(RID p_body) const;
 
+	virtual void body_add_central_force(RID p_body, const Vector2 &p_force);
 	virtual void body_add_force(RID p_body, const Vector2 &p_offset, const Vector2 &p_force);
+	virtual void body_add_torque(RID p_body, real_t p_torque);
 
+	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse);
+	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque);
 	virtual void body_apply_impulse(RID p_body, const Vector2 &p_pos, const Vector2 &p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector2 &p_axis_velocity);
 
@@ -232,7 +244,8 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable);
 
-	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = NULL);
+	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, real_t p_margin = 0.001, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
+	virtual int body_test_ray_separation(RID p_body, const Transform2D &p_transform, bool p_infinite_inertia, Vector2 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual Physics2DDirectBodyState *body_get_direct_state(RID p_body);
@@ -266,6 +279,8 @@ public:
 	virtual void flush_queries();
 	virtual void end_sync();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const { return flushing_queries; }
 
 	int get_process_info(ProcessInfo p_info);
 

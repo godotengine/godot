@@ -25,7 +25,7 @@ class btStaticPlaneShape;
 
 /// btContinuousConvexCollision implements angular and linear time of impact for convex objects.
 /// Based on Brian Mirtich's Conservative Advancement idea (PhD thesis).
-/// Algorithm operates in worldspace, in order to keep inbetween motion globally consistent.
+/// Algorithm operates in worldspace, in order to keep in between motion globally consistent.
 /// It uses GJK at the moment. Future improvement would use minkowski sum / supporting vertex, merging innerloops
 class btContinuousConvexCollision : public btConvexCast
 {

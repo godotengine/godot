@@ -37,6 +37,7 @@
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
 	ViewController *view_controller;
+	bool is_focus_out;
 };
 
 @property(strong, nonatomic) UIWindow *window;

@@ -31,8 +31,8 @@
 #ifndef VSET_H
 #define VSET_H
 
-#include "typedefs.h"
-#include "vector.h"
+#include "core/typedefs.h"
+#include "core/vector.h"
 
 template <class T>
 class VSet {
@@ -133,7 +133,7 @@ public:
 
 	inline T &operator[](int p_index) {
 
-		return _data[p_index];
+		return _data.write[p_index];
 	}
 
 	inline const T &operator[](int p_index) const {

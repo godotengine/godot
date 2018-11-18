@@ -31,9 +31,9 @@
 #ifndef BIT_MASK_H
 #define BIT_MASK_H
 
-#include "image.h"
-#include "io/resource_loader.h"
-#include "resource.h"
+#include "core/image.h"
+#include "core/io/resource_loader.h"
+#include "core/resource.h"
 
 class BitMap : public Resource {
 
@@ -45,6 +45,8 @@ class BitMap : public Resource {
 	int height;
 
 	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
+
+	Array _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
 
 protected:
 	void _set_data(const Dictionary &p_d);

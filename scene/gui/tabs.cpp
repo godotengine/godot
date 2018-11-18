@@ -30,7 +30,7 @@
 
 #include "tabs.h"
 
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -106,41 +106,8 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// test hovering to display right or close button
-		int hover_now = -1;
-		int hover_buttons = -1;
-		for (int i = 0; i < tabs.size(); i++) {
-
-			if (i < offset)
-				continue;
-
-			Rect2 rect = get_tab_rect(i);
-			if (rect.has_point(pos)) {
-				hover_now = i;
-			}
-			if (tabs[i].rb_rect.has_point(pos)) {
-				rb_hover = i;
-				cb_hover = -1;
-				hover_buttons = i;
-				break;
-			} else if (!tabs[i].disabled && tabs[i].cb_rect.has_point(pos)) {
-				cb_hover = i;
-				rb_hover = -1;
-				hover_buttons = i;
-				break;
-			}
-		}
-		if (hover != hover_now) {
-			hover = hover_now;
-			emit_signal("tab_hover", hover);
-		}
-
-		if (hover_buttons == -1) { // no hover
-			rb_hover = hover_buttons;
-			cb_hover = hover_buttons;
-		}
+		_update_hover();
 		update();
-
 		return;
 	}
 
@@ -189,7 +156,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			update();
 		}
 
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		if (mb->is_pressed() && (mb->get_button_index() == BUTTON_LEFT || (select_with_rmb && mb->get_button_index() == BUTTON_RIGHT))) {
 
 			// clicks
 			Point2 pos(mb->get_position().x, mb->get_position().y);
@@ -286,7 +253,7 @@ void Tabs::_notification(int p_what) {
 
 			for (int i = 0; i < tabs.size(); i++) {
 
-				tabs[i].ofs_cache = mw;
+				tabs.write[i].ofs_cache = mw;
 				mw += get_tab_width(i);
 			}
 
@@ -314,7 +281,7 @@ void Tabs::_notification(int p_what) {
 				if (i < offset)
 					continue;
 
-				tabs[i].ofs_cache = w;
+				tabs.write[i].ofs_cache = w;
 
 				int lsize = tabs[i].size_cache;
 
@@ -379,7 +346,7 @@ void Tabs::_notification(int p_what) {
 
 					rb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), rb_rect.position.y + style->get_margin(MARGIN_TOP)));
 					w += rb->get_width();
-					tabs[i].rb_rect = rb_rect;
+					tabs.write[i].rb_rect = rb_rect;
 				}
 
 				if (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current)) {
@@ -403,7 +370,7 @@ void Tabs::_notification(int p_what) {
 
 					cb->draw(ci, Point2i(w + style->get_margin(MARGIN_LEFT), cb_rect.position.y + style->get_margin(MARGIN_TOP)));
 					w += cb->get_width();
-					tabs[i].cb_rect = cb_rect;
+					tabs.write[i].cb_rect = cb_rect;
 				}
 
 				w += sb->get_margin(MARGIN_RIGHT);
@@ -471,7 +438,7 @@ bool Tabs::get_offset_buttons_visible() const {
 void Tabs::set_tab_title(int p_tab, const String &p_title) {
 
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs[p_tab].text = p_title;
+	tabs.write[p_tab].text = p_title;
 	update();
 	minimum_size_changed();
 }
@@ -485,7 +452,7 @@ String Tabs::get_tab_title(int p_tab) const {
 void Tabs::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
 
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs[p_tab].icon = p_icon;
+	tabs.write[p_tab].icon = p_icon;
 	update();
 	minimum_size_changed();
 }
@@ -499,7 +466,7 @@ Ref<Texture> Tabs::get_tab_icon(int p_tab) const {
 void Tabs::set_tab_disabled(int p_tab, bool p_disabled) {
 
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs[p_tab].disabled = p_disabled;
+	tabs.write[p_tab].disabled = p_disabled;
 	update();
 }
 bool Tabs::get_tab_disabled(int p_tab) const {
@@ -511,7 +478,7 @@ bool Tabs::get_tab_disabled(int p_tab) const {
 void Tabs::set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button) {
 
 	ERR_FAIL_INDEX(p_tab, tabs.size());
-	tabs[p_tab].right_button = p_right_button;
+	tabs.write[p_tab].right_button = p_right_button;
 	_update_cache();
 	update();
 	minimum_size_changed();
@@ -520,6 +487,48 @@ Ref<Texture> Tabs::get_tab_right_button(int p_tab) const {
 
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Ref<Texture>());
 	return tabs[p_tab].right_button;
+}
+
+void Tabs::_update_hover() {
+
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	const Point2 &pos = get_local_mouse_position();
+	// test hovering to display right or close button
+	int hover_now = -1;
+	int hover_buttons = -1;
+	for (int i = 0; i < tabs.size(); i++) {
+
+		if (i < offset)
+			continue;
+
+		Rect2 rect = get_tab_rect(i);
+		if (rect.has_point(pos)) {
+			hover_now = i;
+		}
+		if (tabs[i].rb_rect.has_point(pos)) {
+			rb_hover = i;
+			cb_hover = -1;
+			hover_buttons = i;
+			break;
+		} else if (!tabs[i].disabled && tabs[i].cb_rect.has_point(pos)) {
+			cb_hover = i;
+			rb_hover = -1;
+			hover_buttons = i;
+			break;
+		}
+	}
+	if (hover != hover_now) {
+		hover = hover_now;
+		emit_signal("tab_hover", hover);
+	}
+
+	if (hover_buttons == -1) { // no hover
+		rb_hover = hover_buttons;
+		cb_hover = hover_buttons;
+	}
 }
 
 void Tabs::_update_cache() {
@@ -536,9 +545,9 @@ void Tabs::_update_cache() {
 	int size_fixed = 0;
 	int count_resize = 0;
 	for (int i = 0; i < tabs.size(); i++) {
-		tabs[i].ofs_cache = mw;
-		tabs[i].size_cache = get_tab_width(i);
-		tabs[i].size_text = font->get_string_size(tabs[i].text).width;
+		tabs.write[i].ofs_cache = mw;
+		tabs.write[i].size_cache = get_tab_width(i);
+		tabs.write[i].size_text = font->get_string_size(tabs[i].text).width;
 		mw += tabs[i].size_cache;
 		if (tabs[i].size_cache <= min_width || i == current) {
 			size_fixed += tabs[i].size_cache;
@@ -579,9 +588,9 @@ void Tabs::_update_cache() {
 				lsize = m_width;
 			}
 		}
-		tabs[i].ofs_cache = w;
-		tabs[i].size_cache = lsize;
-		tabs[i].size_text = slen;
+		tabs.write[i].ofs_cache = w;
+		tabs.write[i].size_cache = lsize;
+		tabs.write[i].size_text = slen;
 		w += lsize;
 	}
 }
@@ -597,6 +606,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 
 	tabs.push_back(t);
 	_update_cache();
+	call_deferred("_update_hover");
 	update();
 	minimum_size_changed();
 }
@@ -604,6 +614,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 void Tabs::clear_tabs() {
 	tabs.clear();
 	current = 0;
+	call_deferred("_update_hover");
 	update();
 }
 
@@ -614,6 +625,7 @@ void Tabs::remove_tab(int p_idx) {
 	if (current >= p_idx)
 		current--;
 	_update_cache();
+	call_deferred("_update_hover");
 	update();
 	minimum_size_changed();
 
@@ -920,9 +932,18 @@ int Tabs::get_tabs_rearrange_group() const {
 	return tabs_rearrange_group;
 }
 
+void Tabs::set_select_with_rmb(bool p_enabled) {
+	select_with_rmb = p_enabled;
+}
+
+bool Tabs::get_select_with_rmb() const {
+	return select_with_rmb;
+}
+
 void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
+	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
@@ -950,6 +971,9 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &Tabs::set_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &Tabs::get_tabs_rearrange_group);
 
+	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &Tabs::set_select_with_rmb);
+	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &Tabs::get_select_with_rmb);
+
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_close", PropertyInfo(Variant::INT, "tab")));
@@ -959,7 +983,7 @@ void Tabs::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 
@@ -987,6 +1011,8 @@ Tabs::Tabs() {
 	cb_displaypolicy = CLOSE_BUTTON_SHOW_NEVER;
 	offset = 0;
 	max_drawn_tab = 0;
+
+	select_with_rmb = false;
 
 	min_width = 0;
 	scrolling_enabled = true;

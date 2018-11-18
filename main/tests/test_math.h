@@ -31,7 +31,7 @@
 #ifndef TEST_MATH_H
 #define TEST_MATH_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestMath {
 

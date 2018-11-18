@@ -42,6 +42,9 @@
 
 class RigidBodyBullet;
 
+/// This callback is injected inside bullet server and allow me to smooth contacts against trimesh
+bool godotContactAddedCallback(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1);
+
 /// This class is required to implement custom collision behaviour in the broadphase
 struct GodotFilterCallback : public btOverlapFilterCallback {
 	static bool test_collision_filters(uint32_t body0_collision_layer, uint32_t body0_collision_mask, uint32_t body1_collision_layer, uint32_t body1_collision_mask);
@@ -56,17 +59,25 @@ struct GodotClosestRayResultCallback : public btCollisionWorld::ClosestRayResult
 	bool m_pickRay;
 	int m_shapeId;
 
+	bool collide_with_bodies;
+	bool collide_with_areas;
+
 public:
-	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const Set<RID> *p_exclude) :
+	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld),
 			m_exclude(p_exclude),
 			m_pickRay(false),
-			m_shapeId(0) {}
+			m_shapeId(0),
+			collide_with_bodies(p_collide_with_bodies),
+			collide_with_areas(p_collide_with_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult &rayResult, bool normalInWorldSpace) {
-		m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+		if (rayResult.m_localShapeInfo)
+			m_shapeId = rayResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
+		else
+			m_shapeId = 0;
 		return btCollisionWorld::ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
 	}
 };
@@ -76,13 +87,13 @@ struct GodotAllConvexResultCallback : public btCollisionWorld::ConvexResultCallb
 public:
 	PhysicsDirectSpaceState::ShapeResult *m_results;
 	int m_resultMax;
-	int count;
 	const Set<RID> *m_exclude;
+	int count;
 
 	GodotAllConvexResultCallback(PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
 			m_results(p_results),
-			m_exclude(p_exclude),
 			m_resultMax(p_resultMax),
+			m_exclude(p_exclude),
 			count(0) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
@@ -108,9 +119,15 @@ public:
 	const Set<RID> *m_exclude;
 	int m_shapeId;
 
-	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude) :
+	bool collide_with_bodies;
+	bool collide_with_areas;
+
+	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
-			m_exclude(p_exclude) {}
+			m_exclude(p_exclude),
+			m_shapeId(0),
+			collide_with_bodies(p_collide_with_bodies),
+			collide_with_areas(p_collide_with_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -122,15 +139,20 @@ public:
 	const btCollisionObject *m_self_object;
 	PhysicsDirectSpaceState::ShapeResult *m_results;
 	int m_resultMax;
-	int m_count;
 	const Set<RID> *m_exclude;
+	int m_count;
 
-	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
+	bool collide_with_bodies;
+	bool collide_with_areas;
+
+	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_results(p_results),
-			m_exclude(p_exclude),
 			m_resultMax(p_resultMax),
-			m_count(0) {}
+			m_exclude(p_exclude),
+			m_count(0),
+			collide_with_bodies(p_collide_with_bodies),
+			collide_with_areas(p_collide_with_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -143,15 +165,20 @@ public:
 	const btCollisionObject *m_self_object;
 	Vector3 *m_results;
 	int m_resultMax;
-	int m_count;
 	const Set<RID> *m_exclude;
+	int m_count;
 
-	GodotContactPairContactResultCallback(btCollisionObject *p_self_object, Vector3 *p_results, int p_resultMax, const Set<RID> *p_exclude) :
+	bool collide_with_bodies;
+	bool collide_with_areas;
+
+	GodotContactPairContactResultCallback(btCollisionObject *p_self_object, Vector3 *p_results, int p_resultMax, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_results(p_results),
-			m_exclude(p_exclude),
 			m_resultMax(p_resultMax),
-			m_count(0) {}
+			m_exclude(p_exclude),
+			m_count(0),
+			collide_with_bodies(p_collide_with_bodies),
+			collide_with_areas(p_collide_with_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
@@ -162,18 +189,22 @@ struct GodotRestInfoContactResultCallback : public btCollisionWorld::ContactResu
 public:
 	const btCollisionObject *m_self_object;
 	PhysicsDirectSpaceState::ShapeRestInfo *m_result;
+	const Set<RID> *m_exclude;
 	bool m_collided;
 	real_t m_min_distance;
 	const btCollisionObject *m_rest_info_collision_object;
 	btVector3 m_rest_info_bt_point;
-	const Set<RID> *m_exclude;
+	bool collide_with_bodies;
+	bool collide_with_areas;
 
-	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude) :
+	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_result(p_result),
 			m_exclude(p_exclude),
 			m_collided(false),
-			m_min_distance(0) {}
+			m_min_distance(0),
+			collide_with_bodies(p_collide_with_bodies),
+			collide_with_areas(p_collide_with_areas) {}
 
 	virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 

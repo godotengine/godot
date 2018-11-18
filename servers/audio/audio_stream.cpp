@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream.h"
+#include "core/os/os.h"
 
 //////////////////////////////
 
@@ -89,11 +90,135 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 	}
 }
+
 ////////////////////////////////
 
 void AudioStream::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
+}
+
+////////////////////////////////
+
+Ref<AudioStreamPlayback> AudioStreamMicrophone::instance_playback() {
+	Ref<AudioStreamPlaybackMicrophone> playback;
+	playback.instance();
+
+	playbacks.insert(playback.ptr());
+
+	playback->microphone = Ref<AudioStreamMicrophone>((AudioStreamMicrophone *)this);
+	playback->active = false;
+
+	return playback;
+}
+
+String AudioStreamMicrophone::get_stream_name() const {
+
+	//if (audio_stream.is_valid()) {
+	//return "Random: " + audio_stream->get_name();
+	//}
+	return "Microphone";
+}
+
+float AudioStreamMicrophone::get_length() const {
+	return 0;
+}
+
+void AudioStreamMicrophone::_bind_methods() {
+}
+
+AudioStreamMicrophone::AudioStreamMicrophone() {
+}
+
+void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
+
+	AudioDriver::get_singleton()->lock();
+
+	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
+	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
+	int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
+	int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
+#ifdef DEBUG_ENABLED
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+#endif
+
+	if (playback_delay > input_size) {
+		for (int i = 0; i < p_frames; i++) {
+			p_buffer[i] = AudioFrame(0.0f, 0.0f);
+		}
+		input_ofs = 0;
+	} else {
+		for (int i = 0; i < p_frames; i++) {
+			if (input_size > input_ofs) {
+				float l = (buf[input_ofs++] >> 16) / 32768.f;
+				if (input_ofs >= buf.size()) {
+					input_ofs = 0;
+				}
+				float r = (buf[input_ofs++] >> 16) / 32768.f;
+				if (input_ofs >= buf.size()) {
+					input_ofs = 0;
+				}
+
+				p_buffer[i] = AudioFrame(l, r);
+			} else {
+				p_buffer[i] = AudioFrame(0.0f, 0.0f);
+			}
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	if (input_ofs > input_position && (input_ofs - input_position) < (p_frames * 2)) {
+		print_verbose(String(get_class_name()) + " buffer underrun: input_position=" + itos(input_position) + " input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
+	}
+#endif
+
+	AudioDriver::get_singleton()->unlock();
+}
+
+void AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	AudioStreamPlaybackResampled::mix(p_buffer, p_rate_scale, p_frames);
+}
+
+float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
+	return AudioDriver::get_singleton()->get_mix_rate();
+}
+
+void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
+	input_ofs = 0;
+
+	AudioDriver::get_singleton()->capture_start();
+
+	active = true;
+	_begin_resample();
+}
+
+void AudioStreamPlaybackMicrophone::stop() {
+	AudioDriver::get_singleton()->capture_stop();
+	active = false;
+}
+
+bool AudioStreamPlaybackMicrophone::is_playing() const {
+	return active;
+}
+
+int AudioStreamPlaybackMicrophone::get_loop_count() const {
+	return 0;
+}
+
+float AudioStreamPlaybackMicrophone::get_playback_position() const {
+	return 0;
+}
+
+void AudioStreamPlaybackMicrophone::seek(float p_time) {
+	return; // Can't seek a microphone input
+}
+
+AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
+	microphone->playbacks.erase(this);
+	stop();
+}
+
+AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
 }
 
 ////////////////////////////////

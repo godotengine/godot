@@ -30,7 +30,7 @@
 
 #include "curve.h"
 
-#include "core_string_names.h"
+#include "core/core_string_names.h"
 
 template <class T>
 static _FORCE_INLINE_ T _bezier_interp(real_t t, T start, T control_1, T control_2, T end) {
@@ -153,25 +153,25 @@ void Curve::clean_dupes() {
 
 void Curve::set_point_left_tangent(int i, real_t tangent) {
 	ERR_FAIL_INDEX(i, _points.size());
-	_points[i].left_tangent = tangent;
-	_points[i].left_mode = TANGENT_FREE;
+	_points.write[i].left_tangent = tangent;
+	_points.write[i].left_mode = TANGENT_FREE;
 	mark_dirty();
 }
 
 void Curve::set_point_right_tangent(int i, real_t tangent) {
 	ERR_FAIL_INDEX(i, _points.size());
-	_points[i].right_tangent = tangent;
-	_points[i].right_mode = TANGENT_FREE;
+	_points.write[i].right_tangent = tangent;
+	_points.write[i].right_mode = TANGENT_FREE;
 	mark_dirty();
 }
 
 void Curve::set_point_left_mode(int i, TangentMode p_mode) {
 	ERR_FAIL_INDEX(i, _points.size());
-	_points[i].left_mode = p_mode;
+	_points.write[i].left_mode = p_mode;
 	if (i > 0) {
 		if (p_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[i - 1].pos - _points[i].pos).normalized();
-			_points[i].left_tangent = v.y / v.x;
+			_points.write[i].left_tangent = v.y / v.x;
 		}
 	}
 	mark_dirty();
@@ -179,11 +179,11 @@ void Curve::set_point_left_mode(int i, TangentMode p_mode) {
 
 void Curve::set_point_right_mode(int i, TangentMode p_mode) {
 	ERR_FAIL_INDEX(i, _points.size());
-	_points[i].right_mode = p_mode;
+	_points.write[i].right_mode = p_mode;
 	if (i + 1 < _points.size()) {
 		if (p_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[i + 1].pos - _points[i].pos).normalized();
-			_points[i].right_tangent = v.y / v.x;
+			_points.write[i].right_tangent = v.y / v.x;
 		}
 	}
 	mark_dirty();
@@ -222,7 +222,7 @@ void Curve::clear_points() {
 
 void Curve::set_point_value(int p_index, real_t pos) {
 	ERR_FAIL_INDEX(p_index, _points.size());
-	_points[p_index].pos.y = pos;
+	_points.write[p_index].pos.y = pos;
 	update_auto_tangents(p_index);
 	mark_dirty();
 }
@@ -232,10 +232,10 @@ int Curve::set_point_offset(int p_index, float offset) {
 	Point p = _points[p_index];
 	remove_point(p_index);
 	int i = add_point(Vector2(offset, p.pos.y));
-	_points[i].left_tangent = p.left_tangent;
-	_points[i].right_tangent = p.right_tangent;
-	_points[i].left_mode = p.left_mode;
-	_points[i].right_mode = p.right_mode;
+	_points.write[i].left_tangent = p.left_tangent;
+	_points.write[i].right_tangent = p.right_tangent;
+	_points.write[i].left_mode = p.left_mode;
+	_points.write[i].right_mode = p.right_mode;
 	if (p_index != i)
 		update_auto_tangents(p_index);
 	update_auto_tangents(i);
@@ -254,7 +254,7 @@ Curve::Point Curve::get_point(int p_index) const {
 
 void Curve::update_auto_tangents(int i) {
 
-	Point &p = _points[i];
+	Point &p = _points.write[i];
 
 	if (i > 0) {
 		if (p.left_mode == TANGENT_LINEAR) {
@@ -263,7 +263,7 @@ void Curve::update_auto_tangents(int i) {
 		}
 		if (_points[i - 1].right_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[i - 1].pos - p.pos).normalized();
-			_points[i - 1].right_tangent = v.y / v.x;
+			_points.write[i - 1].right_tangent = v.y / v.x;
 		}
 	}
 
@@ -274,7 +274,7 @@ void Curve::update_auto_tangents(int i) {
 		}
 		if (_points[i + 1].left_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[i + 1].pos - p.pos).normalized();
-			_points[i + 1].left_tangent = v.y / v.x;
+			_points.write[i + 1].left_tangent = v.y / v.x;
 		}
 	}
 }
@@ -402,7 +402,7 @@ void Curve::set_data(Array input) {
 
 	for (int j = 0; j < _points.size(); ++j) {
 
-		Point &p = _points[j];
+		Point &p = _points.write[j];
 		int i = j * ELEMS;
 
 		p.pos = input[i];
@@ -426,12 +426,12 @@ void Curve::bake() {
 	for (int i = 1; i < _bake_resolution - 1; ++i) {
 		real_t x = i / static_cast<real_t>(_bake_resolution);
 		real_t y = interpolate(x);
-		_baked_cache[i] = y;
+		_baked_cache.write[i] = y;
 	}
 
 	if (_points.size() != 0) {
-		_baked_cache[0] = _points[0].pos.y;
-		_baked_cache[_baked_cache.size() - 1] = _points[_points.size() - 1].pos.y;
+		_baked_cache.write[0] = _points[0].pos.y;
+		_baked_cache.write[_baked_cache.size() - 1] = _points[_points.size() - 1].pos.y;
 	}
 
 	_baked_cache_dirty = false;
@@ -479,8 +479,19 @@ real_t Curve::interpolate_baked(real_t offset) {
 	}
 }
 
+void Curve::ensure_default_setup(float p_min, float p_max) {
+	if (_points.size() == 0 && _min_value == 0 && _max_value == 1) {
+
+		add_point(Vector2(0, 1));
+		add_point(Vector2(1, 1));
+		set_min_value(p_min);
+		set_max_value(p_max);
+	}
+}
+
 void Curve::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve::get_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
 	ClassDB::bind_method(D_METHOD("clear_points"), &Curve::clear_points);
@@ -543,7 +554,7 @@ void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].pos = p_pos;
+	points.write[p_index].pos = p_pos;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -557,7 +568,7 @@ void Curve2D::set_point_in(int p_index, const Vector2 &p_in) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].in = p_in;
+	points.write[p_index].in = p_in;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -571,7 +582,7 @@ void Curve2D::set_point_out(int p_index, const Vector2 &p_out) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].out = p_out;
+	points.write[p_index].out = p_out;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -806,6 +817,87 @@ float Curve2D::get_bake_interval() const {
 	return bake_interval;
 }
 
+Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
+	// Brute force method
+
+	if (baked_cache_dirty)
+		_bake();
+
+	//validate//
+	int pc = baked_point_cache.size();
+	if (pc == 0) {
+		ERR_EXPLAIN("No points in Curve2D");
+		ERR_FAIL_COND_V(pc == 0, Vector2());
+	}
+
+	if (pc == 1)
+		return baked_point_cache.get(0);
+
+	PoolVector2Array::Read r = baked_point_cache.read();
+
+	Vector2 nearest;
+	float nearest_dist = -1.0f;
+
+	for (int i = 0; i < pc - 1; i++) {
+		Vector2 origin = r[i];
+		Vector2 direction = (r[i + 1] - origin) / bake_interval;
+
+		float d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		Vector2 proj = origin + direction * d;
+
+		float dist = proj.distance_squared_to(p_to_point);
+
+		if (nearest_dist < 0.0f || dist < nearest_dist) {
+			nearest = proj;
+			nearest_dist = dist;
+		}
+	}
+
+	return nearest;
+}
+
+float Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
+	// Brute force method
+
+	if (baked_cache_dirty)
+		_bake();
+
+	//validate//
+	int pc = baked_point_cache.size();
+	if (pc == 0) {
+		ERR_EXPLAIN("No points in Curve2D");
+		ERR_FAIL_COND_V(pc == 0, 0.0f);
+	}
+
+	if (pc == 1)
+		return 0.0f;
+
+	PoolVector2Array::Read r = baked_point_cache.read();
+
+	float nearest = 0.0f;
+	float nearest_dist = -1.0f;
+	float offset = 0.0f;
+
+	for (int i = 0; i < pc - 1; i++) {
+		Vector2 origin = r[i];
+		Vector2 direction = (r[i + 1] - origin) / bake_interval;
+
+		float d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		Vector2 proj = origin + direction * d;
+
+		float dist = proj.distance_squared_to(p_to_point);
+
+		if (nearest_dist < 0.0f || dist < nearest_dist) {
+			nearest = offset + d;
+			nearest_dist = dist;
+		}
+
+		offset += bake_interval;
+	}
+
+	return nearest;
+}
+
 Dictionary Curve2D::_get_data() const {
 
 	Dictionary dc;
@@ -839,9 +931,9 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 
 	for (int i = 0; i < points.size(); i++) {
 
-		points[i].in = r[i * 3 + 0];
-		points[i].out = r[i * 3 + 1];
-		points[i].pos = r[i * 3 + 2];
+		points.write[i].in = r[i * 3 + 0];
+		points.write[i].out = r[i * 3 + 1];
+		points.write[i].pos = r[i * 3 + 2];
 	}
 
 	baked_cache_dirty = true;
@@ -861,7 +953,7 @@ PoolVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const 
 	int pc = 1;
 	for (int i = 0; i < points.size() - 1; i++) {
 
-		_bake_segment2d(midpoints[i], 0, 1, points[i].pos, points[i].out, points[i + 1].pos, points[i + 1].in, 0, p_max_stages, p_tolerance);
+		_bake_segment2d(midpoints.write[i], 0, 1, points[i].pos, points[i].out, points[i + 1].pos, points[i + 1].in, 0, p_max_stages, p_tolerance);
 		pc++;
 		pc += midpoints[i].size();
 	}
@@ -909,6 +1001,8 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve2D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve2D::interpolate_baked, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve2D::get_baked_points);
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve2D::get_closest_point);
+	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve2D::get_closest_offset);
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve2D::tessellate, DEFVAL(5), DEFVAL(4));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve2D::_get_data);
@@ -956,7 +1050,7 @@ void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].pos = p_pos;
+	points.write[p_index].pos = p_pos;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -970,7 +1064,7 @@ void Curve3D::set_point_tilt(int p_index, float p_tilt) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].tilt = p_tilt;
+	points.write[p_index].tilt = p_tilt;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -984,7 +1078,7 @@ void Curve3D::set_point_in(int p_index, const Vector3 &p_in) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].in = p_in;
+	points.write[p_index].in = p_in;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -998,7 +1092,7 @@ void Curve3D::set_point_out(int p_index, const Vector3 &p_out) {
 
 	ERR_FAIL_INDEX(p_index, points.size());
 
-	points[p_index].out = p_out;
+	points.write[p_index].out = p_out;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
@@ -1086,6 +1180,7 @@ void Curve3D::_bake() const {
 	if (points.size() == 0) {
 		baked_point_cache.resize(0);
 		baked_tilt_cache.resize(0);
+		baked_up_vector_cache.resize(0);
 		return;
 	}
 
@@ -1095,6 +1190,14 @@ void Curve3D::_bake() const {
 		baked_point_cache.set(0, points[0].pos);
 		baked_tilt_cache.resize(1);
 		baked_tilt_cache.set(0, points[0].tilt);
+
+		if (up_vector_enabled) {
+
+			baked_up_vector_cache.resize(1);
+			baked_up_vector_cache.set(0, Vector3(0, 1, 0));
+		} else
+			baked_up_vector_cache.resize(0);
+
 		return;
 	}
 
@@ -1164,10 +1267,51 @@ void Curve3D::_bake() const {
 	baked_tilt_cache.resize(pointlist.size());
 	PoolRealArray::Write wt = baked_tilt_cache.write();
 
+	baked_up_vector_cache.resize(up_vector_enabled ? pointlist.size() : 0);
+	PoolVector3Array::Write up_write = baked_up_vector_cache.write();
+
+	Vector3 sideways;
+	Vector3 up;
+	Vector3 forward;
+
+	Vector3 prev_sideways = Vector3(1, 0, 0);
+	Vector3 prev_up = Vector3(0, 1, 0);
+	Vector3 prev_forward = Vector3(0, 0, 1);
+
 	for (List<Plane>::Element *E = pointlist.front(); E; E = E->next()) {
 
 		w[idx] = E->get().normal;
 		wt[idx] = E->get().d;
+
+		if (!up_vector_enabled) {
+			idx++;
+			continue;
+		}
+
+		forward = idx > 0 ? (w[idx] - w[idx - 1]).normalized() : prev_forward;
+
+		float y_dot = prev_up.dot(forward);
+
+		if (y_dot > (1.0f - CMP_EPSILON)) {
+			sideways = prev_sideways;
+			up = -prev_forward;
+		} else if (y_dot < -(1.0f - CMP_EPSILON)) {
+			sideways = prev_sideways;
+			up = prev_forward;
+		} else {
+			sideways = prev_up.cross(forward).normalized();
+			up = forward.cross(sideways).normalized();
+		}
+
+		if (idx == 1)
+			up_write[0] = up;
+
+		up_write[idx] = up;
+
+		prev_sideways = sideways;
+		prev_up = up;
+		prev_forward = forward;
+
 		idx++;
 	}
 }
@@ -1260,6 +1404,53 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 	return Math::lerp(r[idx], r[idx + 1], frac);
 }
 
+Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) const {
+
+	if (baked_cache_dirty)
+		_bake();
+
+	//validate//
+	// curve may not have baked up vectors
+	int count = baked_up_vector_cache.size();
+	if (count == 0) {
+		ERR_EXPLAIN("No up vectors in Curve3D");
+		ERR_FAIL_COND_V(count == 0, Vector3(0, 1, 0));
+	}
+
+	if (count == 1)
+		return baked_up_vector_cache.get(0);
+
+	PoolVector3Array::Read r = baked_up_vector_cache.read();
+	PoolVector3Array::Read rp = baked_point_cache.read();
+	PoolRealArray::Read rt = baked_tilt_cache.read();
+
+	float offset = CLAMP(p_offset, 0.0f, baked_max_ofs);
+
+	int idx = Math::floor((double)offset / (double)bake_interval);
+	float frac = Math::fmod(offset, bake_interval) / bake_interval;
+
+	if (idx == count - 1)
+		return p_apply_tilt ? r[idx].rotated((rp[idx] - rp[idx - 1]).normalized(), rt[idx]) : r[idx];
+
+	Vector3 forward = (rp[idx + 1] - rp[idx]).normalized();
+	Vector3 up = r[idx];
+	Vector3 up1 = r[idx + 1];
+
+	if (p_apply_tilt) {
+		up.rotate(forward, rt[idx]);
+		up1.rotate(idx + 2 >= count ? forward : (rp[idx + 2] - rp[idx + 1]).normalized(), rt[idx + 1]);
+	}
+
+	Vector3 axis = up.cross(up1);
+
+	if (axis.length_squared() < CMP_EPSILON2)
+		axis = forward;
+	else
+		axis.normalize();
+
+	return up.rotated(axis, up.angle_to(up1) * frac);
+}
+
 PoolVector3Array Curve3D::get_baked_points() const {
 
 	if (baked_cache_dirty)
@@ -1276,6 +1467,95 @@ PoolRealArray Curve3D::get_baked_tilts() const {
 	return baked_tilt_cache;
 }
 
+PoolVector3Array Curve3D::get_baked_up_vectors() const {
+
+	if (baked_cache_dirty)
+		_bake();
+
+	return baked_up_vector_cache;
+}
+
+Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
+	// Brute force method
+
+	if (baked_cache_dirty)
+		_bake();
+
+	//validate//
+	int pc = baked_point_cache.size();
+	if (pc == 0) {
+		ERR_EXPLAIN("No points in Curve3D");
+		ERR_FAIL_COND_V(pc == 0, Vector3());
+	}
+
+	if (pc == 1)
+		return baked_point_cache.get(0);
+
+	PoolVector3Array::Read r = baked_point_cache.read();
+
+	Vector3 nearest;
+	float nearest_dist = -1.0f;
+
+	for (int i = 0; i < pc - 1; i++) {
+		Vector3 origin = r[i];
+		Vector3 direction = (r[i + 1] - origin) / bake_interval;
+
+		float d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		Vector3 proj = origin + direction * d;
+
+		float dist = proj.distance_squared_to(p_to_point);
+
+		if (nearest_dist < 0.0f || dist < nearest_dist) {
+			nearest = proj;
+			nearest_dist = dist;
+		}
+	}
+
+	return nearest;
+}
+
+float Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
+	// Brute force method
+
+	if (baked_cache_dirty)
+		_bake();
+
+	//validate//
+	int pc = baked_point_cache.size();
+	if (pc == 0) {
+		ERR_EXPLAIN("No points in Curve3D");
+		ERR_FAIL_COND_V(pc == 0, 0.0f);
+	}
+
+	if (pc == 1)
+		return 0.0f;
+
+	PoolVector3Array::Read r = baked_point_cache.read();
+
+	float nearest = 0.0f;
+	float nearest_dist = -1.0f;
+	float offset = 0.0f;
+
+	for (int i = 0; i < pc - 1; i++) {
+		Vector3 origin = r[i];
+		Vector3 direction = (r[i + 1] - origin) / bake_interval;
+
+		float d = CLAMP((p_to_point - origin).dot(direction), 0.0f, bake_interval);
+		Vector3 proj = origin + direction * d;
+
+		float dist = proj.distance_squared_to(p_to_point);
+
+		if (nearest_dist < 0.0f || dist < nearest_dist) {
+			nearest = offset + d;
+			nearest_dist = dist;
+		}
+
+		offset += bake_interval;
+	}
+
+	return nearest;
+}
+
 void Curve3D::set_bake_interval(float p_tolerance) {
 
 	bake_interval = p_tolerance;
@@ -1286,6 +1566,18 @@ void Curve3D::set_bake_interval(float p_tolerance) {
 float Curve3D::get_bake_interval() const {
 
 	return bake_interval;
+}
+
+void Curve3D::set_up_vector_enabled(bool p_enable) {
+
+	up_vector_enabled = p_enable;
+	baked_cache_dirty = true;
+	emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+bool Curve3D::is_up_vector_enabled() const {
+
+	return up_vector_enabled;
 }
 
 Dictionary Curve3D::_get_data() const {
@@ -1330,10 +1622,10 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 
 	for (int i = 0; i < points.size(); i++) {
 
-		points[i].in = r[i * 3 + 0];
-		points[i].out = r[i * 3 + 1];
-		points[i].pos = r[i * 3 + 2];
-		points[i].tilt = rt[i];
+		points.write[i].in = r[i * 3 + 0];
+		points.write[i].out = r[i * 3 + 1];
+		points.write[i].pos = r[i * 3 + 2];
+		points.write[i].tilt = rt[i];
 	}
 
 	baked_cache_dirty = true;
@@ -1353,7 +1645,7 @@ PoolVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const 
 	int pc = 1;
 	for (int i = 0; i < points.size() - 1; i++) {
 
-		_bake_segment3d(midpoints[i], 0, 1, points[i].pos, points[i].out, points[i + 1].pos, points[i + 1].in, 0, p_max_stages, p_tolerance);
+		_bake_segment3d(midpoints.write[i], 0, 1, points[i].pos, points[i].out, points[i + 1].pos, points[i + 1].in, 0, p_max_stages, p_tolerance);
 		pc++;
 		pc += midpoints[i].size();
 	}
@@ -1399,11 +1691,17 @@ void Curve3D::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("bake","subdivs"),&Curve3D::bake,DEFVAL(10));
 	ClassDB::bind_method(D_METHOD("set_bake_interval", "distance"), &Curve3D::set_bake_interval);
 	ClassDB::bind_method(D_METHOD("get_bake_interval"), &Curve3D::get_bake_interval);
+	ClassDB::bind_method(D_METHOD("set_up_vector_enabled", "enable"), &Curve3D::set_up_vector_enabled);
+	ClassDB::bind_method(D_METHOD("is_up_vector_enabled"), &Curve3D::is_up_vector_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_baked_length"), &Curve3D::get_baked_length);
 	ClassDB::bind_method(D_METHOD("interpolate_baked", "offset", "cubic"), &Curve3D::interpolate_baked, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("interpolate_baked_up_vector", "offset", "apply_tilt"), &Curve3D::interpolate_baked_up_vector, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
+	ClassDB::bind_method(D_METHOD("get_baked_up_vectors"), &Curve3D::get_baked_up_vectors);
+	ClassDB::bind_method(D_METHOD("get_closest_point", "to_point"), &Curve3D::get_closest_point);
+	ClassDB::bind_method(D_METHOD("get_closest_offset", "to_point"), &Curve3D::get_closest_offset);
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve3D::tessellate, DEFVAL(5), DEFVAL(4));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve3D::_get_data);
@@ -1411,6 +1709,9 @@ void Curve3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
+
+	ADD_GROUP("Up Vector", "up_vector_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
 }
 
 Curve3D::Curve3D() {
@@ -1420,4 +1721,5 @@ Curve3D::Curve3D() {
 	add_point(Vector3(0,2,0));
 	add_point(Vector3(0,3,5));*/
 	bake_interval = 0.2;
+	up_vector_enabled = true;
 }

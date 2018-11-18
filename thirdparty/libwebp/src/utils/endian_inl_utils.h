@@ -19,13 +19,6 @@
 #include "src/dsp/dsp.h"
 #include "src/webp/types.h"
 
-// some endian fix (e.g.: mips-gcc doesn't define __BIG_ENDIAN__)
-#if !defined(WORDS_BIGENDIAN) && \
-    (defined(__BIG_ENDIAN__) || defined(_M_PPC) || \
-     (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)))
-#define WORDS_BIGENDIAN
-#endif
-
 #if defined(WORDS_BIGENDIAN)
 #define HToLE32 BSwap32
 #define HToLE16 BSwap16

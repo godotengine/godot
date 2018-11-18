@@ -31,8 +31,8 @@
 // Author: reduzio@gmail.com (C) 2006
 
 #include "eq.h"
-#include "error_macros.h"
-#include "math_funcs.h"
+#include "core/error_macros.h"
+#include "core/math/math_funcs.h"
 #include <math.h>
 
 #define POW2(v) ((v) * (v))
@@ -108,9 +108,9 @@ void EQ::recalculate_band_coefficients() {
 
 		ERR_CONTINUE(roots == 0);
 
-		band[i].c1 = 2.0 * ((0.5 - r1) / 2.0);
-		band[i].c2 = 2.0 * r1;
-		band[i].c3 = 2.0 * (0.5 + r1) * cos(th);
+		band.write[i].c1 = 2.0 * ((0.5 - r1) / 2.0);
+		band.write[i].c2 = 2.0 * r1;
+		band.write[i].c3 = 2.0 * (0.5 + r1) * cos(th);
 		//printf("band %i, coefs = %f,%f,%f\n",i,(float)bands[i].c1,(float)bands[i].c2,(float)bands[i].c3);
 	}
 }
@@ -180,7 +180,7 @@ void EQ::set_bands(const Vector<float> &p_bands) {
 	band.resize(p_bands.size());
 	for (int i = 0; i < p_bands.size(); i++) {
 
-		band[i].freq = p_bands[i];
+		band.write[i].freq = p_bands[i];
 	}
 
 	recalculate_band_coefficients();

@@ -24,6 +24,8 @@ class btCollisionObject;
 #include "LinearMath/btAlignedAllocator.h"
 
 struct btCollisionResult;
+struct btCollisionObjectDoubleData;
+struct btCollisionObjectFloatData;
 
 ///maximum contact breaking and merging threshold
 extern btScalar gContactBreakingThreshold;
@@ -95,7 +97,10 @@ public:
 		: btTypedObject(BT_PERSISTENT_MANIFOLD_TYPE),
 	m_body0(body0),m_body1(body1),m_cachedPoints(0),
 		m_contactBreakingThreshold(contactBreakingThreshold),
-		m_contactProcessingThreshold(contactProcessingThreshold)
+		m_contactProcessingThreshold(contactProcessingThreshold),
+		m_companionIdA(0),
+		m_companionIdB(0),
+		m_index1a(0)
 	{
 	}
 
@@ -256,10 +261,115 @@ public:
 		m_cachedPoints = 0;
 	}
 
+	int	calculateSerializeBufferSize()	const;
+	const char*	serialize(const class btPersistentManifold* manifold, void* dataBuffer, class btSerializer* serializer) const;
+	void deSerialize(const struct btPersistentManifoldDoubleData* manifoldDataPtr);
+	void deSerialize(const struct btPersistentManifoldFloatData* manifoldDataPtr);
 
 
-}
-;
+};
+
+
+
+struct btPersistentManifoldDoubleData
+{
+	btVector3DoubleData m_pointCacheLocalPointA[4];
+	btVector3DoubleData m_pointCacheLocalPointB[4];
+	btVector3DoubleData m_pointCachePositionWorldOnA[4];
+	btVector3DoubleData m_pointCachePositionWorldOnB[4];
+	btVector3DoubleData m_pointCacheNormalWorldOnB[4];
+	btVector3DoubleData	m_pointCacheLateralFrictionDir1[4];
+	btVector3DoubleData	m_pointCacheLateralFrictionDir2[4];
+	double m_pointCacheDistance[4];
+	double m_pointCacheAppliedImpulse[4];
+	double m_pointCacheCombinedFriction[4];
+	double m_pointCacheCombinedRollingFriction[4];
+	double m_pointCacheCombinedSpinningFriction[4];
+	double m_pointCacheCombinedRestitution[4];
+	int	m_pointCachePartId0[4];
+	int	m_pointCachePartId1[4];
+	int	m_pointCacheIndex0[4];
+	int	m_pointCacheIndex1[4];
+	int m_pointCacheContactPointFlags[4];
+	double m_pointCacheAppliedImpulseLateral1[4];
+	double m_pointCacheAppliedImpulseLateral2[4];
+	double m_pointCacheContactMotion1[4];
+	double m_pointCacheContactMotion2[4];
+	double m_pointCacheContactCFM[4];
+	double m_pointCacheCombinedContactStiffness1[4];
+	double m_pointCacheContactERP[4];
+	double m_pointCacheCombinedContactDamping1[4];
+	double m_pointCacheFrictionCFM[4];
+	int m_pointCacheLifeTime[4];
+
+	int m_numCachedPoints;
+	int m_companionIdA;
+	int m_companionIdB;
+	int m_index1a;
+
+	int m_objectType;
+	double	m_contactBreakingThreshold;
+	double	m_contactProcessingThreshold;
+	int m_padding;
+
+	btCollisionObjectDoubleData *m_body0;
+	btCollisionObjectDoubleData *m_body1;
+};
+
+
+struct btPersistentManifoldFloatData
+{
+	btVector3FloatData m_pointCacheLocalPointA[4];
+	btVector3FloatData m_pointCacheLocalPointB[4];
+	btVector3FloatData m_pointCachePositionWorldOnA[4];
+	btVector3FloatData m_pointCachePositionWorldOnB[4];
+	btVector3FloatData m_pointCacheNormalWorldOnB[4];
+	btVector3FloatData	m_pointCacheLateralFrictionDir1[4];
+	btVector3FloatData	m_pointCacheLateralFrictionDir2[4];
+	float m_pointCacheDistance[4];
+	float m_pointCacheAppliedImpulse[4];
+	float m_pointCacheCombinedFriction[4];
+	float m_pointCacheCombinedRollingFriction[4];
+	float m_pointCacheCombinedSpinningFriction[4];
+	float m_pointCacheCombinedRestitution[4];
+	int	m_pointCachePartId0[4];
+	int	m_pointCachePartId1[4];
+	int	m_pointCacheIndex0[4];
+	int	m_pointCacheIndex1[4];
+	int m_pointCacheContactPointFlags[4];
+	float m_pointCacheAppliedImpulseLateral1[4];
+	float m_pointCacheAppliedImpulseLateral2[4];
+	float m_pointCacheContactMotion1[4];
+	float m_pointCacheContactMotion2[4];
+	float m_pointCacheContactCFM[4];
+	float m_pointCacheCombinedContactStiffness1[4];
+	float m_pointCacheContactERP[4];
+	float m_pointCacheCombinedContactDamping1[4];
+	float m_pointCacheFrictionCFM[4];
+	int m_pointCacheLifeTime[4];
+
+	int m_numCachedPoints;
+	int m_companionIdA;
+	int m_companionIdB;
+	int m_index1a;
+
+	int m_objectType;
+	float	m_contactBreakingThreshold;
+	float	m_contactProcessingThreshold;
+	int m_padding;
+
+	btCollisionObjectFloatData *m_body0;
+	btCollisionObjectFloatData *m_body1;
+};
+
+#ifdef BT_USE_DOUBLE_PRECISION
+#define btPersistentManifoldData	btPersistentManifoldDoubleData
+#define btPersistentManifoldDataName	"btPersistentManifoldDoubleData"
+#else
+#define btPersistentManifoldData	btPersistentManifoldFloatData
+#define btPersistentManifoldDataName	"btPersistentManifoldFloatData"
+#endif //BT_USE_DOUBLE_PRECISION
+
 
 
 

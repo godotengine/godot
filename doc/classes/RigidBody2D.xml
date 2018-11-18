@@ -23,6 +23,15 @@
 				Allows you to read and safely modify the simulation state for the object. Use this instead of [Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
+		<method name="add_central_force">
+			<return type="void">
+			</return>
+			<argument index="0" name="force" type="Vector2">
+			</argument>
+			<description>
+				Adds a constant directional force without affecting rotation.
+			</description>
+		</method>
 		<method name="add_force">
 			<return type="void">
 			</return>
@@ -34,6 +43,24 @@
 				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
+		<method name="add_torque">
+			<return type="void">
+			</return>
+			<argument index="0" name="torque" type="float">
+			</argument>
+			<description>
+				Adds a constant rotational force.
+			</description>
+		</method>
+		<method name="apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="impulse" type="Vector2">
+			</argument>
+			<description>
+				Applies a directional impulse without affecting rotation.
+			</description>
+		</method>
 		<method name="apply_impulse">
 			<return type="void">
 			</return>
@@ -43,6 +70,15 @@
 			</argument>
 			<description>
 				Applies a positioned impulse to the body (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied instantaneously. Both the impulse and the offset from the body origin are in global coordinates.
+			</description>
+		</method>
+		<method name="apply_torque_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="torque" type="float">
+			</argument>
+			<description>
+				Applies a rotational impulse to the body.
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
@@ -130,6 +166,8 @@
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode">
 			The body's mode. See [code]MODE_*[/code] constants. Default value: [code]MODE_RIGID[/code].
 		</member>
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
 			If [code]true[/code] the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
 		</member>
@@ -139,14 +177,14 @@
 	</members>
 	<signals>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a body enters into contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
 				Emitted when a body exits contact with this one. [member contact_monitor] must be [code]true[/code] and [member contacts_reported] greater than [code]0[/code].
@@ -155,7 +193,7 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
@@ -168,7 +206,7 @@
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="Node">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>

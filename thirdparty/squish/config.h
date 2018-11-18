@@ -32,6 +32,26 @@
 #endif
 
 // Set to 1 or 2 when building squish to use SSE or SSE2 instructions.
+// -- GODOT start --
+#ifdef _MSC_VER
+  #if defined(_M_IX86_FP)
+    #if _M_IX86_FP >= 2
+      #define SQUISH_USE_SSE 2
+    #elif _M_IX86_FP >= 1
+      #define SQUISH_USE_SSE 1
+    #endif
+  #elif defined(_M_X64)
+    #define SQUISH_USE_SSE 2
+  #endif
+#else
+  #if defined(__SSE2__)
+    #define SQUISH_USE_SSE 2
+  #elif defined(__SSE__)
+    #define SQUISH_USE_SSE 1
+  #endif
+#endif
+// -- GODOT end --
+
 #ifndef SQUISH_USE_SSE
 #define SQUISH_USE_SSE 0
 #endif

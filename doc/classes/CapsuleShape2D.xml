@@ -17,7 +17,7 @@
 			The capsule's height.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius">
-			The capsules's radius.
+			The capsule's radius.
 		</member>
 	</members>
 	<constants>

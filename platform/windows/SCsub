@@ -1,19 +1,13 @@
 #!/usr/bin/env python
 
-import os
 Import('env')
 
-def make_debug_mingw(target, source, env):
-    mingw_prefix = ""
-    if (env["bits"] == "32"):
-        mingw_prefix = env["mingw_prefix_32"]
-    else:
-        mingw_prefix = env["mingw_prefix_64"]
-    os.system(mingw_prefix + 'objcopy --only-keep-debug {0} {0}.debugsymbols'.format(target[0]))
-    os.system(mingw_prefix + 'strip --strip-debug --strip-unneeded {0}'.format(target[0]))
-    os.system(mingw_prefix + 'objcopy --add-gnu-debuglink={0}.debugsymbols {0}'.format(target[0]))
+import os
+from platform_methods import run_in_subprocess
+import platform_windows_builders
 
 common_win = [
+    "godot_win.cpp",
     "context_gl_win.cpp",
     "crash_handler_win.cpp",
     "os_windows.cpp",
@@ -24,20 +18,19 @@ common_win = [
     "windows_terminal_logger.cpp"
 ]
 
-restarget = "godot_res" + env["OBJSUFFIX"]
+res_file = 'godot_res.rc'
+res_target = "godot_res" + env["OBJSUFFIX"]
+res_obj = env.RES(res_target, res_file)
 
-obj = env.RES(restarget, 'godot_res.rc')
-
-common_win.append(obj)
-
-prog = env.add_program('#bin/godot', ['godot_win.cpp'] + common_win, PROGSUFFIX=env["PROGSUFFIX"])
+prog = env.add_program('#bin/godot', common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
 if env['vsproj']:
-    env.vs_srcs = env.vs_srcs + ["platform/windows/godot_win.cpp"]
+    env.vs_srcs = env.vs_srcs + ["platform/windows/" + res_file]
+    env.vs_srcs = env.vs_srcs + ["platform/windows/godot.natvis"]
     for x in common_win:
         env.vs_srcs = env.vs_srcs + ["platform/windows/" + str(x)]
 
 if not os.getenv("VCINSTALLDIR"):
     if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
-        env.AddPostAction(prog, make_debug_mingw)
+        env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))

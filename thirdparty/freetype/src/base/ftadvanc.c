@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Quick computation of advance widths (body).                          */
 /*                                                                         */
-/*  Copyright 2008-2017 by                                                 */
+/*  Copyright 2008-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -116,9 +116,12 @@
                    FT_Int32   flags,
                    FT_Fixed  *padvances )
   {
+    FT_Error  error = FT_Err_Ok;
+
     FT_Face_GetAdvancesFunc  func;
-    FT_UInt                  num, end, nn;
-    FT_Error                 error = FT_Err_Ok;
+
+    FT_UInt  num, end, nn;
+    FT_Int   factor;
 
 
     if ( !face )
@@ -152,16 +155,17 @@
       return FT_THROW( Unimplemented_Feature );
 
     flags |= (FT_UInt32)FT_LOAD_ADVANCE_ONLY;
+    factor = ( flags & FT_LOAD_NO_SCALE ) ? 1 : 1024;
     for ( nn = 0; nn < count; nn++ )
     {
       error = FT_Load_Glyph( face, start + nn, flags );
       if ( error )
         break;
 
-      /* scale from 26.6 to 16.16 */
+      /* scale from 26.6 to 16.16, unless NO_SCALE was requested */
       padvances[nn] = ( flags & FT_LOAD_VERTICAL_LAYOUT )
-                      ? face->glyph->advance.y * 1024
-                      : face->glyph->advance.x * 1024;
+                      ? face->glyph->advance.y * factor
+                      : face->glyph->advance.x * factor;
     }
 
     return error;

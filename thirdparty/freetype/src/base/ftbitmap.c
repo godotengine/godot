@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType utility functions for bitmaps (body).                       */
 /*                                                                         */
-/*  Copyright 2004-2017 by                                                 */
+/*  Copyright 2004-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -153,38 +153,36 @@
                            FT_UInt     ypixels )
   {
     FT_Error        error;
-    int             pitch;
-    int             new_pitch;
+    unsigned int    pitch;
+    unsigned int    new_pitch;
     FT_UInt         bpp;
-    FT_UInt         i, width, height;
+    FT_UInt         width, height;
     unsigned char*  buffer = NULL;
 
 
     width  = bitmap->width;
     height = bitmap->rows;
-    pitch  = bitmap->pitch;
-    if ( pitch < 0 )
-      pitch = -pitch;
+    pitch  = (unsigned int)FT_ABS( bitmap->pitch );
 
     switch ( bitmap->pixel_mode )
     {
     case FT_PIXEL_MODE_MONO:
       bpp       = 1;
-      new_pitch = (int)( ( width + xpixels + 7 ) >> 3 );
+      new_pitch = ( width + xpixels + 7 ) >> 3;
       break;
     case FT_PIXEL_MODE_GRAY2:
       bpp       = 2;
-      new_pitch = (int)( ( width + xpixels + 3 ) >> 2 );
+      new_pitch = ( width + xpixels + 3 ) >> 2;
       break;
     case FT_PIXEL_MODE_GRAY4:
       bpp       = 4;
-      new_pitch = (int)( ( width + xpixels + 1 ) >> 1 );
+      new_pitch = ( width + xpixels + 1 ) >> 1;
       break;
     case FT_PIXEL_MODE_GRAY:
     case FT_PIXEL_MODE_LCD:
     case FT_PIXEL_MODE_LCD_V:
       bpp       = 8;
-      new_pitch = (int)( width + xpixels );
+      new_pitch = width + xpixels;
       break;
     default:
       return FT_THROW( Invalid_Glyph_Format );
@@ -194,7 +192,7 @@
     if ( ypixels == 0 && new_pitch <= pitch )
     {
       /* zero the padding */
-      FT_UInt  bit_width = (FT_UInt)pitch * 8;
+      FT_UInt  bit_width = pitch * 8;
       FT_UInt  bit_last  = ( width + xpixels ) * bpp;
 
 
@@ -235,31 +233,60 @@
     {
       FT_UInt  len = ( width * bpp + 7 ) >> 3;
 
+      unsigned char*  in  = bitmap->buffer;
+      unsigned char*  out = buffer;
 
-      for ( i = 0; i < bitmap->rows; i++ )
-        FT_MEM_COPY( buffer + (FT_UInt)new_pitch * ( ypixels + i ),
-                     bitmap->buffer + (FT_UInt)pitch * i,
-                     len );
+      unsigned char*  limit = bitmap->buffer + pitch * bitmap->rows;
+      unsigned int    delta = new_pitch - len;
+
+
+      FT_MEM_ZERO( out, new_pitch * ypixels );
+      out += new_pitch * ypixels;
+
+      while ( in < limit )
+      {
+        FT_MEM_COPY( out, in, len );
+        in  += pitch;
+        out += len;
+
+        /* we use FT_QALLOC_MULT, which doesn't zero out the buffer;      */
+        /* consequently, we have to manually zero out the remaining bytes */
+        FT_MEM_ZERO( out, delta );
+        out += delta;
+      }
     }
     else
     {
       FT_UInt  len = ( width * bpp + 7 ) >> 3;
 
+      unsigned char*  in  = bitmap->buffer;
+      unsigned char*  out = buffer;
 
-      for ( i = 0; i < bitmap->rows; i++ )
-        FT_MEM_COPY( buffer + (FT_UInt)new_pitch * i,
-                     bitmap->buffer + (FT_UInt)pitch * i,
-                     len );
+      unsigned char*  limit = bitmap->buffer + pitch * bitmap->rows;
+      unsigned int    delta = new_pitch - len;
+
+
+      while ( in < limit )
+      {
+        FT_MEM_COPY( out, in, len );
+        in  += pitch;
+        out += len;
+
+        FT_MEM_ZERO( out, delta );
+        out += delta;
+      }
+
+      FT_MEM_ZERO( out, new_pitch * ypixels );
     }
 
     FT_FREE( bitmap->buffer );
     bitmap->buffer = buffer;
 
-    if ( bitmap->pitch < 0 )
-      new_pitch = -new_pitch;
-
     /* set pitch only, width and height are left untouched */
-    bitmap->pitch = new_pitch;
+    if ( bitmap->pitch < 0 )
+      bitmap->pitch = -(int)new_pitch;
+    else
+      bitmap->pitch = (int)new_pitch;
 
     return FT_Err_Ok;
   }
@@ -444,7 +471,7 @@
      * A gamma of 2.2 is fair to assume.  And then, we need to
      * undo the premultiplication too.
      *
-     *   http://accessibility.kde.org/hsl-adjusted.php
+     *   https://accessibility.kde.org/hsl-adjusted.php
      *
      * We do the computation with integers only, applying a gamma of 2.0.
      * We guarantee 32-bit arithmetic to avoid overflow but the resulting

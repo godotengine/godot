@@ -31,7 +31,7 @@
 #include "collision_polygon_2d.h"
 
 #include "collision_object_2d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -102,11 +102,11 @@ Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
 
 		TriangulatorPoly &tp = I->get();
 
-		decomp[idx].resize(tp.GetNumPoints());
+		decomp.write[idx].resize(tp.GetNumPoints());
 
 		for (int i = 0; i < tp.GetNumPoints(); i++) {
 
-			decomp[idx][i] = tp.GetPoint(i);
+			decomp.write[idx].write[i] = tp.GetPoint(i);
 		}
 
 		idx++;
@@ -247,7 +247,7 @@ Vector<Point2> CollisionPolygon2D::get_polygon() const {
 
 void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 
-	ERR_FAIL_INDEX(p_mode, 2);
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	build_mode = p_mode;
 	if (parent) {
 		_build_polygon();
@@ -325,8 +325,8 @@ void CollisionPolygon2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Segments"), "set_build_mode", "get_build_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);
 	BIND_ENUM_CONSTANT(BUILD_SEGMENTS);

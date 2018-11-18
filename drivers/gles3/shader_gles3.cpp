@@ -30,7 +30,7 @@
 
 #include "shader_gles3.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 //#define DEBUG_OPENGL
 
@@ -121,6 +121,11 @@ bool ShaderGLES3::bind() {
 	}
 
 	ERR_FAIL_COND_V(!version, false);
+
+	if (!version->ok) { //broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
+		glUseProgram(0);
+		return false;
+	}
 
 	glUseProgram(version->id);
 
@@ -239,8 +244,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	CharString code_string2;
 	CharString code_globals;
 	CharString material_string;
-
-	//print_line("code version? "+itos(conditional_version.code_version));
 
 	CustomCode *cc = NULL;
 
@@ -554,7 +557,7 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		v.texture_uniform_locations.resize(cc->texture_uniforms.size());
 		for (int i = 0; i < cc->texture_uniforms.size(); i++) {
 
-			v.texture_uniform_locations[i] = glGetUniformLocation(v.id, String(cc->texture_uniforms[i]).ascii().get_data());
+			v.texture_uniform_locations.write[i] = glGetUniformLocation(v.id, String(cc->texture_uniforms[i]).ascii().get_data());
 			glUniform1i(v.texture_uniform_locations[i], i + base_material_tex_index);
 		}
 	}
@@ -742,13 +745,6 @@ void ShaderGLES3::set_custom_shader(uint32_t p_code_id) {
 }
 
 void ShaderGLES3::free_custom_shader(uint32_t p_code_id) {
-
-	/*  if (! custom_code_map.has( p_code_id )) {
-        print_line("no code id "+itos(p_code_id));
-    } else {
-        print_line("freed code id "+itos(p_code_id));
-
-    }*/
 
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	if (conditional_version.code_version == p_code_id)

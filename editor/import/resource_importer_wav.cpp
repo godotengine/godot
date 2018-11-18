@@ -30,9 +30,9 @@
 
 #include "resource_importer_wav.h"
 
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/resources/audio_stream_sample.h"
 
 String ResourceImporterWAV::get_importer_name() const {
@@ -157,15 +157,18 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			//Consider revision for engine version 3.0
 			compression_code = file->get_16();
 			if (compression_code != 1 && compression_code != 3) {
-				ERR_PRINT("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
-				break;
+				file->close();
+				memdelete(file);
+				ERR_EXPLAIN("Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 			format_channels = file->get_16();
 			if (format_channels != 1 && format_channels != 2) {
-
-				ERR_PRINT("Format not supported for WAVE file (not stereo or mono)");
-				break;
+				file->close();
+				memdelete(file);
+				ERR_EXPLAIN("Format not supported for WAVE file (not stereo or mono).");
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 			format_freq = file->get_32(); //sampling rate
@@ -174,10 +177,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			file->get_16(); // block align (unused)
 			format_bits = file->get_16(); // bits per sample
 
-			if (format_bits % 8) {
-
-				ERR_PRINT("Strange number of bits in sample (not 8,16,24,32)");
-				break;
+			if (format_bits % 8 || format_bits == 0) {
+				file->close();
+				memdelete(file);
+				ERR_EXPLAIN("Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
+				ERR_FAIL_V(ERR_INVALID_DATA);
 			}
 
 			/* Don't need anything else, continue */
@@ -185,7 +189,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 
 		if (chunkID[0] == 'd' && chunkID[1] == 'a' && chunkID[2] == 't' && chunkID[3] == 'a' && !data_found) {
-			/* IS FORMAT CHUNK */
+			/* IS DATA CHUNK */
 			data_found = true;
 
 			if (!format_found) {
@@ -201,7 +205,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			/*print_line("chunksize: "+itos(chunksize));
 			print_line("channels: "+itos(format_channels));
 			print_line("bits: "+itos(format_bits));
-*/
+			*/
 
 			int len = frames;
 			if (format_channels == 2)
@@ -215,19 +219,19 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				for (int i = 0; i < frames * format_channels; i++) {
 					// 8 bit samples are UNSIGNED
 
-					data[i] = int8_t(file->get_8() - 128) / 128.f;
+					data.write[i] = int8_t(file->get_8() - 128) / 128.f;
 				}
 			} else if (format_bits == 32 && compression_code == 3) {
 				for (int i = 0; i < frames * format_channels; i++) {
 					//32 bit IEEE Float
 
-					data[i] = file->get_float();
+					data.write[i] = file->get_float();
 				}
 			} else if (format_bits == 16) {
 				for (int i = 0; i < frames * format_channels; i++) {
 					//16 bit SIGNED
 
-					data[i] = int16_t(file->get_16()) / 32768.f;
+					data.write[i] = int16_t(file->get_16()) / 32768.f;
 				}
 			} else {
 				for (int i = 0; i < frames * format_channels; i++) {
@@ -241,7 +245,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 					}
 					s <<= (32 - format_bits);
 
-					data[i] = (int32_t(s) >> 16) / 32768.f;
+					data.write[i] = (int32_t(s) >> 16) / 32768.f;
 				}
 			}
 
@@ -289,6 +293,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	bool is16 = format_bits != 8;
 	int rate = format_freq;
 
+	/*
 	print_line("Input Sample: ");
 	print_line("\tframes: " + itos(frames));
 	print_line("\tformat_channels: " + itos(format_channels));
@@ -297,17 +302,15 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	print_line("\tloop: " + itos(loop));
 	print_line("\tloop begin: " + itos(loop_begin));
 	print_line("\tloop end: " + itos(loop_end));
+	*/
 
 	//apply frequency limit
 
 	bool limit_rate = p_options["force/max_rate"];
 	int limit_rate_hz = p_options["force/max_rate_hz"];
 	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
-		//resampleeee!!!
+		// resample!
 		int new_data_frames = (int)(frames * (float)limit_rate_hz / (float)rate);
-
-		print_line("\tresampling ratio: " + rtos((float)limit_rate_hz / (float)rate));
-		print_line("\tnew frames: " + itos(new_data_frames));
 
 		Vector<float> new_data;
 		new_data.resize(new_data_frames * format_channels);
@@ -335,7 +338,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 				float res = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
 
-				new_data[i * format_channels + c] = res;
+				new_data.write[i * format_channels + c] = res;
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors
@@ -374,7 +377,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			float mult = 1.0 / max;
 			for (int i = 0; i < data.size(); i++) {
 
-				data[i] *= mult;
+				data.write[i] *= mult;
 			}
 		}
 	}
@@ -408,7 +411,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			Vector<float> new_data;
 			new_data.resize((last - first + 1) * format_channels);
 			for (int i = first * format_channels; i < (last + 1) * format_channels; i++) {
-				new_data[i - first * format_channels] = data[i];
+				new_data.write[i - first * format_channels] = data[i];
 			}
 
 			data = new_data;
@@ -433,7 +436,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		Vector<float> new_data;
 		new_data.resize(data.size() / 2);
 		for (int i = 0; i < frames; i++) {
-			new_data[i] = (data[i * 2 + 0] + data[i * 2 + 1]) / 2.0;
+			new_data.write[i] = (data[i * 2 + 0] + data[i * 2 + 1]) / 2.0;
 		}
 
 		data = new_data;
@@ -465,8 +468,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			right.resize(tframes);
 
 			for (int i = 0; i < tframes; i++) {
-				left[i] = data[i * 2 + 0];
-				right[i] = data[i * 2 + 1];
+				left.write[i] = data[i * 2 + 0];
+				right.write[i] = data[i * 2 + 1];
 			}
 
 			PoolVector<uint8_t> bleft;
@@ -487,8 +490,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				w[i * 2 + 1] = rr[i];
 			}
 		}
-
-		//print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 
@@ -524,120 +525,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	ResourceSaver::save(p_save_path + ".sample", sample);
 
 	return OK;
-}
-
-void ResourceImporterWAV::_compress_ima_adpcm(const Vector<float> &p_data, PoolVector<uint8_t> &dst_data) {
-
-	/*p_sample_data->data = (void*)malloc(len);
-	xm_s8 *dataptr=(xm_s8*)p_sample_data->data;*/
-
-	static const int16_t _ima_adpcm_step_table[89] = {
-		7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-		19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-		50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-		130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-		337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-		876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-		2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-		5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-		15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-	};
-
-	static const int8_t _ima_adpcm_index_table[16] = {
-		-1, -1, -1, -1, 2, 4, 6, 8,
-		-1, -1, -1, -1, 2, 4, 6, 8
-	};
-
-	int datalen = p_data.size();
-	int datamax = datalen;
-	if (datalen & 1)
-		datalen++;
-
-	dst_data.resize(datalen / 2 + 4);
-	PoolVector<uint8_t>::Write w = dst_data.write();
-
-	int i, step_idx = 0, prev = 0;
-	uint8_t *out = w.ptr();
-	//int16_t xm_prev=0;
-	const float *in = p_data.ptr();
-
-	/* initial value is zero */
-	*(out++) = 0;
-	*(out++) = 0;
-	/* Table index initial value */
-	*(out++) = 0;
-	/* unused */
-	*(out++) = 0;
-
-	for (i = 0; i < datalen; i++) {
-		int step, diff, vpdiff, mask;
-		uint8_t nibble;
-		int16_t xm_sample;
-
-		if (i >= datamax)
-			xm_sample = 0;
-		else {
-
-			xm_sample = CLAMP(in[i] * 32767.0, -32768, 32767);
-			/*
-			if (xm_sample==32767 || xm_sample==-32768)
-				printf("clippy!\n",xm_sample);
-			*/
-		}
-
-		//xm_sample=xm_sample+xm_prev;
-		//xm_prev=xm_sample;
-
-		diff = (int)xm_sample - prev;
-
-		nibble = 0;
-		step = _ima_adpcm_step_table[step_idx];
-		vpdiff = step >> 3;
-		if (diff < 0) {
-			nibble = 8;
-			diff = -diff;
-		}
-		mask = 4;
-		while (mask) {
-
-			if (diff >= step) {
-
-				nibble |= mask;
-				diff -= step;
-				vpdiff += step;
-			}
-
-			step >>= 1;
-			mask >>= 1;
-		};
-
-		if (nibble & 8)
-			prev -= vpdiff;
-		else
-			prev += vpdiff;
-
-		if (prev > 32767) {
-			//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip up %i\n",i,xm_sample,prev,diff,vpdiff,prev);
-			prev = 32767;
-		} else if (prev < -32768) {
-			//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip down %i\n",i,xm_sample,prev,diff,vpdiff,prev);
-			prev = -32768;
-		}
-
-		step_idx += _ima_adpcm_index_table[nibble];
-		if (step_idx < 0)
-			step_idx = 0;
-		else if (step_idx > 88)
-			step_idx = 88;
-
-		if (i & 1) {
-			*out |= nibble << 4;
-			out++;
-		} else {
-			*out = nibble;
-		}
-		/*dataptr[i]=prev>>8;*/
-	}
 }
 
 ResourceImporterWAV::ResourceImporterWAV() {

@@ -224,17 +224,11 @@ bool HingeJointSW::setup(real_t p_step) {
 	// Compute limit information
 	real_t hingeAngle = get_hinge_angle();
 
-	//print_line("angle: "+rtos(hingeAngle));
 	//set bias, sign, clear accumulator
 	m_correction = real_t(0.);
 	m_limitSign = real_t(0.);
 	m_solveLimit = false;
 	m_accLimitImpulse = real_t(0.);
-
-	/*if (m_useLimit) {
-		print_line("low: "+rtos(m_lowerLimit));
-		print_line("hi: "+rtos(m_upperLimit));
-	}*/
 
 	//if (m_lowerLimit < m_upperLimit)
 	if (m_useLimit && m_lowerLimit <= m_upperLimit) {
@@ -415,6 +409,7 @@ void HingeJointSW::set_param(PhysicsServer::HingeJointParam p_param, real_t p_va
 		case PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION: m_relaxationFactor = p_value; break;
 		case PhysicsServer::HINGE_JOINT_MOTOR_TARGET_VELOCITY: m_motorTargetVelocity = p_value; break;
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE: m_maxMotorImpulse = p_value; break;
+		case PhysicsServer::HINGE_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 }
 
@@ -430,6 +425,7 @@ real_t HingeJointSW::get_param(PhysicsServer::HingeJointParam p_param) const {
 		case PhysicsServer::HINGE_JOINT_LIMIT_RELAXATION: return m_relaxationFactor;
 		case PhysicsServer::HINGE_JOINT_MOTOR_TARGET_VELOCITY: return m_motorTargetVelocity;
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE: return m_maxMotorImpulse;
+		case PhysicsServer::HINGE_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 
 	return 0;
@@ -440,6 +436,7 @@ void HingeJointSW::set_flag(PhysicsServer::HingeJointFlag p_flag, bool p_value) 
 	switch (p_flag) {
 		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT: m_useLimit = p_value; break;
 		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR: m_enableAngularMotor = p_value; break;
+		case PhysicsServer::HINGE_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
 	}
 }
 bool HingeJointSW::get_flag(PhysicsServer::HingeJointFlag p_flag) const {
@@ -447,6 +444,7 @@ bool HingeJointSW::get_flag(PhysicsServer::HingeJointFlag p_flag) const {
 	switch (p_flag) {
 		case PhysicsServer::HINGE_JOINT_FLAG_USE_LIMIT: return m_useLimit;
 		case PhysicsServer::HINGE_JOINT_FLAG_ENABLE_MOTOR: return m_enableAngularMotor;
+		case PhysicsServer::HINGE_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
 	}
 
 	return false;

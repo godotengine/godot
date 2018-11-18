@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "a_star.h"
-#include "geometry.h"
+
+#include "core/math/geometry.h"
+#include "core/script_language.h"
 #include "scene/scene_string_names.h"
-#include "script_language.h"
 
 int AStar::get_available_point_id() const {
 
@@ -96,11 +97,11 @@ void AStar::remove_point(int p_id) {
 
 	Point *p = points[p_id];
 
-	for (int i = 0; i < p->neighbours.size(); i++) {
+	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
-		Segment s(p_id, p->neighbours[i]->id);
+		Segment s(p_id, E->get()->id);
 		segments.erase(s);
-		p->neighbours[i]->neighbours.erase(p);
+		E->get()->neighbours.erase(p);
 	}
 
 	memdelete(p);
@@ -115,10 +116,10 @@ void AStar::connect_points(int p_id, int p_with_id, bool bidirectional) {
 
 	Point *a = points[p_id];
 	Point *b = points[p_with_id];
-	a->neighbours.push_back(b);
+	a->neighbours.insert(b);
 
 	if (bidirectional)
-		b->neighbours.push_back(a);
+		b->neighbours.insert(a);
 
 	Segment s(p_id, p_with_id);
 	if (s.from == p_id) {
@@ -168,8 +169,8 @@ PoolVector<int> AStar::get_point_connections(int p_id) {
 
 	Point *p = points[p_id];
 
-	for (int i = 0; i < p->neighbours.size(); i++) {
-		point_list.push_back(p->neighbours[i]->id);
+	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
+		point_list.push_back(E->get()->id);
 	}
 
 	return point_list;
@@ -242,21 +243,16 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 	bool found_route = false;
 
-	for (int i = 0; i < begin_point->neighbours.size(); i++) {
+	for (Set<Point *>::Element *E = begin_point->neighbours.front(); E; E = E->next()) {
 
-		Point *n = begin_point->neighbours[i];
+		Point *n = E->get();
 		n->prev_point = begin_point;
 		n->distance = _compute_cost(begin_point->id, n->id) * n->weight_scale;
 		n->last_pass = pass;
 		open_list.add(&n->list);
-
-		if (end_point == n) {
-			found_route = true;
-			break;
-		}
 	}
 
-	while (!found_route) {
+	while (true) {
 
 		if (open_list.first() == NULL) {
 			// No path found
@@ -276,19 +272,20 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 			cost += _estimate_cost(p->id, end_point->id);
 
 			if (cost < least_cost) {
-
 				least_cost_point = E;
 				least_cost = cost;
 			}
 		}
 
 		Point *p = least_cost_point->self();
-		// Open the neighbours for search
-		int es = p->neighbours.size();
+		if (p == end_point) {
+			found_route = true;
+			break;
+		}
 
-		for (int i = 0; i < es; i++) {
+		for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
-			Point *e = p->neighbours[i];
+			Point *e = E->get();
 
 			real_t distance = _compute_cost(p->id, e->id) * e->weight_scale + p->distance;
 
@@ -296,7 +293,6 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 				// Already visited, is this cheaper?
 
 				if (e->distance > distance) {
-
 					e->prev_point = p;
 					e->distance = distance;
 				}
@@ -307,17 +303,8 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 				e->distance = distance;
 				e->last_pass = pass; // Mark as used
 				open_list.add(&e->list);
-
-				if (e == end_point) {
-					// End reached; stop algorithm
-					found_route = true;
-					break;
-				}
 			}
 		}
-
-		if (found_route)
-			break;
 
 		open_list.remove(least_cost_point);
 	}

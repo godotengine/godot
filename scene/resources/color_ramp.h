@@ -31,7 +31,7 @@
 #ifndef SCENE_RESOURCES_COLOR_RAMP_H_
 #define SCENE_RESOURCES_COLOR_RAMP_H_
 
-#include "resource.h"
+#include "core/resource.h"
 
 class Gradient : public Resource {
 	GDCLASS(Gradient, Resource);
@@ -98,7 +98,7 @@ public:
 
 		while (low <= high) {
 			middle = (low + high) / 2;
-			Point &point = points[middle];
+			const Point &point = points[middle];
 			if (point.offset > p_offset) {
 				high = middle - 1; //search low end of array
 			} else if (point.offset < p_offset) {
@@ -118,8 +118,8 @@ public:
 			return points[points.size() - 1].color;
 		if (first < 0)
 			return points[0].color;
-		Point &pointFirst = points[first];
-		Point &pointSecond = points[second];
+		const Point &pointFirst = points[first];
+		const Point &pointSecond = points[second];
 		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
 	}
 

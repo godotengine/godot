@@ -30,7 +30,7 @@
 
 #include "thread_uwp.h"
 
-#include "os/memory.h"
+#include "core/os/memory.h"
 
 Thread *ThreadUWP::create_func_uwp(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
 

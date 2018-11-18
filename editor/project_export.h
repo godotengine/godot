@@ -31,25 +31,26 @@
 #ifndef PROJECT_EXPORT_SETTINGS_H
 #define PROJECT_EXPORT_SETTINGS_H
 
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+#include "editor/editor_export.h"
 #include "editor/editor_file_dialog.h"
-#include "os/dir_access.h"
-#include "os/thread.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
-
-#include "editor/editor_file_system.h"
-#include "editor_export.h"
-#include "property_editor.h"
-#include "scene/gui/slider.h"
 
 class EditorNode;
 
@@ -60,15 +61,14 @@ private:
 	TabContainer *sections;
 
 	MenuButton *add_preset;
+	Button *duplicate_preset;
 	Button *delete_preset;
 	ItemList *presets;
 
 	LineEdit *name;
-	PropertyEditor *parameters;
+	LineEdit *export_path;
+	EditorInspector *parameters;
 	CheckButton *runnable;
-
-	//EditorFileDialog *pck_export;
-	//EditorFileDialog *file_export;
 
 	Button *button_export;
 	bool updating;
@@ -93,6 +93,8 @@ private:
 	ConfirmationDialog *patch_erase;
 
 	Button *export_button;
+	Button *export_all_button;
+	AcceptDialog *export_all_dialog;
 
 	LineEdit *custom_features;
 	RichTextLabel *custom_feature_display;
@@ -108,10 +110,13 @@ private:
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
+	void _export_path_changed(const String &p_string);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
+	void _duplicate_preset();
 	void _delete_preset();
 	void _delete_preset_confirm();
+	void _update_export_all();
 
 	void _update_presets();
 
@@ -131,14 +136,19 @@ private:
 	FileDialog *export_pck_zip;
 	FileDialog *export_project;
 	CheckButton *export_debug;
+	CheckButton *export_pck_zip_debug;
 
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);
 
+	void _validate_export_path(const String &p_path);
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
+	void _export_all_dialog();
+	void _export_all_dialog_action(const String &p_str);
+	void _export_all(bool p_debug);
 
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);

@@ -16,10 +16,12 @@
 			</return>
 			<argument index="0" name="from" type="Resource">
 			</argument>
+			<argument index="1" name="size" type="Vector2">
+			</argument>
 			<description>
-				Generate a preview from a given resource. This must be always implemented.
-			Returning an empty texture is an OK way to fail and let another generator take care.
-			Care must be taken because this function is always called from a thread (not the main thread).
+				Generate a preview from a given resource with the specified size. This must always be implemented.
+				Returning an empty texture is an OK way to fail and let another generator take care.
+				Care must be taken because this function is always called from a thread (not the main thread).
 			</description>
 		</method>
 		<method name="generate_from_path" qualifiers="virtual">
@@ -27,10 +29,12 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
+			<argument index="1" name="size" type="Vector2">
+			</argument>
 			<description>
-				Generate a preview directly from a path, implementing this is optional, as default code will load and call generate()
-			Returning an empty texture is an OK way to fail and let another generator take care.
-			Care must be taken because this function is always called from a thread (not the main thread).
+				Generate a preview directly from a path with the specified size. Implementing this is optional, as default code will load and call [method generate].
+				Returning an empty texture is an OK way to fail and let another generator take care.
+				Care must be taken because this function is always called from a thread (not the main thread).
 			</description>
 		</method>
 		<method name="handles" qualifiers="virtual">

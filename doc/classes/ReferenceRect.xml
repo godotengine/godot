@@ -12,10 +12,10 @@
 	</demos>
 	<methods>
 	</methods>
+	<members>
+		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
+		</member>
+	</members>
 	<constants>
 	</constants>
-	<theme_items>
-		<theme_item name="border" type="StyleBox">
-		</theme_item>
-	</theme_items>
 </class>

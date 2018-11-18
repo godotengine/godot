@@ -42,7 +42,7 @@ class BakedLightmapEditorPlugin : public EditorPlugin {
 
 	BakedLightmap *lightmap;
 
-	Button *bake;
+	ToolButton *bake;
 	EditorNode *editor;
 
 	static EditorProgress *tmp_progress;

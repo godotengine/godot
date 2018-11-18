@@ -30,11 +30,11 @@
 
 #include "pvrtc_compress.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "editor_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "scene/resources/texture.h"
 
 static void (*_base_image_compress_pvrtc2_func)(Image *) = NULL;
@@ -115,11 +115,6 @@ static void _compress_pvrtc4(Image *p_image) {
 	_compress_image(Image::COMPRESS_PVRTC4, p_image);
 }
 
-static void _compress_etc(Image *p_image) {
-
-	_compress_image(Image::COMPRESS_ETC, p_image);
-}
-
 void _pvrtc_register_compressors() {
 
 	_base_image_compress_pvrtc2_func = Image::_image_compress_pvrtc2_func;
@@ -127,5 +122,4 @@ void _pvrtc_register_compressors() {
 
 	Image::_image_compress_pvrtc2_func = _compress_pvrtc2;
 	Image::_image_compress_pvrtc4_func = _compress_pvrtc4;
-	//Image::_image_compress_etc_func=_compress_etc; //use the built in one for ETC
 }

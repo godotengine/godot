@@ -30,7 +30,7 @@
 
 #include "texture_progress.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void TextureProgress::set_under_texture(const Ref<Texture> &p_texture) {
 
@@ -59,14 +59,14 @@ Ref<Texture> TextureProgress::get_over_texture() const {
 }
 
 void TextureProgress::set_stretch_margin(Margin p_margin, int p_size) {
-	ERR_FAIL_INDEX(p_margin, 4);
+	ERR_FAIL_INDEX((int)p_margin, 4);
 	stretch_margin[p_margin] = p_size;
 	update();
 	minimum_size_changed();
 }
 
 int TextureProgress::get_stretch_margin(Margin p_margin) const {
-	ERR_FAIL_INDEX_V(p_margin, 4, 0);
+	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 	return stretch_margin[p_margin];
 }
 
@@ -148,9 +148,9 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 	float angle = (val * Math_TAU) - Math_PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
-	float cp;
-	float cq;
-	float cr;
+	float cp = 0;
+	float cq = 0;
+	float cr = 0;
 	float edgeLeft = 0.0;
 	float edgeRight = 1.0;
 	float edgeBottom = 0.0;
@@ -229,6 +229,17 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				first_section_size = topleft.y;
 				last_section_size = bottomright.y;
 			} break;
+			case FILL_BILINEAR_LEFT_AND_RIGHT: {
+				// TODO: Implement
+			} break;
+			case FILL_BILINEAR_TOP_AND_BOTTOM: {
+				// TODO: Implement
+			} break;
+			case FILL_CLOCKWISE:
+			case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE:
+			case FILL_COUNTER_CLOCKWISE: {
+				// Those modes are circular, not relevant for nine patch
+			} break;
 		}
 
 		double width_filled = width_total * p_ratio;
@@ -263,8 +274,21 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.size.y = width_filled;
 				topleft.y = last_section_size;
 			} break;
+			case FILL_BILINEAR_LEFT_AND_RIGHT: {
+				// TODO: Implement
+			} break;
+			case FILL_BILINEAR_TOP_AND_BOTTOM: {
+				// TODO: Implement
+			} break;
+			case FILL_CLOCKWISE:
+			case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE:
+			case FILL_COUNTER_CLOCKWISE: {
+				// Those modes are circular, not relevant for nine patch
+			} break;
 		}
 	}
+
+	p_texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
 
 	RID ci = get_canvas_item();
 	VS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_rid(), topleft, bottomright, VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, true, p_modulate);
@@ -309,15 +333,23 @@ void TextureProgress::_notification(int p_what) {
 							draw_texture_rect_region(progress, region, region, tint_progress);
 						} break;
 						case FILL_CLOCKWISE:
-						case FILL_COUNTER_CLOCKWISE: {
+						case FILL_COUNTER_CLOCKWISE:
+						case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE: {
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
 								Rect2 region = Rect2(Point2(), s);
 								draw_texture_rect_region(progress, region, region, tint_progress);
 							} else if (val != 0) {
 								Array pts;
-								float direction = mode == FILL_CLOCKWISE ? 1 : -1;
-								float start = rad_init_angle / 360;
+								float direction = mode == FILL_COUNTER_CLOCKWISE ? -1 : 1;
+								float start;
+
+								if (mode == FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE) {
+									start = rad_init_angle / 360 - val / 2;
+								} else {
+									start = rad_init_angle / 360;
+								}
+
 								float end = start + direction * val;
 								pts.append(start);
 								pts.append(end);
@@ -351,6 +383,14 @@ void TextureProgress::_notification(int p_what) {
 								draw_line(p - Point2(0, 8), p + Point2(0, 8), Color(0.9, 0.5, 0.5), 2);
 							}
 						} break;
+						case FILL_BILINEAR_LEFT_AND_RIGHT: {
+							Rect2 region = Rect2(Point2(s.x / 2 - s.x * get_as_ratio() / 2, 0), Size2(s.x * get_as_ratio(), s.y));
+							draw_texture_rect_region(progress, region, region, tint_progress);
+						} break;
+						case FILL_BILINEAR_TOP_AND_BOTTOM: {
+							Rect2 region = Rect2(Point2(0, s.y / 2 - s.y * get_as_ratio() / 2), Size2(s.x, s.y * get_as_ratio()));
+							draw_texture_rect_region(progress, region, region, tint_progress);
+						} break;
 						default:
 							draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), tint_progress);
 					}
@@ -364,7 +404,7 @@ void TextureProgress::_notification(int p_what) {
 }
 
 void TextureProgress::set_fill_mode(int p_fill) {
-	ERR_FAIL_INDEX(p_fill, 6);
+	ERR_FAIL_INDEX(p_fill, 9);
 	mode = (FillMode)p_fill;
 	update();
 }
@@ -446,21 +486,21 @@ void TextureProgress::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_under_texture", "get_under_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_over_texture", "get_over_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_progress_texture", "get_progress_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"), "set_fill_mode", "get_fill_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom), Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
 	ADD_GROUP("Tint", "tint_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_under", "get_tint_under");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_over", "get_tint_over");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_progress", "get_tint_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over"), "set_tint_over", "get_tint_over");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
 	ADD_GROUP("Radial Fill", "radial_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset"), "set_radial_center_offset", "get_radial_center_offset");
 	ADD_GROUP("Stretch", "stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_LEFT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_RIGHT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_BOTTOM);
 
 	BIND_ENUM_CONSTANT(FILL_LEFT_TO_RIGHT);
 	BIND_ENUM_CONSTANT(FILL_RIGHT_TO_LEFT);
@@ -468,6 +508,9 @@ void TextureProgress::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILL_BOTTOM_TO_TOP);
 	BIND_ENUM_CONSTANT(FILL_CLOCKWISE);
 	BIND_ENUM_CONSTANT(FILL_COUNTER_CLOCKWISE);
+	BIND_ENUM_CONSTANT(FILL_BILINEAR_LEFT_AND_RIGHT);
+	BIND_ENUM_CONSTANT(FILL_BILINEAR_TOP_AND_BOTTOM);
+	BIND_ENUM_CONSTANT(FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE);
 }
 
 TextureProgress::TextureProgress() {

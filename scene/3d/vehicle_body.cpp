@@ -366,21 +366,13 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 	const Vector3 &right = wheel.m_raycastInfo.m_wheelAxleWS;
 	Vector3 fwd = up.cross(right);
 	fwd = fwd.normalized();
-	//up = right.cross(fwd);
-	//up.normalize();
 
 	//rotate around steering over de wheelAxleWS
 	real_t steering = wheel.steers ? m_steeringValue : 0.0;
-	//print_line(itos(p_idx)+": "+rtos(steering));
 
 	Basis steeringMat(up, steering);
 
 	Basis rotatingMat(right, wheel.m_rotation);
-
-	/*
-	if (p_idx==1)
-		print_line("steeringMat " +steeringMat);
-	*/
 
 	Basis basis2(
 			right[0], up[0], fwd[0],
@@ -420,8 +412,6 @@ real_t VehicleBody::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 	wheel.m_raycastInfo.m_groundObject = 0;
 
 	if (col) {
-		//print_line("WHEEL "+itos(p_idx)+" FROM "+source+" TO: "+target);
-		//print_line("WHEEL "+itos(p_idx)+" COLLIDE? "+itos(col));
 		param = source.distance_to(rr.position) / source.distance_to(target);
 		depth = raylen * param;
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
@@ -524,7 +514,7 @@ void VehicleBody::_update_suspension(PhysicsDirectBodyState *s) {
 
 //bilateral constraint between two dynamic objects
 void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1,
-		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, real_t p_rollInfluence) {
+		PhysicsBody *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
 
 	real_t normalLenSqr = normal.length_squared();
 	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
@@ -572,7 +562,7 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 			b2invmass);
 
 	// FIXME: rel_vel assignment here is overwritten by the following assignment.
-	// What seemes to be intended in the next next assignment is: rel_vel = normal.dot(rel_vel);
+	// What seems to be intended in the next next assignment is: rel_vel = normal.dot(rel_vel);
 	// Investigate why.
 	real_t rel_vel = jac.getRelativeVelocity(
 			s->get_linear_velocity(),
@@ -583,11 +573,14 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 	rel_vel = normal.dot(vel);
 
 	// !BAS! We had this set to 0.4, in bullet its 0.2
-	// real_t contactDamping = real_t(0.2);
+	real_t contactDamping = real_t(0.2);
 
-	// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
-	// keeping in mind our anti roll factor
-	real_t contactDamping = s->get_step() / p_rollInfluence;
+	if (p_rollInfluence > 0.0) {
+		// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
+		// keeping in mind our anti roll factor if it is set
+		contactDamping = s->get_step() / p_rollInfluence;
+	}
+
 #define ONLY_USE_LINEAR_MASS
 #ifdef ONLY_USE_LINEAR_MASS
 	real_t massTerm = real_t(1.) / ((1.0 / mass) + b2invmass);
@@ -672,15 +665,10 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 	m_forwardImpulse.resize(numWheel);
 	m_sideImpulse.resize(numWheel);
 
-	int numWheelsOnGround = 0;
-
 	//collapse all those loops into one!
 	for (int i = 0; i < wheels.size(); i++) {
-		VehicleWheel &wheelInfo = *wheels[i];
-		if (wheelInfo.m_raycastInfo.m_isInContact)
-			numWheelsOnGround++;
-		m_sideImpulse[i] = real_t(0.);
-		m_forwardImpulse[i] = real_t(0.);
+		m_sideImpulse.write[i] = real_t(0.);
+		m_forwardImpulse.write[i] = real_t(0.);
 	}
 
 	{
@@ -695,22 +683,22 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis; //get_global_transform().basis;
 
-				m_axle[i] = wheelBasis0.get_axis(Vector3::AXIS_X);
+				m_axle.write[i] = wheelBasis0.get_axis(Vector3::AXIS_X);
 				//m_axle[i] = wheelInfo.m_raycastInfo.m_wheelAxleWS;
 
 				const Vector3 &surfNormalWS = wheelInfo.m_raycastInfo.m_contactNormalWS;
 				real_t proj = m_axle[i].dot(surfNormalWS);
-				m_axle[i] -= surfNormalWS * proj;
-				m_axle[i] = m_axle[i].normalized();
+				m_axle.write[i] -= surfNormalWS * proj;
+				m_axle.write[i] = m_axle[i].normalized();
 
-				m_forwardWS[i] = surfNormalWS.cross(m_axle[i]);
-				m_forwardWS[i].normalize();
+				m_forwardWS.write[i] = surfNormalWS.cross(m_axle[i]);
+				m_forwardWS.write[i].normalize();
 
 				_resolve_single_bilateral(s, wheelInfo.m_raycastInfo.m_contactPointWS,
 						wheelInfo.m_raycastInfo.m_groundObject, wheelInfo.m_raycastInfo.m_contactPointWS,
-						m_axle[i], m_sideImpulse[i], wheelInfo.m_rollInfluence);
+						m_axle[i], m_sideImpulse.write[i], wheelInfo.m_rollInfluence);
 
-				m_sideImpulse[i] *= sideFrictionStiffness2;
+				m_sideImpulse.write[i] *= sideFrictionStiffness2;
 			}
 		}
 	}
@@ -741,7 +729,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 			//switch between active rolling (throttle), braking and non-active rolling friction (no throttle/break)
 
-			m_forwardImpulse[wheel] = real_t(0.);
+			m_forwardImpulse.write[wheel] = real_t(0.);
 			wheelInfo.m_skidInfo = real_t(1.);
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
@@ -752,7 +740,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 				real_t maximpSquared = maximp * maximpSide;
 
-				m_forwardImpulse[wheel] = rollingFriction; //wheelInfo.m_engineForce* timeStep;
+				m_forwardImpulse.write[wheel] = rollingFriction; //wheelInfo.m_engineForce* timeStep;
 
 				real_t x = (m_forwardImpulse[wheel]) * fwdFactor;
 				real_t y = (m_sideImpulse[wheel]) * sideFactor;
@@ -774,8 +762,8 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 		for (int wheel = 0; wheel < wheels.size(); wheel++) {
 			if (m_sideImpulse[wheel] != real_t(0.)) {
 				if (wheels[wheel]->m_skidInfo < real_t(1.)) {
-					m_forwardImpulse[wheel] *= wheels[wheel]->m_skidInfo;
-					m_sideImpulse[wheel] *= wheels[wheel]->m_skidInfo;
+					m_forwardImpulse.write[wheel] *= wheels[wheel]->m_skidInfo;
+					m_sideImpulse.write[wheel] *= wheels[wheel]->m_skidInfo;
 				}
 			}
 		}
@@ -929,7 +917,7 @@ void VehicleBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleBody::get_steering);
 
 	ADD_GROUP("Motion", "");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01"), "set_engine_force", "get_engine_force");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
 }
@@ -943,8 +931,6 @@ VehicleBody::VehicleBody() :
 
 	engine_force = 0;
 	brake = 0;
-
-	friction = 1;
 
 	state = NULL;
 	ccd = false;

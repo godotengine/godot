@@ -31,8 +31,8 @@
 #ifndef EDITORRESOURCEPREVIEW_H
 #define EDITORRESOURCEPREVIEW_H
 
-#include "os/semaphore.h"
-#include "os/thread.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
@@ -63,8 +63,10 @@ protected:
 
 public:
 	virtual bool handles(const String &p_type) const;
-	virtual Ref<Texture> generate(const RES &p_from);
-	virtual Ref<Texture> generate_from_path(const String &p_path);
+	virtual Ref<Texture> generate(const RES &p_from, const Size2 p_size) const;
+	virtual Ref<Texture> generate_from_path(const String &p_path, const Size2 p_size) const;
+
+	virtual bool should_generate_small_preview() const;
 
 	EditorResourcePreviewGenerator();
 };
@@ -92,6 +94,7 @@ class EditorResourcePreview : public Node {
 
 	struct Item {
 		Ref<Texture> preview;
+		Ref<Texture> small_preview;
 		int order;
 		uint32_t last_hash;
 		uint64_t modified_time;
@@ -101,8 +104,8 @@ class EditorResourcePreview : public Node {
 
 	Map<String, Item> cache;
 
-	void _preview_ready(const String &p_str, const Ref<Texture> &p_texture, ObjectID id, const StringName &p_func, const Variant &p_ud);
-	Ref<Texture> _generate_preview(const QueueItem &p_item, const String &cache_base);
+	void _preview_ready(const String &p_str, const Ref<Texture> &p_texture, const Ref<Texture> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud);
+	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base);
 
 	static void _thread_func(void *ud);
 	void _thread();

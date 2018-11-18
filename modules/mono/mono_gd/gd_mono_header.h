@@ -31,7 +31,7 @@
 #ifndef GD_MONO_HEADER_H
 #define GD_MONO_HEADER_H
 
-#include "int_types.h"
+#include "core/int_types.h"
 
 class GDMonoAssembly;
 class GDMonoClass;
@@ -44,19 +44,15 @@ struct ManagedType {
 	int type_encoding;
 	GDMonoClass *type_class;
 
-	ManagedType() {
-		type_class = 0;
+	ManagedType() :
+			type_encoding(0),
+			type_class(NULL) {
+	}
+
+	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :
+			type_encoding(p_type_encoding),
+			type_class(p_type_class) {
 	}
 };
-
-typedef union {
-	uint32_t _uint32;
-	float _float;
-} mono_float;
-
-typedef union {
-	uint64_t _uint64;
-	float _double;
-} mono_double;
 
 #endif // GD_MONO_HEADER_H

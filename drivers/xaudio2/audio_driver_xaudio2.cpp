@@ -30,8 +30,8 @@
 
 #include "audio_driver_xaudio2.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 const char *AudioDriverXAudio2::get_name() const {
 	return "XAudio2";
@@ -50,7 +50,7 @@ Error AudioDriverXAudio2::init() {
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
+	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
 	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
@@ -96,8 +96,6 @@ Error AudioDriverXAudio2::init() {
 void AudioDriverXAudio2::thread_func(void *p_udata) {
 
 	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
-
-	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
 

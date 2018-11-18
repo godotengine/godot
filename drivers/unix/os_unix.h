@@ -37,12 +37,10 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/os/os.h"
 #include "drivers/unix/ip_unix.h"
-#include "os/os.h"
 
 class OS_Unix : public OS {
-
-	uint64_t ticks_start;
 
 protected:
 	// UNIX only handles the core functions.
@@ -101,6 +99,7 @@ public:
 	virtual int get_processor_count() const;
 
 	virtual void debug_break();
+	virtual void initialize_debugging();
 
 	virtual String get_executable_path() const;
 	virtual String get_user_data_dir() const;

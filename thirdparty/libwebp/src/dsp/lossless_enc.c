@@ -863,12 +863,7 @@ extern void VP8LEncDspInitMIPS32(void);
 extern void VP8LEncDspInitMIPSdspR2(void);
 extern void VP8LEncDspInitMSA(void);
 
-static volatile VP8CPUInfo lossless_enc_last_cpuinfo_used =
-    (VP8CPUInfo)&lossless_enc_last_cpuinfo_used;
-
-WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInit(void) {
-  if (lossless_enc_last_cpuinfo_used == VP8GetCPUInfo) return;
-
+WEBP_DSP_INIT_FUNC(VP8LEncDspInit) {
   VP8LDspInit();
 
 #if !WEBP_NEON_OMIT_C_CODE
@@ -1011,8 +1006,6 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInit(void) {
   assert(VP8LPredictorsSub_C[13] != NULL);
   assert(VP8LPredictorsSub_C[14] != NULL);
   assert(VP8LPredictorsSub_C[15] != NULL);
-
-  lossless_enc_last_cpuinfo_used = VP8GetCPUInfo;
 }
 
 //------------------------------------------------------------------------------

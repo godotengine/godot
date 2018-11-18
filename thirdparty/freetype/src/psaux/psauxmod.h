@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType auxiliary PostScript module implementation (specification). */
 /*                                                                         */
-/*  Copyright 2000-2017 by                                                 */
+/*  Copyright 2000-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -23,12 +23,21 @@
 #include <ft2build.h>
 #include FT_MODULE_H
 
+#include FT_INTERNAL_POSTSCRIPT_AUX_H
+
 
 FT_BEGIN_HEADER
 
 #ifdef FT_CONFIG_OPTION_PIC
 #error "this module does not support PIC yet"
 #endif
+
+
+  FT_CALLBACK_TABLE
+  const CFF_Builder_FuncsRec  cff_builder_funcs;
+
+  FT_CALLBACK_TABLE
+  const PS_Builder_FuncsRec   ps_builder_funcs;
 
 
   FT_EXPORT_VAR( const FT_Module_Class )  psaux_driver_class;

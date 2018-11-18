@@ -30,9 +30,9 @@
 
 #include "logger.h"
 
-#include "os/dir_access.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 // va_copy was defined in the C99, but not in C++ standards before C++11.
 // When you compile C++ without --std=c++<XX> option, compilers still define
@@ -43,6 +43,10 @@
 #else
 #define va_copy(d, s) ((d) = (s))
 #endif
+#endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define sprintf sprintf_s
 #endif
 
 bool Logger::should_log(bool p_err) {
@@ -112,7 +116,7 @@ void RotatedFileLogger::clear_old_backups() {
 	int max_backups = max_files - 1; // -1 for the current file
 
 	String basename = base_path.get_file().get_basename();
-	String extension = "." + base_path.get_extension();
+	String extension = base_path.get_extension();
 
 	DirAccess *da = DirAccess::open(base_path.get_base_dir());
 	if (!da) {
@@ -123,7 +127,7 @@ void RotatedFileLogger::clear_old_backups() {
 	String f = da->get_next();
 	Set<String> backups;
 	while (f != String()) {
-		if (!da->current_is_dir() && f.begins_with(basename) && f.ends_with(extension) && f != base_path.get_file()) {
+		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
 		}
 		f = da->get_next();
@@ -152,7 +156,10 @@ void RotatedFileLogger::rotate_file() {
 			OS::Time time = OS::get_singleton()->get_time();
 			sprintf(timestamp, "-%04d-%02d-%02d-%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
 
-			String backup_name = base_path.get_basename() + timestamp + "." + base_path.get_extension();
+			String backup_name = base_path.get_basename() + timestamp;
+			if (base_path.get_extension() != String()) {
+				backup_name += "." + base_path.get_extension();
+			}
 
 			DirAccess *da = DirAccess::open(base_path.get_base_dir());
 			if (da) {

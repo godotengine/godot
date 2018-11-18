@@ -287,11 +287,11 @@ gxvalid: TrueType GX validator
   4-5. invalid feature number (117/183)
   -------------------------------------
 
-    The GX/AAT extension can  include 255 different layout features, but
-    popular      layout      features      are      predefined      (see
-    http://developer.apple.com/fonts/Registry/index.html).   Some  fonts
-    include feature  numbers which are incompatible  with the predefined
-    feature registry.
+    The GX/AAT  extension can  include 255 different  layout features,
+    but    popular    layout     features    are    predefined    (see
+    https://developer.apple.com/fonts/TrueType-Reference-Manual/RM09/AppendixF.html).
+    Some fonts include feature numbers which are incompatible with the
+    predefined feature registry.
 
     In our survey, there are 140 fonts including `feat' table.
 
@@ -518,7 +518,7 @@ gxvalid: TrueType GX validator
 
 ------------------------------------------------------------------------
 
-Copyright 2004-2017 by
+Copyright 2004-2018 by
 suzuki toshiya, Masatake YAMATO, Red hat K.K.,
 David Turner, Robert Wilhelm, and Werner Lemberg.
 

@@ -11,6 +11,7 @@ if env['builtin_mbedtls']:
         "aes.c",
         "aesni.c",
         "arc4.c",
+        "aria.c",
         "asn1parse.c",
         "asn1write.c",
         "base64.c",
@@ -19,6 +20,8 @@ if env['builtin_mbedtls']:
         "camellia.c",
         "ccm.c",
         "certs.c",
+        "chacha20.c",
+        "chachapoly.c",
         "cipher.c",
         "cipher_wrap.c",
         "cmac.c",
@@ -36,6 +39,7 @@ if env['builtin_mbedtls']:
         "error.c",
         "gcm.c",
         "havege.c",
+        "hkdf.c",
         "hmac_drbg.c",
         "md2.c",
         "md4.c",
@@ -44,6 +48,7 @@ if env['builtin_mbedtls']:
         "md_wrap.c",
         "memory_buffer_alloc.c",
         "net_sockets.c",
+        "nist_kw.c",
         "oid.c",
         "padlock.c",
         "pem.c",
@@ -55,6 +60,8 @@ if env['builtin_mbedtls']:
         "pk_wrap.c",
         "pkwrite.c",
         "platform.c",
+        "platform_util.c",
+        "poly1305.c",
         "ripemd160.c",
         "rsa.c",
         "rsa_internal.c",
@@ -84,8 +91,12 @@ if env['builtin_mbedtls']:
 
     thirdparty_dir = "#thirdparty/mbedtls/library/"
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-    env_mbed_tls.add_source_files(env.modules_sources, thirdparty_sources)
+
     env_mbed_tls.Prepend(CPPPATH=["#thirdparty/mbedtls/include/"])
+
+    env_thirdparty = env_mbed_tls.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Module sources
 env_mbed_tls.add_source_files(env.modules_sources, "*.cpp")

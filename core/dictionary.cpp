@@ -30,9 +30,9 @@
 
 #include "dictionary.h"
 
-#include "ordered_hash_map.h"
-#include "safe_refcount.h"
-#include "variant.h"
+#include "core/ordered_hash_map.h"
+#include "core/safe_refcount.h"
+#include "core/variant.h"
 
 struct DictionaryPrivate {
 
@@ -48,6 +48,32 @@ void Dictionary::get_key_list(List<Variant> *p_keys) const {
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
 		p_keys->push_back(E.key());
 	}
+}
+
+Variant Dictionary::get_key_at_index(int p_index) const {
+
+	int index = 0;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (index == p_index) {
+			return E.key();
+		}
+		index++;
+	}
+
+	return Variant();
+}
+
+Variant Dictionary::get_value_at_index(int p_index) const {
+
+	int index = 0;
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (index == p_index) {
+			return E.value();
+		}
+		index++;
+	}
+
+	return Variant();
 }
 
 Variant &Dictionary::operator[](const Variant &p_key) {
@@ -109,14 +135,19 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
-void Dictionary::erase(const Variant &p_key) {
+bool Dictionary::erase(const Variant &p_key) {
 
-	_p->variant_map.erase(p_key);
+	return _p->variant_map.erase(p_key);
 }
 
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
 
 	return _p == p_dictionary._p;
+}
+
+bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
+
+	return _p != p_dictionary._p;
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {

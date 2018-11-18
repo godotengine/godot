@@ -78,9 +78,7 @@ class LightOccluder2D : public Node2D {
 	int mask;
 	Ref<OccluderPolygon2D> occluder_polygon;
 
-#ifdef DEBUG_ENABLED
 	void _poly_changed();
-#endif
 
 protected:
 	void _notification(int p_what);

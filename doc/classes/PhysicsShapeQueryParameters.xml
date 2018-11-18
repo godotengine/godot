@@ -19,6 +19,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled">
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled">
+		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 		</member>
 		<member name="exclude" type="Array" setter="set_exclude" getter="get_exclude">

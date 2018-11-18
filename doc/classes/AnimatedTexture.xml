@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimatedTexture" inherits="Texture" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_frame_delay" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="frame" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_frame_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="frame" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_frame_delay">
+			<return type="void">
+			</return>
+			<argument index="0" name="frame" type="int">
+			</argument>
+			<argument index="1" name="delay" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_frame_texture">
+			<return type="void">
+			</return>
+			<argument index="0" name="frame" type="int">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="fps" type="float" setter="set_fps" getter="get_fps">
+		</member>
+		<member name="frames" type="int" setter="set_frames" getter="get_frames">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

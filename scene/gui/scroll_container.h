@@ -92,6 +92,9 @@ public:
 	int get_deadzone() const;
 	void set_deadzone(int p_deadzone);
 
+	HScrollBar *get_h_scrollbar();
+	VScrollBar *get_v_scrollbar();
+
 	virtual bool clips_input() const;
 
 	virtual String get_configuration_warning() const;

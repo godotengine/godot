@@ -28,15 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_server.h"
+
+#include "core/print_string.h"
 #include "drivers/dummy/audio_driver_dummy.h"
 #include "drivers/dummy/rasterizer_dummy.h"
-#include "print_string.h"
+#include "drivers/dummy/texture_loader_dummy.h"
 #include "servers/visual/visual_server_raster.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "main/main.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int OS_Server::get_video_driver_count() const {
@@ -57,11 +59,19 @@ const char *OS_Server::get_audio_driver_name(int p_driver) const {
 	return "Dummy";
 }
 
+int OS_Server::get_current_video_driver() const {
+	return video_driver_index;
+}
+
 void OS_Server::initialize_core() {
 
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+#ifdef __APPLE__
+	SemaphoreOSX::make_default();
+#endif
 }
 
 Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -72,6 +82,8 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	RasterizerDummy::make_current();
 
+	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
+
 	visual_server = memnew(VisualServerRaster);
 	visual_server->init();
 
@@ -79,9 +91,16 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	input = memnew(InputDefault);
 
+#ifdef __APPLE__
+	power_manager = memnew(power_osx);
+#else
 	power_manager = memnew(PowerX11);
+#endif
 
 	_ensure_user_data_dir();
+
+	resource_loader_dummy = memnew(ResourceFormatDummyTexture);
+	ResourceLoader::add_resource_format_loader(resource_loader_dummy);
 
 	return OK;
 }
@@ -98,6 +117,8 @@ void OS_Server::finalize() {
 	memdelete(input);
 
 	memdelete(power_manager);
+
+	memdelete(resource_loader_dummy);
 
 	args.clear();
 }
@@ -208,7 +229,7 @@ void OS_Server::run() {
 
 	while (!force_quit) {
 
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 

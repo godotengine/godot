@@ -106,7 +106,11 @@ void StyleBoxTexture::set_texture(Ref<Texture> p_texture) {
 	if (texture == p_texture)
 		return;
 	texture = p_texture;
-	region_rect = Rect2(Point2(), texture->get_size());
+	if (p_texture.is_null()) {
+		region_rect = Rect2(0, 0, 0, 0);
+	} else {
+		region_rect = Rect2(Point2(), texture->get_size());
+	}
 	emit_signal("texture_changed");
 	emit_changed();
 	_change_notify("texture");
@@ -132,8 +136,17 @@ Ref<Texture> StyleBoxTexture::get_normal_map() const {
 
 void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 
+	ERR_FAIL_INDEX((int)p_margin, 4);
+
 	margin[p_margin] = p_size;
 	emit_changed();
+	static const char *margin_prop[4] = {
+		"content_margin_left",
+		"content_margin_top",
+		"content_margin_right",
+		"content_margin_bottom",
+	};
+	_change_notify(margin_prop[p_margin]);
 }
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
 
@@ -182,12 +195,12 @@ Size2 StyleBoxTexture::get_center_size() const {
 	if (texture.is_null())
 		return Size2();
 
-	return texture->get_size() - get_minimum_size();
+	return region_rect.size - get_minimum_size();
 }
 
 void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_size) {
 
-	ERR_FAIL_INDEX(p_expand_margin, 4);
+	ERR_FAIL_INDEX((int)p_expand_margin, 4);
 	expand_margin[p_expand_margin] = p_size;
 	emit_changed();
 }
@@ -210,7 +223,7 @@ void StyleBoxTexture::set_expand_margin_size_all(float p_expand_margin_size) {
 
 float StyleBoxTexture::get_expand_margin_size(Margin p_expand_margin) const {
 
-	ERR_FAIL_INDEX_V(p_expand_margin, 4, 0);
+	ERR_FAIL_INDEX_V((int)p_expand_margin, 4, 0);
 	return expand_margin[p_expand_margin];
 }
 
@@ -297,7 +310,7 @@ void StyleBoxTexture::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 	ADD_GROUP("Margin", "margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_RIGHT);
@@ -309,8 +322,8 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_BOTTOM);
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
 	ADD_GROUP("Modulate", "modulate_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate_color"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
@@ -552,8 +565,6 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 		vert_offset = 0;
 	}
 	int adapted_corner_detail = (corner_radius[0] == 0 && corner_radius[1] == 0 && corner_radius[2] == 0 && corner_radius[3] == 0) ? 1 : corner_detail;
-	int rings = (border_width[0] == 0 && border_width[1] == 0 && border_width[2] == 0 && border_width[3] == 0) ? 1 : 2;
-	rings = 2;
 
 	int ring_corner_radius[4];
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
@@ -579,7 +590,7 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	//calculate the vert array
 	for (int corner_index = 0; corner_index < 4; corner_index++) {
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {
-			for (int inner_outer = (2 - rings); inner_outer < 2; inner_outer++) {
+			for (int inner_outer = 0; inner_outer < 2; inner_outer++) {
 				float radius;
 				Color color;
 				Point2 corner_point;
@@ -600,19 +611,17 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 		}
 	}
 
-	if (rings == 2) {
-		int vert_count = (adapted_corner_detail + 1) * 4 * rings;
-		//fill the indices and the colors for the border
-		for (int i = 0; i < vert_count; i++) {
-			//poly 1
-			indices.push_back(vert_offset + ((i + 0) % vert_count));
-			indices.push_back(vert_offset + ((i + 2) % vert_count));
-			indices.push_back(vert_offset + ((i + 1) % vert_count));
-			//poly 2
-			indices.push_back(vert_offset + ((i + 1) % vert_count));
-			indices.push_back(vert_offset + ((i + 2) % vert_count));
-			indices.push_back(vert_offset + ((i + 3) % vert_count));
-		}
+	int vert_count = (adapted_corner_detail + 1) * 4 * 2;
+	//fill the indices and the colors for the border
+	for (int i = 0; i < vert_count; i++) {
+		//poly 1
+		indices.push_back(vert_offset + ((i + 0) % vert_count));
+		indices.push_back(vert_offset + ((i + 2) % vert_count));
+		indices.push_back(vert_offset + ((i + 1) % vert_count));
+		//poly 2
+		indices.push_back(vert_offset + ((i + 1) % vert_count));
+		indices.push_back(vert_offset + ((i + 2) % vert_count));
+		indices.push_back(vert_offset + ((i + 3) % vert_count));
 	}
 }
 
@@ -892,12 +901,20 @@ bool StyleBoxLine::is_vertical() const {
 	return vertical;
 }
 
-void StyleBoxLine::set_grow(float p_grow) {
-	grow = p_grow;
+void StyleBoxLine::set_grow_end(float p_grow_end) {
+	grow_end = p_grow_end;
 	emit_changed();
 }
-float StyleBoxLine::get_grow() const {
-	return grow;
+float StyleBoxLine::get_grow_end() const {
+	return grow_end;
+}
+
+void StyleBoxLine::set_grow_begin(float p_grow_begin) {
+	grow_begin = p_grow_begin;
+	emit_changed();
+}
+float StyleBoxLine::get_grow_begin() const {
+	return grow_begin;
 }
 
 void StyleBoxLine::_bind_methods() {
@@ -906,13 +923,16 @@ void StyleBoxLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color"), &StyleBoxLine::get_color);
 	ClassDB::bind_method(D_METHOD("set_thickness", "thickness"), &StyleBoxLine::set_thickness);
 	ClassDB::bind_method(D_METHOD("get_thickness"), &StyleBoxLine::get_thickness);
-	ClassDB::bind_method(D_METHOD("set_grow", "grow"), &StyleBoxLine::set_grow);
-	ClassDB::bind_method(D_METHOD("get_grow"), &StyleBoxLine::get_grow);
+	ClassDB::bind_method(D_METHOD("set_grow_begin", "offset"), &StyleBoxLine::set_grow_begin);
+	ClassDB::bind_method(D_METHOD("get_grow_begin"), &StyleBoxLine::get_grow_begin);
+	ClassDB::bind_method(D_METHOD("set_grow_end", "offset"), &StyleBoxLine::set_grow_end);
+	ClassDB::bind_method(D_METHOD("get_grow_end"), &StyleBoxLine::get_grow_end);
 	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &StyleBoxLine::set_vertical);
 	ClassDB::bind_method(D_METHOD("is_vertical"), &StyleBoxLine::is_vertical);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow", PROPERTY_HINT_RANGE, "-300,300,1"), "set_grow", "get_grow");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow_begin", PROPERTY_HINT_RANGE, "-300,300,1"), "set_grow_begin", "get_grow_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "grow_end", PROPERTY_HINT_RANGE, "-300,300,1"), "set_grow_end", "get_grow_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "thickness", PROPERTY_HINT_RANGE, "0,10"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
@@ -928,12 +948,12 @@ void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Rect2i r = p_rect;
 
 	if (vertical) {
-		r.position.y -= grow;
-		r.size.y += grow * 2;
+		r.position.y -= grow_begin;
+		r.size.y += (grow_begin + grow_end);
 		r.size.x = thickness;
 	} else {
-		r.position.x -= grow;
-		r.size.x += grow * 2;
+		r.position.x -= grow_begin;
+		r.size.x += (grow_begin + grow_end);
 		r.size.y = thickness;
 	}
 
@@ -941,7 +961,8 @@ void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 }
 
 StyleBoxLine::StyleBoxLine() {
-	grow = 1.0;
+	grow_begin = 1.0;
+	grow_end = 1.0;
 	thickness = 1;
 	color = Color(0.0, 0.0, 0.0);
 	vertical = false;

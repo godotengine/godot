@@ -24,8 +24,6 @@ subject to the following restrictions:
 
 #include <new>
 
-extern int gOverlappingPairs;
-
 void	btSimpleBroadphase::validate()
 {
 	for (int i=0;i<m_numHandles;i++)
@@ -315,8 +313,7 @@ void	btSimpleBroadphase::calculateOverlappingPairs(btDispatcher* dispatcher)
 					pair.m_pProxy0 = 0;
 					pair.m_pProxy1 = 0;
 					m_invalidPair++;
-					gOverlappingPairs--;
-				} 
+				}
 
 			}
 

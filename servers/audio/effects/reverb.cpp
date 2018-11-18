@@ -31,27 +31,27 @@
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2006
 
 #include "reverb.h"
-#include "math_funcs.h"
+#include "core/math/math_funcs.h"
 #include <math.h>
 
 const float Reverb::comb_tunings[MAX_COMBS] = {
 	//freeverb comb tunings
-	0.025306122448979593,
-	0.026938775510204082,
-	0.028956916099773241,
-	0.03074829931972789,
-	0.032244897959183672,
-	0.03380952380952381,
-	0.035306122448979592,
-	0.036666666666666667
+	0.025306122448979593f,
+	0.026938775510204082f,
+	0.028956916099773241f,
+	0.03074829931972789f,
+	0.032244897959183672f,
+	0.03380952380952381f,
+	0.035306122448979592f,
+	0.036666666666666667f
 };
 
 const float Reverb::allpass_tunings[MAX_ALLPASS] = {
 	//freeverb allpass tunings
-	0.0051020408163265302,
-	0.007732426303854875,
-	0.01,
-	0.012607709750566893
+	0.0051020408163265302f,
+	0.007732426303854875f,
+	0.01f,
+	0.012607709750566893f
 };
 
 void Reverb::process(float *p_src, float *p_dst, int p_frames) {

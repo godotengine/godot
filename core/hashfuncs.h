@@ -31,10 +31,12 @@
 #ifndef HASHFUNCS_H
 #define HASHFUNCS_H
 
-#include "math_defs.h"
-#include "math_funcs.h"
-#include "typedefs.h"
-#include "ustring.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/node_path.h"
+#include "core/string_db.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
 
 /**
  * Hashing functions
@@ -131,6 +133,7 @@ static inline uint64_t make_uint64_t(T p_in) {
 }
 
 struct HashMapHasherDefault {
+
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
 	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
@@ -145,6 +148,10 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return (uint32_t)p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return (uint32_t)p_wchar; }
+
+	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
+
 	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
 };
 

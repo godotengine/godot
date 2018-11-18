@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "sky_box.h"
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 void Sky::set_radiance_size(RadianceSize p_size) {
 	ERR_FAIL_INDEX(p_size, RADIANCE_SIZE_MAX);
@@ -405,7 +405,7 @@ void ProceduralSky::_update_sky() {
 
 	} else {
 		Ref<Image> image = _generate_sky();
-		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+		VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
 		VS::get_singleton()->texture_set_data(texture, image);
 		_radiance_changed();
 	}
@@ -422,7 +422,7 @@ void ProceduralSky::_queue_update() {
 
 void ProceduralSky::_thread_done(const Ref<Image> &p_image) {
 
-	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), Image::FORMAT_RGBE9995, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
+	VS::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, Image::FORMAT_RGBE9995, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER | VS::TEXTURE_FLAG_REPEAT);
 	VS::get_singleton()->texture_set_data(texture, p_image);
 	_radiance_changed();
 	Thread::wait_to_finish(sky_thread);
@@ -532,14 +532,14 @@ ProceduralSky::ProceduralSky() {
 	texture = VS::get_singleton()->texture_create();
 
 	update_queued = false;
-	sky_top_color = Color::hex(0x0c74f9ff);
-	sky_horizon_color = Color::hex(0x8ed2e8ff);
-	sky_curve = 0.25;
+	sky_top_color = Color::hex(0xa5d6f1ff);
+	sky_horizon_color = Color::hex(0xd6eafaff);
+	sky_curve = 0.09;
 	sky_energy = 1;
 
-	ground_bottom_color = Color::hex(0x1a2530ff);
-	ground_horizon_color = Color::hex(0x7bc9f3ff);
-	ground_curve = 0.01;
+	ground_bottom_color = Color::hex(0x282f36ff);
+	ground_horizon_color = Color::hex(0x6c655fff);
+	ground_curve = 0.02;
 	ground_energy = 1;
 
 	sun_color = Color(1, 1, 1);

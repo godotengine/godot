@@ -32,7 +32,7 @@
 #define COLLISION_OBJECT_SW_H
 
 #include "broad_phase_sw.h"
-#include "self_list.h"
+#include "core/self_list.h"
 #include "servers/physics_server.h"
 #include "shape_sw.h"
 
@@ -135,7 +135,7 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable = p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
-	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_enable) { shapes[p_idx].disabled = p_enable; }
+	_FORCE_INLINE_ void set_shape_as_disabled(int p_idx, bool p_enable) { shapes.write[p_idx].disabled = p_enable; }
 	_FORCE_INLINE_ bool is_shape_set_as_disabled(int p_idx) const { return shapes[p_idx].disabled; }
 
 	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }

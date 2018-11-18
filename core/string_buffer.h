@@ -31,8 +31,7 @@
 #ifndef STRING_BUFFER_H
 #define STRING_BUFFER_H
 
-#include "ustring.h"
-#include <string.h>
+#include "core/ustring.h"
 
 template <int SHORT_BUFFER_SIZE = 64>
 class StringBuffer {
@@ -42,7 +41,7 @@ class StringBuffer {
 	int string_length;
 
 	_FORCE_INLINE_ CharType *current_buffer_ptr() {
-		return static_cast<Vector<CharType> &>(buffer).empty() ? short_buffer : buffer.ptrw();
+		return static_cast<String &>(buffer).empty() ? short_buffer : buffer.ptrw();
 	}
 
 public:

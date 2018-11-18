@@ -9,7 +9,6 @@ Export('env_modules')
 env.modules_sources = [
     "register_module_types.gen.cpp",
 ]
-Export('env')
 
 for x in env.module_list:
     if (x in env.disabled_modules):
@@ -20,7 +19,6 @@ for x in env.module_list:
 if env.split_modules:
     env.split_lib("modules", env_lib = env_modules)
 else:
-
     lib = env_modules.add_library("modules", env.modules_sources)
 
     env.Prepend(LIBS=[lib])

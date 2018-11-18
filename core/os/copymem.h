@@ -31,7 +31,7 @@
 #ifndef COPYMEM_H
 #define COPYMEM_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 #ifdef PLATFORM_COPYMEM
 

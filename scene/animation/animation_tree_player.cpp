@@ -813,7 +813,11 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
 
-		t.skip = false;
+		if (t.skeleton) {
+			t.skip = t.skeleton->is_bone_ignore_animation(t.bone_idx);
+		} else {
+			t.skip = false;
+		}
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */
@@ -873,6 +877,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 							tr.track->object->call(method, args[0], args[1], args[2], args[3], args[4]);
 						}
 					} break;
+					default: {}
 				}
 			}
 		}
@@ -1148,7 +1153,7 @@ void AnimationTreePlayer::transition_node_set_input_auto_advance(const StringNam
 	GET_NODE(NODE_TRANSITION, TransitionNode);
 	ERR_FAIL_INDEX(p_input, n->input_data.size());
 
-	n->input_data[p_input].auto_advance = p_auto_advance;
+	n->input_data.write[p_input].auto_advance = p_auto_advance;
 }
 void AnimationTreePlayer::transition_node_set_xfade_time(const StringName &p_node, float p_time) {
 
@@ -1210,6 +1215,12 @@ String AnimationTreePlayer::animation_node_get_master_animation(const StringName
 
 	GET_NODE_V(NODE_ANIMATION, AnimationNode, String());
 	return n->from;
+}
+
+float AnimationTreePlayer::animation_node_get_position(const StringName &p_node) const {
+
+	GET_NODE_V(NODE_ANIMATION, AnimationNode, 0);
+	return n->time;
 }
 
 bool AnimationTreePlayer::animation_node_is_path_filtered(const StringName &p_node, const NodePath &p_path) const {
@@ -1355,7 +1366,7 @@ void AnimationTreePlayer::remove_node(const StringName &p_node) {
 		for (int i = 0; i < nb->inputs.size(); i++) {
 
 			if (nb->inputs[i].node == p_node)
-				nb->inputs[i].node = StringName();
+				nb->inputs.write[i].node = StringName();
 		}
 	}
 
@@ -1416,11 +1427,11 @@ Error AnimationTreePlayer::connect_nodes(const StringName &p_src_node, const Str
 		for (int i = 0; i < nb->inputs.size(); i++) {
 
 			if (nb->inputs[i].node == p_src_node)
-				nb->inputs[i].node = StringName();
+				nb->inputs.write[i].node = StringName();
 		}
 	}
 
-	dst->inputs[p_dst_input].node = p_src_node;
+	dst->inputs.write[p_dst_input].node = p_src_node;
 
 	_clear_cycle_test();
 
@@ -1453,7 +1464,7 @@ void AnimationTreePlayer::disconnect_nodes(const StringName &p_node, int p_input
 
 	NodeBase *dst = node_map[p_node];
 	ERR_FAIL_INDEX(p_input, dst->inputs.size());
-	dst->inputs[p_input].node = StringName();
+	dst->inputs.write[p_input].node = StringName();
 	last_error = CONNECT_INCOMPLETE;
 	dirty_caches = true;
 }
@@ -1693,7 +1704,7 @@ Error AnimationTreePlayer::node_rename(const StringName &p_node, const StringNam
 		for (int i = 0; i < nb->inputs.size(); i++) {
 
 			if (nb->inputs[i].node == p_node) {
-				nb->inputs[i].node = p_new_name;
+				nb->inputs.write[i].node = p_new_name;
 			}
 		}
 	}
@@ -1720,6 +1731,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("animation_node_set_master_animation", "id", "source"), &AnimationTreePlayer::animation_node_set_master_animation);
 	ClassDB::bind_method(D_METHOD("animation_node_get_master_animation", "id"), &AnimationTreePlayer::animation_node_get_master_animation);
+	ClassDB::bind_method(D_METHOD("animation_node_get_position", "id"), &AnimationTreePlayer::animation_node_get_position);
 	ClassDB::bind_method(D_METHOD("animation_node_set_filter_path", "id", "path", "enable"), &AnimationTreePlayer::animation_node_set_filter_path);
 
 	ClassDB::bind_method(D_METHOD("oneshot_node_set_fadein_time", "id", "time_sec"), &AnimationTreePlayer::oneshot_node_set_fadein_time);
@@ -1803,7 +1815,7 @@ void AnimationTreePlayer::_bind_methods() {
 	ADD_GROUP("Playback", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_animation_process_mode", "get_animation_process_mode");
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "master_player"), "set_master_player", "get_master_player");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "master_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_master_player", "get_master_player");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "base_path"), "set_base_path", "get_base_path");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 

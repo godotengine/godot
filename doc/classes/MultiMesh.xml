@@ -30,6 +30,14 @@
 				Get the color of a specific instance.
 			</description>
 		</method>
+		<method name="get_instance_custom_data" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_instance_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -50,6 +58,16 @@
 				Set the color of a specific instance.
 			</description>
 		</method>
+		<method name="set_instance_custom_data">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<argument index="1" name="custom_data" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_instance_transform">
 			<return type="void">
 			</return>
@@ -64,6 +82,8 @@
 	</methods>
 	<members>
 		<member name="color_format" type="int" setter="set_color_format" getter="get_color_format" enum="MultiMesh.ColorFormat">
+		</member>
+		<member name="custom_data_format" type="int" setter="set_custom_data_format" getter="get_custom_data_format" enum="MultiMesh.CustomDataFormat">
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count">
 		</member>
@@ -82,6 +102,12 @@
 		<constant name="COLOR_8BIT" value="1" enum="ColorFormat">
 		</constant>
 		<constant name="COLOR_FLOAT" value="2" enum="ColorFormat">
+		</constant>
+		<constant name="CUSTOM_DATA_NONE" value="0" enum="CustomDataFormat">
+		</constant>
+		<constant name="CUSTOM_DATA_8BIT" value="1" enum="CustomDataFormat">
+		</constant>
+		<constant name="CUSTOM_DATA_FLOAT" value="2" enum="CustomDataFormat">
 		</constant>
 	</constants>
 </class>

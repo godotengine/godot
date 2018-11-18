@@ -31,7 +31,7 @@
 #ifndef VIDEO_STREAM_WEBM_H
 #define VIDEO_STREAM_WEBM_H
 
-#include "io/resource_loader.h"
+#include "core/io/resource_loader.h"
 #include "scene/resources/video_stream.h"
 
 class WebMFrame;
@@ -109,7 +109,6 @@ private:
 class VideoStreamWebm : public VideoStream {
 
 	GDCLASS(VideoStreamWebm, VideoStream);
-	RES_BASE_EXTENSION("webmstr");
 
 	String file;
 	int audio_track;
@@ -125,6 +124,14 @@ public:
 	virtual void set_file(const String &p_file);
 	String get_file();
 	virtual void set_audio_track(int p_track);
+};
+
+class ResourceFormatLoaderWebm : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
 };
 
 #endif // VIDEO_STREAM_WEBM_H

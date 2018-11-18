@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
-import os
 Import('env')
 
-def make_debug(target, source, env):
-    os.system('objcopy --only-keep-debug {0} {0}.debugsymbols'.format(target[0]))
-    os.system('strip --strip-debug --strip-unneeded {0}'.format(target[0]))
-    os.system('objcopy --add-gnu-debuglink={0}.debugsymbols {0}'.format(target[0]))
+import os
+from platform_methods import run_in_subprocess
+import platform_x11_builders
 
 common_x11 = [
     "context_gl_x11.cpp",
@@ -20,4 +18,4 @@ common_x11 = [
 prog = env.add_program('#bin/godot', ['godot_x11.cpp'] + common_x11)
 
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, make_debug)
+    env.AddPostAction(prog, run_in_subprocess(platform_x11_builders.make_debug_x11))

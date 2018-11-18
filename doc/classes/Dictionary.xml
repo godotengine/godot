@@ -33,7 +33,9 @@
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="key" type="var">
+			<return type="bool">
+			</return>
+			<argument index="0" name="key" type="Variant">
 			</argument>
 			<description>
 				Erase a dictionary key/value pair by key.
@@ -42,7 +44,7 @@
 		<method name="has">
 			<return type="bool">
 			</return>
-			<argument index="0" name="key" type="var">
+			<argument index="0" name="key" type="Variant">
 			</argument>
 			<description>
 				Return true if the dictionary has a given key.

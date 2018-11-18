@@ -30,11 +30,11 @@
 
 #ifdef ANDROID_NATIVE_ACTIVITY
 
-#include "engine.h"
+#include "core/engine.h"
+#include "core/project_settings.h"
 #include "file_access_android.h"
 #include "main/main.h"
 #include "os_android.h"
-#include "project_settings.h"
 
 #include <EGL/egl.h>
 #include <android/log.h>
@@ -408,7 +408,7 @@ static void engine_draw_frame(struct engine *engine) {
 	// Just fill the screen with a color.
 	//glClearColor(0,1,0,1);
 	//glClear(GL_COLOR_BUFFER_BIT);
-	if (engine->os && engine->os->main_loop_iterate() == true) {
+	if (engine->os && engine->os->main_loop_iterate()) {
 
 		engine->requested_quit = true;
 		return; //should exit instead
@@ -928,7 +928,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerMethod(JNIEnv *e
 	jmethodID mid = env->GetMethodID(cls, mname.ascii().get_data(), cs.ascii().get_data());
 	if (!mid) {
 
-		print_line("FAILED GETTING METHOD ID " + mname);
+		print_line("RegisterMethod: Failed getting method ID: " + mname);
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));

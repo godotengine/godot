@@ -31,7 +31,7 @@
 #ifndef SHAPE_H
 #define SHAPE_H
 
-#include "resource.h"
+#include "core/resource.h"
 class ArrayMesh;
 
 class Shape : public Resource {
@@ -40,10 +40,13 @@ class Shape : public Resource {
 	OBJ_SAVE_TYPE(Shape);
 	RES_BASE_EXTENSION("shape");
 	RID shape;
+	real_t margin;
 
 	Ref<ArrayMesh> debug_mesh_cache;
 
 protected:
+	static void _bind_methods();
+
 	_FORCE_INLINE_ RID get_shape() const { return shape; }
 	Shape(RID p_shape);
 
@@ -54,6 +57,9 @@ public:
 	Ref<ArrayMesh> get_debug_mesh();
 
 	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform);
+
+	real_t get_margin() const;
+	void set_margin(real_t p_margin);
 
 	Shape();
 	~Shape();

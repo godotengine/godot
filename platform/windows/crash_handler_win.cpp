@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/project_settings.h"
 #include "main/main.h"
 #include "os_windows.h"
-#include "project_settings.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
@@ -123,6 +123,9 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	}
 
 	fprintf(stderr, "%s: Program crashed\n", __FUNCTION__);
+
+	if (OS::get_singleton()->get_main_loop())
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 
 	// Load the symbols:
 	if (!SymInitialize(process, NULL, false))

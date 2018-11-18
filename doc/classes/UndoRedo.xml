@@ -4,8 +4,29 @@
 		Helper to manage UndoRedo in the editor or custom tools.
 	</brief_description>
 	<description>
-		Helper to manage UndoRedo in the editor or custom tools. It works by storing calls to functions in both 'do' an 'undo' lists.
+		Helper to manage UndoRedo in the editor or custom tools. It works by registering methods and property changes inside 'actions'.
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
+		Here's an example on how to add an action to Godot editor's own 'undoredo':
+		[codeblock]
+		var undoredo = get_undo_redo() # method of EditorPlugin
+
+		func do_something():
+		    pass # put your code here
+
+		func undo_something():
+		    pass # put here the code that reverts what's done by "do_something()"
+
+		func _on_MyButton_pressed():
+		    var node = get_node("MyNode2D")
+		    undoredo.create_action("Move the node")
+		    undoredo.add_do_method(self, "do_something")
+		    undoredo.add_undo_method(self, "undo_something")
+		    undoredo.add_do_property(node, "position", Vector2(100,100))
+		    undoredo.add_undo_property(node, "position", node.position)
+		    undoredo.commit_action()
+		[/codeblock]
+		[method create_action], [method add_do_method], [method add_undo_method], [method add_do_property], [method add_undo_property], and [method commit_action] should be called one after the other, like in the example. Not doing so could lead to crashes.
+		If you don't need to register a method you can leave [method add_do_method] and [method add_undo_method] out, and so it goes for properties. You can register more than one method/property.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,6 +41,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
+				Register a method that will be called when the action is committed.
 			</description>
 		</method>
 		<method name="add_do_property">
@@ -32,7 +54,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Set a property with a custom value.
+				Register a property value change for 'do'.
 			</description>
 		</method>
 		<method name="add_do_reference">
@@ -41,7 +63,7 @@
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Add a 'do' reference that will be erased if the 'do' history is lost. This is useful mostly for new nodes created for the 'do' call. Do not use for resources.
+				Register a reference for 'do' that will be erased if the 'do' history is lost. This is useful mostly for new nodes created for the 'do' call. Do not use for resources.
 			</description>
 		</method>
 		<method name="add_undo_method" qualifiers="vararg">
@@ -52,6 +74,7 @@
 			<argument index="1" name="method" type="String">
 			</argument>
 			<description>
+				Register a method that will be called when the action is undone.
 			</description>
 		</method>
 		<method name="add_undo_property">
@@ -64,7 +87,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Undo setting of a property with a custom value.
+				Register a property value change for 'undo'.
 			</description>
 		</method>
 		<method name="add_undo_reference">
@@ -73,7 +96,7 @@
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Add an 'undo' reference that will be erased if the 'undo' history is lost. This is useful mostly for nodes removed with the 'do' call (not the 'undo' call!).
+				Register a reference for 'undo' that will be erased if the 'undo' history is lost. This is useful mostly for nodes removed with the 'do' call (not the 'undo' call!).
 			</description>
 		</method>
 		<method name="clear_history">
@@ -98,7 +121,7 @@
 			<argument index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0">
 			</argument>
 			<description>
-				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property] and [method add_undo_property].
+				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
@@ -117,15 +140,17 @@
 			</description>
 		</method>
 		<method name="redo">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<description>
+				Redo last action.
 			</description>
 		</method>
 		<method name="undo">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<description>
+				Undo last action.
 			</description>
 		</method>
 	</methods>

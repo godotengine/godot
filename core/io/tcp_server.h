@@ -31,31 +31,32 @@
 #ifndef TCP_SERVER_H
 #define TCP_SERVER_H
 
-#include "io/ip.h"
-#include "io/stream_peer.h"
-#include "stream_peer_tcp.h"
+#include "core/io/ip.h"
+#include "core/io/net_socket.h"
+#include "core/io/stream_peer.h"
+#include "core/io/stream_peer_tcp.h"
 
 class TCP_Server : public Reference {
 
 	GDCLASS(TCP_Server, Reference);
 
 protected:
-	static TCP_Server *(*_create)();
+	enum {
+		MAX_PENDING_CONNECTIONS = 8
+	};
 
-	//bind helper
+	Ref<NetSocket> _sock;
 	static void _bind_methods();
 
 public:
-	virtual Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*")) = 0;
-	virtual bool is_connection_available() const = 0;
-	virtual Ref<StreamPeerTCP> take_connection() = 0;
+	Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
+	bool is_connection_available() const;
+	Ref<StreamPeerTCP> take_connection();
 
-	virtual void stop() = 0; //stop listening
-
-	static Ref<TCP_Server> create_ref();
-	static TCP_Server *create();
+	void stop(); // Stop listening
 
 	TCP_Server();
+	~TCP_Server();
 };
 
 #endif // TCP_SERVER_H

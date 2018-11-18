@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2017 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -138,7 +138,8 @@ const pcre2_compile_context PRIV(default_compile_context) = {
   PCRE2_UNSET,                               /* Max pattern length */
   BSR_DEFAULT,                               /* Backslash R default */
   NEWLINE_DEFAULT,                           /* Newline convention */
-  PARENS_NEST_LIMIT };                       /* As it says */
+  PARENS_NEST_LIMIT,                         /* As it says */
+  0 };                                       /* Extra options */
 
 /* The create function copies the default into the new memory, but must
 override the default memory handling functions if a gcontext was provided. */
@@ -161,9 +162,6 @@ when no context is supplied to a match function. */
 
 const pcre2_match_context PRIV(default_match_context) = {
   { default_malloc, default_free, NULL },
-#ifdef HEAP_MATCH_RECURSE
-  { default_malloc, default_free, NULL },
-#endif
 #ifdef SUPPORT_JIT
   NULL,
   NULL,
@@ -171,8 +169,9 @@ const pcre2_match_context PRIV(default_match_context) = {
   NULL,
   NULL,
   PCRE2_UNSET,   /* Offset limit */
+  HEAP_LIMIT,
   MATCH_LIMIT,
-  MATCH_LIMIT_RECURSION };
+  MATCH_LIMIT_DEPTH };
 
 /* The create function copies the default into the new memory, but must
 override the default memory handling functions if a gcontext was provided. */
@@ -187,6 +186,36 @@ if (mcontext == NULL) return NULL;
 if (gcontext != NULL)
   *((pcre2_memctl *)mcontext) = *((pcre2_memctl *)gcontext);
 return mcontext;
+}
+
+
+/* A default convert context is set up to save having to initialize at run time
+when no context is supplied to the convert function. */
+
+const pcre2_convert_context PRIV(default_convert_context) = {
+  { default_malloc, default_free, NULL },    /* Default memory handling */
+#ifdef _WIN32
+  CHAR_BACKSLASH,                            /* Default path separator */
+  CHAR_GRAVE_ACCENT                          /* Default escape character */
+#else  /* Not Windows */
+  CHAR_SLASH,                                /* Default path separator */
+  CHAR_BACKSLASH                             /* Default escape character */
+#endif
+  };
+
+/* The create function copies the default into the new memory, but must
+override the default memory handling functions if a gcontext was provided. */
+
+PCRE2_EXP_DEFN pcre2_convert_context * PCRE2_CALL_CONVENTION
+pcre2_convert_context_create(pcre2_general_context *gcontext)
+{
+pcre2_convert_context *ccontext = PRIV(memctl_malloc)(
+  sizeof(pcre2_real_convert_context), (pcre2_memctl *)gcontext);
+if (ccontext == NULL) return NULL;
+*ccontext = PRIV(default_convert_context);
+if (gcontext != NULL)
+  *((pcre2_memctl *)ccontext) = *((pcre2_memctl *)gcontext);
+return ccontext;
 }
 
 
@@ -231,10 +260,21 @@ return new;
 
 
 
+PCRE2_EXP_DEFN pcre2_convert_context * PCRE2_CALL_CONVENTION
+pcre2_convert_context_copy(pcre2_convert_context *ccontext)
+{
+pcre2_convert_context *new =
+  ccontext->memctl.malloc(sizeof(pcre2_real_convert_context),
+  ccontext->memctl.memory_data);
+if (new == NULL) return NULL;
+memcpy(new, ccontext, sizeof(pcre2_real_convert_context));
+return new;
+}
+
+
 /*************************************************
 *              Context free functions            *
 *************************************************/
-
 
 PCRE2_EXP_DEFN void PCRE2_CALL_CONVENTION
 pcre2_general_context_free(pcre2_general_context *gcontext)
@@ -260,6 +300,12 @@ if (mcontext != NULL)
 }
 
 
+PCRE2_EXP_DEFN void PCRE2_CALL_CONVENTION
+pcre2_convert_context_free(pcre2_convert_context *ccontext)
+{
+if (ccontext != NULL)
+  ccontext->memctl.free(ccontext, ccontext->memctl.memory_data);
+}
 
 
 /*************************************************
@@ -271,7 +317,7 @@ data is given. Only some of the functions are able to test the validity of the
 data. */
 
 
-/* ------------ Compile contexts ------------ */
+/* ------------ Compile context ------------ */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_character_tables(pcre2_compile_context *ccontext,
@@ -313,6 +359,7 @@ switch(newline)
   case PCRE2_NEWLINE_CRLF:
   case PCRE2_NEWLINE_ANY:
   case PCRE2_NEWLINE_ANYCRLF:
+  case PCRE2_NEWLINE_NUL:
   ccontext->newline_convention = newline;
   return 0;
 
@@ -329,6 +376,13 @@ return 0;
 }
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_compile_extra_options(pcre2_compile_context *ccontext, uint32_t options)
+{
+ccontext->extra_options = options;
+return 0;
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_compile_recursion_guard(pcre2_compile_context *ccontext,
   int (*guard)(uint32_t, void *), void *user_data)
 {
@@ -338,7 +392,7 @@ return 0;
 }
 
 
-/* ------------ Match contexts ------------ */
+/* ------------ Match context ------------ */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_callout(pcre2_match_context *mcontext,
@@ -350,9 +404,23 @@ return 0;
 }
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_heap_limit(pcre2_match_context *mcontext, uint32_t limit)
+{
+mcontext->heap_limit = limit;
+return 0;
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_match_limit(pcre2_match_context *mcontext, uint32_t limit)
 {
 mcontext->match_limit = limit;
+return 0;
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_depth_limit(pcre2_match_context *mcontext, uint32_t limit)
+{
+mcontext->depth_limit = limit;
 return 0;
 }
 
@@ -363,11 +431,13 @@ mcontext->offset_limit = limit;
 return 0;
 }
 
+/* This function became obsolete at release 10.30. It is kept as a synonym for
+backwards compatibility. */
+
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_recursion_limit(pcre2_match_context *mcontext, uint32_t limit)
 {
-mcontext->recursion_limit = limit;
-return 0;
+return pcre2_set_depth_limit(mcontext, limit);
 }
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
@@ -375,17 +445,32 @@ pcre2_set_recursion_memory_management(pcre2_match_context *mcontext,
   void *(*mymalloc)(size_t, void *), void (*myfree)(void *, void *),
   void *mydata)
 {
-#ifdef HEAP_MATCH_RECURSE
-mcontext->stack_memctl.malloc = mymalloc;
-mcontext->stack_memctl.free = myfree;
-mcontext->stack_memctl.memory_data = mydata;
-#else
 (void)mcontext;
 (void)mymalloc;
 (void)myfree;
 (void)mydata;
-#endif
+return 0;
+}
+
+/* ------------ Convert context ------------ */
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_glob_separator(pcre2_convert_context *ccontext, uint32_t separator)
+{
+if (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&
+    separator != CHAR_DOT) return PCRE2_ERROR_BADDATA;
+ccontext->glob_separator = separator;
+return 0;
+}
+
+PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
+pcre2_set_glob_escape(pcre2_convert_context *ccontext, uint32_t escape)
+{
+if (escape > 255 || (escape != 0 && !ispunct(escape)))
+  return PCRE2_ERROR_BADDATA;
+ccontext->glob_escape = escape;
 return 0;
 }
 
 /* End of pcre2_context.c */
+

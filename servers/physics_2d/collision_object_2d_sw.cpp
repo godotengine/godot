@@ -50,7 +50,7 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	shapes[p_index].shape->remove_owner(this);
-	shapes[p_index].shape = p_shape;
+	shapes.write[p_index].shape = p_shape;
 
 	p_shape->add_owner(this);
 	_update_shapes();
@@ -60,15 +60,15 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 void CollisionObject2DSW::set_shape_metadata(int p_index, const Variant &p_metadata) {
 
 	ERR_FAIL_INDEX(p_index, shapes.size());
-	shapes[p_index].metadata = p_metadata;
+	shapes.write[p_index].metadata = p_metadata;
 }
 
 void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_transform) {
 
 	ERR_FAIL_INDEX(p_index, shapes.size());
 
-	shapes[p_index].xform = p_transform;
-	shapes[p_index].xform_inv = p_transform.affine_inverse();
+	shapes.write[p_index].xform = p_transform;
+	shapes.write[p_index].xform_inv = p_transform.affine_inverse();
 	_update_shapes();
 	_shapes_changed();
 }
@@ -76,7 +76,7 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 	ERR_FAIL_INDEX(p_idx, shapes.size());
 
-	CollisionObject2DSW::Shape &shape = shapes[p_idx];
+	CollisionObject2DSW::Shape &shape = shapes.write[p_idx];
 	if (shape.disabled == p_disabled)
 		return;
 
@@ -116,7 +116,7 @@ void CollisionObject2DSW::remove_shape(int p_index) {
 			continue;
 		//should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
-		shapes[i].bpid = 0;
+		shapes.write[i].bpid = 0;
 	}
 	shapes[p_index].shape->remove_owner(this);
 	shapes.remove(p_index);
@@ -133,7 +133,7 @@ void CollisionObject2DSW::_set_static(bool p_static) {
 	if (!space)
 		return;
 	for (int i = 0; i < get_shape_count(); i++) {
-		Shape &s = shapes[i];
+		const Shape &s = shapes[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
@@ -144,7 +144,7 @@ void CollisionObject2DSW::_unregister_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes[i];
+		Shape &s = shapes.write[i];
 		if (s.bpid > 0) {
 			space->get_broadphase()->remove(s.bpid);
 			s.bpid = 0;
@@ -159,7 +159,7 @@ void CollisionObject2DSW::_update_shapes() {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes[i];
+		Shape &s = shapes.write[i];
 
 		if (s.disabled)
 			continue;
@@ -187,7 +187,7 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2 &p_motion) {
 
 	for (int i = 0; i < shapes.size(); i++) {
 
-		Shape &s = shapes[i];
+		Shape &s = shapes.write[i];
 		if (s.disabled)
 			continue;
 
@@ -215,7 +215,7 @@ void CollisionObject2DSW::_set_space(Space2DSW *p_space) {
 
 		for (int i = 0; i < shapes.size(); i++) {
 
-			Shape &s = shapes[i];
+			Shape &s = shapes.write[i];
 			if (s.bpid) {
 				space->get_broadphase()->remove(s.bpid);
 				s.bpid = 0;
@@ -244,6 +244,7 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) {
 	type = p_type;
 	space = NULL;
 	instance_id = 0;
+	canvas_instance_id = 0;
 	collision_mask = 1;
 	collision_layer = 1;
 	pickable = true;

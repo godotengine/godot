@@ -88,6 +88,9 @@
 		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position">
 			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accommodate it.
 		</member>
+		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled">
+			If [code]true[/code] the [code]LineEdit[/code] will show a clear button if [code]text[/code] is not empty.
+		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code] the context menu will appear when right clicked.
 		</member>
@@ -110,7 +113,10 @@
 			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret">
-			If [code]true[/code] every character is shown as "*".
+			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
+		</member>
+		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character">
+			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
 			String value of the [LineEdit].
@@ -164,11 +170,18 @@
 			Undoes the previous action.
 		</constant>
 		<constant name="MENU_REDO" value="6" enum="MenuItems">
+			Reverse the last undo action.
 		</constant>
 		<constant name="MENU_MAX" value="7" enum="MenuItems">
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="clear" type="Texture">
+		</theme_item>
+		<theme_item name="clear_button_color" type="Color">
+		</theme_item>
+		<theme_item name="clear_button_color_pressed" type="Color">
+		</theme_item>
 		<theme_item name="cursor_color" type="Color">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">

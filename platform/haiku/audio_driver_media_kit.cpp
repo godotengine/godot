@@ -32,7 +32,7 @@
 
 #ifdef MEDIA_KIT_ENABLED
 
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 int32_t *AudioDriverMediaKit::samples_in = NULL;
 
@@ -43,7 +43,7 @@ Error AudioDriverMediaKit::init() {
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
+	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
 	buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
 
@@ -100,7 +100,7 @@ int AudioDriverMediaKit::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::SpeakerMode AudioDriverMediaKit::get_speaker_mode() const {
+AudioDriverMediaKit::SpeakerMode AudioDriverMediaKit::get_speaker_mode() const {
 	return speaker_mode;
 }
 

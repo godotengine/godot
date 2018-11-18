@@ -31,10 +31,10 @@
 #ifndef GDSCRIPT_H
 #define GDSCRIPT_H
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/script_language.h"
 #include "gdscript_function.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "script_language.h"
 
 class GDScriptNativeClass : public Reference {
 
@@ -63,7 +63,8 @@ class GDScript : public Script {
 		int index;
 		StringName setter;
 		StringName getter;
-		ScriptInstance::RPCMode rpc_mode;
+		MultiplayerAPI::RPCMode rpc_mode;
+		GDScriptDataType data_type;
 	};
 
 	friend class GDScriptInstance;
@@ -145,8 +146,13 @@ public:
 	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
+	const GDScriptDataType &get_member_type(const StringName &p_member) const {
+		CRASH_COND(!member_indices.has(p_member));
+		return member_indices[p_member].data_type;
+	}
 	const Map<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
+	const String &get_script_class_name() const { return name; }
 
 	virtual bool has_script_signal(const StringName &p_signal) const;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
@@ -165,6 +171,7 @@ public:
 
 	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this);
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
 	virtual bool instance_has(const Object *p_this) const;
 
 	virtual bool has_source_code() const;
@@ -248,12 +255,56 @@ public:
 
 	void reload_members();
 
-	virtual RPCMode get_rpc_mode(const StringName &p_method) const;
-	virtual RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
 
 	GDScriptInstance();
 	~GDScriptInstance();
 };
+
+#ifdef DEBUG_ENABLED
+struct GDScriptWarning {
+	enum Code {
+		UNASSIGNED_VARIABLE, // Variable used but never assigned
+		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc)
+		UNUSED_VARIABLE, // Local variable is declared but never used
+		UNUSED_CLASS_VARIABLE, // Class variable is declared but never used in the file
+		UNUSED_ARGUMENT, // Function argument is never used
+		UNREACHABLE_CODE, // Code after a return statement
+		STANDALONE_EXPRESSION, // Expression not assigned to a variable
+		VOID_ASSIGNMENT, // Function returns void but it's assigned to a variable
+		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost
+		FUNCTION_MAY_YIELD, // Typed assign of function call that yields (it may return a function state)
+		VARIABLE_CONFLICTS_FUNCTION, // Variable has the same name of a function
+		FUNCTION_CONFLICTS_VARIABLE, // Function has the same name of a variable
+		FUNCTION_CONFLICTS_CONSTANT, // Function has the same name of a constant
+		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible
+		UNUSED_SIGNAL, // Signal is defined but never emitted
+		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used
+		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name
+		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name
+		FUNCTION_USED_AS_PROPERTY, // Property not found, but there's a function with the same name
+		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded
+		UNSAFE_PROPERTY_ACCESS, // Property not found in the detected type (but can be in subtypes)
+		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes)
+		UNSAFE_CAST, // Cast used in an unknown type
+		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
+		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
+		WARNING_MAX,
+	} code;
+	Vector<String> symbols;
+	int line;
+
+	String get_name() const;
+	String get_message() const;
+	static String get_name_from_code(Code p_code);
+	static Code get_code_from_name(const String &p_name);
+
+	GDScriptWarning() :
+			code(WARNING_MAX),
+			line(-1) {}
+};
+#endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
 
@@ -262,6 +313,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	Variant *_global_array;
 	Vector<Variant> global_array;
 	Map<StringName, int> globals;
+	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
 
@@ -348,10 +400,10 @@ public:
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
 		for (int i = 0; i < _debug_call_stack_pos; i++) {
-			csi[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
+			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
 			if (_call_stack[i].function)
-				csi[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-			csi[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
+			csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
 		}
 		return csi;
 	}
@@ -369,7 +421,8 @@ public:
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
-	_FORCE_INLINE_ const Map<StringName, int> &get_global_map() { return globals; }
+	_FORCE_INLINE_ const Map<StringName, int> &get_global_map() const { return globals; }
+	_FORCE_INLINE_ const Map<StringName, Variant> &get_named_globals_map() const { return named_globals; }
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 
@@ -389,7 +442,7 @@ public:
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
-	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const;
+	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL, List<ScriptLanguage::Warning> *r_warnings = NULL, Set<int> *r_safe_lines = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual bool supports_builtin_mode() const;
@@ -403,6 +456,8 @@ public:
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
+	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value);
+	virtual void remove_named_global_constant(const StringName &p_name);
 
 	/* DEBUGGER FUNCTIONS */
 
@@ -434,6 +489,11 @@ public:
 	/* LOADER FUNCTIONS */
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+
+	/* GLOBAL CLASSES */
+
+	virtual bool handles_global_class_type(const String &p_type) const;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = NULL, String *r_icon_path = NULL) const;
 
 	GDScriptLanguage();
 	~GDScriptLanguage();

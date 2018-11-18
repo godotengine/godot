@@ -33,7 +33,7 @@
 
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

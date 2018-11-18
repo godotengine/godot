@@ -4,9 +4,6 @@ Import('env')
 
 env.drivers_sources = []
 
-if 'builtin_zlib' in env and env['builtin_zlib']:
-    SConscript("zlib/SCsub")
-
 # OS drivers
 SConscript('unix/SCsub')
 SConscript('windows/SCsub')
@@ -20,6 +17,11 @@ if (env["platform"] == "windows"):
     SConscript("wasapi/SCsub")
 if env['xaudio2']:
     SConscript("xaudio2/SCsub")
+
+# Midi drivers
+SConscript('alsamidi/SCsub')
+SConscript('coremidi/SCsub')
+SConscript('winmidi/SCsub')
 
 # Graphics drivers
 if (env["platform"] != "server"):

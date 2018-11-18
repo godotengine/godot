@@ -31,12 +31,15 @@
 #ifndef AUDIO_SERVER_H
 #define AUDIO_SERVER_H
 
-#include "audio_frame.h"
-#include "object.h"
+#include "core/math/audio_frame.h"
+#include "core/object.h"
+#include "core/os/os.h"
+#include "core/variant.h"
 #include "servers/audio/audio_effect.h"
-#include "variant.h"
 
 class AudioDriverDummy;
+class AudioStream;
+class AudioStreamSample;
 
 class AudioDriver {
 
@@ -44,9 +47,28 @@ class AudioDriver {
 	uint64_t _last_mix_time;
 	uint64_t _mix_amount;
 
+#ifdef DEBUG_ENABLED
+	uint64_t prof_ticks;
+	uint64_t prof_time;
+#endif
+
 protected:
+	Vector<int32_t> input_buffer;
+	unsigned int input_position;
+	unsigned int input_size;
+
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
+	void input_buffer_init(int driver_buffer_frames);
+	void input_buffer_write(int32_t sample);
+
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
+	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+#else
+	_FORCE_INLINE_ void start_counting_ticks() {}
+	_FORCE_INLINE_ void stop_counting_ticks() {}
+#endif
 
 public:
 	double get_mix_time() const; //useful for video -> audio sync
@@ -77,10 +99,25 @@ public:
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
 
+	virtual Error capture_start() { return FAILED; }
+	virtual Error capture_stop() { return FAILED; }
+	virtual void capture_set_device(const String &p_name) {}
+	virtual String capture_get_device() { return "Default"; }
+	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PoolStringArray
+
 	virtual float get_latency() { return 0; }
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
+
+	Vector<int32_t> get_input_buffer() { return input_buffer; }
+	unsigned int get_input_position() { return input_position; }
+	unsigned int get_input_size() { return input_size; }
+
+#ifdef DEBUG_ENABLED
+	uint64_t get_profiling_time() const { return prof_time; }
+	void reset_profiling_time() { prof_time = 0; }
+#endif
 
 	AudioDriver();
 	virtual ~AudioDriver() {}
@@ -129,6 +166,9 @@ private:
 	uint32_t buffer_size;
 	uint64_t mix_count;
 	uint64_t mix_frames;
+#ifdef DEBUG_ENABLED
+	uint64_t prof_time;
+#endif
 
 	float channel_disable_threshold_db;
 	uint32_t channel_disable_frames;
@@ -166,6 +206,9 @@ private:
 		struct Effect {
 			Ref<AudioEffect> effect;
 			bool enabled;
+#ifdef DEBUG_ENABLED
+			uint64_t prof_time;
+#endif
 		};
 
 		Vector<Effect> effects;
@@ -190,9 +233,24 @@ private:
 
 	Mutex *audio_data_lock;
 
+	float output_latency;
+	uint64_t output_latency_ticks;
+
 	void init_channels_and_buffers();
 
 	void _mix_step();
+
+#if 0
+	struct AudioInBlock {
+
+		Ref<AudioStreamSample> audio_stream;
+		int current_position;
+		bool loops;
+	};
+
+	Map<StringName, AudioInBlock *> audio_in_block_map;
+	Vector<AudioInBlock *> audio_in_blocks;
+#endif
 
 	struct CallbackItem {
 
@@ -224,6 +282,7 @@ public:
 	}
 
 	//do not use from outside audio thread
+	bool thread_has_channel_mix_buffer(int p_bus, int p_buffer) const;
 	AudioFrame *thread_get_channel_mix_buffer(int p_bus, int p_buffer);
 	int thread_get_mix_buffer_size() const;
 	int thread_find_bus_index(const StringName &p_name);
@@ -307,6 +366,11 @@ public:
 	String get_device();
 	void set_device(String device);
 
+	Array capture_get_device_list();
+	String capture_get_device();
+	void capture_set_device(const String &p_name);
+
+	float get_output_latency() { return output_latency; }
 	AudioServer();
 	virtual ~AudioServer();
 };

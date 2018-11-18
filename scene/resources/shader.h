@@ -31,9 +31,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 
 class Shader : public Resource {
@@ -61,12 +61,13 @@ private:
 	mutable Map<StringName, StringName> params_cache; //map a shader param to a material param..
 	Map<StringName, Ref<Texture> > default_textures;
 
+	virtual void _update_shader() const; //used for visual shader
 protected:
 	static void _bind_methods();
 
 public:
 	//void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	virtual Mode get_mode() const;
 
 	void set_code(const String &p_code);
 	String get_code() const;
@@ -77,6 +78,8 @@ public:
 	void set_default_texture_param(const StringName &p_param, const Ref<Texture> &p_texture);
 	Ref<Texture> get_default_texture_param(const StringName &p_param) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
+
+	virtual bool is_text_shader() const;
 
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
 		if (params_cache_dirty)

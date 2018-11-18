@@ -57,6 +57,8 @@ private:
 	float pitch_scale;
 	float volume_db;
 	bool autoplay;
+	bool stream_paused;
+	bool stream_paused_fade;
 	StringName bus;
 
 	MixTarget mix_target;
@@ -99,6 +101,9 @@ public:
 
 	void set_mix_target(MixTarget p_target);
 	MixTarget get_mix_target() const;
+
+	void set_stream_paused(bool p_pause);
+	bool get_stream_paused() const;
 
 	AudioStreamPlayer();
 	~AudioStreamPlayer();

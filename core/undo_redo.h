@@ -31,8 +31,8 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "object.h"
-#include "resource.h"
+#include "core/object.h"
+#include "core/resource.h"
 
 class UndoRedo : public Object {
 
@@ -109,8 +109,8 @@ public:
 
 	void commit_action();
 
-	void redo();
-	void undo();
+	bool redo();
+	bool undo();
 	String get_current_action_name() const;
 	void clear_history();
 

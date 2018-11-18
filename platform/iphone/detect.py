@@ -47,8 +47,12 @@ def configure(env):
 
     if (env["target"].startswith("release")):
         env.Append(CPPFLAGS=['-DNDEBUG', '-DNS_BLOCK_ASSERTIONS=1'])
-        env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
-        env.Append(LINKFLAGS=['-O2'])
+        if (env["optimize"] == "speed"): #optimize for speed (default)
+            env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
+            env.Append(LINKFLAGS=['-O2'])
+        else: #optimize for size
+            env.Append(CPPFLAGS=['-Os', '-ftree-vectorize'])
+            env.Append(LINKFLAGS=['-Os'])
 
         if env["target"] == "release_debug":
             env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
@@ -83,7 +87,7 @@ def configure(env):
     s_compiler_path = '$IPHONEPATH/Developer/usr/bin/'
 
     ccache_path = os.environ.get("CCACHE")
-    if ccache_path == None:
+    if ccache_path is None:
         env['CC'] = compiler_path + 'clang'
         env['CXX'] = compiler_path + 'clang++'
         env['S_compiler'] = s_compiler_path + 'gcc'

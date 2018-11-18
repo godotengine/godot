@@ -30,7 +30,7 @@
 
 #include "audio_rb_resampler.h"
 #include "core/math/math_funcs.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "servers/audio_server.h"
 
 int AudioRBResampler::get_channel_count() const {
@@ -82,26 +82,38 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		// For now, channels higher than stereo are almost ignored
 		if (C == 4) {
 
+			// FIXME: v2 and v3 are not being used (thus were commented out to prevent
+			// compilation warnings, but they should likely be uncommented *and* used).
+			// See also C == 6 with similar issues.
 			float v0 = rb[(pos << 2) + 0];
 			float v1 = rb[(pos << 2) + 1];
+			/*
 			float v2 = rb[(pos << 2) + 2];
 			float v3 = rb[(pos << 2) + 3];
+			*/
 			float v0n = rb[(pos_next << 2) + 0];
 			float v1n = rb[(pos_next << 2) + 1];
+			/*
 			float v2n = rb[(pos_next << 2) + 2];
 			float v3n = rb[(pos_next << 2) + 3];
+			*/
 
 			v0 += (v0n - v0) * frac;
 			v1 += (v1n - v1) * frac;
+			/*
 			v2 += (v2n - v2) * frac;
 			v3 += (v3n - v3) * frac;
+			*/
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
 		if (C == 6) {
 
+			// FIXME: Lot of unused assignments here, but it seems like intermediate calculations
+			// should be done as for C == 2 (C == 4 also has some unused assignments).
 			float v0 = rb[(pos * 6) + 0];
 			float v1 = rb[(pos * 6) + 1];
+			/*
 			float v2 = rb[(pos * 6) + 2];
 			float v3 = rb[(pos * 6) + 3];
 			float v4 = rb[(pos * 6) + 4];
@@ -112,6 +124,7 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 			float v3n = rb[(pos_next * 6) + 3];
 			float v4n = rb[(pos_next * 6) + 4];
 			float v5n = rb[(pos_next * 6) + 5];
+			*/
 
 			p_dest[i] = AudioFrame(v0, v1);
 		}
@@ -151,7 +164,7 @@ bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
 		}
 
 		// Fill zeros (silence) for the rest of frames
-		for (uint32_t i = target_todo; i < p_frames; i++) {
+		for (int i = target_todo; i < p_frames; i++) {
 			p_dest[i] = AudioFrame(0, 0);
 		}
 	}

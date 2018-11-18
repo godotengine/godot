@@ -32,8 +32,9 @@
 #define TYPEDEFS_H
 
 #include <stddef.h>
+
 /**
- * Basic definitions and simple functions to be used everywhere..
+ * Basic definitions and simple functions to be used everywhere.
  */
 
 #include "platform_config.h"
@@ -43,6 +44,7 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 
+//should always inline no matter what
 #ifndef _ALWAYS_INLINE_
 
 #if defined(__GNUC__) && (__GNUC__ >= 4)
@@ -57,12 +59,15 @@
 
 #endif
 
+//should always inline, except in some cases because it makes debugging harder
 #ifndef _FORCE_INLINE_
-#ifdef DEBUG_ENABLED
+
+#ifdef DISABLE_FORCED_INLINE
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
 #endif
+
 #endif
 
 //custom, gcc-safe offsetof, because gcc complains a lot.
@@ -74,16 +79,16 @@ T *_nullptr() {
 
 #define OFFSET_OF(st, m) \
 	((size_t)((char *)&(_nullptr<st>()->m) - (char *)0))
-	/**
- * Some platforms (devices) not define NULL
+/**
+ * Some platforms (devices) don't define NULL
  */
 
 #ifndef NULL
 #define NULL 0
 #endif
 
-	/**
- * Windows defines a lot of badly stuff we'll never ever use. undefine it.
+/**
+ * Windows badly defines a lot of stuff we'll never use. Undefine it.
  */
 
 #ifdef _WIN32
@@ -97,21 +102,22 @@ T *_nullptr() {
 #undef CLAMP // override standard definition
 #undef Error
 #undef OK
+#undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
 #endif
 
-#include "int_types.h"
+#include "core/int_types.h"
 
-#include "error_list.h"
-#include "error_macros.h"
+#include "core/error_list.h"
+#include "core/error_macros.h"
 
-	/** Generic ABS function, for math uses please use Math::abs */
+/** Generic ABS function, for math uses please use Math::abs */
 
 #ifndef ABS
-#define ABS(m_v) ((m_v < 0) ? (-(m_v)) : (m_v))
+#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
 #ifndef SGN
-#define SGN(m_v) ((m_v < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
 #endif
 
 #ifndef MIN
@@ -266,7 +272,7 @@ static inline uint64_t BSWAP64(uint64_t x) {
 template <class T>
 struct Comparator {
 
-	inline bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
+	_ALWAYS_INLINE_ bool operator()(const T &p_a, const T &p_b) const { return (p_a < p_b); }
 };
 
 void _global_lock();
@@ -299,4 +305,4 @@ struct _GlobalLock {
 #define unlikely(x) x
 #endif
 
-#endif /* typedefs.h */
+#endif // TYPEDEFS_H

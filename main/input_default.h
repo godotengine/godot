@@ -31,7 +31,7 @@
 #ifndef INPUT_DEFAULT_H
 #define INPUT_DEFAULT_H
 
-#include "os/input.h"
+#include "core/os/input.h"
 
 class InputDefault : public Input {
 
@@ -60,7 +60,10 @@ class InputDefault : public Input {
 
 	Map<StringName, Action> action_state;
 
-	bool emulate_touch;
+	bool emulate_touch_from_mouse;
+	bool emulate_mouse_from_touch;
+
+	int mouse_from_touch_index;
 
 	struct VibrationInfo {
 		float weak_magnitude;
@@ -97,7 +100,6 @@ class InputDefault : public Input {
 		int hat_current;
 
 		Joypad() {
-
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 
 				last_axis[i] = 0.0f;
@@ -110,13 +112,16 @@ class InputDefault : public Input {
 			last_hat = HAT_MASK_CENTER;
 			filter = 0.01f;
 			mapping = -1;
+			hat_current = 0;
 		}
 	};
 
 	SpeedTrack mouse_speed_track;
+	Map<int, SpeedTrack> touch_speed_track;
 	Map<int, Joypad> joy_names;
 	int fallback_mapping;
-	CursorShape default_shape = CURSOR_ARROW;
+
+	CursorShape default_shape;
 
 public:
 	enum HatMask {
@@ -176,6 +181,8 @@ private:
 	void _axis_event(int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
+	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
+
 public:
 	virtual bool is_key_pressed(int p_scancode) const;
 	virtual bool is_mouse_button_pressed(int p_button) const;
@@ -220,13 +227,17 @@ public:
 	void set_main_loop(MainLoop *p_main_loop);
 	void set_mouse_position(const Point2 &p_posf);
 
-	void action_press(const StringName &p_action);
+	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
 
 	void iteration(float p_step);
 
-	void set_emulate_touch(bool p_emulate);
-	virtual bool is_emulating_touchscreen() const;
+	void set_emulate_touch_from_mouse(bool p_emulate);
+	virtual bool is_emulating_touch_from_mouse() const;
+	void ensure_touch_mouse_raised();
+
+	void set_emulate_mouse_from_touch(bool p_emulate);
+	virtual bool is_emulating_mouse_from_touch() const;
 
 	virtual CursorShape get_default_cursor_shape();
 	virtual void set_default_cursor_shape(CursorShape p_shape);

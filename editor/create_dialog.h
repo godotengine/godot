@@ -58,6 +58,7 @@ class CreateDialog : public ConfirmationDialog {
 	String preferred_search_result_type;
 	EditorHelpBit *help_bit;
 	List<StringName> type_list;
+	Set<StringName> type_blacklist;
 
 	void _item_selected();
 
@@ -88,6 +89,8 @@ class CreateDialog : public ConfirmationDialog {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	void _save_and_update_favorite_list();
 
 public:
 	Object *instance_selected();

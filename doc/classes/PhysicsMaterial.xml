@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsMaterial" inherits="Resource" category="Core" version="3.1">
+	<brief_description>
+		A material for physics properties.
+	</brief_description>
+	<description>
+		Provides a means of modifying the collision properties of a [PhysicsBody].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="absorbent" type="bool" setter="set_absorbent" getter="is_absorbent">
+		</member>
+		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
+			The body's bounciness. Default value: [code]0[/code].
+		</member>
+		<member name="friction" type="float" setter="set_friction" getter="get_friction">
+			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
+		</member>
+		<member name="rough" type="bool" setter="set_rough" getter="is_rough">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

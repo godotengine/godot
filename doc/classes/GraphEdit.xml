@@ -85,6 +85,12 @@
 				Return an Array containing the list of connections. A connection consists in a structure of the form {from_slot: 0, from: "GraphNode name 0", to_slot: 1, to: "GraphNode name 1" }
 			</description>
 		</method>
+		<method name="get_zoom_hbox">
+			<return type="HBoxContainer">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_node_connected">
 			<return type="bool">
 			</return>
@@ -138,6 +144,22 @@
 			</argument>
 			<description>
 				Removes the possibility to disconnect nodes when dragging from the slot at the right if it has the specified type.
+			</description>
+		</method>
+		<method name="set_connection_activity">
+			<return type="void">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<argument index="1" name="from_port" type="int">
+			</argument>
+			<argument index="2" name="to" type="String">
+			</argument>
+			<argument index="3" name="to_port" type="int">
+			</argument>
+			<argument index="4" name="amount" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_selected">
@@ -225,7 +247,7 @@
 			</description>
 		</signal>
 		<signal name="node_selected">
-			<argument index="0" name="node" type="Object">
+			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
 				Emitted when a GraphNode is selected.
@@ -248,6 +270,8 @@
 	<constants>
 	</constants>
 	<theme_items>
+		<theme_item name="activity" type="Color">
+		</theme_item>
 		<theme_item name="bezier_len_neg" type="int">
 		</theme_item>
 		<theme_item name="bezier_len_pos" type="int">
@@ -261,6 +285,10 @@
 		<theme_item name="minus" type="Texture">
 		</theme_item>
 		<theme_item name="more" type="Texture">
+		</theme_item>
+		<theme_item name="port_grab_distance_horizontal" type="int">
+		</theme_item>
+		<theme_item name="port_grab_distance_vertical" type="int">
 		</theme_item>
 		<theme_item name="reset" type="Texture">
 		</theme_item>

@@ -5,7 +5,7 @@
 /*    FreeType glyph image formats and default raster interface            */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -169,13 +169,13 @@ FT_BEGIN_HEADER
   /*      @FT_RENDER_MODE_LCD_V.                                           */
   /*                                                                       */
   /*    FT_PIXEL_MODE_BGRA ::                                              */
-  /*      An image with four 8-bit channels per pixel, representing a      */
-  /*      color image (such as emoticons) with alpha channel.  For each    */
-  /*      pixel, the format is BGRA, which means, the blue channel comes   */
-  /*      first in memory.  The color channels are pre-multiplied and in   */
-  /*      the sRGB colorspace.  For example, full red at half-translucent  */
-  /*      opacity will be represented as `00,00,80,80', not `00,00,FF,80'. */
-  /*      See also @FT_LOAD_COLOR.                                         */
+  /*      [Since 2.5] An image with four 8-bit channels per pixel,         */
+  /*      representing a color image (such as emoticons) with alpha        */
+  /*      channel.  For each pixel, the format is BGRA, which means, the   */
+  /*      blue channel comes first in memory.  The color channels are      */
+  /*      pre-multiplied and in the sRGB colorspace.  For example, full    */
+  /*      red at half-translucent opacity will be represented as           */
+  /*      `00,00,80,80', not `00,00,FF,80'.  See also @FT_LOAD_COLOR.      */
   /*                                                                       */
   typedef enum  FT_Pixel_Mode_
   {
@@ -301,11 +301,11 @@ FT_BEGIN_HEADER
   /*                  each outline point's type.                           */
   /*                                                                       */
   /*                  If bit~0 is unset, the point is `off' the curve,     */
-  /*                  i.e., a Bézier control point, while it is `on' if    */
+  /*                  i.e., a Bezier control point, while it is `on' if    */
   /*                  set.                                                 */
   /*                                                                       */
   /*                  Bit~1 is meaningful for `off' points only.  If set,  */
-  /*                  it indicates a third-order Bézier arc control point; */
+  /*                  it indicates a third-order Bezier arc control point; */
   /*                  and a second-order control point if unset.           */
   /*                                                                       */
   /*                  If bit~2 is set, bits 5-7 contain the drop-out mode  */
@@ -532,7 +532,7 @@ FT_BEGIN_HEADER
   /*    A function pointer type used to describe the signature of a `conic */
   /*    to' function during outline walking or decomposition.              */
   /*                                                                       */
-  /*    A `conic to' is emitted to indicate a second-order Bézier arc in   */
+  /*    A `conic to' is emitted to indicate a second-order Bezier arc in   */
   /*    the outline.                                                       */
   /*                                                                       */
   /* <Input>                                                               */
@@ -564,12 +564,12 @@ FT_BEGIN_HEADER
   /*    A function pointer type used to describe the signature of a `cubic */
   /*    to' function during outline walking or decomposition.              */
   /*                                                                       */
-  /*    A `cubic to' is emitted to indicate a third-order Bézier arc.      */
+  /*    A `cubic to' is emitted to indicate a third-order Bezier arc.      */
   /*                                                                       */
   /* <Input>                                                               */
-  /*    control1 :: A pointer to the first Bézier control point.           */
+  /*    control1 :: A pointer to the first Bezier control point.           */
   /*                                                                       */
-  /*    control2 :: A pointer to the second Bézier control point.          */
+  /*    control2 :: A pointer to the second Bezier control point.          */
   /*                                                                       */
   /*    to       :: A pointer to the target end point.                     */
   /*                                                                       */
@@ -595,16 +595,16 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    A structure to hold various function pointers used during outline  */
-  /*    decomposition in order to emit segments, conic, and cubic Béziers. */
+  /*    decomposition in order to emit segments, conic, and cubic Beziers. */
   /*                                                                       */
   /* <Fields>                                                              */
   /*    move_to  :: The `move to' emitter.                                 */
   /*                                                                       */
   /*    line_to  :: The segment emitter.                                   */
   /*                                                                       */
-  /*    conic_to :: The second-order Bézier arc emitter.                   */
+  /*    conic_to :: The second-order Bezier arc emitter.                   */
   /*                                                                       */
-  /*    cubic_to :: The third-order Bézier arc emitter.                    */
+  /*    cubic_to :: The third-order Bezier arc emitter.                    */
   /*                                                                       */
   /*    shift    :: The shift that is applied to coordinates before they   */
   /*                are sent to the emitter.                               */
@@ -701,7 +701,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_GLYPH_FORMAT_OUTLINE ::                                         */
   /*      The glyph image is a vectorial outline made of line segments     */
-  /*      and Bézier arcs; it can be described as an @FT_Outline; you      */
+  /*      and Bezier arcs; it can be described as an @FT_Outline; you      */
   /*      generally want to access the `outline' field of the              */
   /*      @FT_GlyphSlotRec structure to read it.                           */
   /*                                                                       */

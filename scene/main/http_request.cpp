@@ -30,8 +30,6 @@
 
 #include "http_request.h"
 
-#include "version.h"
-
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
 
@@ -106,27 +104,9 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	validate_ssl = p_ssl_validate_domain;
 
-	bool has_user_agent = false;
-	bool has_accept = false;
 	headers = p_custom_headers;
 
 	request_data = p_request_data;
-
-	for (int i = 0; i < headers.size(); i++) {
-
-		if (headers[i].findn("user-agent:") == 0)
-			has_user_agent = true;
-		if (headers[i].findn("Accept:") == 0)
-			has_accept = true;
-	}
-
-	if (!has_user_agent) {
-		headers.push_back("User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")");
-	}
-
-	if (!has_accept) {
-		headers.push_back("Accept: */*");
-	}
 
 	requesting = true;
 
@@ -350,15 +330,13 @@ bool HTTPRequest::_update_connection() {
 					return true;
 				}
 
-				if (client->is_response_chunked()) {
-					body_len = -1; // No body len because chunked, change your webserver configuration if you want body len
-				} else {
-					body_len = client->get_response_body_length();
+				// No body len (-1) if chunked or no content-length header was provided.
+				// Change your webserver configuration if you want body len.
+				body_len = client->get_response_body_length();
 
-					if (body_size_limit >= 0 && body_len > body_size_limit) {
-						call_deferred("_request_done", RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PoolByteArray());
-						return true;
-					}
+				if (body_size_limit >= 0 && body_len > body_size_limit) {
+					call_deferred("_request_done", RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PoolByteArray());
+					return true;
 				}
 
 				if (download_to_file != String()) {
@@ -398,6 +376,9 @@ bool HTTPRequest::_update_connection() {
 					call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 					return true;
 				}
+			} else if (client->get_status() == HTTPClient::STATUS_DISCONNECTED) {
+				// We read till EOF, with no errors. Request is done.
+				call_deferred("_request_done", RESULT_SUCCESS, response_code, response_headers, body);
 			}
 
 			return false;

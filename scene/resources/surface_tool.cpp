@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "surface_tool.h"
-#include "method_bind_ext.gen.inc"
+
+#include "core/method_bind_ext.gen.inc"
 
 #define _VERTEX_SNAP 0.0001
 #define EQ_VERTEX_DIST 0.00001
@@ -421,6 +422,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 	Array a = commit_to_arrays();
 
 	mesh->add_surface_from_arrays(primitive, a, Array(), p_flags);
+
 	if (material.is_valid())
 		mesh->surface_set_material(surface, material);
 
@@ -465,7 +467,7 @@ void SurfaceTool::deindex() {
 	int idx = 0;
 	for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next()) {
 
-		varr[idx++] = E->get();
+		varr.write[idx++] = E->get();
 	}
 	vertex_array.clear();
 	for (List<int>::Element *E = index_array.front(); E; E = E->next()) {
@@ -569,19 +571,19 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 		if (lformat & VS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
 			b.resize(4);
-			b[0] = barr[i * 4 + 0];
-			b[1] = barr[i * 4 + 1];
-			b[2] = barr[i * 4 + 2];
-			b[3] = barr[i * 4 + 3];
+			b.write[0] = barr[i * 4 + 0];
+			b.write[1] = barr[i * 4 + 1];
+			b.write[2] = barr[i * 4 + 2];
+			b.write[3] = barr[i * 4 + 3];
 			v.bones = b;
 		}
 		if (lformat & VS::ARRAY_FORMAT_WEIGHTS) {
 			Vector<float> w;
 			w.resize(4);
-			w[0] = warr[i * 4 + 0];
-			w[1] = warr[i * 4 + 1];
-			w[2] = warr[i * 4 + 2];
-			w[3] = warr[i * 4 + 3];
+			w.write[0] = warr[i * 4 + 0];
+			w.write[1] = warr[i * 4 + 1];
+			w.write[2] = warr[i * 4 + 2];
+			w.write[3] = warr[i * 4 + 3];
 			v.weights = w;
 		}
 
@@ -674,19 +676,19 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 		if (lformat & VS::ARRAY_FORMAT_BONES) {
 			Vector<int> b;
 			b.resize(4);
-			b[0] = barr[i * 4 + 0];
-			b[1] = barr[i * 4 + 1];
-			b[2] = barr[i * 4 + 2];
-			b[3] = barr[i * 4 + 3];
+			b.write[0] = barr[i * 4 + 0];
+			b.write[1] = barr[i * 4 + 1];
+			b.write[2] = barr[i * 4 + 2];
+			b.write[3] = barr[i * 4 + 3];
 			v.bones = b;
 		}
 		if (lformat & VS::ARRAY_FORMAT_WEIGHTS) {
 			Vector<float> w;
 			w.resize(4);
-			w[0] = warr[i * 4 + 0];
-			w[1] = warr[i * 4 + 1];
-			w[2] = warr[i * 4 + 2];
-			w[3] = warr[i * 4 + 3];
+			w.write[0] = warr[i * 4 + 0];
+			w.write[1] = warr[i * 4 + 1];
+			w.write[2] = warr[i * 4 + 2];
+			w.write[3] = warr[i * 4 + 3];
 			v.weights = w;
 		}
 
@@ -754,15 +756,11 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	for (List<int>::Element *E = nindices.front(); E; E = E->next()) {
 
 		int dst_index = E->get() + vfrom;
-		/*
-		if (dst_index <0 || dst_index>=vertex_array.size()) {
-			print_line("invalid index!");
-		}
-		*/
 		index_array.push_back(dst_index);
 	}
-	if (index_array.size() % 3)
-		print_line("IA not div of 3?");
+	if (index_array.size() % 3) {
+		WARN_PRINT("SurfaceTool: Index array not a multiple of 3.");
+	}
 }
 
 //mikktspace callbacks
@@ -845,7 +843,7 @@ void SurfaceTool::generate_tangents() {
 	vtx.resize(vertex_array.size());
 	int idx = 0;
 	for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next()) {
-		vtx[idx++] = E;
+		vtx.write[idx++] = E;
 		E->get().binormal = Vector3();
 		E->get().tangent = Vector3();
 	}

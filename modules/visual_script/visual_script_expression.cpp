@@ -56,11 +56,11 @@ bool VisualScriptExpression::_set(const StringName &p_name, const Variant &p_val
 		int from = inputs.size();
 		inputs.resize(int(p_value));
 		for (int i = from; i < inputs.size(); i++) {
-			inputs[i].name = String::chr('a' + i);
+			inputs.write[i].name = String::chr('a' + i);
 			if (from == 0) {
-				inputs[i].type = output_type;
+				inputs.write[i].type = output_type;
 			} else {
-				inputs[i].type = inputs[from - 1].type;
+				inputs.write[i].type = inputs[from - 1].type;
 			}
 		}
 		expression_dirty = true;
@@ -78,10 +78,10 @@ bool VisualScriptExpression::_set(const StringName &p_name, const Variant &p_val
 
 		if (what == "type") {
 
-			inputs[idx].type = Variant::Type(int(p_value));
+			inputs.write[idx].type = Variant::Type(int(p_value));
 		} else if (what == "name") {
 
-			inputs[idx].name = p_value;
+			inputs.write[idx].name = p_value;
 		} else {
 			return false;
 		}
@@ -455,7 +455,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					break;
 				}
 
-				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
+				if (cchar >= '0' && cchar <= '9') {
 					//a number
 
 					String num;
@@ -465,11 +465,6 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 #define READING_EXP 3
 #define READING_DONE 4
 					int reading = READING_INT;
-
-					if (cchar == '-') {
-						num += '-';
-						cchar = GET_CHAR();
-					}
 
 					CharType c = cchar;
 					bool exp_sign = false;
@@ -1158,8 +1153,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				op->op = expression[i].op;
 				op->nodes[0] = expression[i + 1].node;
 				op->nodes[1] = NULL;
-				expression[i].is_op = false;
-				expression[i].node = op;
+				expression.write[i].is_op = false;
+				expression.write[i].node = op;
 				expression.remove(i + 1);
 			}
 
@@ -1193,7 +1188,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
 
 			//replace all 3 nodes by this operator and make it an expression
-			expression[next_op - 1].node = op;
+			expression.write[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);
 		}
@@ -1375,8 +1370,8 @@ public:
 					bool ret = _execute(p_inputs, constructor->arguments[i], value, r_error_str, ce);
 					if (ret)
 						return true;
-					arr[i] = value;
-					argp[i] = &arr[i];
+					arr.write[i] = value;
+					argp.write[i] = &arr[i];
 				}
 
 				r_ret = Variant::construct(constructor->data_type, (const Variant **)argp.ptr(), argp.size(), ce);
@@ -1402,8 +1397,8 @@ public:
 					bool ret = _execute(p_inputs, bifunc->arguments[i], value, r_error_str, ce);
 					if (ret)
 						return true;
-					arr[i] = value;
-					argp[i] = &arr[i];
+					arr.write[i] = value;
+					argp.write[i] = &arr[i];
 				}
 
 				VisualScriptBuiltinFunc::exec_func(bifunc->func, (const Variant **)argp.ptr(), &r_ret, ce, r_error_str);
@@ -1434,8 +1429,8 @@ public:
 					bool ret = _execute(p_inputs, call->arguments[i], value, r_error_str, ce);
 					if (ret)
 						return true;
-					arr[i] = value;
-					argp[i] = &arr[i];
+					arr.write[i] = value;
+					argp.write[i] = &arr[i];
 				}
 
 				r_ret = base.call(call->method, (const Variant **)argp.ptr(), argp.size(), ce);

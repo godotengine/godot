@@ -11,10 +11,78 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="add_bone">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<argument index="1" name="weights" type="PoolRealArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_bones">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="erase_bone">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_path" qualifiers="const">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bone_weights" qualifiers="const">
+			<return type="PoolRealArray">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_weights">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="weights" type="PoolRealArray">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased">
 			If [code]true[/code] polygon edges will be anti-aliased. Default value: [code]false[/code].
+		</member>
+		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones">
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
 			The polygon's fill color. If [code]texture[/code] is defined, it will be multiplied by this color. It will also be the default color for vertices not set in [code]vertex_colors[/code].
@@ -30,6 +98,8 @@
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 			The polygon's list of vertices. The final point will be connected to the first.
+		</member>
+		<member name="skeleton" type="NodePath" setter="set_skeleton" getter="get_skeleton">
 		</member>
 		<member name="splits" type="PoolIntArray" setter="set_splits" getter="get_splits">
 		</member>

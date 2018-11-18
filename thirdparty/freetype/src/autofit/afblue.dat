@@ -2,7 +2,7 @@
 //
 //    Auto-fitter data for blue strings.
 //
-//  Copyright 2013-2017 by
+//  Copyright 2013-2018 by
 //  David Turner, Robert Wilhelm, and Werner Lemberg.
 //
 //  This file is part of the FreeType project, and may only be used,
@@ -241,6 +241,11 @@ AF_BLUE_STRING_ENUM AF_BLUE_STRINGS_ARRAY AF_BLUE_STRING_MAX_LEN:
     "ⴐ ⴑ ⴓ ⴕ ⴙ ⴛ ⴡ ⴣ"
   AF_BLUE_STRING_GEORGIAN_NUSKHURI_DESCENDER
     "ⴄ ⴅ ⴔ ⴕ ⴁ ⴂ ⴘ ⴝ"
+
+  AF_BLUE_STRING_GEORGIAN_MTAVRULI_TOP
+    "Ნ Ჟ Ჳ Ჸ Გ Ე Ო Ჴ"
+  AF_BLUE_STRING_GEORGIAN_MTAVRULI_BOTTOM
+    "Ი Ჲ Ო Ჩ Მ Შ Ჯ Ჽ"
 
   AF_BLUE_STRING_GLAGOLITIC_CAPITAL_TOP
     "Ⰵ Ⱄ Ⱚ Ⰴ Ⰲ Ⰺ Ⱛ Ⰻ"
@@ -795,13 +800,14 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_ETHIOPIC_BOTTOM, 0                          }
     { AF_BLUE_STRING_MAX,             0                          }
 
-  // blue zones for Mtavruli are missing (not yet defined in Unicode)
   AF_BLUE_STRINGSET_GEOR
     { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
                                                    AF_BLUE_PROPERTY_LATIN_X_HEIGHT   }
     { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_BOTTOM,    0                                 }
     { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_ASCENDER,  AF_BLUE_PROPERTY_LATIN_TOP        }
     { AF_BLUE_STRING_GEORGIAN_MKHEDRULI_DESCENDER, 0                                 }
+    { AF_BLUE_STRING_GEORGIAN_MTAVRULI_TOP,        AF_BLUE_PROPERTY_LATIN_TOP        }
+    { AF_BLUE_STRING_GEORGIAN_MTAVRULI_BOTTOM,     0                                 }
     { AF_BLUE_STRING_MAX,                          0                                 }
 
   AF_BLUE_STRINGSET_GEOK

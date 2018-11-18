@@ -60,10 +60,10 @@ def _find_mono_in_reg_old(subkey, bits):
 def find_mono_root_dir(bits):
     root_dir = _find_mono_in_reg(r'SOFTWARE\Mono', bits)
     if root_dir is not None:
-        return root_dir
+        return str(root_dir)
     root_dir = _find_mono_in_reg_old(r'SOFTWARE\Novell\Mono', bits)
     if root_dir is not None:
-        return root_dir
+        return str(root_dir)
     return ''
 
 
@@ -75,7 +75,7 @@ def find_msbuild_tools_path_reg():
         vswhere = os.getenv('PROGRAMFILES')
     vswhere += r'\Microsoft Visual Studio\Installer\vswhere.exe'
 
-    vswhere_args = ['-latest', '-requires', 'Microsoft.Component.MSBuild']
+    vswhere_args = ['-latest', '-products', '*', '-requires', 'Microsoft.Component.MSBuild']
 
     try:
         lines = subprocess.check_output([vswhere] + vswhere_args).splitlines()

@@ -19,333 +19,483 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 2.18-dev\n"
 
-#: editor/animation_editor.cpp
-msgid "Disabled"
-msgstr "Онемогућено"
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#: modules/visual_script/visual_script_builtin_funcs.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "All Selection"
-msgstr "Све одабрано"
+#: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#: modules/mono/glue/glue_header.h
+#: modules/visual_script/visual_script_builtin_funcs.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr ""
 
-#: editor/animation_editor.cpp
+#: core/math/expression.cpp
+msgid "Invalid input %i (not passed) in expression"
+msgstr ""
+
+#: core/math/expression.cpp
+msgid "self can't be used because instance is null (not passed)"
+msgstr ""
+
+#: core/math/expression.cpp
+msgid "Invalid operands to operator %s, %s and %s."
+msgstr ""
+
+#: core/math/expression.cpp
+msgid "Invalid index of type %s for base type %s"
+msgstr ""
+
+#: core/math/expression.cpp
+msgid "Invalid named index '%s' for base type %s"
+msgstr ""
+
+#: core/math/expression.cpp
+msgid "Invalid arguments to construct '%s'"
+msgstr ""
+
+#: core/math/expression.cpp
+msgid "On call to '%s':"
+msgstr ""
+
+#: editor/animation_bezier_editor.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Free"
+msgstr "Слободно"
+
+#: editor/animation_bezier_editor.cpp
+msgid "Balanced"
+msgstr ""
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Mirror"
+msgstr "Огледало X осе"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Insert Key Here"
+msgstr "Убаци кључеве"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Duplicate Selected Key(s)"
+msgstr "Дуплирај одабрано"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Delete Selected Key(s)"
+msgstr "Обриши одабране датотеке?"
+
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+msgid "Anim Duplicate Keys"
+msgstr "Дуплирај кључеве"
+
+#: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+msgid "Anim Delete Keys"
+msgstr "Уколни кључеве"
+
+#: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Anim Change Keyframe Time"
 msgstr "Промени вредност"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
 msgstr "Промени прелаз"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
 msgstr "Промени положај"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Anim Change Keyframe Value"
 msgstr "Промени вредност"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Промени позив анимације"
 
-#: editor/animation_editor.cpp
-msgid "Anim Add Track"
+#: editor/animation_track_editor.cpp
+msgid "Property Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "3D Transform Track"
+msgstr "Тип трансформације"
+
+#: editor/animation_track_editor.cpp
+msgid "Call Method Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Bezier Curve Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Audio Playback Track"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Playback Track"
+msgstr "Заустави анимацију. (S)"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track"
 msgstr "Додај нову траку"
 
-#: editor/animation_editor.cpp
-msgid "Anim Duplicate Keys"
-msgstr "Дуплирај кључеве"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Length Time (seconds)"
+msgstr "Дужина анимације (у секундама)."
 
-#: editor/animation_editor.cpp
-msgid "Move Anim Track Up"
-msgstr "Помери траку горе"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation Looping"
+msgstr "Скала анимације."
 
-#: editor/animation_editor.cpp
-msgid "Move Anim Track Down"
-msgstr "Помери траку доле"
+#: editor/animation_track_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Functions:"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Remove Anim Track"
-msgstr "Обриши траку анимације"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Audio Clips:"
+msgstr "Звучни слушалац"
 
-#: editor/animation_editor.cpp
-msgid "Set Transitions to:"
-msgstr "Постави прелаз на:"
+#: editor/animation_track_editor.cpp
+msgid "Anim Clips:"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Track Rename"
-msgstr "Измени име анимације"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle this track on/off."
+msgstr "Укљ./Искљ. режим без сметње."
 
-#: editor/animation_editor.cpp
-msgid "Anim Track Change Interpolation"
-msgstr "Измени интерполацију"
+#: editor/animation_track_editor.cpp
+msgid "Update Mode (How this property is set)"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Anim Track Change Value Mode"
-msgstr "Измени режим вредности"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Interpolation Mode"
+msgstr "Анимациони чвор"
 
-#: editor/animation_editor.cpp
-msgid "Anim Track Change Wrap Mode"
-msgstr "Измени режим цикла"
+#: editor/animation_track_editor.cpp
+msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Edit Node Curve"
-msgstr "Измени криву чвора"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Remove this track."
+msgstr "Обриши одабрану траку."
 
-#: editor/animation_editor.cpp
-msgid "Edit Selection Curve"
-msgstr "Измени одабрану криву"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Time (s): "
+msgstr "X-Fade време (сек.):"
 
-#: editor/animation_editor.cpp
-msgid "Anim Delete Keys"
-msgstr "Уколни кључеве"
-
-#: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Duplicate Selection"
-msgstr "Дуплирај одабрано"
-
-#: editor/animation_editor.cpp
-msgid "Duplicate Transposed"
-msgstr "Дуплирај транспоновану"
-
-#: editor/animation_editor.cpp
-msgid "Remove Selection"
-msgstr "Обриши одабрано"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Continuous"
 msgstr "Трајан"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Discrete"
 msgstr "Одвојен"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Trigger"
 msgstr "Окидач"
 
-#: editor/animation_editor.cpp
-msgid "Anim Add Key"
-msgstr "Уметни кључ"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Capture"
+msgstr "Карактеристике"
 
-#: editor/animation_editor.cpp
-msgid "Anim Move Keys"
-msgstr "Помери кључеве"
+#: editor/animation_track_editor.cpp
+msgid "Nearest"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Scale Selection"
-msgstr "Увећај одабрано"
-
-#: editor/animation_editor.cpp
-msgid "Scale From Cursor"
-msgstr "Увећај од курсора"
-
-#: editor/animation_editor.cpp
-msgid "Goto Next Step"
-msgstr "Идите на следећи корак"
-
-#: editor/animation_editor.cpp
-msgid "Goto Prev Step"
-msgstr "Идите на претходни корак"
-
-#: editor/animation_editor.cpp editor/plugins/curve_editor_plugin.cpp
+#: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
 msgid "Linear"
 msgstr "Линеаран"
 
-#: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
-msgid "Constant"
-msgstr "Константан"
+#: editor/animation_track_editor.cpp
+msgid "Cubic"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "In"
-msgstr "Улаз"
+#: editor/animation_track_editor.cpp
+msgid "Clamp Loop Interp"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Out"
-msgstr "Из"
+#: editor/animation_track_editor.cpp
+msgid "Wrap Loop Interp"
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "In-Out"
-msgstr "У-Из"
+#: editor/animation_track_editor.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Insert Key"
+msgstr "Убаци кључеве"
 
-#: editor/animation_editor.cpp
-msgid "Out-In"
-msgstr "Из-У"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Duplicate Key(s)"
+msgstr "Дуплирај кључеве"
 
-#: editor/animation_editor.cpp
-msgid "Transitions"
-msgstr "Прелази"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Delete Key(s)"
+msgstr "Уколни кључеве"
 
-#: editor/animation_editor.cpp
-msgid "Optimize Animation"
-msgstr "Оптимизуј анимацију"
+#: editor/animation_track_editor.cpp
+msgid "Remove Anim Track"
+msgstr "Обриши траку анимације"
 
-#: editor/animation_editor.cpp
-msgid "Clean-Up Animation"
-msgstr "Очистите анимацију"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
 msgstr "Направите нову траку за %s и убаците кључ?"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
 msgstr "Направите %d нових трака и убаците кључеве?"
 
-#: editor/animation_editor.cpp editor/create_dialog.cpp
-#: editor/editor_audio_buses.cpp editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/animation_track_editor.cpp editor/create_dialog.cpp
+#: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
+#: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
 msgstr "Направи"
 
-#: editor/animation_editor.cpp
-msgid "Anim Create & Insert"
-msgstr "Направи анимацију и убаци"
-
-#: editor/animation_editor.cpp
-msgid "Anim Insert Track & Key"
-msgstr "Уметни траку и кључ"
-
-#: editor/animation_editor.cpp
-msgid "Anim Insert Key"
-msgstr "Уметни кључ"
-
-#: editor/animation_editor.cpp
-msgid "Change Anim Len"
-msgstr "Измени дужину анимације"
-
-#: editor/animation_editor.cpp
-msgid "Change Anim Loop"
-msgstr "Измени лупинг анимације"
-
-#: editor/animation_editor.cpp
-msgid "Anim Create Typed Value Key"
-msgstr "Направи кључ са почетном вредношћу"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Anim Insert"
 msgstr "Налепи"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
+msgid "AnimationPlayer can't animate itself, only other players."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Create & Insert"
+msgstr "Направи анимацију и убаци"
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Insert Track & Key"
+msgstr "Уметни траку и кључ"
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Insert Key"
+msgstr "Уметни кључ"
+
+#: editor/animation_track_editor.cpp
+msgid "Transform tracks only apply to Spatial-based nodes."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid ""
+"Audio tracks can only point to nodes of type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Animation tracks can only point to AnimationPlayer nodes."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "An animation player can't animate itself, only other players."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Not possible to add a new track without a root"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Track path is invalid, so can't add a key."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Track is not of type Spatial, can't insert key"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Track path is invalid, so can't add a method key."
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Method not found in object: "
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Move Keys"
+msgstr "Помери кључеве"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Clipboard is empty"
+msgstr "Нема ресурса за копирање!"
+
+#: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
 msgstr "Увећај кључеве"
 
-#: editor/animation_editor.cpp
-msgid "Anim Add Call Track"
-msgstr "Додај позивну траку"
+#: editor/animation_track_editor.cpp
+msgid ""
+"This option does not work for Bezier editing, as it's only a single track."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Animation zoom."
-msgstr "Скала анимације."
+#: editor/animation_track_editor.cpp
+msgid "Only show tracks from nodes selected in tree."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Length (s):"
-msgstr "Дужина (сек.):"
+#: editor/animation_track_editor.cpp
+msgid "Group tracks by node or display them as plain list."
+msgstr ""
 
-#: editor/animation_editor.cpp
-msgid "Animation length (in seconds)."
-msgstr "Дужина анимације (у секундама)."
-
-#: editor/animation_editor.cpp
-msgid "Step (s):"
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Snap (s): "
 msgstr "Један корак (сек.):"
 
-#: editor/animation_editor.cpp
-msgid "Cursor step snap (in seconds)."
-msgstr "Поравнавање корака курсора (у секундама)."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation step value."
+msgstr "Анимационо дрво је важеће."
 
-#: editor/animation_editor.cpp
-msgid "Enable/Disable looping in animation."
-msgstr "Укључи/искључи понављање анимације."
+#: editor/animation_track_editor.cpp editor/editor_properties.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/project_manager.cpp editor/project_settings_editor.cpp
+#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
+msgid "Edit"
+msgstr "Уреди"
 
-#: editor/animation_editor.cpp
-msgid "Add new tracks."
-msgstr "Додај нове траке."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Animation properties."
+msgstr "Анимација"
 
-#: editor/animation_editor.cpp
-msgid "Move current track up."
-msgstr "Помери траку горе."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Copy Tracks"
+msgstr "Копирај параметре"
 
-#: editor/animation_editor.cpp
-msgid "Move current track down."
-msgstr "Помери траку доле."
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Paste Tracks"
+msgstr "Налепи параметре"
 
-#: editor/animation_editor.cpp
-msgid "Remove selected track."
-msgstr "Обриши одабрану траку."
+#: editor/animation_track_editor.cpp
+msgid "Scale Selection"
+msgstr "Увећај одабрано"
 
-#: editor/animation_editor.cpp
-msgid "Track tools"
-msgstr "Алатке за траке"
+#: editor/animation_track_editor.cpp
+msgid "Scale From Cursor"
+msgstr "Увећај од курсора"
 
-#: editor/animation_editor.cpp
-msgid "Enable editing of individual keys by clicking them."
-msgstr "Омогућите уређивање индивидуалних кључева кликом на њих."
+#: editor/animation_track_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Duplicate Selection"
+msgstr "Дуплирај одабрано"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
+msgid "Duplicate Transposed"
+msgstr "Дуплирај транспоновану"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Delete Selection"
+msgstr "Центрирај одабрано"
+
+#: editor/animation_track_editor.cpp
+msgid "Goto Next Step"
+msgstr "Идите на следећи корак"
+
+#: editor/animation_track_editor.cpp
+msgid "Goto Prev Step"
+msgstr "Идите на претходни корак"
+
+#: editor/animation_track_editor.cpp
+msgid "Optimize Animation"
+msgstr "Оптимизуј анимацију"
+
+#: editor/animation_track_editor.cpp
+msgid "Clean-Up Animation"
+msgstr "Очистите анимацију"
+
+#: editor/animation_track_editor.cpp
+msgid "Pick the node that will be animated:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Use Bezier Curves"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
 msgstr "Оптимизатор анимација"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
 msgstr "Максимална линеарна грешка:"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
 msgstr "Максимална угаона грешка:"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
 msgstr "Максимални оптимизован угао:"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Optimize"
 msgstr "Оптимизуј"
 
-#: editor/animation_editor.cpp
-msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr "Одабери AnimationPlayer из дрвета сцене за уређивање анимација."
-
-#: editor/animation_editor.cpp
-msgid "Key"
-msgstr "Кључ"
-
-#: editor/animation_editor.cpp
-msgid "Transition"
-msgstr "Померај"
-
-#: editor/animation_editor.cpp
-msgid "Scale Ratio:"
-msgstr "Размера скале:"
-
-#: editor/animation_editor.cpp
-msgid "Call Functions in Which Node?"
-msgstr "Позови функције у којем чвору?"
-
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
 msgstr "Обриши неважеће кључеве"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
 msgstr "Обриши необјашњене и празне траке"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
 msgstr "Очисти све анимације"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
 msgstr "Очисти анимацију(е) (НЕМА ОПОЗИВАЊА!)"
 
-#: editor/animation_editor.cpp
+#: editor/animation_track_editor.cpp
 msgid "Clean-Up"
 msgstr "Очисти"
+
+#: editor/animation_track_editor.cpp
+msgid "Scale Ratio:"
+msgstr "Размера скале:"
+
+#: editor/animation_track_editor.cpp
+msgid "Select tracks to copy:"
+msgstr ""
+
+#: editor/animation_track_editor.cpp editor/editor_properties.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Copy"
+msgstr "Копирај"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -367,7 +517,7 @@ msgstr "Иди на линију"
 msgid "Line Number:"
 msgstr "Број линије:"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Нема подудара"
 
@@ -383,7 +533,7 @@ msgstr "Подударање великих и малих слова"
 msgid "Whole Words"
 msgstr "Целе речи"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
 msgstr "Замени"
 
@@ -395,17 +545,26 @@ msgstr "Замени све"
 msgid "Selection Only"
 msgstr "Само одабрано"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Zoom In"
 msgstr "Увеличај"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Zoom Out"
 msgstr "Умањи"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Reset Zoom"
 msgstr "Ресетуј увеличање"
+
+#: editor/code_editor.cpp
+msgid "Warnings:"
+msgstr ""
+
+#: editor/code_editor.cpp
+#, fuzzy
+msgid "Zoom:"
+msgstr "Увеличај"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -438,7 +597,8 @@ msgid "Add"
 msgstr "Додај"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -469,7 +629,7 @@ msgid "Oneshot"
 msgstr "Једном"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
-#: editor/export_template_manager.cpp
+#: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -491,26 +651,60 @@ msgid "Connect '%s' to '%s'"
 msgstr "Повежи '%s' са '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connecting Signal:"
-msgstr "Везујући сигнал:"
-
-#: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Disconnect '%s' from '%s'"
 msgstr "Повежи '%s' са '%s'"
 
 #: editor/connections_dialog.cpp
-msgid "Connect.."
+#, fuzzy
+msgid "Disconnect all from signal: '%s'"
+msgstr "Повежи '%s' са '%s'"
+
+#: editor/connections_dialog.cpp
+msgid "Connect..."
 msgstr "Повежи..."
 
 #: editor/connections_dialog.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
 msgstr "Ископчати"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Connect Signal: "
+msgstr "Везујући сигнал:"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Edit Connection: "
+msgstr "Повезивање не успешно"
+
+#: editor/connections_dialog.cpp
+msgid "Are you sure you want to remove all connections from the \""
+msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
 msgstr "Сигнали"
+
+#: editor/connections_dialog.cpp
+msgid "Are you sure you want to remove all connections from this signal?"
+msgstr ""
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Disconnect All"
+msgstr "Ископчати"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Edit..."
+msgstr "Уреди"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Go To Method"
+msgstr "Методе"
 
 #: editor/create_dialog.cpp
 #, fuzzy
@@ -536,22 +730,25 @@ msgstr "Омиљене:"
 msgid "Recent:"
 msgstr "Честе:"
 
-#: editor/create_dialog.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Тражи:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
 #: editor/quick_open.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Подударање:"
 
 #: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
 #: editor/script_editor_debugger.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
 msgstr "Опис:"
 
@@ -613,7 +810,9 @@ msgstr "Потражи замену за ресурс:"
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help.cpp editor/editor_node.cpp editor/filesystem_dock.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp scene/gui/file_dialog.cpp
+#: editor/quick_open.cpp editor/script_create_dialog.cpp
+#: modules/visual_script/visual_script_property_selector.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Open"
 msgstr "Отвори"
 
@@ -634,7 +833,7 @@ msgstr ""
 "Жељене датотеке за брисање су потребне за рад других ресурса.\n"
 "Ипак их обриши? (НЕМА ОПОЗИВАЊА)"
 
-#: editor/dependency_editor.cpp
+#: editor/dependency_editor.cpp editor/export_template_manager.cpp
 #, fuzzy
 msgid "Cannot remove:"
 msgstr "Не може се обрисати:\n"
@@ -703,9 +902,13 @@ msgstr "Промени вредност речника"
 msgid "Thanks from the Godot community!"
 msgstr "Хвала од Godot заједнице!"
 
-#: editor/editor_about.cpp
-msgid "Thanks!"
-msgstr "Хвала!"
+#: editor/editor_about.cpp editor/editor_node.cpp editor/inspector_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/script_create_dialog.cpp scene/gui/dialogs.cpp
+msgid "OK"
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -884,6 +1087,7 @@ msgid "Bus options"
 msgstr "Поставке баса"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Дуплирај"
@@ -925,11 +1129,11 @@ msgid "Move Audio Bus"
 msgstr "Помери звучни бас"
 
 #: editor/editor_audio_buses.cpp
-msgid "Save Audio Bus Layout As.."
+msgid "Save Audio Bus Layout As..."
 msgstr "Сачувај распоред звучног баса као..."
 
 #: editor/editor_audio_buses.cpp
-msgid "Location for New Layout.."
+msgid "Location for New Layout..."
 msgstr "Локација за нови распоред..."
 
 #: editor/editor_audio_buses.cpp
@@ -952,7 +1156,8 @@ msgstr "Додај бас"
 msgid "Create a new Bus Layout."
 msgstr "Направи нови бас распоред."
 
-#: editor/editor_audio_buses.cpp editor/property_editor.cpp
+#: editor/editor_audio_buses.cpp editor/editor_properties.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Учитај"
@@ -962,7 +1167,6 @@ msgid "Load an existing Bus Layout."
 msgstr "Учитај постојећи бас распоред."
 
 #: editor/editor_audio_buses.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save As"
 msgstr "Сачувај као"
 
@@ -999,22 +1203,6 @@ msgid "Invalid name. Must not collide with an existing global constant name."
 msgstr "Неважеће име. Име је резервисано за постојећу глобалну константу."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Invalid Path."
-msgstr "Неважећи пут."
-
-#: editor/editor_autoload_settings.cpp
-msgid "File does not exist."
-msgstr "Датотека не постоји."
-
-#: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Није на пут ресурса."
-
-#: editor/editor_autoload_settings.cpp
-msgid "Add AutoLoad"
-msgstr "Додај аутоматско учитавање"
-
-#: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
 msgstr "Аутоматско учитавање '%s' већ постоји!"
 
@@ -1042,6 +1230,22 @@ msgstr "Укључи"
 msgid "Rearrange Autoloads"
 msgstr "Преуреди аутоматска учитавања"
 
+#: editor/editor_autoload_settings.cpp
+msgid "Invalid Path."
+msgstr "Неважећи пут."
+
+#: editor/editor_autoload_settings.cpp
+msgid "File does not exist."
+msgstr "Датотека не постоји."
+
+#: editor/editor_autoload_settings.cpp
+msgid "Not in resource path."
+msgstr "Није на пут ресурса."
+
+#: editor/editor_autoload_settings.cpp
+msgid "Add AutoLoad"
+msgstr "Додај аутоматско учитавање"
+
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Path:"
@@ -1065,14 +1269,14 @@ msgid "Updating Scene"
 msgstr "Ажурирање сцене"
 
 #: editor/editor_data.cpp
-msgid "Storing local changes.."
+msgid "Storing local changes..."
 msgstr "Чувам локалне промене..."
 
 #: editor/editor_data.cpp
-msgid "Updating scene.."
+msgid "Updating scene..."
 msgstr "Ажурирам сцену..."
 
-#: editor/editor_data.cpp
+#: editor/editor_data.cpp editor/editor_properties.cpp
 #, fuzzy
 msgid "[empty]"
 msgstr "(празно)"
@@ -1136,11 +1340,17 @@ msgid "Copy Path"
 msgstr "Копирај пут"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Open In File Manager"
+msgstr "Покажи у менаџеру датотека"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#: editor/project_manager.cpp
 msgid "Show In File Manager"
 msgstr "Покажи у менаџеру датотека"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "New Folder.."
+msgid "New Folder..."
 msgstr "Нови директоријум..."
 
 #: editor/editor_file_dialog.cpp
@@ -1172,7 +1382,7 @@ msgid "Open a File or Directory"
 msgstr "Отвори датотеку или директоријум"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Сачувај"
@@ -1225,7 +1435,8 @@ msgstr "Иди у родитељски директоријум"
 msgid "Directories & Files:"
 msgstr "Директоријуми и датотеке:"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
+#: editor/plugins/style_box_editor_plugin.cpp
 msgid "Preview:"
 msgstr "Преглед:"
 
@@ -1378,20 +1589,28 @@ msgstr ""
 "Тренутно нема описа ове методе. Молимо помозите нама тако што ћете [color="
 "$color][url=$url]написати једну[/url][/color]!"
 
-#: editor/editor_help.cpp
-msgid "Search Text"
-msgstr "Потражи текст"
+#: editor/editor_inspector.cpp
+#, fuzzy
+msgid "Property: "
+msgstr "Особине"
 
-#: editor/editor_help.cpp
-msgid "Find"
-msgstr "Нађи"
+#: editor/editor_inspector.cpp editor/property_editor.cpp
+msgid "Set"
+msgstr ""
+
+#: editor/editor_inspector.cpp
+msgid "Set Multiple:"
+msgstr ""
 
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "Излаз:"
 
-#: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_editor_debugger.cpp
+#: editor/editor_log.cpp editor/editor_profiler.cpp
+#: editor/editor_properties.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/property_editor.cpp editor/scene_tree_dock.cpp
+#: editor/script_editor_debugger.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Clear"
@@ -1402,18 +1621,17 @@ msgstr "Обриши"
 msgid "Clear Output"
 msgstr "Излаз"
 
+#: editor/editor_node.cpp
+msgid "Project export failed with error code %d."
+msgstr ""
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
 msgstr "Грешка при чувању ресурса!"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save Resource As.."
+msgid "Save Resource As..."
 msgstr "Сачувај ресурс као..."
-
-#: editor/editor_node.cpp editor/plugins/spatial_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
-msgid "I see.."
-msgstr "Разумем..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
@@ -1427,9 +1645,9 @@ msgstr "Тражени формат датотеке је непознат:"
 msgid "Error while saving."
 msgstr "Грешка при чувању."
 
-#: editor/editor_node.cpp
-msgid "Can't open '%s'."
-msgstr "Не могу отворити '%s'."
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Can't open '%s'. The file could have been moved or deleted."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -1469,10 +1687,6 @@ msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr "Не могу сачувати сцену. Вероватно зависности нису задовољене."
-
-#: editor/editor_node.cpp
-msgid "Failed to load resource."
-msgstr "Грешка при учитавању ресурса."
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -1555,42 +1769,6 @@ msgstr ""
 "начин рада."
 
 #: editor/editor_node.cpp
-msgid "Expand all properties"
-msgstr "Прошири све"
-
-#: editor/editor_node.cpp
-msgid "Collapse all properties"
-msgstr "Умањи све"
-
-#: editor/editor_node.cpp
-msgid "Copy Params"
-msgstr "Копирај параметре"
-
-#: editor/editor_node.cpp
-msgid "Paste Params"
-msgstr "Налепи параметре"
-
-#: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
-msgid "Paste Resource"
-msgstr "Налепи ресурсе"
-
-#: editor/editor_node.cpp
-msgid "Copy Resource"
-msgstr "Копирај ресурсе"
-
-#: editor/editor_node.cpp
-msgid "Make Built-In"
-msgstr "Направи уграђеним"
-
-#: editor/editor_node.cpp
-msgid "Make Sub-Resources Unique"
-msgstr "Направи под-ресурс јединственим"
-
-#: editor/editor_node.cpp
-msgid "Open in Help"
-msgstr "Отвори у прозору за помоћ"
-
-#: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "Не постоји дефинисана сцена за покретање."
 
@@ -1641,11 +1819,11 @@ msgid "Open Base Scene"
 msgstr "Отвори базну сцену"
 
 #: editor/editor_node.cpp
-msgid "Quick Open Scene.."
+msgid "Quick Open Scene..."
 msgstr "Брзо отварање сцене..."
 
 #: editor/editor_node.cpp
-msgid "Quick Open Script.."
+msgid "Quick Open Script..."
 msgstr "Брзо отварање скриптице..."
 
 #: editor/editor_node.cpp
@@ -1657,7 +1835,7 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Сачувај промене '%s' пре изласка?"
 
 #: editor/editor_node.cpp
-msgid "Save Scene As.."
+msgid "Save Scene As..."
 msgstr "Сачувај сцену као..."
 
 #: editor/editor_node.cpp
@@ -1709,7 +1887,7 @@ msgid "This action cannot be undone. Revert anyway?"
 msgstr "Ова акција се не може опозвати. Настави?"
 
 #: editor/editor_node.cpp
-msgid "Quick Run Scene.."
+msgid "Quick Run Scene..."
 msgstr "Брзо покретање сцене..."
 
 #: editor/editor_node.cpp
@@ -1781,11 +1959,6 @@ msgstr ""
 "Сцена „%s“ је аутоматски увезена, тако да се не може мењати.\n"
 "За извршавања измена, направите нову наслеђену сцену."
 
-#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "Ugh"
-msgstr "Уф"
-
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
@@ -1815,6 +1988,16 @@ msgstr "Обирши распоред"
 #: editor/script_create_dialog.cpp
 msgid "Default"
 msgstr "Уобичајено"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Play This Scene"
+msgstr "Покрени сцену"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Close Tab"
+msgstr "Затвори остале зупчанике"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -1865,7 +2048,7 @@ msgid "Previous tab"
 msgstr "Претходни таб"
 
 #: editor/editor_node.cpp
-msgid "Filter Files.."
+msgid "Filter Files..."
 msgstr "Филтрирај датотеке..."
 
 #: editor/editor_node.cpp
@@ -1877,11 +2060,11 @@ msgid "New Scene"
 msgstr "Нова сцена"
 
 #: editor/editor_node.cpp
-msgid "New Inherited Scene.."
+msgid "New Inherited Scene..."
 msgstr "Нова наслеђена сцена..."
 
 #: editor/editor_node.cpp
-msgid "Open Scene.."
+msgid "Open Scene..."
 msgstr "Отвори сцену..."
 
 #: editor/editor_node.cpp
@@ -1901,15 +2084,15 @@ msgid "Open Recent"
 msgstr "Отвори недавно коришћено"
 
 #: editor/editor_node.cpp
-msgid "Convert To.."
+msgid "Convert To..."
 msgstr "Конвертуј у..."
 
 #: editor/editor_node.cpp
-msgid "MeshLibrary.."
+msgid "MeshLibrary..."
 msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
-msgid "TileSet.."
+msgid "TileSet..."
 msgstr "TileSet..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
@@ -1938,10 +2121,6 @@ msgstr "Пројекат"
 msgid "Project Settings"
 msgstr "Поставке пројекта"
 
-#: editor/editor_node.cpp
-msgid "Run Script"
-msgstr "Покрени скриптицу"
-
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "Извоз"
@@ -1949,6 +2128,11 @@ msgstr "Извоз"
 #: editor/editor_node.cpp
 msgid "Tools"
 msgstr "Алати"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Project Data Folder"
+msgstr "Отвори менаџер пројекта?"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2061,6 +2245,20 @@ msgstr "Распоред уредника"
 msgid "Toggle Fullscreen"
 msgstr "Укљ./Искљ. режим целог екрана"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Editor Data/Settings Folder"
+msgstr "Поставке уредника"
+
+#: editor/editor_node.cpp
+msgid "Open Editor Data Folder"
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Editor Settings Folder"
+msgstr "Поставке уредника"
+
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
 msgstr "Управљај извозним шаблонима"
@@ -2076,7 +2274,8 @@ msgstr "Класе"
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_settings_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "Тражи"
 
@@ -2120,7 +2319,7 @@ msgstr "Паузирај сцену"
 msgid "Stop the scene."
 msgstr "Заусави сцену."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_profiler.cpp
 msgid "Stop"
 msgstr "Заустави"
 
@@ -2139,6 +2338,16 @@ msgstr "Покрени специфичну сцену"
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
 msgstr "Покрени специфичну сцену"
+
+#: editor/editor_node.cpp
+msgid "Changing the video driver requires restarting the editor."
+msgstr ""
+
+#: editor/editor_node.cpp editor/project_settings_editor.cpp
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Save & Restart"
+msgstr "Сачувај и изађи"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"
@@ -2160,42 +2369,6 @@ msgstr "Искључи индикатор ажурирања"
 msgid "Inspector"
 msgstr "Инспектор"
 
-#: editor/editor_node.cpp
-msgid "Create a new resource in memory and edit it."
-msgstr "Направи нови ресурс у меморији и измени га."
-
-#: editor/editor_node.cpp
-msgid "Load an existing resource from disk and edit it."
-msgstr "Учитај постојећи ресурс са диска и измени га."
-
-#: editor/editor_node.cpp
-msgid "Save the currently edited resource."
-msgstr "Сачувај тренутно измењени ресурс."
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Save As.."
-msgstr "Сачувај као..."
-
-#: editor/editor_node.cpp
-msgid "Go to the previous edited object in history."
-msgstr "Иди на претходно измењен објекат у историјату."
-
-#: editor/editor_node.cpp
-msgid "Go to the next edited object in history."
-msgstr "Иди на следећи измењени објекат у историјату."
-
-#: editor/editor_node.cpp
-msgid "History of recently edited objects."
-msgstr "Историјат недавно измењених објеката."
-
-#: editor/editor_node.cpp
-msgid "Object properties."
-msgstr "Поставке објекта."
-
-#: editor/editor_node.cpp
-msgid "Changes may be lost!"
-msgstr "Промене се могу изгубити!"
-
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
@@ -2210,6 +2383,11 @@ msgid "FileSystem"
 msgstr "Датотечни систем"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Expand Bottom Panel"
+msgstr "Прошири све"
+
+#: editor/editor_node.cpp scene/resources/visual_shader.cpp
 msgid "Output"
 msgstr "Излаз"
 
@@ -2282,23 +2460,28 @@ msgid "Creating Mesh Previews"
 msgstr "Направи приказ мрежа"
 
 #: editor/editor_plugin.cpp
-msgid "Thumbnail.."
+msgid "Thumbnail..."
 msgstr "Сличица..."
+
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Edit Plugin"
+msgstr "Измени полигон"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
 msgstr "Инсталирани прикључци:"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Update"
 msgstr "Ажурирај"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
 msgstr "Верзија:"
 
-#: editor/editor_plugin_settings.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Author:"
 msgstr "Аутор:"
 
@@ -2306,13 +2489,16 @@ msgstr "Аутор:"
 msgid "Status:"
 msgstr "Статус:"
 
-#: editor/editor_profiler.cpp
-msgid "Stop Profiling"
-msgstr "Заустави профилирање"
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Edit:"
+msgstr "Уреди"
 
-#: editor/editor_profiler.cpp
-msgid "Start Profiling"
-msgstr "Покрени профилирање"
+#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Start"
+msgstr "Започни!"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -2360,6 +2546,104 @@ msgstr "Време:"
 msgid "Calls"
 msgstr "Позиви цртања"
 
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "On"
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid "Layer"
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid "Bit %d, value %d"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+#, fuzzy
+msgid "[Empty]"
+msgstr "Додај празан"
+
+#: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
+msgid "Assign.."
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Pick a Viewport"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "New %s"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Make Unique"
+msgstr ""
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Show in File System"
+msgstr ""
+
+#: editor/editor_properties.cpp
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Paste"
+msgstr "Налепи"
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Convert To %s"
+msgstr ""
+
+#: editor/editor_properties.cpp
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Open Editor"
+msgstr "Отвори 2Д уредник"
+
+#: editor/editor_properties.cpp editor/property_editor.cpp
+msgid "Selected node is not a Viewport!"
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+msgid "Size: "
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+msgid "Page: "
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+#, fuzzy
+msgid "New Key:"
+msgstr "Ново име:"
+
+#: editor/editor_properties_array_dict.cpp
+#, fuzzy
+msgid "New Value:"
+msgstr "Ново име:"
+
+#: editor/editor_properties_array_dict.cpp
+msgid "Add Key/Value Pair"
+msgstr ""
+
+#: editor/editor_properties_array_dict.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Item"
+msgstr "Обриши ставку"
+
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
 msgstr "Одабери уређај са листе"
@@ -2396,10 +2680,6 @@ msgstr "Неуспех при покретању скриптице:"
 msgid "Did you forget the '_run' method?"
 msgstr "Да ли сте заборавили методу „_run“?"
 
-#: editor/editor_settings.cpp
-msgid "Default (Same as Editor)"
-msgstr "Уобичајено (као и уредник)"
-
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "Одабери чвор/ове за увоз"
@@ -2425,6 +2705,7 @@ msgid "(Installed)"
 msgstr "(инсталирано)"
 
 #: editor/export_template_manager.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
 msgstr "Преучми"
 
@@ -2437,7 +2718,7 @@ msgid "(Current)"
 msgstr "(Тренутно)"
 
 #: editor/export_template_manager.cpp
-msgid "Retrieving mirrors, please wait.."
+msgid "Retrieving mirrors, please wait..."
 msgstr "Прихватам одредишта, молим сачекајте..."
 
 #: editor/export_template_manager.cpp
@@ -2449,7 +2730,8 @@ msgid "Can't open export templates zip."
 msgstr "Не могу отворити ZIP датотеку са извозним шаблонима."
 
 #: editor/export_template_manager.cpp
-msgid "Invalid version.txt format inside templates."
+#, fuzzy
+msgid "Invalid version.txt format inside templates: %s."
 msgstr "Неважећи формат датотеке version.txt унутар шаблона."
 
 #: editor/export_template_manager.cpp
@@ -2513,11 +2795,17 @@ msgid "Download Complete."
 msgstr "Преузимање успешно."
 
 #: editor/export_template_manager.cpp
+msgid ""
+"Templates installation failed. The problematic templates archives can be "
+"found at '%s'."
+msgstr ""
+
+#: editor/export_template_manager.cpp
 msgid "Error requesting url: "
 msgstr "Грешка при захтеву url: "
 
 #: editor/export_template_manager.cpp
-msgid "Connecting to Mirror.."
+msgid "Connecting to Mirror..."
 msgstr "Повезивање са одредиштем..."
 
 #: editor/export_template_manager.cpp
@@ -2534,7 +2822,7 @@ msgstr "Не могу решити"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Connecting.."
+msgid "Connecting..."
 msgstr "Повезивање..."
 
 #: editor/export_template_manager.cpp
@@ -2548,7 +2836,7 @@ msgstr "Повезан"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Requesting.."
+msgid "Requesting..."
 msgstr "Захтевање..."
 
 #: editor/export_template_manager.cpp
@@ -2592,7 +2880,8 @@ msgid "Download Templates"
 msgstr "Преузми шаблоне"
 
 #: editor/export_template_manager.cpp
-msgid "Select mirror from list: "
+#, fuzzy
+msgid "Select mirror from list: (Shift+Click: Open in Browser)"
 msgstr "Одабери одредиште са листе: "
 
 #: editor/file_type_cache.cpp
@@ -2606,11 +2895,13 @@ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
 msgstr "Неуспех навигације у „%s“ пошто није пронађен у датотечном систему!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails"
+#, fuzzy
+msgid "View items as a grid of thumbnails."
 msgstr "Прикажи ствари као мрежа сличица"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a list"
+#, fuzzy
+msgid "View items as a list."
 msgstr "Прикажи ствари као листа"
 
 #: editor/filesystem_dock.cpp
@@ -2691,12 +2982,12 @@ msgstr "Прошири све"
 msgid "Collapse all"
 msgstr "Умањи све"
 
-#: editor/filesystem_dock.cpp
-msgid "Rename.."
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
 msgstr "Преименуј..."
 
 #: editor/filesystem_dock.cpp
-msgid "Move To.."
+msgid "Move To..."
 msgstr "Помери у..."
 
 #: editor/filesystem_dock.cpp
@@ -2709,17 +3000,34 @@ msgid "Instance"
 msgstr "Додај инстанцу"
 
 #: editor/filesystem_dock.cpp
-msgid "Edit Dependencies.."
+msgid "Edit Dependencies..."
 msgstr "Измени зависности..."
 
 #: editor/filesystem_dock.cpp
-msgid "View Owners.."
+msgid "View Owners..."
 msgstr "Погледај власнике..."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Duplicate.."
+msgid "Duplicate..."
 msgstr "Дуплирај"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Script..."
+msgstr "Брзо отварање скриптице..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Resource..."
+msgstr "Сачувај ресурс као..."
+
+#: editor/filesystem_dock.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/project_manager.cpp editor/rename_dialog.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Rename"
+msgstr "Преименуј"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
@@ -2734,29 +3042,142 @@ msgid "Re-Scan Filesystem"
 msgstr "Поново скенирај датотеке"
 
 #: editor/filesystem_dock.cpp
-msgid "Toggle folder status as Favorite"
+#, fuzzy
+msgid "Toggle folder status as Favorite."
 msgstr "Директоријум као омиљени"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Show current scene file."
+msgstr "Сачувај тренутно измењени ресурс."
 
 #: editor/filesystem_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
 msgstr "Направи следећу сцену/е као дете одабраног чвора."
 
 #: editor/filesystem_dock.cpp
+msgid "Enter tree-view."
+msgstr ""
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Search files"
+msgstr "Потражи класе"
+
+#: editor/filesystem_dock.cpp
 msgid ""
 "Scanning Files,\n"
-"Please Wait.."
+"Please Wait..."
 msgstr ""
 "Скенирање датотека,\n"
 "Молим сачекајте..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Move"
 msgstr "Помери"
 
-#: editor/filesystem_dock.cpp editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Rename"
-msgstr "Преименуј"
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "There is already file or folder with the same name in this location."
+msgstr "Датотека или директоријум са овим именом већ постоји."
+
+#: editor/filesystem_dock.cpp
+msgid "Overwrite"
+msgstr ""
+
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Create Script"
+msgstr "Направи скриптицу"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Find in files"
+msgstr "Нађи плочицу"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Find: "
+msgstr "Нађи"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Whole words"
+msgstr "Целе речи"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Match case"
+msgstr "Подударање великих и малих слова"
+
+#: editor/find_in_files.cpp
+msgid "Folder: "
+msgstr ""
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Filter: "
+msgstr "Филтери..."
+
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find..."
+msgstr "Тражи..."
+
+#: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
+msgid "Replace..."
+msgstr "Замени..."
+
+#: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr ""
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Replace: "
+msgstr "Замени"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Replace all (no undo)"
+msgstr "Замени све"
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Searching..."
+msgstr "Чување..."
+
+#: editor/find_in_files.cpp
+#, fuzzy
+msgid "Search complete"
+msgstr "Потражи текст"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Group name already exists."
+msgstr "Грешка: име анимације већ постоји!"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "invalid Group name."
+msgstr "Неважеће име."
+
+#: editor/groups_editor.cpp editor/node_dock.cpp
+msgid "Groups"
+msgstr "Групе"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Nodes not in Group"
+msgstr "Додај у групу"
+
+#: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+msgid "Filter nodes"
+msgstr ""
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Nodes in Group"
+msgstr "Додај у групу"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -2765,6 +3186,11 @@ msgstr "Додај у групу"
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
 msgstr "Обриши из групе"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Manage Groups"
+msgstr "Групе"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -2807,12 +3233,12 @@ msgid "Import as Multiple Scenes+Materials"
 msgstr "Увези као више сцена и материјала"
 
 #: editor/import/resource_importer_scene.cpp
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
+#: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
 msgstr "Увези сцену"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Importing Scene.."
+msgid "Importing Scene..."
 msgstr "Увожење сцеене..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2826,7 +3252,7 @@ msgid "Generating for Mesh: "
 msgstr "Генерисање осног поравнаног граничниог оквира (AABB)"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Running Custom Script.."
+msgid "Running Custom Script..."
 msgstr "Обрађивање скриптице..."
 
 #: editor/import/resource_importer_scene.cpp
@@ -2842,7 +3268,7 @@ msgid "Error running post-import script:"
 msgstr "Грешка при обрађивању пост-увозне скриптице:"
 
 #: editor/import/resource_importer_scene.cpp
-msgid "Saving.."
+msgid "Saving..."
 msgstr "Чување..."
 
 #: editor/import_dock.cpp
@@ -2862,24 +3288,135 @@ msgid "Import As:"
 msgstr "Увези као:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset.."
+msgid "Preset..."
 msgstr "Поставке..."
 
 #: editor/import_dock.cpp
 msgid "Reimport"
 msgstr "Поново увези"
 
+#: editor/inspector_dock.cpp
+msgid "Failed to load resource."
+msgstr "Грешка при учитавању ресурса."
+
+#: editor/inspector_dock.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Ok"
+msgstr ""
+
+#: editor/inspector_dock.cpp
+msgid "Expand all properties"
+msgstr "Прошири све"
+
+#: editor/inspector_dock.cpp
+msgid "Collapse all properties"
+msgstr "Умањи све"
+
+#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Save As..."
+msgstr "Сачувај као..."
+
+#: editor/inspector_dock.cpp
+msgid "Copy Params"
+msgstr "Копирај параметре"
+
+#: editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Налепи параметре"
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Edit Resource Clipboard"
+msgstr "Нема ресурса за копирање!"
+
+#: editor/inspector_dock.cpp
+msgid "Copy Resource"
+msgstr "Копирај ресурсе"
+
+#: editor/inspector_dock.cpp
+msgid "Make Built-In"
+msgstr "Направи уграђеним"
+
+#: editor/inspector_dock.cpp
+msgid "Make Sub-Resources Unique"
+msgstr "Направи под-ресурс јединственим"
+
+#: editor/inspector_dock.cpp
+msgid "Open in Help"
+msgstr "Отвори у прозору за помоћ"
+
+#: editor/inspector_dock.cpp
+msgid "Create a new resource in memory and edit it."
+msgstr "Направи нови ресурс у меморији и измени га."
+
+#: editor/inspector_dock.cpp
+msgid "Load an existing resource from disk and edit it."
+msgstr "Учитај постојећи ресурс са диска и измени га."
+
+#: editor/inspector_dock.cpp
+msgid "Go to the previous edited object in history."
+msgstr "Иди на претходно измењен објекат у историјату."
+
+#: editor/inspector_dock.cpp
+msgid "Go to the next edited object in history."
+msgstr "Иди на следећи измењени објекат у историјату."
+
+#: editor/inspector_dock.cpp
+msgid "History of recently edited objects."
+msgstr "Историјат недавно измењених објеката."
+
+#: editor/inspector_dock.cpp
+msgid "Object properties."
+msgstr "Поставке објекта."
+
+#: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Filter properties"
+msgstr "Поставке објекта."
+
+#: editor/inspector_dock.cpp
+msgid "Changes may be lost!"
+msgstr "Промене се могу изгубити!"
+
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
 msgstr "Постави MultiNode"
 
 #: editor/node_dock.cpp
-msgid "Groups"
-msgstr "Групе"
-
-#: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
 msgstr "Одабери чвор за мењање сигнала и група."
+
+#: editor/plugin_config_dialog.cpp
+#, fuzzy
+msgid "Edit a Plugin"
+msgstr "Измени полигон"
+
+#: editor/plugin_config_dialog.cpp
+#, fuzzy
+msgid "Create a Plugin"
+msgstr "Направи ивице"
+
+#: editor/plugin_config_dialog.cpp
+#, fuzzy
+msgid "Plugin Name:"
+msgstr "Прикључци"
+
+#: editor/plugin_config_dialog.cpp
+msgid "Subfolder:"
+msgstr ""
+
+#: editor/plugin_config_dialog.cpp
+msgid "Language:"
+msgstr ""
+
+#: editor/plugin_config_dialog.cpp
+msgid "Script Name:"
+msgstr ""
+
+#: editor/plugin_config_dialog.cpp
+msgid "Activate now?"
+msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -2926,6 +3463,147 @@ msgstr ""
 msgid "Delete points"
 msgstr "Обриши тачке"
 
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Add Animation"
+msgstr "Додај анимацију"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Load.."
+msgstr "Учитај"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid ""
+"AnimationTree is inactive.\n"
+"Activate to enable playback, check node warnings if activation fails."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Set the blending position within the space"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Create points."
+msgstr "Обриши тачке"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Erase points."
+msgstr "Десни тастер миша: обриши тачку."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Point"
+msgstr "Помери тачку"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Open Animation Node"
+msgstr "Анимациони чвор"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Triangle already exists"
+msgstr "Грешка: име анимације већ постоји!"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "BlendSpace2D does not belong to an AnimationTree node."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "No triangles exist, so no blending can take place."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Create triangles by connecting points."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Erase points and triangles."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Generate blend triangles automatically (instead of manually)"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Залепи"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Edit Filters"
+msgstr "Уреди филтере"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Output node can't be added to the blend tree."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Unable to connect, port may be in use or connection may be invalid."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "No animation player set, so unable to retrieve track names."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Player path set is invalid, so unable to retrieve track names."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/root_motion_editor_plugin.cpp
+msgid ""
+"Animation player has no valid root node path, so unable to retrieve track "
+"names."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node.."
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/root_motion_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Filtered Tracks:"
+msgstr "Уреди филтере"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Enable filtering"
+msgstr ""
+
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
 msgstr "Укљ./Искљ. аутоматско покретање"
@@ -2952,22 +3630,19 @@ msgid "Remove Animation"
 msgstr "Обриши анимацију"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: Invalid animation name!"
+#, fuzzy
+msgid "Invalid animation name!"
 msgstr "Грешка: неважеће име анимације!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: Animation name already exists!"
+#, fuzzy
+msgid "Animation name already exists!"
 msgstr "Грешка: име анимације већ постоји!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
 msgstr "Преименуј анимацију"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Add Animation"
-msgstr "Додај анимацију"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
@@ -2986,11 +3661,13 @@ msgid "Duplicate Animation"
 msgstr "Дуплирај анимацију"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation to copy!"
+#, fuzzy
+msgid "No animation to copy!"
 msgstr "Грешка: нема анимације за копирање!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation resource on clipboard!"
+#, fuzzy
+msgid "No animation resource on clipboard!"
 msgstr "Грешка: нема анимације у таблици за копирање!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -3002,7 +3679,8 @@ msgid "Paste Animation"
 msgstr "Налепи анимацију"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "ERROR: No animation to edit!"
+#, fuzzy
+msgid "No animation to edit!"
 msgstr "Грешка: нема анимације за измену!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -3034,20 +3712,27 @@ msgid "Scale animation playback globally for the node."
 msgstr "Глобално убрзај анимацију за чвор."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Create new animation in player."
-msgstr "Направи нову анимацију у плејеру."
+msgid "Animation Tools"
+msgstr "Анимационе алатке"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load animation from disk."
-msgstr "Учитај анимацију са диска."
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Animation"
+msgstr "Анимација"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Load an animation from disk."
-msgstr "Учитај анимацију са диска."
+msgid "New"
+msgstr "Нова"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Save the current animation"
-msgstr "Сачувај тренутну анимацију"
+#, fuzzy
+msgid "Edit Transitions..."
+msgstr "Прелази"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Open in Inspector"
+msgstr "Инспектор"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3056,18 +3741,6 @@ msgstr "Прикажи листу анимација у плејеру."
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
 msgstr "Аутоматско пуштање након учитавања"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Edit Target Blend Times"
-msgstr "Уреди времена циљаног мешања"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Animation Tools"
-msgstr "Анимационе алатке"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Copy Animation"
-msgstr "Копирај анимацију"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning"
@@ -3118,6 +3791,11 @@ msgid "Include Gizmos (3D)"
 msgstr "Убаци 3Д справице"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Pin AnimationPlayer"
+msgstr "Налепи анимацију"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
 msgstr "Направи нову анимацију"
 
@@ -3127,6 +3805,7 @@ msgstr "Име анимације:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
@@ -3144,161 +3823,213 @@ msgstr "Следећа (Аутоматки ред):"
 msgid "Cross-Animation Blend Times"
 msgstr "Вишеанимационо време мешања"
 
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Animation"
-msgstr "Анимација"
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "End"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Immediate"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Sync"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "At End"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Travel"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Start and end nodes are needed for a sub-transition."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "No playback resource set at path: %s."
+msgstr "Није на пут ресурса."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid ""
+"Select and move nodes.\n"
+"RMB to add new nodes.\n"
+"Shift+LMB to create connections."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Create new nodes."
+msgstr "Направи нов"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Connect nodes."
+msgstr "Повежи са чвором:"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Remove selected node or transition"
+msgstr "Обриши одабрану траку."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Toggle autoplay this animation on start, restart or seek to zero."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set the end animation. This is useful for sub-transitions."
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition: "
+msgstr "Померај"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "New name:"
-msgstr "Ново име:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Edit Filters"
-msgstr "Уреди филтере"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Scale:"
-msgstr "Скала:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Fade In (s):"
-msgstr "Појављивање (сек.):"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Fade Out (s):"
-msgstr "Нестанак (сек.):"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend"
-msgstr "Мешање"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Mix"
-msgstr "Микс"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Auto Restart:"
-msgstr "Аутоматско рестартовање:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Restart (s):"
-msgstr "Рестартовање (сек.):"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Random Restart (s):"
-msgstr "Насумично рестартовање (сек.):"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Start!"
-msgstr "Започни!"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Amount:"
-msgstr "Количина:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend:"
-msgstr "Мешавина:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend 0:"
-msgstr "Мешавина 0:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend 1:"
-msgstr "Мешавина 1:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "X-Fade Time (s):"
-msgstr "X-Fade време (сек.):"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Current:"
-msgstr "Тренутно:"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Add Input"
-msgstr "Додај улаз"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Clear Auto-Advance"
-msgstr "Обриши аутоматски напредак"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Set Auto-Advance"
-msgstr "Постави аутоматски напредак"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Delete Input"
-msgstr "Обриши улаз"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Animation tree is valid."
-msgstr "Анимационо дрво је важеће."
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Animation tree is invalid."
-msgstr "Анимационо дрво није важеће."
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Animation Node"
-msgstr "Анимациони чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "OneShot Node"
-msgstr "OneShot чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Mix Node"
-msgstr "Микс чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend2 Node"
-msgstr "Мешање2 чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend3 Node"
-msgstr "Мешање3 чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Blend4 Node"
-msgstr "Мешање4 чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "TimeScale Node"
-msgstr "TimeScale чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "TimeSeek Node"
-msgstr "TimeSeek чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Transition Node"
-msgstr "Transition чвор"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Import Animations.."
-msgstr "Увези анимације..."
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Edit Node Filters"
-msgstr "Измени филтере чвора"
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
-msgid "Filters.."
-msgstr "Филтери..."
-
-#: editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
 #, fuzzy
 msgid "AnimationTree"
 msgstr "Анимација"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Free"
-msgstr "Слободно"
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "New name:"
+msgstr "Ново име:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Scale:"
+msgstr "Скала:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Fade In (s):"
+msgstr "Појављивање (сек.):"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Fade Out (s):"
+msgstr "Нестанак (сек.):"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend"
+msgstr "Мешање"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Mix"
+msgstr "Микс"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Auto Restart:"
+msgstr "Аутоматско рестартовање:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Restart (s):"
+msgstr "Рестартовање (сек.):"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Random Restart (s):"
+msgstr "Насумично рестартовање (сек.):"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Start!"
+msgstr "Започни!"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/multimesh_editor_plugin.cpp
+msgid "Amount:"
+msgstr "Количина:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend:"
+msgstr "Мешавина:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend 0:"
+msgstr "Мешавина 0:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend 1:"
+msgstr "Мешавина 1:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "X-Fade Time (s):"
+msgstr "X-Fade време (сек.):"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Current:"
+msgstr "Тренутно:"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Add Input"
+msgstr "Додај улаз"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Clear Auto-Advance"
+msgstr "Обриши аутоматски напредак"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Set Auto-Advance"
+msgstr "Постави аутоматски напредак"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Delete Input"
+msgstr "Обриши улаз"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Animation tree is valid."
+msgstr "Анимационо дрво је важеће."
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Animation tree is invalid."
+msgstr "Анимационо дрво није важеће."
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Animation Node"
+msgstr "Анимациони чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "OneShot Node"
+msgstr "OneShot чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Mix Node"
+msgstr "Микс чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend2 Node"
+msgstr "Мешање2 чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend3 Node"
+msgstr "Мешање3 чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend4 Node"
+msgstr "Мешање4 чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "TimeScale Node"
+msgstr "TimeScale чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "TimeSeek Node"
+msgstr "TimeSeek чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Transition Node"
+msgstr "Transition чвор"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Import Animations..."
+msgstr "Увези анимације..."
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Edit Node Filters"
+msgstr "Измени филтере чвора"
+
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Filters..."
+msgstr "Филтери..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -3353,11 +4084,17 @@ msgid "Asset Download Error:"
 msgstr "Преузимање ресурса неуспешно:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Fetching:"
-msgstr "Преузимање:"
+#, fuzzy
+msgid "Downloading (%s / %s)..."
+msgstr "Преузимање у току"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Resolving.."
+#, fuzzy
+msgid "Downloading..."
+msgstr "Преузимање у току"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Resolving..."
 msgstr "Решавање..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3381,20 +4118,22 @@ msgid "Download for this asset is already in progress!"
 msgstr "Преузимање овог ресурса је у току!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "first"
+#, fuzzy
+msgid "First"
 msgstr "први"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "prev"
-msgstr "претходни"
+#, fuzzy
+msgid "Previous"
+msgstr "Претходни таб"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "next"
-msgstr "следећи"
+msgid "Next"
+msgstr "Следеће"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "last"
-msgstr "задњи"
+msgid "Last"
+msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -3424,7 +4163,7 @@ msgid "Site:"
 msgstr "Веб страница:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support.."
+msgid "Support..."
 msgstr "Подршка..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3461,7 +4200,7 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview"
 msgstr "Преглед"
 
@@ -3470,12 +4209,10 @@ msgid "Configure Snap"
 msgstr "Конфигурација лепљења"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset:"
 msgstr "Офсет мреже:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step:"
 msgstr "Корак мреже:"
 
@@ -3486,14 +4223,6 @@ msgstr "Ротација офсета:"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
 msgstr "Ротације корака:"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move Pivot"
-msgstr "Помери пивот"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move Action"
-msgstr "Помери акцију"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move vertical guide"
@@ -3524,11 +4253,28 @@ msgid "Create new horizontal and vertical guides"
 msgstr "Направи нови хоризонтални и вертикални водич"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Edit IK Chain"
-msgstr "Измени IK ланац"
+#, fuzzy
+msgid "Move pivot"
+msgstr "Помери пивот"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Edit CanvasItem"
+#, fuzzy
+msgid "Rotate CanvasItem"
+msgstr "Уреди CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move anchor"
+msgstr "Помери акцију"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Resize CanvasItem"
+msgstr "Уреди CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem"
 msgstr "Уреди CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3546,6 +4292,21 @@ msgstr "Промени сидра"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
 msgstr "Налепи позу"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Zoom out"
+msgstr "Умањи"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Zoom reset"
+msgstr "Умањи"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Zoom in"
+msgstr "Увеличај"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -3594,7 +4355,8 @@ msgid "Pan Mode"
 msgstr "Режим инспекције"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Toggles snapping"
+#, fuzzy
+msgid "Toggle snapping."
 msgstr "Укљ./Искљ. лепљења"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3602,7 +4364,8 @@ msgid "Use Snap"
 msgstr "Користи лепљење"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snapping options"
+#, fuzzy
+msgid "Snapping Options"
 msgstr "Поставке залепљавања"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3614,6 +4377,7 @@ msgid "Use Rotation Snap"
 msgstr "Користи лепљење ротације"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
 msgstr "Поставке лепљења..."
 
@@ -3642,6 +4406,11 @@ msgid "Snap to node sides"
 msgstr "Лепи за стране чвора"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Snap to node center"
+msgstr "Лепи за сидро чвора"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
 msgstr "Лепи за остале чворове"
 
@@ -3668,14 +4437,6 @@ msgid "Restores the object's children's ability to be selected."
 msgstr "Врати могућност бирања деце објекта."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Make Bones"
-msgstr "Направи кости"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Clear Bones"
-msgstr "Обриши кости"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
 msgstr "Покажи кости"
 
@@ -3686,6 +4447,15 @@ msgstr "Направи IK ланац"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
 msgstr "Очисти IK ланац"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Make Custom Bone(s) from Node(s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Custom Bones"
+msgstr "Обриши кости"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3710,6 +4480,16 @@ msgid "Show Guides"
 msgstr "Покажи водиче"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Origin"
+msgstr "Прикажи центар"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Show Viewport"
+msgstr "1 прозор"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Центрирај одабрано"
 
@@ -3722,11 +4502,8 @@ msgid "Layout"
 msgstr "Распоред"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Keys"
-msgstr "Убаци кључеве"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert Key"
+#, fuzzy
+msgid "Insert keys."
 msgstr "Убаци кључеве"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -3740,14 +4517,6 @@ msgstr "Копирај позу"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
 msgstr "Обриши позу"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Drag pivot from mouse position"
-msgstr "Превуци пивот са позицијом миша"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Set pivot at mouse position"
-msgstr "Постави пивот на позицију миша"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -3764,10 +4533,6 @@ msgstr "Додај %s"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
 msgstr "Додавање %s..."
-
-#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
@@ -3803,27 +4568,20 @@ msgstr "Направи Poly3D"
 msgid "Set Handle"
 msgstr "Постави дршку"
 
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Remove item %d?"
-msgstr "Обриши ствар %d?"
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#, fuzzy
+msgid "CPUParticles"
+msgstr "Честице"
 
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Item"
-msgstr "Додај ствар"
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Create Emission Points From Mesh"
+msgstr "Направи тачке емисије од мреже"
 
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Remove Selected Item"
-msgstr "Обриши одабрану ствар"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Import from Scene"
-msgstr "Увези из сцене"
-
-#: editor/plugins/cube_grid_theme_editor_plugin.cpp
-msgid "Update from Scene"
-msgstr "Ажурирај из сцене"
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Create Emission Points From Node"
+msgstr "Направи тачке емисије од чвора"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat0"
@@ -3892,15 +4650,6 @@ msgstr "Држи Shift за уређивање појединачних танг
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Испечи сонде глобалног осветљења (GI)"
-
-#: editor/plugins/gradient_editor_plugin.cpp
-msgid "Add/Remove Color Ramp Point"
-msgstr "Додај/обриши тачку бојне рампе"
-
-#: editor/plugins/gradient_editor_plugin.cpp
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Color Ramp"
-msgstr "Измени рампу боје"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3987,6 +4736,7 @@ msgid "No mesh to debug."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Model has no UV in this layer"
 msgstr ""
 
@@ -3997,6 +4747,10 @@ msgstr "MeshInstance нема мрежу!"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh has not surface to create outlines from!"
 msgstr "Мрежа нема површине за прављење ивица!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES!"
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Could not create outline!"
@@ -4027,7 +4781,7 @@ msgid "Create Convex Collision Sibling"
 msgstr "Направи конвексног сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Outline Mesh.."
+msgid "Create Outline Mesh..."
 msgstr "Направи ивичну мрежу..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -4051,6 +4805,27 @@ msgstr "Направи ивичну мрежу"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
 msgstr "Величина ивице:"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Remove item %d?"
+msgstr "Обриши ствар %d?"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Add Item"
+msgstr "Додај ствар"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Remove Selected Item"
+msgstr "Обриши одабрану ствар"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Import from Scene"
+msgstr "Увези из сцене"
+
+#: editor/plugins/mesh_library_editor_plugin.cpp
+msgid "Update from Scene"
+msgstr "Ажурирај из сцене"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
@@ -4152,71 +4927,6 @@ msgstr "Насумична величина:"
 msgid "Populate"
 msgstr "Попуни"
 
-#: editor/plugins/navigation_mesh_editor_plugin.cpp
-msgid "Bake!"
-msgstr "Испеци!"
-
-#: editor/plugins/navigation_mesh_editor_plugin.cpp
-#, fuzzy
-msgid "Bake the navigation mesh."
-msgstr "Испеци навигациону мрежу.\n"
-
-#: editor/plugins/navigation_mesh_editor_plugin.cpp
-msgid "Clear the navigation mesh."
-msgstr "Обриши навигациону мрежу."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Setting up Configuration..."
-msgstr "Подешавање конфигурације..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Calculating grid size..."
-msgstr "Израчунавање величине мреже..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Creating heightfield..."
-msgstr "Прављење висинског поља..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Marking walkable triangles..."
-msgstr "Маркирање проходних троуглова..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Constructing compact heightfield..."
-msgstr "Конструисање компактног висинског поља..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Eroding walkable area..."
-msgstr "Ерозија проходне површине..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Partitioning..."
-msgstr "Партиционирање..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Creating contours..."
-msgstr "Прављење контура..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Creating polymesh..."
-msgstr "Прављење полигонске мреже..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Converting to native navigation mesh..."
-msgstr "Конвертовање у природну навигациону мрежу..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Поставке генератора навигационе мреже:"
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Parsing Geometry..."
-msgstr "Анализирање геометрије..."
-
-#: editor/plugins/navigation_mesh_generator.cpp
-msgid "Done!"
-msgstr "Готово!"
-
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Направи навигациони полигон"
@@ -4235,7 +4945,7 @@ msgid "Error loading image:"
 msgstr "Грешка при учитавању слике:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image.."
+msgid "No pixels with transparency > 128 in image..."
 msgstr "У слици нема пиксела са транспарентношћу већом од 128..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -4277,18 +4987,6 @@ msgid "Emission Colors"
 msgstr "Боје емисије"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry."
-msgstr "Чвор не садржи геометрију."
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry (faces)."
-msgstr "Чвор не садржи геометрију (стране)."
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr "Процесор материјала типа „ParticlesMaterial“ је неопходан."
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Стране не садрже област!"
 
@@ -4297,16 +4995,12 @@ msgid "No faces!"
 msgstr "Нема страна!"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Генериши осно поравнан гранични оквир (AABB)"
+msgid "Node does not contain geometry."
+msgstr "Чвор не садржи геометрију."
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emission Points From Mesh"
-msgstr "Направи тачке емисије од мреже"
-
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emission Points From Node"
-msgstr "Направи тачке емисије од чвора"
+msgid "Node does not contain geometry (faces)."
+msgstr "Чвор не садржи геометрију (стране)."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -4331,6 +5025,19 @@ msgstr "Запремина"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
 msgstr "Извор емисије: "
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr "Процесор материјала типа „ParticlesMaterial“ је неопходан."
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "Генериши осно поравнан гранични оквир (AABB)"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to CPUParticles"
+msgstr "Претвори у велика слова"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
@@ -4409,6 +5116,22 @@ msgstr "Обриши тачку"
 msgid "Close Curve"
 msgstr "Затвори криву"
 
+#: editor/plugins/path_2d_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp editor/plugins/theme_editor_plugin.cpp
+#: editor/project_export.cpp
+msgid "Options"
+msgstr "Опција"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Mirror Handle Angles"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Mirror Handle Lengths"
+msgstr ""
+
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
 msgstr "Тачка криве #"
@@ -4441,17 +5164,93 @@ msgstr "Обриши тачку контроле излаза"
 msgid "Remove In-Control Point"
 msgstr "Обриши тачку контроле улаза"
 
+#: editor/plugins/physical_bone_plugin.cpp
+#, fuzzy
+msgid "Move joint"
+msgstr "Помери тачку"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"The skeleton property of the Polygon2D does not point to a Skeleton2D node"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Sync bones"
+msgstr "Покажи кости"
+
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
 msgstr "Направи UV мапу"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon & UV"
+msgstr "Направи полигон"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Split point with itself."
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Split can't form an existing edge."
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split already exists."
+msgstr "Аутоматско учитавање '%s' већ постоји!"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Add Split"
+msgstr "Додај тачку"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid Split: "
+msgstr "Неважећи пут."
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Split"
+msgstr "Обриши тачку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
 msgstr "Трансформиши UV мапу"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint bone weights"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
 msgstr "Уредник UV 2Д полигона"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "UV"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Poly"
+msgstr "Измени полигон"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Splits"
+msgstr "Раздели пут"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Bones"
+msgstr "Направи кости"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
+msgstr "Направи полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Point"
@@ -4482,12 +5281,24 @@ msgid "Scale Polygon"
 msgstr "Скалирај полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/property_editor.cpp
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Edit"
-msgstr "Уреди"
+msgid "Connect two points to make a split"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Select a split to erase it"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint weights with specified intensity"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "UnPaint weights with specified intensity"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Radius:"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"
@@ -4502,9 +5313,9 @@ msgid "Clear UV"
 msgstr "Очисти UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Залепи"
+#, fuzzy
+msgid "Grid Settings"
+msgstr "Поставке"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -4513,6 +5324,36 @@ msgstr "Укључи лепљење"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
 msgstr "Мрежа"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Configure Grid:"
+msgstr "Конфигурација лепљења"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Offset X:"
+msgstr "Офсет мреже:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Offset Y:"
+msgstr "Офсет мреже:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Step X:"
+msgstr "Корак мреже:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Grid Step Y:"
+msgstr "Корак мреже:"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Sync Bones to Polygon"
+msgstr "Скалирај полигон"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -4536,6 +5377,10 @@ msgid "Resource clipboard is empty!"
 msgstr "Нема ресурса за копирање!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
+msgid "Paste Resource"
+msgstr "Налепи ресурсе"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
 msgstr ""
@@ -4557,16 +5402,18 @@ msgid "Load Resource"
 msgstr "Учитај ресурс"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Paste"
-msgstr "Налепи"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #, fuzzy
 msgid "ResourcePreloader"
 msgstr "Ресурс"
+
+#: editor/plugins/root_motion_editor_plugin.cpp
+msgid "AnimationTree has no path set to an AnimationPlayer"
+msgstr ""
+
+#: editor/plugins/root_motion_editor_plugin.cpp
+#, fuzzy
+msgid "Path to AnimationPlayer is invalid"
+msgstr "Анимационо дрво није важеће."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -4578,6 +5425,21 @@ msgid "Close and save changes?"
 msgstr ""
 "Затвори и сачувај измене?\n"
 "\""
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Error writing TextFile:"
+msgstr "Грешка при чувању TileSet!"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Error could not load file."
+msgstr "Неуспех при тражењу плочице:"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Error saving file!"
+msgstr "Грешка при чувању TileSet!"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
@@ -4596,16 +5458,35 @@ msgid "Error importing"
 msgstr "Грешка при увозу"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "New TextFile..."
+msgstr "Нови директоријум..."
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Open File"
+msgstr "Отвори датотеку"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Save File As..."
+msgstr "Сачувај као..."
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "Увези тему"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As.."
+msgid "Save Theme As..."
 msgstr "Сачувај тему као..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid " Class Reference"
 msgstr " референца класе"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Toggle alphabetical sorting of the method list."
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -4636,8 +5517,9 @@ msgid "File"
 msgstr "Датотека"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New"
-msgstr "Нова"
+#, fuzzy
+msgid "New TextFile"
+msgstr "Погледај датотеке"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -4664,6 +5546,12 @@ msgstr "Историја претходно"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "History Next"
 msgstr "Историја следеће"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Theme"
+msgstr "Сачувај тему"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -4696,11 +5584,6 @@ msgstr "Покрени"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
 msgstr "Прикажи панел скриптица"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-msgid "Find.."
-msgstr "Тражи..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4757,10 +5640,6 @@ msgid "Discard"
 msgstr "Одбаци"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Create Script"
-msgstr "Направи скриптицу"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
@@ -4781,6 +5660,16 @@ msgid "Debugger"
 msgstr "Дебагер"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Search results"
+msgstr "Потражи помоћ"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Search in files"
+msgstr "Потражи класе"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "Built-in scripts can only be edited when the scene they belong to is loaded"
 msgstr ""
@@ -4788,39 +5677,55 @@ msgstr ""
 "припадају"
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Line"
+msgstr "Линија:"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "(ignore)"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Само ресурси из датотечног система се могу убацити."
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Lookup Symbol"
+msgstr "Потпун симбол"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
 msgstr "Одабери боју"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
 msgstr "Конвертуј слова"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
 msgstr "Велика слова"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Lowercase"
 msgstr "Мала слова"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Capitalize"
 msgstr "Велика слова"
+
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Syntax Highlighter"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "Исеци"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-msgid "Copy"
-msgstr "Копирај"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -4910,15 +5815,16 @@ msgid "Find Previous"
 msgstr "Нађи претходни"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Replace.."
-msgstr "Замени..."
+#, fuzzy
+msgid "Find in files..."
+msgstr "Филтрирај датотеке..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function.."
+msgid "Goto Function..."
 msgstr "Иди на функцију..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line.."
+msgid "Goto Line..."
 msgstr "Иди на линију..."
 
 #: editor/plugins/script_text_editor.cpp
@@ -4929,129 +5835,42 @@ msgstr "Контекстуална помоћ"
 msgid "Shader"
 msgstr "Шејдер"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Constant"
-msgstr "Промени скаларну константу"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "This skeleton has no bones, create some children Bone2D nodes."
+msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Constant"
-msgstr "Промени векторску константу"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Skeleton2D"
+msgstr "Синглетон"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Constant"
-msgstr "Промени RGB константу"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Make Rest Pose (From Bones)"
+msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Operator"
-msgstr "Промени скаларни оператор"
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Bones to Rest Pose"
+msgstr ""
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Operator"
-msgstr "Промени векторски оператор"
+#: editor/plugins/skeleton_editor_plugin.cpp
+#, fuzzy
+msgid "Create physical bones"
+msgstr "Направи навигациону мрежу"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Scalar Operator"
-msgstr "Промени векторско-скаларни оператор"
+#: editor/plugins/skeleton_editor_plugin.cpp
+#, fuzzy
+msgid "Skeleton"
+msgstr "Синглетон"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Operator"
-msgstr "Промени RGB оператор"
+#: editor/plugins/skeleton_editor_plugin.cpp
+#, fuzzy
+msgid "Create physical skeleton"
+msgstr "Направи ивице"
 
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Toggle Rot Only"
-msgstr "Само ротација"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Function"
-msgstr "Промени скаларну функцију"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Function"
-msgstr "Промени векторску функцију"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Scalar Uniform"
-msgstr "Промени скаларну униформу (uniform)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Vec Uniform"
-msgstr "Промени векторску униформу (uniform)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change RGB Uniform"
-msgstr "Промени RGB униформу (uniform)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Default Value"
-msgstr "Промени уобичајену вредност"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change XForm Uniform"
-msgstr "Промени XForm униформу (uniform)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Texture Uniform"
-msgstr "Промени текстурну униформу (uniform)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Cubemap Uniform"
-msgstr "Промени Cubemap униформу (uniform)"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Comment"
-msgstr "Промени коментар"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Color Ramp"
-msgstr "Додај/обириши из рампе боје"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add/Remove to Curve Map"
-msgstr "Додај/обриши из мапе криве"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Modify Curve Map"
-msgstr "Модификуј мапу криве"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Change Input Name"
-msgstr "Промени улазно име"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Connect Graph Nodes"
-msgstr "Повежи чворове графа"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Disconnect Graph Nodes"
-msgstr "Искључи чворове графа"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Remove Shader Graph Node"
-msgstr "Обриши чвор графа шејдера"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Move Shader Graph Node"
-msgstr "Помери чвор графа шејдера"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Duplicate Graph Node(s)"
-msgstr "Дуплирај чвор/ове графа"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Delete Shader Graph Node(s)"
-msgstr "Обриши чвор/ове графа шејдера"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Cyclic Connection Link"
-msgstr "Грешка: пронађена циклична веза"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Error: Missing Input Connections"
-msgstr "Грешка: недостаје улазна конекција"
-
-#: editor/plugins/shader_graph_editor_plugin.cpp
-msgid "Add Shader Graph Node"
-msgstr "Додај чвор графа шејдера"
+#: editor/plugins/skeleton_ik_editor_plugin.cpp
+#, fuzzy
+msgid "Play IK"
+msgstr "Покрени"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
@@ -5178,16 +5997,17 @@ msgid "Align with view"
 msgstr "Поравнавање са погледом"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-msgid "OK :("
-msgstr "ОК :("
-
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr "Нема родитеља за прављење сина."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
 msgstr "Ова операција захтева један изабран чвор."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Lock View Rotation"
+msgstr "Прикажи информације"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -5232,6 +6052,11 @@ msgstr "Звучни слушалац"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Doppler Enable"
 msgstr "„Doppler“ режим"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Cinematic Preview"
+msgstr "Направи приказ мрежа"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -5367,6 +6192,11 @@ msgid "Tool Scale"
 msgstr "Алат скалирања"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap To Floor"
+msgstr "Залепи за мрежу"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
 msgstr "Укљ./Искљ. режим слободног гледања"
 
@@ -5375,11 +6205,11 @@ msgid "Transform"
 msgstr "Трансформација"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap.."
-msgstr "Конфигуриши лепљење..."
+msgid "Snap object to floor"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Transform Dialog.."
+msgid "Transform Dialog..."
 msgstr "Прозор трансформације..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5407,6 +6237,11 @@ msgid "4 Viewports"
 msgstr "4 прозора"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Gizmos"
+msgstr "Прикажи справице"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
 msgstr "Прикажи центар"
 
@@ -5418,10 +6253,6 @@ msgstr "Прикажи мрежу"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Settings"
 msgstr "Поставке"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Skeleton Gizmo visibility"
-msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -5482,6 +6313,52 @@ msgstr "Пре"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Post"
 msgstr "После"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Sprite is empty!"
+msgstr "Мрежа је празна!"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Can't convert a sprite using animation frames to mesh."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't replace by mesh."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Sprite"
+msgstr "Налепи оквир"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Convert to 2D Mesh"
+msgstr "Претвори у велика слова"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create 2D Mesh"
+msgstr "Направи ивичну мрежу"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Simplification: "
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Grow (Pixels): "
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Update Preview"
+msgstr "Преглед"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Settings:"
+msgstr "Поставке"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
@@ -5553,15 +6430,6 @@ msgstr "Помери (испред)"
 msgid "SpriteFrames"
 msgstr "Налепи оквир"
 
-#: editor/plugins/style_box_editor_plugin.cpp
-msgid "StyleBox Preview:"
-msgstr "StyleBox преглед:"
-
-#: editor/plugins/style_box_editor_plugin.cpp
-#, fuzzy
-msgid "StyleBox"
-msgstr "Стил"
-
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
 msgstr "Постави правоугаони регион"
@@ -5587,27 +6455,21 @@ msgid "Auto Slice"
 msgstr "Аутоматски рез"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Offset:"
 msgstr "Офсет:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Step:"
 msgstr "Корак:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Separation:"
-msgstr "Одвојеност:"
+msgid "Sep.:"
+msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region"
+#, fuzzy
+msgid "TextureRegion"
 msgstr "Регион текстуре"
-
-#: editor/plugins/texture_region_editor_plugin.cpp
-msgid "Texture Region Editor"
-msgstr "Уредник региона текстуре"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -5622,11 +6484,6 @@ msgid "Add All"
 msgstr "Додај све"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove Item"
-msgstr "Обриши ставку"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove All Items"
 msgstr "Обриши све ставке"
 
@@ -5635,7 +6492,7 @@ msgid "Remove All"
 msgstr "Обриши све"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme.."
+msgid "Edit theme..."
 msgstr "Измени тему..."
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5685,6 +6542,16 @@ msgid "Checked Item"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Radio Item"
+msgstr "Додај ствар"
+
+#: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
+msgid "Checked Radio Item"
+msgstr "CheckBox Radio1"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
 msgstr "Има"
 
@@ -5692,12 +6559,9 @@ msgstr "Има"
 msgid "Many"
 msgstr "Много"
 
-#: editor/plugins/theme_editor_plugin.cpp editor/project_export.cpp
-msgid "Options"
-msgstr "Опција"
-
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Have,Many,Several,Options!"
+#, fuzzy
+msgid "Has,Many,Options"
 msgstr "Има,много,неколико,опција!"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5722,7 +6586,7 @@ msgstr "Тип податка:"
 msgid "Icon"
 msgstr "Икона"
 
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Style"
 msgstr "Стил"
 
@@ -5735,13 +6599,17 @@ msgid "Color"
 msgstr "Боја"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
-msgid "Theme"
-msgstr "Сачувај тему"
+msgid "Constant"
+msgstr "Константан"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
 msgstr "Обриши одабрано"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Fix Invalid Tiles"
+msgstr "Неважеће име."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -5765,11 +6633,8 @@ msgid "Erase TileMap"
 msgstr "Обриши TileMap"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Erase selection"
-msgstr "Обриши одабрано"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Find tile"
+#, fuzzy
+msgid "Find Tile"
 msgstr "Нађи плочицу"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
@@ -5793,6 +6658,11 @@ msgid "Pick Tile"
 msgstr "Одабери плочицу"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Move Selection"
+msgstr "Обриши одабрано"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
 msgstr "Ротирај 0 степени"
 
@@ -5809,12 +6679,40 @@ msgid "Rotate 270 degrees"
 msgstr "Ротирај 270 степени"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Could not find tile:"
-msgstr "Неуспех при тражењу плочице:"
+msgid "Add Texture(s) to TileSet"
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Item name or ID:"
-msgstr "Име ставке или идентификатор (ID):"
+#, fuzzy
+msgid "Remove current Texture from TileSet"
+msgstr "Обриши тачку криве"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Create from Scene"
+msgstr "Направи од сцене"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Merge from Scene"
+msgstr "Споји од сцене"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Select sub-tile to use as icon, this will be also used on invalid autotile "
+"bindings."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display tile's names (hold Alt Key)"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Remove Selected Textue and ALL TILES wich uses it?"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "You haven't selected a texture to remove."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene?"
@@ -5826,52 +6724,70 @@ msgid "Merge from scene?"
 msgstr "Споји из сцене?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
-msgid "Tile Set"
-msgstr "TileSet..."
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from Scene"
-msgstr "Направи од сцене"
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
-msgid "Merge from Scene"
-msgstr "Споји од сцене"
-
-#: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Error"
-msgstr "Грешка"
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
-msgid "Autotiles"
-msgstr "Аутоматски рез"
+msgid " file(s) was not added because was already on the list."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+"Drag handles to edit Rect.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "LMB: set bit on.\n"
-"RMB: set bit off."
+"RMB: set bit off.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Select current edited sub-tile."
+msgid ""
+"Select current edited sub-tile.\n"
+"Click on another Tile to edit it."
 msgstr "Сачувај тренутно измењени ресурс."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Select sub-tile to change its priority."
+msgid ""
+"Select sub-tile to use as icon, this will be also used on invalid autotile "
+"bindings.\n"
+"Click on another Tile to edit it."
 msgstr ""
 
-#: editor/progress_dialog.cpp scene/gui/dialogs.cpp
-msgid "Cancel"
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Select sub-tile to change its priority.\n"
+"Click on another Tile to edit it."
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "This property can't be changed."
+msgstr "Ова операција се не може обавити без сцене."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Tile Set"
+msgstr "TileSet..."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Vertex"
+msgstr "Тачке"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Fragment"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Light"
+msgstr "десно"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "VisualShader"
+msgstr "Шејдер"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -5887,8 +6803,8 @@ msgid "Delete preset '%s'?"
 msgstr "Обриши поставку „%s“?"
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted: "
-msgstr "Извозни шаблони за ову платформу су или искварени или непостојећи: "
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr "Извозни шаблони за ову платформу или нису пронађени или су искварене:"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -5896,7 +6812,7 @@ msgid "Presets"
 msgstr "Поставке"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
-msgid "Add.."
+msgid "Add..."
 msgstr "Додај..."
 
 #: editor/project_export.cpp
@@ -5967,10 +6883,6 @@ msgid "Export templates for this platform are missing:"
 msgstr "Извозни шаблони за ову платформу нису пронађени:"
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "Извозни шаблони за ову платформу или нису пронађени или су искварене:"
-
-#: editor/project_export.cpp
 msgid "Export With Debug"
 msgstr ""
 
@@ -5979,7 +6891,7 @@ msgid "The path does not exist."
 msgstr "Путања не постоји."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' file."
+msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5987,8 +6899,21 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
+msgid "Please choose a 'project.godot' or '.zip' file."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Directory already contains a Godot project."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid "Imported Project"
 msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Invalid Project Name."
+msgstr "Неважеће име."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -6070,6 +6995,10 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Path:"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Project Installation Path:"
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -6180,7 +7109,9 @@ msgid "Mouse Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Invalid action (anything goes but '/' or ':')."
+msgid ""
+"Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6192,7 +7123,20 @@ msgid "Rename Input Action Event"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Change Action deadzone"
+msgstr "Измени име анимације:"
+
+#: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "All Devices"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+msgid "Device"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
@@ -6208,7 +7152,7 @@ msgid "Control+"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Press a Key.."
+msgid "Press a Key..."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6236,19 +7180,19 @@ msgid "Wheel Down Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 6"
+msgid "Wheel Left Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 7"
+msgid "Wheel Right Button"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 8"
+msgid "X Button 1"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Button 9"
+msgid "X Button 2"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6274,10 +7218,6 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Add Event"
-msgstr ""
-
-#: editor/project_settings_editor.cpp
-msgid "Device"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6325,7 +7265,9 @@ msgid "Delete Item"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Can't contain '/' or ':'"
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6397,7 +7339,11 @@ msgid "Property:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-msgid "Override For.."
+msgid "Override For..."
+msgstr ""
+
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
+msgid "Editor must be restarted for changes to take effect"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6406,6 +7352,15 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action:"
+msgstr ""
+
+#: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Action"
+msgstr "Помери акцију"
+
+#: editor/project_settings_editor.cpp
+msgid "Deadzone"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -6469,10 +7424,6 @@ msgid "AutoLoad"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "Pick a Viewport"
-msgstr ""
-
-#: editor/property_editor.cpp
 msgid "Ease In"
 msgstr ""
 
@@ -6493,11 +7444,11 @@ msgid "Easing Out-In"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "File.."
+msgid "File..."
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "Dir.."
+msgid "Dir..."
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6509,31 +7460,7 @@ msgid "Select Node"
 msgstr ""
 
 #: editor/property_editor.cpp
-msgid "New Script"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "New %s"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Make Unique"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Show in File System"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Convert To %s"
-msgstr ""
-
-#: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "Selected node is not a Viewport!"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6542,19 +7469,6 @@ msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
-msgstr ""
-
-#: editor/property_editor.cpp
-msgid "On"
-msgstr ""
-
-#: editor/property_editor.cpp
-#, fuzzy
-msgid "[Empty]"
-msgstr "Додај празан"
-
-#: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Set"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -6580,6 +7494,132 @@ msgstr ""
 #: editor/pvrtc_compress.cpp
 msgid "Can't load back converted image using PVRTC tool:"
 msgstr ""
+
+#: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Batch Rename"
+msgstr "Преименуј"
+
+#: editor/rename_dialog.cpp
+msgid "Prefix"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Suffix"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Advanced options"
+msgstr "Поставке залепљавања"
+
+#: editor/rename_dialog.cpp
+msgid "Substitute"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Node name"
+msgstr "Име чвора:"
+
+#: editor/rename_dialog.cpp
+msgid "Node's parent name, if available"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Node type"
+msgstr "Име чвора:"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Current scene name"
+msgstr "Тренутна сцена није сачувана. Ипак отвори?"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Root node name"
+msgstr "Преименуј"
+
+#: editor/rename_dialog.cpp
+msgid ""
+"Sequential integer counter.\n"
+"Compare counter options."
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Per Level counter"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "If set the counter restarts for each group of child nodes"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Initial value for the counter"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Step"
+msgstr "Корак:"
+
+#: editor/rename_dialog.cpp
+msgid "Ammount by which counter is incremented for each node"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Padding"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid ""
+"Minium number of digits for the counter.\n"
+"Missing digits are padded with leading zeros."
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expressions"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Post-Process"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Keep"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "CamelCase to under_scored"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "under_scored to CamelCase"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+msgid "Case"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "To Lowercase"
+msgstr "Мала слова"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "To Uppercase"
+msgstr "Велика слова"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Reset"
+msgstr "Ресетуј увеличање"
+
+#: editor/rename_dialog.cpp editor/script_editor_debugger.cpp
+msgid "Error"
+msgstr "Грешка"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -6617,11 +7657,6 @@ msgstr ""
 msgid "Scene Run Settings"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
-#: scene/gui/dialogs.cpp
-msgid "OK"
-msgstr ""
-
 #: editor/scene_tree_dock.cpp
 msgid "No parent to instance the scenes at."
 msgstr ""
@@ -6638,6 +7673,10 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -6669,7 +7708,7 @@ msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Save New Scene As.."
+msgid "Save New Scene As..."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -6681,12 +7720,33 @@ msgid "Load As Placeholder"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Discard Instancing"
+#, fuzzy
+msgid "Make Local"
+msgstr "Направи кости"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Create Root Node:"
+msgstr "Направи чвор"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "2D Scene"
+msgstr "Сцена"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "3D Scene"
+msgstr "Сцена"
+
+#: editor/scene_tree_dock.cpp
+msgid "User Interface"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Makes Sense!"
-msgstr ""
+#, fuzzy
+msgid "Custom Node"
+msgstr "Направи чвор"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -6694,6 +7754,10 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -6740,18 +7804,15 @@ msgid "Change Type"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach Script"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Make Scene Root"
+msgstr "Сачувај сцену"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Save Branch as Scene"
 msgstr ""
 
@@ -6774,10 +7835,6 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Filter nodes"
-msgstr ""
-
-#: editor/scene_tree_dock.cpp
 msgid "Attach a new or existing script for the selected node."
 msgstr ""
 
@@ -6797,17 +7854,10 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp
-msgid "Clear!"
-msgstr ""
-
 #: editor/scene_tree_editor.cpp
-msgid "Toggle Spatial Visible"
-msgstr ""
-
-#: editor/scene_tree_editor.cpp
-msgid "Toggle CanvasItem Visible"
-msgstr ""
+#, fuzzy
+msgid "Toggle Visible"
+msgstr "Прикажи сакривене датотеке"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
@@ -6815,7 +7865,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connection(s) and group(s)\n"
+"Node has connection(s) and group(s).\n"
 "Click to show signals dock."
 msgstr ""
 
@@ -6831,24 +7881,31 @@ msgid ""
 "Click to show groups dock."
 msgstr ""
 
-#: editor/scene_tree_editor.cpp
-msgid "Open script"
-msgstr ""
+#: editor/scene_tree_editor.cpp editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Open Script"
+msgstr "Покрени скриптицу"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is locked.\n"
-"Click to unlock"
+"Click to unlock it."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Children are not selectable.\n"
-"Click to make selectable"
+"Click to make selectable."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -6886,6 +7943,11 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 msgid "N/A"
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Open Script/Choose Location"
+msgstr "Отвори уредник скриптица"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -7125,10 +8187,22 @@ msgid "Change Camera Size"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
-msgid "Change Sphere Shape Radius"
+msgid "Change Notifier AABB"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Change Probe Extents"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
+msgid "Change Sphere Shape Radius"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Box Shape Extents"
 msgstr ""
 
@@ -7141,19 +8215,34 @@ msgid "Change Capsule Shape Height"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Cylinder Shape Radius"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
+msgid "Change Cylinder Shape Height"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
 msgstr ""
 
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Notifier Extents"
-msgstr ""
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Change Cylinder Radius"
+msgstr "Промени време мешања"
 
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Particles AABB"
-msgstr ""
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Change Cylinder Height"
+msgstr "Промени време мешања"
 
-#: editor/spatial_editor_gizmos.cpp
-msgid "Change Probe Extents"
+#: modules/csg/csg_gizmos.cpp
+#, fuzzy
+msgid "Change Torus Inner Radius"
+msgstr "Промени сидра и ивице"
+
+#: modules/csg/csg_gizmos.cpp
+msgid "Change Torus Outer Radius"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -7207,16 +8296,6 @@ msgstr ""
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp
-#: modules/visual_script/visual_script_builtin_funcs.cpp
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-
-#: modules/gdscript/gdscript_functions.cpp modules/mono/glue/glue_header.h
-#: modules/visual_script/visual_script_builtin_funcs.cpp
-msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -7284,6 +8363,11 @@ msgstr ""
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Delete Selection"
 msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Fill Selection"
+msgstr "Све одабрано"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
@@ -7366,11 +8450,20 @@ msgid "Clear Selection"
 msgstr "Обриши избор"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Fill Selection"
+msgstr "Све одабрано"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Pick Distance:"
+msgstr ""
+
+#: modules/mono/csharp_script.cpp
+msgid "Class name can't be a reserved keyword"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
@@ -7428,9 +8521,79 @@ msgstr "Пројекат"
 msgid "Warnings"
 msgstr ""
 
+#: modules/mono/editor/mono_bottom_panel.cpp
+#, fuzzy
+msgid "View log"
+msgstr "Погледај датотеке"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
+
+#: modules/recast/navigation_mesh_editor_plugin.cpp
+msgid "Bake!"
+msgstr "Испеци!"
+
+#: modules/recast/navigation_mesh_editor_plugin.cpp
+#, fuzzy
+msgid "Bake the navigation mesh."
+msgstr "Испеци навигациону мрежу.\n"
+
+#: modules/recast/navigation_mesh_editor_plugin.cpp
+msgid "Clear the navigation mesh."
+msgstr "Обриши навигациону мрежу."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Setting up Configuration..."
+msgstr "Подешавање конфигурације..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Calculating grid size..."
+msgstr "Израчунавање величине мреже..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Creating heightfield..."
+msgstr "Прављење висинског поља..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Marking walkable triangles..."
+msgstr "Маркирање проходних троуглова..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Constructing compact heightfield..."
+msgstr "Конструисање компактног висинског поља..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Eroding walkable area..."
+msgstr "Ерозија проходне површине..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Partitioning..."
+msgstr "Партиционирање..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Creating contours..."
+msgstr "Прављење контура..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Creating polymesh..."
+msgstr "Прављење полигонске мреже..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Converting to native navigation mesh..."
+msgstr "Конвертовање у природну навигациону мрежу..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Navigation Mesh Generator Setup:"
+msgstr "Поставке генератора навигационе мреже:"
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Parsing Geometry..."
+msgstr "Анализирање геометрије..."
+
+#: modules/recast/navigation_mesh_generator.cpp
+msgid "Done!"
+msgstr "Готово!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -7480,10 +8643,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Type"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Functions:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -7595,36 +8754,14 @@ msgid "Connect Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Condition"
-msgstr ""
+#, fuzzy
+msgid "Connect Node Data"
+msgstr "Повежи са чвором:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Sequence"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Switch"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Iterator"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "While"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Return"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Call"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Get"
-msgstr ""
+#, fuzzy
+msgid "Connect Node Sequence"
+msgstr "Повежи са чвором:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Script already has function '%s'"
@@ -7651,23 +8788,15 @@ msgid "Remove Function"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Edit Variable"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Edit Signal"
+msgid "Editing Variable:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Editing Variable:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -7713,6 +8842,11 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste Nodes"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Edit Member"
+msgstr "Чланови"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
@@ -7768,6 +8902,19 @@ msgid ""
 "(error)."
 msgstr ""
 
+#: modules/visual_script/visual_script_property_selector.cpp
+#, fuzzy
+msgid "Search VisualScript"
+msgstr "Потражи помоћ"
+
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Get"
+msgstr ""
+
+#: modules/visual_script/visual_script_property_selector.cpp
+msgid "Set "
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr ""
@@ -7820,8 +8967,8 @@ msgstr ""
 
 #: scene/2d/collision_object_2d.cpp
 msgid ""
-"This node has no children shapes, so it can't interact with the space.\n"
-"Consider adding CollisionShape2D or CollisionPolygon2D children nodes to "
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
 
@@ -7902,6 +9049,19 @@ msgstr ""
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 
+#: scene/2d/skeleton_2d.cpp
+msgid "This Bone2D chain should end at a Skeleton2D node."
+msgstr ""
+
+#: scene/2d/skeleton_2d.cpp
+msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
+msgstr ""
+
+#: scene/2d/skeleton_2d.cpp
+msgid ""
+"This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
+msgstr ""
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnable2D works best when used with the edited scene root directly "
@@ -7962,8 +9122,8 @@ msgstr ""
 
 #: scene/3d/collision_object.cpp
 msgid ""
-"This node has no children shapes, so it can't interact with the space.\n"
-"Consider adding CollisionShape or CollisionPolygon children nodes to define "
+"This node has no shape, so it can't collide or interact with other objects.\n"
+"Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
 
@@ -8022,8 +9182,29 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 
 #: scene/3d/scenario_fx.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid "This body will be ignored until you set a mesh"
+msgstr ""
+
+#: scene/3d/soft_body.cpp
+msgid ""
+"Size changes to SoftBody will be overriden by the physics engine when "
+"running.\n"
+"Change the size in children collision shapes instead."
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp
@@ -8037,6 +9218,47 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
+
+#: scene/animation/animation_blend_tree.cpp
+msgid "On BlendTree node '%s', animation not found: '%s'"
+msgstr ""
+
+#: scene/animation/animation_blend_tree.cpp
+#, fuzzy
+msgid "Animation not found: '%s'"
+msgstr "Анимационе алатке"
+
+#: scene/animation/animation_tree.cpp
+msgid "In node '%s', invalid animation: '%s'."
+msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Invalid animation: '%s'."
+msgstr "Грешка: неважеће име анимације!"
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Nothing connected to input '%s' of node '%s'."
+msgstr "Повежи '%s' са '%s'"
+
+#: scene/animation/animation_tree.cpp
+msgid "A root AnimationNode for the graph is not set."
+msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "Path to an AnimationPlayer node containing animations is not set."
+msgstr "Одабери AnimationPlayer из дрвета сцене за уређивање анимација."
+
+#: scene/animation/animation_tree.cpp
+msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
+msgstr ""
+
+#: scene/animation/animation_tree.cpp
+#, fuzzy
+msgid "AnimationPlayer root is not a valid node."
+msgstr "Анимационо дрво није важеће."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -8106,6 +9328,311 @@ msgstr ""
 msgid "Invalid font size."
 msgstr "Неважећа величина фонта."
 
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "Input"
+msgstr "Додај улаз"
+
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "None"
+msgstr "<Ниједан>"
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for shader."
+msgstr "Неважећа величина фонта."
+
+#: servers/visual/shader_language.cpp
+msgid "Assignment to function."
+msgstr ""
+
+#: servers/visual/shader_language.cpp
+msgid "Assignment to uniform."
+msgstr ""
+
+#: servers/visual/shader_language.cpp
+msgid "Varyings can only be assigned in vertex function."
+msgstr ""
+
+#~ msgid "Change Scalar Constant"
+#~ msgstr "Промени скаларну константу"
+
+#~ msgid "Change Vec Constant"
+#~ msgstr "Промени векторску константу"
+
+#~ msgid "Change RGB Constant"
+#~ msgstr "Промени RGB константу"
+
+#~ msgid "Change Scalar Operator"
+#~ msgstr "Промени скаларни оператор"
+
+#~ msgid "Change Vec Operator"
+#~ msgstr "Промени векторски оператор"
+
+#~ msgid "Change Vec Scalar Operator"
+#~ msgstr "Промени векторско-скаларни оператор"
+
+#~ msgid "Change RGB Operator"
+#~ msgstr "Промени RGB оператор"
+
+#~ msgid "Toggle Rot Only"
+#~ msgstr "Само ротација"
+
+#~ msgid "Change Scalar Function"
+#~ msgstr "Промени скаларну функцију"
+
+#~ msgid "Change Vec Function"
+#~ msgstr "Промени векторску функцију"
+
+#~ msgid "Change Scalar Uniform"
+#~ msgstr "Промени скаларну униформу (uniform)"
+
+#~ msgid "Change Vec Uniform"
+#~ msgstr "Промени векторску униформу (uniform)"
+
+#~ msgid "Change RGB Uniform"
+#~ msgstr "Промени RGB униформу (uniform)"
+
+#~ msgid "Change Default Value"
+#~ msgstr "Промени уобичајену вредност"
+
+#~ msgid "Change XForm Uniform"
+#~ msgstr "Промени XForm униформу (uniform)"
+
+#~ msgid "Change Texture Uniform"
+#~ msgstr "Промени текстурну униформу (uniform)"
+
+#~ msgid "Change Cubemap Uniform"
+#~ msgstr "Промени Cubemap униформу (uniform)"
+
+#~ msgid "Change Comment"
+#~ msgstr "Промени коментар"
+
+#~ msgid "Add/Remove to Color Ramp"
+#~ msgstr "Додај/обириши из рампе боје"
+
+#~ msgid "Modify Color Ramp"
+#~ msgstr "Измени рампу боје"
+
+#~ msgid "Add/Remove to Curve Map"
+#~ msgstr "Додај/обриши из мапе криве"
+
+#~ msgid "Modify Curve Map"
+#~ msgstr "Модификуј мапу криве"
+
+#~ msgid "Change Input Name"
+#~ msgstr "Промени улазно име"
+
+#~ msgid "Connect Graph Nodes"
+#~ msgstr "Повежи чворове графа"
+
+#~ msgid "Disconnect Graph Nodes"
+#~ msgstr "Искључи чворове графа"
+
+#~ msgid "Remove Shader Graph Node"
+#~ msgstr "Обриши чвор графа шејдера"
+
+#~ msgid "Move Shader Graph Node"
+#~ msgstr "Помери чвор графа шејдера"
+
+#~ msgid "Duplicate Graph Node(s)"
+#~ msgstr "Дуплирај чвор/ове графа"
+
+#~ msgid "Delete Shader Graph Node(s)"
+#~ msgstr "Обриши чвор/ове графа шејдера"
+
+#~ msgid "Error: Cyclic Connection Link"
+#~ msgstr "Грешка: пронађена циклична веза"
+
+#~ msgid "Error: Missing Input Connections"
+#~ msgstr "Грешка: недостаје улазна конекција"
+
+#~ msgid "Add Shader Graph Node"
+#~ msgstr "Додај чвор графа шејдера"
+
+#~ msgid "Disabled"
+#~ msgstr "Онемогућено"
+
+#~ msgid "Move Anim Track Up"
+#~ msgstr "Помери траку горе"
+
+#~ msgid "Move Anim Track Down"
+#~ msgstr "Помери траку доле"
+
+#~ msgid "Set Transitions to:"
+#~ msgstr "Постави прелаз на:"
+
+#~ msgid "Anim Track Rename"
+#~ msgstr "Измени име анимације"
+
+#~ msgid "Anim Track Change Interpolation"
+#~ msgstr "Измени интерполацију"
+
+#~ msgid "Anim Track Change Value Mode"
+#~ msgstr "Измени режим вредности"
+
+#~ msgid "Anim Track Change Wrap Mode"
+#~ msgstr "Измени режим цикла"
+
+#~ msgid "Edit Node Curve"
+#~ msgstr "Измени криву чвора"
+
+#~ msgid "Edit Selection Curve"
+#~ msgstr "Измени одабрану криву"
+
+#~ msgid "Anim Add Key"
+#~ msgstr "Уметни кључ"
+
+#~ msgid "In"
+#~ msgstr "Улаз"
+
+#~ msgid "Out"
+#~ msgstr "Из"
+
+#~ msgid "In-Out"
+#~ msgstr "У-Из"
+
+#~ msgid "Out-In"
+#~ msgstr "Из-У"
+
+#~ msgid "Change Anim Len"
+#~ msgstr "Измени дужину анимације"
+
+#~ msgid "Change Anim Loop"
+#~ msgstr "Измени лупинг анимације"
+
+#~ msgid "Anim Create Typed Value Key"
+#~ msgstr "Направи кључ са почетном вредношћу"
+
+#~ msgid "Anim Add Call Track"
+#~ msgstr "Додај позивну траку"
+
+#~ msgid "Length (s):"
+#~ msgstr "Дужина (сек.):"
+
+#~ msgid "Cursor step snap (in seconds)."
+#~ msgstr "Поравнавање корака курсора (у секундама)."
+
+#~ msgid "Enable/Disable looping in animation."
+#~ msgstr "Укључи/искључи понављање анимације."
+
+#~ msgid "Add new tracks."
+#~ msgstr "Додај нове траке."
+
+#~ msgid "Move current track up."
+#~ msgstr "Помери траку горе."
+
+#~ msgid "Move current track down."
+#~ msgstr "Помери траку доле."
+
+#~ msgid "Track tools"
+#~ msgstr "Алатке за траке"
+
+#~ msgid "Enable editing of individual keys by clicking them."
+#~ msgstr "Омогућите уређивање индивидуалних кључева кликом на њих."
+
+#~ msgid "Key"
+#~ msgstr "Кључ"
+
+#~ msgid "Call Functions in Which Node?"
+#~ msgstr "Позови функције у којем чвору?"
+
+#~ msgid "Thanks!"
+#~ msgstr "Хвала!"
+
+#~ msgid "I see..."
+#~ msgstr "Разумем..."
+
+#~ msgid "Can't open '%s'."
+#~ msgstr "Не могу отворити '%s'."
+
+#~ msgid "Ugh"
+#~ msgstr "Уф"
+
+#~ msgid "Save the currently edited resource."
+#~ msgstr "Сачувај тренутно измењени ресурс."
+
+#~ msgid "Stop Profiling"
+#~ msgstr "Заустави профилирање"
+
+#~ msgid "Start Profiling"
+#~ msgstr "Покрени профилирање"
+
+#~ msgid "Default (Same as Editor)"
+#~ msgstr "Уобичајено (као и уредник)"
+
+#~ msgid "Create new animation in player."
+#~ msgstr "Направи нову анимацију у плејеру."
+
+#~ msgid "Load animation from disk."
+#~ msgstr "Учитај анимацију са диска."
+
+#~ msgid "Load an animation from disk."
+#~ msgstr "Учитај анимацију са диска."
+
+#~ msgid "Save the current animation"
+#~ msgstr "Сачувај тренутну анимацију"
+
+#~ msgid "Edit Target Blend Times"
+#~ msgstr "Уреди времена циљаног мешања"
+
+#~ msgid "Copy Animation"
+#~ msgstr "Копирај анимацију"
+
+#~ msgid "Fetching:"
+#~ msgstr "Преузимање:"
+
+#~ msgid "prev"
+#~ msgstr "претходни"
+
+#~ msgid "next"
+#~ msgstr "следећи"
+
+#~ msgid "last"
+#~ msgstr "задњи"
+
+#~ msgid "Edit IK Chain"
+#~ msgstr "Измени IK ланац"
+
+#~ msgid "Drag pivot from mouse position"
+#~ msgstr "Превуци пивот са позицијом миша"
+
+#~ msgid "Set pivot at mouse position"
+#~ msgstr "Постави пивот на позицију миша"
+
+#~ msgid "Add/Remove Color Ramp Point"
+#~ msgstr "Додај/обриши тачку бојне рампе"
+
+#~ msgid "OK :("
+#~ msgstr "ОК :("
+
+#~ msgid "StyleBox Preview:"
+#~ msgstr "StyleBox преглед:"
+
+#, fuzzy
+#~ msgid "StyleBox"
+#~ msgstr "Стил"
+
+#~ msgid "Separation:"
+#~ msgstr "Одвојеност:"
+
+#~ msgid "Texture Region Editor"
+#~ msgstr "Уредник региона текстуре"
+
+#~ msgid "Erase selection"
+#~ msgstr "Обриши одабрано"
+
+#~ msgid "Item name or ID:"
+#~ msgstr "Име ставке или идентификатор (ID):"
+
+#, fuzzy
+#~ msgid "Autotiles"
+#~ msgstr "Аутоматски рез"
+
+#~ msgid "Export templates for this platform are missing/corrupted: "
+#~ msgstr "Извозни шаблони за ову платформу су или искварени или непостојећи: "
+
 #~ msgid ""
 #~ "Invalid version.txt format inside templates. Revision is not a valid "
 #~ "identifier."
@@ -8115,9 +9642,6 @@ msgstr "Неважећа величина фонта."
 
 #~ msgid "Can't write file."
 #~ msgstr "Неуспех при записивању датотеке."
-
-#~ msgid "Next"
-#~ msgstr "Следеће"
 
 #~ msgid "Not found!"
 #~ msgstr "Није пронађено!"

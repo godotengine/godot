@@ -30,8 +30,8 @@
 
 #include "image_loader_tga.h"
 
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size) {
 	Error error;
@@ -250,8 +250,9 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	if (tga_header.image_width <= 0 || tga_header.image_height <= 0)
 		err = FAILED;
 
-	if (tga_header.pixel_depth != 8 && tga_header.pixel_depth != 24 && tga_header.pixel_depth != 32)
+	if (!(tga_header.pixel_depth == 8 || tga_header.pixel_depth == 24 || tga_header.pixel_depth == 32)) {
 		err = FAILED;
+	}
 
 	if (err == OK) {
 		f->seek(f->get_position() + tga_header.id_length);

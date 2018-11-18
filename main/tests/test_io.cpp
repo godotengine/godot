@@ -32,16 +32,16 @@
 
 #ifdef MINIZIP_ENABLED
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/main_loop.h"
-#include "os/os.h"
-#include "print_string.h"
 #include "scene/resources/texture.h"
 
-#include "io/file_access_memory.h"
+#include "core/io/file_access_memory.h"
 
 namespace TestIO {
 
@@ -50,7 +50,7 @@ class TestMainLoop : public MainLoop {
 	bool quit;
 
 public:
-	virtual void input_event(const InputEvent &p_event) {
+	virtual void input_event(const Ref<InputEvent> &p_event) {
 	}
 	virtual bool idle(float p_time) {
 		return false;
@@ -103,7 +103,7 @@ MainLoop *test() {
 		int len = z->get_len();
 		Vector<uint8_t> zip;
 		zip.resize(len);
-		z->get_buffer(&zip[0], len);
+		z->get_buffer(zip.ptrw(), len);
 		z->close();
 		memdelete(z);
 

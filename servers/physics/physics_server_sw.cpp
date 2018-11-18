@@ -32,13 +32,19 @@
 
 #include "broad_phase_basic.h"
 #include "broad_phase_octree.h"
+#include "core/os/os.h"
+#include "core/script_language.h"
 #include "joints/cone_twist_joint_sw.h"
 #include "joints/generic_6dof_joint_sw.h"
 #include "joints/hinge_joint_sw.h"
 #include "joints/pin_joint_sw.h"
 #include "joints/slider_joint_sw.h"
-#include "os/os.h"
-#include "script_language.h"
+
+#define FLUSH_QUERY_CHECK                                                                                                                     \
+	if (flushing_queries) {                                                                                                                   \
+		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred()/set_deferred() to change monitoring state instead"); \
+		ERR_FAIL();                                                                                                                           \
+	}
 
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 
@@ -64,6 +70,11 @@ RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 		case SHAPE_CAPSULE: {
 
 			shape = memnew(CapsuleShapeSW);
+		} break;
+		case SHAPE_CYLINDER: {
+
+			ERR_EXPLAIN("CylinderShape is not supported in GodotPhysics. Please switch to Bullet in the Project Settings.");
+			ERR_FAIL_V(RID());
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
 
@@ -118,6 +129,13 @@ Variant PhysicsServerSW::shape_get_data(RID p_shape) const {
 	ERR_FAIL_COND_V(!shape->is_configured(), Variant());
 	return shape->get_data();
 };
+
+void PhysicsServerSW::shape_set_margin(RID p_shape, real_t p_margin) {
+}
+
+real_t PhysicsServerSW::shape_get_margin(RID p_shape) const {
+	return 0.0;
+}
 
 real_t PhysicsServerSW::shape_get_custom_solver_bias(RID p_shape) const {
 
@@ -287,6 +305,7 @@ void PhysicsServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
 
 	area->set_shape(p_shape_idx, shape);
 }
+
 void PhysicsServerSW::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform) {
 
 	AreaSW *area = area_owner.get(p_area);
@@ -338,6 +357,8 @@ void PhysicsServerSW::area_clear_shapes(RID p_area) {
 }
 
 void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
+
+	FLUSH_QUERY_CHECK
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
@@ -421,6 +442,8 @@ void PhysicsServerSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 }
 
 void PhysicsServerSW::area_set_monitorable(RID p_area, bool p_monitorable) {
+
+	FLUSH_QUERY_CHECK
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
@@ -568,6 +591,8 @@ RID PhysicsServerSW::body_get_shape(RID p_body, int p_shape_idx) const {
 }
 
 void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+
+	FLUSH_QUERY_CHECK
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -758,6 +783,40 @@ Vector3 PhysicsServerSW::body_get_applied_torque(RID p_body) const {
 	return body->get_applied_torque();
 };
 
+void PhysicsServerSW::body_add_central_force(RID p_body, const Vector3 &p_force) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_central_force(p_force);
+	body->wakeup();
+}
+
+void PhysicsServerSW::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_force(p_force, p_pos);
+	body->wakeup();
+};
+
+void PhysicsServerSW::body_add_torque(RID p_body, const Vector3 &p_torque) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->add_torque(p_torque);
+	body->wakeup();
+};
+
+void PhysicsServerSW::body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	_update_shapes();
+
+	body->apply_central_impulse(p_impulse);
+	body->wakeup();
+}
+
 void PhysicsServerSW::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
 
 	BodySW *body = body_owner.get(p_body);
@@ -902,7 +961,7 @@ bool PhysicsServerSW::body_is_ray_pickable(RID p_body) const {
 	return body->is_ray_pickable();
 }
 
-bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result) {
+bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
@@ -911,7 +970,19 @@ bool PhysicsServerSW::body_test_motion(RID p_body, const Transform &p_from, cons
 
 	_update_shapes();
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, body->get_kinematic_margin(), r_result);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, body->get_kinematic_margin(), r_result, p_exclude_raycast_shapes);
+}
+
+int PhysicsServerSW::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, false);
+	ERR_FAIL_COND_V(!body->get_space(), false);
+	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
+
+	_update_shapes();
+
+	return body->get_space()->test_body_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 }
 
 PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
@@ -1362,6 +1433,8 @@ void PhysicsServerSW::init() {
 
 void PhysicsServerSW::step(real_t p_step) {
 
+#ifndef _3D_DISABLED
+
 	if (!active)
 		return;
 
@@ -1382,6 +1455,7 @@ void PhysicsServerSW::step(real_t p_step) {
 		active_objects += E->get()->get_active_objects();
 		collision_pairs += E->get()->get_collision_pairs();
 	}
+#endif
 }
 
 void PhysicsServerSW::sync(){
@@ -1390,10 +1464,14 @@ void PhysicsServerSW::sync(){
 
 void PhysicsServerSW::flush_queries() {
 
+#ifndef _3D_DISABLED
+
 	if (!active)
 		return;
 
 	doing_sync = true;
+
+	flushing_queries = true;
 
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
@@ -1402,6 +1480,8 @@ void PhysicsServerSW::flush_queries() {
 		SpaceSW *space = (SpaceSW *)E->get();
 		space->call_queries();
 	}
+
+	flushing_queries = false;
 
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
 
@@ -1436,6 +1516,7 @@ void PhysicsServerSW::flush_queries() {
 
 		ScriptDebugger::get_singleton()->add_profiling_frame_data("physics", values);
 	}
+#endif
 };
 
 void PhysicsServerSW::finish() {
@@ -1515,6 +1596,7 @@ PhysicsServerSW::PhysicsServerSW() {
 	collision_pairs = 0;
 
 	active = true;
+	flushing_queries = false;
 };
 
 PhysicsServerSW::~PhysicsServerSW(){

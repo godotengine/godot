@@ -39,7 +39,7 @@ btScalar btMultiBodyConstraintSolver::solveSingleIteration(int iteration, btColl
 		btMultiBodySolverConstraint& constraint = m_multiBodyNonContactConstraints[index];
 		
 		btScalar residual = resolveSingleConstraintRowGeneric(constraint);
-		leastSquaredResidual += residual*residual;
+		leastSquaredResidual = btMax(leastSquaredResidual,residual*residual);
 
 		if(constraint.m_multiBodyA) 
 			constraint.m_multiBodyA->setPosUpdated(false);
@@ -60,36 +60,101 @@ btScalar btMultiBodyConstraintSolver::solveSingleIteration(int iteration, btColl
 			residual = resolveSingleConstraintRowGeneric(constraint);
 		}
 
-		leastSquaredResidual += residual*residual;
+		leastSquaredResidual = btMax(leastSquaredResidual,residual*residual);
  
 		if(constraint.m_multiBodyA) 
 			constraint.m_multiBodyA->setPosUpdated(false);
 		if(constraint.m_multiBodyB) 
 			constraint.m_multiBodyB->setPosUpdated(false);
 	}
-	
+
 	//solve featherstone frictional contact
-
-	for (int j1=0;j1<this->m_multiBodyFrictionContactConstraints.size();j1++)
+	if (infoGlobal.m_solverMode & SOLVER_USE_2_FRICTION_DIRECTIONS && ((infoGlobal.m_solverMode&SOLVER_DISABLE_IMPLICIT_CONE_FRICTION) == 0))
 	{
-		if (iteration < infoGlobal.m_numIterations)
+		for (int j1 = 0; j1<this->m_multiBodyTorsionalFrictionContactConstraints.size(); j1++)
 		{
-			int index = j1;//iteration&1? j1 : m_multiBodyFrictionContactConstraints.size()-1-j1;
-
-			btMultiBodySolverConstraint& frictionConstraint = m_multiBodyFrictionContactConstraints[index];
-			btScalar totalImpulse = m_multiBodyNormalContactConstraints[frictionConstraint.m_frictionIndex].m_appliedImpulse;
-			//adjust friction limits here
-			if (totalImpulse>btScalar(0))
+			if (iteration < infoGlobal.m_numIterations)
 			{
-				frictionConstraint.m_lowerLimit = -(frictionConstraint.m_friction*totalImpulse);
-				frictionConstraint.m_upperLimit = frictionConstraint.m_friction*totalImpulse;
-				btScalar residual = resolveSingleConstraintRowGeneric(frictionConstraint);
-				leastSquaredResidual += residual*residual;
+				int index = j1;//iteration&1? j1 : m_multiBodyTorsionalFrictionContactConstraints.size()-1-j1;
 
-				if(frictionConstraint.m_multiBodyA) 
-					frictionConstraint.m_multiBodyA->setPosUpdated(false);
-				if(frictionConstraint.m_multiBodyB) 
-					frictionConstraint.m_multiBodyB->setPosUpdated(false);
+				btMultiBodySolverConstraint& frictionConstraint = m_multiBodyTorsionalFrictionContactConstraints[index];
+				btScalar totalImpulse = m_multiBodyNormalContactConstraints[frictionConstraint.m_frictionIndex].m_appliedImpulse;
+				//adjust friction limits here
+				if (totalImpulse>btScalar(0))
+				{
+					frictionConstraint.m_lowerLimit = -(frictionConstraint.m_friction*totalImpulse);
+					frictionConstraint.m_upperLimit = frictionConstraint.m_friction*totalImpulse;
+					btScalar residual = resolveSingleConstraintRowGeneric(frictionConstraint);
+					leastSquaredResidual = btMax(leastSquaredResidual , residual*residual);
+
+					if (frictionConstraint.m_multiBodyA)
+						frictionConstraint.m_multiBodyA->setPosUpdated(false);
+					if (frictionConstraint.m_multiBodyB)
+						frictionConstraint.m_multiBodyB->setPosUpdated(false);
+				}
+			}
+		}
+
+		for (int j1 = 0; j1 < this->m_multiBodyFrictionContactConstraints.size(); j1++)
+		{
+			if (iteration < infoGlobal.m_numIterations)
+			{
+				int index = j1;//iteration&1? j1 : m_multiBodyFrictionContactConstraints.size()-1-j1;
+				btMultiBodySolverConstraint& frictionConstraint = m_multiBodyFrictionContactConstraints[index];
+
+				btScalar totalImpulse = m_multiBodyNormalContactConstraints[frictionConstraint.m_frictionIndex].m_appliedImpulse;
+				j1++;
+				int index2 = j1;//iteration&1? j1 : m_multiBodyFrictionContactConstraints.size()-1-j1;
+				btMultiBodySolverConstraint& frictionConstraintB = m_multiBodyFrictionContactConstraints[index2];
+				btAssert(frictionConstraint.m_frictionIndex == frictionConstraintB.m_frictionIndex);
+
+				if (frictionConstraint.m_frictionIndex == frictionConstraintB.m_frictionIndex)
+				{
+					frictionConstraint.m_lowerLimit = -(frictionConstraint.m_friction*totalImpulse);
+					frictionConstraint.m_upperLimit = frictionConstraint.m_friction*totalImpulse;
+					frictionConstraintB.m_lowerLimit = -(frictionConstraintB.m_friction*totalImpulse);
+					frictionConstraintB.m_upperLimit = frictionConstraintB.m_friction*totalImpulse;
+					btScalar residual = resolveConeFrictionConstraintRows(frictionConstraint, frictionConstraintB);
+					leastSquaredResidual = btMax(leastSquaredResidual, residual*residual);
+					
+					if (frictionConstraintB.m_multiBodyA)
+						frictionConstraintB.m_multiBodyA->setPosUpdated(false);
+					if (frictionConstraintB.m_multiBodyB)
+						frictionConstraintB.m_multiBodyB->setPosUpdated(false);
+				
+					if (frictionConstraint.m_multiBodyA)
+						frictionConstraint.m_multiBodyA->setPosUpdated(false);
+					if (frictionConstraint.m_multiBodyB)
+						frictionConstraint.m_multiBodyB->setPosUpdated(false);
+				}
+			}
+		}
+
+		
+	}
+	else
+	{
+		for (int j1 = 0; j1<this->m_multiBodyFrictionContactConstraints.size(); j1++)
+		{
+			if (iteration < infoGlobal.m_numIterations)
+			{
+				int index = j1;//iteration&1? j1 : m_multiBodyFrictionContactConstraints.size()-1-j1;
+
+				btMultiBodySolverConstraint& frictionConstraint = m_multiBodyFrictionContactConstraints[index];
+				btScalar totalImpulse = m_multiBodyNormalContactConstraints[frictionConstraint.m_frictionIndex].m_appliedImpulse;
+				//adjust friction limits here
+				if (totalImpulse>btScalar(0))
+				{
+					frictionConstraint.m_lowerLimit = -(frictionConstraint.m_friction*totalImpulse);
+					frictionConstraint.m_upperLimit = frictionConstraint.m_friction*totalImpulse;
+					btScalar residual = resolveSingleConstraintRowGeneric(frictionConstraint);
+					leastSquaredResidual = btMax(leastSquaredResidual, residual*residual);
+
+					if (frictionConstraint.m_multiBodyA)
+						frictionConstraint.m_multiBodyA->setPosUpdated(false);
+					if (frictionConstraint.m_multiBodyB)
+						frictionConstraint.m_multiBodyB->setPosUpdated(false);
+				}
 			}
 		}
 	}
@@ -101,6 +166,8 @@ btScalar btMultiBodyConstraintSolver::solveGroupCacheFriendlySetup(btCollisionOb
 	m_multiBodyNonContactConstraints.resize(0);
 	m_multiBodyNormalContactConstraints.resize(0);
 	m_multiBodyFrictionContactConstraints.resize(0);
+	m_multiBodyTorsionalFrictionContactConstraints.resize(0);
+	
 	m_data.m_jacobians.resize(0);
 	m_data.m_deltaVelocitiesUnitImpulse.resize(0);
 	m_data.m_deltaVelocities.resize(0);
@@ -128,82 +195,267 @@ void	btMultiBodyConstraintSolver::applyDeltaVee(btScalar* delta_vee, btScalar im
 btScalar btMultiBodyConstraintSolver::resolveSingleConstraintRowGeneric(const btMultiBodySolverConstraint& c)
 {
 
-	btScalar deltaImpulse = c.m_rhs-btScalar(c.m_appliedImpulse)*c.m_cfm;
-	btScalar deltaVelADotn=0;
-	btScalar deltaVelBDotn=0;
+	btScalar deltaImpulse = c.m_rhs - btScalar(c.m_appliedImpulse)*c.m_cfm;
+	btScalar deltaVelADotn = 0;
+	btScalar deltaVelBDotn = 0;
 	btSolverBody* bodyA = 0;
 	btSolverBody* bodyB = 0;
-	int ndofA=0;
-	int ndofB=0;
+	int ndofA = 0;
+	int ndofB = 0;
 
 	if (c.m_multiBodyA)
 	{
-		ndofA  = c.m_multiBodyA->getNumDofs() + 6;
-		for (int i = 0; i < ndofA; ++i) 
-			deltaVelADotn += m_data.m_jacobians[c.m_jacAindex+i] * m_data.m_deltaVelocities[c.m_deltaVelAindex+i];
-	} else if(c.m_solverBodyIdA >= 0)
+		ndofA = c.m_multiBodyA->getNumDofs() + 6;
+		for (int i = 0; i < ndofA; ++i)
+			deltaVelADotn += m_data.m_jacobians[c.m_jacAindex + i] * m_data.m_deltaVelocities[c.m_deltaVelAindex + i];
+	}
+	else if (c.m_solverBodyIdA >= 0)
 	{
 		bodyA = &m_tmpSolverBodyPool[c.m_solverBodyIdA];
-		deltaVelADotn += c.m_contactNormal1.dot(bodyA->internalGetDeltaLinearVelocity()) 	+ c.m_relpos1CrossNormal.dot(bodyA->internalGetDeltaAngularVelocity());
+		deltaVelADotn += c.m_contactNormal1.dot(bodyA->internalGetDeltaLinearVelocity()) + c.m_relpos1CrossNormal.dot(bodyA->internalGetDeltaAngularVelocity());
 	}
 
 	if (c.m_multiBodyB)
 	{
-		ndofB  = c.m_multiBodyB->getNumDofs() + 6;
-		for (int i = 0; i < ndofB; ++i) 
-			deltaVelBDotn += m_data.m_jacobians[c.m_jacBindex+i] * m_data.m_deltaVelocities[c.m_deltaVelBindex+i];
-	} else if(c.m_solverBodyIdB >= 0)
+		ndofB = c.m_multiBodyB->getNumDofs() + 6;
+		for (int i = 0; i < ndofB; ++i)
+			deltaVelBDotn += m_data.m_jacobians[c.m_jacBindex + i] * m_data.m_deltaVelocities[c.m_deltaVelBindex + i];
+	}
+	else if (c.m_solverBodyIdB >= 0)
 	{
 		bodyB = &m_tmpSolverBodyPool[c.m_solverBodyIdB];
-		deltaVelBDotn += c.m_contactNormal2.dot(bodyB->internalGetDeltaLinearVelocity())  + c.m_relpos2CrossNormal.dot(bodyB->internalGetDeltaAngularVelocity());
+		deltaVelBDotn += c.m_contactNormal2.dot(bodyB->internalGetDeltaLinearVelocity()) + c.m_relpos2CrossNormal.dot(bodyB->internalGetDeltaAngularVelocity());
 	}
 
-	
-	deltaImpulse	-=	deltaVelADotn*c.m_jacDiagABInv;//m_jacDiagABInv = 1./denom
-	deltaImpulse	-=	deltaVelBDotn*c.m_jacDiagABInv;
+
+	deltaImpulse -= deltaVelADotn*c.m_jacDiagABInv;//m_jacDiagABInv = 1./denom
+	deltaImpulse -= deltaVelBDotn*c.m_jacDiagABInv;
 	const btScalar sum = btScalar(c.m_appliedImpulse) + deltaImpulse;
-	
+
 	if (sum < c.m_lowerLimit)
 	{
-		deltaImpulse = c.m_lowerLimit-c.m_appliedImpulse;
+		deltaImpulse = c.m_lowerLimit - c.m_appliedImpulse;
 		c.m_appliedImpulse = c.m_lowerLimit;
 	}
-	else if (sum > c.m_upperLimit) 
+	else if (sum > c.m_upperLimit)
 	{
-		deltaImpulse = c.m_upperLimit-c.m_appliedImpulse;
+		deltaImpulse = c.m_upperLimit - c.m_appliedImpulse;
 		c.m_appliedImpulse = c.m_upperLimit;
 	}
 	else
 	{
 		c.m_appliedImpulse = sum;
 	}
-
+	
 	if (c.m_multiBodyA)
 	{
-		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex],deltaImpulse,c.m_deltaVelAindex,ndofA);
+		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex], deltaImpulse, c.m_deltaVelAindex, ndofA);
 #ifdef DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
 		//note: update of the actual velocities (below) in the multibody does not have to happen now since m_deltaVelocities can be applied after all iterations
 		//it would make the multibody solver more like the regular one with m_deltaVelocities being equivalent to btSolverBody::m_deltaLinearVelocity/m_deltaAngularVelocity
-		c.m_multiBodyA->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex],deltaImpulse);
+		c.m_multiBodyA->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex], deltaImpulse);
 #endif //DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
-	} else if(c.m_solverBodyIdA >= 0)
+	}
+	else if (c.m_solverBodyIdA >= 0)
 	{
-		bodyA->internalApplyImpulse(c.m_contactNormal1*bodyA->internalGetInvMass(),c.m_angularComponentA,deltaImpulse);
+		bodyA->internalApplyImpulse(c.m_contactNormal1*bodyA->internalGetInvMass(), c.m_angularComponentA, deltaImpulse);
 
 	}
 	if (c.m_multiBodyB)
 	{
-		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex],deltaImpulse,c.m_deltaVelBindex,ndofB);
+		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex], deltaImpulse, c.m_deltaVelBindex, ndofB);
 #ifdef DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
 		//note: update of the actual velocities (below) in the multibody does not have to happen now since m_deltaVelocities can be applied after all iterations
 		//it would make the multibody solver more like the regular one with m_deltaVelocities being equivalent to btSolverBody::m_deltaLinearVelocity/m_deltaAngularVelocity
-		c.m_multiBodyB->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex],deltaImpulse);
+		c.m_multiBodyB->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex], deltaImpulse);
 #endif //DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
-	} else if(c.m_solverBodyIdB >= 0)
-	{
-		bodyB->internalApplyImpulse(c.m_contactNormal2*bodyB->internalGetInvMass(),c.m_angularComponentB,deltaImpulse);
 	}
-	return deltaImpulse;
+	else if (c.m_solverBodyIdB >= 0)
+	{
+		bodyB->internalApplyImpulse(c.m_contactNormal2*bodyB->internalGetInvMass(), c.m_angularComponentB, deltaImpulse);
+	}
+    btScalar deltaVel =deltaImpulse/c.m_jacDiagABInv;
+	return deltaVel;
+}
+
+
+btScalar btMultiBodyConstraintSolver::resolveConeFrictionConstraintRows(const btMultiBodySolverConstraint& cA1,const btMultiBodySolverConstraint& cB)
+{
+	int ndofA=0;
+	int ndofB=0;
+	btSolverBody* bodyA = 0;
+	btSolverBody* bodyB = 0;
+	btScalar deltaImpulseB = 0.f;
+	btScalar sumB = 0.f;
+	{
+		deltaImpulseB = cB.m_rhs-btScalar(cB.m_appliedImpulse)*cB.m_cfm;
+		btScalar deltaVelADotn=0;
+		btScalar deltaVelBDotn=0;
+		if (cB.m_multiBodyA)
+		{
+			ndofA  = cB.m_multiBodyA->getNumDofs() + 6;
+			for (int i = 0; i < ndofA; ++i) 
+				deltaVelADotn += m_data.m_jacobians[cB.m_jacAindex+i] * m_data.m_deltaVelocities[cB.m_deltaVelAindex+i];
+		} else if(cB.m_solverBodyIdA >= 0)
+		{
+			bodyA = &m_tmpSolverBodyPool[cB.m_solverBodyIdA];
+			deltaVelADotn += cB.m_contactNormal1.dot(bodyA->internalGetDeltaLinearVelocity()) 	+ cB.m_relpos1CrossNormal.dot(bodyA->internalGetDeltaAngularVelocity());
+		}
+
+		if (cB.m_multiBodyB)
+		{
+			ndofB  = cB.m_multiBodyB->getNumDofs() + 6;
+			for (int i = 0; i < ndofB; ++i) 
+				deltaVelBDotn += m_data.m_jacobians[cB.m_jacBindex+i] * m_data.m_deltaVelocities[cB.m_deltaVelBindex+i];
+		} else if(cB.m_solverBodyIdB >= 0)
+		{
+			bodyB = &m_tmpSolverBodyPool[cB.m_solverBodyIdB];
+			deltaVelBDotn += cB.m_contactNormal2.dot(bodyB->internalGetDeltaLinearVelocity())  + cB.m_relpos2CrossNormal.dot(bodyB->internalGetDeltaAngularVelocity());
+		}
+
+	
+		deltaImpulseB	-=	deltaVelADotn*cB.m_jacDiagABInv;//m_jacDiagABInv = 1./denom
+		deltaImpulseB	-=	deltaVelBDotn*cB.m_jacDiagABInv;
+		sumB = btScalar(cB.m_appliedImpulse) + deltaImpulseB;
+	}
+
+	btScalar deltaImpulseA = 0.f;
+	btScalar sumA = 0.f;
+	const btMultiBodySolverConstraint& cA = cA1;
+	{
+		{
+			deltaImpulseA = cA.m_rhs-btScalar(cA.m_appliedImpulse)*cA.m_cfm;
+			btScalar deltaVelADotn=0;
+			btScalar deltaVelBDotn=0;
+			if (cA.m_multiBodyA)
+			{
+				ndofA  = cA.m_multiBodyA->getNumDofs() + 6;
+				for (int i = 0; i < ndofA; ++i) 
+					deltaVelADotn += m_data.m_jacobians[cA.m_jacAindex+i] * m_data.m_deltaVelocities[cA.m_deltaVelAindex+i];
+			} else if(cA.m_solverBodyIdA >= 0)
+			{
+				bodyA = &m_tmpSolverBodyPool[cA.m_solverBodyIdA];
+				deltaVelADotn += cA.m_contactNormal1.dot(bodyA->internalGetDeltaLinearVelocity()) 	+ cA.m_relpos1CrossNormal.dot(bodyA->internalGetDeltaAngularVelocity());
+			}
+
+			if (cA.m_multiBodyB)
+			{
+				ndofB  = cA.m_multiBodyB->getNumDofs() + 6;
+				for (int i = 0; i < ndofB; ++i) 
+					deltaVelBDotn += m_data.m_jacobians[cA.m_jacBindex+i] * m_data.m_deltaVelocities[cA.m_deltaVelBindex+i];
+			} else if(cA.m_solverBodyIdB >= 0)
+			{
+				bodyB = &m_tmpSolverBodyPool[cA.m_solverBodyIdB];
+				deltaVelBDotn += cA.m_contactNormal2.dot(bodyB->internalGetDeltaLinearVelocity())  + cA.m_relpos2CrossNormal.dot(bodyB->internalGetDeltaAngularVelocity());
+			}
+
+	
+			deltaImpulseA	-=	deltaVelADotn*cA.m_jacDiagABInv;//m_jacDiagABInv = 1./denom
+			deltaImpulseA	-=	deltaVelBDotn*cA.m_jacDiagABInv;
+			sumA = btScalar(cA.m_appliedImpulse) + deltaImpulseA;
+		}
+	}
+
+	if (sumA*sumA+sumB*sumB>=cA.m_lowerLimit*cB.m_lowerLimit)
+	{
+		btScalar angle = btAtan2(sumA,sumB);
+		btScalar sumAclipped = btFabs(cA.m_lowerLimit*btSin(angle));
+		btScalar sumBclipped = btFabs(cB.m_lowerLimit*btCos(angle));
+
+		
+		if (sumA < -sumAclipped)
+		{
+			deltaImpulseA = -sumAclipped - cA.m_appliedImpulse;
+			cA.m_appliedImpulse = -sumAclipped;
+		}
+		else if (sumA > sumAclipped)
+		{
+			deltaImpulseA = sumAclipped - cA.m_appliedImpulse;
+			cA.m_appliedImpulse = sumAclipped;
+		}
+		else
+		{
+			cA.m_appliedImpulse = sumA;
+		}
+
+		if (sumB < -sumBclipped)
+		{
+			deltaImpulseB = -sumBclipped - cB.m_appliedImpulse;
+			cB.m_appliedImpulse = -sumBclipped;
+		}
+		else if (sumB > sumBclipped)
+		{
+			deltaImpulseB = sumBclipped - cB.m_appliedImpulse;
+			cB.m_appliedImpulse = sumBclipped;
+		}
+		else
+		{
+			cB.m_appliedImpulse = sumB;
+		}
+		//deltaImpulseA = sumAclipped-cA.m_appliedImpulse;
+		//cA.m_appliedImpulse = sumAclipped;
+		//deltaImpulseB = sumBclipped-cB.m_appliedImpulse;
+		//cB.m_appliedImpulse = sumBclipped;
+	} 
+	else
+	{
+		cA.m_appliedImpulse = sumA;
+		cB.m_appliedImpulse = sumB;
+	}
+	
+	if (cA.m_multiBodyA)
+	{
+		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[cA.m_jacAindex],deltaImpulseA,cA.m_deltaVelAindex,ndofA);
+#ifdef DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+		//note: update of the actual velocities (below) in the multibody does not have to happen now since m_deltaVelocities can be applied after all iterations
+		//it would make the multibody solver more like the regular one with m_deltaVelocities being equivalent to btSolverBody::m_deltaLinearVelocity/m_deltaAngularVelocity
+		cA.m_multiBodyA->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[cA.m_jacAindex],deltaImpulseA);
+#endif //DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+	} else if(cA.m_solverBodyIdA >= 0)
+	{
+		bodyA->internalApplyImpulse(cA.m_contactNormal1*bodyA->internalGetInvMass(),cA.m_angularComponentA,deltaImpulseA);
+
+	}
+	if (cA.m_multiBodyB)
+	{
+		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[cA.m_jacBindex],deltaImpulseA,cA.m_deltaVelBindex,ndofB);
+#ifdef DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+		//note: update of the actual velocities (below) in the multibody does not have to happen now since m_deltaVelocities can be applied after all iterations
+		//it would make the multibody solver more like the regular one with m_deltaVelocities being equivalent to btSolverBody::m_deltaLinearVelocity/m_deltaAngularVelocity
+		cA.m_multiBodyB->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[cA.m_jacBindex],deltaImpulseA);
+#endif //DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+	} else if(cA.m_solverBodyIdB >= 0)
+	{
+		bodyB->internalApplyImpulse(cA.m_contactNormal2*bodyB->internalGetInvMass(),cA.m_angularComponentB,deltaImpulseA);
+	}
+
+	if (cB.m_multiBodyA)
+	{
+		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[cB.m_jacAindex],deltaImpulseB,cB.m_deltaVelAindex,ndofA);
+#ifdef DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+		//note: update of the actual velocities (below) in the multibody does not have to happen now since m_deltaVelocities can be applied after all iterations
+		//it would make the multibody solver more like the regular one with m_deltaVelocities being equivalent to btSolverBody::m_deltaLinearVelocity/m_deltaAngularVelocity
+		cB.m_multiBodyA->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[cB.m_jacAindex],deltaImpulseB);
+#endif //DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+	} else if(cB.m_solverBodyIdA >= 0)
+	{
+		bodyA->internalApplyImpulse(cB.m_contactNormal1*bodyA->internalGetInvMass(),cB.m_angularComponentA,deltaImpulseB);
+	}
+	if (cB.m_multiBodyB)
+	{
+		applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[cB.m_jacBindex],deltaImpulseB,cB.m_deltaVelBindex,ndofB);
+#ifdef DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+		//note: update of the actual velocities (below) in the multibody does not have to happen now since m_deltaVelocities can be applied after all iterations
+		//it would make the multibody solver more like the regular one with m_deltaVelocities being equivalent to btSolverBody::m_deltaLinearVelocity/m_deltaAngularVelocity
+		cB.m_multiBodyB->applyDeltaVeeMultiDof2(&m_data.m_deltaVelocitiesUnitImpulse[cB.m_jacBindex],deltaImpulseB);
+#endif //DIRECTLY_UPDATE_VELOCITY_DURING_SOLVER_ITERATIONS
+	} else if(cB.m_solverBodyIdB >= 0)
+	{
+		bodyB->internalApplyImpulse(cB.m_contactNormal2*bodyB->internalGetInvMass(),cB.m_angularComponentB,deltaImpulseB);
+	}
+
+    btScalar deltaVel =deltaImpulseA/cA.m_jacDiagABInv+deltaImpulseB/cB.m_jacDiagABInv;
+    return deltaVel;
 }
 
 
@@ -908,7 +1160,10 @@ btMultiBodySolverConstraint&	btMultiBodyConstraintSolver::addMultiBodyTorsionalF
                                                                                                      btCollisionObject* colObj0,btCollisionObject* colObj1, btScalar relaxation, const btContactSolverInfo& infoGlobal, btScalar desiredVelocity, btScalar cfmSlip)
 {
     BT_PROFILE("addMultiBodyRollingFrictionConstraint");
-    btMultiBodySolverConstraint& solverConstraint = m_multiBodyFrictionContactConstraints.expandNonInitializing();
+
+	bool useTorsionalAndConeFriction = (infoGlobal.m_solverMode & SOLVER_USE_2_FRICTION_DIRECTIONS && ((infoGlobal.m_solverMode&SOLVER_DISABLE_IMPLICIT_CONE_FRICTION) == 0));
+
+    btMultiBodySolverConstraint& solverConstraint = useTorsionalAndConeFriction? m_multiBodyTorsionalFrictionContactConstraints.expandNonInitializing() : m_multiBodyFrictionContactConstraints.expandNonInitializing();
     solverConstraint.m_orgConstraint = 0;
     solverConstraint.m_orgDofIndex = -1;
     
@@ -1151,6 +1406,7 @@ void btMultiBodyConstraintSolver::convertContacts(btPersistentManifold** manifol
 
 btScalar btMultiBodyConstraintSolver::solveGroup(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifold,int numManifolds,btTypedConstraint** constraints,int numConstraints,const btContactSolverInfo& info, btIDebugDraw* debugDrawer,btDispatcher* dispatcher)
 {
+	//printf("btMultiBodyConstraintSolver::solveGroup: numBodies=%d, numConstraints=%d\n", numBodies, numConstraints);
 	return btSequentialImpulseConstraintSolver::solveGroup(bodies,numBodies,manifold,numManifolds,constraints,numConstraints,info,debugDrawer,dispatcher);
 }
 
@@ -1234,27 +1490,12 @@ void btMultiBodyConstraintSolver::writeBackSolverBodyToMultiBody(btMultiBodySolv
 
 	if (c.m_multiBodyA)
 	{
-		
-		if(c.m_multiBodyA->isMultiDof())
-		{
-			c.m_multiBodyA->applyDeltaVeeMultiDof(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex],c.m_appliedImpulse);
-		}
-		else
-		{
-			c.m_multiBodyA->applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex],c.m_appliedImpulse);
-		}
+		c.m_multiBodyA->applyDeltaVeeMultiDof(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacAindex],c.m_appliedImpulse);
 	}
 	
 	if (c.m_multiBodyB)
 	{
-		if(c.m_multiBodyB->isMultiDof())
-		{
-			c.m_multiBodyB->applyDeltaVeeMultiDof(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex],c.m_appliedImpulse);
-		}
-		else
-		{
-			c.m_multiBodyB->applyDeltaVee(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex],c.m_appliedImpulse);
-		}
+		c.m_multiBodyB->applyDeltaVeeMultiDof(&m_data.m_deltaVelocitiesUnitImpulse[c.m_jacBindex],c.m_appliedImpulse);
 	}
 #endif
 
@@ -1416,6 +1657,8 @@ btScalar btMultiBodyConstraintSolver::solveGroupCacheFriendlyFinish(btCollisionO
 
 void  btMultiBodyConstraintSolver::solveMultiBodyGroup(btCollisionObject** bodies,int numBodies,btPersistentManifold** manifold,int numManifolds,btTypedConstraint** constraints,int numConstraints,btMultiBodyConstraint** multiBodyConstraints, int numMultiBodyConstraints, const btContactSolverInfo& info, btIDebugDraw* debugDrawer,btDispatcher* dispatcher)
 {
+	//printf("solveMultiBodyGroup: numBodies=%d, numConstraints=%d, numManifolds=%d, numMultiBodyConstraints=%d\n", numBodies, numConstraints, numManifolds, numMultiBodyConstraints);
+
 	//printf("solveMultiBodyGroup start\n");
 	m_tmpMultiBodyConstraints = multiBodyConstraints;
 	m_tmpNumMultiBodyConstraints = numMultiBodyConstraints;

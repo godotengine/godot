@@ -36,12 +36,13 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
 //#include "scene/gui/empty_control.h"
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include "pane_drag.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+
 class EditorLog : public VBoxContainer {
 
 	GDCLASS(EditorLog, VBoxContainer);
@@ -68,7 +69,13 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void add_message(const String &p_msg, bool p_error = false);
+	enum MessageType {
+		MSG_TYPE_STD,
+		MSG_TYPE_ERROR,
+		MSG_TYPE_WARNING
+	};
+
+	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
 	void set_tool_button(ToolButton *p_tool_button);
 	void deinit();
 

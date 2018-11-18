@@ -106,7 +106,9 @@
 		<constant name="PHYSICS_3D_ISLAND_COUNT" value="26" enum="Monitor">
 			Number of islands in the 3D physics engine.
 		</constant>
-		<constant name="MONITOR_MAX" value="27" enum="Monitor">
+		<constant name="AUDIO_OUTPUT_LATENCY" value="27" enum="Monitor">
+		</constant>
+		<constant name="MONITOR_MAX" value="28" enum="Monitor">
 		</constant>
 	</constants>
 </class>

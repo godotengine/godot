@@ -32,7 +32,7 @@
 
 #ifdef WINDOWS_ENABLED
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 // Here, after os/os.h
 #include <windows.h>
@@ -174,6 +174,8 @@ String find_msbuild_tools_path() {
 
 	List<String> vswhere_args;
 	vswhere_args.push_back("-latest");
+	vswhere_args.push_back("-products");
+	vswhere_args.push_back("*");
 	vswhere_args.push_back("-requires");
 	vswhere_args.push_back("Microsoft.Component.MSBuild");
 
@@ -226,4 +228,4 @@ cleanup:
 }
 } // namespace MonoRegUtils
 
-#endif WINDOWS_ENABLED
+#endif // WINDOWS_ENABLED

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Internal header files (specification only).                          */
 /*                                                                         */
-/*  Copyright 1996-2017 by                                                 */
+/*  Copyright 1996-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -31,7 +31,7 @@
 #define FT_INTERNAL_DEBUG_H               <freetype/internal/ftdebug.h>
 #define FT_INTERNAL_CALC_H                <freetype/internal/ftcalc.h>
 #define FT_INTERNAL_HASH_H                <freetype/internal/fthash.h>
-#define FT_INTERNAL_DRIVER_H              <freetype/internal/ftdriver.h>
+#define FT_INTERNAL_DRIVER_H              <freetype/internal/ftdrv.h>
 #define FT_INTERNAL_TRACE_H               <freetype/internal/fttrace.h>
 #define FT_INTERNAL_GLYPH_LOADER_H        <freetype/internal/ftgloadr.h>
 #define FT_INTERNAL_SFNT_H                <freetype/internal/sfnt.h>
@@ -44,8 +44,12 @@
 
 #define FT_INTERNAL_POSTSCRIPT_AUX_H      <freetype/internal/psaux.h>
 #define FT_INTERNAL_POSTSCRIPT_HINTS_H    <freetype/internal/pshints.h>
+#define FT_INTERNAL_POSTSCRIPT_PROPS_H    <freetype/internal/ftpsprop.h>
 
 #define FT_INTERNAL_AUTOHINT_H            <freetype/internal/autohint.h>
+
+#define FT_INTERNAL_CFF_TYPES_H           <freetype/internal/cfftypes.h>
+#define FT_INTERNAL_CFF_OBJECTS_TYPES_H   <freetype/internal/cffotypes.h>
 
 
 #if defined( _MSC_VER )      /* Visual C++ (and Intel C++) */

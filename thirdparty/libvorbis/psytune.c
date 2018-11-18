@@ -12,7 +12,6 @@
 
  function: simple utility that runs audio through the psychoacoustics
            without encoding
- last mod: $Id: psytune.c 16037 2009-05-26 21:10:58Z xiphmont $
 
  ********************************************************************/
 
@@ -41,11 +40,11 @@
 static vorbis_info_psy_global _psy_set0G={
   0,   /* decaydBpms */
   8,   /* lines per eighth octave */
-  
+
   /* thresh sample period, preecho clamp trigger threshhold, range, minenergy */
   256, {26.f,26.f,26.f,30.f}, {-90.f,-90.f,-90.f,-90.f}, -90.f,
-  -6.f, 
-  
+  -6.f,
+
   0,
 
   0.,
@@ -68,7 +67,7 @@ static vp_couple _vp_couple0[]={
 
 static vorbis_info_psy _psy_set0={
   ATH_Bark_dB_lineaggressive,
-  
+
   -100.f,
   -140.f,
   6.f, /* floor master att */
@@ -148,7 +147,7 @@ static vorbis_info_psy _psy_set0={
    .900f, 0.f, /*11500*/
    .900f, 1.f, /*16000*/
   },
- 
+
   95.f,  /* even decade + 5 is important; saves an rint() later in a
             tight loop) */
   -44.,
@@ -159,7 +158,7 @@ static vorbis_info_psy _psy_set0={
 
 static vorbis_info_floor1 _floor_set0={1,
                                         {0},
-                                        
+
                                         {32},
                                         {0},
                                         {0},
@@ -171,12 +170,12 @@ static vorbis_info_floor1 _floor_set0={1,
                                          88,31,243,
 
                                          14,54,143,460,
-                                         
-                                         6,3,10, 22,18,26, 41,36,47, 
-                                         69,61,78, 112,99,126, 185,162,211,  
+
+                                         6,3,10, 22,18,26, 41,36,47,
+                                         69,61,78, 112,99,126, 185,162,211,
                                          329,282,387, 672,553,825
                                          },
-                                        
+
                                         60,30,400,
                                         20,8,1,18.,
                                         20,600,
@@ -184,8 +183,8 @@ static vorbis_info_floor1 _floor_set0={1,
 
 
 static vorbis_info_mapping0 mapping_info={1,{0,1},{0},{0},{0},0, 1, {0},{1}};
-static codec_setup_info codec_setup0={ {0,0}, 
-                                       1,1,1,1,1,0,1,        
+static codec_setup_info codec_setup0={ {0,0},
+                                       1,1,1,1,1,0,1,
                                        {NULL},
                                        {0},{&mapping_info},
                                        {0},{NULL},
@@ -194,7 +193,7 @@ static codec_setup_info codec_setup0={ {0,0},
                                        {NULL},
                                        {&_psy_set0},
                                        &_psy_set0G};
-                                       
+
 static int noisy=0;
 void analysis(char *base,int i,float *v,int n,int bark,int dB){
   if(noisy){
@@ -212,7 +211,7 @@ void analysis(char *base,int i,float *v,int n,int bark,int dB){
           fprintf(of,"%g ",toBARK(22050.f*j/n));
         else
           fprintf(of,"%g ",(float)j);
-      
+
         if(dB){
           fprintf(of,"%g\n",todB(v+j));
         }else{
@@ -269,7 +268,7 @@ int main(int argc,char *argv[]){
         framesize=atoi(argv[0]);
     argv++;
   }
-  
+
   vi.channels=2;
   vi.codec_setup=&codec_setup0;
 
@@ -292,7 +291,7 @@ int main(int argc,char *argv[]){
 
   /* we cheat on the WAV header; we just bypass 44 bytes and never
      verify that it matches 16bit/stereo/44.1kHz. */
-  
+
   fread(buffer,1,44,stdin);
   fwrite(buffer,1,44,stdout);
   memset(buffer,0,framesize*2);
@@ -302,10 +301,10 @@ int main(int argc,char *argv[]){
   fprintf(stderr,"Processing for frame size %d...\n",framesize);
 
   while(!eos){
-    long bytes=fread(buffer2,1,framesize*2,stdin); 
+    long bytes=fread(buffer2,1,framesize*2,stdin);
     if(bytes<framesize*2)
       memset(buffer2+bytes,0,framesize*2-bytes);
-    
+
     if(bytes!=0){
       int nonzero[2];
 
@@ -316,10 +315,10 @@ int main(int argc,char *argv[]){
         pcm[1][i]=((buffer[i*4+3]<<8)|
                    (0x00ff&(int)buffer[i*4+2]))/32768.f;
       }
-      
+
       {
         float secs=framesize/44100.;
-        
+
         ampmax+=secs*ampmax_att_per_sec;
         if(ampmax<-9999)ampmax=-9999;
       }
@@ -331,11 +330,11 @@ int main(int argc,char *argv[]){
         float *logmdct=mdct+framesize/2;
 
         analysis("pre",frameno+i,pcm[i],framesize,0,0);
-        
+
         /* fft and mdct transforms  */
         for(j=0;j<framesize;j++)
           fft[j]=pcm[i][j]*=window[j];
-        
+
         drft_forward(&f_look,fft);
 
         local_ampmax[i]=-9999.f;
@@ -347,7 +346,7 @@ int main(int argc,char *argv[]){
           if(temp>local_ampmax[i])local_ampmax[i]=temp;
         }
         if(local_ampmax[i]>ampmax)ampmax=local_ampmax[i];
-        
+
         mdct_forward(&m_look,pcm[i],mdct);
         for(j=0;j<framesize/2;j++)
           logmdct[j]=todB(mdct+j);
@@ -391,7 +390,7 @@ int main(int argc,char *argv[]){
                                           logmdct,
                                           mask,
                                           logmax,
-                                          
+
                                           flr[i]);
         }
 
@@ -406,7 +405,7 @@ int main(int argc,char *argv[]){
         for(j=0;j<framesize/2;j++)
           if(fabs(pcm[i][j])>1500)
             fprintf(stderr,"%ld ",frameno+i);
-        
+
         analysis("res",frameno+i,pcm[i],framesize/2,1,0);
         analysis("codedflr",frameno+i,flr[i],framesize/2,1,1);
       }
@@ -416,7 +415,7 @@ int main(int argc,char *argv[]){
                              &vi,
                              pcm,
                              nonzero);
-        
+
       for(i=0;i<2;i++)
         analysis("quant",frameno+i,pcm[i],framesize/2,1,0);
 
@@ -426,7 +425,7 @@ int main(int argc,char *argv[]){
                  &mapping_info,
                  pcm,
                  nonzero);
-  
+
       for(i=0;i<2;i++)
         analysis("coupled",frameno+i,pcm[i],framesize/2,1,0);
 
@@ -434,11 +433,11 @@ int main(int argc,char *argv[]){
       for(i=mapping_info.coupling_steps-1;i>=0;i--){
         float *pcmM=pcm[mapping_info.coupling_mag[i]];
         float *pcmA=pcm[mapping_info.coupling_ang[i]];
-        
+
         for(j=0;j<framesize/2;j++){
           float mag=pcmM[j];
           float ang=pcmA[j];
-          
+
           if(mag>0)
             if(ang>0){
               pcmM[j]=mag;
@@ -457,7 +456,7 @@ int main(int argc,char *argv[]){
             }
         }
       }
-    
+
       for(i=0;i<2;i++)
         analysis("decoupled",frameno+i,pcm[i],framesize/2,1,0);
 
@@ -479,7 +478,7 @@ int main(int argc,char *argv[]){
 
 
       }
-           
+
       /* write data.  Use the part of buffer we're about to shift out */
       for(i=0;i<2;i++){
         char  *ptr=buffer+i*2;
@@ -503,7 +502,7 @@ int main(int argc,char *argv[]){
           ptr+=4;
         }
       }
- 
+
       fprintf(stderr,"*");
       fwrite(buffer,1,framesize*2,stdout);
       memmove(buffer,buffer2,framesize*2);

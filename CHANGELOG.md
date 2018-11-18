@@ -47,7 +47,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - Setters and getters for node properties.
   - Underscores in number literals are now allowed for improved readability (for example,`1_000_000`).
   - Improved performance (+20% to +40%, based on various benchmarks).
-- [Feature tags](http://docs.godotengine.org/en/latest/learning/workflow/export/feature_tags.html) in the Project Settings, for custom per-platform settings.
+- [Feature tags](http://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html) in the Project Settings, for custom per-platform settings.
 - Full support for the [glTF 2.0](https://www.khronos.org/gltf/) 3D interchange format.
 - Freelook and fly navigation to the 3D editor.
 - Built-in editor logging (logging standard output to a file), disabled by default.

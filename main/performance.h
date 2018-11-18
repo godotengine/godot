@@ -31,7 +31,7 @@
 #ifndef PERFORMANCE_H
 #define PERFORMANCE_H
 
-#include "object.h"
+#include "core/object.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
@@ -77,6 +77,7 @@ public:
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
 		//physics
+		AUDIO_OUTPUT_LATENCY,
 		MONITOR_MAX
 	};
 

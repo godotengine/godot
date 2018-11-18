@@ -33,7 +33,7 @@
 
 #ifdef ANDROID_NATIVE_ACTIVITY
 
-#include "os/dir_access.h"
+#include "core/os/dir_access.h"
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>

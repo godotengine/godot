@@ -34,7 +34,7 @@
 #define FILE_ACCESS_ZIP_H
 
 #include "core/io/file_access_pack.h"
-#include "map.h"
+#include "core/map.h"
 
 #include "thirdparty/minizip/unzip.h"
 
@@ -89,8 +89,6 @@ class FileAccessZip : public FileAccess {
 	unz_file_info64 file_info;
 
 	mutable bool at_eof;
-
-	ZipArchive *archive;
 
 public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file

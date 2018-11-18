@@ -42,7 +42,7 @@
 
 /* NOT typedef a 32 bit type */
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 /* Data structure for MD5 (Message Digest) computation */
 typedef struct {

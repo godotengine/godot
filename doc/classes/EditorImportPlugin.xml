@@ -5,10 +5,7 @@
 	</brief_description>
 	<description>
 		EditorImportPlugins provide a way to extend the editor's resource import functionality. Use them to import resources from custom files or to provide alternatives to the editor's existing importers. Register your [EditorPlugin] with [method EditorPlugin.add_import_plugin].
-
 		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method get_recognized_extension] and [method get_resource_type]). They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].import[/code] directory.
-
-
 		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
 		[codeblock]
 		tool
@@ -38,19 +35,21 @@
 		func get_import_options(i):
 		    return [{"name": "my_option", "default_value": false}]
 
-		func load(src, dst, opts, r_platform_variants, r_gen_files):
+		func import(source_file, save_path, options, r_platform_variants, r_gen_files):
 		    var file = File.new()
-		    if file.open(src, File.READ) != OK:
+		    if file.open(source_file, File.READ) != OK:
 		        return FAILED
 
 		    var mesh = Mesh.new()
+		    # Fill the Mesh with data read in 'file', left as exercise to the reader
 
-		    var save = dst + "." + get_save_extension()
-		    ResourceSaver.save(file, mesh)
+		    var filename = save_path + "." + get_save_extension()
+		    ResourceSaver.save(filename, mesh)
 		    return OK
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -122,7 +121,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Get the godot resource type associated with this loader. e.g. "Mesh" or "Animation".
+				Get the Godot resource type associated with this loader. e.g. "Mesh" or "Animation".
 			</description>
 		</method>
 		<method name="get_save_extension" qualifiers="virtual">

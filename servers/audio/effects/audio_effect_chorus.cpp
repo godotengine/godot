@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "audio_effect_chorus.h"
-#include "math_funcs.h"
+#include "core/math/math_funcs.h"
 #include "servers/audio_server.h"
 
 void AudioEffectChorusInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
@@ -53,7 +53,7 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 
 	//fill ringbuffer
 	for (int i = 0; i < p_frame_count; i++) {
-		audio_buffer[(buffer_pos + i) & buffer_mask] = p_src_frames[i];
+		audio_buffer.write[(buffer_pos + i) & buffer_mask] = p_src_frames[i];
 		p_dst_frames[i] = p_src_frames[i] * base->dry;
 	}
 
@@ -175,7 +175,7 @@ Ref<AudioEffectInstance> AudioEffectChorus::instance() {
 	ins->buffer_pos = 0;
 	ins->audio_buffer.resize(ringbuff_size);
 	for (int i = 0; i < ringbuff_size; i++) {
-		ins->audio_buffer[i] = AudioFrame(0, 0);
+		ins->audio_buffer.write[i] = AudioFrame(0, 0);
 	}
 
 	return ins;

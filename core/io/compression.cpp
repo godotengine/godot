@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "compression.h"
-#include "os/copymem.h"
-#include "project_settings.h"
-#include "zip_io.h"
+
+#include "core/io/zip_io.h"
+#include "core/os/copymem.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/fastlz.h"
 
@@ -174,7 +175,7 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 		} break;
 		case MODE_ZSTD: {
 			ZSTD_DCtx *dctx = ZSTD_createDCtx();
-			if (zstd_long_distance_matching) ZSTD_DCtx_setMaxWindowSize(dctx, 1 << zstd_window_log_size);
+			if (zstd_long_distance_matching) ZSTD_DCtx_setMaxWindowSize(dctx, (size_t)1 << zstd_window_log_size);
 			int ret = ZSTD_decompressDCtx(dctx, p_dst, p_dst_max_size, p_src, p_src_size);
 			ZSTD_freeDCtx(dctx);
 			return ret;

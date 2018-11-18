@@ -44,12 +44,15 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
-#include "os/dir_access.h"
-#include "os/thread.h"
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+
+#include "create_dialog.h"
 
 #include "dependency_editor.h"
 #include "editor_dir_dialog.h"
 #include "editor_file_system.h"
+#include "script_create_dialog.h"
 
 class EditorNode;
 
@@ -57,15 +60,27 @@ class FileSystemDock : public VBoxContainer {
 	GDCLASS(FileSystemDock, VBoxContainer);
 
 public:
-	enum DisplayMode {
-		DISPLAY_THUMBNAILS,
-		DISPLAY_LIST
+	enum FileListDisplayMode {
+		FILE_LIST_DISPLAY_THUMBNAILS,
+		FILE_LIST_DISPLAY_LIST
 	};
 
 private:
+	enum DisplayModeSetting {
+		DISPLAY_MODE_SETTING_TREE_ONLY,
+		DISPLAY_MODE_SETTING_SPLIT,
+	};
+
+	enum DisplayMode {
+		DISPLAY_MODE_TREE_ONLY,
+		DISPLAY_MODE_SPLIT,
+	};
+
 	enum FileMenu {
 		FILE_OPEN,
 		FILE_INSTANCE,
+		FILE_ADD_FAVORITE,
+		FILE_REMOVE_FAVORITE,
 		FILE_DEPENDENCIES,
 		FILE_OWNERS,
 		FILE_MOVE,
@@ -75,19 +90,12 @@ private:
 		FILE_REIMPORT,
 		FILE_INFO,
 		FILE_NEW_FOLDER,
+		FILE_NEW_SCRIPT,
 		FILE_SHOW_IN_EXPLORER,
-		FILE_COPY_PATH
-	};
-
-	enum FolderMenu {
+		FILE_COPY_PATH,
+		FILE_NEW_RESOURCE,
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
-		FOLDER_MOVE,
-		FOLDER_RENAME,
-		FOLDER_REMOVE,
-		FOLDER_NEW_FOLDER,
-		FOLDER_SHOW_IN_EXPLORER,
-		FOLDER_COPY_PATH
 	};
 
 	VBoxContainer *scanning_vb;
@@ -98,22 +106,28 @@ private:
 	EditorNode *editor;
 	Set<String> favorites;
 
+	Button *button_toggle_display_mode;
 	Button *button_reload;
-	Button *button_favorite;
-	Button *button_tree;
-	Button *button_display_mode;
+	Button *button_file_list_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
-	LineEdit *search_box;
+	LineEdit *tree_search_box;
+	LineEdit *file_list_search_box;
+
+	String searched_string;
+	Vector<String> uncollapsed_paths_before_search;
+
 	TextureRect *search_icon;
 	HBoxContainer *path_hb;
 
-	bool low_height_mode;
+	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
+	DisplayModeSetting display_mode_setting;
+	DisplayModeSetting old_display_mode_setting;
 
-	PopupMenu *file_options;
-	PopupMenu *folder_options;
+	PopupMenu *file_list_popup;
+	PopupMenu *tree_popup;
 
 	DependencyEditor *deps_editor;
 	DependencyEditorOwners *owners_editor;
@@ -126,6 +140,11 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
+	ConfirmationDialog *overwrite_dialog;
+	ScriptCreateDialog *make_script_dialog_text;
+	CreateDialog *new_resource_dialog;
+
+	bool always_show_folders;
 
 	class FileOrFolder {
 	public:
@@ -142,6 +161,7 @@ private:
 	FileOrFolder to_rename;
 	FileOrFolder to_duplicate;
 	Vector<FileOrFolder> to_move;
+	String to_move_path;
 
 	Vector<String> history;
 	int history_pos;
@@ -152,29 +172,33 @@ private:
 	bool initialized;
 
 	bool updating_tree;
+	int tree_update_id;
 	Tree *tree; //directories
 	ItemList *files;
 	bool import_dock_needs_update;
 
+	Ref<Texture> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths);
-	void _update_tree(bool keep_collapse_state, bool p_uncollapse_root = false);
+	Vector<String> _compute_uncollapsed_paths();
+	void _update_tree(const Vector<String> p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false);
 
-	void _files_gui_input(Ref<InputEvent> p_event);
+	void _file_list_gui_input(Ref<InputEvent> p_event);
+	void _tree_gui_input(Ref<InputEvent> p_event);
 
-	void _update_files(bool p_keep_selection);
-	void _update_file_display_toggle_button();
+	void _update_file_list(bool p_keep_selection);
+	void _update_file_list_display_mode_button();
 	void _change_file_display();
 	void _fs_changed();
 
-	void _go_to_tree();
-	void _go_to_file_list();
+	void _tree_toggle_collapsed();
 
-	void _select_file(int p_idx);
+	void _select_file(const String p_path);
+	void _tree_activate_file();
+	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
-	void _update_import_dock();
+	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
-	void _file_selected();
-	void _dir_selected();
+	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
 	void _find_remaps(EditorFileSystemDirectory *efsd, const Map<String, String> &renames, Vector<String> &to_remaps) const;
@@ -182,15 +206,20 @@ private:
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const Map<String, String> &p_renames) const;
 	void _update_resource_paths_after_move(const Map<String, String> &p_renames) const;
-	void _update_favorite_dirs_list_after_move(const Map<String, String> &p_renames) const;
+	void _update_favorites_list_after_move(const Map<String, String> &p_files_renames, const Map<String, String> &p_folders_renames) const;
+	void _update_project_settings_after_move(const Map<String, String> &p_folders_renames) const;
 
+	void _resource_created() const;
 	void _make_dir_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
-	void _move_operation_confirm(const String &p_to_path);
+	void _move_with_overwrite();
+	bool _check_existing();
+	void _move_operation_confirm(const String &p_to_path, bool overwrite = false);
 
-	void _file_option(int p_option);
-	void _folder_option(int p_option);
+	void _tree_rmb_option(int p_option);
+	void _file_list_rmb_option(int p_option);
+	void _file_option(int p_option, const Vector<String> p_selected);
 
 	void _fw_history();
 	void _bw_history();
@@ -200,12 +229,14 @@ private:
 	void _set_scanning_mode();
 	void _rescan();
 
-	void _favorites_pressed();
-	void _search_changed(const String &p_text);
+	void _toggle_split_mode(bool p_active);
 
-	void _dir_rmb_pressed(const Vector2 &p_pos);
-	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
-	void _rmb_pressed(const Vector2 &p_pos);
+	void _search_changed(const String &p_text, const Control *p_from);
+
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
+	void _tree_rmb_select(const Vector2 &p_pos);
+	void _file_list_rmb_select(int p_item, const Vector2 &p_pos);
+	void _file_list_rmb_pressed(const Vector2 &p_pos);
 
 	struct FileInfo {
 		String name;
@@ -216,19 +247,26 @@ private:
 		bool import_broken;
 
 		bool operator<(const FileInfo &fi) const {
-			return name < fi.name;
+			return NaturalNoCaseComparator()(name, fi.name);
 		}
 	};
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
+	void _set_current_path_text(const String &p_path);
+
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	String _get_drag_target_folder(const Point2 &p_point, Control *p_from) const;
+	void _get_drag_target_folder(String &target, bool &target_favorites, const Point2 &p_point, Control *p_from) const;
 
 	void _preview_invalidated(const String &p_path);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
+	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+	void _tree_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+
+	void _update_display_mode(bool p_force = false);
+
+	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
 
 protected:
 	void _notification(int p_what);
@@ -243,7 +281,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 
-	void set_display_mode(int p_mode);
+	void set_file_list_display_mode(int p_mode);
 
 	int get_split_offset() { return split_box->get_split_offset(); }
 	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }

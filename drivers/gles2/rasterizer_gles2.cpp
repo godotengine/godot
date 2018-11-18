@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "rasterizer_gles2.h"
 
-#include "gl_context/context_gl.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include <string.h>
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "drivers/gl_context/context_gl.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
@@ -64,6 +64,21 @@
 #define GLAPIENTRY
 #endif
 
+#if !defined(GLES_OVER_GL) && !defined(IPHONE_ENABLED)
+// Used for debugging on mobile, but not iOS as EGL is not available
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <GLES2/gl2platform.h>
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define strcpy strcpy_s
+#endif
+
+#ifndef IPHONE_ENABLED
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
@@ -73,6 +88,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		return; //these are ultimately annoying, so removing for now
 
 	char debSource[256], debType[256], debSev[256];
+
 	if (source == _EXT_DEBUG_SOURCE_API_ARB)
 		strcpy(debSource, "OpenGL");
 	else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
@@ -110,6 +126,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINTS(output);
 }
+#endif // IPHONE_ENABLED
 
 typedef void (*DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -136,28 +153,21 @@ RasterizerScene *RasterizerGLES2::get_scene() {
 	return scene;
 }
 
-void RasterizerGLES2::initialize() {
-
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("Using GLES2 video driver");
-	}
+Error RasterizerGLES2::is_viable() {
 
 #ifdef GLAD_ENABLED
 	if (!gladLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
+		return ERR_UNAVAILABLE;
 	}
 
 // GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
 #ifdef OPENGL_ENABLED // OpenGL 2.1 Profile required
-	if (GLVersion.major < 2) {
-#else // OpenGL ES 3.0
+	if (GLVersion.major < 2 || (GLVersion.major == 2 && GLVersion.minor < 1)) {
+#else // OpenGL ES 2.0
 	if (GLVersion.major < 2) {
 #endif
-		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 2.1 / OpenGL ES 2.0, sorry :(\n"
-				  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 2.1 / OpenGL ES 2.0, sorry :(\n"
-								   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-				"Fatal error: Insufficient OpenGL / GLES driver support");
+		return ERR_UNAVAILABLE;
 	}
 
 #ifdef GLES_OVER_GL
@@ -183,15 +193,22 @@ void RasterizerGLES2::initialize() {
 			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
 			glGenerateMipmap = glGenerateMipmapEXT;
 		} else {
-			ERR_PRINT("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
-					  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-			OS::get_singleton()->alert("Your system's graphic drivers seem not to support GL_ARB(EXT)_framebuffer_object OpenGL extension, sorry :(\n"
-									   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-					"Fatal error: Insufficient OpenGL / GLES driver support");
+			return ERR_UNAVAILABLE;
 		}
 	}
-#endif
-	if (true || OS::get_singleton()->is_stdout_verbose()) {
+#endif // GLES_OVER_GL
+
+#endif // GLAD_ENABLED
+
+	return OK;
+}
+
+void RasterizerGLES2::initialize() {
+
+	print_verbose("Using GLES2 video driver");
+
+#ifdef GLAD_ENABLED
+	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 			glDebugMessageCallbackARB(_gl_debug_print, NULL);
@@ -200,12 +217,11 @@ void RasterizerGLES2::initialize() {
 			print_line("OpenGL debugging not supported!");
 		}
 	}
-
 #endif // GLAD_ENABLED
 
-		// For debugging
+	// For debugging
 #ifdef GLES_OVER_GL
-	if (GLAD_GL_ARB_debug_output) {
+	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
 		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
 		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
@@ -218,7 +234,24 @@ void RasterizerGLES2::initialize() {
 			GL_DEBUG_SEVERITY_HIGH_ARB, 5, "hello");
 		*/
 	}
-#endif
+#else
+#ifndef IPHONE_ENABLED
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
+		if (!callback) {
+			callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallbackKHR");
+		}
+
+		if (callback) {
+
+			print_line("godot: ENABLING GL DEBUG");
+			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+			callback(_gl_debug_print, NULL);
+			glEnable(_EXT_DEBUG_OUTPUT);
+		}
+	}
+#endif // !IPHONE_ENABLED
+#endif // GLES_OVER_GL
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
@@ -227,20 +260,13 @@ void RasterizerGLES2::initialize() {
 	scene->initialize();
 }
 
-void RasterizerGLES2::begin_frame() {
-	uint64_t tick = OS::get_singleton()->get_ticks_usec();
+void RasterizerGLES2::begin_frame(double frame_step) {
+	time_total += frame_step;
 
-	double delta = double(tick - prev_ticks) / 1000000.0;
-	delta *= Engine::get_singleton()->get_time_scale();
-
-	time_total += delta;
-
-	if (delta == 0) {
+	if (frame_step == 0) {
 		//to avoid hiccups
-		delta = 0.001;
+		frame_step = 0.001;
 	}
-
-	prev_ticks = tick;
 
 	// double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
 	// if (time_total > time_roll_over)
@@ -251,9 +277,7 @@ void RasterizerGLES2::begin_frame() {
 	storage->frame.time[2] = Math::fmod(time_total, 900);
 	storage->frame.time[3] = Math::fmod(time_total, 60);
 	storage->frame.count++;
-	storage->frame.delta = delta;
-
-	storage->frame.prev_tick = tick;
+	storage->frame.delta = frame_step;
 
 	storage->update_dirty_resources();
 
@@ -316,23 +340,43 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glViewport(0, 0, window_w, window_h);
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
-	glClearColor(p_color.r, p_color.g, p_color.b, p_color.a);
+	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+	} else {
+		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	}
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	canvas->canvas_begin();
 
 	RID texture = storage->texture_create();
-	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), p_image->get_format(), VS::TEXTURE_FLAG_FILTER);
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
 	storage->texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
 	Rect2 screenrect;
+	if (p_scale) {
 
-	screenrect = imgrect;
-	screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.position.x = (window_w - screenrect.size.x) / 2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.position.y = (window_h - screenrect.size.y) / 2;
+		}
+	} else {
+
+		screenrect = imgrect;
+		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
+	}
 
 	RasterizerStorageGLES2::Texture *t = storage->texture_owner.get(texture);
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
 	canvas->draw_generic_textured_rect(screenrect, Rect2(0, 0, 1, 1));
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -340,7 +384,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 	storage->free(texture);
 
-	OS::get_singleton()->swap_buffers();
+	end_frame(true);
 }
 
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
@@ -353,26 +397,66 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
 	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
+	canvas->state.canvas_shader.set_custom_shader(0);
 	canvas->state.canvas_shader.bind();
 
 	canvas->canvas_begin();
-	canvas->state.canvas_shader.set_uniform(CanvasShaderGLES2::BLIT_PASS, true);
 	glDisable(GL_BLEND);
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
 
 	// TODO normals
 
 	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
 
-	canvas->state.canvas_shader.set_uniform(CanvasShaderGLES2::BLIT_PASS, false);
-
 	glBindTexture(GL_TEXTURE_2D, 0);
 	canvas->canvas_end();
 }
 
+void RasterizerGLES2::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
+	ERR_FAIL_COND(storage->frame.current_rt);
+
+	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	glDisable(GL_BLEND);
+
+	// render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+
+	// output our texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rt->color);
+
+	canvas->draw_lens_distortion_rect(p_screen_rect, p_k1, p_k2, p_eye_center, p_oversample);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void RasterizerGLES2::end_frame(bool p_swap_buffers) {
+
+	if (OS::get_singleton()->is_layered_allowed()) {
+		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
+			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
+			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
+			if (data) {
+				glReadPixels(0, 0, wndsize.x, wndsize.y, GL_BGRA, GL_UNSIGNED_BYTE, data);
+				OS::get_singleton()->swap_layered_buffer();
+
+				return;
+			}
+#endif
+		} else {
+			//clear alpha
+			glColorMask(false, false, false, true);
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glColorMask(true, true, true, true);
+		}
+	}
+
 	if (p_swap_buffers)
 		OS::get_singleton()->swap_buffers();
 	else
@@ -405,7 +489,6 @@ RasterizerGLES2::RasterizerGLES2() {
 	scene->storage = storage;
 	storage->scene = scene;
 
-	prev_ticks = 0;
 	time_total = 0;
 }
 

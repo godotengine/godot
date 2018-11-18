@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "spin_box.h"
-#include "os/input.h"
+#include "core/os/input.h"
 
 Size2 SpinBox::get_minimum_size() const {
 
@@ -217,6 +217,16 @@ void SpinBox::_notification(int p_what) {
 	}
 }
 
+void SpinBox::set_align(LineEdit::Align p_align) {
+
+	line_edit->set_align(p_align);
+}
+
+LineEdit::Align SpinBox::get_align() const {
+
+	return line_edit->get_align();
+}
+
 void SpinBox::set_suffix(const String &p_suffix) {
 
 	suffix = p_suffix;
@@ -253,6 +263,8 @@ void SpinBox::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &SpinBox::_gui_input);
 	ClassDB::bind_method(D_METHOD("_text_entered"), &SpinBox::_text_entered);
+	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
+	ClassDB::bind_method(D_METHOD("get_align"), &SpinBox::get_align);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
@@ -264,6 +276,7 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_line_edit_input"), &SpinBox::_line_edit_input);
 	ClassDB::bind_method(D_METHOD("_range_click_timeout"), &SpinBox::_range_click_timeout);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");

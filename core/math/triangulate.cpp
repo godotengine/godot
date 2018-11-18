@@ -128,10 +128,10 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 	if (0.0 < get_area(contour))
 		for (int v = 0; v < n; v++)
-			V[v] = v;
+			V.write[v] = v;
 	else
 		for (int v = 0; v < n; v++)
-			V[v] = (n - 1) - v;
+			V.write[v] = (n - 1) - v;
 
 	bool relaxed = false;
 
@@ -182,11 +182,11 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 			/* remove v from remaining polygon */
 			for (s = v, t = v + 1; t < nv; s++, t++)
-				V[s] = V[t];
+				V.write[s] = V[t];
 
 			nv--;
 
-			/* resest error detection counter */
+			/* reset error detection counter */
 			count = 2 * nv;
 		}
 	}

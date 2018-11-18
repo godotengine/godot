@@ -28,24 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// Must include Winsock before windows.h (included by os_uwp.h)
+#include "drivers/unix/net_socket_posix.h"
+
 #include "os_uwp.h"
 
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
-#include "drivers/windows/packet_peer_udp_winsock.h"
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
-#include "drivers/windows/stream_peer_tcp_winsock.h"
-#include "drivers/windows/tcp_server_winsock.h"
-#include "io/marshalls.h"
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
-#include "project_settings.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 #include "thread_uwp.h"
 
 #include <ppltasks.h>
@@ -66,12 +68,7 @@ using namespace Windows::ApplicationModel::DataTransfer;
 using namespace concurrency;
 
 int OSUWP::get_video_driver_count() const {
-
-	return 1;
-}
-const char *OSUWP::get_video_driver_name(int p_driver) const {
-
-	return "GLES3";
+	return 2;
 }
 
 Size2 OSUWP::get_window_size() const {
@@ -79,6 +76,10 @@ Size2 OSUWP::get_window_size() const {
 	size.width = video_mode.width;
 	size.height = video_mode.height;
 	return size;
+}
+
+int OSUWP::get_current_video_driver() const {
+	return video_driver_index;
 }
 
 void OSUWP::set_window_size(const Size2 p_size) {
@@ -133,18 +134,6 @@ void OSUWP::set_keep_screen_on(bool p_enabled) {
 	OS::set_keep_screen_on(p_enabled);
 }
 
-int OSUWP::get_audio_driver_count() const {
-
-	return AudioDriverManager::get_driver_count();
-}
-
-const char *OSUWP::get_audio_driver_name(int p_driver) const {
-
-	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V(!driver, "");
-	return AudioDriverManager::get_driver(p_driver)->get_name();
-}
-
 void OSUWP::initialize_core() {
 
 	last_button_state = 0;
@@ -163,9 +152,7 @@ void OSUWP::initialize_core() {
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
 
-	TCPServerWinsock::make_default();
-	StreamPeerTCPWinsock::make_default();
-	PacketPeerUDPWinsock::make_default();
+	NetSocketPosix::make_default();
 
 	// We need to know how often the clock is updated
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
@@ -185,10 +172,9 @@ bool OSUWP::can_draw() const {
 	return !minimized;
 };
 
-void OSUWP::set_gl_context(ContextEGL *p_context) {
-
-	gl_context = p_context;
-};
+void OSUWP::set_window(Windows::UI::Core::CoreWindow ^ p_window) {
+	window = p_window;
+}
 
 void OSUWP::screen_size_changed() {
 
@@ -200,7 +186,78 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	main_loop = NULL;
 	outside = true;
 
-	gl_context->initialize();
+	ContextEGL::Driver opengl_api_type = ContextEGL::GLES_2_0;
+
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		opengl_api_type = ContextEGL::GLES_2_0;
+	}
+
+	bool gl_initialization_error = false;
+
+	gl_context = NULL;
+	while (!gl_context) {
+		gl_context = memnew(ContextEGL(window, opengl_api_type));
+
+		if (gl_context->initialize() != OK) {
+			memdelete(gl_context);
+			gl_context = NULL;
+
+			if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+				if (p_video_driver == VIDEO_DRIVER_GLES2) {
+					gl_initialization_error = true;
+					break;
+				}
+
+				p_video_driver = VIDEO_DRIVER_GLES2;
+				opengl_api_type = ContextEGL::GLES_2_0;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	while (true) {
+		if (opengl_api_type == ContextEGL::GLES_3_0) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					opengl_api_type = ContextEGL::GLES_2_0;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		}
+
+		if (opengl_api_type == ContextEGL::GLES_2_0) {
+			if (RasterizerGLES2::is_viable() == OK) {
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
+								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
+	}
+
+	video_driver_index = p_video_driver;
+	gl_context->make_current();
+	gl_context->set_use_vsync(video_mode.use_vsync);
+
 	VideoMode vm;
 	vm.width = gl_context->get_window_width();
 	vm.height = gl_context->get_window_height();
@@ -238,23 +295,13 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 
 	set_video_mode(vm);
 
-	gl_context->make_current();
-
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
-	gl_context->set_use_vsync(vm.use_vsync);
-
 	visual_server = memnew(VisualServerRaster);
-	// FIXME: Reimplement threaded rendering? Or remove?
-	/*
+	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-
-		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+		visual_server = memnew(VisualServerWrapMT(visual_server, false));
 	}
-	*/
 
 	visual_server->init();
-
 	input = memnew(InputDefault);
 
 	joypad = ref new JoypadUWP(input);
@@ -297,7 +344,7 @@ Error OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 	if (is_keep_screen_on())
 		display_request->RequestActive();
 
-	set_keep_screen_on(GLOBAL_DEF("display/window/keep_screen_on", true));
+	set_keep_screen_on(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
 
 	return OK;
 }
@@ -357,6 +404,8 @@ void OSUWP::finalize() {
 }
 
 void OSUWP::finalize_core() {
+
+	NetSocketPosix::cleanup();
 }
 
 void OSUWP::alert(const String &p_alert, const String &p_title) {
@@ -392,7 +441,6 @@ void OSUWP::ManagedType::update_clipboard() {
 	if (data->Contains(StandardDataFormats::Text)) {
 
 		create_task(data->GetTextAsync()).then([this](Platform::String ^ clipboard_content) {
-
 			this->clipboard = clipboard_content;
 		});
 	}
@@ -814,7 +862,7 @@ void OSUWP::run() {
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		if (managed_object->alert_close_handle) continue;
 		process_events(); // get rid of pending events
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 

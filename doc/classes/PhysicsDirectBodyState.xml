@@ -15,6 +15,8 @@
 			<argument index="0" name="force" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant directional force without affecting rotation.
+				This is equivalent to [code]add_force(force, Vector3(0,0,0))[/code].
 			</description>
 		</method>
 		<method name="add_force">
@@ -25,6 +27,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant force (i.e. acceleration).
 			</description>
 		</method>
 		<method name="add_torque">
@@ -33,6 +36,17 @@
 			<argument index="0" name="torque" type="Vector3">
 			</argument>
 			<description>
+				Adds a constant rotational force (i.e. a motor) without affecting position.
+			</description>
+		</method>
+		<method name="apply_central_impulse">
+			<return type="void">
+			</return>
+			<argument index="0" name="j" type="Vector3">
+			</argument>
+			<description>
+				Applies a single directional impulse without affecting rotation.
+				This is equivalent to ``apply_impulse(Vector3(0,0,0), impulse)``.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -43,6 +57,7 @@
 			<argument index="1" name="j" type="Vector3">
 			</argument>
 			<description>
+				Apply a positioned impulse (which will be affected by the body mass and shape). This is the equivalent of hitting a billiard ball with a cue: a force that is applied once, and only once. Both the impulse and the position are in global coordinates, and the position is relative to the object's origin.
 			</description>
 		</method>
 		<method name="apply_torque_impulse">
@@ -51,6 +66,7 @@
 			<argument index="0" name="j" type="Vector3">
 			</argument>
 			<description>
+				Apply a torque impulse (which will be affected by the body mass and shape). This will rotate the body around the passed in vector.
 			</description>
 		</method>
 		<method name="get_contact_collider" qualifiers="const">
@@ -105,6 +121,15 @@
 			<return type="int">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_contact_impulse" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="contact_idx" type="int">
+			</argument>
+			<description>
+				Impulse created by the contact. Only implemented for Bullet physics.
 			</description>
 		</method>
 		<method name="get_contact_local_normal" qualifiers="const">

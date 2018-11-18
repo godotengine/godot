@@ -33,4 +33,5 @@
 // for ifaddrs.h needed in drivers/unix/ip_unix.cpp
 #define _BSD_SOURCE 1
 
-#define GLES3_INCLUDE_H "glad/glad.h"
+#define GLES3_INCLUDE_H "thirdparty/glad/glad/glad.h"
+#define GLES2_INCLUDE_H "thirdparty/glad/glad/glad.h"

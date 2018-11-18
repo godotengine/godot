@@ -26,8 +26,6 @@
 #include "src/utils/utils.h"
 #include "src/webp/format_constants.h"
 
-#include "src/enc/delta_palettization_enc.h"
-
 // Maximum number of histogram images (sub-blocks).
 #define MAX_HUFF_IMAGE_SIZE       2600
 
@@ -259,7 +257,7 @@ static int AnalyzeEntropy(const uint32_t* argb,
       ++histo[kHistoAlphaPred * 256];
 
       for (j = 0; j < kHistoTotal; ++j) {
-        entropy_comp[j] = VP8LBitsEntropy(&histo[j * 256], 256, NULL);
+        entropy_comp[j] = VP8LBitsEntropy(&histo[j * 256], 256);
       }
       entropy[kDirect] = entropy_comp[kHistoAlpha] +
           entropy_comp[kHistoRed] +
@@ -384,8 +382,7 @@ static int EncoderAnalyze(VP8LEncoder* const enc,
       AnalyzeAndCreatePalette(pic, low_effort,
                               enc->palette_, &enc->palette_size_);
 
-  // TODO(jyrki): replace the decision to be based on an actual estimate
-  // of entropy, or even spatial variance of entropy.
+  // Empirical bit sizes.
   enc->histo_bits_ = GetHistoBits(method, use_palette,
                                   pic->width, pic->height);
   enc->transform_bits_ = GetTransformBits(method, enc->histo_bits_);
@@ -756,7 +753,6 @@ static WebPEncodingError StoreImageToBitMask(
       // Don't write the distance with the extra bits code since
       // the distance can be up to 18 bits of extra bits, and the prefix
       // 15 bits, totaling to 33, and our PutBits only supports up to 32 bits.
-      // TODO(jyrki): optimize this further.
       VP8LPrefixEncode(distance, &code, &n_bits, &bits);
       WriteHuffmanCode(bw, codes + 4, code);
       VP8LPutBits(bw, bits, n_bits);
@@ -1464,49 +1460,6 @@ static WebPEncodingError EncodePalette(VP8LBitWriter* const bw, int low_effort,
                               20 /* quality */, low_effort);
 }
 
-#ifdef WEBP_EXPERIMENTAL_FEATURES
-
-static WebPEncodingError EncodeDeltaPalettePredictorImage(
-    VP8LBitWriter* const bw, VP8LEncoder* const enc, int quality,
-    int low_effort) {
-  const WebPPicture* const pic = enc->pic_;
-  const int width = pic->width;
-  const int height = pic->height;
-
-  const int pred_bits = 5;
-  const int transform_width = VP8LSubSampleSize(width, pred_bits);
-  const int transform_height = VP8LSubSampleSize(height, pred_bits);
-  const int pred = 7;   // default is Predictor7 (Top/Left Average)
-  const int tiles_per_row = VP8LSubSampleSize(width, pred_bits);
-  const int tiles_per_col = VP8LSubSampleSize(height, pred_bits);
-  uint32_t* predictors;
-  int tile_x, tile_y;
-  WebPEncodingError err = VP8_ENC_OK;
-
-  predictors = (uint32_t*)WebPSafeMalloc(tiles_per_col * tiles_per_row,
-                                         sizeof(*predictors));
-  if (predictors == NULL) return VP8_ENC_ERROR_OUT_OF_MEMORY;
-
-  for (tile_y = 0; tile_y < tiles_per_col; ++tile_y) {
-    for (tile_x = 0; tile_x < tiles_per_row; ++tile_x) {
-      predictors[tile_y * tiles_per_row + tile_x] = 0xff000000u | (pred << 8);
-    }
-  }
-
-  VP8LPutBits(bw, TRANSFORM_PRESENT, 1);
-  VP8LPutBits(bw, PREDICTOR_TRANSFORM, 2);
-  VP8LPutBits(bw, pred_bits - 2, 3);
-  err = EncodeImageNoHuffman(
-      bw, predictors, &enc->hash_chain_,
-      (VP8LBackwardRefs*)&enc->refs_[0],  // cast const away
-      (VP8LBackwardRefs*)&enc->refs_[1],
-      transform_width, transform_height, quality, low_effort);
-  WebPSafeFree(predictors);
-  return err;
-}
-
-#endif // WEBP_EXPERIMENTAL_FEATURES
-
 // -----------------------------------------------------------------------------
 // VP8LEncoder
 
@@ -1568,7 +1521,7 @@ static int EncodeStreamHook(void* input, void* data2) {
   WebPEncodingError err = VP8_ENC_OK;
   const int quality = (int)config->quality;
   const int low_effort = (config->method == 0);
-#if (WEBP_NEAR_LOSSLESS == 1) || defined(WEBP_EXPERIMENTAL_FEATURES)
+#if (WEBP_NEAR_LOSSLESS == 1)
   const int width = picture->width;
 #endif
   const int height = picture->height;
@@ -1626,29 +1579,6 @@ static int EncodeStreamHook(void* input, void* data2) {
 #else
     enc->argb_content_ = kEncoderNone;
 #endif
-
-#ifdef WEBP_EXPERIMENTAL_FEATURES
-    if (config->use_delta_palette) {
-      enc->use_predict_ = 1;
-      enc->use_cross_color_ = 0;
-      enc->use_subtract_green_ = 0;
-      enc->use_palette_ = 1;
-      if (enc->argb_content_ != kEncoderNearLossless &&
-          enc->argb_content_ != kEncoderPalette) {
-        err = MakeInputImageCopy(enc);
-        if (err != VP8_ENC_OK) goto Error;
-      }
-      err = WebPSearchOptimalDeltaPalette(enc);
-      if (err != VP8_ENC_OK) goto Error;
-      if (enc->use_palette_) {
-        err = AllocateTransformBuffer(enc, width, height);
-        if (err != VP8_ENC_OK) goto Error;
-        err = EncodeDeltaPalettePredictorImage(bw, enc, quality, low_effort);
-        if (err != VP8_ENC_OK) goto Error;
-        use_delta_palette = 1;
-      }
-    }
-#endif  // WEBP_EXPERIMENTAL_FEATURES
 
     // Encode palette
     if (enc->use_palette_) {
@@ -1822,7 +1752,7 @@ WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
       worker_interface->Init(worker);
       worker->data1 = param;
       worker->data2 = NULL;
-      worker->hook = (WebPWorkerHook)EncodeStreamHook;
+      worker->hook = EncodeStreamHook;
     }
   }
 
@@ -1944,7 +1874,6 @@ int VP8LEncodeImage(const WebPConfig* const config,
   err = VP8LEncodeStream(config, picture, &bw, 1 /*use_cache*/);
   if (err != VP8_ENC_OK) goto Error;
 
-  // TODO(skal): have a fine-grained progress report in VP8LEncodeStream().
   if (!WebPReportProgress(picture, 90, &percent)) goto UserAbort;
 
   // Finish the RIFF chunk.

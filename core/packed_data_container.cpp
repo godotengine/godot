@@ -30,8 +30,8 @@
 
 #include "packed_data_container.h"
 
-#include "core_string_names.h"
-#include "io/marshalls.h"
+#include "core/core_string_names.h"
+#include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 
@@ -251,7 +251,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			int len;
 			encode_variant(p_data, NULL, len);
 			tmpdata.resize(tmpdata.size() + len);
-			encode_variant(p_data, &tmpdata[pos], len);
+			encode_variant(p_data, &tmpdata.write[pos], len);
 			return pos;
 
 		} break;
@@ -268,8 +268,8 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			uint32_t pos = tmpdata.size();
 			int len = d.size();
 			tmpdata.resize(tmpdata.size() + len * 12 + 8);
-			encode_uint32(TYPE_DICT, &tmpdata[pos + 0]);
-			encode_uint32(len, &tmpdata[pos + 4]);
+			encode_uint32(TYPE_DICT, &tmpdata.write[pos + 0]);
+			encode_uint32(len, &tmpdata.write[pos + 4]);
 
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -288,11 +288,11 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			int idx = 0;
 			for (List<DictKey>::Element *E = sortk.front(); E; E = E->next()) {
 
-				encode_uint32(E->get().hash, &tmpdata[pos + 8 + idx * 12 + 0]);
+				encode_uint32(E->get().hash, &tmpdata.write[pos + 8 + idx * 12 + 0]);
 				uint32_t ofs = _pack(E->get().key, tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata[pos + 8 + idx * 12 + 4]);
+				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 4]);
 				ofs = _pack(d[E->get().key], tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata[pos + 8 + idx * 12 + 8]);
+				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 8]);
 				idx++;
 			}
 
@@ -306,13 +306,13 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			uint32_t pos = tmpdata.size();
 			int len = a.size();
 			tmpdata.resize(tmpdata.size() + len * 4 + 8);
-			encode_uint32(TYPE_ARRAY, &tmpdata[pos + 0]);
-			encode_uint32(len, &tmpdata[pos + 4]);
+			encode_uint32(TYPE_ARRAY, &tmpdata.write[pos + 0]);
+			encode_uint32(len, &tmpdata.write[pos + 4]);
 
 			for (int i = 0; i < len; i++) {
 
 				uint32_t ofs = _pack(a[i], tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata[pos + 8 + i * 4]);
+				encode_uint32(ofs, &tmpdata.write[pos + 8 + i * 4]);
 			}
 
 			return pos;

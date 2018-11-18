@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTERSCENE_H
 #define RESOURCEIMPORTERSCENE_H
 
-#include "io/resource_import.h"
+#include "core/io/resource_import.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape.h"
@@ -75,11 +75,17 @@ class EditorScenePostImport : public Reference {
 
 	GDCLASS(EditorScenePostImport, Reference);
 
+	String source_folder;
+	String source_file;
+
 protected:
 	static void _bind_methods();
 
 public:
+	String get_source_folder() const;
+	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
+	virtual void init(const String &p_scene_folder, const String &p_scene_path);
 	EditorScenePostImport();
 };
 
@@ -110,7 +116,7 @@ class ResourceImporterScene : public ResourceImporter {
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_ENABLE,
-		//LIGHT_BAKE_LIGHTMAPS
+		LIGHT_BAKE_LIGHTMAPS
 	};
 
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);

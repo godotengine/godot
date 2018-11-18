@@ -33,23 +33,35 @@
 #include <mono/metadata/attrdefs.h>
 
 #include "gd_mono_assembly.h"
+#include "gd_mono_marshal.h"
 
-MonoType *GDMonoClass::get_raw_type(GDMonoClass *p_class) {
+String GDMonoClass::get_full_name(MonoClass *p_mono_class) {
+	// mono_type_get_full_name is not exposed to embedders, but this seems to do the job
+	MonoReflectionType *type_obj = mono_type_get_object(mono_domain_get(), get_mono_type(p_mono_class));
 
-	return mono_class_get_type(p_class->get_mono_ptr());
+	MonoException *exc = NULL;
+	MonoString *str = GDMonoUtils::object_to_string((MonoObject *)type_obj, &exc);
+	UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+	return GDMonoMarshal::mono_string_to_godot(str);
+}
+
+MonoType *GDMonoClass::get_mono_type(MonoClass *p_mono_class) {
+	return mono_class_get_type(p_mono_class);
+}
+
+String GDMonoClass::get_full_name() const {
+	return get_full_name(mono_class);
+}
+
+MonoType *GDMonoClass::get_mono_type() {
+	// Care, you cannot compare MonoType pointers
+	return get_mono_type(mono_class);
 }
 
 bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
-}
-
-String GDMonoClass::get_full_name() const {
-
-	String res = namespace_name;
-	if (res.length())
-		res += ".";
-	return res + class_name;
 }
 
 GDMonoClass *GDMonoClass::get_parent_class() {
@@ -308,6 +320,12 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	return get_method(method);
 }
 
+void *GDMonoClass::get_method_thunk(const StringName &p_name, int p_params_count) {
+
+	GDMonoMethod *method = get_method(p_name, p_params_count);
+	return method ? method->get_thunk() : NULL;
+}
+
 GDMonoField *GDMonoClass::get_field(const StringName &p_name) {
 
 	Map<StringName, GDMonoField *>::Element *result = fields.find(p_name);
@@ -483,7 +501,7 @@ GDMonoClass::~GDMonoClass() {
 					}
 				}
 
-				deleted_methods[offset] = method;
+				deleted_methods.write[offset] = method;
 				++offset;
 
 				memdelete(method);

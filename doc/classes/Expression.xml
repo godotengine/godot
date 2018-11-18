@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Expression" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+		A class that stores an expression you can execute.
+	</brief_description>
+	<description>
+		An expression can be made of any arithmetic operation, built-in math function call, method call of a passed instance, or built-in type construction call.
+		An example expression text using the built-in math functions could be [code]sqrt(pow(3,2) + pow(4,2))[/code].
+		In the following example we use a [LineEdit] node to write our expression and show the result.
+		[codeblock]
+		onready var expression = Expression.new()
+
+		func _ready():
+		    $LineEdit.connect("text_entered", self, "_on_text_entered")
+
+		func _on_text_entered(command):
+		    var error = expression.parse(command, [])
+		    if error != OK:
+		        print(get_error_text())
+		        return
+		    var result = expression.execute([], null, true)
+		    if not expression.has_execute_failed():
+		        $LineEdit.text = str(result)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="execute">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="inputs" type="Array" default="[  ]">
+			</argument>
+			<argument index="1" name="base_instance" type="Object" default="null">
+			</argument>
+			<argument index="2" name="show_error" type="bool" default="true">
+			</argument>
+			<description>
+				Executes the expression that was previously parsed by [method parse] and returns the result. Before you use the returned object, you should check if the method failed by calling [method has_execute_failed].
+			</description>
+		</method>
+		<method name="get_error_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the error text if [method parse] has failed.
+			</description>
+		</method>
+		<method name="has_execute_failed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if [method execute] has failed.
+			</description>
+		</method>
+		<method name="parse">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="expression" type="String">
+			</argument>
+			<argument index="1" name="input_names" type="PoolStringArray" default="PoolStringArray(  )">
+			</argument>
+			<description>
+				Parses the expression and returns a [enum @GlobalScope.Error].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

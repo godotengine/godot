@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 
-import os
 Import('env')
 
-def make_debug(target, source, env):
-    if (env["macports_clang"] != 'no'):
-        mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
-        mpclangver = env["macports_clang"]
-        os.system(mpprefix + '/libexec/llvm-' + mpclangver + '/bin/llvm-dsymutil {0} -o {0}.dSYM'.format(target[0]))
-    else:
-        os.system('dsymutil {0} -o {0}.dSYM'.format(target[0]))
-    os.system('strip -u -r {0}'.format(target[0]))
+import os
+from platform_methods import run_in_subprocess
+import platform_osx_builders
 
 files = [
     'crash_handler_osx.mm',
@@ -25,5 +19,5 @@ files = [
 prog = env.add_program('#bin/godot', files)
 
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
-    env.AddPostAction(prog, make_debug)
+    env.AddPostAction(prog, run_in_subprocess(platform_osx_builders.make_debug_osx))
 

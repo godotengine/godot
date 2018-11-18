@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="UPNP" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+		UPNP network functions.
+	</brief_description>
+	<description>
+		Provides UPNP functionality to discover [UPNPDevice]s on the local network and execute commands on them, like managing port mappings (port forwarding) and querying the local and remote network IP address. Note that methods on this class are synchronous and block the calling thread.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="add_device">
+			<return type="void">
+			</return>
+			<argument index="0" name="device" type="UPNPDevice">
+			</argument>
+			<description>
+				Adds the given [UPNPDevice] to the list of discovered devices.
+			</description>
+		</method>
+		<method name="add_port_mapping" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="port_internal" type="int" default="0">
+			</argument>
+			<argument index="2" name="desc" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="3" name="proto" type="String" default="&quot;UDP&quot;">
+			</argument>
+			<argument index="4" name="duration" type="int" default="0">
+			</argument>
+			<description>
+				Adds a mapping to forward the external [code]port[/code] (between 1 and 65535) on the default gateway (see [method get_gateway]) to the [code]internal_port[/code] on the local machine for the given protocol [code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP being the default). If a port mapping for the given port and protocol combination already exists on that gateway device, this method tries to overwrite it. If that is not desired, you can retrieve the gateway manually with [method get_gateway] and call [method add_port_mapping] on it, if any.
+				If [code]internal_port[/code] is [code]0[/code] (the default), the same port number is used for both the external and the internal port (the [code]port[/code] value).
+				The description ([code]desc[/code]) is shown in some router UIs and can be used to point out which application added the mapping, and the lifetime of the mapping can be limited by [code]duration[/code]. However, some routers are incompatible with one or both of these, so use with caution and add fallback logic in case of errors to retry without them if in doubt.
+				See [enum UPNPResult] for possible return values.
+			</description>
+		</method>
+		<method name="clear_devices">
+			<return type="void">
+			</return>
+			<description>
+				Clears the list of discovered devices.
+			</description>
+		</method>
+		<method name="delete_port_mapping" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="proto" type="String" default="&quot;UDP&quot;">
+			</argument>
+			<description>
+				Deletes the port mapping for the given port and protocol combination on the default gateway (see [method get_gateway]) if one exists. [code]port[/code] must be a valid port between 1 and 65535, [code]proto[/code] can be either [code]TCP[/code] or [code]UDP[/code]. See [enum UPNPResult] for possible return values.
+			</description>
+		</method>
+		<method name="discover">
+			<return type="int">
+			</return>
+			<argument index="0" name="timeout" type="int" default="2000">
+			</argument>
+			<argument index="1" name="ttl" type="int" default="2">
+			</argument>
+			<argument index="2" name="device_filter" type="String" default="&quot;InternetGatewayDevice&quot;">
+			</argument>
+			<description>
+				Discovers local [UPNPDevice]s. Clears the list of previously discovered devices.
+				Filters for IGD (InternetGatewayDevice) type devices by default, as those manage port forwarding. [code]timeout[/code] is the time to wait for responses in milliseconds. [code]ttl[/code] is the time-to-live; only touch this if you know what you're doing.
+				See [enum UPNPResult] for possible return values.
+			</description>
+		</method>
+		<method name="get_device" qualifiers="const">
+			<return type="UPNPDevice">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the [UPNPDevice] at the given [code]index[/code].
+			</description>
+		</method>
+		<method name="get_device_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of discovered [UPNPDevice]s.
+			</description>
+		</method>
+		<method name="get_gateway" qualifiers="const">
+			<return type="UPNPDevice">
+			</return>
+			<description>
+				Returns the default gateway. That is the first discovered [UPNPDevice] that is also a valid IGD (InternetGatewayDevice).
+			</description>
+		</method>
+		<method name="query_external_address" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the external [IP] address of the default gateway (see [method get_gateway]) as string. Returns an empty string on error.
+			</description>
+		</method>
+		<method name="remove_device">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Removes the device at [code]index[/code] from the list of discovered devices.
+			</description>
+		</method>
+		<method name="set_device">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<argument index="1" name="device" type="UPNPDevice">
+			</argument>
+			<description>
+				Sets the device at [code]index[/code] from the list of discovered devices to [code]device[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="discover_ipv6" type="bool" setter="set_discover_ipv6" getter="is_discover_ipv6">
+			If [code]true[/code], IPv6 is used for [UPNPDevice] discovery.
+		</member>
+		<member name="discover_local_port" type="int" setter="set_discover_local_port" getter="get_discover_local_port">
+			If [code]0[/code], the local port to use for discovery is chosen automatically by the system. If [code]1[/code], discovery will be done from the source port 1900 (same as destination port). Otherwise, the value will be used as the port.
+		</member>
+		<member name="discover_multicast_if" type="String" setter="set_discover_multicast_if" getter="get_discover_multicast_if">
+			Multicast interface to use for discovery. Uses the default multicast interface if empty.
+		</member>
+	</members>
+	<constants>
+		<constant name="UPNP_RESULT_SUCCESS" value="0" enum="UPNPResult">
+			UPNP command or discovery was successful.
+		</constant>
+		<constant name="UPNP_RESULT_NOT_AUTHORIZED" value="1" enum="UPNPResult">
+			Not authorized to use the command on the [UPNPDevice]. May be returned when the user disabled UPNP on their router.
+		</constant>
+		<constant name="UPNP_RESULT_PORT_MAPPING_NOT_FOUND" value="2" enum="UPNPResult">
+			No port mapping was found for the given port, protocol combination on the given [UPNPDevice].
+		</constant>
+		<constant name="UPNP_RESULT_INCONSISTENT_PARAMETERS" value="3" enum="UPNPResult">
+			Inconsistent parameters.
+		</constant>
+		<constant name="UPNP_RESULT_NO_SUCH_ENTRY_IN_ARRAY" value="4" enum="UPNPResult">
+			No such entry in array. May be returned if a given port, protocol combination is not found on an [UPNPDevice].
+		</constant>
+		<constant name="UPNP_RESULT_ACTION_FAILED" value="5" enum="UPNPResult">
+			The action failed.
+		</constant>
+		<constant name="UPNP_RESULT_SRC_IP_WILDCARD_NOT_PERMITTED" value="6" enum="UPNPResult">
+			The [UPNPDevice] does not allow wildcard values for the source IP address.
+		</constant>
+		<constant name="UPNP_RESULT_EXT_PORT_WILDCARD_NOT_PERMITTED" value="7" enum="UPNPResult">
+			The [UPNPDevice] does not allow wildcard values for the external port.
+		</constant>
+		<constant name="UPNP_RESULT_INT_PORT_WILDCARD_NOT_PERMITTED" value="8" enum="UPNPResult">
+			The [UPNPDevice] does not allow wildcard values for the internal port.
+		</constant>
+		<constant name="UPNP_RESULT_REMOTE_HOST_MUST_BE_WILDCARD" value="9" enum="UPNPResult">
+			The remote host value must be a wildcard.
+		</constant>
+		<constant name="UPNP_RESULT_EXT_PORT_MUST_BE_WILDCARD" value="10" enum="UPNPResult">
+			The external port value must be a wildcard.
+		</constant>
+		<constant name="UPNP_RESULT_NO_PORT_MAPS_AVAILABLE" value="11" enum="UPNPResult">
+			No port maps are available. May also be returned if port mapping functionality is not available.
+		</constant>
+		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MECHANISM" value="12" enum="UPNPResult">
+			Conflict with other mechanism. May be returned instead of [code]UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING[/code] if a port mapping conflicts with an existing one.
+		</constant>
+		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING" value="13" enum="UPNPResult">
+			Conflict with an existing port mapping.
+		</constant>
+		<constant name="UPNP_RESULT_SAME_PORT_VALUES_REQUIRED" value="14" enum="UPNPResult">
+			External and internal port values must be the same.
+		</constant>
+		<constant name="UPNP_RESULT_ONLY_PERMANENT_LEASE_SUPPORTED" value="15" enum="UPNPResult">
+			Only permanent leases are supported. Do not use the [code]duration[/code] parameter when adding port mappings.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_GATEWAY" value="16" enum="UPNPResult">
+			Invalid gateway.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_PORT" value="17" enum="UPNPResult">
+			Invalid port.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_PROTOCOL" value="18" enum="UPNPResult">
+			Invalid protocol.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_DURATION" value="19" enum="UPNPResult">
+			Invalid duration.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_ARGS" value="20" enum="UPNPResult">
+			Invalid arguments.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_RESPONSE" value="21" enum="UPNPResult">
+			Invalid response.
+		</constant>
+		<constant name="UPNP_RESULT_INVALID_PARAM" value="22" enum="UPNPResult">
+			Invalid parameter.
+		</constant>
+		<constant name="UPNP_RESULT_HTTP_ERROR" value="23" enum="UPNPResult">
+			HTTP error.
+		</constant>
+		<constant name="UPNP_RESULT_SOCKET_ERROR" value="24" enum="UPNPResult">
+			Socket error.
+		</constant>
+		<constant name="UPNP_RESULT_MEM_ALLOC_ERROR" value="25" enum="UPNPResult">
+			Error allocating memory.
+		</constant>
+		<constant name="UPNP_RESULT_NO_GATEWAY" value="26" enum="UPNPResult">
+			No gateway available. You may need to call [method discover] first, or discovery didn't detect any valid IGDs (InternetGatewayDevices).
+		</constant>
+		<constant name="UPNP_RESULT_NO_DEVICES" value="27" enum="UPNPResult">
+			No devices available. You may need to call [method discover] first, or discovery didn't detect any valid [UPNPDevice]s.
+		</constant>
+		<constant name="UPNP_RESULT_UNKNOWN_ERROR" value="28" enum="UPNPResult">
+			Unknown error.
+		</constant>
+	</constants>
+</class>

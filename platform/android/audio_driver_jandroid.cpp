@@ -30,8 +30,8 @@
 
 #include "audio_driver_jandroid.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "thread_jandroid.h"
 
 #ifndef ANDROID_NATIVE_ACTIVITY
@@ -78,13 +78,11 @@ Error AudioDriverAndroid::init() {
 	//        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	int mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
+	int mix_rate = GLOBAL_DEF_RST("audio/mix_rate", 44100);
 
-	int latency = GLOBAL_DEF("audio/output_latency", 25);
+	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
 	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer size: " + itos(buffer_size));
-	}
+	print_verbose("Audio buffer size: " + itos(buffer_size));
 
 	audioBuffer = env->CallObjectMethod(io, _init_audio, mix_rate, buffer_size);
 

@@ -37,7 +37,7 @@
 			</description>
 		</method>
 		<method name="create_item">
-			<return type="Object">
+			<return type="TreeItem">
 			</return>
 			<argument index="0" name="parent" type="Object" default="null">
 			</argument>
@@ -94,6 +94,8 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				If [member drop_mode_flags] includes [code]DROP_MODE_INBETWEEN[/code], returns -1 if [code]position[/code] is the upper part of a tree item at that position, 1 for the lower part, and additionally 0 for the middle part if [member drop_mode_flags] includes [code]DROP_MODE_ON_ITEM[/code].
+				Otherwise, returns 0. If there are no tree item at [code]position[/code], returns -100.
 			</description>
 		</method>
 		<method name="get_edited" qualifiers="const">
@@ -228,7 +230,7 @@
 			The amount of columns.
 		</member>
 		<member name="drop_mode_flags" type="int" setter="set_drop_mode_flags" getter="get_drop_mode_flags">
-			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants.
+			The drop mode as an OR combination of flags. See [code]DROP_MODE_*[/code] constants. Once dropping is done, reverts to [code]DROP_MODE_DISABLED[/code]. Setting this during [method Control.can_drop_data] is recommended.
 		</member>
 		<member name="hide_folding" type="bool" setter="set_hide_folding" getter="is_folding_hidden">
 			If [code]true[/code] the folding arrow is hidden.
@@ -242,7 +244,7 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<argument index="1" name="column" type="int">
 			</argument>
@@ -284,7 +286,7 @@
 			</description>
 		</signal>
 		<signal name="item_collapsed">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<description>
 				Emitted when an item is collapsed by a click on the folding arrow.
@@ -322,7 +324,7 @@
 			</description>
 		</signal>
 		<signal name="multi_selected">
-			<argument index="0" name="item" type="Object">
+			<argument index="0" name="item" type="TreeItem">
 			</argument>
 			<argument index="1" name="column" type="int">
 			</argument>

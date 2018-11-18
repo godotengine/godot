@@ -36,7 +36,7 @@
 #include "scene/resources/color_ramp.h"
 #include "scene/resources/default_theme/theme_data.h"
 
-#define POINT_WIDTH 8
+#define POINT_WIDTH (8 * EDSCALE)
 
 class GradientEdit : public Control {
 

@@ -204,9 +204,9 @@
 	</members>
 	<signals>
 		<signal name="input_event">
-			<argument index="0" name="viewport" type="Object">
+			<argument index="0" name="viewport" type="Node">
 			</argument>
-			<argument index="1" name="event" type="Object">
+			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<argument index="2" name="shape_idx" type="int">
 			</argument>

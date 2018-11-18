@@ -74,7 +74,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 			Vector2 ep = nm.xform.xform(r[idx]);
 			center += ep;
 			e.point = _get_point(ep);
-			p.edges[j] = e;
+			p.edges.write[j] = e;
 
 			int idxn = indices[(j + 1) % plen];
 			if (idxn < 0 || idxn >= len) {
@@ -119,17 +119,16 @@ void Navigation2D::_navpoly_link(int p_id) {
 					ConnectionPending pending;
 					pending.polygon = &p;
 					pending.edge = j;
-					p.edges[j].P = C->get().pending.push_back(pending);
+					p.edges.write[j].P = C->get().pending.push_back(pending);
 					continue;
-					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
 
 				C->get().B = &p;
 				C->get().B_edge = j;
-				C->get().A->edges[C->get().A_edge].C = &p;
-				C->get().A->edges[C->get().A_edge].C_edge = j;
-				p.edges[j].C = C->get().A;
-				p.edges[j].C_edge = C->get().A_edge;
+				C->get().A->edges.write[C->get().A_edge].C = &p;
+				C->get().A->edges.write[C->get().A_edge].C_edge = j;
+				p.edges.write[j].C = C->get().A;
+				p.edges.write[j].C_edge = C->get().A_edge;
 				//connection successful.
 			}
 		}
@@ -143,8 +142,6 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm = navpoly_map[p_id];
 	ERR_FAIL_COND(!nm.linked);
-
-	//print_line("UNLINK");
 
 	for (List<Polygon>::Element *E = nm.polygons.front(); E; E = E->next()) {
 
@@ -167,10 +164,10 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 			} else if (C->get().B) {
 				//disconnect
 
-				C->get().B->edges[C->get().B_edge].C = NULL;
-				C->get().B->edges[C->get().B_edge].C_edge = -1;
-				C->get().A->edges[C->get().A_edge].C = NULL;
-				C->get().A->edges[C->get().A_edge].C_edge = -1;
+				C->get().B->edges.write[C->get().B_edge].C = NULL;
+				C->get().B->edges.write[C->get().B_edge].C_edge = -1;
+				C->get().A->edges.write[C->get().A_edge].C = NULL;
+				C->get().A->edges.write[C->get().A_edge].C_edge = -1;
 
 				if (C->get().A == &E->get()) {
 
@@ -187,11 +184,11 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 
 					C->get().B = cp.polygon;
 					C->get().B_edge = cp.edge;
-					C->get().A->edges[C->get().A_edge].C = cp.polygon;
-					C->get().A->edges[C->get().A_edge].C_edge = cp.edge;
-					cp.polygon->edges[cp.edge].C = C->get().A;
-					cp.polygon->edges[cp.edge].C_edge = C->get().A_edge;
-					cp.polygon->edges[cp.edge].P = NULL;
+					C->get().A->edges.write[C->get().A_edge].C = cp.polygon;
+					C->get().A->edges.write[C->get().A_edge].C_edge = cp.edge;
+					cp.polygon->edges.write[cp.edge].C = C->get().A;
+					cp.polygon->edges.write[cp.edge].C_edge = C->get().A_edge;
+					cp.polygon->edges.write[cp.edge].P = NULL;
 				}
 
 			} else {
@@ -339,9 +336,8 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		Vector<Vector2> path;
 		path.resize(2);
-		path[0] = begin_point;
-		path[1] = end_point;
-		//print_line("Direct Path");
+		path.write[0] = begin_point;
+		path.write[1] = end_point;
 		return path;
 	}
 
@@ -379,7 +375,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 	while (!found_route) {
 
 		if (open_list.size() == 0) {
-			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list
@@ -393,10 +388,34 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 			Polygon *p = E->get();
 
 			float cost = p->distance;
+
+#ifdef USE_ENTRY_POINT
+			int es = p->edges.size();
+
+			float shortest_distance = 1e30;
+
+			for (int i = 0; i < es; i++) {
+				Polygon::Edge &e = p->edges.write[i];
+
+				if (!e.C)
+					continue;
+
+				Vector2 edge[2] = {
+					_get_vertex(p->edges[i].point),
+					_get_vertex(p->edges[(i + 1) % es].point)
+				};
+
+				Vector2 edge_point = Geometry::get_closest_point_to_segment_2d(p->entry, edge);
+				float dist = p->entry.distance_to(edge_point);
+				if (dist < shortest_distance)
+					shortest_distance = dist;
+			}
+
+			cost += shortest_distance;
+#else
 			cost += p->center.distance_to(end_point);
-
+#endif
 			if (cost < least_cost) {
-
 				least_cost_poly = E;
 				least_cost = cost;
 			}
@@ -408,7 +427,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 
 		for (int i = 0; i < es; i++) {
 
-			Polygon::Edge &e = p->edges[i];
+			Polygon::Edge &e = p->edges.write[i];
 
 			if (!e.C)
 				continue;
@@ -526,7 +545,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 					if (portal_left.distance_squared_to(apex_point) < CMP_EPSILON || CLOCK_TANGENT(apex_point, left, portal_right) > 0) {
 						left_poly = p;
 						portal_left = left;
-						//print_line("***ADVANCE LEFT");
 					} else {
 
 						apex_point = portal_right;
@@ -537,8 +555,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						if (!path.size() || path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
 							path.push_back(apex_point);
 						skip = true;
-						//print_line("addpoint left");
-						//print_line("***CLIP LEFT");
 					}
 				}
 
@@ -547,7 +563,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 					if (portal_right.distance_squared_to(apex_point) < CMP_EPSILON || CLOCK_TANGENT(apex_point, right, portal_left) < 0) {
 						right_poly = p;
 						portal_right = right;
-						//print_line("***ADVANCE RIGHT");
 					} else {
 
 						apex_point = portal_left;
@@ -557,8 +572,6 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 						portal_left = apex_point;
 						if (!path.size() || path[path.size() - 1].distance_to(apex_point) > CMP_EPSILON)
 							path.push_back(apex_point);
-						//print_line("addpoint right");
-						//print_line("***CLIP RIGHT");
 					}
 				}
 
@@ -586,7 +599,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 		if (!path.size() || path[path.size() - 1].distance_squared_to(begin_point) > CMP_EPSILON) {
 			path.push_back(begin_point); // Add the begin point
 		} else {
-			path[path.size() - 1] = begin_point; // Replace first midpoint by the exact begin point
+			path.write[path.size() - 1] = begin_point; // Replace first midpoint by the exact begin point
 		}
 
 		path.invert();
@@ -594,7 +607,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2 &p_start, const Vect
 		if (path.size() <= 1 || path[path.size() - 1].distance_squared_to(end_point) > CMP_EPSILON) {
 			path.push_back(end_point); // Add the end point
 		} else {
-			path[path.size() - 1] = end_point; // Replace last midpoint by the exact end point
+			path.write[path.size() - 1] = end_point; // Replace last midpoint by the exact end point
 		}
 
 		return path;
@@ -671,7 +684,7 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 
 				if (Geometry::is_point_in_triangle(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
 
-					E->get().owner;
+					return E->get().owner;
 				}
 			}
 		}

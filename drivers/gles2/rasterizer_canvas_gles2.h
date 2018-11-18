@@ -34,6 +34,7 @@
 #include "servers/visual/rasterizer.h"
 
 #include "shaders/canvas.glsl.gen.h"
+#include "shaders/lens_distorted.glsl.gen.h"
 
 // #include "shaders/canvas_shadow.glsl.gen.h"
 
@@ -70,6 +71,7 @@ public:
 		bool canvas_texscreen_used;
 		CanvasShaderGLES2 canvas_shader;
 		// CanvasShadowShaderGLES3 canvas_shadow_shader;
+		LensDistortedShaderGLES2 lens_shader;
 
 		bool using_texture_rect;
 		bool using_ninepatch;
@@ -103,7 +105,7 @@ public:
 	_FORCE_INLINE_ void _draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
 	_FORCE_INLINE_ void _draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
 
-	_FORCE_INLINE_ void _canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip);
+	_FORCE_INLINE_ void _canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip, RasterizerStorageGLES2::Material *p_material);
 	_FORCE_INLINE_ void _copy_texscreen(const Rect2 &p_rect);
 
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
@@ -117,6 +119,7 @@ public:
 
 	void _bind_quad_buffer();
 	void draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src);
+	void draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
 
 	void initialize();
 	void finalize();

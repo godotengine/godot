@@ -31,10 +31,10 @@
 #include "image_etc.h"
 #include "Etc.h"
 #include "EtcFilter.h"
-#include "image.h"
-#include "os/copymem.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/image.h"
+#include "core/os/copymem.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 	switch (format) {
@@ -47,13 +47,14 @@ static Image::Format _get_etc2_mode(Image::DetectChannels format) {
 		case Image::DETECTED_RGB:
 			return Image::FORMAT_ETC2_RGB8;
 
-		default:
+		case Image::DETECTED_RGBA:
 			return Image::FORMAT_ETC2_RGBA8;
 
-			// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
+		// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
+		default:
+			// TODO: Kept for compatibility, but should be investigated whether it's correct or if it should error out
+			return Image::FORMAT_ETC2_RGBA8;
 	}
-
-	ERR_FAIL_COND_V(true, Image::FORMAT_MAX);
 }
 
 static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format) {
@@ -81,22 +82,42 @@ static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format)
 
 		case Image::FORMAT_ETC2_RGB8A1:
 			return Etc::Image::Format::RGB8A1;
+
+		default:
+			ERR_FAIL_V(Etc::Image::Format::UNKNOWN);
 	}
-
-	ERR_FAIL_COND_V(true, Etc::Image::Format::UNKNOWN);
-}
-
-static void _decompress_etc1(Image *p_img) {
-	// not implemented, to be removed
-}
-
-static void _decompress_etc2(Image *p_img) {
-	// not implemented, to be removed
 }
 
 static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::CompressSource p_source) {
 	Image::Format img_format = p_img->get_format();
 	Image::DetectChannels detected_channels = p_img->get_detected_channels();
+
+	if (p_source == Image::COMPRESS_SOURCE_LAYERED) {
+		//keep what comes in
+		switch (p_img->get_format()) {
+			case Image::FORMAT_L8: {
+				detected_channels = Image::DETECTED_L;
+			} break;
+			case Image::FORMAT_LA8: {
+				detected_channels = Image::DETECTED_LA;
+			} break;
+			case Image::FORMAT_R8: {
+				detected_channels = Image::DETECTED_R;
+			} break;
+			case Image::FORMAT_RG8: {
+				detected_channels = Image::DETECTED_RG;
+			} break;
+			case Image::FORMAT_RGB8: {
+				detected_channels = Image::DETECTED_RGB;
+			} break;
+			case Image::FORMAT_RGBA8:
+			case Image::FORMAT_RGBA4444:
+			case Image::FORMAT_RGBA5551: {
+				detected_channels = Image::DETECTED_RGBA;
+			} break;
+			default: {}
+		}
+	}
 
 	if (p_source == Image::COMPRESS_SOURCE_SRGB && (detected_channels == Image::DETECTED_R || detected_channels == Image::DETECTED_RG)) {
 		//R and RG do not support SRGB
@@ -147,7 +168,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	PoolVector<uint8_t>::Read r = img->get_data().read();
 
-	int target_size = Image::get_image_data_size(imgw, imgh, etc_format, p_img->has_mipmaps() ? -1 : 0);
+	unsigned int target_size = Image::get_image_data_size(imgw, imgh, etc_format, p_img->has_mipmaps());
 	int mmc = 1 + (p_img->has_mipmaps() ? Image::get_image_required_mipmaps(imgw, imgh, etc_format) : 0);
 
 	PoolVector<uint8_t> dst_data;
@@ -172,7 +193,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	int wofs = 0;
 
-	print_line("begin encoding, format: " + Image::get_format_name(etc_format));
+	print_verbose("ETC: Begin encoding, format: " + Image::get_format_name(etc_format));
 	uint64_t t = OS::get_singleton()->get_ticks_msec();
 	for (int i = 0; i < mmc; i++) {
 		// convert source image to internal etc2comp format (which is equivalent to Image::FORMAT_RGBAF)
@@ -200,7 +221,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		delete[] src_rgba_f;
 	}
 
-	print_line("time encoding: " + rtos(OS::get_singleton()->get_ticks_msec() - t));
+	print_verbose("ETC: Time encoding: " + rtos(OS::get_singleton()->get_ticks_msec() - t));
 
 	p_img->create(imgw, imgh, p_img->has_mipmaps(), etc_format, dst_data);
 }
@@ -216,8 +237,5 @@ static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::CompressS
 void _register_etc_compress_func() {
 
 	Image::_image_compress_etc1_func = _compress_etc1;
-	//Image::_image_decompress_etc1 = _decompress_etc1;
-
 	Image::_image_compress_etc2_func = _compress_etc2;
-	//Image::_image_decompress_etc2 = _decompress_etc2;
 }

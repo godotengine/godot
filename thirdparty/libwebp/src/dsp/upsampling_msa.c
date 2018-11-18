@@ -264,6 +264,7 @@ static void YuvToBgr(int y, int u, int v, uint8_t* const bgr) {
   bgr[2] = Clip8(r1 >> 6);
 }
 
+#if !defined(WEBP_REDUCE_CSP)
 static void YuvToRgb565(int y, int u, int v, uint8_t* const rgb) {
   const int y1 = MultHi(y, 19077);
   const int r1 = y1 + MultHi(v, 26149) - 14234;
@@ -306,6 +307,7 @@ static void YuvToArgb(uint8_t y, uint8_t u, uint8_t v, uint8_t* const argb) {
   argb[0] = 0xff;
   YuvToRgb(y, u, v, argb + 1);
 }
+#endif  // WEBP_REDUCE_CSP
 
 static void YuvToBgra(uint8_t y, uint8_t u, uint8_t v, uint8_t* const bgra) {
   YuvToBgr(y, u, v, bgra);
@@ -317,6 +319,7 @@ static void YuvToRgba(uint8_t y, uint8_t u, uint8_t v, uint8_t* const rgba) {
   rgba[3] = 0xff;
 }
 
+#if !defined(WEBP_REDUCE_CSP)
 static void YuvToRgbLine(const uint8_t* y, const uint8_t* u,
                          const uint8_t* v, uint8_t* dst, int length) {
   v16u8 R, G, B;
@@ -370,6 +373,7 @@ static void YuvToBgrLine(const uint8_t* y, const uint8_t* u,
     memcpy(dst, temp, length * 3 * sizeof(*dst));
   }
 }
+#endif  // WEBP_REDUCE_CSP
 
 static void YuvToRgbaLine(const uint8_t* y, const uint8_t* u,
                           const uint8_t* v, uint8_t* dst, int length) {
@@ -427,6 +431,7 @@ static void YuvToBgraLine(const uint8_t* y, const uint8_t* u,
   }
 }
 
+#if !defined(WEBP_REDUCE_CSP)
 static void YuvToArgbLine(const uint8_t* y, const uint8_t* u,
                           const uint8_t* v, uint8_t* dst, int length) {
   v16u8 R, G, B;
@@ -526,6 +531,7 @@ static void YuvToRgb565Line(const uint8_t* y, const uint8_t* u,
     memcpy(dst, temp, length * 2 * sizeof(*dst));
   }
 }
+#endif  // WEBP_REDUCE_CSP
 
 #define UPSAMPLE_32PIXELS(a, b, c, d) do {    \
   v16u8 s = __msa_aver_u_b(a, d);             \

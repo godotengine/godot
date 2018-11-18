@@ -12,7 +12,6 @@
 		Band 4 : 1000 Hz
 		Band 5 : 3200 Hz
 		Band 6 : 10000 Hz
-
 		See also [AudioEffectEQ], [AudioEffectEQ10], [AudioEffectEQ21].
 	</description>
 	<tutorials>

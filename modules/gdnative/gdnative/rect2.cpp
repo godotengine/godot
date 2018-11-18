@@ -30,7 +30,7 @@
 
 #include "gdnative/rect2.h"
 
-#include "core/math/math_2d.h"
+#include "core/math/transform_2d.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus
@@ -106,6 +106,27 @@ godot_rect2 GDAPI godot_rect2_grow(const godot_rect2 *p_self, const godot_real p
 	const Rect2 *self = (const Rect2 *)p_self;
 
 	*((Rect2 *)&dest) = self->grow(p_by);
+	return dest;
+}
+
+godot_rect2 GDAPI godot_rect2_grow_individual(const godot_rect2 *p_self, const godot_real p_left, const godot_real p_top, const godot_real p_right, const godot_real p_bottom) {
+	godot_rect2 dest;
+	const Rect2 *self = (const Rect2 *)p_self;
+	*((Rect2 *)&dest) = self->grow_individual(p_left, p_top, p_right, p_bottom);
+	return dest;
+}
+
+godot_rect2 GDAPI godot_rect2_grow_margin(const godot_rect2 *p_self, const godot_int p_margin, const godot_real p_by) {
+	godot_rect2 dest;
+	const Rect2 *self = (const Rect2 *)p_self;
+	*((Rect2 *)&dest) = self->grow_margin((Margin)p_margin, p_by);
+	return dest;
+}
+
+godot_rect2 GDAPI godot_rect2_abs(const godot_rect2 *p_self) {
+	godot_rect2 dest;
+	const Rect2 *self = (const Rect2 *)p_self;
+	*((Rect2 *)&dest) = self->abs();
 	return dest;
 }
 

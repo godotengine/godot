@@ -40,7 +40,7 @@
 class RigidBodyBullet;
 
 class Generic6DOFJointBullet : public JointBullet {
-	class btGeneric6DofConstraint *sixDOFConstraint;
+	class btGeneric6DofSpring2Constraint *sixDOFConstraint;
 
 	// First is linear second is angular
 	Vector3 limits_lower[2];
@@ -48,7 +48,7 @@ class Generic6DOFJointBullet : public JointBullet {
 	bool flags[3][PhysicsServer::G6DOF_JOINT_FLAG_MAX];
 
 public:
-	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
+	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_6DOF; }
 

@@ -577,9 +577,6 @@ extern void VP8LDspInitNEON(void);
 extern void VP8LDspInitMIPSdspR2(void);
 extern void VP8LDspInitMSA(void);
 
-static volatile VP8CPUInfo lossless_last_cpuinfo_used =
-    (VP8CPUInfo)&lossless_last_cpuinfo_used;
-
 #define COPY_PREDICTOR_ARRAY(IN, OUT) do {                \
   (OUT)[0] = IN##0_C;                                     \
   (OUT)[1] = IN##1_C;                                     \
@@ -599,9 +596,7 @@ static volatile VP8CPUInfo lossless_last_cpuinfo_used =
   (OUT)[15] = IN##0_C;                                    \
 } while (0);
 
-WEBP_TSAN_IGNORE_FUNCTION void VP8LDspInit(void) {
-  if (lossless_last_cpuinfo_used == VP8GetCPUInfo) return;
-
+WEBP_DSP_INIT_FUNC(VP8LDspInit) {
   COPY_PREDICTOR_ARRAY(Predictor, VP8LPredictors)
   COPY_PREDICTOR_ARRAY(Predictor, VP8LPredictors_C)
   COPY_PREDICTOR_ARRAY(PredictorAdd, VP8LPredictorsAdd)
@@ -658,8 +653,6 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LDspInit(void) {
   assert(VP8LConvertBGRAToRGB565 != NULL);
   assert(VP8LMapColor32b != NULL);
   assert(VP8LMapColor8b != NULL);
-
-  lossless_last_cpuinfo_used = VP8GetCPUInfo;
 }
 #undef COPY_PREDICTOR_ARRAY
 

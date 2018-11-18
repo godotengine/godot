@@ -64,7 +64,7 @@ public:
 	void set_autostart(bool p_start);
 	bool has_autostart() const;
 
-	void start();
+	void start(float p_time = -1);
 	void stop();
 
 	void set_paused(bool p_paused);

@@ -30,40 +30,46 @@
 
 #include "register_core_types.h"
 
-#include "bind/core_bind.h"
-#include "class_db.h"
-#include "compressed_translation.h"
+#include "core/bind/core_bind.h"
+#include "core/class_db.h"
+#include "core/compressed_translation.h"
+#include "core/core_string_names.h"
+#include "core/engine.h"
+#include "core/func_ref.h"
+#include "core/input_map.h"
+#include "core/io/config_file.h"
+#include "core/io/http_client.h"
+#include "core/io/image_loader.h"
+#include "core/io/marshalls.h"
+#include "core/io/multiplayer_api.h"
+#include "core/io/networked_multiplayer_peer.h"
+#include "core/io/packet_peer.h"
+#include "core/io/packet_peer_udp.h"
+#include "core/io/pck_packer.h"
+#include "core/io/resource_format_binary.h"
+#include "core/io/resource_import.h"
+#include "core/io/stream_peer_ssl.h"
+#include "core/io/tcp_server.h"
+#include "core/io/translation_loader_po.h"
 #include "core/io/xml_parser.h"
-#include "core_string_names.h"
-#include "engine.h"
-#include "func_ref.h"
-#include "geometry.h"
-#include "input_map.h"
-#include "io/config_file.h"
-#include "io/http_client.h"
-#include "io/marshalls.h"
-#include "io/multiplayer_api.h"
-#include "io/networked_multiplayer_peer.h"
-#include "io/packet_peer.h"
-#include "io/packet_peer_udp.h"
-#include "io/pck_packer.h"
-#include "io/resource_format_binary.h"
-#include "io/resource_import.h"
-#include "io/stream_peer_ssl.h"
-#include "io/tcp_server.h"
-#include "io/translation_loader_po.h"
-#include "math/a_star.h"
-#include "math/triangle_mesh.h"
-#include "os/input.h"
-#include "os/main_loop.h"
-#include "packed_data_container.h"
-#include "path_remap.h"
-#include "project_settings.h"
-#include "translation.h"
-#include "undo_redo.h"
+#include "core/math/a_star.h"
+#include "core/math/expression.h"
+#include "core/math/geometry.h"
+#include "core/math/random_number_generator.h"
+#include "core/math/triangle_mesh.h"
+#include "core/os/input.h"
+#include "core/os/main_loop.h"
+#include "core/packed_data_container.h"
+#include "core/path_remap.h"
+#include "core/project_settings.h"
+#include "core/translation.h"
+#include "core/undo_redo.h"
+
 static ResourceFormatSaverBinary *resource_saver_binary = NULL;
 static ResourceFormatLoaderBinary *resource_loader_binary = NULL;
 static ResourceFormatImporter *resource_format_importer = NULL;
+
+static ResourceFormatLoaderImage *resource_format_image = NULL;
 
 static _ResourceLoader *_resource_loader = NULL;
 static _ResourceSaver *_resource_saver = NULL;
@@ -111,6 +117,9 @@ void register_core_types() {
 	resource_format_importer = memnew(ResourceFormatImporter);
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
 
+	resource_format_image = memnew(ResourceFormatLoaderImage);
+	ResourceLoader::add_resource_format_loader(resource_format_image);
+
 	ClassDB::register_class<Object>();
 
 	ClassDB::register_virtual_class<Script>();
@@ -138,9 +147,9 @@ void register_core_types() {
 	ClassDB::register_class<FuncRef>();
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();
-	ClassDB::register_custom_instance_class<StreamPeerTCP>();
-	ClassDB::register_custom_instance_class<TCP_Server>();
-	ClassDB::register_custom_instance_class<PacketPeerUDP>();
+	ClassDB::register_class<StreamPeerTCP>();
+	ClassDB::register_class<TCP_Server>();
+	ClassDB::register_class<PacketPeerUDP>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
 	ClassDB::register_virtual_class<IP>();
 	ClassDB::register_virtual_class<PacketPeer>();
@@ -148,7 +157,6 @@ void register_core_types() {
 	ClassDB::register_virtual_class<NetworkedMultiplayerPeer>();
 	ClassDB::register_class<MultiplayerAPI>();
 	ClassDB::register_class<MainLoop>();
-	//ClassDB::register_type<OptimizedSaver>();
 	ClassDB::register_class<Translation>();
 	ClassDB::register_class<PHashTranslation>();
 	ClassDB::register_class<UndoRedo>();
@@ -173,6 +181,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<PackedDataContainerRef>();
 	ClassDB::register_class<AStar>();
 	ClassDB::register_class<EncodedObjectAsID>();
+	ClassDB::register_class<RandomNumberGenerator>();
 
 	ClassDB::register_class<JSONParseResult>();
 
@@ -191,7 +200,8 @@ void register_core_types() {
 
 void register_core_settings() {
 	//since in register core types, globals may not e present
-	GLOBAL_DEF("network/limits/packet_peer_stream/max_buffer_po2", (16));
+	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
 }
 
 void register_core_singletons() {
@@ -209,6 +219,7 @@ void register_core_singletons() {
 	ClassDB::register_virtual_class<Input>();
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
+	ClassDB::register_class<Expression>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
@@ -237,6 +248,8 @@ void unregister_core_types() {
 
 	memdelete(_geometry);
 
+	if (resource_format_image)
+		memdelete(resource_format_image);
 	if (resource_saver_binary)
 		memdelete(resource_saver_binary);
 	if (resource_loader_binary)

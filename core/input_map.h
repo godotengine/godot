@@ -31,8 +31,8 @@
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
-#include "object.h"
-#include "os/input_event.h"
+#include "core/object.h"
+#include "core/os/input_event.h"
 
 class InputMap : public Object {
 
@@ -55,7 +55,7 @@ private:
 
 	mutable Map<StringName, Action> input_map;
 
-	List<Ref<InputEvent> >::Element *_find_event(Action p_action, const Ref<InputEvent> &p_event, bool *p_pressed = NULL, float *p_strength = NULL) const;
+	List<Ref<InputEvent> >::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed = NULL, float *p_strength = NULL) const;
 
 	Array _get_action_list(const StringName &p_action);
 	Array _get_actions();
@@ -75,6 +75,7 @@ public:
 	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	void action_erase_event(const StringName &p_action, const Ref<InputEvent> &p_event);
+	void action_erase_events(const StringName &p_action);
 
 	const List<Ref<InputEvent> > *get_action_list(const StringName &p_action);
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;

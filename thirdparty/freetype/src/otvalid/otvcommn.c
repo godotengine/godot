@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType common tables validation (body).                            */
 /*                                                                         */
-/*  Copyright 2004-2017 by                                                 */
+/*  Copyright 2004-2018 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -313,19 +313,26 @@
 
     OTV_NAME_ENTER( "Device" );
 
-    OTV_LIMIT_CHECK( 8 );
+    OTV_LIMIT_CHECK( 6 );
     StartSize   = FT_NEXT_USHORT( p );
     EndSize     = FT_NEXT_USHORT( p );
     DeltaFormat = FT_NEXT_USHORT( p );
 
-    if ( DeltaFormat < 1 || DeltaFormat > 3 )
-      FT_INVALID_FORMAT;
+    if ( DeltaFormat == 0x8000U )
+    {
+      /* VariationIndex, nothing to do */
+    }
+    else
+    {
+      if ( DeltaFormat < 1 || DeltaFormat > 3 )
+        FT_INVALID_FORMAT;
 
-    if ( EndSize < StartSize )
-      FT_INVALID_DATA;
+      if ( EndSize < StartSize )
+        FT_INVALID_DATA;
 
-    count = EndSize - StartSize + 1;
-    OTV_LIMIT_CHECK( ( 1 << DeltaFormat ) * count / 8 );  /* DeltaValue */
+      count = EndSize - StartSize + 1;
+      OTV_LIMIT_CHECK( ( 1 << DeltaFormat ) * count / 8 );  /* DeltaValue */
+    }
 
     OTV_EXIT;
   }
@@ -347,7 +354,7 @@
                        OTV_Validator  otvalid )
   {
     FT_Bytes           p = table;
-    FT_UInt            LookupType, SubTableCount;
+    FT_UInt            LookupType, LookupFlag, SubTableCount;
     OTV_Validate_Func  validate;
 
 
@@ -355,7 +362,7 @@
 
     OTV_LIMIT_CHECK( 6 );
     LookupType    = FT_NEXT_USHORT( p );
-    p            += 2;                      /* skip LookupFlag */
+    LookupFlag    = FT_NEXT_USHORT( p );
     SubTableCount = FT_NEXT_USHORT( p );
 
     OTV_TRACE(( " (type %d)\n", LookupType ));
@@ -372,6 +379,9 @@
     /* SubTable */
     for ( ; SubTableCount > 0; SubTableCount-- )
       validate( table + FT_NEXT_USHORT( p ), otvalid );
+
+    if ( LookupFlag & 0x10 )
+      OTV_LIMIT_CHECK( 2 );  /* MarkFilteringSet */
 
     OTV_EXIT;
   }

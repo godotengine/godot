@@ -90,7 +90,7 @@ void GIProbeEditorPlugin::_bind_methods() {
 GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 
 	editor = p_node;
-	bake = memnew(Button);
+	bake = memnew(ToolButton);
 	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->hide();

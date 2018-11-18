@@ -31,10 +31,12 @@
 #ifndef IMAGE_LOADER_H
 #define IMAGE_LOADER_H
 
-#include "image.h"
-#include "list.h"
-#include "os/file_access.h"
-#include "ustring.h"
+#include "core/image.h"
+#include "core/io/resource_loader.h"
+#include "core/list.h"
+#include "core/os/file_access.h"
+#include "core/ustring.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -55,6 +57,7 @@ class ImageLoader;
 
 class ImageFormatLoader {
 	friend class ImageLoader;
+	friend class ResourceFormatLoaderImage;
 
 protected:
 	virtual Error load_image(Ref<Image> p_image, FileAccess *p_fileaccess, bool p_force_linear, float p_scale) = 0;
@@ -70,7 +73,7 @@ class ImageLoader {
 	enum {
 		MAX_LOADERS = 8
 	};
-
+	friend class ResourceFormatLoaderImage;
 	static ImageFormatLoader *loader[MAX_LOADERS];
 	static int loader_count;
 
@@ -81,6 +84,14 @@ public:
 	static bool recognize(const String &p_extension);
 
 	static void add_image_format_loader(ImageFormatLoader *p_loader);
+};
+
+class ResourceFormatLoaderImage : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
 };
 
 #endif

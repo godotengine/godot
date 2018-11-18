@@ -2,19 +2,58 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace GodotSharpTools.Editor
 {
     public class MonoDevelopInstance
     {
-        private Process process;
-        private string solutionFile;
+        public enum EditorId
+        {
+            MonoDevelop = 0,
+            VisualStudioForMac = 1
+        }
+
+        readonly string solutionFile;
+        readonly EditorId editorId;
+
+        Process process;
 
         public void Execute(string[] files)
         {
             bool newWindow = process == null || process.HasExited;
 
             List<string> args = new List<string>();
+
+            string command;
+
+            if (Utils.OS.IsOSX())
+            {
+                string bundleId = codeEditorBundleIds[editorId];
+
+                if (IsApplicationBundleInstalled(bundleId))
+                {
+                    command = "open";
+
+                    args.Add("-b");
+                    args.Add(bundleId);
+
+                    // The 'open' process must wait until the application finishes
+                    if (newWindow)
+                        args.Add("--wait-apps");
+
+                    args.Add("--args");
+                }
+                else
+                {
+                    command = codeEditorPaths[editorId];
+                }
+            }
+            else
+            {
+                command = codeEditorPaths[editorId];
+            }
 
             args.Add("--ipc-tcp");
 
@@ -33,25 +72,73 @@ namespace GodotSharpTools.Editor
 
             if (newWindow)
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(MonoDevelopFile, string.Join(" ", args));
-                process = Process.Start(startInfo);
+                process = Process.Start(new ProcessStartInfo()
+                {
+                    FileName = command,
+                    Arguments = string.Join(" ", args),
+                    UseShellExecute = false
+                });
             }
             else
             {
-                Process.Start(MonoDevelopFile, string.Join(" ", args));
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = command,
+                    Arguments = string.Join(" ", args),
+                    UseShellExecute = false
+                });
             }
         }
 
-        public MonoDevelopInstance(string solutionFile)
+        public MonoDevelopInstance(string solutionFile, EditorId editorId)
         {
+            if (editorId == EditorId.VisualStudioForMac && !Utils.OS.IsOSX())
+                throw new InvalidOperationException($"{nameof(EditorId.VisualStudioForMac)} not supported on this platform");
+
             this.solutionFile = solutionFile;
+            this.editorId = editorId;
         }
 
-        private static string MonoDevelopFile
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static bool IsApplicationBundleInstalled(string bundleId);
+
+        static readonly IReadOnlyDictionary<EditorId, string> codeEditorPaths;
+        static readonly IReadOnlyDictionary<EditorId, string> codeEditorBundleIds;
+
+        static MonoDevelopInstance()
         {
-            get
+            if (Utils.OS.IsOSX())
             {
-                return "monodevelop";
+                codeEditorPaths = new Dictionary<EditorId, string>
+                {
+                    // Rely on PATH
+                    { EditorId.MonoDevelop, "monodevelop" },
+                    { EditorId.VisualStudioForMac, "VisualStudio" }
+                };
+                codeEditorBundleIds = new Dictionary<EditorId, string>
+                {
+                    // TODO EditorId.MonoDevelop
+                    { EditorId.VisualStudioForMac, "com.microsoft.visual-studio" }
+                };
+            }
+            else if (Utils.OS.IsWindows())
+            {
+                codeEditorPaths = new Dictionary<EditorId, string>
+                {
+                    // XamarinStudio is no longer a thing, and the latest version is quite old
+                    // MonoDevelop is available from source only on Windows. The recommendation
+                    // is to use Visual Studio instead. Since there are no official builds, we
+                    // will rely on custom MonoDevelop builds being added to PATH.
+                    { EditorId.MonoDevelop, "MonoDevelop.exe" }
+                };
+            }
+            else if (Utils.OS.IsUnix())
+            {
+                codeEditorPaths = new Dictionary<EditorId, string>
+                {
+                    // Rely on PATH
+                    { EditorId.MonoDevelop, "monodevelop" }
+                };
             }
         }
     }

@@ -11,9 +11,15 @@ def get_name():
     return "Server"
 
 
+def get_program_suffix():
+    if (sys.platform == "darwin"):
+        return "osx"
+    return "x11"
+
+
 def can_build():
 
-    if (os.name != "posix" or sys.platform == "darwin"):
+    if (os.name != "posix"):
         return False
 
     return True
@@ -29,9 +35,7 @@ def get_opts():
 
 def get_flags():
 
-    return [
-            ("module_mobile_vr_enabled", False),
-    ]
+    return []
 
 
 def configure(env):
@@ -56,7 +60,7 @@ def configure(env):
     ## Compiler configuration
 
     if env['use_llvm']:
-        if ('clang++' not in env['CXX']):
+        if ('clang++' not in os.path.basename(env['CXX'])):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
             env["LINK"] = "clang++"
@@ -66,9 +70,6 @@ def configure(env):
     ## Dependencies
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
-
-    if not env['builtin_libwebp']:
-        env.ParseConfig('pkg-config libwebp --cflags --libs')
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
     # as shared libraries leads to weird issues
@@ -124,6 +125,21 @@ def configure(env):
     if not env['builtin_libogg']:
         env.ParseConfig('pkg-config ogg --cflags --libs')
 
+    if not env['builtin_libwebp']:
+        env.ParseConfig('pkg-config libwebp --cflags --libs')
+
+    if not env['builtin_mbedtls']:
+        # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
+        env.Append(LIBS=['mbedtls', 'mbedcrypto', 'mbedx509'])
+
+    if not env['builtin_libwebsockets']:
+        env.ParseConfig('pkg-config libwebsockets --cflags --libs')
+
+    if not env['builtin_miniupnpc']:
+        # No pkgconfig file so far, hardcode default paths.
+        env.Append(CPPPATH=["/usr/include/miniupnpc"])
+        env.Append(LIBS=["miniupnpc"])
+
     # On Linux wchar_t should be 32-bits
     # 16-bit library shouldn't be required due to compiler optimisations
     if not env['builtin_pcre2']:
@@ -137,6 +153,10 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/server'])
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
+
+    if (platform.system() == "Darwin"):
+        env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-lz', '-framework', 'IOKit'])
+
     env.Append(LIBS=['pthread'])
 
     if (platform.system() == "Linux"):

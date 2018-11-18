@@ -894,7 +894,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	for (uint32_t i = 0; i < string_table_size; i++) {
 
 		StringName s = get_unicode_string();
-		string_map[i] = s;
+		string_map.write[i] = s;
 	}
 
 	print_bl("strings: " + itos(string_table_size));
@@ -1309,7 +1309,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 		case Variant::INT: {
 
 			int64_t val = p_property;
-			if (val > 0x7FFFFFFF || val < -0x80000000) {
+			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
 				f->store_32(VARIANT_INT64);
 				f->store_64(val);
 
@@ -1718,7 +1718,7 @@ void ResourceFormatSaverBinaryInstance::save_unicode_string(FileAccess *f, const
 
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32(utf8.length() + 1 | 0x80000000);
+		f->store_32((utf8.length() + 1) | 0x80000000);
 	} else {
 		f->store_32(utf8.length() + 1);
 	}
@@ -1813,8 +1813,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 					Property p;
 					p.name_idx = get_string_index(F->get().name);
 					p.value = E->get()->get(F->get().name);
-					if (((F->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && p.value.is_zero()) || ((F->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && p.value.is_one()))
+
+					Variant default_value = ClassDB::class_get_default_property_value(E->get()->get_class(), F->get().name);
+
+					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
 						continue;
+					}
+
 					p.pi = F->get();
 
 					rd.properties.push_back(p);
@@ -1834,7 +1839,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	save_order.resize(external_resources.size());
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		save_order[E->get()] = E->key();
+		save_order.write[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < save_order.size(); i++) {

@@ -50,6 +50,14 @@
 				Returns the name of the [member master_player]'s [Animation] bound to this animation node.
 			</description>
 		</method>
+		<method name="animation_node_get_position" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="animation_node_set_animation">
 			<return type="void">
 			</return>
@@ -610,7 +618,7 @@
 			Once set, Animation nodes can be added to the AnimationTreePlayer.
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode">
-			The thread in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
+			The thread in which to update animations. Default value: [code]ANIMATION_PROCESS_IDLE[/code].
 		</member>
 	</members>
 	<constants>

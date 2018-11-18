@@ -30,15 +30,15 @@
 
 #include "scene_format_text.h"
 #include "core/io/resource_format_binary.h"
-#include "os/dir_access.h"
-#include "project_settings.h"
-#include "version.h"
+#include "core/os/dir_access.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 
 //version 2: changed names for basis, aabb, poolvectors, etc.
 #define FORMAT_VERSION 2
 
-#include "os/dir_access.h"
-#include "version.h"
+#include "core/os/dir_access.h"
+#include "core/version.h"
 
 #define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
 
@@ -294,25 +294,25 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 
 			if (!next_tag.fields.has("from")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'from' field fron connection tag";
+				error_text = "missing 'from' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("to")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'to' field fron connection tag";
+				error_text = "missing 'to' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("signal")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'signal' field fron connection tag";
+				error_text = "missing 'signal' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("method")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'method' field fron connection tag";
+				error_text = "missing 'method' field from connection tag";
 				return Ref<PackedScene>();
 			}
 
@@ -358,7 +358,7 @@ Ref<PackedScene> ResourceInteractiveLoaderText::_parse_node_tag(VariantParser::R
 
 			if (!next_tag.fields.has("path")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'path' field fron connection tag";
+				error_text = "missing 'path' field from connection tag";
 				_printerr();
 				return Ref<PackedScene>();
 			}
@@ -626,14 +626,14 @@ Error ResourceInteractiveLoaderText::poll() {
 		if (!packed_scene.is_valid())
 			return error;
 
-		error = OK;
+		error = ERR_FILE_EOF;
 		//get it here
 		resource = packed_scene;
 		if (!ResourceCache::has(res_path)) {
 			packed_scene->set_path(res_path);
 		}
 
-		return ERR_FILE_EOF;
+		return error;
 
 	} else {
 		error_text += "Unknown tag in file: " + next_tag.name;
@@ -896,7 +896,7 @@ static void bs_save_unicode_string(FileAccess *f, const String &p_string, bool p
 
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		f->store_32(utf8.length() + 1 | 0x80000000);
+		f->store_32((utf8.length() + 1) | 0x80000000);
 	} else {
 		f->store_32(utf8.length() + 1);
 	}
@@ -1523,7 +1523,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
 
-		sorted_er[E->get()] = E->key();
+		sorted_er.write[E->get()] = E->key();
 	}
 
 	for (int i = 0; i < sorted_er.size(); i++) {
@@ -1600,9 +1600,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 				String name = PE->get().name;
 				Variant value = res->get(name);
+				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
 
-				if ((PE->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero()) || (PE->get().usage & PROPERTY_USAGE_STORE_IF_NONONE && value.is_one()))
+				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					continue;
+				}
 
 				if (PE->get().type == Variant::OBJECT && value.is_zero() && !(PE->get().usage & PROPERTY_USAGE_STORE_IF_NULL))
 					continue;

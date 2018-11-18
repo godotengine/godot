@@ -128,9 +128,9 @@ static WEBP_INLINE void VP8Transpose_2_4x4_16b(
 // Pack the planar buffers
 // rrrr... rrrr... gggg... gggg... bbbb... bbbb....
 // triplet by triplet in the output buffer rgb as rgbrgbrgbrgb ...
-static WEBP_INLINE void VP8PlanarTo24b(__m128i* const in0, __m128i* const in1,
-                                       __m128i* const in2, __m128i* const in3,
-                                       __m128i* const in4, __m128i* const in5) {
+static WEBP_INLINE void VP8PlanarTo24b_SSE2(
+    __m128i* const in0, __m128i* const in1, __m128i* const in2,
+    __m128i* const in3, __m128i* const in4, __m128i* const in5) {
   // The input is 6 registers of sixteen 8b but for the sake of explanation,
   // let's take 6 registers of four 8b values.
   // To pack, we will keep taking one every two 8b integer and move it
@@ -159,10 +159,10 @@ static WEBP_INLINE void VP8PlanarTo24b(__m128i* const in0, __m128i* const in1,
 
 // Convert four packed four-channel buffers like argbargbargbargb... into the
 // split channels aaaaa ... rrrr ... gggg .... bbbbb ......
-static WEBP_INLINE void VP8L32bToPlanar(__m128i* const in0,
-                                        __m128i* const in1,
-                                        __m128i* const in2,
-                                        __m128i* const in3) {
+static WEBP_INLINE void VP8L32bToPlanar_SSE2(__m128i* const in0,
+                                             __m128i* const in1,
+                                             __m128i* const in2,
+                                             __m128i* const in3) {
   // Column-wise transpose.
   const __m128i A0 = _mm_unpacklo_epi8(*in0, *in1);
   const __m128i A1 = _mm_unpackhi_epi8(*in0, *in1);

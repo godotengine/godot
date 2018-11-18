@@ -30,7 +30,7 @@
 
 #include "audio_player.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
@@ -41,10 +41,10 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	int buffer_size = mix_buffer.size();
 
 	if (p_fadeout) {
-		buffer_size = MIN(buffer_size, 16); //short fadeout ramp
+		// Short fadeout ramp
+		buffer_size = MIN(buffer_size, 128);
 	}
 
-	//mix
 	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
 	//multiply volume interpolating to avoid clicks if this changes
@@ -56,6 +56,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 		buffer[i] *= vol;
 		vol += vol_inc;
 	}
+
 	//set volume for next mix
 	mix_volume_db = target_volume;
 
@@ -90,11 +91,14 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
 void AudioStreamPlayer::_mix_audio() {
 
-	if (!stream_playback.is_valid()) {
+	if (!stream_playback.is_valid() || !active)
 		return;
-	}
 
-	if (!active) {
+	if (stream_paused) {
+		if (stream_paused_fade) {
+			_mix_internal(true);
+			stream_paused_fade = false;
+		}
 		return;
 	}
 
@@ -135,6 +139,17 @@ void AudioStreamPlayer::_notification(int p_what) {
 
 		AudioServer::get_singleton()->remove_callback(_mix_audios, this);
 	}
+
+	if (p_what == NOTIFICATION_PAUSED) {
+		if (!can_process()) {
+			// Node can't process so we start fading out to silence
+			set_stream_paused(true);
+		}
+	}
+
+	if (p_what == NOTIFICATION_UNPAUSED) {
+		set_stream_paused(false);
+	}
 }
 
 void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
@@ -159,7 +174,6 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 
 	if (p_stream.is_valid() && stream_playback.is_null()) {
 		stream.unref();
-		ERR_FAIL_COND(stream_playback.is_null());
 	}
 }
 
@@ -178,6 +192,7 @@ float AudioStreamPlayer::get_volume_db() const {
 }
 
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
+	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 }
 float AudioStreamPlayer::get_pitch_scale() const {
@@ -204,6 +219,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
+		stream_playback->stop();
 		active = false;
 		set_process_internal(false);
 	}
@@ -275,6 +291,19 @@ bool AudioStreamPlayer::_is_active() const {
 	return active;
 }
 
+void AudioStreamPlayer::set_stream_paused(bool p_pause) {
+
+	if (p_pause != stream_paused) {
+		stream_paused = p_pause;
+		stream_paused_fade = p_pause ? true : false;
+	}
+}
+
+bool AudioStreamPlayer::get_stream_paused() const {
+
+	return stream_paused;
+}
+
 void AudioStreamPlayer::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "bus") {
@@ -328,11 +357,15 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer::_bus_layout_changed);
 
+	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
+	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer::get_stream_paused);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,32,0.01"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 
@@ -351,6 +384,8 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	autoplay = false;
 	setseek = -1;
 	active = false;
+	stream_paused = false;
+	stream_paused_fade = false;
 	mix_target = MIX_TARGET_STEREO;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");

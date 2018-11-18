@@ -6,5 +6,3 @@ Import('env_modules')
 env_vs = env_modules.Clone()
 
 env_vs.add_source_files(env.modules_sources, "*.cpp")
-
-Export('env')

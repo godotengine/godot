@@ -30,22 +30,22 @@
 
 #include "test_math.h"
 
-#include "camera_matrix.h"
-#include "math_funcs.h"
-#include "matrix3.h"
-#include "os/file_access.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/math/camera_matrix.h"
+#include "core/math/math_funcs.h"
+#include "core/math/matrix3.h"
+#include "core/math/transform.h"
+#include "core/os/file_access.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/ustring.h"
+#include "core/variant.h"
+#include "core/vmap.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "servers/visual/shader_language.h"
-#include "transform.h"
-#include "ustring.h"
-#include "variant.h"
-#include "vmap.h"
 
-#include "method_ptrcall.h"
+#include "core/method_ptrcall.h"
 
 namespace TestMath {
 
@@ -503,8 +503,8 @@ MainLoop *test() {
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
 	buf.resize(fa->get_len() + 1);
-	fa->get_buffer(&buf[0], flen);
-	buf[flen] = 0;
+	fa->get_buffer(buf.ptrw(), flen);
+	buf.write[flen] = 0;
 
 	String code;
 	code.parse_utf8((const char *)&buf[0]);

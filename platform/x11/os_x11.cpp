@@ -29,12 +29,12 @@
 /*************************************************************************/
 
 #include "os_x11.h"
+#include "core/os/dir_access.h"
+#include "core/print_string.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
-#include "os/dir_access.h"
-#include "print_string.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -82,6 +82,10 @@ void OS_X11::initialize_core() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+}
+
+int OS_X11::get_current_video_driver() const {
+	return video_driver_index;
 }
 
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
@@ -166,13 +170,13 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 #ifdef TOUCH_ENABLED
 	if (!XQueryExtension(x11_display, "XInputExtension", &touch.opcode, &event_base, &error_base)) {
-		fprintf(stderr, "XInput extension not available");
+		print_verbose("XInput extension not available, touch support disabled.");
 	} else {
 		// 2.2 is the first release with multitouch
 		int xi_major = 2;
 		int xi_minor = 2;
 		if (XIQueryVersion(x11_display, &xi_major, &xi_minor) != Success) {
-			fprintf(stderr, "XInput 2.2 not available (server supports %d.%d)\n", xi_major, xi_minor);
+			print_verbose(vformat("XInput 2.2 not available (server supports %d.%d), touch support disabled.", xi_major, xi_minor));
 			touch.opcode = 0;
 		} else {
 			int dev_count;
@@ -194,14 +198,14 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				}
 				if (direct_touch) {
 					touch.devices.push_back(dev->deviceid);
-					fprintf(stderr, "Using touch device: %s\n", dev->name);
+					print_verbose("XInput: Using touch device: " + String(dev->name));
 				}
 			}
 
 			XIFreeDeviceInfo(info);
 
-			if (is_stdout_verbose() && !touch.devices.size()) {
-				fprintf(stderr, "No touch devices found\n");
+			if (!touch.devices.size()) {
+				print_verbose("XInput: No touch devices found.");
 			}
 		}
 	}
@@ -262,8 +266,11 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	*/
 
 // maybe contextgl wants to be in charge of creating the window
-//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED)
+	// Set DRI_PRIME if not set. This means that Godot should default to a higher-power GPU if it exists.
+	// Note: Due to the final '0' parameter to setenv any existing DRI_PRIME environment variables will not
+	// be overwritten.
+	setenv("DRI_PRIME", "1", 0);
 
 	ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_3_0_COMPATIBLE;
 
@@ -271,29 +278,80 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
 	}
 
-	context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
-	context_gl->initialize();
+	bool editor = Engine::get_singleton()->is_editor_hint();
+	bool gl_initialization_error = false;
 
-	switch (opengl_api_type) {
-		case ContextGL_X11::GLES_2_0_COMPATIBLE: {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-		} break;
-		case ContextGL_X11::GLES_3_0_COMPATIBLE: {
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-		} break;
+	context_gl = NULL;
+	while (!context_gl) {
+		context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
+
+		if (context_gl->initialize() != OK) {
+			memdelete(context_gl);
+			context_gl = NULL;
+
+			if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+				if (p_video_driver == VIDEO_DRIVER_GLES2) {
+					gl_initialization_error = true;
+					break;
+				}
+
+				p_video_driver = VIDEO_DRIVER_GLES2;
+				opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
 	}
+
+	while (true) {
+		if (opengl_api_type == ContextGL_X11::GLES_3_0_COMPATIBLE) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		}
+
+		if (opengl_api_type == ContextGL_X11::GLES_2_0_COMPATIBLE) {
+			if (RasterizerGLES2::is_viable() == OK) {
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
+								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
+	}
+
+	video_driver_index = p_video_driver;
 
 	context_gl->set_use_vsync(current_videomode.use_vsync);
 
 #endif
+
 	visual_server = memnew(VisualServerRaster);
-
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
+
 	if (current_videomode.maximized) {
 		current_videomode.maximized = false;
 		set_window_maximized(true);
@@ -333,8 +391,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		current_videomode.always_on_top = false;
 		set_window_always_on_top(true);
 	}
-
-	AudioDriverManager::initialize(p_audio_driver);
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(x11_window == 0, ERR_UNAVAILABLE);
@@ -391,6 +447,9 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
 
+	im_active = false;
+	im_position = Vector2();
+
 	if (xim && xim_style) {
 
 		xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, x11_window, XNFocusWindow, x11_window, (char *)NULL);
@@ -400,7 +459,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			xic = NULL;
 		}
 		if (xic) {
-			XSetICFocus(xic);
+			XUnsetICFocus(xic);
 		} else {
 			WARN_PRINT("XCreateIC couldn't create xic");
 		}
@@ -414,9 +473,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	cursor_theme = XcursorGetTheme(x11_display);
 
 	if (!cursor_theme) {
-		if (is_stdout_verbose()) {
-			print_line("XcursorGetTheme could not get cursor theme");
-		}
+		print_verbose("XcursorGetTheme could not get cursor theme");
 		cursor_theme = "default";
 	}
 
@@ -429,7 +486,6 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	current_cursor = CURSOR_ARROW;
 
 	if (cursor_theme) {
-		//print_line("cursor theme: "+String(cursor_theme));
 		for (int i = 0; i < CURSOR_MAX; i++) {
 
 			static const char *cursor_file[] = {
@@ -455,10 +511,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
 			if (img[i]) {
 				cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
-				//print_line("found cursor: "+String(cursor_file[i])+" id "+itos(cursors[i]));
 			} else {
-				if (OS::is_stdout_verbose())
-					print_line("failed cursor: " + String(cursor_file[i]));
+				print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
 			}
 		}
 	}
@@ -507,6 +561,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	visual_server->init();
 
+	AudioDriverManager::initialize(p_audio_driver);
+
 	input = memnew(InputDefault);
 
 	window_has_focus = true; // Set focus to true at init
@@ -517,6 +573,10 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	power_manager = memnew(PowerX11);
 
+	if (p_desired.layered_splash) {
+		set_window_per_pixel_transparency_enabled(true);
+	}
+
 	XEvent xevent;
 	while (XPending(x11_display) > 0) {
 		XNextEvent(x11_display, &xevent);
@@ -524,6 +584,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			_window_changed(&xevent);
 		}
 	}
+
+	update_real_mouse_position();
 
 	return OK;
 }
@@ -537,7 +599,24 @@ void OS_X11::xim_destroy_callback(::XIM im, ::XPointer client_data,
 	os->xic = NULL;
 }
 
+void OS_X11::set_ime_active(const bool p_active) {
+
+	im_active = p_active;
+
+	if (!xic)
+		return;
+
+	if (p_active) {
+		XSetICFocus(xic);
+		set_ime_position(im_position);
+	} else {
+		XUnsetICFocus(xic);
+	}
+}
+
 void OS_X11::set_ime_position(const Point2 &p_pos) {
+
+	im_position = p_pos;
 
 	if (!xic)
 		return;
@@ -576,6 +655,9 @@ void OS_X11::finalize() {
 		memdelete(debugger_connection_console);
 	}
 	*/
+#ifdef ALSAMIDI_ENABLED
+	driver_alsamidi.close();
+#endif
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
@@ -666,12 +748,15 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 			ERR_PRINT("NO GRAB");
 		}
 
-		center.x = current_videomode.width / 2;
-		center.y = current_videomode.height / 2;
-		XWarpPointer(x11_display, None, x11_window,
-				0, 0, 0, 0, (int)center.x, (int)center.y);
+		if (mouse_mode == MOUSE_MODE_CAPTURED) {
+			center.x = current_videomode.width / 2;
+			center.y = current_videomode.height / 2;
 
-		input->set_mouse_position(center);
+			XWarpPointer(x11_display, None, x11_window,
+					0, 0, 0, 0, (int)center.x, (int)center.y);
+
+			input->set_mouse_position(center);
+		}
 	} else {
 		do_mouse_warp = false;
 	}
@@ -705,6 +790,25 @@ int OS_X11::get_mouse_button_state() const {
 
 Point2 OS_X11::get_mouse_position() const {
 	return last_mouse_pos;
+}
+
+bool OS_X11::get_window_per_pixel_transparency_enabled() const {
+
+	if (!is_layered_allowed()) return false;
+	return layered_window;
+}
+
+void OS_X11::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+
+	if (!is_layered_allowed()) return;
+	if (layered_window != p_enabled) {
+		if (p_enabled) {
+			set_borderless_window(true);
+			layered_window = true;
+		} else {
+			layered_window = false;
+		}
+	}
 }
 
 void OS_X11::set_window_title(const String &p_title) {
@@ -955,6 +1059,7 @@ Point2 OS_X11::get_window_position() const {
 
 void OS_X11::set_window_position(const Point2 &p_position) {
 	XMoveWindow(x11_display, x11_window, p_position.x, p_position.y);
+	update_real_mouse_position();
 }
 
 Size2 OS_X11::get_window_size() const {
@@ -984,8 +1089,18 @@ Size2 OS_X11::get_real_window_size() const {
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
+
+	if (current_videomode.width == p_size.width && current_videomode.height == p_size.height)
+		return;
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
+	int old_w = xwa.width;
+	int old_h = xwa.height;
+
 	// If window resizable is disabled we need to update the attributes first
-	if (is_window_resizable() == false) {
+	if (!is_window_resizable()) {
 		XSizeHints *xsh;
 		xsh = XAllocSizeHints();
 		xsh->flags = PMinSize | PMaxSize;
@@ -1003,11 +1118,25 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	// Update our videomode width and height
 	current_videomode.width = p_size.x;
 	current_videomode.height = p_size.y;
+
+	for (int timeout = 0; timeout < 50; ++timeout) {
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, x11_window, &xwa);
+
+		if (old_w != xwa.width || old_h != xwa.height)
+			break;
+
+		usleep(10000);
+	}
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
+
 	if (current_videomode.fullscreen == p_enabled)
 		return;
+
+	if (layered_window)
+		set_window_per_pixel_transparency_enabled(false);
 
 	if (p_enabled && current_videomode.always_on_top) {
 		// Fullscreen + Always-on-top requires a maximized window on some window managers (Metacity)
@@ -1254,6 +1383,9 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 	if (current_videomode.borderless_window == p_borderless)
 		return;
 
+	if (!p_borderless && layered_window)
+		set_window_per_pixel_transparency_enabled(false);
+
 	current_videomode.borderless_window = p_borderless;
 
 	Hints hints;
@@ -1262,6 +1394,9 @@ void OS_X11::set_borderless_window(bool p_borderless) {
 	hints.decorations = current_videomode.borderless_window ? 0 : 1;
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+
+	// Preserve window size
+	set_window_size(Size2(current_videomode.width, current_videomode.height));
 }
 
 bool OS_X11::get_borderless_window() {
@@ -1273,7 +1408,7 @@ void OS_X11::request_attention() {
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
 	// Will be unset by the window manager after user react on the request for attention
-	//
+
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
@@ -1287,6 +1422,7 @@ void OS_X11::request_attention() {
 	xev.xclient.data.l[1] = wm_attention;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
@@ -1449,7 +1585,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// KeyMappingX11 also translates keysym to unicode.
 	// It does a binary search on a table to translate
 	// most properly.
-	//print_line("keysym_unicode: "+rtos(keysym_unicode));
 	unsigned int unicode = keysym_unicode > 0 ? KeyMappingX11::get_unicode_from_keysym(keysym_unicode) : 0;
 
 	/* Phase 4, determine if event must be filtered */
@@ -1472,7 +1607,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// know Mod1 was ALT and Mod4 was META (applekey/winkey)
 	// just tried Mods until i found them.
 
-	//print_line("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
+	//print_verbose("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
 
 	Ref<InputEventKey> k;
 	k.instance();
@@ -1557,7 +1692,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 		}
 	} else {
 		//ignore
-		if (last_is_pressed == false) {
+		if (!last_is_pressed) {
 			return;
 		}
 	}
@@ -1690,6 +1825,11 @@ void OS_X11::process_xevents() {
 							if (touch.state.has(index)) // Defensive
 								break;
 							touch.state[index] = pos;
+							if (touch.state.size() == 1) {
+								// X11 may send a motion event when a touch gesture begins, that would result
+								// in a spurious mouse motion event being sent to Godot; remember it to be able to filter it out
+								touch.mouse_pos_to_filter = pos;
+							}
 							input->parse_input_event(st);
 						} else {
 							if (!touch.state.has(index)) // Defensive
@@ -1767,8 +1907,8 @@ void OS_X11::process_xevents() {
 							GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 				}
 #ifdef TOUCH_ENABLED
-					// Grab touch devices to avoid OS gesture interference
-					/*for (int i = 0; i < touch.devices.size(); ++i) {
+				// Grab touch devices to avoid OS gesture interference
+				/*for (int i = 0; i < touch.devices.size(); ++i) {
 					XIGrabDevice(x11_display, touch.devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &touch.event_mask);
 				}*/
 #endif
@@ -1859,15 +1999,9 @@ void OS_X11::process_xevents() {
 			} break;
 			case MotionNotify: {
 
-				// FUCK YOU X11 API YOU SERIOUSLY GROSS ME OUT
-				// YOU ARE AS GROSS AS LOOKING AT A PUTRID PILE
-				// OF POOP STICKING OUT OF A CLOGGED TOILET
-				// HOW THE FUCK I AM SUPPOSED TO KNOW WHICH ONE
-				// OF THE MOTION NOTIFY EVENTS IS THE ONE GENERATED
-				// BY WARPING THE MOUSE POINTER?
-				// YOU ARE FORCING ME TO FILTER ONE BY ONE TO FIND IT
-				// PLEASE DO ME A FAVOR AND DIE DROWNED IN A FECAL
-				// MOUNTAIN BECAUSE THAT'S WHERE YOU BELONG.
+				// The X11 API requires filtering one-by-one through the motion
+				// notify events, in order to figure out which event is the one
+				// generated by warping the mouse pointer.
 
 				while (true) {
 					if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == current_videomode.width / 2 && event.xmotion.y == current_videomode.height / 2) {
@@ -1896,6 +2030,20 @@ void OS_X11::process_xevents() {
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
+#ifdef TOUCH_ENABLED
+				// Avoidance of spurious mouse motion (see handling of touch)
+				bool filter = false;
+				// Adding some tolerance to match better Point2i to Vector2
+				if (touch.state.size() && Vector2(pos).distance_squared_to(touch.mouse_pos_to_filter) < 2) {
+					filter = true;
+				}
+				// Invalidate to avoid filtering a possible legitimate similar event coming later
+				touch.mouse_pos_to_filter = Vector2(1e10, 1e10);
+				if (filter) {
+					break;
+				}
+#endif
+
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
 					if (pos == Point2i(current_videomode.width / 2, current_videomode.height / 2)) {
@@ -1919,6 +2067,10 @@ void OS_X11::process_xevents() {
 				}
 
 				Point2i rel = pos - last_mouse_pos;
+
+				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+					pos = Point2i(current_videomode.width / 2, current_videomode.height / 2);
+				}
 
 				Ref<InputEventMouseMotion> mm;
 				mm.instance();
@@ -1947,7 +2099,7 @@ void OS_X11::process_xevents() {
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
-				// it will be handled in it's own function.
+				// it will be handled in its own function.
 				handle_key_event((XKeyEvent *)&event);
 			} break;
 			case SelectionRequest: {
@@ -2020,7 +2172,7 @@ void OS_X11::process_xevents() {
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
 					for (int i = 0; i < files.size(); i++) {
-						files[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
+						files.write[i] = files[i].replace("file://", "").replace("%20", " ").strip_escapes();
 					}
 					main_loop->drop_files(files);
 
@@ -2258,7 +2410,7 @@ Error OS_X11::shell_open(String p_uri) {
 
 bool OS_X11::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc";
+	return p_feature == "pc" || p_feature == "s3tc" || p_feature == "bptc";
 }
 
 String OS_X11::get_config_path() const {
@@ -2351,20 +2503,35 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 
 void OS_X11::move_window_to_foreground() {
 
-	XRaiseWindow(x11_display, x11_window);
+	XEvent xev;
+	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = net_active_window;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
-	if (p_shape == current_cursor)
+	if (p_shape == current_cursor) {
 		return;
-	if (mouse_mode == MOUSE_MODE_VISIBLE) {
-		if (cursors[p_shape] != None)
+	}
+
+	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (cursors[p_shape] != None) {
 			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
-		else if (cursors[CURSOR_ARROW] != None)
+		} else if (cursors[CURSOR_ARROW] != None) {
 			XDefineCursor(x11_display, x11_window, cursors[CURSOR_ARROW]);
+		}
 	}
 
 	current_cursor = p_shape;
@@ -2373,13 +2540,42 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture> texture = p_cursor;
-		Ref<Image> image = texture->get_data();
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Ref<Image> image;
+		Size2 texture_size;
+		Rect2 atlas_rect;
 
-		ERR_FAIL_COND(texture->get_width() > 256 || texture->get_height() > 256);
+		if (texture.is_valid()) {
+			image = texture->get_data();
+		}
+
+		if (!image.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.position.x = atlas_texture->get_region().position.x;
+			atlas_rect.position.y = atlas_texture->get_region().position.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
+
+		image = texture->get_data();
+
+		ERR_FAIL_COND(!image.is_valid());
 
 		// Create the cursor structure
-		XcursorImage *cursor_image = XcursorImageCreate(texture->get_width(), texture->get_height());
-		XcursorUInt image_size = texture->get_width() * texture->get_height();
+		XcursorImage *cursor_image = XcursorImageCreate(texture_size.width, texture_size.height);
+		XcursorUInt image_size = texture_size.width * texture_size.height;
 		XcursorDim size = sizeof(XcursorPixel) * image_size;
 
 		cursor_image->version = 1;
@@ -2388,13 +2584,18 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		cursor_image->yhot = p_hotspot.y;
 
 		// allocate memory to contain the whole file
-		cursor_image->pixels = (XcursorPixel *)malloc(size);
+		cursor_image->pixels = (XcursorPixel *)memalloc(size);
 
 		image->lock();
 
 		for (XcursorPixel index = 0; index < image_size; index++) {
-			int row_index = floor(index / texture->get_width());
-			int column_index = index % texture->get_width();
+			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
+			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
+
+			if (atlas_texture.is_valid()) {
+				column_index = MIN(column_index, atlas_rect.size.width - 1);
+				row_index = MIN(row_index, atlas_rect.size.height - 1);
+			}
 
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
 		}
@@ -2406,73 +2607,188 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		// Save it for a further usage
 		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);
 
-		if (p_shape == CURSOR_ARROW) {
-			XDefineCursor(x11_display, x11_window, cursors[p_shape]);
+		if (p_shape == current_cursor) {
+			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+				XDefineCursor(x11_display, x11_window, cursors[p_shape]);
+			}
 		}
+
+		memfree(cursor_image->pixels);
+		XcursorImageDestroy(cursor_image);
+	} else {
+		// Reset to default system cursor
+		if (img[p_shape]) {
+			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
+		}
+
+		CursorShape c = current_cursor;
+		current_cursor = CURSOR_MAX;
+		set_cursor_shape(c);
 	}
 }
 
 void OS_X11::release_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->release_current();
+#endif
 }
 
 void OS_X11::make_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->make_current();
+#endif
 }
 
 void OS_X11::swap_buffers() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
+#endif
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
+	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
+
+	String path = get_environment("PATH");
+	Vector<String> path_elems = path.split(":", false);
+	String program;
+
+	for (int i = 0; i < path_elems.size(); i++) {
+		for (unsigned int k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+			String tested_path = path_elems[i] + "/" + message_programs[k];
+
+			if (FileAccess::exists(tested_path)) {
+				program = tested_path;
+				break;
+			}
+		}
+
+		if (program.length())
+			break;
+	}
 
 	List<String> args;
-	args.push_back("-center");
-	args.push_back("-title");
-	args.push_back(p_title);
-	args.push_back(p_alert);
 
-	execute("xmessage", args, true);
+	if (program.ends_with("zenity")) {
+		args.push_back("--error");
+		args.push_back("--width");
+		args.push_back("500");
+		args.push_back("--title");
+		args.push_back(p_title);
+		args.push_back("--text");
+		args.push_back(p_alert);
+	}
+
+	if (program.ends_with("kdialog")) {
+		args.push_back("--error");
+		args.push_back(p_alert);
+		args.push_back("--title");
+		args.push_back(p_title);
+	}
+
+	if (program.ends_with("Xdialog")) {
+		args.push_back("--title");
+		args.push_back(p_title);
+		args.push_back("--msgbox");
+		args.push_back(p_alert);
+		args.push_back("0");
+		args.push_back("0");
+	}
+
+	if (program.ends_with("xmessage")) {
+		args.push_back("-center");
+		args.push_back("-title");
+		args.push_back(p_title);
+		args.push_back(p_alert);
+	}
+
+	if (program.length()) {
+		execute(program, args, true);
+	} else {
+		print_line(p_alert);
+	}
+
+	return;
+}
+
+bool g_set_icon_error = false;
+int set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
+	g_set_icon_error = true;
+	return 0;
 }
 
 void OS_X11::set_icon(const Ref<Image> &p_icon) {
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&set_icon_errorhandler);
+
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 	if (p_icon.is_valid()) {
 		Ref<Image> img = p_icon->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
-		int w = img->get_width();
-		int h = img->get_height();
+		while (true) {
+			int w = img->get_width();
+			int h = img->get_height();
 
-		// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
-		Vector<long> pd;
+			if (g_set_icon_error) {
+				g_set_icon_error = false;
 
-		pd.resize(2 + w * h);
+				WARN_PRINT("Icon too large, attempting to resize icon.");
 
-		pd[0] = w;
-		pd[1] = h;
+				int new_width, new_height;
+				if (w > h) {
+					new_width = w / 2;
+					new_height = h * new_width / w;
+				} else {
+					new_height = h / 2;
+					new_width = w * new_height / h;
+				}
 
-		PoolVector<uint8_t>::Read r = img->get_data().read();
+				w = new_width;
+				h = new_height;
 
-		long *wr = &pd[2];
-		uint8_t const *pr = r.ptr();
+				if (!w || !h) {
+					WARN_PRINT("Unable to set icon.");
+					break;
+				}
 
-		for (int i = 0; i < w * h; i++) {
-			long v = 0;
-			//    A             R             G            B
-			v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
-			*wr++ = v;
-			pr += 4;
+				img->resize(w, h, Image::INTERPOLATE_CUBIC);
+			}
+
+			// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
+			Vector<long> pd;
+
+			pd.resize(2 + w * h);
+
+			pd.write[0] = w;
+			pd.write[1] = h;
+
+			PoolVector<uint8_t>::Read r = img->get_data().read();
+
+			long *wr = &pd.write[2];
+			uint8_t const *pr = r.ptr();
+
+			for (int i = 0; i < w * h; i++) {
+				long v = 0;
+				//    A             R             G            B
+				v |= pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+				*wr++ = v;
+				pr += 4;
+			}
+
+			XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+
+			if (!g_set_icon_error)
+				break;
 		}
-		XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
 	} else {
 		XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
+
 	XFlush(x11_display);
+	XSetErrorHandler(oldHandler);
 }
 
 void OS_X11::force_process_input() {
@@ -2502,7 +2818,7 @@ void OS_X11::run() {
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
-		if (Main::iteration() == true)
+		if (Main::iteration())
 			break;
 	};
 
@@ -2518,8 +2834,10 @@ String OS_X11::get_joy_guid(int p_device) const {
 }
 
 void OS_X11::_set_use_vsync(bool p_enable) {
+#if defined(OPENGL_ENABLED)
 	if (context_gl)
-		return context_gl->set_use_vsync(p_enable);
+		context_gl->set_use_vsync(p_enable);
+#endif
 }
 /*
 bool OS_X11::is_vsync_enabled() const {
@@ -2688,6 +3006,25 @@ OS::LatinKeyboardVariant OS_X11::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
+void OS_X11::update_real_mouse_position() {
+	Window root_return, child_return;
+	int root_x, root_y, win_x, win_y;
+	unsigned int mask_return;
+
+	Bool xquerypointer_result = XQueryPointer(x11_display, x11_window, &root_return, &child_return, &root_x, &root_y,
+			&win_x, &win_y, &mask_return);
+
+	if (xquerypointer_result) {
+		if (win_x > 0 && win_y > 0 && win_x <= current_videomode.width && win_y <= current_videomode.height) {
+
+			last_mouse_pos.x = win_x;
+			last_mouse_pos.y = win_y;
+			last_mouse_pos_valid = true;
+			input->set_mouse_position(last_mouse_pos);
+		}
+	}
+}
+
 OS_X11::OS_X11() {
 
 #ifdef PULSEAUDIO_ENABLED
@@ -2698,6 +3035,7 @@ OS_X11::OS_X11() {
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
+	layered_window = false;
 	minimized = false;
 	xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;

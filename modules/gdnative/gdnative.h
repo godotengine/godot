@@ -31,15 +31,15 @@
 #ifndef GDNATIVE_H
 #define GDNATIVE_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/thread_safe.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
 
 #include "gdnative/gdnative.h"
 #include "gdnative_api_struct.gen.h"
 
-#include "io/config_file.h"
+#include "core/io/config_file.h"
 
 class GDNativeLibraryResourceLoader;
 class GDNative;
@@ -148,16 +148,16 @@ public:
 	static void _bind_methods();
 
 	void set_library(Ref<GDNativeLibrary> p_library);
-	Ref<GDNativeLibrary> get_library();
+	Ref<GDNativeLibrary> get_library() const;
 
-	bool is_initialized();
+	bool is_initialized() const;
 
 	bool initialize();
 	bool terminate();
 
 	Variant call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments = Array());
 
-	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true);
+	Error get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional = true) const;
 };
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {

@@ -64,6 +64,7 @@ class PopupMenu : public Popup {
 		int h_ofs;
 		Ref<ShortCut> shortcut;
 		bool shortcut_is_global;
+		bool shortcut_is_disabled;
 
 		Item() {
 			checked = false;
@@ -76,6 +77,7 @@ class PopupMenu : public Popup {
 			_ofs_cache = 0;
 			h_ofs = 0;
 			shortcut_is_global = false;
+			shortcut_is_disabled = false;
 		}
 	};
 
@@ -99,6 +101,7 @@ class PopupMenu : public Popup {
 	bool hide_on_item_selection;
 	bool hide_on_checkable_item_selection;
 	bool hide_on_multistate_item_selection;
+	bool hide_on_window_lose_focus;
 	Vector2 moved;
 
 	Array _get_items() const;
@@ -149,6 +152,7 @@ public:
 	void set_item_h_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
+	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
 
 	void toggle_item_checked(int p_idx);
 
@@ -165,6 +169,7 @@ public:
 	bool is_item_separator(int p_idx) const;
 	bool is_item_checkable(int p_idx) const;
 	bool is_item_radio_checkable(int p_idx) const;
+	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
 	Ref<ShortCut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
@@ -176,7 +181,7 @@ public:
 
 	void remove_item(int p_idx);
 
-	void add_separator();
+	void add_separator(const String &p_text = String());
 
 	void clear();
 
@@ -198,7 +203,13 @@ public:
 	void set_hide_on_multistate_item_selection(bool p_enabled);
 	bool is_hide_on_multistate_item_selection() const;
 
+	void set_submenu_popup_delay(float p_time);
+	float get_submenu_popup_delay() const;
+
 	virtual void popup(const Rect2 &p_bounds = Rect2());
+
+	void set_hide_on_window_lose_focus(bool p_enabled);
+	bool is_hide_on_window_lose_focus() const;
 
 	PopupMenu();
 	~PopupMenu();

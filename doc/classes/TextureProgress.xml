@@ -52,10 +52,13 @@
 			[Texture] that draws under the progress bar. The bar's background.
 		</member>
 		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over">
+			Multiplies the color of the bar's [code]texture_over[/code] texture. The effect is similar to [member CanvasItem.modulate], except it only affects this specific texture instead of the entire node.
 		</member>
 		<member name="tint_progress" type="Color" setter="set_tint_progress" getter="get_tint_progress">
+			Multiplies the color of the bar's [code]texture_progress[/code] texture.
 		</member>
 		<member name="tint_under" type="Color" setter="set_tint_under" getter="get_tint_under">
+			Multiplies the color of the bar's [code]texture_under[/code] texture.
 		</member>
 	</members>
 	<constants>
@@ -72,10 +75,19 @@
 			The [member texture_progress] fills from bottom to top.
 		</constant>
 		<constant name="FILL_CLOCKWISE" value="4" enum="FillMode">
-			Turns the node into a radial bar. The [member texture_progress] fills clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to refine its behavior.
+			Turns the node into a radial bar. The [member texture_progress] fills clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
 		</constant>
 		<constant name="FILL_COUNTER_CLOCKWISE" value="5" enum="FillMode">
-			Turns the node into a radial bar. The [member texture_progress] fills counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to refine its behavior.
+			Turns the node into a radial bar. The [member texture_progress] fills counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
+		</constant>
+		<constant name="FILL_BILINEAR_LEFT_AND_RIGHT" value="6" enum="FillMode">
+			The [member texture_progress] fills from the center, expanding both towards the left and the right.
+		</constant>
+		<constant name="FILL_BILINEAR_TOP_AND_BOTTOM" value="7" enum="FillMode">
+			The [member texture_progress] fills from the center, expanding both towards the top and the bottom.
+		</constant>
+		<constant name="FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE" value="8" enum="FillMode">
+			Turns the node into a radial bar. The [member texture_progress] fills radially from the center, expanding both clockwise and counter-clockwise. See [member radial_center_offset], [member radial_initial_angle] and [member radial_fill_degrees] to control the way the bar fills up.
 		</constant>
 	</constants>
 </class>

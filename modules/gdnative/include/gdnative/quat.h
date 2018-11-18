@@ -60,6 +60,8 @@ extern "C" {
 
 void GDAPI godot_quat_new(godot_quat *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z, const godot_real p_w);
 void GDAPI godot_quat_new_with_axis_angle(godot_quat *r_dest, const godot_vector3 *p_axis, const godot_real p_angle);
+void GDAPI godot_quat_new_with_basis(godot_quat *r_dest, const godot_basis *p_basis);
+void GDAPI godot_quat_new_with_euler(godot_quat *r_dest, const godot_vector3 *p_euler);
 
 godot_real GDAPI godot_quat_get_x(const godot_quat *p_self);
 void GDAPI godot_quat_set_x(godot_quat *p_self, const godot_real val);
@@ -106,6 +108,8 @@ godot_quat GDAPI godot_quat_operator_divide(const godot_quat *p_self, const godo
 godot_bool GDAPI godot_quat_operator_equal(const godot_quat *p_self, const godot_quat *p_b);
 
 godot_quat GDAPI godot_quat_operator_neg(const godot_quat *p_self);
+
+void GDAPI godot_quat_set_axis_angle(godot_quat *p_self, const godot_vector3 *p_axis, const godot_real p_angle);
 
 #ifdef __cplusplus
 }
