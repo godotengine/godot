@@ -1237,7 +1237,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
 	window_view = [[GodotContentView alloc] init];
-	[window_view setWantsLayer:TRUE];
+	if (@available(macOS 10.14, *)) {
+		[window_view setWantsLayer:TRUE];
+	}
 
 	float displayScale = 1.0;
 	if (is_hidpi_allowed()) {
