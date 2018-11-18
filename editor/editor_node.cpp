@@ -637,6 +637,7 @@ void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path) {
 
 	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	saving_resource = p_resource;
 
 	current_option = RESOURCE_SAVE_AS;
 	List<String> extensions;
@@ -1263,15 +1264,13 @@ void EditorNode::_dialog_action(String p_file) {
 		case RESOURCE_SAVE:
 		case RESOURCE_SAVE_AS: {
 
-			uint32_t current = editor_history.get_current();
+			ERR_FAIL_COND(saving_resource.is_null())
+			save_resource_in_path(saving_resource, p_file);
+			saving_resource = Ref<Resource>();
+			ObjectID current = editor_history.get_current();
 			Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
-
-			ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
-
-			RES current_res = RES(Object::cast_to<Resource>(current_obj));
-
-			save_resource_in_path(current_res, p_file);
-
+			ERR_FAIL_COND(!current_obj);
+			current_obj->_change_notify();
 		} break;
 		case SETTINGS_LAYOUT_SAVE: {
 
@@ -5777,6 +5776,7 @@ EditorNode::EditorNode() {
 
 	_edit_current();
 	current = NULL;
+	saving_resource = Ref<Resource>();
 
 	reference_resource_mem = true;
 	save_external_resources_mem = true;
