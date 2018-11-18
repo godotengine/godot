@@ -170,10 +170,20 @@ public:
 			OperatorNode *initial_assignment;
 			MultiplayerAPI::RPCMode rpc_mode;
 			int usages;
+
+			Member() {
+				expression = NULL;
+				initial_assignment = NULL;
+				usages = 0;
+			}
 		};
 		struct Constant {
 			Node *expression;
 			DataType type;
+
+			Constant() {
+				expression = NULL;
+			}
 		};
 
 		struct Signal {
@@ -201,6 +211,8 @@ public:
 			extends_used = false;
 			end_line = -1;
 			owner = NULL;
+			initializer = NULL;
+			ready = NULL;
 		}
 	};
 
@@ -229,6 +241,7 @@ public:
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 			has_yield = false;
 			has_unreachable_code = false;
+			body = NULL;
 		}
 	};
 
@@ -498,7 +511,10 @@ public:
 
 	struct AssertNode : public Node {
 		Node *condition;
-		AssertNode() { type = TYPE_ASSERT; }
+		AssertNode() {
+			type = TYPE_ASSERT;
+			condition = NULL;
+		}
 	};
 
 	struct BreakpointNode : public Node {
