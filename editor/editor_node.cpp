@@ -152,6 +152,7 @@ void EditorNode::_update_scene_tabs() {
 	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
+	scene_tabs->ensure_tab_visible(editor_data.get_edited_scene());
 
 	if (scene_tabs->get_offset_buttons_visible()) {
 		// move add button to fixed position on the tabbar
