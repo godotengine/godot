@@ -298,6 +298,7 @@ Skeleton2D::Skeleton2D() {
 	transform_dirty = true;
 
 	skeleton = VS::get_singleton()->skeleton_create();
+	set_notify_transform(true);
 }
 
 Skeleton2D::~Skeleton2D() {
