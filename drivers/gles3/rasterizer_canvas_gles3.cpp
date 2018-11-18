@@ -1221,8 +1221,6 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 
 	bool rebind_shader = true;
 
-	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_DISTANCE_FIELD, false);
-
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -1340,7 +1338,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 					last_blend_mode = last_blend_mode != RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_DISABLED ? last_blend_mode : -1;
 				}
 
-				if (shader_ptr != shader_cache) {
+				if (shader_ptr != shader_cache || rebind_shader) {
 
 					if (shader_ptr->canvas_item.uses_time) {
 						VisualServerRaster::redraw_request();
@@ -1657,6 +1655,14 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 	if (current_clip) {
 		glDisable(GL_SCISSOR_TEST);
 	}
+	//disable states that may have been used
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_DISTANCE_FIELD, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SKELETON, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCE_CUSTOM, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_PARTICLES, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_INSTANCING, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_LIGHTING, false);
+	state.canvas_shader.set_conditional(CanvasShaderGLES3::USE_SHADOWS, false);
 }
 
 void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {
