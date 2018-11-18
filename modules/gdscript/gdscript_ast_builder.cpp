@@ -1040,8 +1040,9 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		key(L"native_type");
 		serialize(data_type.native_type);
 
-		key(L"class_type");
-		serialize(data_type.class_type);
+		// circular reference
+		// key(L"class_type");
+		// serialize(data_type.class_type);
 		// Ref<Script> script_type; // TODO: how to serialize this?
 
 		endObject();
