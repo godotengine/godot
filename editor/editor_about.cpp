@@ -209,7 +209,6 @@ EditorAbout::EditorAbout() {
 	TreeItem *tpl_ti_lc = _tpl_tree->create_item(root);
 	tpl_ti_lc->set_text(0, TTR("Licenses"));
 	tpl_ti_lc->set_selectable(0, false);
-	int read_idx = 0;
 	String long_text = "";
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 
@@ -234,7 +233,6 @@ EditorAbout::EditorAbout() {
 			String license = "\n    License: " + String(part.license) + "\n";
 			text += license;
 			long_text += license + "\n";
-			read_idx++;
 		}
 		ti->set_metadata(0, text);
 	}
