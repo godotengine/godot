@@ -983,6 +983,9 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		key(L"rpc_mode");
 		serialize(member.rpc_mode);
 
+		key(L"usages");
+		serialize(member.usages);
+
 		endObject();
 	}
 
