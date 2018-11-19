@@ -1348,6 +1348,9 @@ void AnimationPlayer::_animation_changed() {
 
 	clear_caches();
 	emit_signal("caches_cleared");
+	if (is_playing()) {
+		playback.seeked = true; //need to restart stuff, like audio
+	}
 }
 
 void AnimationPlayer::_stop_playing_caches() {
