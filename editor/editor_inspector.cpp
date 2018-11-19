@@ -1153,6 +1153,11 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
+		Ref<Font> font = get_font("font", "Tree");
+		if (mb->get_position().y > font->get_height()) { //clicked outside
+			return;
+		}
+
 		_test_unfold();
 
 		bool unfold = !object->editor_is_section_unfolded(section);
