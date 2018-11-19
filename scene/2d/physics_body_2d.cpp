@@ -898,6 +898,13 @@ Array RigidBody2D::get_colliding_bodies() const {
 	return ret;
 }
 
+int RigidBody2D::get_colliding_body_count() const {
+
+	ERR_FAIL_COND_V(!contact_monitor, 0);
+
+	return contact_monitor->body_map.size();
+}
+
 void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 	if (p_enabled == is_contact_monitor_enabled())
@@ -1053,6 +1060,7 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_body_exit_tree"), &RigidBody2D::_body_exit_tree);
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody2D::get_colliding_bodies);
+	ClassDB::bind_method(D_METHOD("get_colliding_body_count"), &RigidBody2D::get_colliding_body_count);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "Physics2DDirectBodyState")));
 

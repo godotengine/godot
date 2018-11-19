@@ -273,6 +273,8 @@ public:
 
 	Array get_colliding_bodies() const; //function for script
 
+	int get_colliding_body_count() const;
+
 	virtual String get_configuration_warning() const;
 
 	RigidBody2D();

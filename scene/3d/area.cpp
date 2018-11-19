@@ -435,6 +435,11 @@ Array Area::get_overlapping_bodies() const {
 	return ret;
 }
 
+int Area::get_overlapping_body_count() const {
+
+	return body_map.size();
+}
+
 void Area::set_monitorable(bool p_enable) {
 
 	if (locked || PhysicsServer::get_singleton()->is_flushing_queries()) {
@@ -471,6 +476,11 @@ Array Area::get_overlapping_areas() const {
 	}
 
 	return ret;
+}
+
+int Area::get_overlapping_area_count() const {
+
+	return area_map.size();
 }
 
 bool Area::overlaps_area(Node *p_area) const {
@@ -674,6 +684,8 @@ void Area::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_overlapping_bodies"), &Area::get_overlapping_bodies);
 	ClassDB::bind_method(D_METHOD("get_overlapping_areas"), &Area::get_overlapping_areas);
+	ClassDB::bind_method(D_METHOD("get_overlapping_body_count"), &Area::get_overlapping_body_count);
+	ClassDB::bind_method(D_METHOD("get_overlapping_area_count"), &Area::get_overlapping_area_count);
 
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area::overlaps_area);

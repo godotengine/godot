@@ -926,6 +926,13 @@ Array RigidBody::get_colliding_bodies() const {
 	return ret;
 }
 
+int RigidBody::get_colliding_body_count() const {
+
+	ERR_FAIL_COND_V(!contact_monitor, 0);
+
+	return contact_monitor->body_map.size();
+}
+
 String RigidBody::get_configuration_warning() const {
 
 	Transform t = get_transform();
@@ -1017,6 +1024,7 @@ void RigidBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &RigidBody::get_axis_lock);
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody::get_colliding_bodies);
+	ClassDB::bind_method(D_METHOD("get_colliding_body_count"), &RigidBody::get_colliding_body_count);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState")));
 
