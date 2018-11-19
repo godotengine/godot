@@ -1900,7 +1900,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							if (gui.drag_data.get_type() != Variant::NIL) {
 
 								gui.mouse_focus = NULL;
+								break;
 							} else {
+								if (gui.drag_preview != NULL) {
+									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
+									memdelete(gui.drag_preview);
+									gui.drag_preview = NULL;
+								}
 								gui.dragging = false;
 							}
 
