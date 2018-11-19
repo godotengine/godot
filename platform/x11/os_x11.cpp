@@ -369,7 +369,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	// disable resizable window
-	if (!current_videomode.resizable) {
+	if (!current_videomode.resizable && !current_videomode.fullscreen) {
 		XSizeHints *xsh;
 		xsh = XAllocSizeHints();
 		xsh->flags = PMinSize | PMaxSize;
