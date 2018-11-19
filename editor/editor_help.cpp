@@ -399,8 +399,10 @@ void EditorHelpIndex::_notification(int p_what) {
 		if (enable_rl) {
 			class_list->add_constant_override("draw_relationship_lines", 1);
 			class_list->add_color_override("relationship_line_color", rl_color);
+			class_list->add_constant_override("draw_guides", 0);
 		} else {
 			class_list->add_constant_override("draw_relationship_lines", 0);
+			class_list->add_constant_override("draw_guides", 1);
 		}
 	}
 }
