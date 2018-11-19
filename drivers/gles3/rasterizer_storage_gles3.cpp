@@ -3787,12 +3787,14 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	Mesh *mesh = mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
-	if (mesh->custom_aabb != AABB())
+	if (mesh->custom_aabb != AABB()) {
 		return mesh->custom_aabb;
+	}
 
 	Skeleton *sk = NULL;
-	if (p_skeleton.is_valid())
+	if (p_skeleton.is_valid()) {
 		sk = skeleton_owner.get(p_skeleton);
+	}
 
 	AABB aabb;
 
@@ -3831,6 +3833,7 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						mtx.origin.y = texture[base_ofs + 3];
 
 						AABB baabb = mtx.xform(skbones[j]);
+
 						if (first) {
 							laabb = baabb;
 							first = false;
@@ -3862,6 +3865,8 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						mtx.basis[2].y = texture[base_ofs + 1];
 						mtx.basis[2].z = texture[base_ofs + 2];
 						mtx.origin.z = texture[base_ofs + 3];
+
+						print_line("surface " + itos(i) + " bone " + itos(j) + " aabb: " + skbones[j]);
 
 						AABB baabb = mtx.xform(skbones[j]);
 						if (first) {

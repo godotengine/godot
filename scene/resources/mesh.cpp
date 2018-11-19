@@ -706,6 +706,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 
 	Vector<AABB> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh, idx);
 	Array arr;
+	arr.resize(skel_aabb.size());
 	for (int i = 0; i < skel_aabb.size(); i++) {
 		arr[i] = skel_aabb[i];
 	}
