@@ -3842,6 +3842,10 @@ RID RasterizerStorageGLES2::particles_get_draw_pass_mesh(RID p_particles, int p_
 void RasterizerStorageGLES2::update_particles() {
 }
 
+bool RasterizerStorageGLES2::particles_is_inactive(RID p_particles) const {
+	return true;
+}
+
 ////////
 
 void RasterizerStorageGLES2::instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {

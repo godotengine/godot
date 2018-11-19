@@ -6455,6 +6455,13 @@ void RasterizerStorageGLES3::update_particles() {
 	glDisable(GL_RASTERIZER_DISCARD);
 }
 
+bool RasterizerStorageGLES3::particles_is_inactive(RID p_particles) const {
+
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, false);
+	return !particles->emitting && particles->inactive;
+}
+
 ////////
 
 void RasterizerStorageGLES3::instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {

@@ -681,6 +681,8 @@ public:
 	int particles_get_draw_passes(RID p_particles) const { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
 
+	virtual bool particles_is_inactive(RID p_particles) const { return false; }
+
 	/* RENDER TARGET */
 
 	RID render_target_create() { return RID(); }
