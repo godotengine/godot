@@ -121,6 +121,13 @@ bool Dictionary::empty() const {
 	return !_p->variant_map.size();
 }
 
+Variant Dictionary::get(const Variant &p_key, const Variant &p_default_value) const {
+	if (_p->variant_map.has(p_key)) {
+		return _p->variant_map[p_key];
+	} 
+	return p_default_value;
+}
+
 bool Dictionary::has(const Variant &p_key) const {
 
 	return _p->variant_map.has(p_key);

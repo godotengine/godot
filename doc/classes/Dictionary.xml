@@ -41,6 +41,17 @@
 				Erase a dictionary key/value pair by key.
 			</description>
 		</method>
+		<method name="get">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<argument index="1" name="default_value" type="Variant" default="null">
+			</argument>
+			<description>
+				Returns the value if the dictionary has the given key, otherwise, default_value is returned. If no default 
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool">
 			</return>

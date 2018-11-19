@@ -70,6 +70,19 @@ void GDAPI godot_dictionary_clear(godot_dictionary *p_self) {
 	self->clear();
 }
 
+godot_variant GDAPI godot_dictionary_get_default(const godot_dictionary *p_self, const godot_variant *p_key, const godot_variant *p_default_value) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	const Variant *key = (const Variant *)p_key;
+
+	if (self->has(*key)) {
+		godot_variant raw_dest;
+		Variant *dest = (Variant *)&raw_dest;
+		memnew_placement(dest, Variant(self->operator[](*key)));
+		return raw_dest;
+	};
+	return *p_default_value;
+}
+
 godot_bool GDAPI godot_dictionary_has(const godot_dictionary *p_self, const godot_variant *p_key) {
 	const Dictionary *self = (const Dictionary *)p_self;
 	const Variant *key = (const Variant *)p_key;

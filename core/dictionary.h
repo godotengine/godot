@@ -63,6 +63,8 @@ public:
 	bool empty() const;
 	void clear();
 
+	Variant get(const Variant &p_key, const Variant &p_default_value) const;
+	
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
 

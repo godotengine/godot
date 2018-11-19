@@ -69,6 +69,8 @@ godot_bool GDAPI godot_dictionary_empty(const godot_dictionary *p_self);
 
 void GDAPI godot_dictionary_clear(godot_dictionary *p_self);
 
+godot_variant GDAPI godot_dictionary_get_default(const godot_dictionary *p_self, const godot_variant *p_key, const godot_variant *p_default_value);
+
 godot_bool GDAPI godot_dictionary_has(const godot_dictionary *p_self, const godot_variant *p_key);
 
 godot_bool GDAPI godot_dictionary_has_all(const godot_dictionary *p_self, const godot_array *p_keys);

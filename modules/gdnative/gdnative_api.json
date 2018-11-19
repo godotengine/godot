@@ -3135,6 +3135,15 @@
         ]
       },
       {
+        "name": "godot_dictionary_get_default",
+        "return_type": "godot_variant",
+        "arguments": [
+          ["const godot_dictionary *", "p_self"],
+          ["const godot_variant *", "p_key"],
+          ["const godot_variant *", "p_default_value"]
+        ]
+      },
+      {
         "name": "godot_dictionary_has",
         "return_type": "godot_bool",
         "arguments": [
