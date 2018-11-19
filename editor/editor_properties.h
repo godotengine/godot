@@ -552,6 +552,8 @@ class EditorPropertyResource : public EditorProperty {
 	void _resource_selected();
 	void _viewport_selected(const NodePath &p_path);
 
+	void _update_menu_items();
+
 	void _update_menu();
 
 	void _sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool);
@@ -564,6 +566,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _button_input(const Ref<InputEvent> &p_event);
 	void _open_editor_pressed();
 
 protected:
