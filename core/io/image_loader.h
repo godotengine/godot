@@ -71,7 +71,7 @@ public:
 class ImageLoader {
 
 	enum {
-		MAX_LOADERS = 8
+		MAX_LOADERS = 32
 	};
 	friend class ResourceFormatLoaderImage;
 	static ImageFormatLoader *loader[MAX_LOADERS];
