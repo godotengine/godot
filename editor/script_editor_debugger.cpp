@@ -1041,8 +1041,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (enable_rl) {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
 				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
-			} else
+				inspect_scene_tree->add_constant_override("draw_guides", 0);
+			} else {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
+				inspect_scene_tree->add_constant_override("draw_guides", 1);
+			}
 		} break;
 		case NOTIFICATION_PROCESS: {
 
