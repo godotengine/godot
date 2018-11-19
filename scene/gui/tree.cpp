@@ -901,6 +901,7 @@ void Tree::update_cache() {
 	cache.item_margin = get_constant("item_margin");
 	cache.button_margin = get_constant("button_margin");
 	cache.guide_width = get_constant("guide_width");
+	cache.draw_guides = get_constant("draw_guides");
 	cache.draw_relationship_lines = get_constant("draw_relationship_lines");
 	cache.relationship_line_color = get_color("relationship_line_color");
 	cache.scroll_border = get_constant("scroll_border");
@@ -1132,7 +1133,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				cell_rect.size.x += cache.hseparation;
 			}
 
-			VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(cell_rect.position.x, cell_rect.position.y + cell_rect.size.height), cell_rect.position + cell_rect.size, cache.guide_color, 1);
+			if (cache.draw_guides) {
+				VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(cell_rect.position.x, cell_rect.position.y + cell_rect.size.height), cell_rect.position + cell_rect.size, cache.guide_color, 1);
+			}
 
 			if (i == 0) {
 

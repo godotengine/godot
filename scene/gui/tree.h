@@ -434,6 +434,7 @@ private:
 		int button_margin;
 		Point2 offset;
 		int draw_relationship_lines;
+		int draw_guides;
 		int scroll_border;
 		int scroll_speed;
 

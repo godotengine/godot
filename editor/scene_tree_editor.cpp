@@ -980,8 +980,11 @@ void SceneTreeEditor::_editor_settings_changed() {
 	if (enable_rl) {
 		tree->add_constant_override("draw_relationship_lines", 1);
 		tree->add_color_override("relationship_line_color", rl_color);
-	} else
+		tree->add_constant_override("draw_guides", 0);
+	} else {
 		tree->add_constant_override("draw_relationship_lines", 0);
+		tree->add_constant_override("draw_guides", 1);
+	}
 }
 
 void SceneTreeEditor::_bind_methods() {
