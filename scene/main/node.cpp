@@ -1237,16 +1237,26 @@ void Node::remove_child(Node *p_child) {
 	}
 }
 
-void Node::adopt_child(Node *p_child, bool p_legible_unique_name) {
-
+void Node::reparent_child(Node *p_child, bool preserve_global_transform, bool p_legible_unique_name) {
 	if (p_child == this) {
 		ERR_EXPLAIN("Can't add '" + p_child->get_name() + "' as a child to itself.")
 		ERR_FAIL_COND(p_child == this); // adding to itself!
 	}
 
 	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, adopt_node() failed.");
+		ERR_EXPLAIN("Parent node is busy setting up children, reparent_child() failed.");
 		ERR_FAIL_COND(data.blocked > 0);
+	}
+
+	/* Check to make sure that this node is not an offspring
+     * of the node that we're trying to take in. */
+	Node *ancestor = get_parent();
+	while (ancestor) {
+		if (p_child == ancestor) {
+			ERR_EXPLAIN("Cannot reparent an ancestor node ('" + ancestor->get_name() + "') to its offspring + '" + get_name() + "'. Consider reparenting the offspring first.");
+			ERR_FAIL_COND(p_child == ancestor);
+		}
+		ancestor = ancestor->get_parent();
 	}
 
 	Node *parent = p_child->get_parent();
@@ -2671,11 +2681,12 @@ void Node::_bind_methods() {
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
 	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
-
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("adopt_child", "node", "legible_unique_name"), &Node::adopt_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("reparent_child", "node", "preserve_global_transform"
+															"legible_unique_name"),
+			&Node::reparent_child, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);

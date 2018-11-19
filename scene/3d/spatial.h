@@ -203,6 +203,7 @@ public:
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();
+	void reparent_child(Node *p_child, bool preserve_global_location = false, bool p_legible_unique_name = false);
 
 	Spatial();
 	~Spatial();

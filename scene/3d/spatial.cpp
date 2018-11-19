@@ -731,6 +731,17 @@ void Spatial::force_update_transform() {
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
+void Spatial::reparent_child(Node *p_child, bool preserve_global_transform, bool p_legible_unique_name) {
+	Spatial *sp_child = dynamic_cast<Spatial *>(p_child);
+	if (preserve_global_transform && sp_child) {
+		Transform global_transform = sp_child->get_global_transform();
+		Node::reparent_child(p_child, preserve_global_transform, p_legible_unique_name);
+		sp_child->set_global_transform(global_transform);
+	} else {
+		Node::reparent_child(p_child, preserve_global_transform, p_legible_unique_name);
+	}
+}
+
 void Spatial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Spatial::set_transform);

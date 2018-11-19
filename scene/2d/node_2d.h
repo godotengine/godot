@@ -111,6 +111,7 @@ public:
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
+	void reparent_child(Node *p_child, bool preserve_global_transform = false, bool p_legible_unique_name = false);
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
 	Transform2D get_transform() const;

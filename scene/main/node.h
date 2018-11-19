@@ -248,7 +248,7 @@ public:
 	void add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name = false);
 	void remove_child(Node *p_child);
 
-	void adopt_child(Node *p_child, bool p_legible_unique_name = false);
+	virtual void reparent_child(Node *p_child, bool preserve_global_transform = false, bool p_legible_unique_name = false);
 
 	int get_child_count() const;
 	Node *get_child(int p_index) const;

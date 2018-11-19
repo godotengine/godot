@@ -350,6 +350,18 @@ bool Node2D::is_z_relative() const {
 	return z_relative;
 }
 
+void Node2D::reparent_child(Node *p_child, bool preserve_global_transform, bool p_legible_unique_name) {
+	CanvasItem *ci_child = dynamic_cast<CanvasItem *>(p_child);
+	Node2D *twod_child = dynamic_cast<Node2D *>(p_child);
+	if (preserve_global_transform && ci_child && twod_child) {
+		Transform2D global_transform = ci_child->get_global_transform();
+		Node::reparent_child(p_child, preserve_global_transform, p_legible_unique_name);
+		twod_child->set_global_transform(global_transform);
+	} else {
+		Node::reparent_child(p_child, preserve_global_transform, p_legible_unique_name);
+	}
+}
+
 int Node2D::get_z_index() const {
 
 	return z_index;
