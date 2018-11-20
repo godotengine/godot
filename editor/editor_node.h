@@ -356,6 +356,7 @@ private:
 	EditorExport *editor_export;
 
 	Object *current;
+	Ref<Resource> saving_resource;
 
 	bool _playing_edited;
 	String run_custom_filename;

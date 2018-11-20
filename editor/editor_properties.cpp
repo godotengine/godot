@@ -2016,6 +2016,13 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 		} break;
 
+		case OBJ_MENU_SAVE: {
+			RES res = get_edited_object()->get(get_edited_property());
+			if (res.is_null())
+				return;
+			EditorNode::get_singleton()->save_resource(res);
+		} break;
+
 		case OBJ_MENU_COPY: {
 			RES res = get_edited_object()->get(get_edited_property());
 
@@ -2233,6 +2240,7 @@ void EditorPropertyResource::_update_menu_items() {
 		menu->add_icon_item(get_icon("Edit", "EditorIcons"), TTR("Edit"), OBJ_MENU_EDIT);
 		menu->add_icon_item(get_icon("Clear", "EditorIcons"), TTR("Clear"), OBJ_MENU_CLEAR);
 		menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
+		menu->add_icon_item(get_icon("Save", "EditorIcons"), TTR("Save"), OBJ_MENU_SAVE);
 		RES r = res;
 		if (r.is_valid() && r->get_path().is_resource_file()) {
 			menu->add_separator();
