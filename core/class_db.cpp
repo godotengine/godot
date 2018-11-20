@@ -936,9 +936,8 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
-
 	if (type->property_setget.has(p_pinfo.name)) {
-		ERR_EXPLAIN("Object already has property: " + p_class);
+		ERR_EXPLAIN("Object " + p_class + " already has property: " + p_pinfo.name);
 		ERR_FAIL();
 	}
 #endif
