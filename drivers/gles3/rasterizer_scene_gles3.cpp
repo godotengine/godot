@@ -4297,8 +4297,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glClearBufferfv(GL_COLOR, 0, clear_color.components); // specular
 	}
 
+	VS::EnvironmentBG bg_mode = (!env || (probe && env->bg_mode == VS::ENV_BG_CANVAS)) ? VS::ENV_BG_CLEAR_COLOR : env->bg_mode;
+
 	if (env) {
-		switch (env->bg_mode) {
+		switch (bg_mode) {
 			case VS::ENV_BG_COLOR_SKY:
 			case VS::ENV_BG_SKY:
 
