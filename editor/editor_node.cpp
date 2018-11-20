@@ -2003,7 +2003,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (err != OK)
 				ERR_PRINT("Failed to load scene");
 			editor_data.move_edited_scene_to_index(cur_idx);
-			get_undo_redo()->clear_history();
+			get_undo_redo()->clear_history(false);
 			scene_tabs->set_current_tab(cur_idx);
 
 		} break;
@@ -2613,7 +2613,7 @@ void EditorNode::_remove_edited_scene() {
 	}
 	_scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
-	editor_data.get_undo_redo().clear_history();
+	editor_data.get_undo_redo().clear_history(false);
 	_update_title();
 	_update_scene_tabs();
 }
