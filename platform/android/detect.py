@@ -223,7 +223,7 @@ def configure(env):
     else:
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
-     
+
     env.Append(CPPFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
     env.Append(CPPFLAGS='-DNO_STATVFS -DGLES_ENABLED'.split())
 
@@ -267,12 +267,12 @@ def configure(env):
         env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
         if mt_link:
             env.Append(LINKFLAGS=['-Wl,--threads'])
-            
+
     if env["android_arch"] == "armv7":
         env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
     env.Append(LINKFLAGS='-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'.split())
     env.Append(LINKFLAGS='-Wl,-soname,libgodot_android.so -Wl,--gc-sections'.split())
-    
+
     env.Append(LINKFLAGS=target_opts)
     env.Append(LINKFLAGS=common_opts)
 

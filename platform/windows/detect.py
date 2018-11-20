@@ -262,7 +262,7 @@ def configure_mingw(env):
                 env.Append(CCFLAGS=['-O2'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os'])
-   
+
 
         env.Append(LINKFLAGS=['-Wl,--subsystem,windows'])
 
@@ -281,7 +281,7 @@ def configure_mingw(env):
            env.Append(CCFLAGS=['-O2'])
         else: #optimize for size
            env.Prepend(CCFLAGS=['-Os'])
-   
+
     elif (env["target"] == "debug"):
         env.Append(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 

@@ -206,7 +206,7 @@ namespace Godot
         public static real_t PosMod(real_t a, real_t b)
         {
             real_t c = a % b;
-            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            if ((c < 0 && b > 0) || (c > 0 && b < 0))
             {
                 c += b;
             }
@@ -219,7 +219,7 @@ namespace Godot
         public static int PosMod(int a, int b)
         {
             int c = a % b;
-            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            if ((c < 0 && b > 0) || (c > 0 && b < 0))
             {
                 c += b;
             }

@@ -379,8 +379,8 @@ namespace Godot
 
             return txt;
         }
-        
-        // Constructors 
+
+        // Constructors
         public Color(float r, float g, float b, float a = 1.0f)
         {
             this.r = r;

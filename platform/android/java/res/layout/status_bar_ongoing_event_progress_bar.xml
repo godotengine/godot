@@ -32,9 +32,9 @@
             android:id="@+id/appIcon"
             android:layout_width="fill_parent"
             android:layout_height="25dp"
-            android:scaleType="centerInside"            
+            android:scaleType="centerInside"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"            
+            android:layout_alignParentTop="true"
             android:src="@android:drawable/stat_sys_download" />
 
         <TextView

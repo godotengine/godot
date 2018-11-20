@@ -407,8 +407,8 @@ namespace Godot
 
             return new AABB(min, max - min);
         }
-        
-        // Constructors 
+
+        // Constructors
         public AABB(Vector3 position, Vector3 size)
         {
             _position = position;

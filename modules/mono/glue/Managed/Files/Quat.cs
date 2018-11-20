@@ -202,7 +202,7 @@ namespace Godot
         // Static Readonly Properties
         public static Quat Identity { get; } = new Quat(0f, 0f, 0f, 1f);
 
-        // Constructors 
+        // Constructors
         public Quat(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;

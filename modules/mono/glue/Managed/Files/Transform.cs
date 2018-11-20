@@ -133,7 +133,7 @@ namespace Godot
         public static Transform FlipY { get { return _flipY; } }
         public static Transform FlipZ { get { return _flipZ; } }
 
-        // Constructors 
+        // Constructors
         public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
         {
             basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);

@@ -261,15 +261,15 @@ namespace Godot
         public static Transform2D Identity { get { return _identity; } }
         public static Transform2D FlipX { get { return _flipX; } }
         public static Transform2D FlipY { get { return _flipY; } }
-        
-        // Constructors 
+
+        // Constructors
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
         {
             x = xAxis;
             y = yAxis;
             o = origin;
         }
-        
+
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             x = new Vector2(xx, xy);
