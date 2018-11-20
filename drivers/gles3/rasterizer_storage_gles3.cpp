@@ -874,8 +874,6 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 		int size, ofs;
 		img->get_mipmap_offset_and_size(i, ofs, size);
 
-		//print_line("mipmap: "+itos(i)+" size: "+itos(size)+" w: "+itos(mm_w)+", h: "+itos(mm_h));
-
 		if (texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP) {
 
 			if (texture->compressed) {
@@ -1062,8 +1060,6 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-	//print_line("GET FORMAT: " + Image::get_format_name(texture->format) + " mipmaps: " + itos(texture->mipmaps));
-
 	for (int i = 0; i < texture->mipmaps; i++) {
 
 		int ofs = 0;
@@ -1141,8 +1137,6 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	glBindTexture(GL_TEXTURE_2D, temp_color_texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-	print_line(itos(texture->alloc_width) + " xx " + itos(texture->alloc_height) + " -> " + itos(real_format));
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -2892,9 +2886,6 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 			if (E->get().order < 0)
 				continue; // texture, does not go here
 
-			//if (material->shader->mode == VS::SHADER_PARTICLES) {
-			//	print_line("uniform " + String(E->key()) + " order " + itos(E->get().order) + " offset " + itos(material->shader->ubo_offsets[E->get().order]));
-			//}
 			//regular uniform
 			uint8_t *data = &local_ubo[material->shader->ubo_offsets[E->get().order]];
 
@@ -3865,8 +3856,6 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						mtx.basis[2].y = texture[base_ofs + 1];
 						mtx.basis[2].z = texture[base_ofs + 2];
 						mtx.origin.z = texture[base_ofs + 3];
-
-						print_line("surface " + itos(i) + " bone " + itos(j) + " aabb: " + skbones[j]);
 
 						AABB baabb = mtx.xform(skbones[j]);
 						if (first) {
