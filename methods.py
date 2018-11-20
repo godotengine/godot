@@ -628,3 +628,27 @@ def CommandNoCache(env, target, sources, command, **args):
     result = env.Command(target, sources, command, **args)
     env.NoCache(result)
     return result
+
+def detect_darwin_sdk_path(platform, env):
+    sdk_name = ''
+    if platform == 'osx':
+        sdk_name = 'macosx'
+        var_name = 'MACOS_SDK_PATH'
+    elif platform == 'iphone':
+        sdk_name = 'iphoneos'
+        var_name = 'IPHONESDK'
+    elif platform == 'iphonesimulator':
+        sdk_name = 'iphonesimulator'
+        var_name = 'IPHONESDK'
+    else:
+        raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
+
+    if not env[var_name]:
+        try:
+            sdk_path = subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip()
+            if sdk_path:
+                env[var_name] = sdk_path
+        except (subprocess.CalledProcessError, OSError) as e:
+            print("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            raise
+
