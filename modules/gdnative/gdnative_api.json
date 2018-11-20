@@ -6427,7 +6427,24 @@
         "major": 3,
         "minor": 1
       },
-      "next": null,
+      "next": {
+        "type": "NET",
+        "version": {
+          "major": 3,
+          "minor": 2
+        },
+        "next": null,
+        "api": [
+          {
+            "name": "godot_net_bind_webrtc_peer",
+            "return_type": "void",
+            "arguments": [
+              ["godot_object *", "p_obj"],
+              ["const godot_net_webrtc_peer *", "p_interface"]
+            ]
+          }
+        ]
+      },
       "api": [
         {
           "name": "godot_net_bind_stream_peer",
