@@ -268,11 +268,11 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		return ret;
 	};
 
-	if (name == "java.lang.Integer") {
+	if (name == "java.lang.Integer" || name == "java.lang.Long") {
 
 		jclass nclass = env->FindClass("java/lang/Number");
-		jmethodID intValue = env->GetMethodID(nclass, "intValue", "()I");
-		int ret = env->CallIntMethod(obj, intValue);
+		jmethodID longValue = env->GetMethodID(nclass, "longValue", "()J");
+		jlong ret = env->CallLongMethod(obj, longValue);
 		return ret;
 	};
 
