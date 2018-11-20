@@ -120,6 +120,8 @@
 		<member name="fog_depth_enabled" type="bool" setter="set_fog_depth_enabled" getter="is_fog_depth_enabled">
 			Enables the fog depth.
 		</member>
+		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end">
+		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled">
 			Enables the fog. Needs fog_height_enabled and/or for_depth_enabled to actually display fog.
 		</member>

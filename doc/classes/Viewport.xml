@@ -125,6 +125,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_input_handled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_size_override_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -144,6 +150,12 @@
 			</return>
 			<argument index="0" name="rect" type="Rect2">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_as_handled">
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -221,6 +233,8 @@
 		</member>
 		<member name="gui_snap_controls_to_pixels" type="bool" setter="set_snap_controls_to_pixels" getter="is_snap_controls_to_pixels_enabled">
 			If [code]true[/code] the GUI controls on the viewport will lay pixel perfectly. Default value: [code]true[/code].
+		</member>
+		<member name="handle_input_locally" type="bool" setter="set_handle_input_locally" getter="is_handling_input_locally">
 		</member>
 		<member name="hdr" type="bool" setter="set_hdr" getter="get_hdr">
 			If [code]true[/code] the viewport rendering will receive benefits from High Dynamic Range algorithm. Default value: [code]true[/code].

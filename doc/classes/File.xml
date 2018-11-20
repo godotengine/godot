@@ -330,7 +330,7 @@
 		<method name="store_csv_line">
 			<return type="void">
 			</return>
-			<argument index="0" name="values" type="PoolStringArray" default="&quot;,&quot;">
+			<argument index="0" name="values" type="PoolStringArray">
 			</argument>
 			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
 			</argument>

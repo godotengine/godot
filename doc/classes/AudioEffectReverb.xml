@@ -15,7 +15,7 @@
 	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping">
-			Defines how reflective the imaginary room's walls are. Value can range from 0 to 1. Default value: [code]1[/code].			
+			Defines how reflective the imaginary room's walls are. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="dry" type="float" setter="set_dry" getter="get_dry">
 			Output percent of original sound. At 0, only modified sound is outputted. Value can range from 0 to 1. Default value: [code]1[/code].

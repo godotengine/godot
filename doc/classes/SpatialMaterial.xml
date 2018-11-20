@@ -52,6 +52,10 @@
 		<member name="depth_enabled" type="bool" setter="set_feature" getter="get_feature">
 			If [code]true[/code] Depth mapping is enabled. See also [member normal_enabled].
 		</member>
+		<member name="depth_flip_binormal" type="bool" setter="set_depth_deep_parallax_flip_binormal" getter="get_depth_deep_parallax_flip_binormal">
+		</member>
+		<member name="depth_flip_tangent" type="bool" setter="set_depth_deep_parallax_flip_tangent" getter="get_depth_deep_parallax_flip_tangent">
+		</member>
 		<member name="depth_max_layers" type="int" setter="set_depth_deep_parallax_max_layers" getter="get_depth_deep_parallax_max_layers">
 		</member>
 		<member name="depth_min_layers" type="int" setter="set_depth_deep_parallax_min_layers" getter="get_depth_deep_parallax_min_layers">
