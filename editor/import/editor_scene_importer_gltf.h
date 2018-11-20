@@ -317,7 +317,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Spatial *_generate_scene(GLTFState &state, int p_bake_fps);
 
 	Error _parse_meshes(GLTFState &state);
-	Error _parse_images(GLTFState &state, const String &p_base_path);
+	Error _parse_images(GLTFState &state, const String &p_base_path, const String &p_original_base_path);
 	Error _parse_textures(GLTFState &state);
 
 	Error _parse_materials(GLTFState &state);
@@ -336,7 +336,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 public:
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = NULL, Error *r_err = NULL);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = NULL, Error *r_err = NULL, const String &p_original_path = "");
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
 	EditorSceneImporterGLTF();

@@ -69,7 +69,7 @@ void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 
 	ERR_FAIL();
 }
-Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path) {
 
 	if (get_script_instance()) {
 		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
@@ -78,7 +78,7 @@ Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, 
 	ERR_FAIL_V(NULL);
 }
 
-Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path) {
 
 	if (get_script_instance()) {
 		return get_script_instance()->call("_import_animation", p_path, p_flags);
@@ -90,20 +90,20 @@ Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint3
 //for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
 //and you want to load the resulting file
 
-Node *EditorSceneImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Node *EditorSceneImporter::import_scene_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path) {
 
-	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this, p_path, p_flags, p_bake_fps);
+	return ResourceImporterScene::get_singleton()->import_scene_from_other_importer(this, p_path, p_flags, p_bake_fps, p_original_path);
 }
 
-Ref<Animation> EditorSceneImporter::import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneImporter::import_animation_from_other_importer(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path) {
 
 	return ResourceImporterScene::get_singleton()->import_animation_from_other_importer(this, p_path, p_flags, p_bake_fps);
 }
 
 void EditorSceneImporter::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_scene_from_other_importer);
-	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer", "path", "flags", "bake_fps"), &EditorSceneImporter::import_animation_from_other_importer);
+	ClassDB::bind_method(D_METHOD("import_scene_from_other_importer", "path", "flags", "bake_fps", "original_path"), &EditorSceneImporter::import_scene_from_other_importer);
+	ClassDB::bind_method(D_METHOD("import_animation_from_other_importer", "path", "flags", "bake_fps", "original_path"), &EditorSceneImporter::import_animation_from_other_importer);
 
 	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_import_flags"));
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_get_extensions"));
@@ -1121,7 +1121,7 @@ void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_
 	}
 }
 
-Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path) {
 
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
@@ -1150,7 +1150,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 
 	List<String> missing;
 	Error err;
-	return importer->import_scene(p_path, p_flags, p_bake_fps, &missing, &err);
+	return importer->import_scene(p_path, p_flags, p_bake_fps, &missing, &err, p_original_path);
 }
 
 Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
@@ -1443,7 +1443,7 @@ uint32_t EditorSceneImporterESCN::get_import_flags() const {
 void EditorSceneImporterESCN::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("escn");
 }
-Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path) {
 
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
@@ -1454,6 +1454,6 @@ Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_fla
 
 	return scene;
 }
-Ref<Animation> EditorSceneImporterESCN::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneImporterESCN::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path) {
 	ERR_FAIL_V(Ref<Animation>());
 }

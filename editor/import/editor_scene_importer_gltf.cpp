@@ -582,7 +582,9 @@ int EditorSceneImporterGLTF::_get_component_type_size(int component_type) {
 		case COMPONENT_TYPE_UNSIGNED_SHORT: return 2; break;
 		case COMPONENT_TYPE_INT: return 4; break;
 		case COMPONENT_TYPE_FLOAT: return 4; break;
-		default: { ERR_FAIL_V(0); }
+		default: {
+			ERR_FAIL_V(0);
+		}
 	}
 	return 0;
 }
@@ -632,7 +634,8 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, int p
 				element_size = 16; //override for this case
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	Vector<double> dst_buffer;
@@ -1105,7 +1108,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 	return OK;
 }
 
-Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_base_path) {
+Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_base_path, const String &p_original_base_path) {
 
 	if (!state.json.has("images"))
 		return OK;
@@ -1135,7 +1138,13 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 				data_size = data.size();
 			} else {
 
-				uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
+				String base_path;
+
+				if (p_base_path == String("res://.import")) {
+					base_path = p_original_base_path;
+				}
+				uri = base_path.plus_file(uri).replace("\\", "/"); //fix for windows
+
 				Ref<Texture> texture = ResourceLoader::load(uri);
 				state.images.push_back(texture);
 				continue;
@@ -2116,7 +2125,7 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	return root;
 }
 
-Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path) {
 
 	GLTFState state;
 
@@ -2170,7 +2179,7 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 		return NULL;
 
 	/* STEP 5 PARSE IMAGES */
-	err = _parse_images(state, p_path.get_base_dir());
+	err = _parse_images(state, p_path.get_base_dir(), p_original_path.get_base_dir());
 	if (err != OK)
 		return NULL;
 
