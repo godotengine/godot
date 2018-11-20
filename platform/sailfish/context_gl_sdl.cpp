@@ -79,6 +79,11 @@ Error ContextGL_SDL::initialize() {
 	sdl_window = SDL_CreateWindow("Godot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 	ERR_FAIL_COND_V(!sdl_window, ERR_UNCONFIGURED);
 
+	if( !sdl_window ) {
+		OS::get_singleton()->print("Error: SDL Window not created.\n");
+		return FAILED;
+	}
+
 	p->gl_context = SDL_GL_CreateContext(sdl_window);
 
 	if(p->gl_context == NULL) {

@@ -139,33 +139,33 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	context_gl->initialize();
 	sdl_window = context_gl->get_window_pointer();
 
-// #ifndef GLES2_ENABLED
-// 	RasterizerGLES3::register_config();
-// 	RasterizerGLES3::make_current();
-// #elseø
-	RasterizerGLES2::register_config();
-	RasterizerGLES2::make_current();
-// #endif
+	if (RasterizerGLES2::is_viable() == OK) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		ERR_PRINT("GLESv2 initialization error!");
+		return ERR_FAIL;
+	}
 
 	context_gl->set_use_vsync(current_videomode.use_vsync);
 
-//#endif
+	//#endif
 	visual_server = memnew(VisualServerRaster);
 
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
-	if (current_videomode.maximized) {
-		current_videomode.maximized = false;
-		set_window_maximized(true);
-		// borderless fullscreen window mode
-	} else if (current_videomode.fullscreen) {
-		current_videomode.fullscreen = false;
-		set_window_fullscreen(true);
-	} else if (current_videomode.borderless_window) {
-		set_borderless_window(current_videomode.borderless_window);
-	}
+	// if (current_videomode.maximized) {
+	// 	current_videomode.maximized = false;
+	// 	set_window_maximized(true);
+	// 	// borderless fullscreen window mode
+	// } else if (current_videomode.fullscreen) {
+	// 	current_videomode.fullscreen = false;
+	// 	set_window_fullscreen(true);
+	// } else if (current_videomode.borderless_window) {
+	// 	set_borderless_window(current_videomode.borderless_window);
+	// }
 
 	// enable / disable resizable window
 	if (current_videomode.resizable) {
@@ -192,7 +192,7 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		// process_events();
 		// force_process_input();
 	}
-	OS::get_singleton()->print("\nlibaudioresource initialization finished.\n");
+	//OS::get_singleton()->print("\nlibaudioresource initialization finished.\n");
 #endif
 
 	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
@@ -1494,7 +1494,7 @@ void OS_SDL::start_audio_driver()
 	// if ( AudioDriverManager::get_driver(0)->init() != OK) {
 	// 	ERR_PRINT("Initializing audio failed.");
 	// }
-	AudioDriverManager::initialize(0);
+	AudioDriverManager::initialize(-1);
 }
 
 void OS_SDL::stop_audio_driver() {
@@ -1509,7 +1509,7 @@ static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acq
 	OS_SDL* os = (OS_SDL*) user_data;
 
 	if (acquired) {
-		print_line("starting audio driver");
+		print_line("\nAudiorRsource initialization finished.\n");
 		// start playback
 		os->is_audio_resource_acquired = true;
 		os->start_audio_driver();
