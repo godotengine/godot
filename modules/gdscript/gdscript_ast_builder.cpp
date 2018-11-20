@@ -696,6 +696,12 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 	}
 
 	void GDScriptASTBuilder::serialize(const Variant& variant) {
+		startObject();
+
+		key(L"type");
+		serialize(variant.get_type());
+
+		key(L"value");
 		switch(variant.get_type()) {
 			case Variant::NIL:
 				serialize(L"NIL");
@@ -781,6 +787,8 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 			default:
 				serialize("unsupported Variant type: " + itos((int)variant.get_type()));
 		}
+
+		endObject();
 	}
 
 	void GDScriptASTBuilder::serialize(PropertyHint hint) {
