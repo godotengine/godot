@@ -410,10 +410,12 @@ namespace Godot
             );
         }
 
-        public Quat Quat() {
+        public Quat Quat()
+        {
             real_t trace = _x[0] + _y[1] + _z[2];
 
-            if (trace > 0.0f) {
+            if (trace > 0.0f)
+            {
                 real_t s = Mathf.Sqrt(trace + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
                 return new Quat(
@@ -424,7 +426,8 @@ namespace Godot
                 );
             }
 
-            if (_x[0] > _y[1] && _x[0] > _z[2]) {
+            if (_x[0] > _y[1] && _x[0] > _z[2])
+            {
                 real_t s = Mathf.Sqrt(_x[0] - _y[1] - _z[2] + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
                 return new Quat(
@@ -435,7 +438,8 @@ namespace Godot
                 );
             }
 
-            if (_y[1] > _z[2]) {
+            if (_y[1] > _z[2])
+            {
                 real_t s = Mathf.Sqrt(-_x[0] + _y[1] - _z[2] + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
                 return new Quat(
@@ -444,7 +448,9 @@ namespace Godot
                     (_y[2] + _z[1]) * inv_s,
                     (_x[2] - _z[0]) * inv_s
                 );
-            } else {
+            }
+            else
+            {
                 real_t s = Mathf.Sqrt(-_x[0] - _y[1] + _z[2] + 1.0f) * 2f;
                 real_t inv_s = 1f / s;
                 return new Quat(
@@ -502,8 +508,8 @@ namespace Godot
         {
             var axis_sq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
 
-            real_t cosine = Mathf.Cos( phi);
-            real_t sine = Mathf.Sin( phi);
+            real_t cosine = Mathf.Cos(phi);
+            real_t sine = Mathf.Sin(phi);
 
             _x = new Vector3
             (
@@ -529,9 +535,9 @@ namespace Godot
 
         public Basis(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
         {
-            _x = xAxis;
-            _y = yAxis;
-            _z = zAxis;
+            x = xAxis;
+            y = yAxis;
+            z = zAxis;
         }
 
         public Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz)
