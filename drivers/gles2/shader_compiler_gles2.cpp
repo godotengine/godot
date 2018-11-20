@@ -86,10 +86,11 @@ static String _mkid(const String &p_id) {
 
 static String f2sp0(float p_float) {
 
-	if (int(p_float) == p_float)
-		return itos(p_float) + ".0";
-	else
-		return rtoss(p_float);
+	String num = rtoss(p_float);
+	if (num.find(".") == -1 && num.find("e") == -1) {
+		num += ".0";
+	}
+	return num;
 }
 
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
