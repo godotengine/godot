@@ -31,8 +31,25 @@
 #include "register_types.h"
 #include "webrtc_peer.h"
 
+#ifdef JAVASCRIPT_ENABLED
+#include "emscripten.h"
+#include "webrtc_peer_js.h"
+#endif
+#ifdef WEBRTC_GDNATIVE_ENABLED
+#include "webrtc_peer_gdnative.h"
+#endif
+
 void register_webrtc_types() {
+#ifdef JAVASCRIPT_ENABLED
+	WebRTCPeerJS::make_default();
+#elif defined(WEBRTC_GDNATIVE_ENABLED)
+	WebRTCPeerGDNative::make_default();
+#endif
+
 	ClassDB::register_custom_instance_class<WebRTCPeer>();
+#ifdef WEBRTC_GDNATIVE_ENABLED
+	ClassDB::register_class<WebRTCPeerGDNative>();
+#endif
 }
 
 void unregister_webrtc_types() {}
