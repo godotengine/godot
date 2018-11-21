@@ -443,6 +443,7 @@ void ScriptTextEditor::_validate_script() {
 	if (!script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc, &warnings, &safe_lines)) {
 		String error_text = "error(" + itos(line) + "," + itos(col) + "): " + errortxt;
 		code_editor->set_error(error_text);
+		code_editor->set_error_pos(line - 1, col - 1);
 	} else {
 		code_editor->set_error("");
 		line = -1;

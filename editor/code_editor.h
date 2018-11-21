@@ -36,6 +36,7 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/timer.h"
@@ -157,7 +158,9 @@ class CodeTextEditor : public VBoxContainer {
 	int font_resize_val;
 	real_t font_size;
 
-	Label *error;
+	LinkButton *error;
+	int error_line;
+	int error_column;
 
 	void _on_settings_change();
 
@@ -171,6 +174,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_out();
 	void _zoom_changed();
 	void _reset_zoom();
+	void _error_pressed();
 
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
@@ -213,6 +217,7 @@ public:
 
 	void update_editor_settings();
 	void set_error(const String &p_error);
+	void set_error_pos(int p_line, int p_column);
 	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
