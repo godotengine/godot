@@ -91,6 +91,9 @@ class OS_SDL : public OS_Unix {
 		// XIEventMask event_mask;
 		Map<int, Vector2> state;
 	} touch;
+
+	int num_touches;
+	int touch_mouse_index;
 #endif
 
 	unsigned int get_mouse_button_state(uint32_t button_mask, bool refresh);
