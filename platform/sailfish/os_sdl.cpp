@@ -144,7 +144,7 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		RasterizerGLES2::make_current();
 	} else {
 		ERR_PRINT("GLESv2 initialization error!");
-		return ERR_FAIL;
+		return ERR_UNAVAILABLE;
 	}
 
 	context_gl->set_use_vsync(current_videomode.use_vsync);
@@ -563,6 +563,19 @@ void OS_SDL::process_events() {
 	SDL_bool text_edit_mode = SDL_IsTextInputActive();
 	Vector<String> dropped_files;
 
+	if (!window_has_focus) {
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+				if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
+				minimized = false;
+				window_has_focus = true;
+				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+			}
+		}
+		return;
+	}
+
 	while (SDL_PollEvent(&event)) {
 
 		if (event.type == SDL_WINDOWEVENT) {
@@ -586,6 +599,8 @@ void OS_SDL::process_events() {
 					if (main_loop && !mouse_mode_grab)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+					window_has_focus = false;
+					minimized = true;
 					if (input)
 						input->set_mouse_in_window(false);
 					break;
@@ -690,19 +705,20 @@ void OS_SDL::process_events() {
 		}
 
 #if defined(TOUCH_ENABLED)
-		/*if( event.type ==  SDL_FINGERDOWN || event.type == SDL_FINGERUP )
+		if( event.type ==  SDL_FINGERDOWN || event.type == SDL_FINGERUP )
 		{
 			// if(OS::get_singleton()->is_stdout_verbose())
 			// 	print_line("SDL_FINGERDOW | SDL_FINGERUP");
 			// InputEvent input_event;
 			Ref<InputEventScreenTouch> input_event;
-			input_event.instance()
-			input_event.ID = ++event_id;
-			input_event.device = 0;
+			input_event.instance();
+			//input_event.ID = ++event_id;
+			input_event->set_device(0);
 
-			InputEvent mouse_event;
-			mouse_event.ID = ++event_id;
-			mouse_event.device = 0;
+			Ref<InputEventMouseButton> mouse_event;
+			mouse_event.instance();
+			//mouse_event.ID = ++event_id;
+			mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
 			Point2i pos = Point2i(event.tfinger.x, event.tfinger.y);
@@ -726,21 +742,18 @@ void OS_SDL::process_events() {
 				touch_mouse_index = -1;
 			}
 
-			input_event.type = InputEvent::SCREEN_TOUCH;
-			input_event.screen_touch.index = index;
-			input_event.screen_touch.x = pos.x;
-			input_event.screen_touch.y = pos.y;
-			input_event.screen_touch.pressed = is_begin;
+			//input_event.type = InputEvent::SCREEN_TOUCH;
+			input_event->set_index(index);
+			input_event->set_position(pos);
+			input_event->set_pressed(is_begin);
 
 			if (translate) {
-				mouse_event.type = InputEvent::MOUSE_BUTTON;
-				mouse_event.mouse_button.x = pos.x;
-				mouse_event.mouse_button.y = pos.y;
-				mouse_event.mouse_button.global_x = pos.x;
-				mouse_event.mouse_button.global_y = pos.y;
-				input->set_mouse_pos(pos);
-				mouse_event.mouse_button.button_index = 1;
-				mouse_event.mouse_button.pressed = is_begin;
+				//mouse_event.type = InputEvent::MOUSE_BUTTON;
+				mouse_event->set_position(pos);
+				mouse_event->set_global_position(pos);
+				input->set_mouse_position(pos);
+				mouse_event->set_button_index(1);
+				mouse_event->set_pressed(is_begin);
 				last_mouse_pos = pos;
 			}
 
@@ -764,13 +777,15 @@ void OS_SDL::process_events() {
 			// if(OS::get_singleton()->is_stdout_verbose())
 				// print_line("SDL_FINGERMOTION");
 
-			InputEvent input_event;
-			input_event.ID = ++event_id;
-			input_event.device = 0;
+			Ref<InputEventScreenDrag> input_event;
+			input_event.instance();
+			//input_event.ID = ++event_id;
+			input_event->set_device(0);
 
-			InputEvent mouse_event;
-			mouse_event.ID = ++event_id;
-			mouse_event.device = 0;
+			Ref<InputEventMouseMotion> mouse_event;
+			mouse_event.instance();
+			//mouse_event.ID = ++event_id;
+			mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
 			Point2i pos = Point2i(event.tfinger.x, event.tfinger.y);
@@ -785,31 +800,26 @@ void OS_SDL::process_events() {
 
 			if (curr_pos_elem->value() != pos) 
 			{
-				input_event.type = InputEvent::SCREEN_DRAG;
-				input_event.screen_drag.index = index;
-				input_event.screen_drag.x = pos.x;
-				input_event.screen_drag.y = pos.y;
-				input_event.screen_drag.relative_x = pos.x - curr_pos_elem->value().x;
-				input_event.screen_drag.relative_y = pos.y - curr_pos_elem->value().y;
+				//input_event.type = InputEvent::SCREEN_DRAG;
+				input_event->set_index(index);
+				input_event->set_position(pos);
+				input_event->set_relative(pos - curr_pos_elem->value());
 				input->parse_input_event(input_event);
 
 				if (index == touch_mouse_index) 
 				{
-					mouse_event.type = InputEvent::MOUSE_MOTION;
-					mouse_event.mouse_motion.x = pos.x;
-					mouse_event.mouse_motion.y = pos.y;
-					mouse_event.mouse_motion.global_x = pos.x;
-					mouse_event.mouse_motion.global_y = pos.y;
-					input->set_mouse_pos(pos);
-					mouse_event.mouse_motion.relative_x = pos.x - last_mouse_pos.x;
-					mouse_event.mouse_motion.relative_y = pos.y - last_mouse_pos.y;
+					//mouse_event.type = InputEvent::MOUSE_MOTION;
+					mouse_event->set_position(pos);
+					mouse_event->set_global_position(pos);
+					input->set_mouse_position(pos);
+					mouse_event->set_relative(pos - last_mouse_pos);
 					last_mouse_pos = pos;
 					input->parse_input_event(mouse_event);
 				}
 
 				curr_pos_elem->value() = pos;
 			}
-		}*/
+		}//*/
 #endif
 		/*if (event.type == SDL_MOUSEWHEEL) {
 			last_timestamp = event.wheel.timestamp;
