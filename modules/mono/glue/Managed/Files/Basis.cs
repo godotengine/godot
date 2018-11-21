@@ -13,9 +13,9 @@ namespace Godot
     {
         private static readonly Basis identity = new Basis
         (
-            new Vector3(1f, 0f, 0f),
-            new Vector3(0f, 1f, 0f),
-            new Vector3(0f, 0f, 1f)
+            1f, 0f, 0f,
+            0f, 1f, 0f,
+            0f, 0f, 1f
         );
 
         private static readonly Basis[] orthoBases = {
@@ -159,9 +159,9 @@ namespace Godot
         {
             return new Basis
             (
-                new Vector3(xAxis.x, yAxis.x, zAxis.x),
-                new Vector3(xAxis.y, yAxis.y, zAxis.y),
-                new Vector3(xAxis.z, yAxis.z, zAxis.z)
+                xAxis.x, yAxis.x, zAxis.x,
+                xAxis.y, yAxis.y, zAxis.y,
+                xAxis.z, yAxis.z, zAxis.z
             );
         }
 
@@ -535,12 +535,17 @@ namespace Godot
 
         public Basis(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
         {
-            x = xAxis;
-            y = yAxis;
-            z = zAxis;
+            _x = new Vector3(xAxis.x, yAxis.x, zAxis.x);
+            _y = new Vector3(xAxis.y, yAxis.y, zAxis.y);
+            _z = new Vector3(xAxis.z, yAxis.z, zAxis.z);
+            // Same as:
+            // SetAxis(0, xAxis);
+            // SetAxis(1, yAxis);
+            // SetAxis(2, zAxis);
+            // We need to assign the struct fields so we can't do that...
         }
 
-        public Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz)
+        internal Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz)
         {
             _x = new Vector3(xx, xy, xz);
             _y = new Vector3(yx, yy, yz);

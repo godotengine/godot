@@ -204,9 +204,9 @@ namespace Godot
         public Basis Outer(Vector3 b)
         {
             return new Basis(
-                new Vector3(x * b.x, x * b.y, x * b.z),
-                new Vector3(y * b.x, y * b.y, y * b.z),
-                new Vector3(z * b.x, z * b.y, z * b.z)
+                x * b.x, x * b.y, x * b.z,
+                y * b.x, y * b.y, y * b.z,
+                z * b.x, z * b.y, z * b.z
             );
         }
 

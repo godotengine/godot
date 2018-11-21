@@ -124,9 +124,9 @@ namespace Godot
 
         // Constants
         private static readonly Transform _identity = new Transform(Basis.Identity, Vector3.Zero);
-        private static readonly Transform _flipX = new Transform(new Basis(new Vector3(-1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)), Vector3.Zero);
-        private static readonly Transform _flipY = new Transform(new Basis(new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 1)), Vector3.Zero);
-        private static readonly Transform _flipZ = new Transform(new Basis(new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, -1)), Vector3.Zero);
+        private static readonly Transform _flipX = new Transform(new Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1), Vector3.Zero);
+        private static readonly Transform _flipY = new Transform(new Basis(1, 0, 0, 0, -1, 0, 0, 0, 1), Vector3.Zero);
+        private static readonly Transform _flipZ = new Transform(new Basis(1, 0, 0, 0, 1, 0, 0, 0, -1), Vector3.Zero);
 
         public static Transform Identity { get { return _identity; } }
         public static Transform FlipX { get { return _flipX; } }
