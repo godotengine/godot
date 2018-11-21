@@ -42,7 +42,7 @@
 #include "servers/visual_server.h"
 
 Mutex *CanvasItemMaterial::material_mutex = NULL;
-SelfList<CanvasItemMaterial>::List CanvasItemMaterial::dirty_materials;
+SelfList<CanvasItemMaterial>::List *CanvasItemMaterial::dirty_materials = NULL;
 Map<CanvasItemMaterial::MaterialKey, CanvasItemMaterial::ShaderData> CanvasItemMaterial::shader_map;
 CanvasItemMaterial::ShaderNames *CanvasItemMaterial::shader_names = NULL;
 
@@ -51,6 +51,8 @@ void CanvasItemMaterial::init_shaders() {
 #ifndef NO_THREADS
 	material_mutex = Mutex::create();
 #endif
+
+	dirty_materials = memnew(SelfList<CanvasItemMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
 
@@ -61,6 +63,9 @@ void CanvasItemMaterial::init_shaders() {
 
 void CanvasItemMaterial::finish_shaders() {
 
+	memdelete(dirty_materials);
+	dirty_materials = NULL;
+
 #ifndef NO_THREADS
 	memdelete(material_mutex);
 #endif
@@ -68,7 +73,7 @@ void CanvasItemMaterial::finish_shaders() {
 
 void CanvasItemMaterial::_update_shader() {
 
-	dirty_materials.remove(&element);
+	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key)
@@ -157,9 +162,9 @@ void CanvasItemMaterial::flush_changes() {
 	if (material_mutex)
 		material_mutex->lock();
 
-	while (dirty_materials.first()) {
+	while (dirty_materials->first()) {
 
-		dirty_materials.first()->self()->_update_shader();
+		dirty_materials->first()->self()->_update_shader();
 	}
 
 	if (material_mutex)
@@ -172,7 +177,7 @@ void CanvasItemMaterial::_queue_shader_change() {
 		material_mutex->lock();
 
 	if (!element.in_list()) {
-		dirty_materials.add(&element);
+		dirty_materials->add(&element);
 	}
 
 	if (material_mutex)

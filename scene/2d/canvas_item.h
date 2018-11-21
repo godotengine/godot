@@ -109,7 +109,7 @@ private:
 	}
 
 	static Mutex *material_mutex;
-	static SelfList<CanvasItemMaterial>::List dirty_materials;
+	static SelfList<CanvasItemMaterial>::List *dirty_materials;
 	SelfList<CanvasItemMaterial> element;
 
 	void _update_shader();

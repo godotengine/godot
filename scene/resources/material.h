@@ -360,7 +360,7 @@ private:
 	};
 
 	static Mutex *material_mutex;
-	static SelfList<SpatialMaterial>::List dirty_materials;
+	static SelfList<SpatialMaterial>::List *dirty_materials;
 	static ShaderNames *shader_names;
 
 	SelfList<SpatialMaterial> element;
