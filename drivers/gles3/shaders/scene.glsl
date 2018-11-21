@@ -1585,24 +1585,24 @@ void main() {
 
 	float alpha = 1.0;
 
-#if defined(DO_SIDE_CHECK)
-	float side = gl_FrontFacing ? 1.0 : -1.0;
-#else
-	float side = 1.0;
-#endif
-
 #if defined(ALPHA_SCISSOR_USED)
 	float alpha_scissor = 0.5;
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-	vec3 binormal = normalize(binormal_interp) * side;
-	vec3 tangent = normalize(tangent_interp) * side;
+	vec3 binormal = normalize(binormal_interp);// * side;
+	vec3 tangent = normalize(tangent_interp);// * side;
 #else
 	vec3 binormal = vec3(0.0);
 	vec3 tangent = vec3(0.0);
 #endif
-	vec3 normal = normalize(normal_interp) * side;
+	vec3 normal = normalize(normal_interp);
+
+#if defined(DO_SIDE_CHECK)
+	if (!gl_FrontFacing) {
+		normal = -normal;
+	}
+#endif
 
 #if defined(ENABLE_UV_INTERP)
 	vec2 uv = uv_interp;
@@ -1658,7 +1658,7 @@ FRAGMENT_SHADER_CODE
 	normalmap.xy = normalmap.xy * 2.0 - 1.0;
 	normalmap.z = sqrt(max(0.0, 1.0 - dot(normalmap.xy, normalmap.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
-	normal = normalize(mix(normal_interp, tangent * normalmap.x + binormal * normalmap.y + normal * normalmap.z, normaldepth)) * side;
+	normal = normalize(mix(normal, tangent * normalmap.x + binormal * normalmap.y + normal * normalmap.z, normaldepth));
 
 #endif
 
