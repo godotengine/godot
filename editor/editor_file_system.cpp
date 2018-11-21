@@ -466,6 +466,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	bool fs_changed = false;
 
 	Vector<String> reimports;
+	Vector<String> reloads;
 
 	for (List<ItemAction>::Element *E = scan_actions.front(); E; E = E->next()) {
 
@@ -545,11 +546,24 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				fs_changed = true;
 			} break;
+			case ItemAction::ACTION_FILE_RELOAD: {
+
+				int idx = ia.dir->find_file_index(ia.file);
+				ERR_CONTINUE(idx == -1);
+				String full_path = ia.dir->get_file_path(idx);
+
+				reloads.push_back(full_path);
+
+			} break;
 		}
 	}
 
 	if (reimports.size()) {
 		reimport_files(reimports);
+	}
+
+	if (reloads.size()) {
+		emit_signal("resources_reload", reloads);
 	}
 	scan_actions.clear();
 
@@ -905,10 +919,10 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 			continue;
 		}
 
+		String path = cd.plus_file(p_dir->files[i]->file);
+
 		if (import_extensions.has(p_dir->files[i]->file.get_extension().to_lower())) {
 			//check here if file must be imported or not
-
-			String path = cd.plus_file(p_dir->files[i]->file);
 
 			uint64_t mt = FileAccess::get_modified_time(path);
 
@@ -932,6 +946,20 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
+				ia.dir = p_dir;
+				ia.file = p_dir->files[i]->file;
+				scan_actions.push_back(ia);
+			}
+		} else if (ResourceCache::has(path)) { //test for potential reload
+
+			uint64_t mt = FileAccess::get_modified_time(path);
+
+			if (mt != p_dir->files[i]->modified_time) {
+
+				p_dir->files[i]->modified_time = mt; //save new time, but test for reload
+
+				ItemAction ia;
+				ia.action = ItemAction::ACTION_FILE_RELOAD;
 				ia.dir = p_dir;
 				ia.file = p_dir->files[i]->file;
 				scan_actions.push_back(ia);
@@ -1726,6 +1754,7 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
+	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
 }
 
 void EditorFileSystem::_update_extensions() {

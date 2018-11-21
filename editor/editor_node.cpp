@@ -410,6 +410,40 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 	push_item(script.operator->());
 }
 
+void EditorNode::_resources_changed(const PoolVector<String> &p_resources) {
+
+	List<Ref<Resource> > changed;
+
+	int rc = p_resources.size();
+	for (int i = 0; i < rc; i++) {
+
+		Ref<Resource> res(ResourceCache::get(p_resources.get(i)));
+		if (res.is_null()) {
+			continue;
+		}
+
+		if (!res->editor_can_reload_from_file())
+			continue;
+		if (!res->get_path().is_resource_file() && !res->get_path().is_abs_path())
+			continue;
+		if (!FileAccess::exists(res->get_path()))
+			continue;
+
+		if (res->get_import_path() != String()) {
+			//this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
+			continue;
+		}
+
+		changed.push_back(res);
+	}
+
+	if (changed.size()) {
+		for (List<Ref<Resource> >::Element *E = changed.front(); E; E = E->next()) {
+			E->get()->reload_from_file();
+		}
+	}
+}
+
 void EditorNode::_fs_changed() {
 
 	for (Set<FileDialog *>::Element *E = file_dialogs.front(); E; E = E->next()) {
@@ -420,41 +454,6 @@ void EditorNode::_fs_changed() {
 	for (Set<EditorFileDialog *>::Element *E = editor_file_dialogs.front(); E; E = E->next()) {
 
 		E->get()->invalidate();
-	}
-
-	{
-		//reload changed resources
-		List<Ref<Resource> > changed;
-
-		List<Ref<Resource> > cached;
-		ResourceCache::get_cached_resources(&cached);
-		// FIXME: This should be done in a thread.
-		for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
-
-			if (!E->get()->editor_can_reload_from_file())
-				continue;
-			if (!E->get()->get_path().is_resource_file() && !E->get()->get_path().is_abs_path())
-				continue;
-			if (!FileAccess::exists(E->get()->get_path()))
-				continue;
-
-			if (E->get()->get_import_path() != String()) {
-				//this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
-				continue;
-			}
-
-			uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
-
-			if (mt != E->get()->get_last_modified_time()) {
-				changed.push_back(E->get());
-			}
-		}
-
-		if (changed.size()) {
-			for (List<Ref<Resource> >::Element *E = changed.front(); E; E = E->next()) {
-				E->get()->reload_from_file();
-			}
-		}
 	}
 
 	_mark_unsaved_scenes();
@@ -4650,6 +4649,8 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_video_driver_selected"), &EditorNode::_video_driver_selected);
 
+	ClassDB::bind_method(D_METHOD("_resources_changed"), &EditorNode::_resources_changed);
+
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
 	ADD_SIGNAL(MethodInfo("stop_pressed"));
@@ -5819,6 +5820,7 @@ EditorNode::EditorNode() {
 	EditorFileSystem::get_singleton()->connect("sources_changed", this, "_sources_changed");
 	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_fs_changed");
 	EditorFileSystem::get_singleton()->connect("resources_reimported", this, "_resources_reimported");
+	EditorFileSystem::get_singleton()->connect("resources_reload", this, "_resources_changed");
 
 	_build_icon_type_cache();
 

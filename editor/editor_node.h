@@ -606,6 +606,8 @@ private:
 	static void _resource_saved(RES p_resource, const String &p_path);
 	static void _resource_loaded(RES p_resource, const String &p_path);
 
+	void _resources_changed(const PoolVector<String> &p_resources);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
