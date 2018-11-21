@@ -135,6 +135,13 @@
 				Emitted whenever this MultiplayerAPI's [member network_peer] disconnects from server. Only emitted on clients.
 			</description>
 		</signal>
+		<signal name="rpc_node_notfound">
+			<argument index="0" name="node_path" type="String">
+			</argument>
+			<description>
+				Emitted whenever a RPC or RSET call is made to a node that does not exist on the client.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="RPC_MODE_DISABLED" value="0" enum="RPCMode">

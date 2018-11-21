@@ -195,6 +195,8 @@ private:
 	void _connection_failed();
 	void _server_disconnected();
 
+	void _rpc_node_notfound(String np);
+
 	static SceneTree *singleton;
 	friend class Node;
 

@@ -332,6 +332,13 @@
 				Emitted whenever this SceneTree's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
+		<signal name="rpc_node_notfound">
+			<argument index="0" name="node_path" type="String">
+			</argument>
+			<description>
+				Emitted whenever a RPC or RSET call is made to a node that does not exist on the client.
+			</description>
+		</signal>
 		<signal name="node_added">
 			<argument index="0" name="node" type="Node">
 			</argument>

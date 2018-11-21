@@ -1699,6 +1699,10 @@ void SceneTree::_server_disconnected() {
 	emit_signal("server_disconnected");
 }
 
+void SceneTree::_rpc_node_notfound(String np) {
+	emit_signal("rpc_node_notfound", np);
+}
+
 Ref<MultiplayerAPI> SceneTree::get_multiplayer() const {
 	return multiplayer;
 }
@@ -1720,6 +1724,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 		multiplayer->disconnect("connected_to_server", this, "_connected_to_server");
 		multiplayer->disconnect("connection_failed", this, "_connection_failed");
 		multiplayer->disconnect("server_disconnected", this, "_server_disconnected");
+		multiplayer->disconnect("rpc_node_notfound", this, "_rpc_node_notfound");
 	}
 
 	multiplayer = p_multiplayer;
@@ -1730,6 +1735,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {
 	multiplayer->connect("connected_to_server", this, "_connected_to_server");
 	multiplayer->connect("connection_failed", this, "_connection_failed");
 	multiplayer->connect("server_disconnected", this, "_server_disconnected");
+	multiplayer->connect("rpc_node_notfound", this, "_rpc_node_notfound");
 }
 
 void SceneTree::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_network_peer) {
@@ -1857,6 +1863,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_connected_to_server"), &SceneTree::_connected_to_server);
 	ClassDB::bind_method(D_METHOD("_connection_failed"), &SceneTree::_connection_failed);
 	ClassDB::bind_method(D_METHOD("_server_disconnected"), &SceneTree::_server_disconnected);
+	ClassDB::bind_method(D_METHOD("_rpc_node_notfound"), &SceneTree::_rpc_node_notfound);
 
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &SceneTree::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &SceneTree::is_using_font_oversampling);
@@ -1888,6 +1895,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
 	ADD_SIGNAL(MethodInfo("server_disconnected"));
+	ADD_SIGNAL(MethodInfo("rpc_node_notfound", PropertyInfo(Variant::STRING, "node_path")));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
