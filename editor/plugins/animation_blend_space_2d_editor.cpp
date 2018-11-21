@@ -607,6 +607,8 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 
 	auto_triangles->set_pressed(blend_space->get_auto_triangles());
 
+	interpolation->select(blend_space->get_blend_mode());
+
 	max_x_value->set_value(blend_space->get_max_space().x);
 	max_y_value->set_value(blend_space->get_max_space().y);
 
@@ -636,6 +638,8 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_snap", Vector2(snap_x->get_value(), snap_y->get_value()));
 	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
+	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -752,6 +756,10 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 		snap->set_icon(get_icon("SnapGrid", "EditorIcons"));
 		open_editor->set_icon(get_icon("Edit", "EditorIcons"));
 		auto_triangles->set_icon(get_icon("AutoTriangle", "EditorIcons"));
+		interpolation->clear();
+		interpolation->add_icon_item(get_icon("TrackContinuous", "EditorIcons"), "", 0);
+		interpolation->add_icon_item(get_icon("TrackDiscrete", "EditorIcons"), "", 1);
+		interpolation->add_icon_item(get_icon("TrackCapture", "EditorIcons"), "", 2);
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
@@ -913,6 +921,13 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap_y->set_min(0.01);
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);
+
+	top_hb->add_child(memnew(VSeparator));
+
+	top_hb->add_child(memnew(Label(TTR("Blend:"))));
+	interpolation = memnew(OptionButton);
+	top_hb->add_child(interpolation);
+	interpolation->connect("item_selected", this, "_config_changed");
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);

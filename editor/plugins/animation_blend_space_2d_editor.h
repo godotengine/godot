@@ -60,6 +60,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	ToolButton *snap;
 	SpinBox *snap_x;
 	SpinBox *snap_y;
+	OptionButton *interpolation;
 
 	ToolButton *auto_triangles;
 
