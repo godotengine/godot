@@ -1802,14 +1802,26 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 
 	NodePath path = p_path;
 	Node *base_node = Object::cast_to<Node>(get_edited_object());
-	if (base_node == NULL) {
-		if (Object::cast_to<Resource>(get_edited_object())) {
-			Node *to_node = get_node(p_path);
-			path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
-		} else if (get_edited_object()->has_method("get_root_path")) {
-			base_node = get_edited_object()->call("get_root_path");
+	if (!base_node) {
+		//try a base node within history
+		if (EditorNode::get_singleton()->get_editor_history()->get_path_size() > 0) {
+			Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(0));
+			if (base) {
+				base_node = Object::cast_to<Node>(base);
+			}
 		}
 	}
+
+	if (!base_node && get_edited_object()->has_method("get_root_path")) {
+		base_node = get_edited_object()->call("get_root_path");
+	}
+
+	if (!base_node && Object::cast_to<Reference>(get_edited_object())) {
+		Node *to_node = get_node(p_path);
+		ERR_FAIL_COND(!to_node);
+		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
+	}
+
 	if (base_node) { // for AnimationTrackKeyEdit
 		path = base_node->get_path().rel_path_to(p_path);
 	}
