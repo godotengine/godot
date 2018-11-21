@@ -51,7 +51,7 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 	}
 }
 
-void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item **r_items, Transform2D *r_extra_transforms, int &r_index) {
+void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item **r_items, int &r_index) {
 	int child_item_count = p_canvas_item->child_items.size();
 	VisualServerCanvas::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
@@ -64,7 +64,7 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 		r_index++;
 
 		if (child_items[i]->sort_y)
-			_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, r_items, r_extra_transforms, r_index);
+			_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, r_items, r_index);
 	}
 }
 
@@ -100,7 +100,6 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 
 	int child_item_count = ci->child_items.size();
 	Item **child_items = ci->child_items.ptrw();
-	Transform2D *child_extra_transforms = NULL;
 
 	if (ci->clip) {
 		if (p_canvas_clip != NULL) {
@@ -118,14 +117,14 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 
 		if (ci->ysort_children_count == -1) {
 			ci->ysort_children_count = 0;
-			_collect_ysort_children(ci, Transform2D(), NULL, NULL, ci->ysort_children_count);
+			_collect_ysort_children(ci, Transform2D(), NULL, ci->ysort_children_count);
 		}
 
 		child_item_count = ci->ysort_children_count;
 		child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
 		int i = 0;
-		_collect_ysort_children(ci, Transform2D(), child_items, child_extra_transforms, i);
+		_collect_ysort_children(ci, Transform2D(), child_items, i);
 
 		SortArray<Item *, ItemPtrSort> sorter;
 		sorter.sort(child_items, child_item_count);
@@ -336,7 +335,12 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 
 			Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 			item_owner->child_items.erase(canvas_item);
-			item_owner->ysort_children_count = -1;
+
+			Item *ysort_owner = item_owner;
+			while (ysort_owner && ysort_owner->sort_y) {
+				item_owner->ysort_children_count = -1;
+				ysort_owner = canvas_item_owner.getornull(ysort_owner->parent);
+			}
 		}
 
 		canvas_item->parent = RID();
@@ -1346,6 +1350,12 @@ bool VisualServerCanvas::free(RID p_rid) {
 
 				Item *item_owner = canvas_item_owner.get(canvas_item->parent);
 				item_owner->child_items.erase(canvas_item);
+
+				Item *ysort_owner = item_owner;
+				while (ysort_owner && ysort_owner->sort_y) {
+					item_owner->ysort_children_count = -1;
+					ysort_owner = canvas_item_owner.getornull(ysort_owner->parent);
+				}
 			}
 		}
 
