@@ -3039,20 +3039,17 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 			reflection_ubo.ambient[3] = rpi->probe_ptr->interior_ambient_probe_contrib;
 		} else {
 			Color ambient_linear;
-			// FIXME: contrib was retrieved but never used, is it meant to be set as ambient[3]? (GH-20361)
-			//float contrib = 0;
 			if (p_env) {
 				ambient_linear = p_env->ambient_color.to_linear();
 				ambient_linear.r *= p_env->ambient_energy;
 				ambient_linear.g *= p_env->ambient_energy;
 				ambient_linear.b *= p_env->ambient_energy;
-				//contrib = p_env->ambient_sky_contribution;
 			}
 
 			reflection_ubo.ambient[0] = ambient_linear.r;
 			reflection_ubo.ambient[1] = ambient_linear.g;
 			reflection_ubo.ambient[2] = ambient_linear.b;
-			reflection_ubo.ambient[3] = 0;
+			reflection_ubo.ambient[3] = 0; //not used in exterior mode, since it just blends with regular ambient light
 		}
 
 		int cell_size = reflection_atlas->size / reflection_atlas->subdiv;
