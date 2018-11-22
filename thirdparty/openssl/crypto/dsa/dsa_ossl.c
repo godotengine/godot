@@ -73,6 +73,8 @@ static int dsa_do_verify(const unsigned char *dgst, int dgst_len,
                          DSA_SIG *sig, DSA *dsa);
 static int dsa_init(DSA *dsa);
 static int dsa_finish(DSA *dsa);
+static BIGNUM *dsa_mod_inverse_fermat(const BIGNUM *k, const BIGNUM *q,
+                                      BN_CTX *ctx);
 
 static DSA_METHOD openssl_dsa_meth = {
     "OpenSSL DSA method",
@@ -133,17 +135,13 @@ const DSA_METHOD *DSA_OpenSSL(void)
 static DSA_SIG *dsa_do_sign(const unsigned char *dgst, int dlen, DSA *dsa)
 {
     BIGNUM *kinv = NULL, *r = NULL, *s = NULL;
-    BIGNUM m;
-    BIGNUM xr;
+    BIGNUM *m, *blind, *blindm, *tmp;
     BN_CTX *ctx = NULL;
     int reason = ERR_R_BN_LIB;
     DSA_SIG *ret = NULL;
     int noredo = 0;
 
-    BN_init(&m);
-    BN_init(&xr);
-
-    if (!dsa->p || !dsa->q || !dsa->g) {
+    if (dsa->p == NULL || dsa->q == NULL || dsa->g == NULL) {
         reason = DSA_R_MISSING_PARAMETERS;
         goto err;
     }
@@ -154,6 +152,13 @@ static DSA_SIG *dsa_do_sign(const unsigned char *dgst, int dlen, DSA *dsa)
     ctx = BN_CTX_new();
     if (ctx == NULL)
         goto err;
+    m = BN_CTX_get(ctx);
+    blind = BN_CTX_get(ctx);
+    blindm = BN_CTX_get(ctx);
+    tmp = BN_CTX_get(ctx);
+    if (tmp == NULL)
+        goto err;
+
  redo:
     if ((dsa->kinv == NULL) || (dsa->r == NULL)) {
         if (!DSA_sign_setup(dsa, ctx, &kinv, &r))
@@ -173,18 +178,50 @@ static DSA_SIG *dsa_do_sign(const unsigned char *dgst, int dlen, DSA *dsa)
          * 4.2
          */
         dlen = BN_num_bytes(dsa->q);
-    if (BN_bin2bn(dgst, dlen, &m) == NULL)
+    if (BN_bin2bn(dgst, dlen, m) == NULL)
         goto err;
 
-    /* Compute  s = inv(k) (m + xr) mod q */
-    if (!BN_mod_mul(&xr, dsa->priv_key, r, dsa->q, ctx))
-        goto err;               /* s = xr */
-    if (!BN_add(s, &xr, &m))
-        goto err;               /* s = m + xr */
-    if (BN_cmp(s, dsa->q) > 0)
-        if (!BN_sub(s, s, dsa->q))
+    /*
+     * The normal signature calculation is:
+     *
+     *   s := k^-1 * (m + r * priv_key) mod q
+     *
+     * We will blind this to protect against side channel attacks
+     *
+     *   s := blind^-1 * k^-1 * (blind * m + blind * r * priv_key) mod q
+     */
+
+    /* Generate a blinding value */
+    do {
+        if (!BN_rand(blind, BN_num_bits(dsa->q) - 1, -1, 0))
             goto err;
+    } while (BN_is_zero(blind));
+    BN_set_flags(blind, BN_FLG_CONSTTIME);
+    BN_set_flags(blindm, BN_FLG_CONSTTIME);
+    BN_set_flags(tmp, BN_FLG_CONSTTIME);
+
+    /* tmp := blind * priv_key * r mod q */
+    if (!BN_mod_mul(tmp, blind, dsa->priv_key, dsa->q, ctx))
+        goto err;
+    if (!BN_mod_mul(tmp, tmp, r, dsa->q, ctx))
+        goto err;
+
+    /* blindm := blind * m mod q */
+    if (!BN_mod_mul(blindm, blind, m, dsa->q, ctx))
+        goto err;
+
+    /* s : = (blind * priv_key * r) + (blind * m) mod q */
+    if (!BN_mod_add_quick(s, tmp, blindm, dsa->q))
+        goto err;
+
+    /* s := s * k^-1 mod q */
     if (!BN_mod_mul(s, s, kinv, dsa->q, ctx))
+        goto err;
+
+    /* s:= s * blind^-1 mod q */
+    if (BN_mod_inverse(blind, blind, dsa->q, ctx) == NULL)
+        goto err;
+    if (!BN_mod_mul(s, s, blind, dsa->q, ctx))
         goto err;
 
     /*
@@ -210,13 +247,9 @@ static DSA_SIG *dsa_do_sign(const unsigned char *dgst, int dlen, DSA *dsa)
         BN_free(r);
         BN_free(s);
     }
-    if (ctx != NULL)
-        BN_CTX_free(ctx);
-    BN_clear_free(&m);
-    BN_clear_free(&xr);
-    if (kinv != NULL)           /* dsa->kinv is NULL now if we used it */
-        BN_clear_free(kinv);
-    return (ret);
+    BN_CTX_free(ctx);
+    BN_clear_free(kinv);
+    return ret;
 }
 
 static int dsa_sign_setup(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,
@@ -248,7 +281,7 @@ static int dsa_sign_setup(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,
         goto err;
 
     /* Preallocate space */
-    q_bits = BN_num_bits(dsa->q);
+    q_bits = BN_num_bits(dsa->q) + sizeof(dsa->q->d[0]) * 16;
     if (!BN_set_bit(&k, q_bits)
         || !BN_set_bit(&l, q_bits)
         || !BN_set_bit(&m, q_bits))
@@ -262,8 +295,8 @@ static int dsa_sign_setup(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,
 
     if ((dsa->flags & DSA_FLAG_NO_EXP_CONSTTIME) == 0) {
         BN_set_flags(&k, BN_FLG_CONSTTIME);
+        BN_set_flags(&l, BN_FLG_CONSTTIME);
     }
-
 
     if (dsa->flags & DSA_FLAG_CACHE_MONT_P) {
         if (!BN_MONT_CTX_set_locked(&dsa->method_mont_p,
@@ -302,8 +335,8 @@ static int dsa_sign_setup(DSA *dsa, BN_CTX *ctx_in, BIGNUM **kinvp,
     if (!BN_mod(r, r, dsa->q, ctx))
         goto err;
 
-    /* Compute  part of 's = inv(k) (m + xr) mod q' */
-    if ((kinv = BN_mod_inverse(NULL, &k, dsa->q, ctx)) == NULL)
+    /* Compute part of 's = inv(k) (m + xr) mod q' */
+    if ((kinv = dsa_mod_inverse_fermat(&k, dsa->q, ctx)) == NULL)
         goto err;
 
     if (*kinvp != NULL)
@@ -436,4 +469,32 @@ static int dsa_finish(DSA *dsa)
     if (dsa->method_mont_p)
         BN_MONT_CTX_free(dsa->method_mont_p);
     return (1);
+}
+
+/*
+ * Compute the inverse of k modulo q.
+ * Since q is prime, Fermat's Little Theorem applies, which reduces this to
+ * mod-exp operation.  Both the exponent and modulus are public information
+ * so a mod-exp that doesn't leak the base is sufficient.  A newly allocated
+ * BIGNUM is returned which the caller must free.
+ */
+static BIGNUM *dsa_mod_inverse_fermat(const BIGNUM *k, const BIGNUM *q,
+                                      BN_CTX *ctx)
+{
+    BIGNUM *res = NULL;
+    BIGNUM *r, e;
+
+    if ((r = BN_new()) == NULL)
+        return NULL;
+
+    BN_init(&e);
+
+    if (BN_set_word(r, 2)
+            && BN_sub(&e, q, r)
+            && BN_mod_exp_mont(r, k, &e, q, ctx, NULL))
+        res = r;
+    else
+        BN_free(r);
+    BN_free(&e);
+    return res;
 }
