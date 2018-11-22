@@ -60,7 +60,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 
 	String extension = p_file.get_extension();
 
-	for (int i = 0; i < loader_count; i++) {
+	for (int i = 0; i < loader.size(); i++) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
@@ -83,30 +83,45 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 
 void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
 
-	for (int i = 0; i < loader_count; i++) {
+	for (int i = 0; i < loader.size(); i++) {
 
 		loader[i]->get_recognized_extensions(p_extensions);
 	}
 }
 
-bool ImageLoader::recognize(const String &p_extension) {
+ImageFormatLoader *ImageLoader::recognize(const String &p_extension) {
 
-	for (int i = 0; i < loader_count; i++) {
+	for (int i = 0; i < loader.size(); i++) {
 
 		if (loader[i]->recognize(p_extension))
-			return true;
+			return loader[i];
 	}
 
-	return false;
+	return NULL;
 }
 
-ImageFormatLoader *ImageLoader::loader[MAX_LOADERS];
-int ImageLoader::loader_count = 0;
+Vector<ImageFormatLoader *> ImageLoader::loader;
 
 void ImageLoader::add_image_format_loader(ImageFormatLoader *p_loader) {
 
-	ERR_FAIL_COND(loader_count >= MAX_LOADERS);
-	loader[loader_count++] = p_loader;
+	loader.push_back(p_loader);
+}
+
+void ImageLoader::remove_image_format_loader(ImageFormatLoader *p_loader) {
+
+	loader.erase(p_loader);
+}
+
+const Vector<ImageFormatLoader *> &ImageLoader::get_image_format_loaders() {
+
+	return loader;
+}
+
+void ImageLoader::cleanup() {
+
+	while (loader.size()) {
+		remove_image_format_loader(loader[0]);
+	}
 }
 
 /////////////////
@@ -137,7 +152,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_origin
 
 	int idx = -1;
 
-	for (int i = 0; i < ImageLoader::loader_count; i++) {
+	for (int i = 0; i < ImageLoader::loader.size(); i++) {
 		if (ImageLoader::loader[i]->recognize(extension)) {
 			idx = i;
 			break;
