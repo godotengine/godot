@@ -66,6 +66,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cryptlib.h"
 #include <openssl/conf.h>
 #include <openssl/conf_api.h>
 #include "e_os.h"
@@ -141,7 +142,7 @@ char *_CONF_get_string(const CONF *conf, const char *section,
             if (v != NULL)
                 return (v->value);
             if (strcmp(section, "ENV") == 0) {
-                p = getenv(name);
+                p = ossl_safe_getenv(name);
                 if (p != NULL)
                     return (p);
             }
@@ -154,7 +155,7 @@ char *_CONF_get_string(const CONF *conf, const char *section,
         else
             return (NULL);
     } else
-        return (getenv(name));
+        return (ossl_safe_getenv(name));
 }
 
 #if 0                           /* There's no way to provide error checking
@@ -290,6 +291,8 @@ CONF_VALUE *_CONF_new_section(CONF *conf, const char *section)
 
     vv = lh_CONF_VALUE_insert(conf->data, v);
     OPENSSL_assert(vv == NULL);
+    if (lh_CONF_VALUE_error(conf->data) > 0)
+        goto err;
     ok = 1;
  err:
     if (!ok) {

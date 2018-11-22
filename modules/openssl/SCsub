@@ -381,6 +381,7 @@ if env['builtin_openssl']:
         "crypto/evp/p_verify.c",
         "crypto/ex_data.c",
         "crypto/fips_ers.c",
+        "crypto/getenv.c",
         "crypto/hmac/hmac.c",
         "crypto/hmac/hm_ameth.c",
         "crypto/hmac/hm_pmeth.c",

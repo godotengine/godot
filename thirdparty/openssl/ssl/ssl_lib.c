@@ -58,7 +58,7 @@
  * [including the GNU Public Licence.]
  */
 /* ====================================================================
- * Copyright (c) 1998-2007 The OpenSSL Project.  All rights reserved.
+ * Copyright (c) 1998-2018 The OpenSSL Project.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1404,28 +1404,37 @@ int SSL_set_cipher_list(SSL *s, const char *str)
 }
 
 /* works well for SSLv2, not so good for SSLv3 */
-char *SSL_get_shared_ciphers(const SSL *s, char *buf, int len)
+char *SSL_get_shared_ciphers(const SSL *s, char *buf, int size)
 {
     char *p;
-    STACK_OF(SSL_CIPHER) *sk;
+    STACK_OF(SSL_CIPHER) *clntsk, *srvrsk;
     SSL_CIPHER *c;
     int i;
 
-    if ((s->session == NULL) || (s->session->ciphers == NULL) || (len < 2))
-        return (NULL);
-
-    p = buf;
-    sk = s->session->ciphers;
-
-    if (sk_SSL_CIPHER_num(sk) == 0)
+    if (!s->server
+            || s->session == NULL
+            || s->session->ciphers == NULL
+            || size < 2)
         return NULL;
 
-    for (i = 0; i < sk_SSL_CIPHER_num(sk); i++) {
+    p = buf;
+    clntsk = s->session->ciphers;
+    srvrsk = SSL_get_ciphers(s);
+    if (clntsk == NULL || srvrsk == NULL)
+        return NULL;
+
+    if (sk_SSL_CIPHER_num(clntsk) == 0 || sk_SSL_CIPHER_num(srvrsk) == 0)
+        return NULL;
+
+    for (i = 0; i < sk_SSL_CIPHER_num(clntsk); i++) {
         int n;
 
-        c = sk_SSL_CIPHER_value(sk, i);
+        c = sk_SSL_CIPHER_value(clntsk, i);
+        if (sk_SSL_CIPHER_find(srvrsk, c) < 0)
+            continue;
+
         n = strlen(c->name);
-        if (n + 1 > len) {
+        if (n + 1 > size) {
             if (p != buf)
                 --p;
             *p = '\0';
@@ -1434,7 +1443,7 @@ char *SSL_get_shared_ciphers(const SSL *s, char *buf, int len)
         strcpy(p, c->name);
         p += n;
         *(p++) = ':';
-        len -= n + 1;
+        size -= n + 1;
     }
     p[-1] = '\0';
     return (buf);
@@ -2250,10 +2259,10 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
     int rsa_tmp_export, dh_tmp_export, kl;
     unsigned long mask_k, mask_a, emask_k, emask_a;
 #ifndef OPENSSL_NO_ECDSA
-    int have_ecc_cert, ecdsa_ok, ecc_pkey_size;
+    int have_ecc_cert, ecdsa_ok;
 #endif
 #ifndef OPENSSL_NO_ECDH
-    int have_ecdh_tmp, ecdh_ok;
+    int have_ecdh_tmp, ecdh_ok, ecc_pkey_size;
 #endif
 #ifndef OPENSSL_NO_EC
     X509 *x = NULL;
@@ -2396,7 +2405,9 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
         if (!(cpk->valid_flags & CERT_PKEY_SIGN))
             ecdsa_ok = 0;
         ecc_pkey = X509_get_pubkey(x);
+# ifndef OPENSSL_NO_ECDH
         ecc_pkey_size = (ecc_pkey != NULL) ? EVP_PKEY_bits(ecc_pkey) : 0;
+# endif
         EVP_PKEY_free(ecc_pkey);
         if ((x->sig_alg) && (x->sig_alg->algorithm)) {
             signature_nid = OBJ_obj2nid(x->sig_alg->algorithm);
@@ -2458,7 +2469,7 @@ void ssl_set_cert_masks(CERT *c, const SSL_CIPHER *cipher)
 #define ku_reject(x, usage) \
         (((x)->ex_flags & EXFLAG_KUSAGE) && !((x)->ex_kusage & (usage)))
 
-#ifndef OPENSSL_NO_EC
+#ifndef OPENSSL_NO_ECDH
 
 int ssl_check_srvr_ecc_cert_and_alg(X509 *x, SSL *s)
 {
