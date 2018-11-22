@@ -406,6 +406,16 @@ bool BaseButton::is_toggle_mode() const {
 	return toggle_mode;
 }
 
+void BaseButton::set_shortcut_in_tooltip(bool p_on) {
+
+	shortcut_in_tooltip = p_on;
+}
+
+bool BaseButton::is_shortcut_in_tooltip_enabled() const {
+
+	return shortcut_in_tooltip;
+}
+
 void BaseButton::set_action_mode(ActionMode p_mode) {
 
 	action_mode = p_mode;
@@ -471,7 +481,7 @@ void BaseButton::_unhandled_input(Ref<InputEvent> p_event) {
 String BaseButton::get_tooltip(const Point2 &p_pos) const {
 
 	String tooltip = Control::get_tooltip(p_pos);
-	if (shortcut.is_valid() && shortcut->is_valid()) {
+	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
 		if (shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 			text += "\n" + tooltip;
@@ -510,6 +520,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
 	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enabled"), &BaseButton::set_toggle_mode);
 	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &BaseButton::is_toggle_mode);
+	ClassDB::bind_method(D_METHOD("set_shortcut_in_tooltip", "enabled"), &BaseButton::set_shortcut_in_tooltip);
+	ClassDB::bind_method(D_METHOD("is_shortcut_in_tooltip_enabled"), &BaseButton::is_shortcut_in_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &BaseButton::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &BaseButton::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_action_mode", "mode"), &BaseButton::set_action_mode);
@@ -535,6 +547,7 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
@@ -555,6 +568,7 @@ void BaseButton::_bind_methods() {
 BaseButton::BaseButton() {
 
 	toggle_mode = false;
+	shortcut_in_tooltip = true;
 	status.pressed = false;
 	status.press_attempt = false;
 	status.hovering = false;
