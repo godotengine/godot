@@ -602,6 +602,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			String n = p_data[ofs + i * 2 + 0];
 			Variant v = p_data[ofs + i * 2 + 1];
+
 			PropertyHint h = PROPERTY_HINT_NONE;
 			String hs = String();
 
