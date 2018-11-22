@@ -205,9 +205,15 @@ private:
 	bool can_integrate_forces;
 
 	Vector<CollisionData> collisions;
+	Vector<RigidBodyBullet *> collision_traces_1;
+	Vector<RigidBodyBullet *> collision_traces_2;
+	Vector<RigidBodyBullet *> *prev_collision_traces;
+	Vector<RigidBodyBullet *> *curr_collision_traces;
+
 	// these parameters are used to avoid vector resize
 	int maxCollisionsDetection;
 	int collisionsCount;
+	int prev_collision_count;
 
 	Vector<AreaBullet *> areasWhereIam;
 	// these parameters are used to avoid vector resize
@@ -244,9 +250,17 @@ public:
 	virtual void on_collision_checker_end();
 
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
+
+		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
+
 		maxCollisionsDetection = p_maxCollisionsDetection;
+
 		collisions.resize(p_maxCollisionsDetection);
+		collision_traces_1.resize(p_maxCollisionsDetection);
+		collision_traces_2.resize(p_maxCollisionsDetection);
+
 		collisionsCount = 0;
+		prev_collision_count = MIN(prev_collision_count, p_maxCollisionsDetection);
 	}
 	int get_max_collisions_detection() {
 		return maxCollisionsDetection;
@@ -254,6 +268,7 @@ public:
 
 	bool can_add_collision() { return collisionsCount < maxCollisionsDetection; }
 	bool add_collision_object(RigidBodyBullet *p_otherObject, const Vector3 &p_hitWorldLocation, const Vector3 &p_hitLocalLocation, const Vector3 &p_hitNormal, const float &p_appliedImpulse, int p_other_shape_index, int p_local_shape_index);
+	bool was_colliding(RigidBodyBullet *p_other_object);
 
 	void assert_no_constraints();
 
