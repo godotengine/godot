@@ -1425,6 +1425,10 @@ void KinematicBody2D::set_sync_to_physics(bool p_enable) {
 		return;
 	}
 	sync_to_physics = p_enable;
+
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+
 	if (p_enable) {
 		Physics2DServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 		set_only_update_transform_changes(true);
