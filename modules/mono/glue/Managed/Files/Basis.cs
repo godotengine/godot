@@ -260,13 +260,13 @@ namespace Godot
             Vector3 euler;
             euler.z = 0.0f;
 
-            real_t mxy = m.Row1[2];
+            real_t mzy = m.Row1[2];
 
-            if (mxy < 1.0f)
+            if (mzy < 1.0f)
             {
-                if (mxy > -1.0f)
+                if (mzy > -1.0f)
                 {
-                    euler.x = Mathf.Asin(-mxy);
+                    euler.x = Mathf.Asin(-mzy);
                     euler.y = Mathf.Atan2(m.Row0[2], m.Row2[2]);
                     euler.z = Mathf.Atan2(m.Row1[0], m.Row1[1]);
                 }
@@ -418,19 +418,11 @@ namespace Godot
 
         public Basis Scaled(Vector3 scale)
         {
-            var m = this;
-
-            m.Row0[0] *= scale.x;
-            m.Row0[1] *= scale.x;
-            m.Row0[2] *= scale.x;
-            m.Row1[0] *= scale.y;
-            m.Row1[1] *= scale.y;
-            m.Row1[2] *= scale.y;
-            m.Row2[0] *= scale.z;
-            m.Row2[1] *= scale.z;
-            m.Row2[2] *= scale.z;
-
-            return m;
+            var b = this;
+            b.Row0 *= scale.x;
+            b.Row1 *= scale.y;
+            b.Row2 *= scale.z;
+            return b;
         }
 
         public real_t Tdotx(Vector3 with)
@@ -622,11 +614,12 @@ namespace Godot
             // We need to assign the struct fields here first so we can't do it that way...
         }
 
-        internal Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz)
+        // Arguments are named such that xy is equal to calling x.y
+        internal Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz)
         {
-            Row0 = new Vector3(xx, xy, xz);
-            Row1 = new Vector3(yx, yy, yz);
-            Row2 = new Vector3(zx, zy, zz);
+            Row0 = new Vector3(xx, yx, zx);
+            Row1 = new Vector3(xy, yy, zy);
+            Row2 = new Vector3(xz, yz, zz);
         }
 
         public static Basis operator *(Basis left, Basis right)

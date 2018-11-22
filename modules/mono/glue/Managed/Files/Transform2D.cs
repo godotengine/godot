@@ -298,6 +298,7 @@ namespace Godot
             origin = originPos;
         }
 
+        // Arguments are named such that xy is equal to calling x.y
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             x = new Vector2(xx, xy);
