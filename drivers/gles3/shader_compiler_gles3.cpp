@@ -133,8 +133,7 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 
 	switch (p_interp) {
 		case SL::INTERPOLATION_FLAT: return "flat ";
-		case SL::INTERPOLATION_NO_PERSPECTIVE: return "noperspective ";
-		case SL::INTERPOLATION_SMOOTH: return "smooth ";
+		case SL::INTERPOLATION_SMOOTH: return "";
 	}
 	return "";
 }
