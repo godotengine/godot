@@ -1050,7 +1050,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			if (text == "")
 				text = tx->get_word_under_cursor();
 			if (text != "") {
-				emit_signal("request_help_search", text);
+				emit_signal("request_help", text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
