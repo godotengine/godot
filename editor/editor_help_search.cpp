@@ -74,17 +74,17 @@ void EditorHelpSearch::_update_results() {
 	set_process(true);
 }
 
-void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_ie) {
+void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 
 	// Redirect up and down navigational key events to the results list.
-	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid()) {
-		switch (k->get_scancode()) {
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		switch (key->get_scancode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				results_tree->call("_gui_input", k);
+				results_tree->call("_gui_input", key);
 				search_box->accept_event();
 			} break;
 		}
@@ -93,18 +93,6 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_ie) {
 
 void EditorHelpSearch::_search_box_text_changed(const String &p_text) {
 
-	_update_results();
-}
-
-void EditorHelpSearch::_case_sensitive_button_pressed() {
-
-	search_box->grab_focus();
-	_update_results();
-}
-
-void EditorHelpSearch::_hierarchy_button_pressed() {
-
-	search_box->grab_focus();
 	_update_results();
 }
 
@@ -165,10 +153,9 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_update_results"), &EditorHelpSearch::_update_results);
 	ClassDB::bind_method(D_METHOD("_search_box_gui_input"), &EditorHelpSearch::_search_box_gui_input);
 	ClassDB::bind_method(D_METHOD("_search_box_text_changed"), &EditorHelpSearch::_search_box_text_changed);
-	ClassDB::bind_method(D_METHOD("_case_sensitive_button_pressed"), &EditorHelpSearch::_case_sensitive_button_pressed);
-	ClassDB::bind_method(D_METHOD("_hierarchy_button_pressed"), &EditorHelpSearch::_hierarchy_button_pressed);
 	ClassDB::bind_method(D_METHOD("_filter_combo_item_selected"), &EditorHelpSearch::_filter_combo_item_selected);
 	ClassDB::bind_method(D_METHOD("_confirmed"), &EditorHelpSearch::_confirmed);
 	ADD_SIGNAL(MethodInfo("go_to_help"));
@@ -224,15 +211,17 @@ EditorHelpSearch::EditorHelpSearch() {
 
 	case_sensitive_button = memnew(ToolButton);
 	case_sensitive_button->set_tooltip("Case Sensitive");
-	case_sensitive_button->connect("pressed", this, "_case_sensitive_button_pressed");
+	case_sensitive_button->connect("pressed", this, "_update_results");
 	case_sensitive_button->set_toggle_mode(true);
+	case_sensitive_button->set_focus_mode(FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(ToolButton);
 	hierarchy_button->set_tooltip("Show Hierarchy");
-	hierarchy_button->connect("pressed", this, "_hierarchy_button_pressed");
+	hierarchy_button->connect("pressed", this, "_update_results");
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
+	hierarchy_button->set_focus_mode(FOCUS_NONE);
 	hbox->add_child(hierarchy_button);
 
 	filter_combo = memnew(OptionButton);
