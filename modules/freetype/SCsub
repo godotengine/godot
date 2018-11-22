@@ -92,11 +92,11 @@ if env['builtin_freetype']:
     inserted = False
     for idx, linklib in enumerate(env["LIBS"]):
         if isbasestring(linklib): # first system lib such as "X11", otherwise SCons lib object
-            env["LIBS"].insert(idx, lib)
+            env.insert_libs(idx, lib)
             inserted = True
             break
     if not inserted:
-        env.Append(LIBS=[lib])
+        env.append_libs(lib)
 
 # Godot source files
 env_freetype.add_source_files(env.modules_sources, "*.cpp")

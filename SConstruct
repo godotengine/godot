@@ -119,6 +119,15 @@ env_base.__class__.add_source_files = methods.add_source_files
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 env_base.__class__.split_lib = methods.split_lib
 
+if(os.name == "nt"):
+    env_base.__class__.append_libs = methods.append_libs_windows
+    env_base.__class__.prepend_libs = methods.prepend_libs_windows
+    env_base.__class__.insert_libs = methods.insert_libs_windows
+else:
+    env_base.__class__.append_libs = methods.append_libs_linux
+    env_base.__class__.prepend_libs = methods.prepend_libs_linux
+    env_base.__class__.insert_libs = methods.insert_libs_linux
+
 env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
@@ -430,6 +439,9 @@ if selected_platform in platform_list:
         # On Windows, only static libraries and import libraries can be
         # statically linked - both using .lib extension
         env["LIBSUFFIXES"] += [env["LIBSUFFIX"]]
+        # Disabling prefix and suffix concatenation to library names.
+        # Libraries are added as full paths using append/prepend_libs function.
+        env["_LIBFLAGS"] = '${_concat("", LIBS, "", __env__)}'
     else:
         env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
