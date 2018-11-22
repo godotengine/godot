@@ -66,6 +66,16 @@
  */
 int BN_sqr(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
 {
+    int ret = bn_sqr_fixed_top(r, a, ctx);
+
+    bn_correct_top(r);
+    bn_check_top(r);
+
+    return ret;
+}
+
+int bn_sqr_fixed_top(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
+{
     int max, al;
     int ret = 0;
     BIGNUM *tmp, *rr;
@@ -135,14 +145,8 @@ int BN_sqr(BIGNUM *r, const BIGNUM *a, BN_CTX *ctx)
     }
 
     rr->neg = 0;
-    /*
-     * If the most-significant half of the top word of 'a' is zero, then the
-     * square of 'a' will max-1 words.
-     */
-    if (a->d[al - 1] == (a->d[al - 1] & BN_MASK2l))
-        rr->top = max - 1;
-    else
-        rr->top = max;
+    rr->top = max;
+    rr->flags |= BN_FLG_FIXED_TOP;
     if (r != rr && BN_copy(r, rr) == NULL)
         goto err;
 
