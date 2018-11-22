@@ -8,7 +8,6 @@ import datetime
 import subprocess
 from compat import iteritems, isbasestring
 
-
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
 
     if isbasestring(filetype):
@@ -603,6 +602,122 @@ def generate_vs_project(env, num_jobs):
             variant=variants)
     else:
         print("Could not locate Visual Studio batch file for setting up the build environment. Not generating VS project.")
+
+# Returns list of libs with correct prefixes and suffixes
+def get_libs_full_path(env, libs, libpaths = []):
+    import SCons.Util
+    import SCons.Node
+    import SCons.Node.FS
+
+    if not libs:
+        return []
+    if SCons.Util.is_String(libs):
+        libs = [ libs ]
+    if SCons.Util.is_String(libpaths):
+        libpaths = [ libpaths ]
+    try:
+        lp = env["LIBPATH"]
+        libpaths.append(lp)
+    except KeyError:
+        pass
+
+    try:
+        prefixes = env['LIBPREFIXES']
+        if not SCons.Util.is_List(prefixes):
+            prefixes = [ prefixes ]
+    except KeyError:
+        prefixes = [ '' ]
+
+    try:
+        suffixes = env['LIBSUFFIXES']
+        if not SCons.Util.is_List(suffixes):
+            suffixes = [ suffixes ]
+    except KeyError:
+        suffixes = [ '']
+
+    # Substitute environment variables in prefixes, suffixes and libs list.
+    prefixes = env.subst_list(prefixes)[0]
+    if not prefixes:
+        prefixes = [ '' ]
+    suffixes = env.subst_list(suffixes)[0]
+    if not suffixes:
+        suffixes = [ '' ]
+    libs = env.subst_list(libs)[0]
+    libpaths = env.subst_list(libpaths)[0]
+
+    libdirs = []
+    for lp in libpaths:
+        # converting to 'str' here, because subst_list returns strings as
+        # 'SCons.Subst.CmdStringHolder' which later fails to be detected 
+        # as string
+        libdirs.append(env.Dir(str(lp)))
+    # If no libpaths were supplied nor was env["LIBPATH"] set, assume that
+    # relative paths were specified relative to the project root directory
+
+    pairs = []
+    for suf in suffixes:
+        for pref in prefixes:
+            pairs.append((pref, suf))
+
+    result = []
+
+    adjustixes = SCons.Util.adjustixes
+    for lib in libs:
+        if not SCons.Util.is_String(lib):
+            result.append(lib)
+            break
+        lib = str(lib)
+        for pref, suf in pairs:
+            if lib.startswith("#"):
+                libdirs_local = [ env.Dir("#") ] + libdirs
+            else:
+                libdirs_local = [ env.Dir(".") ] + libdirs
+            libdirs_local = tuple(libdirs_local)
+            l = str.lstrip(lib, string.whitespace + "#")
+            l = adjustixes(l, str(pref), str(suf))
+            l = env.FindFile(l, libdirs_local)
+            if l:
+                lib = l
+                break
+        result.append(lib)
+    resultstring = map(SCons.Node.FS.Base.get_abspath, result)
+    return SCons.Node.NodeList(resultstring)
+
+def append_libs_windows(self, libs, libpaths = []):
+    libs = get_libs_full_path(self, libs, libpaths)
+    self.Append(LIBS=libs)
+
+def prepend_libs_windows(self, libs, libpaths = []):
+    libs = get_libs_full_path(self, libs, libpaths)
+    self.Prepend(LIBS=libs)
+
+def insert_libs_windows(self, index, libs, libpaths = []):
+    libs = get_libs_full_path(self, libs, libpaths)
+    try:
+        self["LIBS"][index:index] = libs
+    except KeyError:
+        if index == 0:
+            self.Append(LIBS=libs)
+        else:
+            raise IndexError
+
+def append_libs_linux(self, libs, libpaths = []):
+    self.Append(LIBPATH=libpaths)
+    self.Append(LIBS=libs)
+
+def prepend_libs_linux(self, libs, libpaths = []):
+    self.Prepend(LIBPATH=libpaths)
+    self.Prepend(LIBS=libs)
+
+def insert_libs_linux(self, index, libs, libpaths = []):
+    self.Prepend(LIBPATH=libpaths)
+    try:
+        self["LIBS"][index:index] = libs
+    except KeyError:
+        if index == 0:
+            self.Append(LIBS=libs)
+        else:
+            raise IndexError
 
 def precious_program(env, program, sources, **args):
     program = env.ProgramOriginal(program, sources, **args)
