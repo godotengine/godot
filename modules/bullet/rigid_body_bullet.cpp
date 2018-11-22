@@ -268,6 +268,7 @@ RigidBodyBullet::RigidBodyBullet() :
 		can_integrate_forces(false),
 		maxCollisionsDetection(0),
 		collisionsCount(0),
+		prev_collision_count(0),
 		maxAreasWhereIam(10),
 		areaWhereIamCount(0),
 		countGravityPointSpaces(0),
@@ -293,6 +294,9 @@ RigidBodyBullet::RigidBodyBullet() :
 		areasWhereIam.write[i] = NULL;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
+
+	prev_collision_traces = &collision_traces_1;
+	curr_collision_traces = &collision_traces_2;
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
@@ -410,7 +414,14 @@ void RigidBodyBullet::on_collision_filters_change() {
 }
 
 void RigidBodyBullet::on_collision_checker_start() {
+
+	prev_collision_count = collisionsCount;
 	collisionsCount = 0;
+
+	// Swap array
+	Vector<RigidBodyBullet *> *s = prev_collision_traces;
+	prev_collision_traces = curr_collision_traces;
+	curr_collision_traces = s;
 }
 
 void RigidBodyBullet::on_collision_checker_end() {
@@ -433,8 +444,18 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 	cd.other_object_shape = p_other_shape_index;
 	cd.local_shape = p_local_shape_index;
 
+	curr_collision_traces->write[collisionsCount] = p_otherObject;
+
 	++collisionsCount;
 	return true;
+}
+
+bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
+	for (int i = prev_collision_count - 1; 0 <= i; --i) {
+		if ((*prev_collision_traces)[i] == p_other_object)
+			return true;
+	}
+	return false;
 }
 
 void RigidBodyBullet::assert_no_constraints() {
