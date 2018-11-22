@@ -1695,7 +1695,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 
 	n->godot_nodes.push_back(node);
 
-	if (n->skin >= 0 && Object::cast_to<MeshInstance>(node)) {
+	if (n->skin >= 0 && n->skin < skeletons.size() && Object::cast_to<MeshInstance>(node)) {
 		MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 
 		Skeleton *s = skeletons[n->skin];
