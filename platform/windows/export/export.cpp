@@ -50,13 +50,16 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 
-	if (rcedit_path == String()) {
-		return OK;
-	}
-
-	if (!FileAccess::exists(rcedit_path)) {
+	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
 		ERR_PRINTS("Could not find rcedit executable at " + rcedit_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	if (rcedit_path == String()) {
+		// Try to run rcedit from PATH
+		// On non-Windows platforms, this will try to call a launcher script
+		// that uses WINE to run the actual rcedit executable
+		rcedit_path = "rcedit";
 	}
 
 #ifndef WINDOWS_ENABLED
@@ -64,7 +67,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
 
 	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		ERR_PRINTS("Could not find wine executable at " + wine_path + ", aborting.");
+		ERR_PRINTS("Could not find WINE executable at " + wine_path + ", aborting.");
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -126,9 +129,16 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 #ifdef WINDOWS_ENABLED
 	OS::get_singleton()->execute(rcedit_path, args, true);
 #else
-	// On non-Windows we need WINE to run rcedit
-	args.push_front(rcedit_path);
-	OS::get_singleton()->execute(wine_path, args, true);
+	// On non-Windows platforms, we need WINE to run rcedit
+	if (rcedit_path == "rcedit") {
+		// If attempting to launch rcedit from the PATH, the launcher script
+		// will run WINE instead, so we don't do it ourselves
+		OS::get_singleton()->execute(rcedit_path, args, true);
+	} else {
+		// Run rcedit directly using WINE if a path is specified
+		args.push_front(rcedit_path);
+		OS::get_singleton()->execute(wine_path, args, true);
+	}
 #endif
 
 	return OK;
