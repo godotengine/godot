@@ -53,6 +53,7 @@ void EditorHelpSearch::_load_settings() {
 	if (enable_rl) {
 		results_tree->add_constant_override("draw_relationship_lines", 1);
 		results_tree->add_color_override("relationship_line_color", rl_color);
+		results_tree->add_constant_override("draw_guides", 0);
 	} else {
 		results_tree->add_constant_override("draw_relationship_lines", 0);
 		results_tree->add_constant_override("draw_guides", 1);
@@ -114,10 +115,13 @@ void EditorHelpSearch::_filter_combo_item_selected(int p_option) {
 
 void EditorHelpSearch::_confirmed() {
 
+	TreeItem *item = results_tree->get_selected();
+	if (!item)
+		return;
+
 	// Activate the script editor and emit the signal with the documentation link to display.
 	EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 
-	TreeItem *item = results_tree->get_selected();
 	emit_signal("go_to_help", item->get_metadata(0));
 
 	hide();
@@ -139,6 +143,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		case NOTIFICATION_POPUP_HIDE: {
 
 			results_tree->clear();
+			get_ok()->set_disabled(true);
 			EditorSettings::get_singleton()->set("interface/dialogs/search_help_bounds", get_rect());
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -147,7 +152,7 @@ void EditorHelpSearch::_notification(int p_what) {
 			if (search.is_valid()) {
 				if (search->work()) {
 					// Search done.
-					get_ok()->set_disabled(results_tree->get_root()->get_children() == NULL);
+					get_ok()->set_disabled(!results_tree->get_selected());
 					search = Ref<Runner>();
 					set_process(false);
 				}
@@ -256,6 +261,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->set_hide_root(true);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", this, "_confirmed");
+	results_tree->connect("item_selected", get_ok(), "set_disabled", varray(false));
 	vbox->add_child(results_tree, true);
 
 	_load_settings();
@@ -463,7 +469,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	Ref<Texture> icon = empty_icon;
 	if (ui_service->has_icon(p_doc->name, "EditorIcons"))
 		icon = ui_service->get_icon(p_doc->name, "EditorIcons");
-	else if (ClassDB::is_parent_class(p_doc->name, "Object"))
+	else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object"))
 		icon = ui_service->get_icon("Object", "EditorIcons");
 	String tooltip = p_doc->brief_description.strip_edges();
 
