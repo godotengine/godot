@@ -66,10 +66,8 @@ class EditorHelpSearch : public ConfirmationDialog {
 	void _load_settings();
 	void _update_results();
 
-	void _search_box_gui_input(const Ref<InputEvent> &p_ie);
+	void _search_box_gui_input(const Ref<InputEvent> &p_event);
 	void _search_box_text_changed(const String &p_text);
-	void _case_sensitive_button_pressed();
-	void _hierarchy_button_pressed();
 	void _filter_combo_item_selected(int p_option);
 	void _confirmed();
 
