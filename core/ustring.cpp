@@ -3298,7 +3298,9 @@ String String::http_unescape() const {
 			res += ord_at(i);
 		}
 	}
-	return String::utf8(res.ascii());
+
+	CharString res2 = res.ascii();
+	return res2.ptr() ? String::utf8(res2.ptr()) : String();
 }
 
 String String::c_unescape() const {
@@ -3892,7 +3894,7 @@ String String::percent_decode() const {
 		pe += c;
 	}
 
-	return String::utf8(pe.ptr());
+	return pe.ptr() ? String::utf8(pe.ptr()) : String();
 }
 
 String String::get_basename() const {
