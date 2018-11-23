@@ -84,6 +84,8 @@ uniform highp mat4 world_transform;
 
 uniform highp float time;
 
+uniform highp vec2 viewport_size;
+
 #ifdef RENDER_DEPTH
 uniform float light_bias;
 uniform float light_normal_bias;
@@ -676,6 +678,8 @@ uniform highp mat4 projection_inverse_matrix;
 uniform highp mat4 world_transform;
 
 uniform highp float time;
+
+uniform highp vec2 viewport_size;
 
 #if defined(SCREEN_UV_USED)
 uniform vec2 screen_pixel_size;
