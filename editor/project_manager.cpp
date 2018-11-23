@@ -95,6 +95,7 @@ private:
 	String zip_title;
 	AcceptDialog *dialog_error;
 	String fav_dir;
+	bool popup_window_active = false;
 
 	String created_folder_path;
 
@@ -462,7 +463,6 @@ private:
 
 					mode = MODE_INSTALL;
 					ok_pressed();
-
 					return;
 				}
 
@@ -631,6 +631,8 @@ private:
 
 		if (install_status_rect->get_texture() == get_icon("StatusError", "EditorIcons"))
 			msg->show();
+
+		set_popup_window_active(false);
 	}
 
 	void _notification(int p_what) {
@@ -655,6 +657,10 @@ protected:
 	}
 
 public:
+
+	bool get_popup_window_active() { return popup_window_active; }
+	void set_popup_window_active(bool value) { popup_window_active = value; }
+
 	void set_zip_path(const String &p_path) {
 		zip_path = p_path;
 	}
@@ -672,6 +678,7 @@ public:
 	}
 
 	void show_dialog() {
+		popup_window_active = true;
 
 		if (mode == MODE_RENAME) {
 
@@ -996,8 +1003,8 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 		switch (k->get_scancode()) {
 
 			case KEY_ENTER: {
-
-				_open_project();
+				if(!npdialog->get_popup_window_active())
+					_open_project();
 			} break;
 			case KEY_DELETE: {
 
@@ -1540,6 +1547,7 @@ void ProjectManager::_scan_projects() {
 void ProjectManager::_new_project() {
 
 	npdialog->set_mode(ProjectDialog::MODE_NEW);
+
 	npdialog->show_dialog();
 }
 
