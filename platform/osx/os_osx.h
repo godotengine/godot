@@ -124,8 +124,8 @@ public:
 
 	Point2 im_position;
 	bool im_active;
-	ImeCallback im_callback;
-	void *im_target;
+	String im_text;
+	Point2 im_selection;
 
 	power_osx *power_manager;
 
@@ -245,7 +245,8 @@ public:
 
 	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
-	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	virtual String get_unique_id() const;
 

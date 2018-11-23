@@ -831,7 +831,6 @@ void LineEdit::_notification(int p_what) {
 
 				OS::get_singleton()->set_ime_active(true);
 				OS::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
-				OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -843,7 +842,6 @@ void LineEdit::_notification(int p_what) {
 			OS::get_singleton()->set_ime_active(true);
 			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
-			OS::get_singleton()->set_ime_intermediate_text_callback(_ime_text_callback, this);
 
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
@@ -852,7 +850,6 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_EXIT: {
 
 			OS::get_singleton()->set_ime_position(Point2());
-			OS::get_singleton()->set_ime_intermediate_text_callback(NULL, NULL);
 			OS::get_singleton()->set_ime_active(false);
 			ime_text = "";
 			ime_selection = Point2();
@@ -860,6 +857,12 @@ void LineEdit::_notification(int p_what) {
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();
 
+		} break;
+		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
+
+			ime_text = OS::get_singleton()->get_ime_text();
+			ime_selection = OS::get_singleton()->get_ime_selection();
+			update();
 		} break;
 	}
 }
@@ -1459,13 +1462,6 @@ void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
 	}
 	right_icon = p_icon;
 	update();
-}
-
-void LineEdit::_ime_text_callback(void *p_self, String p_text, Point2 p_selection) {
-	LineEdit *self = (LineEdit *)p_self;
-	self->ime_text = p_text;
-	self->ime_selection = p_selection;
-	self->update();
 }
 
 void LineEdit::_text_changed() {

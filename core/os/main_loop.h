@@ -65,6 +65,7 @@ public:
 		NOTIFICATION_TRANSLATION_CHANGED = 90,
 		NOTIFICATION_WM_ABOUT = 91,
 		NOTIFICATION_CRASH = 92,
+		NOTIFICATION_OS_IME_UPDATE = 93,
 	};
 
 	virtual void input_event(const Ref<InputEvent> &p_event);

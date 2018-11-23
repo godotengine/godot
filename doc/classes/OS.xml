@@ -210,6 +210,20 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
+		<method name="get_ime_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns IME intermediate text.
+			</description>
+		</method>
+		<method name="get_ime_selection" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns IME selection range.
+			</description>
+		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
 			<return type="String">
 			</return>
@@ -663,12 +677,22 @@
 				Sets the game's icon.
 			</description>
 		</method>
+		<method name="set_ime_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<description>
+				Sets whether IME input mode should be enabled.
+			</description>
+		</method>
 		<method name="set_ime_position">
 			<return type="void">
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
+				Sets position of IME suggestion list popup (in window coordinates).
 			</description>
 		</method>
 		<method name="set_thread_name">

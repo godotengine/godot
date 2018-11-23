@@ -136,5 +136,7 @@
 		</constant>
 		<constant name="NOTIFICATION_CRASH" value="92">
 		</constant>
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="93">
+		</constant>
 	</constants>
 </class>
