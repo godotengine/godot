@@ -58,10 +58,12 @@
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
-#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
+#ifndef GLAPIENTRY
+#if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
 #define GLAPIENTRY APIENTRY
 #else
 #define GLAPIENTRY
+#endif
 #endif
 
 #if !defined(GLES_OVER_GL) && !defined(IPHONE_ENABLED)
