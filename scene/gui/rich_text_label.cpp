@@ -1616,6 +1616,7 @@ void RichTextLabel::clear() {
 	main->lines.clear();
 	main->lines.resize(1);
 	main->first_invalid_line = 0;
+	scroll_w = 0;
 	update();
 	selection.click = NULL;
 	selection.active = false;
