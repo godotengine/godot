@@ -398,11 +398,11 @@ void AnimatedSprite::_notification(int p_what) {
 							emit_signal(SceneStringNames::get_singleton()->animation_finished);
 							frame = 0;
 						} else {
-							if (!is_over) {
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
-								is_over = true;
-							}
 							frame = fc - 1;
+							if (!is_over) {
+								is_over = true;
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							}
 						}
 					} else {
 						frame++;
