@@ -278,12 +278,13 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
 	}
 
+	int screen_id = _get_initial_screen_id();
 	bool editor = Engine::get_singleton()->is_editor_hint();
 	bool gl_initialization_error = false;
 
 	context_gl = NULL;
 	while (!context_gl) {
-		context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
+		context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type, screen_id));
 
 		if (context_gl->initialize() != OK) {
 			memdelete(context_gl);
@@ -929,6 +930,10 @@ int OS_X11::get_screen_count() const {
 }
 
 int OS_X11::get_current_screen() const {
+	if (!x11_window) {
+		return XDefaultScreen(x11_display);
+	}
+
 	int x, y;
 	Window child;
 	XTranslateCoordinates(x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);

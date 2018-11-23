@@ -329,6 +329,9 @@
 		</member>
 		<member name="display/window/per_pixel_transparency_splash" type="bool" setter="" getter="">
 		</member>
+		<member name="display/window/screen_id" type="int" setter="" getter="">
+			Set the screen number, defaults to -1. If configured, use the 'No Management' option on 'run/window_placement/rect', otherwise the editor overrides this value.
+		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="">
 			Force the window to be always on top.
 		</member>

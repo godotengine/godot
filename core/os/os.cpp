@@ -704,6 +704,17 @@ void OS::close_midi_inputs() {
 		MIDIDriver::get_singleton()->close();
 }
 
+int OS::_get_initial_screen_id() {
+	int screen_id = GLOBAL_DEF("display/window/screen_id", -1);
+	if (screen_id == -1) {
+		screen_id = get_current_screen();
+	} else if (screen_id >= get_screen_count()) {
+		screen_id = 0;
+	}
+
+	return screen_id;
+}
+
 OS::OS() {
 	void *volatile stack_bottom;
 

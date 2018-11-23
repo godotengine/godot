@@ -60,6 +60,7 @@ private:
 	//::Colormap x11_colormap;
 	::Display *x11_display;
 	::Window &x11_window;
+	int screen_id;
 	bool double_buffer;
 	bool direct_render;
 	int glx_minor, glx_major;
@@ -78,7 +79,7 @@ public:
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
 
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
+	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type, int p_screen_id);
 	virtual ~ContextGL_X11();
 };
 

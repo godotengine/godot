@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "context_gl_x11.h"
+#include "core/project_settings.h"
 
 #ifdef X11_ENABLED
 #if defined(OPENGL_ENABLED)
@@ -190,7 +191,19 @@ Error ContextGL_X11::initialize() {
 	}
 
 	swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
+	Point2 screen_pos = OS::get_singleton()->get_screen_position(screen_id);
+	Size2 screen_size = OS::get_singleton()->get_screen_size(screen_id);
+	int width = OS::get_singleton()->get_video_mode().width;
+	int height = OS::get_singleton()->get_video_mode().height;
+	int x = screen_pos.x + (screen_size.x - width) / 2;
+	int y = screen_pos.y + (screen_size.y - height) / 2;
+	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), x, y, width, height, 0, vi->depth, InputOutput, vi->visual, valuemask, &swa);
+
+	XSizeHints xsh;
+	xsh.flags = PPosition;
+	xsh.x = x;
+	xsh.y = y;
+	XSetWMNormalHints(x11_display, x11_window, &xsh);
 
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
 	set_class_hint(x11_display, x11_window);
@@ -254,13 +267,14 @@ bool ContextGL_X11::is_using_vsync() const {
 	return use_vsync;
 }
 
-ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type) :
+ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type, int p_screen_id) :
 		x11_window(p_x11_window) {
 
 	default_video_mode = p_default_video_mode;
 	x11_display = p_x11_display;
 
 	context_type = p_context_type;
+	screen_id = p_screen_id;
 
 	double_buffer = false;
 	direct_render = false;

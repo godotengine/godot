@@ -148,6 +148,9 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 			args.push_back("--fullscreen");
 		} break;
+		case 5: { // no management
+
+		} break;
 	}
 
 	if (p_breakpoints.size()) {

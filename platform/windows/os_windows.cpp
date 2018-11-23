@@ -1099,6 +1099,9 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	video_mode = p_desired;
 	//printf("**************** desired %s, mode %s\n", p_desired.fullscreen?"true":"false", video_mode.fullscreen?"true":"false");
 	RECT WindowRect;
+	int screen_id = _get_initial_screen_id();
+	Point2 screen_pos = get_screen_position(screen_id);
+	Size2 screen_size = get_screen_size(screen_id);
 
 	WindowRect.left = 0;
 	WindowRect.right = video_mode.width;
@@ -1141,35 +1144,9 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	pre_fs_valid = true;
 	if (video_mode.fullscreen) {
 
-		/* this returns DPI unaware size, commenting
-		DEVMODE current;
-		memset(&current, 0, sizeof(current));
-		EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &current);
+		WindowRect.right = screen_size.x;
+		WindowRect.bottom = screen_size.y;
 
-		WindowRect.right = current.dmPelsWidth;
-		WindowRect.bottom = current.dmPelsHeight;
-
-		*/
-
-		EnumSizeData data = { 0, 0, Size2() };
-		EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
-
-		WindowRect.right = data.size.width;
-		WindowRect.bottom = data.size.height;
-
-		/*  DEVMODE dmScreenSettings;
-		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
-		dmScreenSettings.dmSize=sizeof(dmScreenSettings);
-		dmScreenSettings.dmPelsWidth	= video_mode.width;
-		dmScreenSettings.dmPelsHeight	= video_mode.height;
-		dmScreenSettings.dmBitsPerPel	= current.dmBitsPerPel;
-		dmScreenSettings.dmFields=DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
-
-		LONG err = ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN);
-		if (err!=DISP_CHANGE_SUCCESSFUL) {
-
-			video_mode.fullscreen=false;
-		}*/
 		pre_fs_valid = false;
 	}
 
@@ -1233,8 +1210,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 				dwExStyle,
 				L"Engine", L"",
 				dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-				(GetSystemMetrics(SM_CXSCREEN) - WindowRect.right) / 2,
-				(GetSystemMetrics(SM_CYSCREEN) - WindowRect.bottom) / 2,
+				screen_pos.x + (screen_size.x - WindowRect.right) / 2,
+				screen_pos.y + (screen_size.y - WindowRect.bottom) / 2,
 				WindowRect.right - WindowRect.left,
 				WindowRect.bottom - WindowRect.top,
 				NULL, NULL, hInstance, NULL);

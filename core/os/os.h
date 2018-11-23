@@ -146,6 +146,8 @@ protected:
 	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
+	int _get_initial_screen_id();
+
 public:
 	typedef int64_t ProcessID;
 

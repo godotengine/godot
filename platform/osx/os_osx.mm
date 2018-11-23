@@ -1235,11 +1235,16 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (p_desired.resizable ? NSWindowStyleMaskResizable : 0);
 	}
 
+	int screen_id = _get_initial_screen_id();
+	Size2 screen_size = get_screen_size(screen_id);
+	NSScreen *screen = [[NSScreen screens] objectAtIndex:screen_id];
+
 	window_object = [[GodotWindow alloc]
-			initWithContentRect:NSMakeRect(0, 0, p_desired.width, p_desired.height)
+			initWithContentRect:NSMakeRect((screen_size.x - p_desired.width) / 2, (screen_size.y - p_desired.height) / 2, p_desired.width, p_desired.height)
 					  styleMask:styleMask
 						backing:NSBackingStoreBuffered
-						  defer:NO];
+						  defer:NO
+						 screen:screen];
 
 	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
@@ -1251,7 +1256,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	float displayScale = 1.0;
 	if (is_hidpi_allowed()) {
 		// note that mainScreen is not screen #0 but the one with the keyboard focus.
-		NSScreen *screen = [NSScreen mainScreen];
 		if ([screen respondsToSelector:@selector(backingScaleFactor)]) {
 			displayScale = fmax(displayScale, [screen backingScaleFactor]);
 		}
@@ -1270,7 +1274,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	[window_object setContentView:window_view];
 	[window_object setDelegate:window_delegate];
 	[window_object setAcceptsMouseMovedEvents:YES];
-	[window_object center];
 
 	[window_object setRestorable:NO];
 
@@ -2640,6 +2643,7 @@ OS_OSX::OS_OSX() {
 	im_callback = NULL;
 	im_target = NULL;
 	layered_window = false;
+	window_object = 0;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 
 	eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
