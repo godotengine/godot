@@ -95,13 +95,15 @@ public:
 		}
 
 		DataType() :
+				kind(UNRESOLVED),
 				has_type(false),
 				is_constant(false),
 				is_meta_type(false),
 				infer_type(false),
 				may_yield(false),
 				builtin_type(Variant::NIL),
-				class_type(NULL) {}
+				class_type(NULL)
+			{}
 	};
 
 	struct Node {
@@ -170,19 +172,24 @@ public:
 			OperatorNode *initial_assignment;
 			MultiplayerAPI::RPCMode rpc_mode;
 			int usages;
+			bool onready;
 
 			Member() {
 				expression = NULL;
 				initial_assignment = NULL;
+				onready = false;
 				usages = 0;
 			}
 		};
 		struct Constant {
 			Node *expression;
 			DataType type;
+			bool is_enum;
+			int line;
 
 			Constant() {
 				expression = NULL;
+				is_enum = false;
 			}
 		};
 

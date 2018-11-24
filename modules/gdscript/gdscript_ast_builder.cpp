@@ -787,7 +787,6 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 			default:
 				serialize("unsupported Variant type: " + itos((int)variant.get_type()));
 		}
-
 		endObject();
 	}
 
@@ -991,6 +990,9 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		key(L"rpc_mode");
 		serialize(member.rpc_mode);
 
+		key(L"onready");
+		serialize(member.onready);
+
 		key(L"usages");
 		serialize(member.usages);
 
@@ -1005,6 +1007,12 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 
 		key(L"expression");
 		serialize(constant.expression);
+
+		key(L"is_enum");
+		serialize(constant.is_enum);
+
+		key(L"line");
+		serialize(constant.line);
 
 		endObject();
 	}
@@ -1029,6 +1037,30 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 
 	void GDScriptASTBuilder::serialize(const GDScriptParser::DataType& data_type) {
 		startObject();
+
+		key(L"kind");
+		switch(data_type.kind) {
+			case GDScriptParser::DataType::BUILTIN:
+				serialize(L"BUILTIN");
+				break;
+			case GDScriptParser::DataType::NATIVE:
+				serialize(L"NATIVE");
+				break;
+			case GDScriptParser::DataType::SCRIPT:
+				serialize(L"SCRIPT");
+				break;
+			case GDScriptParser::DataType::GDSCRIPT:
+				serialize(L"GDSCRIPT");
+				break;
+			case GDScriptParser::DataType::CLASS:
+				serialize(L"CLASS");
+				break;
+			case GDScriptParser::DataType::UNRESOLVED:
+				serialize(L"UNRESOLVED");
+				break;
+			default:
+				assert(false);
+		}
 
 		key(L"has_type");
 		serialize(data_type.has_type);

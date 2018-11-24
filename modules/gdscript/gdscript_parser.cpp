@@ -4690,6 +4690,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					else
 						p_class->initializer->statements.push_back(op);
 
+					member.onready = onready;
 					member.initial_assignment = op;
 
 				} else {
@@ -4760,7 +4761,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				// constant declaration and initialization
 
 				ClassNode::Constant constant;
-
+				constant.line = tokenizer->get_token_line();
 				tokenizer->advance();
 				if (!tokenizer->is_token_literal(0, true)) {
 
@@ -4836,6 +4837,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				int last_assign = -1; // Incremented by 1 right before the assignment.
 				String enum_name;
 				Dictionary enum_dict;
+				int enum_token_line = tokenizer->get_token_line();
 
 				tokenizer->advance();
 				if (tokenizer->is_token_literal(0, true)) {
@@ -4941,6 +4943,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							}
 
 							ClassNode::Constant constant;
+							constant.line = enum_value_expr->line;
 							constant.type.has_type = true;
 							constant.type.kind = DataType::BUILTIN;
 							constant.type.builtin_type = Variant::INT;
@@ -4952,6 +4955,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				if (enum_name != "") {
 					ClassNode::Constant enum_constant;
+					enum_constant.is_enum = true;
+					enum_constant.line = enum_token_line;
 					ConstantNode *cn = alloc_node<ConstantNode>();
 					cn->value = enum_dict;
 					cn->datatype = _type_from_variant(cn->value);
