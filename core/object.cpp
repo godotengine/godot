@@ -592,7 +592,7 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 	return current_value;
 }
 
-void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) const {
+void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed, bool p_validate) const {
 
 	if (script_instance && p_reversed) {
 		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
@@ -614,9 +614,24 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
 		script_instance->get_property_list(p_list);
 	}
+
+	if (p_validate) {
+		for (List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
+			_validate_property_script(E->get());
+		}
+	}
 }
 
 void Object::_validate_property(PropertyInfo &property) const {
+}
+
+void Object::_validate_property_script(PropertyInfo &property) const
+{
+	_validate_property(property);
+
+	if (script_instance) {
+		script_instance->validate_property(property);
+	}
 }
 
 void Object::get_method_list(List<MethodInfo> *p_list) const {

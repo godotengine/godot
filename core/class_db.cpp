@@ -986,7 +986,7 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 
 			if (p_validator) {
 				PropertyInfo pi = E->get();
-				p_validator->_validate_property(pi);
+				p_validator->_validate_property_script(pi);
 				p_list->push_back(pi);
 			} else {
 				p_list->push_back(E->get());

@@ -544,6 +544,7 @@ protected:
 
 	friend class ClassDB;
 	virtual void _validate_property(PropertyInfo &property) const;
+	void _validate_property_script(PropertyInfo &property) const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_class();
@@ -636,7 +637,7 @@ public:
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = NULL);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = NULL) const;
 
-	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
+	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false, bool p_validate = false) const;
 
 	bool has_method(const StringName &p_method) const;
 	void get_method_list(List<MethodInfo> *p_list) const;

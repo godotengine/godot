@@ -609,6 +609,11 @@ Variant::Type NativeScriptInstance::get_property_type(const StringName &p_name, 
 	return Variant::NIL;
 }
 
+void NativeScriptInstance::validate_property(PropertyInfo &p_property) const
+{
+
+}
+
 void NativeScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	script->get_method_list(p_list);
 }

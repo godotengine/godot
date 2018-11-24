@@ -1039,6 +1039,36 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 	return Variant::NIL;
 }
 
+void GDScriptInstance::validate_property(PropertyInfo &p_property) const
+{
+	const GDScript *sptr = script.ptr();
+
+	Dictionary pinfo = p_property;
+	Variant pinfo_v = pinfo;
+	const Variant *args[1] = { &pinfo_v };
+
+	while (sptr) {
+
+		const Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
+		if (E) {
+
+			Variant::CallError err;
+			Variant ret = const_cast<GDScriptFunction *>(E->get())->call(const_cast<GDScriptInstance *>(this), (const Variant **)args, 1, err);
+			if (err.error == Variant::CallError::CALL_OK) {
+
+				if (ret.get_type() != Variant::DICTIONARY) {
+
+					ERR_EXPLAIN("Wrong return type for _validate_property, must be a dictionary.");
+					ERR_FAIL();
+				}
+				Dictionary prop = ret;
+				p_property = PropertyInfo::from_dict(prop);
+			}
+		}
+		sptr = sptr->_base;
+	}
+}
+
 void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	// exported members, not doen yet!
 
@@ -1786,6 +1816,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
 	strings._get_property_list = StaticCString::create("_get_property_list");
+	strings._validate_property = StaticCString::create("_validate_property");
 	strings._script_source = StaticCString::create("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";

@@ -2762,7 +2762,7 @@ void PropertyEditor::update_tree() {
 	tree->set_hide_root(true);
 
 	List<PropertyInfo> plist;
-	obj->get_property_list(&plist, true);
+	obj->get_property_list(&plist, true, true);
 
 	bool draw_red = false;
 
