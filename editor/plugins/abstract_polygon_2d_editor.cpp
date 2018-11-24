@@ -103,6 +103,11 @@ bool AbstractPolygon2DEditor::_is_line() const {
 	return false;
 }
 
+bool AbstractPolygon2DEditor::_has_uv() const {
+
+	return false;
+}
+
 int AbstractPolygon2DEditor::_get_polygon_count() const {
 
 	return 1;
@@ -202,12 +207,7 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 			button_edit->set_pressed(true);
 
 			get_tree()->connect("node_removed", this, "_node_removed");
-
 			create_resource->connect("confirmed", this, "_create_resource");
-
-		} break;
-		case NOTIFICATION_PHYSICS_PROCESS: {
-
 		} break;
 	}
 }
@@ -250,8 +250,12 @@ void AbstractPolygon2DEditor::_wip_close() {
 		_set_polygon(0, wip);
 	} else if (wip.size() >= (_is_line() ? 2 : 3)) {
 
-		undo_redo->create_action(TTR("Create Poly"));
+		undo_redo->create_action(TTR("Create Polygon"));
 		_action_add_polygon(wip);
+		if (_has_uv()) {
+			undo_redo->add_do_method(_get_node(), "set_uv", PoolVector<Vector2>());
+			undo_redo->add_undo_method(_get_node(), "set_uv", _get_node()->get("uv"));
+		}
 		_commit_action();
 	} else {
 
@@ -313,7 +317,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						if (vertices.size() < (_is_line() ? 2 : 3)) {
 
 							vertices.push_back(cpoint);
-							undo_redo->create_action(TTR("Edit Poly"));
+							undo_redo->create_action(TTR("Edit Polygon"));
 							selected_point = Vertex(insert.polygon, vertices.size());
 							_action_set_polygon(insert.polygon, vertices);
 							_commit_action();
@@ -331,7 +335,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							undo_redo->create_action(TTR("Insert Point"));
 							_action_set_polygon(insert.polygon, vertices);
 							_commit_action();
-
 							return true;
 						}
 					} else {
@@ -363,7 +366,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						ERR_FAIL_INDEX_V(edited_point.vertex, vertices.size(), false);
 						vertices.write[edited_point.vertex] = edited_point.pos - _get_offset(edited_point.polygon);
 
-						undo_redo->create_action(TTR("Edit Poly"));
+						undo_redo->create_action(TTR("Edit Polygon"));
 						_action_set_polygon(edited_point.polygon, pre_move_edit, vertices);
 						_commit_action();
 
@@ -531,6 +534,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 }
 
 void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
+
 	if (!_get_node())
 		return;
 
@@ -631,9 +635,11 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 
 		_set_node(p_polygon);
 
-		//Enable the pencil tool if the polygon is empty
+		// Enable the pencil tool if the polygon is empty.
 		if (_is_empty())
 			_menu_option(MODE_CREATE);
+		else
+			_menu_option(MODE_EDIT);
 
 		wip.clear();
 		wip_active = false;
@@ -664,12 +670,12 @@ void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
 
 		vertices.remove(p_vertex.vertex);
 
-		undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
+		undo_redo->create_action(TTR("Edit Polygon (Remove Point)"));
 		_action_set_polygon(p_vertex.polygon, vertices);
 		_commit_action();
 	} else {
 
-		undo_redo->create_action(TTR("Remove Poly And Point"));
+		undo_redo->create_action(TTR("Remove Polygon And Point"));
 		_action_remove_polygon(p_vertex.polygon);
 		_commit_action();
 	}
@@ -777,19 +783,19 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	add_child(button_create);
 	button_create->connect("pressed", this, "_menu_option", varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip(TTR("Create a new polygon from scratch"));
+	button_create->set_tooltip(TTR("Create points."));
 
 	button_edit = memnew(ToolButton);
 	add_child(button_edit);
 	button_edit->connect("pressed", this, "_menu_option", varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
-	button_edit->set_tooltip(TTR("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point."));
+	button_edit->set_tooltip(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
 
 	button_delete = memnew(ToolButton);
 	add_child(button_delete);
 	button_delete->connect("pressed", this, "_menu_option", varray(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
-	button_delete->set_tooltip(TTR("Delete points"));
+	button_delete->set_tooltip(TTR("Erase points."));
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);

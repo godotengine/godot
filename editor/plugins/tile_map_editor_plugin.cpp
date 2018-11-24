@@ -1862,7 +1862,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	toolbar->add_child(tile_info);
 
 	options = memnew(MenuButton);
-	options->set_text("Tile Map");
+	options->set_text("TileMap");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TileMap", "EditorIcons"));
 	options->set_process_unhandled_key_input(false);
 

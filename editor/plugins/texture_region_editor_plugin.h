@@ -43,9 +43,9 @@
 	@author Mariano Suligoy
 */
 
-class TextureRegionEditor : public Control {
+class TextureRegionEditor : public VBoxContainer {
 
-	GDCLASS(TextureRegionEditor, Control);
+	GDCLASS(TextureRegionEditor, VBoxContainer);
 
 	enum SnapMode {
 		SNAP_NONE,
@@ -55,7 +55,7 @@ class TextureRegionEditor : public Control {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	MenuButton *snap_mode_button;
+	OptionButton *snap_mode_button;
 	ToolButton *zoom_in;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_out;
@@ -66,7 +66,7 @@ class TextureRegionEditor : public Control {
 	SpinBox *sb_off_x;
 	SpinBox *sb_sep_y;
 	SpinBox *sb_sep_x;
-	Control *edit_draw;
+	Panel *edit_draw;
 
 	VScrollBar *vscroll;
 	HScrollBar *hscroll;
@@ -111,7 +111,8 @@ class TextureRegionEditor : public Control {
 	void _zoom_in();
 	void _zoom_reset();
 	void _zoom_out();
-	void apply_rect(const Rect2 &rect);
+	void apply_rect(const Rect2 &p_rect);
+	void _update_rect();
 	void _update_autoslice();
 
 protected:

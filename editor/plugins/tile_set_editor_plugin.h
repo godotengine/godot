@@ -40,12 +40,12 @@
 #define WORKSPACE_MARGIN Vector2(10, 10)
 class TilesetEditorContext;
 
-class TileSetEditor : public Control {
+class TileSetEditor : public HSplitContainer {
 
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
-	GDCLASS(TileSetEditor, Control)
+	GDCLASS(TileSetEditor, HSplitContainer)
 
 	enum TextureToolButtons {
 		TOOL_TILESET_ADD_TEXTURE,
@@ -134,6 +134,7 @@ class TileSetEditor : public Control {
 	HSeparator *separator_editmode;
 	HBoxContainer *toolbar;
 	ToolButton *tools[TOOL_MAX];
+	VSeparator *separator_bitmask;
 	VSeparator *separator_delete;
 	VSeparator *separator_grid;
 	SpinBox *spin_priority;
@@ -184,7 +185,7 @@ private:
 
 	void _zoom_in();
 	void _zoom_out();
-	void _reset_zoom();
+	void _zoom_reset();
 
 	void draw_highlight_current_tile();
 	void draw_highlight_subtile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
@@ -240,6 +241,8 @@ public:
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
+	void set_state(const Dictionary &p_state);
+	Dictionary get_state() const;
 
 	TileSetEditorPlugin(EditorNode *p_node);
 };
