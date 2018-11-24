@@ -6,7 +6,7 @@ import glob
 import string
 import datetime
 import subprocess
-from compat import iteritems, isbasestring
+from compat import iteritems, isbasestring, decode_utf8
 
 
 def add_source_files(self, sources, filetype, lib_env=None, shared=False):
@@ -645,7 +645,7 @@ def detect_darwin_sdk_path(platform, env):
 
     if not env[var_name]:
         try:
-            sdk_path = subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip()
+            sdk_path = decode_utf8(subprocess.check_output(['xcrun', '--sdk', sdk_name, '--show-sdk-path']).strip())
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError) as e:
