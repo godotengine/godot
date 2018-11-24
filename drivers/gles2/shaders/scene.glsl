@@ -84,8 +84,6 @@ uniform highp mat4 world_transform;
 
 uniform highp float time;
 
-
-
 #ifdef RENDER_DEPTH
 uniform float light_bias;
 uniform float light_normal_bias;
@@ -1121,7 +1119,7 @@ LIGHT_SHADER_CODE
 	float NdotL = dot(N, L);
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
 	float NdotV = dot(N, V);
-	float cNdotV = max(NdotV, 0.0);
+	float cNdotV = max(abs(NdotV), 1e-6);
 
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
 	vec3 H = normalize(V + L);
