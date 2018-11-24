@@ -3539,10 +3539,10 @@ void CollisionPolygonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 ////
 
 NavigationMeshSpatialGizmoPlugin::NavigationMeshSpatialGizmoPlugin() {
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
+	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)), false, false, false, SpatialMaterial::CULL_DISABLED);
+	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)), false, false, false, SpatialMaterial::CULL_DISABLED);
+	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)), false, false, false, SpatialMaterial::CULL_DISABLED);
+	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)), false, false, false, SpatialMaterial::CULL_DISABLED);
 }
 
 bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {

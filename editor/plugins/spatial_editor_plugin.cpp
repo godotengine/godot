@@ -5746,7 +5746,7 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 SpatialEditorPlugin::~SpatialEditorPlugin() {
 }
 
-void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color) {
+void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color &p_color, bool p_billboard, bool p_on_top, bool p_use_vertex_color, SpatialMaterial::CullMode p_cull_mode) {
 
 	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
 
@@ -5768,6 +5768,7 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 		material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 		material->set_render_priority(SpatialMaterial::RENDER_PRIORITY_MIN + 1);
+		material->set_cull_mode(p_cull_mode);
 
 		if (p_use_vertex_color) {
 			material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
