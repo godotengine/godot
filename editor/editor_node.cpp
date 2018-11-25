@@ -2926,7 +2926,12 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	_update_scene_tabs();
 	_add_to_recent_scenes(lpath);
 
-	editor_folding.load_scene_folding(new_scene, lpath);
+	if (editor_folding.has_folding_data(lpath)) {
+		editor_folding.load_scene_folding(new_scene, lpath);
+	} else if (EDITOR_GET("interface/inspector/auto_unfold_foreign_scenes")) {
+		editor_folding.unfold_scene(new_scene);
+		editor_folding.save_scene_folding(new_scene, lpath);
+	}
 
 	prev_scene->set_disabled(previous_scenes.size() == 0);
 	opening_prev = false;
@@ -4878,7 +4883,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
 	EDITOR_DEF_RST("interface/inspector/disable_folding", false);
-	EDITOR_DEF_RST("interface/inspector/auto_unfold_edited", true);
+	EDITOR_DEF_RST("interface/inspector/auto_unfold_foreign_scenes", true);
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
 	EDITOR_DEF("interface/inspector/horizontal_vector_types_editing", true);
 	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);

@@ -37,6 +37,15 @@
 
 class UndoRedo;
 
+class EditorPropertyRevert {
+public:
+	static bool may_node_be_in_instance(Node *p_node);
+	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value);
+	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
+
+	static bool can_property_revert(Object *p_object, const StringName &p_property);
+};
+
 class EditorProperty : public Container {
 
 	GDCLASS(EditorProperty, Container)
@@ -70,7 +79,6 @@ private:
 	bool use_folding;
 	bool draw_top_bg;
 
-	bool _might_be_in_instance();
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
@@ -272,7 +280,6 @@ class EditorInspector : public ScrollContainer {
 	bool read_only;
 	bool keying;
 	bool use_sub_inspector_bg;
-	bool auto_unfold_edited;
 
 	float refresh_countdown;
 	bool update_tree_pending;
@@ -367,7 +374,6 @@ public:
 	String get_object_class() const;
 
 	void set_use_sub_inspector_bg(bool p_enable);
-	void set_auto_unfold_edited(bool p_enable);
 
 	EditorInspector();
 };

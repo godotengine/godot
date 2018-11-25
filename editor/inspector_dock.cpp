@@ -593,7 +593,6 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_undo_redo(&editor_data->get_undo_redo());
 
 	inspector->set_use_filter(true); // TODO: check me
-	inspector->set_auto_unfold_edited(bool(EDITOR_GET("interface/inspector/auto_unfold_edited")));
 
 	inspector->connect("resource_selected", this, "_resource_selected");
 	inspector->connect("property_keyed", this, "_property_keyed");
