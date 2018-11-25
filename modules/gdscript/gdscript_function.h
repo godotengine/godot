@@ -272,15 +272,13 @@ private:
 public:
 	struct CallState {
 
-		ObjectID instance_id; //by debug only
-		ObjectID script_id;
-
+		ObjectID instance_id;
 		GDScriptInstance *instance;
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
 		uint32_t alloca_size;
-		GDScript *_class;
+		Ref<GDScript> script;
 		int ip;
 		int line;
 		int defarg;
