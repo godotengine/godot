@@ -415,7 +415,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
 		}
 
-		if (normal) {
+		if (normal == 1) {
 			image->normalize();
 		}
 	}
