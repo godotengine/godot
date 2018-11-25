@@ -216,10 +216,10 @@ void OS_Wayland::pointer_axis_handler(void *data, struct wl_pointer *wl_pointer,
 	d_wl->input->parse_input_event(mb);
 
 	// Maybe needed
-	// Ref<InputEventMouseButton> mb_release = mb->duplicate();
-	// mb_release->set_pressed(false);
-	// mb->set_factor(0);
-	// d_wl->input->parse_input_event(mb);
+	Ref<InputEventMouseButton> mb_release = mb->duplicate();
+	mb_release->set_pressed(false);
+	mb->set_factor(0);
+	d_wl->input->parse_input_event(mb);
 }
 void OS_Wayland::pointer_frame_handler(void *data, struct wl_pointer *wl_pointer) {
 }
@@ -422,7 +422,7 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 		return ERR_UNAVAILABLE;
 	}
 	// swap_buffers();
-	wl_display_dispatch(display);
+	//wl_display_dispatch(display);
 	wl_display_roundtrip(display);
 
 	// video_driver_index = p_video_driver;
@@ -530,8 +530,8 @@ void OS_Wayland::set_window_size(const Size2 p_size) {
 		wl_surface_commit(surface);
 	} else {
 		context_gl_egl->resize(egl_window, (int)p_size.width, (int)p_size.height, 0, 0);
-		Main::force_redraw();
 	}
+	Main::force_redraw();
 }
 
 void OS_Wayland::swap_buffers() {
