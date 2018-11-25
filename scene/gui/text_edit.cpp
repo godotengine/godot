@@ -4264,6 +4264,7 @@ void TextEdit::_clear() {
 	cursor.line_ofs = 0;
 	cursor.wrap_ofs = 0;
 	cursor.last_fit_x = 0;
+	selection.active = false;
 }
 
 void TextEdit::clear() {
