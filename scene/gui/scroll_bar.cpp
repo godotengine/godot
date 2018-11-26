@@ -330,6 +330,8 @@ void ScrollBar::_notification(int p_what) {
 
 				if (Math::abs(vel) >= dist) {
 					set_value(target_scroll);
+					scrolling = false;
+					set_physics_process_internal(false);
 				} else {
 					set_value(get_value() + vel);
 				}
