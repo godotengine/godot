@@ -18,18 +18,19 @@
 # stnmycri <satenmeycri@gmail.com>, 2017-2018.
 # Yavuz Günay <yavuzgunay@gmail.com>, 2017.
 # Onur Sanır <onursanir@gmail.com>, 2018.
+# Oğuzhan Özdemir <ozdemiroguzhan0@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-07 20:42+0000\n"
-"Last-Translator: Onur Sanır <onursanir@gmail.com>\n"
+"PO-Revision-Date: 2018-10-28 16:23+0000\n"
+"Last-Translator: Oğuzhan Özdemir <ozdemiroguzhan0@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -81,7 +82,7 @@ msgstr "Ücretsiz"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Dengelenmiş"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -89,7 +90,6 @@ msgid "Mirror"
 msgstr "X'e Aynala"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
 msgstr "Anahtar Gir"
 

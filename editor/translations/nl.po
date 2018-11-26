@@ -27,8 +27,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-08-07 22:36+0000\n"
-"Last-Translator: Willem <studiebolmail@gmail.com>\n"
+"PO-Revision-Date: 2018-09-24 22:24+0000\n"
+"Last-Translator: frank <frankvprive@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -50,34 +50,32 @@ msgstr "Niet genoeg bytes om bytes te decoderen, of ongeldig formaat."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Ongeldige invoer %i (niet doorgegeven) in expressie"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
+"self kan niet gebruikt worden omdat de instantie null is (niet doorgegeven)"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Ongeldige index eigenschap naam '%s' in node %s."
+msgstr "Ongeldige operand voor operator %s, %s en %s."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "Ongeldige index eigenschap naam '%s' in node %s."
+msgstr "Ongeldige index in type %s voor basis-type %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Ongeldige indexnaam %s voor basis-type %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": Ongeldig argument van type: "
+msgstr "Ongeldig argument in constructie '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "Tijdens invocatie van '%s':"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -86,27 +84,23 @@ msgstr "Vrij"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Gebalanceerd"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Spiegel X"
+msgstr "Spiegel"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Voer Sleutel in"
+msgstr "Hier Key invoegen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Dupliceer Selectie"
+msgstr "Kopieer Geselecteerde Key(s)"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Geselecteerde Verwijderen"
+msgstr "Geselecteerde Key(s) Verwijderen"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -138,44 +132,39 @@ msgstr "Anim Wijzig Aanroep"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Eigenschap Track"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "Transformatie Type"
+msgstr "3D Transformatie Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Methode Invocatie Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier-curve Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Audio Terugspelen Track"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "Stop animatie opname. (S)"
+msgstr "Animatie Terugspelen Track"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Anim Track Toevoegen"
+msgstr "Track Toevoegen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "Animatie lengte (in seconden)."
+msgstr "Animatielengte (in seconden)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Animatie zoom."
+msgstr "Animatie Loopen"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -183,41 +172,37 @@ msgid "Functions:"
 msgstr "Functies:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Clips:"
-msgstr "Audio Luisteraar"
+msgstr "Audioclips:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animatieclips:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Afleidingsvrije modus veranderen."
+msgstr "Aan-uitschakelaar Track."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Update Modus (Setting van deze eigenschap)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "Animatie Node"
+msgstr "Interpolatiemodus"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr ""
+"Terugloopmodus (Interpolatie tussen het begin en het einde van de loop)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "Verwijder geselecteerde track."
+msgstr "Verwijder deze track."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "X-Fade Tijd (en):"
+msgstr "Tijd (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -232,13 +217,12 @@ msgid "Trigger"
 msgstr "Trigger"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "Kenmerken"
+msgstr "Vastleggen"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Dichtstbijzijnde"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -247,15 +231,15 @@ msgstr "Lineair"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubiek"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Klem loop interpolatie"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Loop Interpolatie Terug"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -263,14 +247,12 @@ msgid "Insert Key"
 msgstr "Voer Sleutel in"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Anim Dupliceer Keys"
+msgstr "Dupliceer Key(s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Anim Verwijder Keys"
+msgstr "Verwijder Key(s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -300,7 +282,7 @@ msgstr "Anim Invoegen"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "Animatie-Speler kan zichzelf niet animeren, alleen andere spelers."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -317,6 +299,8 @@ msgstr "Anim Key Invoegen"
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
+"Transformatie tracks zijn alleen te gebruiken met nodes die een dimensionale "
+"oriëntatie hebben."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -332,7 +316,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "Een animatiespeler kan zichzelf niet animeren, alleen andere spelers."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"

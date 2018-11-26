@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-28 12:39+0000\n"
+"PO-Revision-Date: 2018-10-11 13:29+0000\n"
 "Last-Translator: Gustavs Porietis (pg829-) <porietisgustavs@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 3.1.1\n"
+"X-Generator: Weblate 3.2.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -26,7 +26,7 @@ msgstr ""
 #: modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Nepietiekams skaits baitu lai dekodētu baitus vai nepareizs formāts."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -50,7 +50,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "Nepareizs arguments lai konstruētu '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -59,11 +59,11 @@ msgstr ""
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Bezmaksas"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Balancēts"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -129,38 +129,36 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Audio atskaņošanas celiņs"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "Animācijas atskaņošanas celiņs"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr ""
+msgstr "Pievienot celiņu"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
 msgstr "Animācijas garums (sekundēs)."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Animācijas tālummaiņa."
+msgstr "Animācijas cikls."
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funkcijas:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Audio klipi:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animācijas klipi:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -172,7 +170,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr ""
+msgstr "Interpolācijas režīms"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -180,32 +178,31 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
-msgstr ""
+msgstr "Noņemt šo celiņu."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "Solis (ļi):"
+msgstr "Laiks (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr ""
+msgstr "Nepārtraukti"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr ""
+msgstr "Diskrēta"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
-msgstr ""
+msgstr "Trigeris"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
-msgstr ""
+msgstr "Uztvert"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Tuvākais"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -214,7 +211,7 @@ msgstr "Lineārs"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubisks"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -227,29 +224,27 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Ievietot atslēgievietni"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Dublikāta Izvēle"
+msgstr "Dublicēt atslēgvietnes"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Izdzēst"
+msgstr "Izdzēst atslēgvietnes"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr ""
+msgstr "Noņemt animācijas celiņu"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Izveidot JAUNU celiņu priekš %s un ievietot atslēgievietni?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Izveidot %d JAUNU celiņu un ievietot atslēgievietni?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
@@ -263,23 +258,23 @@ msgstr "Izveidot"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
-msgstr ""
+msgstr "Anim ievietot"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "AnimationPlayer nevar animēt pats sevi, tikai citi spēlētāji."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr ""
+msgstr "Anim izveidot un ievietot"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr ""
+msgstr "Anim ievietot celiņu un atslēgvietni"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr ""
+msgstr "Anim ievietot atslēgievietni"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -292,18 +287,22 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Audio celiņu var tikai rādīt uz šāda tipa mezgliem:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animācijas celiņi var norādīt tikai uz AnimationPlayer mezgliem."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "Animācijas atskaņotājs nevar animēt pats sevi, tikai citi spēlētāji."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Nevar izveidot jaunu celiņu bez saknes"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -319,19 +318,19 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "Metode netika atrasta objektā: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr ""
+msgstr "Anim pārvietot atslēgievietnes"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
-msgstr ""
+msgstr "Starpliktuve ir tukša"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr ""
+msgstr "Anim pārvietot atslēgievietnes"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -340,21 +339,20 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Rādīt celiņus tikai no mezgliem izvēlētajā kokā."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
 msgstr ""
+"Sagrupēt celiņus atkarībā no mezgliem vai rādīt tos vienkāršā sarakstā."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap (s): "
-msgstr "Solis (ļi):"
+msgstr "Solis (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Animācijas tālummaiņa."
+msgstr "Animācijas soļa vērtība."
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -363,28 +361,27 @@ msgstr "Animācijas tālummaiņa."
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Rediģēt"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "Animācijas tālummaiņa."
+msgstr "Animācijas īpašības."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
-msgstr ""
+msgstr "Kopēt celiņus"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
-msgstr ""
+msgstr "Ielīmēt celiņus"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
-msgstr ""
+msgstr "Mēroga Izvēle"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
-msgstr ""
+msgstr "Skala No Kursora"
 
 #: editor/animation_track_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -393,12 +390,11 @@ msgstr "Dublikāta Izvēle"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr ""
+msgstr "Dublicēt transponējušās"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Dublikāta Izvēle"
+msgstr "Dzēst izvēlētos"
 
 #: editor/animation_track_editor.cpp
 msgid "Goto Next Step"
@@ -410,7 +406,7 @@ msgstr "Doties uz iepriekšējo soli"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr ""
+msgstr "Optimizēt animāciju"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
@@ -418,7 +414,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Izvēlies mezglu, kurā tiks animēta:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
@@ -426,7 +422,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr ""
+msgstr "Anim. Optimizētājs"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -545,9 +541,8 @@ msgid "Warnings:"
 msgstr ""
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Zoom:"
-msgstr "Pietuvināt"
+msgstr "Pietuvināt:"
 
 #: editor/code_editor.cpp editor/script_editor_debugger.cpp
 msgid "Line:"

@@ -8,18 +8,19 @@
 # Kim Nielsen <kimmowich@stofanet.dk>, 2017, 2018.
 # Michael Madsen <mim@michael-madsen.dk>, 2017.
 # Christoffer Schindel <ceas@outlook.com>, 2018.
+# frederikzt <frederikzt@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-08-15 20:35+0000\n"
-"Last-Translator: David Lamhauge <davidlamhauge@gmail.com>\n"
+"PO-Revision-Date: 2018-11-21 19:07+0000\n"
+"Last-Translator: frederikzt <frederikzt@gmail.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Weblate 3.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -46,18 +47,16 @@ msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Ugyldigt indeks egenskabsnavn '%s' i noden %s."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "Ugyldigt indeks egenskabsnavn '%s' i noden %s."
+msgstr "Ugyldigt indeks af type %s for basistype %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
 msgstr ""
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": Ugyldigt argument af typen: "
+msgstr "Ugyldige argumenter til at konstruere '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -77,19 +76,16 @@ msgid "Mirror"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Anim Indsæt Nøgle"
+msgstr "Indsæt nøgle her"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplikér Valgte"
+msgstr "Duplikér valgte nøgle(r)"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Slet Valgte"
+msgstr "Slet valgte nøgle(r)"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -145,14 +141,12 @@ msgid "Animation Playback Track"
 msgstr "Stop animation afspilning. (S)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Anim Tilføj Spor"
+msgstr "Tilføj Spor"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "Animations Længde (i sekunder)."
+msgstr "Animations længde (i sekunder)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1158,7 +1152,7 @@ msgstr "Indlæs"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load an existing Bus Layout."
-msgstr "Indlæs et eksisterende Bus Layout"
+msgstr "Indlæs et eksisterende Bus Layout."
 
 #: editor/editor_audio_buses.cpp
 msgid "Save As"

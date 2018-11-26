@@ -2,69 +2,69 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Abhas Kumar Sinha <abhaskumarsinha@gmail.com>, 2017.
-#
+# Suryansh5545 <suryanshpathak5545@gmail.com>, 2018.
+# Vikram1323 <vikram1323@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-25 10:21+0000\n"
-"Last-Translator: Abhas Kumar Sinha <abhaskumarsinha@gmail.com>\n"
+"PO-Revision-Date: 2018-10-07 18:27+0000\n"
+"Last-Translator: Vikram1323 <vikram1323@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 3.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "कन्वर्ट करने के लिए अमान्य प्रकार तर्क (), TYPE_ * स्थिरांक का उपयोग करें।"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "डीकोडिंग बाइट्स, या अमान्य प्रारूप के लिए पर्याप्त बाइट्स नहीं है।"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "अभिव्यक्ति में अमान्य इनपुट % i (पारित नहीं)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "स्वयं का उपयोग नहीं किया जा सकता क्योंकि उदाहरण शून्य है (पास नहीं हुआ)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "ऑपरेटर %s, %s और %s के लिए अमान्य ऑपरेंड।"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "बेस प्रकार %s के लिए प्रकार %s का अमान्य अनुक्रमणिका"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "आधार प्रकार %s के लिए अवैध नाम सूचकांक '%s'"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "'%s' बनाने के लिए अवैध तर्क"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "'% s ' को कॉल करने पर:"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "मुफ्त"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "संतुलित"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -72,12 +72,11 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "चाबी यहां डालें"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "डुप्लिकेट चयन"
+msgstr "चयनित चाबी (फ़ाइलें) डुप्लिकेट"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -86,7 +85,7 @@ msgstr "चयनित फ़ाइलें हटाएं?"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Anim डुप्लिकेट चाबी"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 #, fuzzy
@@ -101,7 +100,7 @@ msgstr "एनीमेशन परिवर्तन निधि"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Anim Change Transition"
-msgstr "एनीमेशन परिवर्तन संक्रमण (एनीमेशन परिवर्तन)"
+msgstr "एनीमेशन परिवर्तन बुलावा"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -109,9 +108,8 @@ msgid "Anim Change Transform"
 msgstr "एनीमेशन परिवर्तन परिणत"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "एनीमेशन परिवर्तन निधि"
+msgstr "एनीमेशन मुख्य-फ़्रेम मूल्य(Value) बदलें"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
@@ -119,45 +117,45 @@ msgstr "एनीमेशन परिवर्तन बुलावा"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "गुण(Property)  ट्रैक"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "3 डी ट्रैक रूपांतरण"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "कॉल मेथड ट्रैक"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "बेज़ियर वक्र ट्रैक"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "ऑडियो प्लेबैक ट्रैक"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "एनिमेशन प्लेबैक ट्रैक"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Add Track"
-msgstr "एनीमेशन ट्रैक जोड़ें"
+msgstr "ट्रैक जोड़ें"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Length Time (seconds)"
-msgstr ""
+msgstr "ऐनिमेशन लंबाई समय (सेकंड्स)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr ""
+msgstr "एनिमेशन लूप"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "कार्यों:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
@@ -2221,11 +2219,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "समुदाय"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "के बारे में"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -7078,7 +7076,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "सामान्य"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"

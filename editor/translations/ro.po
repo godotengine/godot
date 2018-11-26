@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-08-05 00:52+0000\n"
-"Last-Translator: Grigore Antoniuc <grisa181@gmail.com>\n"
+"PO-Revision-Date: 2018-08-31 18:22+0000\n"
+"Last-Translator: Nitroretro <nitroretro@protonmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.1.1\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -70,24 +70,20 @@ msgid "Balanced"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Eroare!"
+msgstr "Reflectează"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Inserează Notă"
+msgstr "Inserează Cheie Aici"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplicați Selecția"
+msgstr "Duplicați Cheile Selectate"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Ştergeți fişierele selectate?"
+msgstr "Ştergeți Cheile Selectate"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -2345,13 +2341,12 @@ msgstr "Rulează Scena Personalizată"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "Schimbarea driver-ului video necesită restartarea editorului."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Save & Restart"
-msgstr "Salvează și Închide"
+msgstr "Salvează și Restartează"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"

@@ -1,44 +1,43 @@
-# Icelandic translation of the Godot Engine editor
+# Malayalam translation of the Godot Engine editor
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-# Jóhannes G. Þorsteinsson <johannesg@johannesg.com>, 2017, 2018.
-# Kaan Gül <qaantum@hotmail.com>, 2018.
+# christy james <jkuttu@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-10-15 19:30+0000\n"
-"Last-Translator: Jóhannes G. Þorsteinsson <johannesg@johannesg.com>\n"
-"Language-Team: Icelandic <https://hosted.weblate.org/projects/godot-engine/"
-"godot/is/>\n"
-"Language: is\n"
+"PO-Revision-Date: 2018-08-28 18:40+0000\n"
+"Last-Translator: christy james <jkuttu@gmail.com>\n"
+"Language-Team: Malayalam <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ml/>\n"
+"Language: ml\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.2.1\n"
+"X-Generator: Weblate 3.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "ആർഗ്യുമെന്റ് ടൈപ്പ് അസാധുവാണ് മാറ്റംവരുത്താൻ(), TYPE_ * സ്ഥിരാങ്കങ്ങൾ ഉപയോഗിക്കുക."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/glue_header.h
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "തെറ്റായ ഫോർമാറ്റിങ്  അല്ലെങ്കിൽ ഡീക്കോഡിങ്ങിനു  ആവശ്യത്തിനു ബെറ്റുകൾ  ഇല്ല."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "എക്സ്പ്രെഷനിൽ അസാധുവായ ഇൻപുട്ട് %i (പാസാക്കിയിട്ടില്ല)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "സെല്ഫ് ഉപയോഗിക്കാൻ പറ്റില്ല കാരണം ആ ഇൻസ്റ്റൻസ് ശൂന്യം ആണ്  (പാസായിട്ടില്ല)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "പ്രവർത്തകന് ചെയ്യാൻ കൊടുത്ത പ്രവർത്തനങ്ങൾ  %s,%s,%s അസാധുവാണ്."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -74,9 +73,8 @@ msgid "Insert Key Here"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Afrita val"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -84,36 +82,31 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Tvíteknir lyklar"
+msgstr ""
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim Eyða Lyklum"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim breyta lyklagrind tími"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transition"
-msgstr "Anim breyting umskipti"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Transform"
-msgstr "Breyta umbreytingu"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim breyta lyklagrind gildi"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Call"
-msgstr "Útkall breyting símtal"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -140,9 +133,8 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Anim bæta við lag"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Length Time (seconds)"
@@ -182,28 +174,24 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "Fjarlægja Anim track"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Continuous"
-msgstr "Samfellt"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Discrete"
-msgstr "Afmarkað"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Trigger"
-msgstr "Kveikja:"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
@@ -236,19 +224,16 @@ msgid "Insert Key"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Tvíteknir lyklar"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Anim DELETE-lyklar"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove Anim Track"
-msgstr "Fjarlægja Anim track"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
@@ -329,9 +314,8 @@ msgid "Method not found in object: "
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Move Keys"
-msgstr "Færa lykla af Anim"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -369,7 +353,7 @@ msgstr ""
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr "Breyta"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
@@ -384,9 +368,8 @@ msgid "Paste Tracks"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Scale Selection"
-msgstr "Val á kvarða"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
@@ -394,19 +377,16 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Duplicate Selection"
-msgstr "Afrita val"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Transposed"
-msgstr "Tvískipt transposed"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Afrita val"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Goto Next Step"
@@ -661,7 +641,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection: "
-msgstr "Breyta Tengingu: "
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \""
@@ -681,7 +661,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr "Breyta..."
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
@@ -896,7 +876,7 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Verkefna Stjóri "
+msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1829,7 +1809,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr "Opna Verkefna Stjóra?"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -1842,7 +1822,6 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
 msgstr ""
-"Vista breytingar á neðangreindum senu(m) áður en Verkefna Stjóri er opnaður?"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2358,7 +2337,7 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
-msgstr "Breyta Viðbót"
+msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2383,7 +2362,7 @@ msgstr ""
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
-msgstr "Breyta:"
+msgstr ""
 
 #: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
 #: editor/rename_dialog.cpp
@@ -2861,16 +2840,15 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Breyta"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Duplicate..."
-msgstr "Hreyfimynd Tvöfalda Lykla"
+msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "New Script..."
@@ -3540,9 +3518,8 @@ msgid "New"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Transitions..."
-msgstr "Stillið breyting á:"
+msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Open in Inspector"
@@ -3680,9 +3657,8 @@ msgid "Connect nodes."
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition"
-msgstr "Fjarlægja val"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -3693,9 +3669,8 @@ msgid "Set the end animation. This is useful for sub-transitions."
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "Stillið breyting á:"
+msgstr ""
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -4985,9 +4960,8 @@ msgid "Invalid Split: "
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Split"
-msgstr "Fjarlægja val"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -6361,9 +6335,8 @@ msgid "Pick Tile"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Move Selection"
-msgstr "Fjarlægja val"
+msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate 0 degrees"
@@ -6725,8 +6698,6 @@ msgid ""
 "Language changed.\n"
 "The UI will update next time the editor or project manager starts."
 msgstr ""
-"Tungumáli breytt.\n"
-"Viðmótið mun uppfærast við næstu ræsingu á tóli eða verkefna stjóra."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -6736,7 +6707,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "Verkefna Stjóri"
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Project List"
@@ -7037,9 +7008,8 @@ msgid "Action:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Action"
-msgstr "Allt úrvalið"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
@@ -7178,9 +7148,8 @@ msgid "Can't load back converted image using PVRTC tool:"
 msgstr ""
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Batch Rename"
-msgstr "Endurnefning Anim track"
+msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "Prefix"
@@ -8021,9 +7990,8 @@ msgid "GridMap Delete Selection"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Fill Selection"
-msgstr "Allt úrvalið"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
@@ -8106,9 +8074,8 @@ msgid "Clear Selection"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Fill Selection"
-msgstr "Allt úrvalið"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Settings"
@@ -8983,38 +8950,3 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
-
-#, fuzzy
-#~ msgid "Disabled"
-#~ msgstr "Óvirkt"
-
-#, fuzzy
-#~ msgid "Move Anim Track Up"
-#~ msgstr "Færa Anim track upp"
-
-#, fuzzy
-#~ msgid "Move Anim Track Down"
-#~ msgstr "Færa Anim track niður"
-
-#, fuzzy
-#~ msgid "Anim Track Change Interpolation"
-#~ msgstr "Breytingar á Anim track"
-
-#, fuzzy
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "Breyta gildisstilling í Anim track"
-
-#, fuzzy
-#~ msgid "Anim Track Change Wrap Mode"
-#~ msgstr "Anim track breyta hulum ham"
-
-#, fuzzy
-#~ msgid "Edit Node Curve"
-#~ msgstr "Breyta hnútnum Ferill"
-
-#, fuzzy
-#~ msgid "Anim Add Key"
-#~ msgstr "Anim bæta við lykli"
-
-#~ msgid "Move Add Key"
-#~ msgstr "Hreyfa Viðbótar Lykil"

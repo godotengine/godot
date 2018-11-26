@@ -9,18 +9,19 @@
 # rezapouya <r.pouya@chmail.ir>, 2016.
 # sayyed hamed nasib <cghamed752@chmail.ir>, 2017.
 # Behrooz Kashani <bkashani@gmail.com>, 2018.
+# Mahdi <sadisticwarlock@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-07-24 19:42+0000\n"
-"Last-Translator: Behrooz Kashani <bkashani@gmail.com>\n"
+"PO-Revision-Date: 2018-11-21 19:07+0000\n"
+"Last-Translator: Mahdi <sadisticwarlock@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.1-dev\n"
+"X-Generator: Weblate 3.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -82,19 +83,16 @@ msgid "Mirror"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "کلید را در انیمیشن درج کن"
+msgstr "کلید را وارد کن"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "انتخاب شده را به دو تا تکثیر کن"
+msgstr "کلید تکراری درست کن"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "انتخاب شده را حذف کن"
+msgstr "کلید‌ها را پاک کن"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -150,19 +148,16 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "افزودن ترَک به انیمیشن"
+msgstr "ترک را اضافه کن"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "طول انیمیشن (به ثانیه)."
+msgstr "طول انیمیشن (به ثانیه)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "بزرگنمایی در انیمیشن."
+msgstr "تکرار انیمیشن"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -195,9 +190,8 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "ترک انتخاب شده را حذف کن."
+msgstr "این ترک را حذف کن."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -276,7 +270,7 @@ msgstr "ساختن تعداد d% ترک جدید، ودرج  کلیدها؟"
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
-msgstr "ساختن"
+msgstr "تولید"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"

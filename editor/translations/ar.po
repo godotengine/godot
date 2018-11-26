@@ -18,11 +18,14 @@
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
 # Omar Aglan <omar.aglan91@yahoo.com>, 2018.
 # Codes Otaku <ilyas.gamerz@gmail.com>, 2018.
+# Takai Eddine Kennouche <takai.kenn@gmail.com>, 2018.
+# Mohamed El-Baz <albaz2000eg@gmail.com>, 2018.
+# عاصم شكر - Aasem shokr <aasemshokr@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-08-13 14:34+0000\n"
-"Last-Translator: Codes Otaku <ilyas.gamerz@gmail.com>\n"
+"PO-Revision-Date: 2018-11-18 22:43+0000\n"
+"Last-Translator: عاصم شكر - Aasem shokr <aasemshokr@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -30,7 +33,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Weblate 3.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -79,35 +82,31 @@ msgstr "مجاني/فارغ"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "معزز"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "خطأ!"
+msgstr "عكس"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "أدخل مفتاح"
+msgstr "أدخل مفتاحاً هنا"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "تكرير المحدد"
+msgstr "تكرار المفاتيح المحدد(ة)"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "إمسح الملفات المحددة؟"
+msgstr "إمسح المفاتيح المحدد(ة)"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "مفاتيح نسخ التحريك"
+msgstr "تكرار مفاتيح التحريك"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "مفاتيح حذف التحريك"
+msgstr "أزل مفاتيح التحريك"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -131,11 +130,11 @@ msgstr "نداء تغيير التحريك"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "خط الخاصية"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "خط التحريك ثلاثي الأبعاد"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
@@ -147,45 +146,40 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "شريط صبط الصوت"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "إيقاف تشغيل الحركة. (س)"
+msgstr "شريط ضبط الحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "مسار إضافة التحريك"
+msgstr "إضافة مسار"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "طول الحركة (بالثواني)."
+msgstr "مدة الحركة (بالثواني)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "تكبير الحركة."
+msgstr "تكرار الحركة"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "دوال:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "مقاطع الصوت:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "مقاطع الحركة:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "تمكين/إيقاف الوضع الخالي من الإلهاء."
+msgstr "تمكين/إيقاف هذا المسار."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -3690,7 +3684,7 @@ msgstr "أدوات الحركة"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
-msgstr "حركة"
+msgstr "صورة متحركة"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New"
@@ -7262,7 +7256,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "عام"
 
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 msgid "Property:"
