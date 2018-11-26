@@ -397,7 +397,7 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 	if (get_script_instance()) {
-		return get_script_instance()->call("get_child_by_nane");
+		return get_script_instance()->call("get_child_by_name");
 	}
 	return Ref<AnimationNode>();
 }
