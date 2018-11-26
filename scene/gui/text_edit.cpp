@@ -5758,6 +5758,7 @@ void TextEdit::_update_completion_candidates() {
 	completion_base = s;
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
+	Vector<String> completion_options_casei;
 
 	for (int i = 0; i < completion_strings.size(); i++) {
 		if (single_quote && completion_strings[i].is_quoted()) {
@@ -5766,8 +5767,12 @@ void TextEdit::_update_completion_candidates() {
 
 		if (completion_strings[i].begins_with(s)) {
 			completion_options.push_back(completion_strings[i]);
+		} else if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
+			completion_options_casei.push_back(completion_strings[i]);
 		}
 	}
+
+	completion_options.append_array(completion_options_casei);
 
 	if (completion_options.size() == 0) {
 		for (int i = 0; i < completion_strings.size(); i++) {
