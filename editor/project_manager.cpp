@@ -745,8 +745,8 @@ public:
 				get_ok()->set_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
-                project_name->call_deferred("grab_focus");
-                project_name->call_deferred("select_all");
+                		project_name->call_deferred("grab_focus");
+                		project_name->call_deferred("select_all");
 
 			} else if (mode == MODE_INSTALL) {
 
