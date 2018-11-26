@@ -1191,6 +1191,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 							if (collada.state.mesh_data_map.has(meshid)) {
 								Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
+								mesh->set_name(meshdata.name);
 								Error err = _create_mesh_surfaces(false, mesh, ng->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
 								ERR_FAIL_COND_V(err, err);
 
