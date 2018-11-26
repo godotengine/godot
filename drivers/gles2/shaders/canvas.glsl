@@ -16,6 +16,8 @@ uniform highp mat4 projection_matrix;
 #include "stdlib.glsl"
 
 uniform highp mat4 modelview_matrix;
+uniform highp mat4 world_matrix;
+uniform highp mat4 inv_world_matrix;
 uniform highp mat4 extra_matrix;
 attribute highp vec2 vertex; // attrib:0
 attribute vec4 color_attrib; // attrib:3
@@ -149,6 +151,12 @@ void main() {
 	uv = uv_attrib;
 #endif
 
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+	outvec = world_matrix * extra_matrix_instance * outvec;
+#endif
+
+#define extra_matrix extra_matrix_instance
+
 	{
 		vec2 src_vtx = outvec.xy;
 		/* clang-format off */
@@ -158,10 +166,17 @@ VERTEX_SHADER_CODE
 		/* clang-format on */
 	}
 
-#if !defined(SKIP_TRANSFORM_USED)
-	outvec = extra_matrix_instance * outvec;
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+	outvec = inv_world_matrix * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
+
+#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
+	outvec = extra_matrix * outvec;
+	outvec = modelview_matrix * outvec;
+#endif
+
+#undef extra_matrix
 
 	color_interp = color;
 

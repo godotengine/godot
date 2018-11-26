@@ -51,6 +51,8 @@ public:
 		Transform projection_matrix;
 
 		Transform2D modelview_matrix;
+		Transform2D world_matrix;
+		Transform2D inv_world_matrix;
 		Transform2D extra_matrix;
 
 		Color final_modulate;

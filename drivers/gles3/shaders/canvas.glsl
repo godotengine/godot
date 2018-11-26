@@ -45,6 +45,8 @@ layout(std140) uniform CanvasItemData { //ubo:0
 
 uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
+uniform highp mat4 world_matrix;
+uniform highp mat4 inv_world_matrix;
 
 out highp vec2 uv_interp;
 out mediump vec4 color_interp;
@@ -148,6 +150,10 @@ void main() {
 	outvec.xy /= color_texpixel_size;
 #endif
 
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+	outvec = world_matrix * extra_matrix_instance * outvec;
+#endif
+
 #define extra_matrix extra_matrix_instance
 
 	//for compatibility with the fragment shader we need to use uv here
@@ -167,7 +173,12 @@ VERTEX_SHADER_CODE
 	pixel_size_interp = abs(dst_rect.zw) * vertex;
 #endif
 
-#if !defined(SKIP_TRANSFORM_USED)
+#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
+	outvec = inv_world_matrix * outvec;
+	outvec = modelview_matrix * outvec;
+#endif
+
+#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 	outvec = extra_matrix * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
