@@ -140,7 +140,15 @@ void EditorHelpSearch::_notification(int p_what) {
 			if (search.is_valid()) {
 				if (search->work()) {
 					// Search done.
+
+					// Only point to the perfect match if it's a new search, and not just reopening a old one.
+					if (!old_search)
+						results_tree->ensure_cursor_is_visible();
+					else
+						old_search = false;
+
 					get_ok()->set_disabled(!results_tree->get_selected());
+
 					search = Ref<Runner>();
 					set_process(false);
 				}
@@ -177,6 +185,7 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 	if (p_term == "") {
 		search_box->clear();
 	} else {
+		old_search = true;
 		search_box->set_text(p_term);
 		search_box->select_all();
 	}
@@ -185,6 +194,8 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
+
+	old_search = false;
 
 	set_hide_on_ok(false);
 	set_resizable(true);
@@ -406,8 +417,6 @@ bool EditorHelpSearch::Runner::_phase_select_match() {
 
 	if (matched_item)
 		matched_item->select(0);
-	results_tree->ensure_cursor_is_visible();
-
 	return true;
 }
 

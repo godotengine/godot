@@ -58,6 +58,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	ToolButton *hierarchy_button;
 	OptionButton *filter_combo;
 	Tree *results_tree;
+	bool old_search;
 
 	class Runner;
 	Ref<Runner> search;
