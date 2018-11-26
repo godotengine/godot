@@ -370,7 +370,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			script = p_instance->script.ptr();
 		} else {
-			script = this->_script.ptr();
+			script = _script;
 		}
 	}
 
@@ -1182,7 +1182,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GET_VARIANT_PTR(dst, argc + 3);
 
-				const GDScript *gds = _script.ptr();
+				const GDScript *gds = _script;
 
 				const Map<StringName, GDScriptFunction *>::Element *E = NULL;
 				while (gds->base.ptr()) {
@@ -1253,7 +1253,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.stack_size = _stack_size;
 				gdfs->state.self = self;
 				gdfs->state.alloca_size = alloca_size;
-				gdfs->state.script = _script;
+				gdfs->state.script = Ref<GDScript>(_script);
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
 				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
@@ -1760,22 +1760,14 @@ GDScriptFunction::~GDScriptFunction() {
 
 Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-#ifdef DEBUG_ENABLED
-	// Checking this first since it's faster
-	if (!state.script.is_valid()) {
-		ERR_EXPLAIN("Resumed after yield, but script is gone");
-		ERR_FAIL_V(Variant());
-	}
-
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
+#ifdef DEBUG_ENABLED
 		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
 		ERR_FAIL_V(Variant());
-	}
 #else
-	if (!is_valid()) {
 		return Variant();
-	}
 #endif
+	}
 
 	Variant arg;
 	r_error.error = Variant::CallError::CALL_OK;
@@ -1842,9 +1834,6 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 		return false;
 
 	if (p_extended_check) {
-		//script gone? (checking this first since it's faster)
-		if (!state.script.is_valid())
-			return false;
 		//class instance gone?
 		if (state.instance_id && !ObjectDB::get_instance(state.instance_id))
 			return false;
@@ -1856,18 +1845,14 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	ERR_FAIL_COND_V(!function, Variant());
-#ifdef DEBUG_ENABLED
-	// Checking this first since it's faster
-	if (!state.script.is_valid()) {
-		ERR_EXPLAIN("Resumed after yield, but script is gone");
-		ERR_FAIL_V(Variant());
-	}
-
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
+#ifdef DEBUG_ENABLED
 		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
 		ERR_FAIL_V(Variant());
-	}
+#else
+		return Variant();
 #endif
+	}
 
 	state.result = p_arg;
 	Variant::CallError err;
