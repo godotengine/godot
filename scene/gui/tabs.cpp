@@ -53,7 +53,7 @@ Size2 Tabs::get_minimum_size() const {
 				ms.width += get_constant("hseparation");
 		}
 
-		ms.width += font->get_string_size(tabs[i].text).width;
+		ms.width += Math::ceil(font->get_string_size(tabs[i].text).width);
 
 		if (tabs[i].disabled)
 			ms.width += tab_disabled->get_minimum_size().width;
@@ -547,7 +547,7 @@ void Tabs::_update_cache() {
 	for (int i = 0; i < tabs.size(); i++) {
 		tabs.write[i].ofs_cache = mw;
 		tabs.write[i].size_cache = get_tab_width(i);
-		tabs.write[i].size_text = font->get_string_size(tabs[i].text).width;
+		tabs.write[i].size_text = Math::ceil(font->get_string_size(tabs[i].text).width);
 		mw += tabs[i].size_cache;
 		if (tabs[i].size_cache <= min_width || i == current) {
 			size_fixed += tabs[i].size_cache;
@@ -803,7 +803,7 @@ int Tabs::get_tab_width(int p_idx) const {
 			x += get_constant("hseparation");
 	}
 
-	x += font->get_string_size(tabs[p_idx].text).width;
+	x += Math::ceil(font->get_string_size(tabs[p_idx].text).width);
 
 	if (tabs[p_idx].disabled)
 		x += tab_disabled->get_minimum_size().width;
