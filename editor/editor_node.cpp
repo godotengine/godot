@@ -1749,6 +1749,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			file->popup_centered_ratio();
 
 		} break;
+		case SETTING_PLUGIN_UPDATE: {
+			//project_settings->popup_project_settings();
+			//project_settings->update_plugins();
+			//		 if(flag!=0||flag!=1) flag=0;
+			//flag = (flag+1)%2;
+			if (project_settings->flag != 0 && project_settings->flag != 1) project_settings->flag = 0;
+			project_settings->flag = (project_settings->flag + 1) % 2;
+			project_settings->enable_plugins();
+			project_settings->hide();
+		} break;
 		case FILE_QUICK_OPEN_SCENE: {
 
 			quick_open->popup_dialog("PackedScene", true);
@@ -5236,6 +5246,7 @@ EditorNode::EditorNode() {
 	p = project_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
 	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
+	p->add_shortcut(ED_SHORTCUT("editor/update_plugin", TTR("Enable or Disable Plugin"), KEY_F8), SETTING_PLUGIN_UPDATE);
 	p->add_separator();
 	p->connect("id_pressed", this, "_menu_option");
 	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);

@@ -62,7 +62,8 @@ protected:
 
 public:
 	void update_plugins();
-
+	void enable_plugins();
+	int flag;
 	EditorPluginSettings();
 };
 

@@ -810,6 +810,11 @@ void ProjectSettingsEditor::update_plugins() {
 	plugin_settings->update_plugins();
 }
 
+void ProjectSettingsEditor::enable_plugins() {
+	plugin_settings->flag = this->flag;
+	plugin_settings->enable_plugins();
+}
+
 void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
 	String selected_path = p_path;

@@ -187,7 +187,8 @@ public:
 	void popup_project_settings();
 	void set_plugins_page();
 	void update_plugins();
-
+	void enable_plugins();
+	int flag;
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
 
 	TabContainer *get_tabs();
