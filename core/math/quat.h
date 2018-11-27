@@ -61,6 +61,7 @@ public:
 
 	void set_euler(const Vector3 &p_euler) { set_euler_yxz(p_euler); };
 	Vector3 get_euler() const { return get_euler_yxz(); };
+	Vector3 euler() const { return get_euler_yxz(); };
 
 	Quat slerp(const Quat &q, const real_t &t) const;
 	Quat slerpni(const Quat &q, const real_t &t) const;
@@ -115,6 +116,19 @@ public:
 		z = p_z;
 		w = p_w;
 	}
+	inline void set(const Quat &p_q) {
+		x = p_q.x;
+		y = p_q.y;
+		z = p_q.z;
+		w = p_q.w;
+	} // Cannot be exposed to GDScript due to being an overloaded function.
+	inline void set(const Vector3 &euler) {
+		set_euler_yxz(euler);
+	} // Cannot be exposed to GDScript due to being an overloaded function.
+	inline void set(const Vector3 &axis, const real_t &angle) {
+		set_axis_angle(axis, angle);
+	} // Cannot be exposed to GDScript due to being an overloaded function.
+
 	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),
 			y(p_y),

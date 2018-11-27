@@ -137,14 +137,20 @@ struct Vector2 {
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
+	_FORCE_INLINE_ void set(real_t p_x, real_t p_y) {
+		x = p_x;
+		y = p_y;
+	}
+	_FORCE_INLINE_ void set(const Vector2 &p_v) {
+		x = p_v.x;
+		y = p_v.y;
+	} // Cannot be exposed to GDScript due to being an overloaded method.
+
 	_FORCE_INLINE_ Vector2(real_t p_x, real_t p_y) {
 		x = p_x;
 		y = p_y;
 	}
-	_FORCE_INLINE_ Vector2() {
-		x = 0;
-		y = 0;
-	}
+	_FORCE_INLINE_ Vector2() { x = y = 0; }
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {

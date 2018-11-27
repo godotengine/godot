@@ -368,6 +368,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector2, cross);
 	VCALL_LOCALMEM0R(Vector2, abs);
 	VCALL_LOCALMEM1R(Vector2, clamped);
+	VCALL_LOCALMEM2(Vector2, set);
 
 	VCALL_LOCALMEM0R(Rect2, get_area);
 	VCALL_LOCALMEM1R(Rect2, intersects);
@@ -411,6 +412,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector3, slide);
 	VCALL_LOCALMEM1R(Vector3, bounce);
 	VCALL_LOCALMEM1R(Vector3, reflect);
+	VCALL_LOCALMEM3(Vector3, set);
 
 	VCALL_LOCALMEM0R(Plane, normalized);
 	VCALL_LOCALMEM0R(Plane, center);
@@ -455,9 +457,11 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Quat, slerp);
 	VCALL_LOCALMEM2R(Quat, slerpni);
 	VCALL_LOCALMEM4R(Quat, cubic_slerp);
+	VCALL_LOCALMEM0R(Quat, euler);
 	VCALL_LOCALMEM0R(Quat, get_euler);
 	VCALL_LOCALMEM1(Quat, set_euler);
 	VCALL_LOCALMEM2(Quat, set_axis_angle);
+	VCALL_LOCALMEM4(Quat, set);
 
 	VCALL_LOCALMEM0R(Color, to_argb32);
 	VCALL_LOCALMEM0R(Color, to_abgr32);
@@ -474,6 +478,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Color, darkened);
 	VCALL_LOCALMEM1R(Color, to_html);
 	VCALL_LOCALMEM4R(Color, from_hsv);
+	VCALL_LOCALMEM4(Color, set);
 
 	VCALL_LOCALMEM0R(RID, get_id);
 
@@ -856,6 +861,11 @@ struct _VariantCall {
 		r_ret = Vector2(*p_args[0], *p_args[1]);
 	}
 
+	static void Vector2_init2(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Vector2(((Vector2)(*p_args[0])));
+	}
+
 	static void Rect2_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Rect2(*p_args[0], *p_args[1]);
@@ -886,6 +896,11 @@ struct _VariantCall {
 		r_ret = Vector3(*p_args[0], *p_args[1], *p_args[2]);
 	}
 
+	static void Vector3_init2(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Vector3(((Vector3)(*p_args[0])));
+	}
+
 	static void Plane_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
@@ -912,7 +927,7 @@ struct _VariantCall {
 
 	static void Quat_init2(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Quat(((Vector3)(*p_args[0])), ((float)(*p_args[1])));
+		r_ret = Quat(((Vector3)(*p_args[0])), ((real_t)(*p_args[1])));
 	}
 
 	static void Quat_init3(Variant &r_ret, const Variant **p_args) {
@@ -938,6 +953,16 @@ struct _VariantCall {
 	static void Color_init4(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Color::hex(*p_args[0]);
+	}
+
+	static void Color_init5(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color(((Color)(*p_args[0])));
+	}
+
+	static void Color_init6(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color(((Color)(*p_args[0])), *p_args[1]);
 	}
 
 	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
@@ -1607,6 +1632,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, REAL, Vector2, cross, VECTOR2, "with", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, abs, varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, clamped, REAL, "length", varray());
+	ADDFUNC2(VECTOR2, NIL, Vector2, set, REAL, "x", REAL, "y", varray());
 
 	ADDFUNC0R(RECT2, REAL, Rect2, get_area, varray());
 	ADDFUNC1R(RECT2, BOOL, Rect2, intersects, RECT2, "b", varray());
@@ -1650,6 +1676,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, slide, VECTOR3, "n", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, bounce, VECTOR3, "n", varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, reflect, VECTOR3, "n", varray());
+	ADDFUNC3(VECTOR3, NIL, Vector3, set, REAL, "x", REAL, "y", REAL, "z", varray());
 
 	ADDFUNC0R(PLANE, PLANE, Plane, normalized, varray());
 	ADDFUNC0R(PLANE, VECTOR3, Plane, center, varray());
@@ -1672,9 +1699,11 @@ void register_variant_methods() {
 	ADDFUNC2R(QUAT, QUAT, Quat, slerp, QUAT, "b", REAL, "t", varray());
 	ADDFUNC2R(QUAT, QUAT, Quat, slerpni, QUAT, "b", REAL, "t", varray());
 	ADDFUNC4R(QUAT, QUAT, Quat, cubic_slerp, QUAT, "b", QUAT, "pre_a", QUAT, "post_b", REAL, "t", varray());
+	ADDFUNC0R(QUAT, VECTOR3, Quat, euler, varray());
 	ADDFUNC0R(QUAT, VECTOR3, Quat, get_euler, varray());
 	ADDFUNC1(QUAT, NIL, Quat, set_euler, VECTOR3, "euler", varray());
 	ADDFUNC2(QUAT, NIL, Quat, set_axis_angle, VECTOR3, "axis", REAL, "angle", varray());
+	ADDFUNC4(QUAT, NIL, Quat, set, REAL, "x", REAL, "y", REAL, "z", REAL, "w", varray());
 
 	ADDFUNC0R(COLOR, INT, Color, to_argb32, varray());
 	ADDFUNC0R(COLOR, INT, Color, to_abgr32, varray());
@@ -1691,6 +1720,7 @@ void register_variant_methods() {
 	ADDFUNC1R(COLOR, COLOR, Color, darkened, REAL, "amount", varray());
 	ADDFUNC1R(COLOR, STRING, Color, to_html, BOOL, "with_alpha", varray(true));
 	ADDFUNC4R(COLOR, COLOR, Color, from_hsv, REAL, "h", REAL, "s", REAL, "v", REAL, "a", varray(1.0));
+	ADDFUNC4(COLOR, NIL, Color, set, REAL, "r", REAL, "g", REAL, "b", REAL, "a", varray());
 
 	ADDFUNC0R(_RID, INT, RID, get_id, varray());
 
@@ -1893,6 +1923,7 @@ void register_variant_methods() {
 	/* REGISTER CONSTRUCTORS */
 
 	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::REAL, "y", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Vector2_init2, Variant::VECTOR2, "v", Variant::VECTOR2);
 
 	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Rect2_init2, Variant::RECT2, "x", Variant::REAL, "y", Variant::REAL, "width", Variant::REAL, "height", Variant::REAL);
@@ -1901,6 +1932,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Transform2D_init3, Variant::TRANSFORM2D, "x_axis", Variant::VECTOR2, "y_axis", Variant::VECTOR2, "origin", Variant::VECTOR2);
 
 	_VariantCall::add_constructor(_VariantCall::Vector3_init1, Variant::VECTOR3, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Vector3_init2, Variant::VECTOR3, "v", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Plane_init1, Variant::PLANE, "a", Variant::REAL, "b", Variant::REAL, "c", Variant::REAL, "d", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Plane_init2, Variant::PLANE, "v1", Variant::VECTOR3, "v2", Variant::VECTOR3, "v3", Variant::VECTOR3);
@@ -1912,6 +1944,10 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
+	//_VariantCall::add_constructor(_VariantCall::Color_init3, Variant::COLOR, "html", Variant::STRING); // TODO: These already have "from" constructors and I'm not sure where that code is. It doesn't show up in a grep for "Color::init3".
+	//_VariantCall::add_constructor(_VariantCall::Color_init4, Variant::COLOR, "hex", Variant::INT); // It would be better to switch the argument names to html and hex like here, but we must get rid of the "from" constructors first.
+	_VariantCall::add_constructor(_VariantCall::Color_init5, Variant::COLOR, "c", Variant::COLOR);
+	_VariantCall::add_constructor(_VariantCall::Color_init6, Variant::COLOR, "c", Variant::COLOR, "a", Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
