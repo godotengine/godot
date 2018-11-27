@@ -477,6 +477,7 @@ void main() {
 
 #if defined(NORMALMAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
+		normal_used=true;
 #endif
 
 		/* clang-format off */

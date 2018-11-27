@@ -1452,7 +1452,7 @@ void EditorNode::_edit_current() {
 	bool is_node = current_obj->is_class("Node");
 
 	String editable_warning; //none by default
-
+	
 	if (is_resource) {
 
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
