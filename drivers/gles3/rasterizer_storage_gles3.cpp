@@ -7673,7 +7673,7 @@ void RasterizerStorageGLES3::initialize() {
 	config.etc2_supported = true;
 	config.hdr_supported = false;
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
-	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc");
+	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 #endif
 
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
