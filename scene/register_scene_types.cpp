@@ -210,8 +210,6 @@
 #include "scene/resources/physics_material.h"
 #endif
 
-static ResourceFormatLoaderTheme *resource_loader_theme = NULL;
-
 static ResourceFormatSaverText *resource_saver_text = NULL;
 static ResourceFormatLoaderText *resource_loader_text = NULL;
 
@@ -241,9 +239,6 @@ void register_scene_types() {
 
 	resource_loader_texture_layered = memnew(ResourceFormatLoaderTextureLayered);
 	ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
-
-	resource_loader_theme = memnew(ResourceFormatLoaderTheme);
-	ResourceLoader::add_resource_format_loader(resource_loader_theme);
 
 	resource_saver_text = memnew(ResourceFormatSaverText);
 	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
@@ -743,7 +738,6 @@ void unregister_scene_types() {
 	memdelete(resource_loader_dynamic_font);
 	memdelete(resource_loader_stream_texture);
 	memdelete(resource_loader_texture_layered);
-	memdelete(resource_loader_theme);
 
 	DynamicFont::finish_dynamic_fonts();
 
