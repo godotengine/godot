@@ -981,6 +981,10 @@ bool VisualScript::is_tool() const {
 	return false;
 }
 
+bool VisualScript::is_valid() const {
+	return true; //always valid
+}
+
 ScriptLanguage *VisualScript::get_language() const {
 
 	return VisualScriptLanguage::singleton;

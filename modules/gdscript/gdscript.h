@@ -141,7 +141,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool is_valid() const { return valid; }
+	virtual bool is_valid() const { return valid; }
 
 	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }

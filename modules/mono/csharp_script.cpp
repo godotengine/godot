@@ -2571,6 +2571,10 @@ void CSharpScript::update_exports() {
 #endif
 }
 
+bool CSharpScript::is_valid() const {
+	return true; //TODO return false if invalid
+}
+
 bool CSharpScript::has_script_signal(const StringName &p_signal) const {
 	if (_signals.has(p_signal))
 		return true;

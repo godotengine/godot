@@ -294,6 +294,10 @@ MethodInfo NativeScript::get_method_info(const StringName &p_method) const {
 	return MethodInfo();
 }
 
+bool NativeScript::is_valid() const {
+	return true;
+}
+
 bool NativeScript::is_tool() const {
 	NativeScriptDesc *script_data = get_script_desc();
 
