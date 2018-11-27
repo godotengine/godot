@@ -206,7 +206,9 @@ void ParallaxBackground::_bind_methods() {
 
 ParallaxBackground::ParallaxBackground() {
 
-	base_scale = Vector2(1, 1);
 	scale = 1.0;
 	set_layer(-1); //behind all by default
+
+	base_scale = Vector2(1, 1);
+	ignore_camera_zoom = false;
 }
