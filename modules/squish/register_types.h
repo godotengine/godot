@@ -28,7 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef TOOLS_ENABLED
 void register_squish_types();
 void unregister_squish_types();
-#endif
