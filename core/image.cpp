@@ -1931,7 +1931,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
@@ -1985,7 +1986,8 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
@@ -2042,7 +2044,8 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	lock();
 	Ref<Image> img = p_src;
@@ -2096,7 +2099,8 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	lock();
 	Ref<Image> img = p_src;
