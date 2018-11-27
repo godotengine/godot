@@ -24,6 +24,14 @@ bool GDScriptASTBuilder::build(const String& code) {
 		return true;
 	}
 
+void GDScriptASTBuilder::serialize(real_t val) {
+	if(Math::is_nan(val)) {
+		m_writer->String(L"NaN");
+	} else {
+		m_writer->Double(val);
+	}
+}
+
 void GDScriptASTBuilder::serialize(GDScriptParser::OperatorNode::Operator op) {
 		switch(op) {
 			case GDScriptParser::OperatorNode::OP_CALL:

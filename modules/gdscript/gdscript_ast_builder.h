@@ -16,7 +16,7 @@ private:
 	inline void serialize(const StringName& str) { serialize(String(str)); }
 	inline void serialize(int val) { m_writer->Int(val); }
 	inline void serialize(bool val) { m_writer->Bool(val); }
-	inline void serialize(real_t val) { m_writer->Double(val); }
+	void serialize(real_t val);
 	inline void startArray() { m_writer->StartArray(); }
 	inline void endArray() { m_writer->EndArray(); }
 	inline void startObject() { m_writer->StartObject(); }
