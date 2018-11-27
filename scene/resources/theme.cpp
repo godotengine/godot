@@ -39,26 +39,6 @@ void Theme::_emit_theme_changed() {
 	emit_changed();
 }
 
-void Theme::_ref_font(Ref<Font> p_sc) {
-
-	if (!font_refcount.has(p_sc)) {
-		font_refcount[p_sc] = 1;
-		p_sc->connect("changed", this, "_emit_theme_changed");
-	} else {
-		font_refcount[p_sc] += 1;
-	}
-}
-
-void Theme::_unref_font(Ref<Font> p_sc) {
-
-	ERR_FAIL_COND(!font_refcount.has(p_sc));
-	font_refcount[p_sc]--;
-	if (font_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", this, "_emit_theme_changed");
-		font_refcount.erase(p_sc);
-	}
-}
-
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 
 	String sname = p_name;
@@ -217,13 +197,13 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 		return;
 
 	if (default_theme_font.is_valid()) {
-		_unref_font(default_theme_font);
+		default_theme_font->disconnect("changed", this, "_emit_theme_changed");
 	}
 
 	default_theme_font = p_default_font;
 
 	if (default_theme_font.is_valid()) {
-		_ref_font(default_theme_font);
+		default_theme_font->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	_change_notify();
@@ -263,7 +243,15 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_type, const R
 
 	bool new_value = !icon_map.has(p_type) || !icon_map[p_type].has(p_name);
 
+	if (icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
+		icon_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
+	}
+
 	icon_map[p_type][p_name] = p_icon;
+
+	if (p_icon.is_valid()) {
+		icon_map[p_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
+	}
 
 	if (new_value) {
 		_change_notify();
@@ -290,7 +278,12 @@ void Theme::clear_icon(const StringName &p_name, const StringName &p_type) {
 	ERR_FAIL_COND(!icon_map.has(p_type));
 	ERR_FAIL_COND(!icon_map[p_type].has(p_name));
 
+	if (icon_map[p_type][p_name].is_valid()) {
+		icon_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
+	}
+
 	icon_map[p_type].erase(p_name);
+
 	_change_notify();
 	emit_changed();
 }
@@ -358,7 +351,15 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_type, con
 
 	bool new_value = !style_map.has(p_type) || !style_map[p_type].has(p_name);
 
+	if (style_map[p_type].has(p_name) && style_map[p_type][p_name].is_valid()) {
+		style_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
+	}
+
 	style_map[p_type][p_name] = p_style;
+
+	if (p_style.is_valid()) {
+		style_map[p_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
+	}
 
 	if (new_value)
 		_change_notify();
@@ -385,7 +386,12 @@ void Theme::clear_stylebox(const StringName &p_name, const StringName &p_type) {
 	ERR_FAIL_COND(!style_map.has(p_type));
 	ERR_FAIL_COND(!style_map[p_type].has(p_name));
 
+	if (style_map[p_type][p_name].is_valid()) {
+		style_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
+	}
+
 	style_map[p_type].erase(p_name);
+
 	_change_notify();
 	emit_changed();
 }
@@ -416,15 +422,14 @@ void Theme::set_font(const StringName &p_name, const StringName &p_type, const R
 
 	bool new_value = !font_map.has(p_type) || !font_map[p_type].has(p_name);
 
-	if (!new_value) {
-		if (font_map[p_type][p_name].is_valid()) {
-			_unref_font(font_map[p_type][p_name]);
-		}
+	if (font_map[p_type][p_name].is_valid()) {
+		font_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
+
 	font_map[p_type][p_name] = p_font;
 
 	if (p_font.is_valid()) {
-		_ref_font(p_font);
+		font_map[p_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	if (new_value) {
@@ -452,8 +457,8 @@ void Theme::clear_font(const StringName &p_name, const StringName &p_type) {
 	ERR_FAIL_COND(!font_map.has(p_type));
 	ERR_FAIL_COND(!font_map[p_type].has(p_name));
 
-	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid()) {
-		_unref_font(font_map[p_type][p_name]);
+	if (font_map[p_type][p_name].is_valid()) {
+		font_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
 
 	font_map[p_type].erase(p_name);
@@ -570,15 +575,91 @@ void Theme::get_constant_list(StringName p_type, List<StringName> *p_list) const
 	}
 }
 
+void Theme::clear() {
+
+	//these need disconnecting
+	{
+		const StringName *K = NULL;
+		while ((K = icon_map.next(K))) {
+			const StringName *L = NULL;
+			while ((L = icon_map[*K].next(L))) {
+				icon_map[*K][*L]->disconnect("changed", this, "_emit_theme_changed");
+			}
+		}
+	}
+
+	{
+		const StringName *K = NULL;
+		while ((K = style_map.next(K))) {
+			const StringName *L = NULL;
+			while ((L = style_map[*K].next(L))) {
+				style_map[*K][*L]->disconnect("changed", this, "_emit_theme_changed");
+			}
+		}
+	}
+
+	{
+		const StringName *K = NULL;
+		while ((K = font_map.next(K))) {
+			const StringName *L = NULL;
+			while ((L = font_map[*K].next(L))) {
+				font_map[*K][*L]->disconnect("changed", this, "_emit_theme_changed");
+			}
+		}
+	}
+
+	icon_map.clear();
+	style_map.clear();
+	font_map.clear();
+	shader_map.clear();
+	color_map.clear();
+	constant_map.clear();
+
+	_change_notify();
+	emit_changed();
+}
+
 void Theme::copy_default_theme() {
 
 	Ref<Theme> default_theme = get_default();
 
-	icon_map = default_theme->icon_map;
-	style_map = default_theme->style_map;
-	font_map = default_theme->font_map;
+	//these need reconnecting, so add normally
+	{
+		const StringName *K = NULL;
+		while ((K = default_theme->icon_map.next(K))) {
+			const StringName *L = NULL;
+			while ((L = default_theme->icon_map[*K].next(L))) {
+				set_icon(*K, *L, default_theme->icon_map[*K][*L]);
+			}
+		}
+	}
+
+	{
+		const StringName *K = NULL;
+		while ((K = default_theme->style_map.next(K))) {
+			const StringName *L = NULL;
+			while ((L = default_theme->style_map[*K].next(L))) {
+				set_stylebox(*K, *L, default_theme->style_map[*K][*L]);
+			}
+		}
+	}
+
+	{
+		const StringName *K = NULL;
+		while ((K = default_theme->font_map.next(K))) {
+			const StringName *L = NULL;
+			while ((L = default_theme->font_map[*K].next(L))) {
+				set_font(*K, *L, default_theme->font_map[*K][*L]);
+			}
+		}
+	}
+
+	//these are ok to just copy
+
 	color_map = default_theme->color_map;
 	constant_map = default_theme->constant_map;
+	shader_map = default_theme->shader_map;
+
 	_change_notify();
 	emit_changed();
 }
@@ -660,6 +741,8 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_constant", "name", "type"), &Theme::has_constant);
 	ClassDB::bind_method(D_METHOD("clear_constant", "name", "type"), &Theme::clear_constant);
 	ClassDB::bind_method(D_METHOD("get_constant_list", "type"), &Theme::_get_constant_list);
+
+	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
 	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
