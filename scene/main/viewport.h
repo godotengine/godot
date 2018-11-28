@@ -272,7 +272,7 @@ private:
 		bool key_event_accepted;
 		Control *mouse_focus;
 		Control *mouse_click_grabber;
-		int mouse_focus_button;
+		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
 		Control *tooltip;
@@ -378,6 +378,8 @@ private:
 	friend class CanvasLayer;
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
+
+	void _drop_mouse_focus();
 
 protected:
 	void _notification(int p_what);
