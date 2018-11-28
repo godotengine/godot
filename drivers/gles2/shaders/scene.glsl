@@ -84,8 +84,6 @@ uniform highp mat4 world_transform;
 
 uniform highp float time;
 
-
-
 #ifdef RENDER_DEPTH
 uniform float light_bias;
 uniform float light_normal_bias;

@@ -585,9 +585,9 @@ float Environment::get_glow_hdr_bleed_threshold() const {
 	return glow_hdr_bleed_threshold;
 }
 
-void Environment::set_glow_hdr_luminance_cap(float p_threshold) {
+void Environment::set_glow_hdr_luminance_cap(float p_amount) {
 
-	glow_hdr_luminance_cap = p_threshold;
+	glow_hdr_luminance_cap = p_amount;
 
 	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_threshold, glow_hdr_luminance_cap, glow_bicubic_upscale);
 }

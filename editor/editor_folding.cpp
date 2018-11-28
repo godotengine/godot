@@ -1,8 +1,8 @@
 #include "editor_folding.h"
 
 #include "core/os/file_access.h"
-#include "editor_settings.h"
 #include "editor_inspector.h"
+#include "editor_settings.h"
 
 PoolVector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 
@@ -172,7 +172,6 @@ bool EditorFolding::has_folding_data(const String &p_path) {
 	return FileAccess::exists(file);
 }
 
-
 void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 
 	List<PropertyInfo> plist;
@@ -185,34 +184,33 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
 		if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
-			group="";
-			group_base="";
+			group = "";
+			group_base = "";
 		}
 		if (E->get().usage & PROPERTY_USAGE_GROUP) {
 			group = E->get().name;
 			group_base = E->get().hint_string;
 			if (group_base.ends_with("_")) {
-				group_base=group_base.substr(0,group_base.length()-1);
+				group_base = group_base.substr(0, group_base.length() - 1);
 			}
 		}
 
 		//can unfold
 		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
 
-
 			if (group != "") { //group
-				if (group_base==String() || E->get().name.begins_with(group_base)) {
-					bool can_revert = EditorPropertyRevert::can_property_revert(p_object,E->get().name);
-					if (can_revert)	{
+				if (group_base == String() || E->get().name.begins_with(group_base)) {
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+					if (can_revert) {
 						unfold_group.insert(group);
 					}
 				}
 			} else { //path
 				int last = E->get().name.find_last("/");
-				if (last!=-1) {
-					bool can_revert = EditorPropertyRevert::can_property_revert(p_object,E->get().name);
+				if (last != -1) {
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
 					if (can_revert) {
-						unfold_group.insert(E->get().name.substr(0,last));
+						unfold_group.insert(E->get().name.substr(0, last));
 					}
 				}
 			}
@@ -223,13 +221,13 @@ void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
 			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
 
 				resources.insert(res);
-				_do_object_unfolds(res.ptr(),resources);
+				_do_object_unfolds(res.ptr(), resources);
 			}
 		}
 	}
 
-	for (Set<String>::Element *E=unfold_group.front();E;E=E->next()) {
-	     p_object->editor_set_section_unfold(E->get(),true);
+	for (Set<String>::Element *E = unfold_group.front(); E; E = E->next()) {
+		p_object->editor_set_section_unfold(E->get(), true);
 	}
 }
 
@@ -243,7 +241,7 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, Set<RES> &resou
 		}
 	}
 
-	_do_object_unfolds(p_node,resources);
+	_do_object_unfolds(p_node, resources);
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_do_node_unfolds(p_root, p_node->get_child(i), resources);
@@ -253,7 +251,7 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, Set<RES> &resou
 void EditorFolding::unfold_scene(Node *p_scene) {
 
 	Set<RES> resources;
-	_do_node_unfolds(p_scene,p_scene,resources);
+	_do_node_unfolds(p_scene, p_scene, resources);
 }
 
 EditorFolding::EditorFolding() {

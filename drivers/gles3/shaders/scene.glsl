@@ -1590,8 +1590,8 @@ void main() {
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
-	vec3 binormal = normalize(binormal_interp);// * side;
-	vec3 tangent = normalize(tangent_interp);// * side;
+	vec3 binormal = normalize(binormal_interp);
+	vec3 tangent = normalize(tangent_interp);
 #else
 	vec3 binormal = vec3(0.0);
 	vec3 tangent = vec3(0.0);
