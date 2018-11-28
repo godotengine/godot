@@ -415,12 +415,129 @@ void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
+	if (get_mouse_mode() == MOUSE_MODE_VISIBLE) {
+		if (cursors[p_shape] != "") {
+			Vector<String> url = cursors[p_shape].split("?");
+			set_css_cursor(("url(\"" + url[0] + "\") " + url[1] + ", auto").utf8());
+		} else {
+			set_css_cursor(godot2dom_cursor(p_shape));
+		}
+	}
+
 	cursor_shape = p_shape;
-	if (get_mouse_mode() != MOUSE_MODE_HIDDEN)
-		set_css_cursor(godot2dom_cursor(cursor_shape));
 }
 
 void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
+	if (p_cursor.is_valid()) {
+		Ref<Texture> texture = p_cursor;
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Ref<Image> image;
+		Size2 texture_size;
+		Rect2 atlas_rect;
+
+		if (texture.is_valid()) {
+			image = texture->get_data();
+		}
+
+		if (!image.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.position.x = atlas_texture->get_region().position.x;
+			atlas_rect.position.y = atlas_texture->get_region().position.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
+
+		image = texture->get_data();
+
+		ERR_FAIL_COND(!image.is_valid());
+
+		if (atlas_texture.is_valid())
+			image->crop_from_point(
+					atlas_rect.position.x,
+					atlas_rect.position.y,
+					texture_size.width,
+					texture_size.height);
+
+		if (image->get_format() != Image::FORMAT_RGBA8) {
+			image->convert(Image::FORMAT_RGBA8);
+		}
+
+		png_image png_meta;
+		memset(&png_meta, 0, sizeof png_meta);
+		png_meta.version = PNG_IMAGE_VERSION;
+		png_meta.width = texture_size.width;
+		png_meta.height = texture_size.height;
+		png_meta.format = PNG_FORMAT_RGBA;
+
+		PoolByteArray png;
+		size_t len;
+		PoolByteArray::Read r = image->get_data().read();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+
+		png.resize(len);
+		PoolByteArray::Write w = png.write();
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
+		w = PoolByteArray::Write();
+
+		r = png.read();
+
+		char *object_url;
+		/* clang-format off */
+		EM_ASM({
+			var PNG_PTR = $0;
+			var PNG_LEN = $1;
+			var PTR = $2;
+
+			var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: 'image/png' });
+			var url = URL.createObjectURL(png);
+			var length_bytes = lengthBytesUTF8(url) + 1;
+			var string_on_wasm_heap = _malloc(length_bytes);
+			setValue(PTR, string_on_wasm_heap, '*');
+			stringToUTF8(url, string_on_wasm_heap, length_bytes);
+		}, r.ptr(), len, &object_url);
+		/* clang-format on */
+		r = PoolByteArray::Read();
+
+		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
+
+		/* clang-format off */
+		EM_ASM({ _free($0); }, object_url);
+		/* clang-format on */
+
+		if (cursors[p_shape] != "") {
+			/* clang-format off */
+			EM_ASM({
+				URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
+			}, cursors[p_shape].utf8().get_data());
+			/* clang-format on */
+			cursors[p_shape] = "";
+		}
+
+		cursors[p_shape] = url;
+
+	} else if (cursors[p_shape] != "") {
+		/* clang-format off */
+		EM_ASM({
+			URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
+		}, cursors[p_shape].utf8().get_data());
+		/* clang-format on */
+		cursors[p_shape] = "";
+	}
+
+	set_cursor_shape(cursor_shape);
 }
 
 void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
@@ -432,7 +549,9 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
 
+		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
+		set_cursor_shape(cursor_shape);
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
@@ -446,7 +565,9 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 		ERR_EXPLAIN("MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback");
 		ERR_FAIL_COND(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED);
 		ERR_FAIL_COND(result != EMSCRIPTEN_RESULT_SUCCESS);
+		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
+		set_cursor_shape(cursor_shape);
 	}
 }
 
