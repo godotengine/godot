@@ -598,7 +598,7 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 			return false;
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[0];
+			String file = files[i];
 			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
 			if (!ClassDB::is_parent_class(ftype, "Texture")) {

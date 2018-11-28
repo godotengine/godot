@@ -849,7 +849,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 		return;
 
 	int idx = -1;
-	for (int i = 0; node_rects.size(); i++) {
+	for (int i = 0; i < node_rects.size(); i++) {
 		if (node_rects[i].node_name == playback->get_current_node()) {
 			idx = i;
 			break;

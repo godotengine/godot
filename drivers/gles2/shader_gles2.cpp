@@ -99,7 +99,7 @@ void ShaderGLES2::bind_uniforms() {
 	const Map<uint32_t, CameraMatrix>::Element *C = uniform_cameras.front();
 
 	while (C) {
-		int idx = E->key();
+		int idx = C->key();
 		int location = version->uniform_location[idx];
 
 		if (location < 0) {

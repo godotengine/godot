@@ -2149,7 +2149,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				int idx = p_index;
 				if (idx < 0)
 					idx += 4;
-				if (idx >= 0 || idx < 4) {
+				if (idx >= 0 && idx < 4) {
 					Color *v = reinterpret_cast<Color *>(_data._mem);
 					(*v)[idx] = p_value;
 					valid = true;
@@ -2524,7 +2524,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				int idx = p_index;
 				if (idx < 0)
 					idx += 4;
-				if (idx >= 0 || idx < 4) {
+				if (idx >= 0 && idx < 4) {
 					const Color *v = reinterpret_cast<const Color *>(_data._mem);
 					valid = true;
 					return (*v)[idx];

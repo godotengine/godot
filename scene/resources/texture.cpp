@@ -994,10 +994,10 @@ void AtlasTexture::_bind_methods() {
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -1013,10 +1013,10 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -1048,10 +1048,10 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return false;
+
+	Rect2 rc = region;
 
 	Rect2 src = p_src_rect;
 	if (src.size == Size2()) {
@@ -1084,11 +1084,13 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 
-	if (atlas.is_valid()) {
-		return atlas->is_pixel_opaque(p_x + region.position.x + margin.position.x, p_x + region.position.y + margin.position.y);
-	}
+	if (!atlas.is_valid())
+		return true;
 
-	return true;
+	int x = p_x + region.position.x + margin.position.x;
+	int y = p_y + region.position.y + margin.position.y;
+
+	return atlas->is_pixel_opaque(x, y);
 }
 
 AtlasTexture::AtlasTexture() {
