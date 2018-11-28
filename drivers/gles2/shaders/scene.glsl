@@ -354,6 +354,10 @@ void main() {
 	uv2_interp = uv2_attrib;
 #endif
 
+#ifdef OVERRIDE_POSITION
+	highp vec4 position;
+#endif
+
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 	vertex = world_matrix * vertex;
 	normal = normalize((world_matrix * vec4(normal, 0.0)).xyz);
@@ -641,7 +645,12 @@ VERTEX_SHADER_CODE
 #endif //fog
 
 #endif //use vertex lighting
+
+#ifdef OVERRIDE_POSITION
+	gl_Position = position;
+#else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
 }
 
 /* clang-format off */

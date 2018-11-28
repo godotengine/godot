@@ -306,6 +306,10 @@ void main() {
 	uv2_interp = uv2_attrib;
 #endif
 
+#ifdef OVERRIDE_POSITION
+	highp vec4 position;
+#endif
+
 #if defined(USE_INSTANCING) && defined(ENABLE_INSTANCE_CUSTOM)
 	vec4 instance_custom = instance_custom_data;
 #else
@@ -461,7 +465,11 @@ VERTEX_SHADER_CODE
 
 #endif //RENDER_DEPTH
 
+#ifdef OVERRIDE_POSITION
+	gl_Position = position;
+#else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
 
 	position_interp = gl_Position;
 
