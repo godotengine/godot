@@ -50,6 +50,7 @@ class OS_JavaScript : public OS_Unix {
 	InputDefault *input;
 	Ref<InputEventKey> deferred_key_event;
 	CursorShape cursor_shape;
+	String cursors[CURSOR_MAX];
 	Point2 touches[32];
 
 	Point2i last_click_pos;
