@@ -909,10 +909,10 @@ void AtlasTexture::_bind_methods() {
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -928,10 +928,10 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -950,10 +950,10 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 
 	//this might not necessarily work well if using a rect, needs to be fixed properly
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	Rect2 src = p_src_rect;
 	src.position += (rc.position - margin.position);
@@ -981,10 +981,10 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return false;
+
+	Rect2 rc = region;
 
 	Rect2 src = p_src_rect;
 	src.position += (rc.position - margin.position);

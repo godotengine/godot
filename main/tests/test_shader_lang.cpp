@@ -180,7 +180,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 				String scode = dump_node_code(bnode->statements[i], p_level);
 
-				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
+				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
 					code += scode; //use directly
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
