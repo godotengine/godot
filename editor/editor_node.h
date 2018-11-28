@@ -525,6 +525,8 @@ private:
 
 	} export_defer;
 
+	bool disable_progress_dialog;
+
 	static EditorNode *singleton;
 
 	static Vector<EditorNodeInitCallback> _init_callbacks;
