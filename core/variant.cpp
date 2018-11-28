@@ -1662,17 +1662,7 @@ Variant::operator Transform() const {
 		return Transform(*_data._basis, Vector3());
 	else if (type == QUAT)
 		return Transform(Basis(*reinterpret_cast<const Quat *>(_data._mem)), Vector3());
-	else if (type == TRANSFORM2D) {
-		const Transform2D &t = *_data._transform2d;
-		Transform m;
-		m.basis.elements[0][0] = t.elements[0][0];
-		m.basis.elements[1][0] = t.elements[1][0];
-		m.basis.elements[0][1] = t.elements[0][1];
-		m.basis.elements[1][1] = t.elements[1][1];
-		m.origin[0] = t.elements[2][0];
-		m.origin[1] = t.elements[2][1];
-		return m;
-	} else
+	else
 		return Transform();
 }
 
