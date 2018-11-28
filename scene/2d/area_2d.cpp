@@ -158,7 +158,9 @@ void Area2D::_body_inout(int p_status, const RID &p_body, int p_instance, int p_
 
 	Map<ObjectID, BodyState>::Element *E = body_map.find(objid);
 
-	ERR_FAIL_COND(!body_in && !E);
+	if (!body_in && !E) {
+		return; //does not exist because it was likely removed from the tree
+	}
 
 	locked = true;
 

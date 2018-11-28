@@ -157,7 +157,9 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 
 	Map<ObjectID, BodyState>::Element *E = body_map.find(objid);
 
-	ERR_FAIL_COND(!body_in && !E);
+	if (!body_in && !E) {
+		return; //likely removed from the tree
+	}
 
 	locked = true;
 
