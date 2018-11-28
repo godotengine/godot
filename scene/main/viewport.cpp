@@ -2498,7 +2498,7 @@ void Viewport::_drop_mouse_focus() {
 			Ref<InputEventMouseButton> mb;
 			mb.instance();
 			mb->set_position(c->get_local_mouse_position());
-			mb->set_global_position(gui.mouse_focus->get_local_mouse_position());
+			mb->set_global_position(c->get_local_mouse_position());
 			mb->set_button_index(i + 1);
 			mb->set_pressed(false);
 			c->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
