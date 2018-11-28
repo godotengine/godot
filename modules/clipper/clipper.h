@@ -48,6 +48,20 @@ public:
 
 	bool is_hole(int idx);
 
+	// The following convenience methods can be described as:
+	// - union: a + b
+	// - difference: a - b
+	// - intersection: a * b (common area)
+	// - xor: a ^ b (all but common area)
+
+	Array merge(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open = false);
+	Array clip(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open = false);
+	Array intersect(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open = false);
+	Array exclude(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open = false);
+
+	Array offset(const Vector<Vector2> &poly, real_t p_offset); // negative to shrink, positive to expand
+	Array triangulate(const Vector<Vector2> &poly);
+
 	//--------------------------------------------------------------------------
 	// Configuration methods
 	//--------------------------------------------------------------------------
@@ -87,6 +101,9 @@ protected:
 
 	cl::Path _scale_up(const Vector<Vector2> &points, real_t scale);
 	Vector<Vector2> _scale_down(const cl::Path &path, real_t scale);
+
+	void _scale_down_paths(const cl::Paths &paths, Array &dest, real_t scale);
+	void _scale_down_paths(const cl::Paths &paths, Vector<Vector2> &dest, real_t scale);
 
 	void _build_hierarchy(cl::PolyPath &p_root);
 

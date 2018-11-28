@@ -225,6 +225,126 @@ bool Clipper::is_hole(int idx) {
 	return path->IsHole();
 }
 
+Array Clipper::merge(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
+
+	cl::Clipper cl;
+
+	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
+	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
+
+	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
+	cl.AddPath(path_b, cl::PathType::ptClip);
+
+	cl::Paths paths_closed;
+	cl::Paths paths_open;
+
+	cl.Execute(cl::ClipType::ctUnion, paths_closed, paths_open, fill_rule);
+
+	Array polys;
+	_scale_down_paths(paths_closed, polys, PRECISION);
+	_scale_down_paths(paths_open, polys, PRECISION);
+
+	return polys;
+}
+
+Array Clipper::clip(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
+
+	cl::Clipper cl;
+
+	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
+	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
+
+	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
+	cl.AddPath(path_b, cl::PathType::ptClip);
+
+	cl::Paths paths_closed;
+	cl::Paths paths_open;
+
+	cl.Execute(cl::ClipType::ctDifference, paths_closed, paths_open, fill_rule);
+
+	Array polys;
+	_scale_down_paths(paths_closed, polys, PRECISION);
+	_scale_down_paths(paths_open, polys, PRECISION);
+
+	return polys;
+}
+
+Array Clipper::intersect(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
+
+	cl::Clipper cl;
+
+	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
+	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
+
+	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
+	cl.AddPath(path_b, cl::PathType::ptClip);
+
+	cl::Paths paths_closed;
+	cl::Paths paths_open;
+
+	cl.Execute(cl::ClipType::ctIntersection, paths_closed, paths_open, fill_rule);
+
+	Array polys;
+	_scale_down_paths(paths_closed, polys, PRECISION);
+	_scale_down_paths(paths_open, polys, PRECISION);
+
+	return polys;
+}
+
+Array Clipper::exclude(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
+
+	cl::Clipper cl;
+
+	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
+	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
+
+	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
+	cl.AddPath(path_b, cl::PathType::ptClip);
+
+	cl::Paths paths_closed;
+	cl::Paths paths_open;
+
+	cl.Execute(cl::ClipType::ctXor, paths_closed, paths_open, fill_rule);
+
+	Array polys;
+	_scale_down_paths(paths_closed, polys, PRECISION);
+	_scale_down_paths(paths_open, polys, PRECISION);
+
+	return polys;
+}
+
+Array Clipper::offset(const Vector<Vector2> &poly, real_t p_offset) {
+
+	cl::ClipperOffset co;
+
+	const cl::Path &path = _scale_up(poly, PRECISION);
+	co.AddPath(path, join_type, end_type);
+
+	cl::Paths paths;
+	co.Execute(paths, p_offset * PRECISION);
+
+	Array polys;
+	_scale_down_paths(paths, polys, PRECISION);
+
+	return polys;
+}
+
+Array Clipper::triangulate(const Vector<Vector2> &poly) {
+
+	cl::ClipperTri ct;
+
+	const cl::Path &path = _scale_up(poly, PRECISION);
+	ct.AddPath(path, cl::PathType::ptSubject);
+
+	cl::Paths paths;
+	ct.Execute(cl::ClipType::ctUnion, paths, cl::FillRule::frNonZero);
+
+	Array triangles;
+	_scale_down_paths(paths, triangles, PRECISION);
+
+	return triangles;
+}
+
 //------------------------------------------------------------------------------
 
 void Clipper::_build_hierarchy(cl::PolyPath &p_root) {
@@ -309,6 +429,25 @@ _FORCE_INLINE_ Vector<Vector2> Clipper::_scale_down(const cl::Path &path, real_t
 	return points;
 }
 
+_FORCE_INLINE_ void Clipper::_scale_down_paths(const cl::Paths &paths, Array &dest, real_t scale) {
+
+	for (int i = 0; i < paths.size(); ++i) {
+		const Vector<Vector2> poly = _scale_down(paths[i], scale);
+		dest.push_back(poly);
+	}
+}
+
+_FORCE_INLINE_ void Clipper::_scale_down_paths(const cl::Paths &paths, Vector<Vector2> &dest, real_t scale) {
+
+	for (int i = 0; i < paths.size(); ++i) {
+		const Vector<Vector2> poly = _scale_down(paths[i], scale);
+
+		for (int j = 0; j < poly.size(); ++j) {
+			dest.push_back(poly[j]);
+		}
+	}
+}
+
 void Clipper::_bind_methods() {
 
 	//--------------------------------------------------------------------------
@@ -333,6 +472,15 @@ void Clipper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hierarchy", "idx"), &Clipper::get_hierarchy);
 
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "bounds"), "", "get_bounds");
+
+	// Convenience
+	ClassDB::bind_method(D_METHOD("merge", "poly_a", "poly_b", "is_a_open"), &Clipper::merge, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("clip", "poly_a", "poly_b", "is_a_open"), &Clipper::clip, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("intersect", "poly_a", "poly_b", "is_a_open"), &Clipper::intersect, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("exclude", "poly_a", "poly_b", "is_a_open"), &Clipper::exclude, DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("offset", "poly", "offset"), &Clipper::offset);
+	ClassDB::bind_method(D_METHOD("triangulate", "poly"), &Clipper::triangulate);
 
 	//--------------------------------------------------------------------------
 	// Configuration methods
