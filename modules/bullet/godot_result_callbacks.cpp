@@ -102,6 +102,9 @@ bool GodotAllConvexResultCallback::needsCollision(btBroadphaseProxy *proxy0) con
 }
 
 btScalar GodotAllConvexResultCallback::addSingleResult(btCollisionWorld::LocalConvexResult &convexResult, bool normalInWorldSpace) {
+	if (count >= m_resultMax)
+		return 1; // not used by bullet
+
 	CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(convexResult.m_hitCollisionObject->getUserPointer());
 
 	PhysicsDirectSpaceState::ShapeResult &result = m_results[count];
@@ -172,6 +175,9 @@ btScalar GodotClosestConvexResultCallback::addSingleResult(btCollisionWorld::Loc
 }
 
 bool GodotAllContactResultCallback::needsCollision(btBroadphaseProxy *proxy0) const {
+	if (m_count >= m_resultMax)
+		return false;
+
 	const bool needs = GodotFilterCallback::test_collision_filters(m_collisionFilterGroup, m_collisionFilterMask, proxy0->m_collisionFilterGroup, proxy0->m_collisionFilterMask);
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
@@ -249,6 +255,8 @@ bool GodotContactPairContactResultCallback::needsCollision(btBroadphaseProxy *pr
 }
 
 btScalar GodotContactPairContactResultCallback::addSingleResult(btManifoldPoint &cp, const btCollisionObjectWrapper *colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper *colObj1Wrap, int partId1, int index1) {
+	if (m_count >= m_resultMax)
+		return 1; // not used by bullet
 
 	if (m_self_object == colObj0Wrap->getCollisionObject()) {
 		B_TO_G(cp.m_localPointA, m_results[m_count * 2 + 0]); // Local contact
