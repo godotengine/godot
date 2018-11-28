@@ -691,7 +691,7 @@ void CPUParticles::_particles_process(float p_delta) {
 
 			if (flags[FLAG_DISABLE_Z]) {
 				p.velocity.z = 0.0;
-				p.velocity.z = 0.0;
+				p.transform.origin.z = 0.0;
 			}
 
 		} else if (!p.active) {
@@ -757,15 +757,15 @@ void CPUParticles::_particles_process(float p_delta) {
 			}
 
 			Vector3 force = gravity;
-			Vector3 pos = p.transform.origin;
+			Vector3 position = p.transform.origin;
 			if (flags[FLAG_DISABLE_Z]) {
-				pos.z = 0.0;
+				position.z = 0.0;
 			}
 			//apply linear acceleration
 			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * (parameters[PARAM_LINEAR_ACCEL] + tex_linear_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_LINEAR_ACCEL]) : Vector3();
 			//apply radial acceleration
 			Vector3 org = emission_xform.origin;
-			Vector3 diff = pos - org;
+			Vector3 diff = position - org;
 			force += diff.length() > 0.0 ? diff.normalized() * (parameters[PARAM_RADIAL_ACCEL] + tex_radial_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_RADIAL_ACCEL]) : Vector3();
 			//apply tangential acceleration;
 			if (flags[FLAG_DISABLE_Z]) {
