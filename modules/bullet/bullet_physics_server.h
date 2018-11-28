@@ -375,6 +375,9 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag);
 
+	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision);
+	virtual int generic_6dof_joint_get_precision(RID p_joint);
+
 	/* MISC */
 
 	virtual void free(RID p_rid);
