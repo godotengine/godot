@@ -673,7 +673,7 @@ void CodeTextEditor::_reset_zoom() {
 	if (font.is_valid()) {
 		EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
 		font->set_size(14);
-		zoom_nb->set_text("100%");
+		font_size_nb->set_text("14 (100%)");
 	}
 }
 
@@ -748,7 +748,7 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 	if (font.is_valid()) {
 		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
 
-		zoom_nb->set_text(itos(100 * new_size / (14 * EDSCALE)) + "%");
+		font_size_nb->set_text(itos(new_size) + " (" + itos(100 * new_size / (14 * EDSCALE)) + "%)");
 
 		if (new_size != font->get_size()) {
 			EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
@@ -1162,6 +1162,9 @@ void CodeTextEditor::_on_settings_change() {
 
 	_update_font();
 
+	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
+	font_size_nb->set_text(itos(font_size) + " (" + itos(100 * font_size / (14 * EDSCALE)) + "%)");
+
 	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
 			EDITOR_DEF("text_editor/completion/auto_brace_complete", true));
@@ -1296,23 +1299,23 @@ CodeTextEditor::CodeTextEditor() {
 	warning_count_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 	warning_count_label->set_text("0");
 
-	Label *zoom_txt = memnew(Label);
-	status_bar->add_child(zoom_txt);
-	zoom_txt->set_align(Label::ALIGN_RIGHT);
-	zoom_txt->set_valign(Label::VALIGN_CENTER);
-	zoom_txt->set_v_size_flags(SIZE_FILL);
-	zoom_txt->set_text(TTR("Zoom:"));
-	zoom_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	Label *font_size_txt = memnew(Label);
+	status_bar->add_child(font_size_txt);
+	font_size_txt->set_align(Label::ALIGN_RIGHT);
+	font_size_txt->set_valign(Label::VALIGN_CENTER);
+	font_size_txt->set_v_size_flags(SIZE_FILL);
+	font_size_txt->set_text(TTR("Font Size:"));
+	font_size_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
-	zoom_nb = memnew(Label);
-	status_bar->add_child(zoom_nb);
-	zoom_nb->set_valign(Label::VALIGN_CENTER);
-	zoom_nb->set_v_size_flags(SIZE_FILL);
-	zoom_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
-	zoom_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
-	zoom_nb->set_custom_minimum_size(Size2(60, 1) * EDSCALE);
-	zoom_nb->set_align(Label::ALIGN_RIGHT);
-	zoom_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	font_size_nb = memnew(Label);
+	status_bar->add_child(font_size_nb);
+	font_size_nb->set_valign(Label::VALIGN_CENTER);
+	font_size_nb->set_v_size_flags(SIZE_FILL);
+	font_size_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
+	font_size_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
+	font_size_nb->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
+	font_size_nb->set_align(Label::ALIGN_RIGHT);
+	font_size_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	Label *line_txt = memnew(Label);
 	status_bar->add_child(line_txt);
@@ -1368,7 +1371,7 @@ CodeTextEditor::CodeTextEditor() {
 
 	font_resize_val = 0;
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
-	zoom_nb->set_text(itos(100 * font_size / (14 * EDSCALE)) + "%");
+	font_size_nb->set_text(itos(font_size) + " (" + itos(100 * font_size / (14 * EDSCALE)) + "%)");
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);
