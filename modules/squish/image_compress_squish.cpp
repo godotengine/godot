@@ -30,8 +30,6 @@
 
 #include "image_compress_squish.h"
 
-#include "core/print_string.h"
-
 #include <squish.h>
 
 void image_decompress_squish(Image *p_image) {
@@ -76,6 +74,7 @@ void image_decompress_squish(Image *p_image) {
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
+#ifdef TOOLS_ENABLED
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
@@ -204,3 +203,4 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 		p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 	}
 }
+#endif
