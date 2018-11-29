@@ -2194,13 +2194,42 @@ Ref<Theme> Control::get_theme() const {
 }
 
 void Control::set_tooltip(const String &p_tooltip) {
-
 	data.tooltip = p_tooltip;
 }
 
-String Control::get_tooltip(const Point2 &p_pos) const {
 
-	return data.tooltip;
+void Control::checkString(String &str) const{
+   String sub = "\\";  
+   size_t pos = str.find(sub, 0);
+
+   while(pos != String::npos)
+   {
+       if(pos + 1 != str.length()) {
+          checkChar(str.ord_at(pos + 1), str, pos);
+       }
+       pos = str.find(sub, pos + 1);
+   }
+}
+
+void Control::checkChar(char chr, String &str, int pos) const{
+   if(chr == 'n') {
+      String BegStr = str.substr(0,pos);
+      String EndStr = str.substr(pos+2, str.length());
+      str = BegStr + "\n" + EndStr;
+   }
+   else if(chr == 't'){
+      String BegStr = str.substr(0,pos);
+      String EndStr = str.substr(pos+2, str.length());
+      str = BegStr + "   " + EndStr;
+   }
+}
+
+
+String Control::get_tooltip(const Point2 &p_pos) const {
+    
+	String Str = data.tooltip;
+	checkString(Str);
+	return  Str;
 }
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	if (get_script_instance()) {
@@ -2232,6 +2261,12 @@ Transform2D Control::get_transform() const {
 
 String Control::_get_tooltip() const {
 
+	String Str = data.tooltip;
+	checkString(Str);
+	return  Str;
+}
+
+String Control::_get_ori_tooltip() const {
 	return data.tooltip;
 }
 
@@ -2796,6 +2831,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tooltip", "tooltip"), &Control::set_tooltip);
 	ClassDB::bind_method(D_METHOD("get_tooltip", "at_position"), &Control::get_tooltip, DEFVAL(Point2()));
 	ClassDB::bind_method(D_METHOD("_get_tooltip"), &Control::_get_tooltip);
+	ClassDB::bind_method(D_METHOD("_get_ori_tooltip"), &Control::_get_ori_tooltip); //Added to ensure only user input is saved. Not correctly formatted version
 
 	ClassDB::bind_method(D_METHOD("set_default_cursor_shape", "shape"), &Control::set_default_cursor_shape);
 	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"), &Control::get_default_cursor_shape);
@@ -2866,7 +2902,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rect_clip_content"), "set_clip_contents", "is_clipping_contents");
 
 	ADD_GROUP("Hint", "hint_");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_tooltip");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "_get_ori_tooltip");//Adds data using only copy provided by user, not correctly formatted one.
 
 	ADD_GROUP("Focus", "focus_");
 	ADD_PROPERTYI(PropertyInfo(Variant::NODE_PATH, "focus_neighbour_left", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_neighbour", "get_focus_neighbour", MARGIN_LEFT);
@@ -3011,3 +3047,4 @@ Control::Control() {
 
 Control::~Control() {
 }
+

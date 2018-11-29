@@ -232,7 +232,7 @@ private:
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 
 	void _size_changed();
-	String _get_tooltip() const;
+	
 
 	void _ref_font(Ref<Font> p_sc);
 	void _unref_font(Ref<Font> p_sc);
@@ -453,7 +453,11 @@ public:
 
 	void set_tooltip(const String &p_tooltip);
 	virtual String get_tooltip(const Point2 &p_pos) const;
+	String _get_ori_tooltip() const;
+	String _get_tooltip() const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
+	void checkString(String &str) const; //Functionality to check string for "\"
+	void checkChar(char chr, String &str, int pos) const; //Check whether next character after \ is an esacpe character such as n, t, etc. Unfortuantely had to create substring to handle issue.
 
 	/* CURSOR */
 
@@ -501,3 +505,4 @@ VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
 
 #endif
+
