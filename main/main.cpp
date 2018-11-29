@@ -1499,6 +1499,13 @@ bool Main::start() {
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 					String s = E->get().name;
+					//ignore feature overrides
+					int dot = s.find(".");
+					if (dot >= 0) {
+						Vector<String> ss = s.split(".");
+						if (ProjectSettings::get_singleton()->has_setting(ss[0]))
+							continue;
+					}
 					if (!s.begins_with("autoload/"))
 						continue;
 					String name = s.get_slicec('/', 1);
@@ -1520,6 +1527,13 @@ bool Main::start() {
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 					String s = E->get().name;
+					//ignore feature overrides
+					int dot = s.find(".");
+					if (dot >= 0) {
+						Vector<String> ss = s.split(".");
+						if (ProjectSettings::get_singleton()->has_setting(ss[0]))
+							continue;
+					}
 					if (!s.begins_with("autoload/"))
 						continue;
 					String name = s.get_slicec('/', 1);
