@@ -227,18 +227,18 @@ bool Clipper::is_hole(int idx) {
 
 Array Clipper::merge(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
 
-	cl::Clipper cl;
+	cl::Clipper clp;
 
 	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
 	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
 
-	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
-	cl.AddPath(path_b, cl::PathType::ptClip);
+	clp.AddPath(path_a, cl::ptSubject, is_a_open);
+	clp.AddPath(path_b, cl::ptClip);
 
 	cl::Paths paths_closed;
 	cl::Paths paths_open;
 
-	cl.Execute(cl::ClipType::ctUnion, paths_closed, paths_open, fill_rule);
+	clp.Execute(cl::ctUnion, paths_closed, paths_open, fill_rule);
 
 	Array polys;
 	_scale_down_paths(paths_closed, polys, PRECISION);
@@ -249,18 +249,18 @@ Array Clipper::merge(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_
 
 Array Clipper::clip(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
 
-	cl::Clipper cl;
+	cl::Clipper clp;
 
 	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
 	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
 
-	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
-	cl.AddPath(path_b, cl::PathType::ptClip);
+	clp.AddPath(path_a, cl::ptSubject, is_a_open);
+	clp.AddPath(path_b, cl::ptClip);
 
 	cl::Paths paths_closed;
 	cl::Paths paths_open;
 
-	cl.Execute(cl::ClipType::ctDifference, paths_closed, paths_open, fill_rule);
+	clp.Execute(cl::ctDifference, paths_closed, paths_open, fill_rule);
 
 	Array polys;
 	_scale_down_paths(paths_closed, polys, PRECISION);
@@ -271,18 +271,18 @@ Array Clipper::clip(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b
 
 Array Clipper::intersect(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
 
-	cl::Clipper cl;
+	cl::Clipper clp;
 
 	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
 	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
 
-	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
-	cl.AddPath(path_b, cl::PathType::ptClip);
+	clp.AddPath(path_a, cl::ptSubject, is_a_open);
+	clp.AddPath(path_b, cl::ptClip);
 
 	cl::Paths paths_closed;
 	cl::Paths paths_open;
 
-	cl.Execute(cl::ClipType::ctIntersection, paths_closed, paths_open, fill_rule);
+	clp.Execute(cl::ctIntersection, paths_closed, paths_open, fill_rule);
 
 	Array polys;
 	_scale_down_paths(paths_closed, polys, PRECISION);
@@ -293,18 +293,18 @@ Array Clipper::intersect(const Vector<Vector2> &poly_a, const Vector<Vector2> &p
 
 Array Clipper::exclude(const Vector<Vector2> &poly_a, const Vector<Vector2> &poly_b, bool is_a_open) {
 
-	cl::Clipper cl;
+	cl::Clipper clp;
 
 	const cl::Path &path_a = _scale_up(poly_a, PRECISION);
 	const cl::Path &path_b = _scale_up(poly_b, PRECISION);
 
-	cl.AddPath(path_a, cl::PathType::ptSubject, is_a_open);
-	cl.AddPath(path_b, cl::PathType::ptClip);
+	clp.AddPath(path_a, cl::ptSubject, is_a_open);
+	clp.AddPath(path_b, cl::ptClip);
 
 	cl::Paths paths_closed;
 	cl::Paths paths_open;
 
-	cl.Execute(cl::ClipType::ctXor, paths_closed, paths_open, fill_rule);
+	clp.Execute(cl::ctXor, paths_closed, paths_open, fill_rule);
 
 	Array polys;
 	_scale_down_paths(paths_closed, polys, PRECISION);
@@ -315,13 +315,13 @@ Array Clipper::exclude(const Vector<Vector2> &poly_a, const Vector<Vector2> &pol
 
 Array Clipper::offset(const Vector<Vector2> &poly, real_t p_offset) {
 
-	cl::ClipperOffset co;
+	cl::ClipperOffset clo;
 
 	const cl::Path &path = _scale_up(poly, PRECISION);
-	co.AddPath(path, join_type, end_type);
+	clo.AddPath(path, join_type, end_type);
 
 	cl::Paths paths;
-	co.Execute(paths, p_offset * PRECISION);
+	clo.Execute(paths, p_offset * PRECISION);
 
 	Array polys;
 	_scale_down_paths(paths, polys, PRECISION);
@@ -331,13 +331,13 @@ Array Clipper::offset(const Vector<Vector2> &poly, real_t p_offset) {
 
 Array Clipper::triangulate(const Vector<Vector2> &poly) {
 
-	cl::ClipperTri ct;
+	cl::ClipperTri clt;
 
 	const cl::Path &path = _scale_up(poly, PRECISION);
-	ct.AddPath(path, cl::PathType::ptSubject);
+	clt.AddPath(path, cl::ptSubject);
 
 	cl::Paths paths;
-	ct.Execute(cl::ClipType::ctUnion, paths, cl::FillRule::frNonZero);
+	clt.Execute(cl::ctUnion, paths, cl::frNonZero);
 
 	Array triangles;
 	_scale_down_paths(paths, triangles, PRECISION);
