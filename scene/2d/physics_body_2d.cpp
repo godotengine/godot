@@ -1293,7 +1293,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						if (p_stop_on_slope) {
 							if (Vector2() == lv_n + p_floor_direction) {
 								Transform2D gt = get_global_transform();
-								gt.elements[2] -= collision.travel;
+								gt.elements[2] -= collision.travel.project(p_floor_direction.tangent());
 								set_global_transform(gt);
 								return Vector2();
 							}
