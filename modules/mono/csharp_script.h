@@ -82,6 +82,21 @@ class CSharpScript : public Script {
 
 	Set<Object *> instances;
 
+#ifdef DEBUG_ENABLED
+	Set<ObjectID> pending_reload_instances;
+#endif
+
+	struct StateBackup {
+		// TODO
+		// Replace with buffer containing the serialized state of managed scripts.
+		// Keep variant state backup to use only with script instance placeholders.
+		List<Pair<StringName, Variant> > properties;
+	};
+
+#ifdef TOOLS_ENABLED
+	Map<ObjectID, CSharpScript::StateBackup> pending_reload_state;
+#endif
+
 	String source;
 	StringName name;
 
@@ -103,10 +118,6 @@ class CSharpScript : public Script {
 	bool exports_invalidated;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
-#endif
-
-#ifdef DEBUG_ENABLED
-	Map<ObjectID, List<Pair<StringName, Variant> > > pending_reload_state;
 #endif
 
 	Map<StringName, PropertyInfo> member_info;
@@ -186,6 +197,7 @@ class CSharpInstance : public ScriptInstance {
 	bool base_ref;
 	bool ref_dying;
 	bool unsafe_referenced;
+	bool predelete_notified;
 
 	Ref<CSharpScript> script;
 	Ref<MonoGCHandle> gchandle;
@@ -255,11 +267,9 @@ class CSharpLanguage : public ScriptLanguage {
 	GDMono *gdmono;
 	SelfList<CSharpScript>::List script_list;
 
-	Mutex *lock;
-	Mutex *script_bind_lock;
-	Mutex *script_gchandle_release_lock;
-
-	Map<Ref<CSharpScript>, Map<ObjectID, List<Pair<StringName, Variant> > > > to_reload;
+	Mutex *script_instances_mutex;
+	Mutex *script_gchandle_release_mutex;
+	Mutex *language_bind_mutex;
 
 	Map<Object *, CSharpScriptBinding> script_bindings;
 
@@ -296,7 +306,8 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 #ifdef TOOLS_ENABLED
-	void reload_assemblies_if_needed(bool p_soft_reload);
+	bool is_assembly_reloading_needed();
+	void reload_assemblies(bool p_soft_reload);
 #endif
 
 	void project_assembly_loaded();

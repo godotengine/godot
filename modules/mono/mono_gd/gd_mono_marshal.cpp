@@ -163,7 +163,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			MonoException *exc = NULL;
 			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, (MonoObject **)&exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
@@ -172,7 +172,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			exc = NULL;
 			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+			MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, (MonoObject **)&exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {
@@ -192,8 +192,11 @@ String mono_to_utf8_string(MonoString *p_mono_string) {
 	MonoError error;
 	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
 
-	ERR_EXPLAIN("Conversion of MonoString to UTF8 failed.");
-	ERR_FAIL_COND_V(!mono_error_ok(&error), String());
+	if (!mono_error_ok(&error)) {
+		ERR_PRINTS(String("Failed to convert MonoString* to UTF-8: ") + mono_error_get_message(&error));
+		mono_error_cleanup(&error);
+		return String();
+	}
 
 	String ret = String::utf8(utf8);
 
@@ -546,7 +549,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 				MonoException *exc = NULL;
 				GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-				MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+				MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, (MonoObject **)&exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 				if (is_dict) {
@@ -555,7 +558,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 				exc = NULL;
 				GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-				MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+				MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, (MonoObject **)&exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 				if (is_array) {
@@ -710,16 +713,14 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 			if (CACHED_CLASS(Array) == type_class) {
 				MonoException *exc = NULL;
-				GDMonoUtils::Array_GetPtr get_ptr = CACHED_METHOD_THUNK(Array, GetPtr);
-				Array *ptr = get_ptr(p_obj, (MonoObject **)&exc);
+				Array *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Array, GetPtr), p_obj, (MonoObject **)&exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
 			if (CACHED_CLASS(Dictionary) == type_class) {
 				MonoException *exc = NULL;
-				GDMonoUtils::Dictionary_GetPtr get_ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr);
-				Dictionary *ptr = get_ptr(p_obj, (MonoObject **)&exc);
+				Dictionary *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Dictionary, GetPtr), p_obj, (MonoObject **)&exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
@@ -731,7 +732,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			MonoException *exc = NULL;
 
 			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, (MonoObject **)&exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
@@ -744,7 +745,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			exc = NULL;
 
 			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+			MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, (MonoObject **)&exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {
