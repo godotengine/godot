@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  util_macros.h                                                        */
+/*  mutex_utils.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UTIL_MACROS_H
-#define UTIL_MACROS_H
+#ifndef MUTEX_UTILS_H
+#define MUTEX_UTILS_H
 
-#define _GD_VARNAME_CONCAT_B(m_ignore, m_name) m_name
-#define _GD_VARNAME_CONCAT_A(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B(hello there, m_a##m_b##m_c)
-#define _GD_VARNAME_CONCAT(m_a, m_b, m_c) _GD_VARNAME_CONCAT_A(m_a, m_b, m_c)
-#define GD_UNIQUE_NAME(m_name) _GD_VARNAME_CONCAT(m_name, _, __COUNTER__)
+#include "core/error_macros.h"
+#include "core/os/mutex.h"
 
-// noreturn
+#include "macros.h"
 
-#if __cpp_static_assert
-#define GD_STATIC_ASSERT(m_cond) static_assert((m_cond), "Condition '" #m_cond "' failed")
-#else
-#define GD_STATIC_ASSERT(m_cond) typedef int GD_UNIQUE_NAME(godot_static_assert)[((m_cond) ? 1 : -1)]
+class ScopedMutexLock {
+	Mutex *mutex;
+
+public:
+	ScopedMutexLock(Mutex *mutex) {
+		this->mutex = mutex;
+#ifndef NO_THREADS
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!mutex);
 #endif
-
-#undef _NO_RETURN_
-
-#ifdef __GNUC__
-#define _NO_RETURN_ __attribute__((noreturn))
-#elif _MSC_VER
-#define _NO_RETURN_ __declspec(noreturn)
-#else
-#error Platform or compiler not supported
+		this->mutex->lock();
 #endif
+	}
 
-// unreachable
-
-#if defined(_MSC_VER)
-#define _UNREACHABLE_() __assume(0)
-#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
-#define _UNREACHABLE_() __builtin_unreachable()
-#else
-#define _UNREACHABLE_() \
-	CRASH_NOW();        \
-	do {                \
-	} while (true);
+	~ScopedMutexLock() {
+#ifndef NO_THREADS
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!mutex);
 #endif
+		mutex->unlock();
+#endif
+	}
+};
 
-#endif // UTIL_MACROS_H
+#define SCOPED_MUTEX_LOCK(m_mutex) ScopedMutexLock GD_UNIQUE_NAME(__scoped_mutex_lock__)(m_mutex);
+
+// TODO: Add version that receives a lambda instead, once C++11 is allowed
+
+#endif // MUTEX_UTILS_H

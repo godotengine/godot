@@ -694,4 +694,8 @@ uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &
 	}
 }
 
+void dispose(MonoObject *p_mono_object, MonoException **r_exc) {
+	invoke_method_thunk(CACHED_METHOD_THUNK(GodotObject, Dispose), p_mono_object, (MonoObject **)r_exc);
+}
+
 } // namespace GDMonoUtils

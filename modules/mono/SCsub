@@ -103,6 +103,16 @@ import os
 
 
 def find_nuget_unix():
+    import os
+
+    if 'NUGET_PATH' in os.environ:
+        hint_path = os.environ['NUGET_PATH']
+        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+            return hint_path
+        hint_path = os.path.join(hint_path, 'nuget')
+        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+            return hint_path
+
     import os.path
     import sys
 
@@ -129,6 +139,16 @@ def find_nuget_unix():
 
 
 def find_nuget_windows():
+    import os
+
+    if 'NUGET_PATH' in os.environ:
+        hint_path = os.environ['NUGET_PATH']
+        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+            return hint_path
+        hint_path = os.path.join(hint_path, 'nuget.exe')
+        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+            return hint_path
+
     import mono_reg_utils as monoreg
 
     mono_root = ''
@@ -157,14 +177,6 @@ def find_nuget_windows():
     for hint_dir in os.environ['PATH'].split(os.pathsep):
         hint_dir = hint_dir.strip('"')
         hint_path = os.path.join(hint_dir, 'nuget.exe')
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-
-    if 'NUGET_PATH' in os.environ:
-        hint_path = os.environ['NUGET_PATH']
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-        hint_path = os.path.join(hint_path, 'nuget.exe')
         if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
             return hint_path
 
