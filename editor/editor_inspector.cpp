@@ -128,18 +128,22 @@ void EditorProperty::_notification(int p_what) {
 
 				bottom_rect = Rect2(m, rect.size.height + get_constant("vseparation", "Tree"), size.width - m, bottom_editor->get_combined_minimum_size().height);
 			}
-		}
 
-		if (keying) {
-			Ref<Texture> key;
+			if (keying) {
+				Ref<Texture> key;
 
-			if (use_keying_next()) {
-				key = get_icon("KeyNext", "EditorIcons");
-			} else {
-				key = get_icon("Key", "EditorIcons");
+				if (use_keying_next()) {
+					key = get_icon("KeyNext", "EditorIcons");
+				} else {
+					key = get_icon("Key", "EditorIcons");
+				}
+
+				rect.size.x -= key->get_width() + get_constant("hseparator", "Tree");
+
+				if (no_children) {
+					text_size -= key->get_width() + 4 * EDSCALE;
+				}
 			}
-
-			rect.size.x -= key->get_width() + get_constant("hseparator", "Tree");
 		}
 
 		//set children
