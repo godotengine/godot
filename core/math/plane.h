@@ -75,6 +75,10 @@ public:
 	operator String() const;
 
 	_FORCE_INLINE_ Plane() { d = 0; }
+	_FORCE_INLINE_ Plane(const Plane &p_plane) :
+			normal(p_plane.normal),
+			d(p_plane.d){};
+
 	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
 			normal(p_a, p_b, p_c),
 			d(p_d){};

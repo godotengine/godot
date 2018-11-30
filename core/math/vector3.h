@@ -143,6 +143,11 @@ struct Vector3 {
 	operator String() const;
 
 	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
+	_FORCE_INLINE_ Vector3(const Vector3 &p_vec3) {
+		x = p_vec3.x;
+		y = p_vec3.y;
+		z = p_vec3.z;
+	}
 	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;
 		y = p_y;

@@ -223,6 +223,10 @@ struct Rect2 {
 	operator String() const { return String(position) + ", " + String(size); }
 
 	Rect2() {}
+	Rect2(const Rect2 &p_rect2) :
+			position(p_rect2.position),
+			size(p_rect2.size) {
+	}
 	Rect2(real_t p_x, real_t p_y, real_t p_width, real_t p_height) :
 			position(Point2(p_x, p_y)),
 			size(Size2(p_width, p_height)) {

@@ -124,11 +124,11 @@ public:
 	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
 
 	Quat(const Vector3 &euler) { set_euler(euler); }
-	Quat(const Quat &q) {
-		x = q.x;
-		y = q.y;
-		z = q.z;
-		w = q.w;
+	Quat(const Quat &p_quat) {
+		x = p_quat.x;
+		y = p_quat.y;
+		z = p_quat.z;
+		w = p_quat.w;
 	}
 
 	Quat(const Vector3 &v0, const Vector3 &v1) // shortest arc

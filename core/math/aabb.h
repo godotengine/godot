@@ -107,6 +107,11 @@ public:
 			position(p_pos),
 			size(p_size) {
 	}
+
+	inline AABB(const AABB &p_aabb) :
+			position(p_aabb.position),
+			size(p_aabb.size) {
+	}
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {

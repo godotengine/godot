@@ -828,18 +828,30 @@ struct _VariantCall {
 	static ConstructFunc *construct_funcs;
 
 	static void Vector2_init1(Variant &r_ret, const Variant **p_args) {
+		r_ret = Vector2(p_args[0]->operator Vector2());
+	}
 
+	static void Vector2_init2(Variant &r_ret, const Variant **p_args) {
 		r_ret = Vector2(*p_args[0], *p_args[1]);
 	}
 
 	static void Rect2_init1(Variant &r_ret, const Variant **p_args) {
-
-		r_ret = Rect2(*p_args[0], *p_args[1]);
+		r_ret = Rect2(p_args[0]->operator Rect2());
 	}
 
 	static void Rect2_init2(Variant &r_ret, const Variant **p_args) {
 
+		r_ret = Rect2(*p_args[0], *p_args[1]);
+	}
+
+	static void Rect2_init3(Variant &r_ret, const Variant **p_args) {
+
 		r_ret = Rect2(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
+	}
+
+	static void Transform2D_init1(Variant &r_ret, const Variant **p_args) {
+		Transform2D m(p_args[0]->operator Transform2D());
+		r_ret = m;
 	}
 
 	static void Transform2D_init2(Variant &r_ret, const Variant **p_args) {
@@ -858,70 +870,94 @@ struct _VariantCall {
 	}
 
 	static void Vector3_init1(Variant &r_ret, const Variant **p_args) {
+		r_ret = Vector3(p_args[0]->operator Vector3());
+	}
+
+	static void Vector3_init2(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Vector3(*p_args[0], *p_args[1], *p_args[2]);
 	}
 
 	static void Plane_init1(Variant &r_ret, const Variant **p_args) {
-
-		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
+		r_ret = Plane(p_args[0]->operator Plane());
 	}
 
 	static void Plane_init2(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2]);
+		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
 	}
 
 	static void Plane_init3(Variant &r_ret, const Variant **p_args) {
 
+		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2]);
+	}
+
+	static void Plane_init4(Variant &r_ret, const Variant **p_args) {
+
 		r_ret = Plane(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
 	}
-	static void Plane_init4(Variant &r_ret, const Variant **p_args) {
+	static void Plane_init5(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Plane(p_args[0]->operator Vector3(), p_args[1]->operator Vector3());
 	}
 
 	static void Quat_init1(Variant &r_ret, const Variant **p_args) {
-
-		r_ret = Quat(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
+		r_ret = Quat(p_args[0]->operator Quat());
 	}
 
 	static void Quat_init2(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Quat(((Vector3)(*p_args[0])), ((float)(*p_args[1])));
+		r_ret = Quat(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
 	}
 
 	static void Quat_init3(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Quat(((Vector3)(*p_args[0])), ((float)(*p_args[1])));
+	}
+
+	static void Quat_init4(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Quat(((Vector3)(*p_args[0])));
 	}
 
 	static void Color_init1(Variant &r_ret, const Variant **p_args) {
-
-		r_ret = Color(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
+		r_ret = Color(p_args[0]->operator Color());
 	}
 
 	static void Color_init2(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Color(*p_args[0], *p_args[1], *p_args[2]);
+		r_ret = Color(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
 	}
 
 	static void Color_init3(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Color::html(*p_args[0]);
+		r_ret = Color(*p_args[0], *p_args[1], *p_args[2]);
 	}
 
 	static void Color_init4(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color::html(*p_args[0]);
+	}
+
+	static void Color_init5(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Color::hex(*p_args[0]);
 	}
 
 	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
+		r_ret = ::AABB(p_args[0]->operator ::AABB());
+	}
+
+	static void AABB_init2(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = ::AABB(*p_args[0], *p_args[1]);
 	}
 
 	static void Basis_init1(Variant &r_ret, const Variant **p_args) {
+		r_ret = Basis(p_args[0]->operator Basis());
+	}
+
+	static void Basis_init2(Variant &r_ret, const Variant **p_args) {
 
 		Basis m;
 		m.set_axis(0, *p_args[0]);
@@ -930,12 +966,16 @@ struct _VariantCall {
 		r_ret = m;
 	}
 
-	static void Basis_init2(Variant &r_ret, const Variant **p_args) {
+	static void Basis_init3(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Basis(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
 	}
 
 	static void Transform_init1(Variant &r_ret, const Variant **p_args) {
+		r_ret = Transform(p_args[0]->operator Transform());
+	}
+
+	static void Transform_init2(Variant &r_ret, const Variant **p_args) {
 
 		Transform t;
 		t.basis.set_axis(0, *p_args[0]);
@@ -945,7 +985,7 @@ struct _VariantCall {
 		r_ret = t;
 	}
 
-	static void Transform_init2(Variant &r_ret, const Variant **p_args) {
+	static void Transform_init3(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Transform(p_args[0]->operator Basis(), p_args[1]->operator Vector3());
 	}
@@ -1854,34 +1894,44 @@ void register_variant_methods() {
 
 	/* REGISTER CONSTRUCTORS */
 
-	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::REAL, "y", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "vector2", Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Vector2_init2, Variant::VECTOR2, "x", Variant::REAL, "y", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
-	_VariantCall::add_constructor(_VariantCall::Rect2_init2, Variant::RECT2, "x", Variant::REAL, "y", Variant::REAL, "width", Variant::REAL, "height", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "rect2", Variant::RECT2);
+	_VariantCall::add_constructor(_VariantCall::Rect2_init2, Variant::RECT2, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Rect2_init3, Variant::RECT2, "x", Variant::REAL, "y", Variant::REAL, "width", Variant::REAL, "height", Variant::REAL);
 
+	_VariantCall::add_constructor(_VariantCall::Transform2D_init1, Variant::TRANSFORM2D, "transform2d", Variant::TRANSFORM2D);
 	_VariantCall::add_constructor(_VariantCall::Transform2D_init2, Variant::TRANSFORM2D, "rotation", Variant::REAL, "position", Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Transform2D_init3, Variant::TRANSFORM2D, "x_axis", Variant::VECTOR2, "y_axis", Variant::VECTOR2, "origin", Variant::VECTOR2);
 
-	_VariantCall::add_constructor(_VariantCall::Vector3_init1, Variant::VECTOR3, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Vector3_init1, Variant::VECTOR3, "vector3", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Vector3_init2, Variant::VECTOR3, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Plane_init1, Variant::PLANE, "a", Variant::REAL, "b", Variant::REAL, "c", Variant::REAL, "d", Variant::REAL);
-	_VariantCall::add_constructor(_VariantCall::Plane_init2, Variant::PLANE, "v1", Variant::VECTOR3, "v2", Variant::VECTOR3, "v3", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Plane_init3, Variant::PLANE, "normal", Variant::VECTOR3, "d", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Plane_init1, Variant::PLANE, "plane", Variant::PLANE);
+	_VariantCall::add_constructor(_VariantCall::Plane_init2, Variant::PLANE, "a", Variant::REAL, "b", Variant::REAL, "c", Variant::REAL, "d", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Plane_init3, Variant::PLANE, "v1", Variant::VECTOR3, "v2", Variant::VECTOR3, "v3", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Plane_init4, Variant::PLANE, "normal", Variant::VECTOR3, "d", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Quat_init1, Variant::QUAT, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL, "w", Variant::REAL);
-	_VariantCall::add_constructor(_VariantCall::Quat_init2, Variant::QUAT, "axis", Variant::VECTOR3, "angle", Variant::REAL);
-	_VariantCall::add_constructor(_VariantCall::Quat_init3, Variant::QUAT, "euler", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Quat_init1, Variant::QUAT, "quat", Variant::QUAT);
+	_VariantCall::add_constructor(_VariantCall::Quat_init2, Variant::QUAT, "x", Variant::REAL, "y", Variant::REAL, "z", Variant::REAL, "w", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Quat_init3, Variant::QUAT, "axis", Variant::VECTOR3, "angle", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Quat_init4, Variant::QUAT, "euler", Variant::VECTOR3);
 
-	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
-	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "color", Variant::COLOR);
+	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Color_init3, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "aabb", Variant::AABB);
+	_VariantCall::add_constructor(_VariantCall::AABB_init2, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
-	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "basis", Variant::BASIS);
+	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Basis_init3, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "transform", Variant::TRANSFORM);
+	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Transform_init3, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
 
 	/* REGISTER CONSTANTS */
 

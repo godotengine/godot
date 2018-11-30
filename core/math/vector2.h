@@ -134,6 +134,10 @@ struct Vector2 {
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
+	_FORCE_INLINE_ Vector2(const Vector2 &p_vec2) {
+		x = p_vec2.x;
+		y = p_vec2.y;
+	}
 	_FORCE_INLINE_ Vector2(real_t p_x, real_t p_y) {
 		x = p_x;
 		y = p_y;

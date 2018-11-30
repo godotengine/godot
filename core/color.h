@@ -211,6 +211,16 @@ struct Color {
 	}
 
 	/**
+	 * Copy constructor
+	 */
+	_FORCE_INLINE_ Color(const Color &p_color) {
+		r = p_color.r;
+		g = p_color.g;
+		b = p_color.b;
+		a = p_color.a;
+	}
+
+	/**
 	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 1.0
 	 */
 	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a = 1.0) {

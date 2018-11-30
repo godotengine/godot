@@ -259,6 +259,12 @@ public:
 		elements[2][1] = 0;
 		elements[2][2] = 1;
 	}
+
+	_FORCE_INLINE_ Basis(const Basis &p_basis) {
+		elements[0] = p_basis.elements[0];
+		elements[1] = p_basis.elements[1];
+		elements[2] = p_basis.elements[2];
+	}
 };
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {

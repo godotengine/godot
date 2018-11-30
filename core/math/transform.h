@@ -109,6 +109,7 @@ public:
 	operator String() const;
 
 	Transform(const Basis &p_basis, const Vector3 &p_origin = Vector3());
+	Transform(const Transform &p_trans);
 	Transform() {}
 };
 

@@ -123,6 +123,13 @@ struct Transform2D {
 	}
 
 	Transform2D(real_t p_rot, const Vector2 &p_pos);
+
+	Transform2D(const Transform2D &p_trans2d) {
+		elements[0] = p_trans2d.elements[0];
+		elements[1] = p_trans2d.elements[1];
+		elements[2] = p_trans2d.elements[2];
+	}
+
 	Transform2D() {
 		elements[0][0] = 1.0;
 		elements[1][1] = 1.0;
