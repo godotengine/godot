@@ -95,7 +95,7 @@ private:
 	String zip_title;
 	AcceptDialog *dialog_error;
 	String fav_dir;
-	bool popup_window_active = false;
+	bool popup_window_active;
 
 	String created_folder_path;
 
@@ -657,7 +657,6 @@ protected:
 	}
 
 public:
-
 	bool get_popup_window_active() { return popup_window_active; }
 	void set_popup_window_active(bool value) { popup_window_active = value; }
 
@@ -863,6 +862,8 @@ public:
 
 		dialog_error = memnew(AcceptDialog);
 		add_child(dialog_error);
+
+		set_popup_window_active(false);
 	}
 };
 
@@ -1003,7 +1004,7 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 		switch (k->get_scancode()) {
 
 			case KEY_ENTER: {
-				if(!npdialog->get_popup_window_active())
+				if (!npdialog->get_popup_window_active())
 					_open_project();
 			} break;
 			case KEY_DELETE: {
