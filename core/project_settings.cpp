@@ -294,8 +294,9 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		return err;
 	}
 
-	//Attempt with execname.pck
 	if (exec_path != "") {
+		//Attempt with execname.pck
+
 		bool found = false;
 
 		// get our filename without our path (note, using exec_path.get_file before get_basename anymore because not all file systems have dots in their file names!)
@@ -308,6 +309,14 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 		} else {
 			datapack_name = filebase_name + ".pck";
 			if (_load_resource_pack(datapack_name)) {
+				found = true;
+			}
+		}
+
+		// Attempt with bundled PCK
+
+		if (!found) {
+			if (_load_resource_pack(exec_path)) {
 				found = true;
 			}
 		}

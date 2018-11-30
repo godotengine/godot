@@ -220,7 +220,7 @@ public:
 
 	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = NULL);
 
-	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files = NULL);
+	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_bundle = false, Vector<SharedObject> *p_so_files = NULL);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 	virtual bool poll_devices() { return false; }

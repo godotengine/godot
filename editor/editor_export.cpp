@@ -790,7 +790,7 @@ Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObj
 	return OK;
 }
 
-Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files) {
+Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_bundle, Vector<SharedObject> *p_so_files) {
 
 	EditorProgress ep("savepack", TTR("Packing"), 102);
 
@@ -812,9 +812,29 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE)
-	f->store_32(0x43504447); //GDPK
+	FileAccess *f;
+	if (!p_bundle) {
+		// Regular output to separate PCK file
+		f = FileAccess::open(p_path, FileAccess::WRITE);
+		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE)
+	} else {
+		// Append to executable
+		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+		ERR_FAIL_COND_V(!f, ERR_FILE_CANT_OPEN)
+
+		f->seek_end();
+
+		// Ensure bundled PCK starts at 64-bit multiple
+		int64_t pos = f->get_position();
+		int64_t pad = pos % 8;
+		for (int i = 0; i < pad; i++) {
+			f->store_8(0);
+		}
+	}
+
+	int64_t pck_start_pos = f->get_position();
+
+	f->store_32(0x43504447); //GDPC
 	f->store_32(1); //pack version
 	f->store_32(VERSION_MAJOR);
 	f->store_32(VERSION_MINOR);
@@ -882,7 +902,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	memdelete(ftmp);
 
-	f->store_32(0x43504447); //GDPK
+	if (p_bundle) {
+		int64_t pck_len = f->get_position() - pck_start_pos;
+		f->store_64(pck_len);
+		f->store_32(0x43504447); //GDPC
+	}
+
 	memdelete(f);
 
 	return OK;
@@ -1250,6 +1275,7 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/bundle_pck"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE), ""));
 }
@@ -1364,11 +1390,16 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
 	if (err == OK) {
-		String pck_path = p_path.get_basename() + ".pck";
+		String pck_path;
+		if (p_preset->get("binary_format/bundle_pck")) {
+			pck_path = p_path;
+		} else {
+			pck_path = p_path.get_basename() + ".pck";
+		}
 
 		Vector<SharedObject> so_files;
 
-		err = save_pack(p_preset, pck_path, &so_files);
+		err = save_pack(p_preset, pck_path, p_preset->get("binary_format/bundle_pck"), &so_files);
 
 		if (err == OK && !so_files.empty()) {
 			//if shared object files, copy them
