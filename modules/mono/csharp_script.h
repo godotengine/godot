@@ -169,7 +169,7 @@ public:
 	virtual void update_exports();
 
 	virtual bool is_tool() const { return tool; }
-	virtual bool is_valid() const;
+	virtual bool is_valid() const { return valid; }
 
 	virtual Ref<Script> get_base_script() const;
 	virtual ScriptLanguage *get_language() const;
