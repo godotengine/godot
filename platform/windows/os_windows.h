@@ -93,6 +93,7 @@ class OS_Windows : public OS {
 	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
+	Point2 last_pos;
 
 	HBITMAP hBitmap; //DIB section for layered window
 	uint8_t *dib_data;
