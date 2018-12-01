@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "java_glue.h"
 #include "android/asset_manager_jni.h"
 #include "audio_driver_jandroid.h"
@@ -1566,4 +1564,3 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 //Main::cleanup();
 
 //return os.get_exit_code();
-#endif

@@ -31,8 +31,6 @@
 #ifndef FILE_ACCESS_JANDROID_H
 #define FILE_ACCESS_JANDROID_H
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "core/os/file_access.h"
 #include "java_glue.h"
 class FileAccessJAndroid : public FileAccess {
@@ -80,7 +78,5 @@ public:
 	FileAccessJAndroid();
 	~FileAccessJAndroid();
 };
-
-#endif
 
 #endif // FILE_ACCESS_JANDROID_H

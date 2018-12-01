@@ -10,9 +10,7 @@ from detect import get_ndk_version
 android_files = [
 
     'os_android.cpp',
-    'godot_android.cpp',
     'file_access_android.cpp',
-    'dir_access_android.cpp',
     'audio_driver_opensl.cpp',
     'file_access_jandroid.cpp',
     'dir_access_jandroid.cpp',
@@ -25,7 +23,6 @@ android_files = [
 
 thirdparty_files = [
     'ifaddrs_android.cpp',
-    'android_native_app_glue.c',
     'cpu-features.c',
 ]
 
