@@ -993,7 +993,7 @@ void CSharpLanguage::set_language_index(int p_idx) {
 
 void CSharpLanguage::release_script_gchandle(Ref<MonoGCHandle> &p_gchandle) {
 
-	if (!p_gchandle->is_released()) { // Do not locking unnecessarily
+	if (!p_gchandle->is_released()) { // Do not lock unnecessarily
 		SCOPED_MUTEX_LOCK(get_singleton()->script_gchandle_release_mutex);
 		p_gchandle->release();
 	}
@@ -1003,7 +1003,7 @@ void CSharpLanguage::release_script_gchandle(MonoObject *p_expected_obj, Ref<Mon
 
 	uint32_t pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(p_expected_obj); // We might lock after this, so pin it
 
-	if (!p_gchandle->is_released()) { // Do not locking unnecessarily
+	if (!p_gchandle->is_released()) { // Do not lock unnecessarily
 		SCOPED_MUTEX_LOCK(get_singleton()->script_gchandle_release_mutex);
 
 		MonoObject *target = p_gchandle->get_target();
@@ -1754,7 +1754,8 @@ CSharpInstance::CSharpInstance() :
 		base_ref(false),
 		ref_dying(false),
 		unsafe_referenced(false),
-		predelete_notified(false) {
+		predelete_notified(false),
+		destructing_script_instance(false) {
 }
 
 CSharpInstance::~CSharpInstance() {
@@ -1771,7 +1772,9 @@ CSharpInstance::~CSharpInstance() {
 
 			if (mono_object) {
 				MonoException *exc = NULL;
+				destructing_script_instance = true;
 				GDMonoUtils::dispose(mono_object, &exc);
+				destructing_script_instance = false;
 
 				if (exc) {
 					GDMonoUtils::set_pending_exception(exc);

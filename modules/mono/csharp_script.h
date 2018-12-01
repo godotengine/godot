@@ -198,6 +198,7 @@ class CSharpInstance : public ScriptInstance {
 	bool ref_dying;
 	bool unsafe_referenced;
 	bool predelete_notified;
+	bool destructing_script_instance;
 
 	Ref<CSharpScript> script;
 	Ref<MonoGCHandle> gchandle;
@@ -217,6 +218,8 @@ class CSharpInstance : public ScriptInstance {
 
 public:
 	MonoObject *get_mono_object() const;
+
+	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
 
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
