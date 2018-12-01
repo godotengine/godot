@@ -54,8 +54,10 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	if (p_ptr->get_script_instance()) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(p_ptr->get_script_instance());
 		if (cs_instance) {
-			cs_instance->mono_object_disposed(p_obj);
-			p_ptr->set_script_instance(NULL);
+			if (!cs_instance->is_destructing_script_instance()) {
+				cs_instance->mono_object_disposed(p_obj);
+				p_ptr->set_script_instance(NULL);
+			}
 			return;
 		}
 	}
@@ -82,12 +84,14 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_
 	if (ref->get_script_instance()) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(ref->get_script_instance());
 		if (cs_instance) {
-			bool r_owner_deleted;
-			cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, r_owner_deleted);
-			if (!r_owner_deleted && !p_is_finalizer) {
-				// If the native instance is still alive and Dispose() was called
-				// (instead of the finalizer), then we remove the script instance.
-				ref->set_script_instance(NULL);
+			if (!cs_instance->is_destructing_script_instance()) {
+				bool r_owner_deleted;
+				cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, r_owner_deleted);
+				if (!r_owner_deleted && !p_is_finalizer) {
+					// If the native instance is still alive and Dispose() was called
+					// (instead of the finalizer), then we remove the script instance.
+					ref->set_script_instance(NULL);
+				}
 			}
 			return;
 		}
