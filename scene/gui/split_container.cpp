@@ -94,12 +94,15 @@ void SplitContainer::_resort() {
 	}
 
 	// Compute the final middle separation
-	int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
-	middle_sep = no_offset_middle_sep + clamped_split_offset;
-	if (!collapsed && should_clamp_split_offset) {
-		split_offset = clamped_split_offset;
-		_change_notify("split_offset");
-		should_clamp_split_offset = false;
+	middle_sep = no_offset_middle_sep;
+	if (!collapsed) {
+		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
+		middle_sep += clamped_split_offset;
+		if (should_clamp_split_offset) {
+			split_offset = clamped_split_offset;
+			_change_notify("split_offset");
+			should_clamp_split_offset = false;
+		}
 	}
 
 	if (vertical) {
