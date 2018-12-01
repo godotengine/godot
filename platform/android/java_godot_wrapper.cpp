@@ -59,6 +59,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_get_clipboard = p_env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
+	_get_surface = p_env->GetMethodID(cls, "get_surface", "()Landroid/view/Surface");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -181,5 +182,14 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 		return env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
 	} else {
 		return false;
+	}
+}
+
+jobject GodotJavaWrapper::get_surface() {
+	if (_get_surface) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		return env->CallObjectMethod(godot_instance, _get_surface);
+	} else {
+		return NULL;
 	}
 }

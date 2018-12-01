@@ -46,6 +46,7 @@ extern "C" {
 
 JNIEnv *GDAPI godot_android_get_env();
 jobject GDAPI godot_android_get_activity();
+jobject GDAPI godot_android_get_surface();
 
 #ifdef __cplusplus
 }

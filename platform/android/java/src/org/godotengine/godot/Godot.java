@@ -64,6 +64,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -399,6 +400,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			e.printStackTrace();
 			return new String[0];
 		}
+	}
+
+	public Surface get_surface() {
+		return mView.getHolder().getSurface();
 	}
 
 	String expansion_pack_path;
