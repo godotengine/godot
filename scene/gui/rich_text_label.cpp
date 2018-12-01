@@ -765,19 +765,17 @@ void RichTextLabel::_update_scroll() {
 
 		if (exceeds) {
 			scroll_visible = true;
-			main->first_invalid_line = 0;
 			scroll_w = vscroll->get_combined_minimum_size().width;
 			vscroll->show();
 			vscroll->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -scroll_w);
-			_validate_line_caches(main);
-
 		} else {
-
 			scroll_visible = false;
-			vscroll->hide();
 			scroll_w = 0;
-			_validate_line_caches(main);
+			vscroll->hide();
 		}
+
+		main->first_invalid_line = 0; //invalidate ALL
+		_validate_line_caches(main);
 	}
 }
 
@@ -1616,7 +1614,6 @@ void RichTextLabel::clear() {
 	main->lines.clear();
 	main->lines.resize(1);
 	main->first_invalid_line = 0;
-	scroll_w = 0;
 	update();
 	selection.click = NULL;
 	selection.active = false;
