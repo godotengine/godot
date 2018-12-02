@@ -31,8 +31,6 @@
 #ifndef DIR_ACCESS_JANDROID_H
 #define DIR_ACCESS_JANDROID_H
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "core/os/dir_access.h"
 #include "java_glue.h"
 #include <stdio.h>
@@ -87,4 +85,3 @@ public:
 };
 
 #endif // DIR_ACCESS_JANDROID_H
-#endif

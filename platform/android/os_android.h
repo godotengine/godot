@@ -41,12 +41,6 @@
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 
-#ifdef ANDROID_NATIVE_ACTIVITY
-#include <android/log.h>
-#include <android/sensor.h>
-#include <android_native_app_glue.h>
-#endif
-
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 typedef int (*OpenURIFunc)(const String &);
 typedef String (*GetUserDataDirFunc)();
