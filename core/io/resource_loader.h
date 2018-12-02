@@ -123,6 +123,7 @@ public:
 	static int get_import_order(const String &p_path);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
+	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) err_notify(err_notify_ud, p_err);
