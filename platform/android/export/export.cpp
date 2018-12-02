@@ -672,10 +672,13 @@ class EditorExportAndroid : public EditorExportPlatform {
 			aperms++;
 		}
 
-		for (int i = 0; i < MAX_USER_PERMISSIONS; i++) {
-			String user_perm = p_preset->get("user_permissions/" + itos(i));
-			if (user_perm.strip_edges() != "" && user_perm.strip_edges() != "False")
-				perms.push_back(user_perm.strip_edges());
+		PoolStringArray user_perms = p_preset->get("permissions/custom_permissions");
+
+		for (int i = 0; i < user_perms.size(); i++) {
+			String user_perm = user_perms[i].strip_edges();
+			if (!user_perm.empty()) {
+				perms.push_back(user_perm);
+			}
 		}
 
 		if (p_give_internet) {
@@ -1104,10 +1107,6 @@ class EditorExportAndroid : public EditorExportPlatform {
 	}
 
 public:
-	enum {
-		MAX_USER_PERMISSIONS = 20
-	};
-
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
 
 public:
@@ -1169,16 +1168,13 @@ public:
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "architectures/" + abi), is_default));
 		}
 
+		r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "permissions/custom_permissions"), PoolStringArray()));
+
 		const char **perms = android_perms;
 		while (*perms) {
 
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "permissions/" + String(*perms).to_lower()), false));
 			perms++;
-		}
-
-		for (int i = 0; i < MAX_USER_PERMISSIONS; i++) {
-
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "user_permissions/" + itos(i)), false));
 		}
 	}
 
