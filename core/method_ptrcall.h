@@ -110,7 +110,7 @@ MAKE_PTRARGCONV(uint32_t, int64_t);
 MAKE_PTRARGCONV(int32_t, int64_t);
 MAKE_PTRARG(int64_t);
 MAKE_PTRARG(uint64_t);
-MAKE_PTRARGCONV(float, double);
+MAKE_PTRARG(float);
 MAKE_PTRARG(double);
 
 MAKE_PTRARG(String);
