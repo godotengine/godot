@@ -6045,7 +6045,10 @@ void TextEdit::menu_option(int p_option) {
 		case MENU_UNDO: {
 			undo();
 		} break;
-	};
+		case MENU_REDO: {
+			redo();
+		}
+	}
 }
 
 void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
@@ -6221,6 +6224,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_CLEAR);
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
 	BIND_ENUM_CONSTANT(MENU_UNDO);
+	BIND_ENUM_CONSTANT(MENU_REDO);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
@@ -6349,6 +6353,7 @@ TextEdit::TextEdit() {
 	menu->add_item(RTR("Clear"), MENU_CLEAR);
 	menu->add_separator();
 	menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
+	menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
 }
 
