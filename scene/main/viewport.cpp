@@ -1780,7 +1780,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			if (gui.mouse_focus->can_process()) {
+			if (gui.mouse_focus && gui.mouse_focus->can_process()) {
 				_gui_call_input(gui.mouse_focus, mb);
 			}
 
