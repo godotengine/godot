@@ -265,6 +265,9 @@ void ItemListEditor::_notification(int p_notification) {
 
 		add_button->set_icon(get_icon("Add", "EditorIcons"));
 		del_button->set_icon(get_icon("Remove", "EditorIcons"));
+	} else if (p_notification == NOTIFICATION_READY) {
+
+		get_tree()->connect("node_removed", this, "_node_removed");
 	}
 }
 
@@ -341,6 +344,7 @@ bool ItemListEditor::handles(Object *p_object) const {
 
 void ItemListEditor::_bind_methods() {
 
+	ClassDB::bind_method("_node_removed", &ItemListEditor::_node_removed);
 	ClassDB::bind_method("_edit_items", &ItemListEditor::_edit_items);
 	ClassDB::bind_method("_add_button", &ItemListEditor::_add_pressed);
 	ClassDB::bind_method("_delete_button", &ItemListEditor::_delete_pressed);
