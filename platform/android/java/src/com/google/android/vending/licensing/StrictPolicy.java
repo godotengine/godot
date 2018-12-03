@@ -16,6 +16,13 @@
 
 package com.google.android.vending.licensing;
 
+import android.util.Log;
+import com.google.android.vending.licensing.util.URIQueryDecoder;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Non-caching policy. All requests will be sent to the licensing service,
  * and no local caching is performed.
@@ -26,38 +33,67 @@ package com.google.android.vending.licensing;
  * weigh the risks of using this Policy over one which implements caching,
  * such as ServerManagedPolicy.
  * <p>
- * Access to the application is only allowed if a LICESNED response is.
+ * Access to the application is only allowed if a LICENSED response is.
  * received. All other responses (including RETRY) will deny access.
  */
 public class StrictPolicy implements Policy {
 
-    private int mLastResponse;
+	private static final String TAG = "StrictPolicy";
 
-    public StrictPolicy() {
-        // Set default policy. This will force the application to check the policy on launch.
-        mLastResponse = Policy.RETRY;
-    }
+	private int mLastResponse;
+	private String mLicensingUrl;
 
-    /**
+	public StrictPolicy() {
+		// Set default policy. This will force the application to check the policy on launch.
+		mLastResponse = Policy.RETRY;
+		mLicensingUrl = null;
+	}
+
+	/**
      * Process a new response from the license server. Since we aren't
      * performing any caching, this equates to reading the LicenseResponse.
-     * Any ResponseData provided is ignored.
+     * Any cache-related ResponseData is ignored, but the licensing URL
+     * extra is still extracted in cases where the app is unlicensed.
      *
      * @param response the result from validating the server response
      * @param rawData the raw server response data
      */
-    public void processServerResponse(int response, ResponseData rawData) {
-        mLastResponse = response;
-    }
+	public void processServerResponse(int response, ResponseData rawData) {
+		mLastResponse = response;
 
-    /**
+		if (response == Policy.NOT_LICENSED) {
+			Map<String, String> extras = decodeExtras(rawData);
+			mLicensingUrl = extras.get("LU");
+		}
+	}
+
+	/**
      * {@inheritDoc}
      *
      * This implementation allows access if and only if a LICENSED response
      * was received the last time the server was contacted.
      */
-    public boolean allowAccess() {
-        return (mLastResponse == Policy.LICENSED);
-    }
+	public boolean allowAccess() {
+		return (mLastResponse == Policy.LICENSED);
+	}
 
+	public String getLicensingUrl() {
+		return mLicensingUrl;
+	}
+
+	private Map<String, String> decodeExtras(
+			com.google.android.vending.licensing.ResponseData rawData) {
+		Map<String, String> results = new HashMap<String, String>();
+		if (rawData == null) {
+			return results;
+		}
+
+		try {
+			URI rawExtras = new URI("?" + rawData.extra);
+			URIQueryDecoder.DecodeQuery(rawExtras, results);
+		} catch (URISyntaxException e) {
+			Log.w(TAG, "Invalid syntax error while decoding extras data from server.");
+		}
+		return results;
+	}
 }

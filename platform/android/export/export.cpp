@@ -1564,7 +1564,7 @@ public:
 				_fix_resources(p_preset, data);
 			}
 
-			if (file == "res/drawable/icon.png") {
+			if (file == "res/drawable-nodpi-v4/icon.png") {
 				bool found = false;
 				for (unsigned int i = 0; i < sizeof(launcher_icons) / sizeof(launcher_icons[0]); ++i) {
 					String icon_path = String(p_preset->get(launcher_icons[i].option_id)).strip_edges();

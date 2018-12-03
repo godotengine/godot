@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.google.android.vending.expansion.downloader.impl;
+package com.google.android.vending.licensing;
 
 /**
- * Uses the class-loader model to utilize the updated notification builders in
- * Honeycomb while maintaining a compatible version for older devices.
+ * A DeviceLimiter that doesn't limit the number of devices that can use a
+ * given user's license.
+ * <p>
+ * Unless you have reason to believe that your application is being pirated
+ * by multiple users using the same license (signing in to Market as the same
+ * user), we recommend you use this implementation.
  */
-public class CustomNotificationFactory {
-    static public DownloadNotification.ICustomNotification createCustomNotification() {
-        if (android.os.Build.VERSION.SDK_INT > 13)
-            return new V14CustomNotification();
-        else
-            throw new RuntimeException();
-    }
+public class NullDeviceLimiter implements DeviceLimiter {
+
+	public int isDeviceAllowed(String userId) {
+		return Policy.LICENSED;
+	}
 }
