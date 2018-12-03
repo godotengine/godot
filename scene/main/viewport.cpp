@@ -1747,7 +1747,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			mb->set_position(pos);
 
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton()) {
+			if (ScriptDebugger::get_singleton() && gui.mouse_focus) {
 
 				Array arr;
 				arr.push_back(gui.mouse_focus->get_path());
@@ -1850,7 +1850,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.mouse_focus = NULL;
 			}
 
-			if (mouse_focus->can_process()) {
+			if (mouse_focus && mouse_focus->can_process()) {
 				_gui_call_input(mouse_focus, mb);
 			}
 
@@ -2065,7 +2065,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		OS::get_singleton()->set_cursor_shape((OS::CursorShape)cursor_shape);
 
-		if (over->can_process()) {
+		if (over && over->can_process()) {
 			_gui_call_input(over, mm);
 		}
 
