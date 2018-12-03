@@ -63,7 +63,7 @@ public:
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
-	operator const char *() { return get_data(); };
+	operator const char *() const { return get_data(); };
 };
 
 typedef wchar_t CharType;
