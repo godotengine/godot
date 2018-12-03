@@ -223,31 +223,31 @@ void EditorPropertyArray::update_property() {
 
 		// arrays
 		case Variant::POOL_BYTE_ARRAY: {
-			arrtype = "ByteArray";
+			arrtype = "PoolByteArray";
 
 		} break;
 		case Variant::POOL_INT_ARRAY: {
-			arrtype = "IntArray";
+			arrtype = "PoolIntArray";
 
 		} break;
 		case Variant::POOL_REAL_ARRAY: {
 
-			arrtype = "FltArray";
+			arrtype = "PoolFloatArray";
 		} break;
 		case Variant::POOL_STRING_ARRAY: {
 
-			arrtype = "StrArray";
+			arrtype = "PoolStringArray";
 		} break;
 		case Variant::POOL_VECTOR2_ARRAY: {
 
-			arrtype = "Vec2Array";
+			arrtype = "PoolVector2Array";
 		} break;
 		case Variant::POOL_VECTOR3_ARRAY: {
-			arrtype = "Vec3Array";
+			arrtype = "PoolVector3Array";
 
 		} break;
 		case Variant::POOL_COLOR_ARRAY: {
-			arrtype = "ColArray";
+			arrtype = "PoolColorArray";
 		} break;
 		default: {}
 	}
@@ -261,7 +261,7 @@ void EditorPropertyArray::update_property() {
 		return;
 	}
 
-	edit->set_text(arrtype + "(size " + itos(array.call("size")) + ")");
+	edit->set_text(arrtype + " (size " + itos(array.call("size")) + ")");
 
 #ifdef TOOLS_ENABLED
 
@@ -334,185 +334,18 @@ void EditorPropertyArray::update_property() {
 
 			EditorProperty *prop = NULL;
 			Variant value = array.get(i + offset);
+			Variant::Type value_type = value.get_type();
 
-			switch (value.get_type()) {
-				case Variant::NIL: {
-					prop = memnew(EditorPropertyNil);
+			if (value_type == Variant::NIL && subtype != Variant::NIL) {
+				value_type = subtype;
+			}
 
-				} break;
-
-				// atomic types
-				case Variant::BOOL: {
-
-					prop = memnew(EditorPropertyCheck);
-
-				} break;
-				case Variant::INT: {
-					EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-					editor->setup(-100000, 100000, 1, true, true);
-					prop = editor;
-
-				} break;
-				case Variant::REAL: {
-
-					EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-					editor->setup(-100000, 100000, 0.001, true, false, true, true);
-					prop = editor;
-				} break;
-				case Variant::STRING: {
-
-					prop = memnew(EditorPropertyText);
-
-				} break;
-
-					// math types
-
-				case Variant::VECTOR2: {
-
-					EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::RECT2: {
-
-					EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::VECTOR3: {
-
-					EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::TRANSFORM2D: {
-
-					EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::PLANE: {
-
-					EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::QUAT: {
-
-					EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::AABB: {
-
-					EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::BASIS: {
-					EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-				case Variant::TRANSFORM: {
-					EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
-					editor->setup(-100000, 100000, 0.001, true);
-					prop = editor;
-
-				} break;
-
-				// misc types
-				case Variant::COLOR: {
-					prop = memnew(EditorPropertyColor);
-
-				} break;
-				case Variant::NODE_PATH: {
-					prop = memnew(EditorPropertyNodePath);
-
-				} break;
-				case Variant::_RID: {
-					prop = memnew(EditorPropertyNil);
-
-				} break;
-				case Variant::OBJECT: {
-
-					if (Object::cast_to<EncodedObjectAsID>(value)) {
-
-						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
-						editor->setup("Object");
-						prop = editor;
-
-					} else {
-
-						EditorPropertyResource *editor = memnew(EditorPropertyResource);
-						editor->setup("Resource");
-						prop = editor;
-					}
-
-				} break;
-				case Variant::DICTIONARY: {
-					prop = memnew(EditorPropertyDictionary);
-
-				} break;
-
-				// arrays
-				case Variant::ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::ARRAY);
-					prop = editor;
-
-				} break;
-				case Variant::POOL_BYTE_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_BYTE_ARRAY);
-					prop = editor;
-
-				} break;
-				case Variant::POOL_INT_ARRAY: {
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_INT_ARRAY);
-					prop = editor;
-
-				} break;
-				case Variant::POOL_REAL_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_REAL_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_STRING_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_STRING_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_VECTOR2_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_VECTOR2_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_VECTOR3_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_VECTOR3_ARRAY);
-					prop = editor;
-				} break;
-				case Variant::POOL_COLOR_ARRAY: {
-
-					EditorPropertyArray *editor = memnew(EditorPropertyArray);
-					editor->setup(Variant::POOL_COLOR_ARRAY);
-					prop = editor;
-				} break;
-				default: {}
+			if (value_type == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(value)) {
+				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+				editor->setup("Object");
+				prop = editor;
+			} else {
+				prop = EditorInspector::instantiate_property_editor(NULL, value_type, "", subtype_hint, subtype_hint_string, 0);
 			}
 
 			prop->set_object_and_property(object.ptr(), prop_name);
@@ -583,15 +416,39 @@ void EditorPropertyArray::_length_changed(double p_page) {
 	emit_signal("property_changed", get_edited_property(), array);
 
 	if (array.get_type() == Variant::ARRAY) {
+		if (subtype != Variant::NIL) {
+			int size = array.call("size");
+			for (int i = 0; i < size; i++) {
+				if (array.get(i).get_type() == Variant::NIL) {
+					Variant::CallError ce;
+					array.set(i, Variant::construct(subtype, NULL, 0, ce));
+				}
+			}
+		}
 		array = array.call("duplicate"); //dupe, so undo/redo works better
 	}
 	object->set_array(array);
 	update_property();
 }
 
-void EditorPropertyArray::setup(Variant::Type p_array_type) {
+void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
 
 	array_type = p_array_type;
+
+	if (array_type == Variant::ARRAY && !p_hint_string.empty()) {
+		int hint_subtype_seperator = p_hint_string.find(":");
+		if (hint_subtype_seperator >= 0) {
+			String subtype_string = p_hint_string.substr(0, hint_subtype_seperator);
+			int slash_pos = subtype_string.find("/");
+			if (slash_pos >= 0) {
+				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
+				subtype_string = subtype_string.substr(0, slash_pos);
+			}
+
+			subtype_hint_string = p_hint_string.substr(hint_subtype_seperator + 1, p_hint_string.size() - hint_subtype_seperator - 1);
+			subtype = Variant::Type(subtype_string.to_int());
+		}
+	}
 }
 
 void EditorPropertyArray::_bind_methods() {
@@ -630,6 +487,10 @@ EditorPropertyArray::EditorPropertyArray() {
 		change_type->add_item(type, i);
 	}
 	changing_type_idx = -1;
+
+	subtype = Variant::NIL;
+	subtype_hint = PROPERTY_HINT_NONE;
+	subtype_hint_string = "";
 }
 
 ///////////////////// DICTIONARY ///////////////////////////
