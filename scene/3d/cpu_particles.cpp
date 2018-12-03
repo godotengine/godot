@@ -217,7 +217,7 @@ String CPUParticles::get_configuration_warning() const {
 	if (!mesh_found) {
 		if (warnings != String())
 			warnings += "\n";
-		warnings += "- " + TTR("Nothing is visible because no mesh has not been assigned.");
+		warnings += "- " + TTR("Nothing is visible because no mesh has been assigned.");
 	}
 
 	if (!anim_material_found && (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
