@@ -764,10 +764,22 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 }
 
 //mikktspace callbacks
+namespace {
+struct TangentGenerationContextUserData {
+	Vector<List<SurfaceTool::Vertex>::Element *> vertices;
+	Vector<List<int>::Element *> indices;
+};
+} // namespace
+
 int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
 
-	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
-	return varr.size() / 3;
+	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+
+	if (triangle_data.indices.size() > 0) {
+		return triangle_data.indices.size() / 3;
+	} else {
+		return triangle_data.vertices.size() / 3;
+	}
 }
 int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
 
@@ -775,8 +787,17 @@ int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, c
 }
 void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
 
-	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
-	Vector3 v = varr[iFace * 3 + iVert]->get().vertex;
+	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vector3 v;
+	if (triangle_data.indices.size() > 0) {
+		int index = triangle_data.indices[iFace * 3 + iVert]->get();
+		if (index < triangle_data.vertices.size()) {
+			v = triangle_data.vertices[index]->get().vertex;
+		}
+	} else {
+		v = triangle_data.vertices[iFace * 3 + iVert]->get().vertex;
+	}
+
 	fvPosOut[0] = v.x;
 	fvPosOut[1] = v.y;
 	fvPosOut[2] = v.z;
@@ -784,48 +805,62 @@ void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvP
 
 void SurfaceTool::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
 
-	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
-	Vector3 v = varr[iFace * 3 + iVert]->get().normal;
+	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vector3 v;
+	if (triangle_data.indices.size() > 0) {
+		int index = triangle_data.indices[iFace * 3 + iVert]->get();
+		if (index < triangle_data.vertices.size()) {
+			v = triangle_data.vertices[index]->get().normal;
+		}
+	} else {
+		v = triangle_data.vertices[iFace * 3 + iVert]->get().normal;
+	}
+
 	fvNormOut[0] = v.x;
 	fvNormOut[1] = v.y;
 	fvNormOut[2] = v.z;
 }
 void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
 
-	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
-	Vector2 v = varr[iFace * 3 + iVert]->get().uv;
+	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vector2 v;
+	if (triangle_data.indices.size() > 0) {
+		int index = triangle_data.indices[iFace * 3 + iVert]->get();
+		if (index < triangle_data.vertices.size()) {
+			v = triangle_data.vertices[index]->get().uv;
+		}
+	} else {
+		v = triangle_data.vertices[iFace * 3 + iVert]->get().uv;
+	}
+
 	fvTexcOut[0] = v.x;
 	fvTexcOut[1] = v.y;
-	//fvTexcOut[1]=1.0-v.y;
 }
 
 void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
 
-	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
-	Vertex *vtx = &varr[iFace * 3 + iVert]->get();
+	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
+	Vertex *vtx = NULL;
+	if (triangle_data.indices.size() > 0) {
+		int index = triangle_data.indices[iFace * 3 + iVert]->get();
+		if (index < triangle_data.vertices.size()) {
+			vtx = &triangle_data.vertices[index]->get();
+		}
+	} else {
+		vtx = &triangle_data.vertices[iFace * 3 + iVert]->get();
+	}
 
-	vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-	vtx->binormal = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
-}
-
-void SurfaceTool::mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert) {
-
-	Vector<List<Vertex>::Element *> &varr = *((Vector<List<Vertex>::Element *> *)pContext->m_pUserData);
-	Vertex &vtx = varr[iFace * 3 + iVert]->get();
-
-	vtx.tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-	vtx.binormal = vtx.normal.cross(vtx.tangent) * fSign;
+	if (vtx != NULL) {
+		vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
+		vtx->binormal = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
+	}
 }
 
 void SurfaceTool::generate_tangents() {
 
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
-
-	bool indexed = index_array.size() > 0;
-	if (indexed)
-		deindex();
 
 	SMikkTSpaceInterface mkif;
 	mkif.m_getNormal = mikktGetNormal;
@@ -839,24 +874,25 @@ void SurfaceTool::generate_tangents() {
 	SMikkTSpaceContext msc;
 	msc.m_pInterface = &mkif;
 
-	Vector<List<Vertex>::Element *> vtx;
-	vtx.resize(vertex_array.size());
+	TangentGenerationContextUserData triangle_data;
+	triangle_data.vertices.resize(vertex_array.size());
 	int idx = 0;
 	for (List<Vertex>::Element *E = vertex_array.front(); E; E = E->next()) {
-		vtx.write[idx++] = E;
+		triangle_data.vertices.write[idx++] = E;
 		E->get().binormal = Vector3();
 		E->get().tangent = Vector3();
 	}
-	msc.m_pUserData = &vtx;
+	triangle_data.indices.resize(index_array.size());
+	idx = 0;
+	for (List<int>::Element *E = index_array.front(); E; E = E->next()) {
+		triangle_data.indices.write[idx++] = E;
+	}
+	msc.m_pUserData = &triangle_data;
 
 	bool res = genTangSpaceDefault(&msc);
 
 	ERR_FAIL_COND(!res);
 	format |= Mesh::ARRAY_FORMAT_TANGENT;
-
-	if (indexed) {
-		index();
-	}
 }
 
 void SurfaceTool::generate_normals(bool p_flip) {
