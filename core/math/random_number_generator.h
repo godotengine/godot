@@ -53,7 +53,12 @@ public:
 
 	_FORCE_INLINE_ real_t randf() { return randbase.randf(); }
 
-	_FORCE_INLINE_ real_t rand_range(real_t from, real_t to) { return randbase.random(from, to); }
+	_FORCE_INLINE_ real_t randf_range(real_t from, real_t to) { return randbase.random(from, to); }
+
+	_FORCE_INLINE_ int randi_range(int from, int to) {
+		unsigned int ret = randbase.rand();
+		return ret % (to - from + 1) + from;
+	}
 
 	RandomNumberGenerator();
 };
