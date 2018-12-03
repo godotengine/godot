@@ -727,16 +727,28 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			}
 		} break;
 
-		case WM_SIZE: {
-			int window_w = LOWORD(lParam);
-			int window_h = HIWORD(lParam);
-			if (window_w > 0 && window_h > 0 && !preserve_window_size) {
-				video_mode.width = window_w;
-				video_mode.height = window_h;
-			} else {
-				preserve_window_size = false;
-				set_window_size(Size2(video_mode.width, video_mode.height));
+		case WM_MOVE: {
+			if (!IsIconic(hWnd)) {
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				last_pos = Point2(x, y);
 			}
+		} break;
+
+		case WM_SIZE: {
+			// Ignore size when a SIZE_MINIMIZED event is triggered
+			if (wParam != SIZE_MINIMIZED) {
+				int window_w = LOWORD(lParam);
+				int window_h = HIWORD(lParam);
+				if (window_w > 0 && window_h > 0 && !preserve_window_size) {
+					video_mode.width = window_w;
+					video_mode.height = window_h;
+				} else {
+					preserve_window_size = false;
+					set_window_size(Size2(video_mode.width, video_mode.height));
+				}
+			}
+
 			if (wParam == SIZE_MAXIMIZED) {
 				maximized = true;
 				minimized = false;
@@ -1685,6 +1697,10 @@ int OS_Windows::get_screen_dpi(int p_screen) const {
 
 Point2 OS_Windows::get_window_position() const {
 
+	if (minimized) {
+		return last_pos;
+	}
+
 	RECT r;
 	GetWindowRect(hWnd, &r);
 	return Point2(r.left, r.top);
@@ -1705,8 +1721,14 @@ void OS_Windows::set_window_position(const Point2 &p_position) {
 		ClientToScreen(hWnd, (POINT *)&rect.right);
 		ClipCursor(&rect);
 	}
+
+	last_pos = p_position;
 }
 Size2 OS_Windows::get_window_size() const {
+
+	if (minimized) {
+		return Size2(video_mode.width, video_mode.height);
+	}
 
 	RECT r;
 	if (GetClientRect(hWnd, &r)) { // Only area inside of window border
