@@ -99,6 +99,70 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 
+	bool is_package_name_valid(const String &p_package, String *r_error = NULL) const {
+
+		String pname = p_package;
+
+		if (pname.length() == 0) {
+			if (r_error) {
+				*r_error = "Identifier is missing.";
+			}
+			return false;
+		}
+
+		int segments = 0;
+		bool first = true;
+		for (int i = 0; i < pname.length(); i++) {
+			CharType c = pname[i];
+			if (first && c == '.') {
+				if (r_error) {
+					*r_error = "Identifier segments must be of non-zero length.";
+				}
+				return false;
+			}
+			if (c == '.') {
+				segments++;
+				first = true;
+				continue;
+			}
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+				if (r_error) {
+					*r_error = "The character '" + String::chr(c) + "' is not allowed in Identifier.";
+				}
+				return false;
+			}
+			if (first && (c >= '0' && c <= '9')) {
+				if (r_error) {
+					*r_error = "A digit cannot be the first character in a Identifier segment.";
+				}
+				return false;
+			}
+			if (first && c == '_') {
+				if (r_error) {
+					*r_error = "The character '" + String::chr(c) + "' cannot be the first character in a Identifier segment.";
+				}
+				return false;
+			}
+			first = false;
+		}
+
+		if (segments == 0) {
+			if (r_error) {
+				*r_error = "The Identifier must have at least one '.' separator.";
+			}
+			return false;
+		}
+
+		if (first) {
+			if (r_error) {
+				*r_error = "Identifier segments must be of non-zero length.";
+			}
+			return false;
+		}
+
+		return true;
+	}
+
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
 	virtual void get_export_options(List<ExportOption> *r_options);
@@ -985,6 +1049,12 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	String team_id = p_preset->get("application/app_store_team_id");
 	if (team_id.length() == 0) {
 		err += "App Store Team ID not specified - cannot configure the project.\n";
+	}
+
+	String identifier = p_preset->get("application/identifier");
+	String pn_err;
+	if (!is_package_name_valid(identifier, &pn_err)) {
+		err += "Invalid Identifier - " + pn_err + "\n";
 	}
 
 	for (unsigned int i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
