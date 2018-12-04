@@ -147,9 +147,9 @@ def setup_msvc_auto(env):
     # Note: actual compiler version can be found in env['MSVC_VERSION'], e.g. "14.1" for VS2015
     # Get actual target arch into bits (it may be "default" at this point):
     if env['TARGET_ARCH'] in ('amd64', 'x86_64'):
-        env['bits'] = 64
+        env['bits'] = '64'
     else:
-        env['bits'] = 32
+        env['bits'] = '32'
     print(" Found MSVC version %s, arch %s, bits=%s" % (env['MSVC_VERSION'], env['TARGET_ARCH'], env['bits']))
     if env['TARGET_ARCH'] in ('amd64', 'x86_64'):
         env["x86_libtheora_opt_vc"] = False
