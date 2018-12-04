@@ -339,7 +339,7 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *ysort_owner = item_owner;
 			while (ysort_owner && ysort_owner->sort_y) {
 				item_owner->ysort_children_count = -1;
-				ysort_owner = canvas_item_owner.getornull(ysort_owner->parent);
+				ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
 			}
 		}
 
@@ -363,7 +363,7 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 			Item *ysort_owner = item_owner;
 			while (ysort_owner && ysort_owner->sort_y) {
 				item_owner->ysort_children_count = -1;
-				ysort_owner = canvas_item_owner.getornull(ysort_owner->parent);
+				ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
 			}
 
 		} else {
@@ -1354,7 +1354,7 @@ bool VisualServerCanvas::free(RID p_rid) {
 				Item *ysort_owner = item_owner;
 				while (ysort_owner && ysort_owner->sort_y) {
 					item_owner->ysort_children_count = -1;
-					ysort_owner = canvas_item_owner.getornull(ysort_owner->parent);
+					ysort_owner = canvas_item_owner.owns(ysort_owner->parent) ? canvas_item_owner.getornull(ysort_owner->parent) : NULL;
 				}
 			}
 		}
