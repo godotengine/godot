@@ -569,8 +569,8 @@ msgstr "คำเตือน"
 
 #: editor/code_editor.cpp
 #, fuzzy
-msgid "Zoom:"
-msgstr "ซูม (%):"
+msgid "Font Size:"
+msgstr "ขนาดฟอนต์ต้นฉบับ:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1724,6 +1724,12 @@ msgstr "ทำไม่ได้ถ้าไม่มีฉาก"
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr "บันทึกฉากไม่ได้ อาจจะมีการอ้างอิงไม่สมบูรณ์ (อินสแตนซ์หรือการสืบทอด)"
@@ -2145,7 +2151,7 @@ msgid "Undo"
 msgstr "เลิกทำ"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "ทำซ้ำ"
 
@@ -9258,7 +9264,7 @@ msgstr "ต้องมีรูปทรงเพื่อให้ CollisionSh
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "ไม่มีการแสดงผลเนื่องจากไม่ได้กำหนด mesh ใน draw pass"
 
 #: scene/3d/cpu_particles.cpp
@@ -9507,6 +9513,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Zoom:"
+#~ msgstr "ซูม (%):"
 
 #~ msgid "Class List:"
 #~ msgstr "รายชื่อคลาส:"
@@ -10209,9 +10219,6 @@ msgstr ""
 
 #~ msgid "Source Font:"
 #~ msgstr "ฟอนต์ต้นฉบับ:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "ขนาดฟอนต์ต้นฉบับ:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "นำเข้ามาเป็นรีซอร์ส:"

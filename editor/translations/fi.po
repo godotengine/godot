@@ -545,8 +545,9 @@ msgid "Warnings:"
 msgstr "Varoitukset:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Lähennä:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Etunäkymä"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1707,6 +1708,12 @@ msgstr "Tätä toimintoa ei voi tehdä ilman että puun juuri on olemassa."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2139,7 +2146,7 @@ msgid "Undo"
 msgstr "Peru"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Tee uudelleen"
 
@@ -9193,7 +9200,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
 "Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
 "passes)."
@@ -9455,6 +9462,9 @@ msgstr "Sijoitus uniformille."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
+
+#~ msgid "Zoom:"
+#~ msgstr "Lähennä:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "Oletko varma, että haluat poistaa kaikki yhteydet kohteesta \""

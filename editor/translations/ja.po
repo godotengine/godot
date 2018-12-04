@@ -560,8 +560,9 @@ msgid "Warnings:"
 msgstr "警告:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "ズーム:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "ソース　フォントサイズ:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1715,6 +1716,12 @@ msgstr "この操作は、ツリーの root なしでは実行できません。
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2156,7 +2163,7 @@ msgid "Undo"
 msgstr "元に戻す"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "やり直す"
 
@@ -9706,7 +9713,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "描画パスのためのメッシュが指定されていませんので見えません"
 
 #: scene/3d/cpu_particles.cpp
@@ -9973,6 +9980,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Zoom:"
+#~ msgstr "ズーム:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "\" から全ての接続を除去してもよろしいですか"
@@ -10753,10 +10763,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Source Font:"
 #~ msgstr "ソース　フォント:"
-
-#, fuzzy
-#~ msgid "Source Font Size:"
-#~ msgstr "ソース　フォントサイズ:"
 
 #, fuzzy
 #~ msgid "Dest Resource:"

@@ -547,8 +547,9 @@ msgid "Warnings:"
 msgstr "Avisos:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Zoom:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Mida de la lletra:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1711,6 +1712,12 @@ msgstr "Aquesta operació no es pot fer sense cap arrel d'arbre."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2154,7 +2161,7 @@ msgid "Undo"
 msgstr "Desfés"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Refés"
 
@@ -9316,7 +9323,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Res és visible perquè no s'ha assignat cap Malla a cap pas de Dibuix."
 
 #: scene/3d/cpu_particles.cpp
@@ -9583,6 +9590,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Zoom:"
+#~ msgstr "Zoom:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "Esteu segur que voleu eliminar totes les connexions de \""
@@ -10276,9 +10286,6 @@ msgstr ""
 
 #~ msgid "Source Font:"
 #~ msgstr "Lletra:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Mida de la lletra:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Recurs Objectiu:"

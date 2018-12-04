@@ -598,8 +598,9 @@ msgid "Warnings:"
 msgstr "Avertissements :"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Agrandissement (%) :"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Taille de la police source :"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1740,6 +1741,12 @@ msgstr "Cette opération ne peut être réalisée sans une arborescence racine."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2191,7 +2198,7 @@ msgid "Undo"
 msgstr "Annuler"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Refaire"
 
@@ -9257,7 +9264,7 @@ msgstr ""
 "de forme pour cette CollisionShape !"
 
 #: scene/3d/cpu_particles.cpp
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Rien n'est visible car aucun maillage n'a été assigné."
 
 #: scene/3d/cpu_particles.cpp
@@ -9524,6 +9531,9 @@ msgstr "Affectation à l'uniforme."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
+
+#~ msgid "Zoom:"
+#~ msgstr "Agrandissement (%) :"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "Voulez-vous vraiment supprimer toutes les connexions du ''"
@@ -10251,9 +10261,6 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 
 #~ msgid "Source Font:"
 #~ msgstr "Police source :"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Taille de la police source :"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Ressource de destination :"

@@ -551,8 +551,9 @@ msgid "Warnings:"
 msgstr "Advertencias:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Zoom:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Tamaño de la Tipografía de Origen:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1692,6 +1693,12 @@ msgstr "Esta operación no puede hacerse sin una raíz de árbol."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2137,7 +2144,7 @@ msgid "Undo"
 msgstr "Deshacer"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Rehacer"
 
@@ -9168,7 +9175,8 @@ msgstr ""
 "shape!"
 
 #: scene/3d/cpu_particles.cpp
-msgid "Nothing is visible because no mesh has not been assigned."
+#, fuzzy
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nada visible ya que no se asignó ningún mesh."
 
 #: scene/3d/cpu_particles.cpp
@@ -9432,6 +9440,9 @@ msgstr "Asignación a uniform."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Solo se pueden asignar variaciones en funciones de vértice."
+
+#~ msgid "Zoom:"
+#~ msgstr "Zoom:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "¿Estás seguro/a que querés quitar todas las conexiones de el/la \""
@@ -10155,9 +10166,6 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 
 #~ msgid "Source Font:"
 #~ msgstr "Tipografía de Origen:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Tamaño de la Tipografía de Origen:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Recurso de Dest:"

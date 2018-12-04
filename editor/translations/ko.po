@@ -550,8 +550,9 @@ msgid "Warnings:"
 msgstr "경고:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "확대:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "소스 폰트 크기:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1685,6 +1686,12 @@ msgstr "이 작업은 트리 루트 없이는 불가합니다."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2115,7 +2122,7 @@ msgid "Undo"
 msgstr "되돌리기"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "다시 실행"
 
@@ -9097,7 +9104,8 @@ msgstr ""
 "를 만드세요!"
 
 #: scene/3d/cpu_particles.cpp
-msgid "Nothing is visible because no mesh has not been assigned."
+#, fuzzy
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "지정된 메시가 없으므로 아무것도 보이지 않습니다."
 
 #: scene/3d/cpu_particles.cpp
@@ -9352,6 +9360,9 @@ msgstr "균일하게 배치함."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
+
+#~ msgid "Zoom:"
+#~ msgstr "확대:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "\" 에서 모든 연결을 제거하시겠습니까"
@@ -10051,9 +10062,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Source Font:"
 #~ msgstr "소스 폰트:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "소스 폰트 크기:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "리소스 경로:"

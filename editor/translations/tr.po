@@ -582,8 +582,8 @@ msgstr "Uyarılar"
 
 #: editor/code_editor.cpp
 #, fuzzy
-msgid "Zoom:"
-msgstr "Yaklaş (%):"
+msgid "Font Size:"
+msgstr "Kaynak Yazı Türü Boyutu:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1745,6 +1745,12 @@ msgstr "Bu işlem bir kök sahne olmadan yapılamaz."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2184,7 +2190,7 @@ msgid "Undo"
 msgstr "Geri"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Geri"
 
@@ -9375,7 +9381,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
 "Hiçbirşey görünebilir değil çünkü örüntüler çizim geçişlerine atanmış değil."
 
@@ -9645,6 +9651,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Zoom:"
+#~ msgstr "Yaklaş (%):"
 
 #~ msgid "Class List:"
 #~ msgstr "Sınıf Listesi:"
@@ -10345,9 +10355,6 @@ msgstr ""
 
 #~ msgid "Source Font:"
 #~ msgstr "Yazı Türü Kaynağı:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Kaynak Yazı Türü Boyutu:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Varış Kaynağı:"

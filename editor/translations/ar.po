@@ -567,8 +567,8 @@ msgstr ""
 
 #: editor/code_editor.cpp
 #, fuzzy
-msgid "Zoom:"
-msgstr "تقريب"
+msgid "Font Size:"
+msgstr "حجم الخطوط:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1729,6 +1729,12 @@ msgstr "هذه العملية لا يمكنها الإكتمال من غير ج�
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr "لا يمكن حفظ المشهد. على الأرجح لا يمكن إستيفاء التبعيات (مجسّدات)."
@@ -2163,7 +2169,7 @@ msgid "Undo"
 msgstr "تراجع"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "إعادة"
 
@@ -9208,7 +9214,7 @@ msgid ""
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp
@@ -9437,6 +9443,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Zoom:"
+#~ msgstr "تقريب"
 
 #~ msgid "Class List:"
 #~ msgstr "قائمة الأصناف:"

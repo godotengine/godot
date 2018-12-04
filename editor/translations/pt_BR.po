@@ -579,8 +579,9 @@ msgid "Warnings:"
 msgstr "Avisos:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Ampliação:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Tamanho da Fonte de Origem:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1738,6 +1739,12 @@ msgstr "Essa operação não pode ser realizada sem uma raiz da cena."
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2181,7 +2188,7 @@ msgid "Undo"
 msgstr "Desfazer"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Refazer"
 
@@ -9377,7 +9384,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
 "Nada está visível porque as meshes não foram atribuídas a passes de desenho."
 
@@ -9646,6 +9653,9 @@ msgstr "Atribuição à uniforme."
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Variáveis só podem ser atribuídas na função de vértice."
+
+#~ msgid "Zoom:"
+#~ msgstr "Ampliação:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "Tem certeza que quer remover todas conexões do \""
@@ -10371,9 +10381,6 @@ msgstr "Variáveis só podem ser atribuídas na função de vértice."
 
 #~ msgid "Source Font:"
 #~ msgstr "Fonte Origem:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Tamanho da Fonte de Origem:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Recurso Destino:"

@@ -546,8 +546,9 @@ msgid "Warnings:"
 msgstr "Προειδοποιήσεις:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Μεγέθυνση:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Μέγεθος πηγαίας γραμματοσειράς:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1709,6 +1710,12 @@ msgstr "Αυτή η λειτουργία δεν μπορεί να γίνει χ�
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2161,7 +2168,7 @@ msgid "Undo"
 msgstr "Αναίρεση"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Ακύρωση αναίρεσης"
 
@@ -9332,7 +9339,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
 "Τίποτα δεν είναι ορατό, επειδή δεν έχουν οριστεί περάσματα για τα πλέγματα."
 
@@ -9602,6 +9609,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Zoom:"
+#~ msgstr "Μεγέθυνση:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr ""
@@ -10319,9 +10329,6 @@ msgstr ""
 
 #~ msgid "Source Font:"
 #~ msgstr "Πηγαία γραμματοσειρά:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Μέγεθος πηγαίας γραμματοσειράς:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Πόρος προορισμού:"

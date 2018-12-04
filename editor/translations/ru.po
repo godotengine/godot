@@ -569,8 +569,9 @@ msgid "Warnings:"
 msgstr "Предупреждения:"
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "Приближение:"
+#, fuzzy
+msgid "Font Size:"
+msgstr "Исходный размер шрифта:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1709,6 +1710,12 @@ msgstr "Эта операция не может быть выполнена бе
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
@@ -2146,7 +2153,7 @@ msgid "Undo"
 msgstr "Отменить"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Повторить"
 
@@ -9223,7 +9230,7 @@ msgstr ""
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
-msgid "Nothing is visible because no mesh has not been assigned."
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Ничего не видно, потому что полисетки не были назначены на отрисовку."
 
 #: scene/3d/cpu_particles.cpp
@@ -9496,6 +9503,9 @@ msgstr "Назначить форму"
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Переменные могут быть назначены только в функции вершин."
+
+#~ msgid "Zoom:"
+#~ msgstr "Приближение:"
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "Вы уверены, что хотите удалить все подключения от \""
@@ -10211,9 +10221,6 @@ msgstr "Переменные могут быть назначены только
 
 #~ msgid "Source Font:"
 #~ msgstr "Исходный шрифт:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "Исходный размер шрифта:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "Ресурс назначения:"

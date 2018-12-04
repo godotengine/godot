@@ -571,8 +571,9 @@ msgid "Warnings:"
 msgstr "警告："
 
 #: editor/code_editor.cpp
-msgid "Zoom:"
-msgstr "缩放："
+#, fuzzy
+msgid "Font Size:"
+msgstr "源字体大小:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1694,6 +1695,12 @@ msgstr "此操作必须在打开一个场景后才能执行。"
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr "无法保存场景，依赖项（实例或基类）验证失败。"
@@ -2109,7 +2116,7 @@ msgid "Undo"
 msgstr "撤销"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "重做"
 
@@ -9013,7 +9020,8 @@ msgstr ""
 "源！"
 
 #: scene/3d/cpu_particles.cpp
-msgid "Nothing is visible because no mesh has not been assigned."
+#, fuzzy
+msgid "Nothing is visible because no mesh has been assigned."
 msgstr "无物可见，因为没有未被分配的网格(mesh)。"
 
 #: scene/3d/cpu_particles.cpp
@@ -9255,6 +9263,9 @@ msgstr "对uniform的赋值。"
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
+
+#~ msgid "Zoom:"
+#~ msgstr "缩放："
 
 #~ msgid "Are you sure you want to remove all connections from the \""
 #~ msgstr "您确定要移除所有广播连接从 \""
@@ -9971,9 +9982,6 @@ msgstr "变量只能在顶点函数中指定。"
 
 #~ msgid "Source Font:"
 #~ msgstr "源字体文件:"
-
-#~ msgid "Source Font Size:"
-#~ msgstr "源字体大小:"
 
 #~ msgid "Dest Resource:"
 #~ msgstr "目标资源:"
