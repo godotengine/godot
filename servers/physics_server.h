@@ -697,6 +697,9 @@ public:
 		G6DOF_JOINT_LINEAR_DAMPING,
 		G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY,
 		G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT,
+		G6DOF_JOINT_LINEAR_SPRING_STIFFNESS,
+		G6DOF_JOINT_LINEAR_SPRING_DAMPING,
+		G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT,
 		G6DOF_JOINT_ANGULAR_LOWER_LIMIT,
 		G6DOF_JOINT_ANGULAR_UPPER_LIMIT,
 		G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS,
@@ -706,6 +709,9 @@ public:
 		G6DOF_JOINT_ANGULAR_ERP,
 		G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY,
 		G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT,
+		G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS,
+		G6DOF_JOINT_ANGULAR_SPRING_DAMPING,
+		G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT,
 		G6DOF_JOINT_MAX
 	};
 
@@ -713,6 +719,8 @@ public:
 
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT,
+		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING,
+		G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING,
 		G6DOF_JOINT_FLAG_ENABLE_MOTOR,
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR,
 		G6DOF_JOINT_FLAG_MAX
@@ -725,6 +733,9 @@ public:
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
+
+	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) = 0;
+	virtual int generic_6dof_joint_get_precision(RID p_joint) = 0;
 
 	/* QUERY API */
 
@@ -743,6 +754,8 @@ public:
 	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
 	virtual void finish() = 0;
+
+	virtual bool is_flushing_queries() const = 0;
 
 	enum ProcessInfo {
 

@@ -13,6 +13,9 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased">
+			Controls whether the font should be rendered with anti-aliasing.
+		</member>
 		<member name="font_path" type="String" setter="set_font_path" getter="get_font_path">
 			The path to the vector font file.
 		</member>

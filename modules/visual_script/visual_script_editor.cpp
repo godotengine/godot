@@ -1923,7 +1923,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
-void VisualScriptEditor::_selected_method(const String &p_method, const String &p_type) {
+void VisualScriptEditor::_selected_method(const String &p_method, const String &p_type, const bool p_connecting) {
 
 	Ref<VisualScriptFunctionCall> vsfc = script->get_node(edited_func, selecting_method_id);
 	if (!vsfc.is_valid())

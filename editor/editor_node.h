@@ -121,8 +121,8 @@ private:
 		FILE_NEW_SCENE,
 		FILE_NEW_INHERITED_SCENE,
 		FILE_OPEN_SCENE,
-		FILE_SAVE_SCENE,
 		SETTING_PLUGIN_UPDATE,
+		FILE_SAVE_SCENE,
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_BEFORE_RUN,
@@ -181,7 +181,6 @@ private:
 		SETTINGS_HELP,
 		SCENE_TAB_CLOSE,
 
-		HELP_CLASSES,
 		HELP_SEARCH,
 		HELP_DOCS,
 		HELP_QA,
@@ -357,6 +356,7 @@ private:
 	EditorExport *editor_export;
 
 	Object *current;
+	Ref<Resource> saving_resource;
 
 	bool _playing_edited;
 	String run_custom_filename;
@@ -446,6 +446,7 @@ private:
 	void _show_messages();
 	void _vp_resized();
 
+	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
@@ -524,6 +525,8 @@ private:
 		String password;
 
 	} export_defer;
+
+	bool disable_progress_dialog;
 
 	static EditorNode *singleton;
 
@@ -605,6 +608,8 @@ private:
 
 	static void _resource_saved(RES p_resource, const String &p_path);
 	static void _resource_loaded(RES p_resource, const String &p_path);
+
+	void _resources_changed(const PoolVector<String> &p_resources);
 
 protected:
 	void _notification(int p_what);

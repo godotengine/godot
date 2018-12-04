@@ -239,10 +239,6 @@
 			</argument>
 			<argument index="3" name="normal_map" type="RID">
 			</argument>
-			<argument index="4" name="h_frames" type="int">
-			</argument>
-			<argument index="5" name="v_frames" type="int">
-			</argument>
 			<description>
 				Adds a particles system to the [CanvasItem]'s draw commands.
 			</description>
@@ -1117,11 +1113,13 @@
 			</argument>
 			<argument index="2" name="depth_begin" type="float">
 			</argument>
-			<argument index="3" name="depth_curve" type="float">
+			<argument index="3" name="depth_end" type="float">
 			</argument>
-			<argument index="4" name="transmit" type="bool">
+			<argument index="4" name="depth_curve" type="float">
 			</argument>
-			<argument index="5" name="transmit_curve" type="float">
+			<argument index="5" name="transmit" type="bool">
+			</argument>
+			<argument index="6" name="transmit_curve" type="float">
 			</argument>
 			<description>
 			</description>

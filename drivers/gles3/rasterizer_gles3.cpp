@@ -79,12 +79,6 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 
 #ifdef GLAD_ENABLED
 // Restricting to GLAD as only used in initialize() with GLAD_GL_ARB_debug_output
-#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
-#define GLAPIENTRY APIENTRY
-#else
-#define GLAPIENTRY
-#endif
-
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
@@ -432,7 +426,6 @@ void RasterizerGLES3::make_current() {
 
 void RasterizerGLES3::register_config() {
 
-	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);

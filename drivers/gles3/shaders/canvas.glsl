@@ -138,6 +138,11 @@ void main() {
 	highp vec4 outvec = vec4(vertex, 0.0, 1.0);
 #endif
 
+#ifdef USE_PARTICLES
+	//scale by texture size
+	outvec.xy /= color_texpixel_size;
+#endif
+
 #define extra_matrix extra_matrix_instance
 
 	{
@@ -472,6 +477,7 @@ void main() {
 
 #if defined(NORMALMAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
+		normal_used = true;
 #endif
 
 		/* clang-format off */

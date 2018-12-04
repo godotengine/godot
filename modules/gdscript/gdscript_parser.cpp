@@ -3752,6 +3752,19 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				BlockNode *block = alloc_node<BlockNode>();
 				block->parent_class = p_class;
 
+				FunctionNode *function = alloc_node<FunctionNode>();
+				function->name = name;
+				function->arguments = arguments;
+				function->argument_types = argument_types;
+				function->default_values = default_values;
+				function->_static = _static;
+				function->line = fnline;
+#ifdef DEBUG_ENABLED
+				function->arguments_usage = arguments_usage;
+#endif // DEBUG_ENABLED
+				function->rpc_mode = rpc_mode;
+				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+
 				if (name == "_init") {
 
 					if (_static) {
@@ -3782,7 +3795,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								parenthesis++;
 								while (true) {
 
+									current_function = function;
 									Node *arg = _parse_and_reduce_expression(p_class, _static);
+									current_function = NULL;
 									cparent->arguments.push_back(arg);
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
@@ -3826,19 +3841,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-				FunctionNode *function = alloc_node<FunctionNode>();
-				function->name = name;
 				function->return_type = return_type;
-				function->arguments = arguments;
-				function->argument_types = argument_types;
-				function->default_values = default_values;
-				function->_static = _static;
-				function->line = fnline;
-#ifdef DEBUG_ENABLED
-				function->arguments_usage = arguments_usage;
-#endif // DEBUG_ENABLED
-				function->rpc_mode = rpc_mode;
-				rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
 				if (_static)
 					p_class->static_functions.push_back(function);
@@ -4840,6 +4843,21 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance();
 				if (tokenizer->is_token_literal(0, true)) {
 					enum_name = tokenizer->get_token_literal();
+
+					if (current_class->constant_expressions.has(enum_name)) {
+						_set_error("A constant named '" + String(enum_name) + "' already exists in this class (at line: " +
+								   itos(current_class->constant_expressions[enum_name].expression->line) + ").");
+						return;
+					}
+
+					for (int i = 0; i < current_class->variables.size(); i++) {
+						if (current_class->variables[i].identifier == enum_name) {
+							_set_error("A variable named '" + String(enum_name) + "' already exists in this class (at line: " +
+									   itos(current_class->variables[i].line) + ").");
+							return;
+						}
+					}
+
 					tokenizer->advance();
 				}
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_CURLY_BRACKET_OPEN) {
@@ -4866,25 +4884,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						return;
 					} else { // tokenizer->is_token_literal(0, true)
-						ClassNode::Constant constant;
-
 						StringName const_id = tokenizer->get_token_literal();
 
-						if (current_class->constant_expressions.has(const_id)) {
-							_set_error("A constant named '" + String(const_id) + "' already exists in this class (at line: " +
-									   itos(current_class->constant_expressions[const_id].expression->line) + ").");
-							return;
-						}
-
-						for (int i = 0; i < current_class->variables.size(); i++) {
-							if (current_class->variables[i].identifier == const_id) {
-								_set_error("A variable named '" + String(const_id) + "' already exists in this class (at line: " +
-										   itos(current_class->variables[i].line) + ").");
-								return;
-							}
-						}
-
 						tokenizer->advance();
+
+						ConstantNode *enum_value_expr;
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ASSIGN) {
 							tokenizer->advance();
@@ -4902,23 +4906,20 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 								return;
 							}
 
-							ConstantNode *subexpr_const = static_cast<ConstantNode *>(subexpr);
+							enum_value_expr = static_cast<ConstantNode *>(subexpr);
 
-							if (subexpr_const->value.get_type() != Variant::INT) {
+							if (enum_value_expr->value.get_type() != Variant::INT) {
 								_set_error("Expected an int value for enum");
 								return;
 							}
 
-							last_assign = subexpr_const->value;
-
-							constant.expression = subexpr_const;
+							last_assign = enum_value_expr->value;
 
 						} else {
 							last_assign = last_assign + 1;
-							ConstantNode *cn = alloc_node<ConstantNode>();
-							cn->value = last_assign;
-							cn->datatype = _type_from_variant(cn->value);
-							constant.expression = cn;
+							enum_value_expr = alloc_node<ConstantNode>();
+							enum_value_expr->value = last_assign;
+							enum_value_expr->datatype = _type_from_variant(enum_value_expr->value);
 						}
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
@@ -4926,14 +4927,29 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 
 						if (enum_name != "") {
-							const ConstantNode *cn = static_cast<const ConstantNode *>(constant.expression);
-							enum_dict[const_id] = cn->value;
-						}
+							enum_dict[const_id] = enum_value_expr->value;
+						} else {
+							if (current_class->constant_expressions.has(const_id)) {
+								_set_error("A constant named '" + String(const_id) + "' already exists in this class (at line: " +
+										   itos(current_class->constant_expressions[const_id].expression->line) + ").");
+								return;
+							}
 
-						constant.type.has_type = true;
-						constant.type.kind = DataType::BUILTIN;
-						constant.type.builtin_type = Variant::INT;
-						p_class->constant_expressions.insert(const_id, constant);
+							for (int i = 0; i < current_class->variables.size(); i++) {
+								if (current_class->variables[i].identifier == const_id) {
+									_set_error("A variable named '" + String(const_id) + "' already exists in this class (at line: " +
+											   itos(current_class->variables[i].line) + ").");
+									return;
+								}
+							}
+
+							ClassNode::Constant constant;
+							constant.type.has_type = true;
+							constant.type.kind = DataType::BUILTIN;
+							constant.type.builtin_type = Variant::INT;
+							constant.expression = enum_value_expr;
+							p_class->constant_expressions.insert(const_id, constant);
+						}
 					}
 				}
 
@@ -6419,6 +6435,10 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 	StringName native;
 	if (p_base_type.kind == DataType::GDSCRIPT) {
 		base_gdscript = p_base_type.script_type;
+		if (base_gdscript.is_null() || !base_gdscript->is_valid()) {
+			// GDScript wasn't properly compíled, don't bother trying
+			return false;
+		}
 	} else if (p_base_type.kind == DataType::SCRIPT) {
 		base_script = p_base_type.script_type;
 	} else if (p_base_type.kind == DataType::NATIVE) {
@@ -6457,6 +6477,12 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 			return true;
 		}
 		base_script = base_script->get_base_script();
+	}
+
+	if (native == StringName()) {
+		// Empty native class, might happen in some Script implementations
+		// Just ignore it
+		return false;
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -6901,6 +6927,10 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 	Ref<GDScript> gds;
 	if (base_type.kind == DataType::GDSCRIPT) {
 		gds = base_type.script_type;
+		if (gds.is_null() || !gds->is_valid()) {
+			// GDScript wasn't properly compíled, don't bother trying
+			return false;
+		}
 	}
 
 	Ref<Script> scr;
@@ -6961,6 +6991,12 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		base_type = _type_from_variant(scr.operator Variant());
 		native = scr->get_instance_base_type();
 		scr = scr->get_base_script();
+	}
+
+	if (native == StringName()) {
+		// Empty native class, might happen in some Script implementations
+		// Just ignore it
+		return false;
 	}
 
 	// Check ClassDB

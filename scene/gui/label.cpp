@@ -393,7 +393,7 @@ void Label::regenerate_word_cache() {
 
 	WordCache *last = NULL;
 
-	for (int i = 0; i < xl_text.size() + 1; i++) {
+	for (int i = 0; i <= xl_text.length(); i++) {
 
 		CharType current = i < xl_text.length() ? xl_text[i] : ' '; //always a space at the end, so the algo works
 
@@ -429,12 +429,11 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
-			} else {
+			} else if (current != ' ') {
 				total_char_cache++;
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				total_char_cache--; // do not count spaces
 				if (line_width > 0 || last == NULL || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;

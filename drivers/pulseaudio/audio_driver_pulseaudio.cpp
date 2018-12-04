@@ -346,9 +346,9 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 						for (int j = 0; j < ad->pa_map.channels - 1; j++) {
 							ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
 						}
-						uint32_t l = ad->samples_in[in_idx++];
-						uint32_t r = ad->samples_in[in_idx++];
-						ad->samples_out.write[out_idx++] = ((l >> 1) + (r >> 1)) >> 16;
+						uint32_t l = ad->samples_in[in_idx++] >> 16;
+						uint32_t r = ad->samples_in[in_idx++] >> 16;
+						ad->samples_out.write[out_idx++] = (l + r) / 2;
 					}
 				}
 			}
@@ -374,7 +374,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				const void *ptr = ad->samples_out.ptr();
 				ret = pa_stream_write(ad->pa_str, (char *)ptr + write_ofs, bytes_to_write, NULL, 0LL, PA_SEEK_RELATIVE);
 				if (ret != 0) {
-					ERR_PRINT("pa_stream_write error");
+					ERR_PRINTS("PulseAudio: pa_stream_write error: " + String(pa_strerror(ret)));
 				} else {
 					avail_bytes -= bytes_to_write;
 					write_ofs += bytes_to_write;
@@ -401,6 +401,9 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					break;
 				}
 			}
+
+			avail_bytes = 0;
+			write_ofs = 0;
 		}
 
 		if (ad->pa_rec_str && pa_stream_get_state(ad->pa_rec_str) == PA_STREAM_READY) {

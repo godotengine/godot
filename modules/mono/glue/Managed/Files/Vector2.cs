@@ -215,7 +215,7 @@ namespace Godot
             x = v.x;
             y = v.y;
         }
-        
+
         public Vector2 Slerp(Vector2 b, real_t t)
         {
             real_t theta = AngleTo(b);
@@ -242,7 +242,7 @@ namespace Godot
         private static readonly Vector2 _one = new Vector2(1, 1);
         private static readonly Vector2 _negOne = new Vector2(-1, -1);
         private static readonly Vector2 _inf = new Vector2(Mathf.Inf, Mathf.Inf);
-      
+
         private static readonly Vector2 _up = new Vector2(0, -1);
         private static readonly Vector2 _down = new Vector2(0, 1);
         private static readonly Vector2 _right  = new Vector2(1, 0);

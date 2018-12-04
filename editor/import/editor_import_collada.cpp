@@ -771,7 +771,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 						int binormal_pos = (binormal_src->stride ? binormal_src->stride : 3) * p.indices[src + binormal_ofs];
 						ERR_FAIL_INDEX_V(binormal_pos, binormal_src->array.size(), ERR_INVALID_DATA);
-						Vector3 binormal = Vector3(binormal_src->array[binormal_pos + 0], binormal_src->array[binormal_pos + 1], binormal_src->array[binormal_pos + 2]);
+						Vector3 binormal = Vector3(-binormal_src->array[binormal_pos + 0], -binormal_src->array[binormal_pos + 1], -binormal_src->array[binormal_pos + 2]); // Due to Godots face order it seems we need to flip our binormal!
 
 						int tangent_pos = (tangent_src->stride ? tangent_src->stride : 3) * p.indices[src + tangent_ofs];
 						ERR_FAIL_INDEX_V(tangent_pos, tangent_src->array.size(), ERR_INVALID_DATA);
@@ -1191,6 +1191,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 							if (collada.state.mesh_data_map.has(meshid)) {
 								Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
+								mesh->set_name(meshdata.name);
 								Error err = _create_mesh_surfaces(false, mesh, ng->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
 								ERR_FAIL_COND_V(err, err);
 
@@ -1655,8 +1656,9 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 			}
 
-			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
+			bool singular_matrix = Math::is_equal_approx(s.x, 0.0f) || Math::is_equal_approx(s.y, 0.0f) || Math::is_equal_approx(s.z, 0.0f);
+			Quat q = singular_matrix ? Quat() : xform.basis.get_rotation_quat();
 			Vector3 l = xform.origin;
 
 			animation->transform_track_insert_key(track, snapshots[i], l, q, s);
@@ -1705,8 +1707,9 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 
 			xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
 
-			Quat q = xform.basis.get_rotation_quat();
 			Vector3 s = xform.basis.get_scale();
+			bool singular_matrix = Math::is_equal_approx(s.x, 0.0f) || Math::is_equal_approx(s.y, 0.0f) || Math::is_equal_approx(s.z, 0.0f);
+			Quat q = singular_matrix ? Quat() : xform.basis.get_rotation_quat();
 			Vector3 l = xform.origin;
 
 			animation->transform_track_insert_key(track, 0, l, q, s);

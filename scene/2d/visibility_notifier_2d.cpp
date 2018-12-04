@@ -190,7 +190,7 @@ void VisibilityEnabler2D::_find_nodes(Node *p_node) {
 	if (enabler[ENABLER_FREEZE_BODIES]) {
 
 		RigidBody2D *rb2d = Object::cast_to<RigidBody2D>(p_node);
-		if (rb2d && ((rb2d->get_mode() == RigidBody2D::MODE_CHARACTER || (rb2d->get_mode() == RigidBody2D::MODE_RIGID && !rb2d->is_able_to_sleep())))) {
+		if (rb2d && ((rb2d->get_mode() == RigidBody2D::MODE_CHARACTER || rb2d->get_mode() == RigidBody2D::MODE_RIGID))) {
 
 			add = true;
 			meta = rb2d->get_mode();

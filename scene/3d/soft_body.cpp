@@ -401,7 +401,7 @@ String SoftBody::get_configuration_warning() const {
 	}
 
 	Transform t = get_transform();
-	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(0).length() - 1.0) > 0.05)) {
+	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		if (!warning.empty())
 			warning += "\n\n";
 

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNode" inherits="Resource" category="Core" version="3.1">
 	<brief_description>
+		Base resource for [AnimationTree] nodes.
 	</brief_description>
 	<description>
+		Base resource for [AnimationTree] nodes. In general it's not used directly but you can create custom ones with custom blending formulas.
+	Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +18,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Add an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree]
 			</description>
 		</method>
 		<method name="blend_animation">
@@ -31,6 +35,7 @@
 			<argument index="4" name="blend" type="float">
 			</argument>
 			<description>
+				Blend an animation by "blend" amount (name must be valid in the linked [AnimationPlayer]). A time and delta mas be passed, as well as whether seek happened.
 			</description>
 		</method>
 		<method name="blend_input">
@@ -49,6 +54,7 @@
 			<argument index="5" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
+				Blend an input. This is only useful for nodes created for an AnimationBlendTree. Time is a delta, unless "seek" is true, in which case it is absolute. A filter mode may be optionally passed.
 			</description>
 		</method>
 		<method name="blend_node">
@@ -69,18 +75,37 @@
 			<argument index="6" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
+				Blend another animaiton node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
 			</description>
 		</method>
 		<method name="get_caption" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
+				Get the text caption for this node (used by some editors)
+			</description>
+		</method>
+		<method name="get_child_by_name" qualifiers="virtual">
+			<return type="Object">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Get the a child node by index (used by editors inheriting from [AnimationRootNode]).
+			</description>
+		</method>
+		<method name="get_child_nodes" qualifiers="virtual">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Get all children nodes, in order as a name:node dictionary. Only useful when inheriting [AnimationRootNode].
 			</description>
 		</method>
 		<method name="get_input_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Amount of inputs in this node, only useful for nodes that go into [AnimationBlendTree].
 			</description>
 		</method>
 		<method name="get_input_name">
@@ -89,6 +114,7 @@
 			<argument index="0" name="input" type="int">
 			</argument>
 			<description>
+				Get the name of an input by index.
 			</description>
 		</method>
 		<method name="get_parameter" qualifiers="const">
@@ -97,12 +123,31 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Get the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+			</description>
+		</method>
+		<method name="get_parameter_default_value" qualifiers="virtual">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Get the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+			</description>
+		</method>
+		<method name="get_parameter_list" qualifiers="virtual">
+			<return type="Array">
+			</return>
+			<description>
+				Get the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+			Format is similar to [Object.get_property_list]
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
+				Return true whether you want the blend tree editor to display filter editing on this node.
 			</description>
 		</method>
 		<method name="is_path_filtered" qualifiers="const">
@@ -111,6 +156,7 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
+				Return true wether a given path is filtered.
 			</description>
 		</method>
 		<method name="process" qualifiers="virtual">
@@ -121,6 +167,10 @@
 			<argument index="1" name="seek" type="bool">
 			</argument>
 			<description>
+				Called when a custom node is processed. The argument "time" is relative, unless "seek" is true (in which case it is absolute).
+			Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions.
+			You can also use [method get_parameter] and [method set_parameter] to modify local memory.
+			This function returns the time left for the current animation to finish (if unsure, just pass  the value from the main blend being called).
 			</description>
 		</method>
 		<method name="remove_input">
@@ -129,6 +179,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Remove an input, call this only when inactive.
 			</description>
 		</method>
 		<method name="set_filter_path">
@@ -139,6 +190,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Add/Remove a path for the filter.
 			</description>
 		</method>
 		<method name="set_parameter">
@@ -149,16 +201,19 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
+				Set a custom parameter. These are used as local storage, because resources can be reused across the tree or scenes.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="filter_enabled" type="bool" setter="set_filter_enabled" getter="is_filter_enabled">
+			Return whether filtering is enabled.
 		</member>
 	</members>
 	<signals>
 		<signal name="removed_from_graph">
 			<description>
+				Called when the node was removed from the graph.
 			</description>
 		</signal>
 		<signal name="tree_changed">
@@ -168,12 +223,16 @@
 	</signals>
 	<constants>
 		<constant name="FILTER_IGNORE" value="0" enum="FilterAction">
+			Do not use filtering.
 		</constant>
 		<constant name="FILTER_PASS" value="1" enum="FilterAction">
+			Paths matching the filter will be allowed to pass.
 		</constant>
 		<constant name="FILTER_STOP" value="2" enum="FilterAction">
+			Paths matching the filter will be discarded.
 		</constant>
 		<constant name="FILTER_BLEND" value="3" enum="FilterAction">
+			Paths matching the filter will be blended (by the blend value).
 		</constant>
 	</constants>
 </class>

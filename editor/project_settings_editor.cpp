@@ -810,7 +810,8 @@ void ProjectSettingsEditor::update_plugins() {
 	plugin_settings->update_plugins();
 }
 
-void ProjectSettingsEditor::enable_plugins() {
+
+void ProjectSettingsEditor::enable_plugins(){
 	plugin_settings->flag = this->flag;
 	plugin_settings->enable_plugins();
 }

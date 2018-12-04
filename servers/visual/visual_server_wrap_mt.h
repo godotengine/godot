@@ -430,14 +430,14 @@ public:
 
 	FUNC6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	FUNC6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	FUNC10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
+	FUNC11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
 	FUNC6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
 	FUNC5(environment_set_fog, RID, bool, const Color &, const Color &, float)
-	FUNC6(environment_set_fog_depth, RID, bool, float, float, bool, float)
+	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
 	FUNCRID(scenario)

@@ -154,7 +154,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorSpinSlider::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT || p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT || p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 		if (grabbing_spinner) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			grabbing_spinner = false;

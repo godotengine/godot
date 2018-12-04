@@ -982,10 +982,10 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	Error err = da->rename(old_path, new_path);
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
-		if (p_item.is_file && FileAccess::exists(old_path + ".cache")) {
-			err = da->rename(old_path + ".cache", new_path + ".cache");
+		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
+			err = da->rename(old_path + ".import", new_path + ".import");
 			if (err != OK) {
-				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".cache\n");
+				EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + ".import\n");
 			}
 		}
 
@@ -1038,10 +1038,10 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 	Error err = p_item.is_file ? da->copy(old_path, new_path) : da->copy_dir(old_path, new_path);
 	if (err == OK) {
 		//Move/Rename any corresponding import settings too
-		if (p_item.is_file && FileAccess::exists(old_path + ".cache")) {
-			err = da->copy(old_path + ".cache", new_path + ".cache");
+		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
+			err = da->copy(old_path + ".import", new_path + ".import");
 			if (err != OK) {
-				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".cache\n");
+				EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + ".import\n");
 			}
 		}
 	} else {
@@ -2222,13 +2222,13 @@ void FileSystemDock::_update_import_dock() {
 			break;
 		}
 
-		if (!FileAccess::exists(fpath + ".cache")) {
+		if (!FileAccess::exists(fpath + ".import")) {
 			imports.clear();
 			break;
 		}
 		Ref<ConfigFile> cf;
 		cf.instance();
-		Error err = cf->load(fpath + ".cache");
+		Error err = cf->load(fpath + ".import");
 		if (err != OK) {
 			imports.clear();
 			break;

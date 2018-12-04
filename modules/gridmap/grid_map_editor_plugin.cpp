@@ -802,7 +802,9 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 			VisualServer::get_singleton()->instance_set_visible(grid_instance[i], false);
 		}
 
-		VisualServer::get_singleton()->instance_set_visible(cursor_instance, false);
+		if (cursor_instance.is_valid()) {
+			VisualServer::get_singleton()->instance_set_visible(cursor_instance, false);
+		}
 
 		return;
 	}

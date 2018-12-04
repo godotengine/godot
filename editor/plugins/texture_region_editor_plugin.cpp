@@ -846,7 +846,8 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	p->set_item_checked(0, true);
 	p->connect("id_pressed", this, "_set_snap_mode");
 	hb_grid = memnew(HBoxContainer);
-	hb_tools->add_child(hb_grid);
+	//hb_tools->add_child(hb_grid);
+	main_vb->add_child(hb_grid);
 	hb_grid->add_child(memnew(VSeparator));
 
 	hb_grid->add_child(memnew(Label(TTR("Offset:"))));

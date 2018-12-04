@@ -123,8 +123,8 @@ protected:
 		if (!prop_values.has(p_name) || String(p_name).begins_with("Constants/"))
 			return false;
 
-		emit_signal("value_edited", p_name, p_value);
 		prop_values[p_name] = p_value;
+		emit_signal("value_edited", p_name, p_value);
 		return true;
 	}
 
@@ -467,7 +467,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String type = p_data[1];
 		Array properties = p_data[2];
 
-		bool is_new_object = false;
 		if (remote_objects.has(id)) {
 			debugObj = remote_objects[id];
 		} else {
@@ -475,10 +474,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			debugObj->remote_object_id = id;
 			debugObj->type_name = type;
 			remote_objects[id] = debugObj;
-			is_new_object = true;
 			debugObj->connect("value_edited", this, "_scene_tree_property_value_edited");
 		}
 
+		int old_prop_size = debugObj->prop_list.size();
+
+		debugObj->prop_list.clear();
+		int new_props_added = 0;
+		Set<String> changed;
 		for (int i = 0; i < properties.size(); i++) {
 
 			Array prop = properties[i];
@@ -511,18 +514,34 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				}
 			}
 
-			if (is_new_object) {
-				//don't update.. it's the same, instead refresh
-				debugObj->prop_list.push_back(pinfo);
-			}
+			//always add the property, since props may have been added or removed
+			debugObj->prop_list.push_back(pinfo);
 
-			debugObj->prop_values[pinfo.name] = var;
+			if (!debugObj->prop_values.has(pinfo.name)) {
+				new_props_added++;
+				debugObj->prop_values[pinfo.name] = var;
+			} else {
+
+				if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, debugObj->prop_values[pinfo.name], var))) {
+					debugObj->prop_values[pinfo.name] = var;
+					changed.insert(pinfo.name);
+				}
+			}
 		}
 
 		if (editor->get_editor_history()->get_current() != debugObj->get_instance_id()) {
 			editor->push_item(debugObj, "");
 		} else {
-			debugObj->update();
+
+			if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
+				//only some may have changed, if so, then update those, if exist
+				for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
+					EditorNode::get_singleton()->get_inspector()->update_property(E->get());
+				}
+			} else {
+				//full update, because props were added or removed
+				debugObj->update();
+			}
 		}
 	} else if (p_msg == "message:video_mem") {
 
@@ -583,6 +602,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			String n = p_data[ofs + i * 2 + 0];
 			Variant v = p_data[ofs + i * 2 + 1];
+
 			PropertyHint h = PROPERTY_HINT_NONE;
 			String hs = String();
 
@@ -1022,8 +1042,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (enable_rl) {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
 				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
-			} else
+				inspect_scene_tree->add_constant_override("draw_guides", 0);
+			} else {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
+				inspect_scene_tree->add_constant_override("draw_guides", 1);
+			}
 		} break;
 		case NOTIFICATION_PROCESS: {
 
@@ -2234,7 +2257,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds, this);
 	p_editor->get_undo_redo()->set_property_notify_callback(_property_changeds, this);
-	live_debug = false;
+	live_debug = true;
 	last_path_id = false;
 	error_count = 0;
 	warning_count = 0;

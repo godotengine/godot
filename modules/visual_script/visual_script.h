@@ -341,6 +341,7 @@ public:
 	virtual Error reload(bool p_keep_state = false);
 
 	virtual bool is_tool() const;
+	virtual bool is_valid() const;
 
 	virtual ScriptLanguage *get_language() const;
 

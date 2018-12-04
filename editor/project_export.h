@@ -93,6 +93,8 @@ private:
 	ConfirmationDialog *patch_erase;
 
 	Button *export_button;
+	Button *export_all_button;
+	AcceptDialog *export_all_dialog;
 
 	LineEdit *custom_features;
 	RichTextLabel *custom_feature_display;
@@ -114,6 +116,7 @@ private:
 	void _duplicate_preset();
 	void _delete_preset();
 	void _delete_preset_confirm();
+	void _update_export_all();
 
 	void _update_presets();
 
@@ -143,6 +146,9 @@ private:
 	void _validate_export_path(const String &p_path);
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
+	void _export_all_dialog();
+	void _export_all_dialog_action(const String &p_str);
+	void _export_all(bool p_debug);
 
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);

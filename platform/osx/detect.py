@@ -1,5 +1,6 @@
 import os
 import sys
+from methods import detect_darwin_sdk_path
 
 
 def is_active():
@@ -23,6 +24,7 @@ def get_opts():
 
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
+        ('MACOS_SDK_PATH', 'Path to the macOS SDK', ''),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
     ]
@@ -83,6 +85,10 @@ def configure(env):
             env['RANLIB'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env['AS'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
             env.Append(CCFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+
+        detect_darwin_sdk_path('osx', env)
+        env.Append(CPPFLAGS=['-isysroot', '$MACOS_SDK_PATH'])
+        env.Append(LINKFLAGS=['-isysroot', '$MACOS_SDK_PATH'])
 
     else: # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", 0)

@@ -132,7 +132,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			result.kind = GDScriptDataType::SCRIPT;
 			result.script_type = p_datatype.script_type;
 			result.native_type = result.script_type->get_instance_base_type();
-		}
+		} break;
 		case GDScriptParser::DataType::GDSCRIPT: {
 			result.kind = GDScriptDataType::GDSCRIPT;
 			result.script_type = p_datatype.script_type;
@@ -1603,13 +1603,13 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 	return OK;
 }
 
-Error GDScriptCompiler::_parse_function(Ref<GDScript> p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready) {
+Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready) {
 
 	Vector<int> bytecode;
 	CodeGen codegen;
 
 	codegen.class_node = p_class;
-	codegen.script = p_script.ptr();
+	codegen.script = p_script;
 	codegen.function_node = p_func;
 	codegen.stack_max = 0;
 	codegen.current_line = 0;
@@ -1853,7 +1853,7 @@ Error GDScriptCompiler::_parse_function(Ref<GDScript> p_script, const GDScriptPa
 	return OK;
 }
 
-Error GDScriptCompiler::_parse_class_level(Ref<GDScript> p_script, Ref<GDScript> p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 
 	if (p_class->owner && p_class->owner->owner) {
 		// Owner is not root
@@ -1887,7 +1887,7 @@ Error GDScriptCompiler::_parse_class_level(Ref<GDScript> p_script, Ref<GDScript>
 	p_script->initializer = NULL;
 
 	p_script->subclasses.clear();
-	p_script->_owner = p_owner.ptr();
+	p_script->_owner = p_owner;
 	p_script->tool = p_class->tool;
 	p_script->name = p_class->name;
 
@@ -1994,7 +1994,7 @@ Error GDScriptCompiler::_parse_class_level(Ref<GDScript> p_script, Ref<GDScript>
 
 		StringName name = p_class->_signals[i].name;
 
-		GDScript *c = p_script.ptr();
+		GDScript *c = p_script;
 
 		while (c) {
 
@@ -2054,7 +2054,7 @@ Error GDScriptCompiler::_parse_class_level(Ref<GDScript> p_script, Ref<GDScript>
 	return OK;
 }
 
-Error GDScriptCompiler::_parse_class_blocks(Ref<GDScript> p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 	//parse methods
 
 	bool has_initializer = false;
@@ -2159,7 +2159,7 @@ Error GDScriptCompiler::_parse_class_blocks(Ref<GDScript> p_script, const GDScri
 	return OK;
 }
 
-void GDScriptCompiler::_make_scripts(const Ref<GDScript> p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
+void GDScriptCompiler::_make_scripts(const GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 
 	Map<StringName, Ref<GDScript> > old_subclasses;
 
@@ -2178,20 +2178,20 @@ void GDScriptCompiler::_make_scripts(const Ref<GDScript> p_script, const GDScrip
 			subclass.instance();
 		}
 
-		subclass->_owner = const_cast<GDScript *>(p_script.ptr());
+		subclass->_owner = const_cast<GDScript *>(p_script);
 		class_map.insert(name, subclass);
 
 		_make_scripts(subclass.ptr(), p_class->subclasses[i], p_keep_state);
 	}
 }
 
-Error GDScriptCompiler::compile(const GDScriptParser *p_parser, Ref<GDScript> p_script, bool p_keep_state) {
+Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state) {
 
 	err_line = -1;
 	err_column = -1;
 	error = "";
 	parser = p_parser;
-	main_script = p_script.ptr();
+	main_script = p_script;
 	const GDScriptParser::Node *root = parser->get_parse_tree();
 	ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, ERR_INVALID_DATA);
 

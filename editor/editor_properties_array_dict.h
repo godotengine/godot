@@ -101,6 +101,8 @@ class EditorPropertyArray : public EditorProperty {
 	void _change_type(Object *p_button, int p_index);
 	void _change_type_menu(int p_index);
 
+	void _object_id_selected(const String &p_property, ObjectID p_id);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -134,6 +136,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _change_type_menu(int p_index);
 
 	void _add_key_value();
+	void _object_id_selected(const String &p_property, ObjectID p_id);
 
 protected:
 	static void _bind_methods();

@@ -444,6 +444,7 @@ public:
 		MENU_CLEAR,
 		MENU_SELECT_ALL,
 		MENU_UNDO,
+		MENU_REDO,
 		MENU_MAX
 
 	};

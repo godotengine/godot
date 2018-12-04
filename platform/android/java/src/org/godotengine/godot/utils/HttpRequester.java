@@ -69,7 +69,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
- * 
+ *
  * @author Luis Linietsky <luis.linietsky@gmail.com>
  */
 public class HttpRequester {

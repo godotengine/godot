@@ -28,8 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "java_glue.h"
 #include "android/asset_manager_jni.h"
 #include "audio_driver_jandroid.h"
@@ -268,11 +266,11 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		return ret;
 	};
 
-	if (name == "java.lang.Integer") {
+	if (name == "java.lang.Integer" || name == "java.lang.Long") {
 
 		jclass nclass = env->FindClass("java/lang/Number");
-		jmethodID intValue = env->GetMethodID(nclass, "intValue", "()I");
-		int ret = env->CallIntMethod(obj, intValue);
+		jmethodID longValue = env->GetMethodID(nclass, "longValue", "()J");
+		jlong ret = env->CallLongMethod(obj, longValue);
 		return ret;
 	};
 
@@ -1566,4 +1564,3 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 //Main::cleanup();
 
 //return os.get_exit_code();
-#endif

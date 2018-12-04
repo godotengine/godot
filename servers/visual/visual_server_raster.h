@@ -504,14 +504,14 @@ public:
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	BIND10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
+	BIND11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
 	BIND5(environment_set_fog, RID, bool, const Color &, const Color &, float)
-	BIND6(environment_set_fog_depth, RID, bool, float, float, bool, float)
+	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
 	/* SCENARIO API */

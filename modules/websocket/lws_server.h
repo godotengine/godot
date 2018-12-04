@@ -45,11 +45,16 @@ class LWSServer : public WebSocketServer {
 
 private:
 	Map<int, Ref<LWSPeer> > peer_map;
+	int _in_buf_size;
+	int _in_pkt_size;
+	int _out_buf_size;
+	int _out_pkt_size;
 
 public:
 	Error listen(int p_port, PoolVector<String> p_protocols = PoolVector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;
+	int get_max_packet_size() const;
 	bool has_peer(int p_id) const;
 	Ref<WebSocketPeer> get_peer(int p_id) const;
 	IP_Address get_peer_address(int p_peer_id) const;

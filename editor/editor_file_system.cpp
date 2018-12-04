@@ -328,7 +328,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		return false;
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".cache", FileAccess::READ, &err);
+	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
 	if (!f) { //no import file, do reimport
 		return true;
@@ -361,7 +361,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		if (err == ERR_FILE_EOF) {
 			break;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".cache:" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
 		}
@@ -409,7 +409,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		if (err == ERR_FILE_EOF) {
 			break;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".cache.md5:" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import.md5:" + itos(lines) + " error: " + error_text);
 			memdelete(md5s);
 			return false; // parse error
 		}
@@ -466,6 +466,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	bool fs_changed = false;
 
 	Vector<String> reimports;
+	Vector<String> reloads;
 
 	for (List<ItemAction>::Element *E = scan_actions.front(); E; E = E->next()) {
 
@@ -540,16 +541,29 @@ bool EditorFileSystem::_update_scan_actions() {
 					//must not reimport, all was good
 					//update modified times, to avoid reimport
 					ia.dir->files[idx]->modified_time = FileAccess::get_modified_time(full_path);
-					ia.dir->files[idx]->import_modified_time = FileAccess::get_modified_time(full_path + ".cache");
+					ia.dir->files[idx]->import_modified_time = FileAccess::get_modified_time(full_path + ".import");
 				}
 
 				fs_changed = true;
+			} break;
+			case ItemAction::ACTION_FILE_RELOAD: {
+
+				int idx = ia.dir->find_file_index(ia.file);
+				ERR_CONTINUE(idx == -1);
+				String full_path = ia.dir->get_file_path(idx);
+
+				reloads.push_back(full_path);
+
 			} break;
 		}
 	}
 
 	if (reimports.size()) {
 		reimport_files(reimports);
+	}
+
+	if (reloads.size()) {
+		emit_signal("resources_reload", reloads);
 	}
 	scan_actions.clear();
 
@@ -713,8 +727,8 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 			//is imported
 			uint64_t import_mt = 0;
-			if (FileAccess::exists(path + ".cache")) {
-				import_mt = FileAccess::get_modified_time(path + ".cache");
+			if (FileAccess::exists(path + ".import")) {
+				import_mt = FileAccess::get_modified_time(path + ".import");
 			}
 
 			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && !_test_for_reimport(path, true)) {
@@ -905,10 +919,10 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 			continue;
 		}
 
+		String path = cd.plus_file(p_dir->files[i]->file);
+
 		if (import_extensions.has(p_dir->files[i]->file.get_extension().to_lower())) {
 			//check here if file must be imported or not
-
-			String path = cd.plus_file(p_dir->files[i]->file);
 
 			uint64_t mt = FileAccess::get_modified_time(path);
 
@@ -916,11 +930,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 			if (mt != p_dir->files[i]->modified_time) {
 				reimport = true; //it was modified, must be reimported.
-			} else if (!FileAccess::exists(path + ".cache")) {
-				reimport = true; //no .cache file, obviously reimport
+			} else if (!FileAccess::exists(path + ".import")) {
+				reimport = true; //no .import file, obviously reimport
 			} else {
 
-				uint64_t import_mt = FileAccess::get_modified_time(path + ".cache");
+				uint64_t import_mt = FileAccess::get_modified_time(path + ".import");
 				if (import_mt != p_dir->files[i]->import_modified_time) {
 					reimport = true;
 				} else if (_test_for_reimport(path, true)) {
@@ -932,6 +946,20 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
+				ia.dir = p_dir;
+				ia.file = p_dir->files[i]->file;
+				scan_actions.push_back(ia);
+			}
+		} else if (ResourceCache::has(path)) { //test for potential reload
+
+			uint64_t mt = FileAccess::get_modified_time(path);
+
+			if (mt != p_dir->files[i]->modified_time) {
+
+				p_dir->files[i]->modified_time = mt; //save new time, but test for reload
+
+				ItemAction ia;
+				ia.action = ItemAction::ACTION_FILE_RELOAD;
 				ia.dir = p_dir;
 				ia.file = p_dir->files[i]->file;
 				scan_actions.push_back(ia);
@@ -954,14 +982,14 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 }
 
 void EditorFileSystem::_delete_internal_files(String p_file) {
-	if (FileAccess::exists(p_file + ".cache")) {
+	if (FileAccess::exists(p_file + ".import")) {
 		List<String> paths;
 		ResourceFormatImporter::get_singleton()->get_internal_resource_path_list(p_file, &paths);
 		DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		for (List<String>::Element *E = paths.front(); E; E = E->next()) {
 			da->remove(E->get());
 		}
-		da->remove(p_file + ".cache");
+		da->remove(p_file + ".import");
 		memdelete(da);
 	}
 }
@@ -1468,11 +1496,11 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	Map<StringName, Variant> params;
 	String importer_name;
 
-	if (FileAccess::exists(p_file + ".cache")) {
+	if (FileAccess::exists(p_file + ".import")) {
 		//use existing
 		Ref<ConfigFile> cf;
 		cf.instance();
-		Error err = cf->load(p_file + ".cache");
+		Error err = cf->load(p_file + ".import");
 		if (err == OK) {
 			if (cf->has_section("params")) {
 				List<String> sk;
@@ -1540,9 +1568,9 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		ERR_PRINTS("Error importing: " + p_file);
 	}
 
-	//as import is complete, save the .cache file
+	//as import is complete, save the .import file
 
-	FileAccess *f = FileAccess::open(p_file + ".cache", FileAccess::WRITE);
+	FileAccess *f = FileAccess::open(p_file + ".import", FileAccess::WRITE);
 	ERR_FAIL_COND(!f);
 
 	//write manually, as order matters ([remap] has to go first for performance).
@@ -1622,7 +1650,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	f->close();
 	memdelete(f);
 
-	// Store the md5's of the various files. These are stored separately so that the .cache files can be version controlled.
+	// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
 	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
 	ERR_FAIL_COND(!md5s);
 	md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
@@ -1634,7 +1662,7 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
-	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".cache");
+	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file + ".import");
 	fs->files[cpos]->deps = _get_dependencies(p_file);
 	fs->files[cpos]->type = importer->get_resource_type();
 	fs->files[cpos]->import_valid = ResourceLoader::is_import_valid(p_file);
@@ -1658,13 +1686,13 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
-	{ //check that .cache folder exists
+	{ //check that .import folder exists
 		DirAccess *da = DirAccess::open("res://");
-		if (da->change_dir(".cache") != OK) {
-			Error err = da->make_dir(".cache");
+		if (da->change_dir(".import") != OK) {
+			Error err = da->make_dir(".import");
 			if (err) {
 				memdelete(da);
-				ERR_EXPLAIN("Failed to create 'res://.cache' folder.");
+				ERR_EXPLAIN("Failed to create 'res://.import' folder.");
 				ERR_FAIL_COND(err != OK);
 			}
 		}
@@ -1726,6 +1754,7 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
+	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
 }
 
 void EditorFileSystem::_update_extensions() {
@@ -1769,8 +1798,8 @@ EditorFileSystem::EditorFileSystem() {
 	scanning_changes_done = false;
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da->change_dir("res://.cache") != OK) {
-		da->make_dir("res://.cache");
+	if (da->change_dir("res://.import") != OK) {
+		da->make_dir("res://.import");
 	}
 	memdelete(da);
 

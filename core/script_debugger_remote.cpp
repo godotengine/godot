@@ -108,7 +108,7 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	}
 
 	int len = 0;
-	Error err = encode_variant(var, NULL, len);
+	Error err = encode_variant(var, NULL, len, true);
 	if (err != OK)
 		ERR_PRINT("Failed to encode variant");
 

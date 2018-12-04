@@ -33,8 +33,6 @@
 
 #include "servers/audio_server.h"
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "java_glue.h"
 
 class AudioDriverAndroid : public AudioDriver {
@@ -78,5 +76,4 @@ public:
 	AudioDriverAndroid();
 };
 
-#endif
 #endif // AUDIO_DRIVER_ANDROID_H

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "particles.h"
+#include "scene/resources/particles_material.h"
 
 #include "servers/visual_server.h"
 
@@ -226,15 +227,27 @@ String Particles::get_configuration_warning() const {
 	String warnings;
 
 	bool meshes_found = false;
+	bool anim_material_found = false;
 
 	for (int i = 0; i < draw_passes.size(); i++) {
 		if (draw_passes[i].is_valid()) {
 			meshes_found = true;
-			break;
+			for (int j = 0; j < draw_passes[i]->get_surface_count(); j++) {
+				anim_material_found = Object::cast_to<ShaderMaterial>(draw_passes[i]->surface_get_material(j).ptr()) != NULL;
+				SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(draw_passes[i]->surface_get_material(j).ptr());
+				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
+			}
+			if (meshes_found && anim_material_found) break;
 		}
 	}
 
+	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != NULL;
+	SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(get_material_override().ptr());
+	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
+
 	if (!meshes_found) {
+		if (warnings != String())
+			warnings += "\n";
 		warnings += "- " + TTR("Nothing is visible because meshes have not been assigned to draw passes.");
 	}
 
@@ -242,6 +255,15 @@ String Particles::get_configuration_warning() const {
 		if (warnings != String())
 			warnings += "\n";
 		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+	} else {
+		const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
+		if (!anim_material_found && process &&
+				(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
+						process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
+			if (warnings != String())
+				warnings += "\n";
+			warnings += "- " + TTR("Particles animation requires the usage of a SpatialMaterial with \"Billboard Particles\" enabled.");
+		}
 	}
 
 	return warnings;

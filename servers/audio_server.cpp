@@ -460,6 +460,14 @@ void AudioServer::_mix_step() {
 	to_mix = buffer_size;
 }
 
+bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
+	if (p_bus < 0 || p_bus >= buses.size())
+		return false;
+	if (p_buffer < 0 || p_buffer >= buses[p_bus]->channels.size())
+		return false;
+	return true;
+}
+
 AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) {
 
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), NULL);
@@ -1017,7 +1025,7 @@ void AudioServer::update() {
 
 void AudioServer::load_default_bus_layout() {
 
-	if (FileAccess::exists("res://default_bus_layout.tres")) {
+	if (ResourceLoader::exists("res://default_bus_layout.tres")) {
 		Ref<AudioBusLayout> default_layout = ResourceLoader::load("res://default_bus_layout.tres");
 		if (default_layout.is_valid()) {
 			set_bus_layout(default_layout);

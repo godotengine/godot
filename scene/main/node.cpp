@@ -157,7 +157,7 @@ void Node::_notification(int p_notification) {
 			// kill children as cleanly as possible
 			while (data.children.size()) {
 
-				Node *child = data.children[0];
+				Node *child = data.children[data.children.size() - 1]; //begin from the end because its faster and more consistent with creation
 				remove_child(child);
 				memdelete(child);
 			}
@@ -1008,6 +1008,32 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	}
 }
 
+// Return s + 1 as if it were an integer
+String increase_numeric_string(const String &s) {
+
+	String res = s;
+	bool carry = res.length() > 0;
+
+	for (int i = res.length() - 1; i >= 0; i--) {
+		if (!carry) {
+			break;
+		}
+		CharType n = s[i];
+		if (n == '9') { // keep carry as true: 9 + 1
+			res[i] = '0';
+		} else {
+			res[i] = s[i] + 1;
+			carry = false;
+		}
+	}
+
+	if (carry) {
+		res = "1" + res;
+	}
+
+	return res;
+}
+
 String Node::_generate_serial_child_name(Node *p_child) {
 
 	String name = p_child->data.name;
@@ -1040,42 +1066,38 @@ String Node::_generate_serial_child_name(Node *p_child) {
 	}
 
 	String nnsep = _get_name_num_separator();
-	int num = 0;
-	bool explicit_zero = false;
-	if (nums.length() > 0 && name.substr(name.length() - nnsep.length() - nums.length(), nnsep.length()) == nnsep) {
-		// Base name + Separator + Number
-		num = nums.to_int();
-		name = name.substr(0, name.length() - nnsep.length() - nums.length()); // Keep base name
-		if (num == 0) {
-			explicit_zero = true;
+	int name_last_index = name.length() - nnsep.length() - nums.length();
+
+	// Assign the base name + separator to name if we have numbers preceded by a separator
+	if (nums.length() > 0 && name.substr(name_last_index, nnsep.length()) == nnsep) {
+		name = name.substr(0, name_last_index + nnsep.length()).strip_edges();
+	} else {
+		nums = "";
+	}
+
+	Vector<String> children_names;
+
+	for (int i = 0; i < data.children.size(); i++) {
+		String child_name = data.children[i]->data.name;
+		if (data.children[i] == p_child)
+			continue;
+		if (child_name.begins_with(name)) {
+			children_names.push_back(child_name);
 		}
 	}
 
-	int num_places = nums.length();
 	for (;;) {
-		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num).pad_zeros(num_places) : "")).strip_edges();
-		bool found = false;
-		for (int i = 0; i < data.children.size(); i++) {
-			if (data.children[i] == p_child)
-				continue;
-			if (data.children[i]->data.name == attempt) {
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
+		String attempt = name + nums;
+
+		if (children_names.find(attempt) == -1) {
 			return attempt;
 		} else {
-			if (num == 0) {
-				if (explicit_zero) {
-					// Name ended in separator + 0; user expects to get to separator + 1
-					num = 1;
-				} else {
-					// Name was undecorated so skip to 2 for a more natural result
-					num = 2;
-				}
+			if (nums.length() == 0) {
+				// Name was undecorated so skip to 2 for a more natural result
+				nums = "2";
+				name += nnsep; // Add separator because nums.length() > 0 was false
 			} else {
-				num++;
+				nums = increase_numeric_string(nums);
 			}
 		}
 	}
@@ -1182,13 +1204,24 @@ void Node::remove_child(Node *p_child) {
 		ERR_FAIL_COND(data.blocked > 0);
 	}
 
+	int child_count = data.children.size();
+	Node **children = data.children.ptrw();
 	int idx = -1;
-	for (int i = 0; i < data.children.size(); i++) {
 
-		if (data.children[i] == p_child) {
+	if (p_child->data.pos >= 0 && p_child->data.pos < child_count) {
+		if (children[p_child->data.pos] == p_child) {
+			idx = p_child->data.pos;
+		}
+	}
 
-			idx = i;
-			break;
+	if (idx == -1) { //maybe removed while unparenting or something and index was not updated, so just in case the above fails, try this.
+		for (int i = 0; i < child_count; i++) {
+
+			if (children[i] == p_child) {
+
+				idx = i;
+				break;
+			}
 		}
 	}
 
@@ -1205,9 +1238,14 @@ void Node::remove_child(Node *p_child) {
 
 	data.children.remove(idx);
 
-	for (int i = idx; i < data.children.size(); i++) {
+	//update pointer and size
+	child_count = data.children.size();
+	children = data.children.ptrw();
 
-		data.children[i]->data.pos = i;
+	for (int i = idx; i < child_count; i++) {
+
+		children[i]->data.pos = i;
+		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = NULL;

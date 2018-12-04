@@ -93,6 +93,7 @@ class OS_Windows : public OS {
 	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
+	Point2 last_pos;
 
 	HBITMAP hBitmap; //DIB section for layered window
 	uint8_t *dib_data;
@@ -156,6 +157,8 @@ class OS_Windows : public OS {
 	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
 	void _update_window_style(bool repaint = true);
+
+	void _set_mouse_mode_impl(MouseMode p_mode);
 
 	// functions used by main to initialize/deinitialize the OS
 protected:

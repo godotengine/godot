@@ -982,11 +982,27 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		err += "Custom release package not found.\n";
 	}
 
+	String team_id = p_preset->get("application/app_store_team_id");
+	if (team_id.length() == 0) {
+		err += "App Store Team ID not specified - cannot configure the project.\n";
+	}
+
+	for (unsigned int i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
+		IconInfo info = icon_infos[i];
+		String icon_path = p_preset->get(info.preset_key);
+		if (icon_path.length() == 0) {
+			if (info.is_required) {
+				err += "Required icon is not specified in the preset.\n";
+			}
+			break;
+		}
+	}
+
 	if (!err.empty())
 		r_error = err;
 
 	r_missing_templates = !valid;
-	return valid;
+	return err.empty();
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {

@@ -103,6 +103,7 @@ protected:
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
 	void _wip_close();
+	void _wip_cancel();
 	bool _delete_point(const Vector2 &p_gpoint);
 
 	void _notification(int p_what);

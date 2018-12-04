@@ -1,6 +1,7 @@
 #include "editor_folding.h"
 
 #include "core/os/file_access.h"
+#include "editor_inspector.h"
 #include "editor_settings.h"
 
 PoolVector<String> EditorFolding::_get_unfolds(const Object *p_object) {
@@ -165,10 +166,92 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 }
 
 bool EditorFolding::has_folding_data(const String &p_path) {
-	String path = EditorSettings::get_singleton()->get_project_settings_dir();
+
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	return FileAccess::exists(file);
+}
+
+void EditorFolding::_do_object_unfolds(Object *p_object, Set<RES> &resources) {
+
+	List<PropertyInfo> plist;
+	p_object->get_property_list(&plist);
+	String group_base;
+	String group;
+
+	Set<String> unfold_group;
+
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+
+		if (E->get().usage & PROPERTY_USAGE_CATEGORY) {
+			group = "";
+			group_base = "";
+		}
+		if (E->get().usage & PROPERTY_USAGE_GROUP) {
+			group = E->get().name;
+			group_base = E->get().hint_string;
+			if (group_base.ends_with("_")) {
+				group_base = group_base.substr(0, group_base.length() - 1);
+			}
+		}
+
+		//can unfold
+		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+
+			if (group != "") { //group
+				if (group_base == String() || E->get().name.begins_with(group_base)) {
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+					if (can_revert) {
+						unfold_group.insert(group);
+					}
+				}
+			} else { //path
+				int last = E->get().name.find_last("/");
+				if (last != -1) {
+					bool can_revert = EditorPropertyRevert::can_property_revert(p_object, E->get().name);
+					if (can_revert) {
+						unfold_group.insert(E->get().name.substr(0, last));
+					}
+				}
+			}
+		}
+
+		if (E->get().type == Variant::OBJECT) {
+			RES res = p_object->get(E->get().name);
+			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+
+				resources.insert(res);
+				_do_object_unfolds(res.ptr(), resources);
+			}
+		}
+	}
+
+	for (Set<String>::Element *E = unfold_group.front(); E; E = E->next()) {
+		p_object->editor_set_section_unfold(E->get(), true);
+	}
+}
+
+void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, Set<RES> &resources) {
+	if (p_root != p_node) {
+		if (!p_node->get_owner()) {
+			return; //not owned, bye
+		}
+		if (p_node->get_owner() != p_root && !p_root->is_editable_instance(p_node)) {
+			return;
+		}
+	}
+
+	_do_object_unfolds(p_node, resources);
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_do_node_unfolds(p_root, p_node->get_child(i), resources);
+	}
+}
+
+void EditorFolding::unfold_scene(Node *p_scene) {
+
+	Set<RES> resources;
+	_do_node_unfolds(p_scene, p_scene, resources);
 }
 
 EditorFolding::EditorFolding() {

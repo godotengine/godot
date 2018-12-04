@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Visual scripting.
 - Rewritten import system.
   - Assets are now referenced with their source files, then imported in a transparent manner by the engine.
-  - Imported assets are now cached in a `.cache` directory, making distribution and versioning easier.
+  - Imported assets are now cached in a `.import` directory, making distribution and versioning easier.
   - Support for ETC2 compression.
   - Support for uncompressed Targa (.tga) textures, allowing for faster importing.
 - Rewritten export system.

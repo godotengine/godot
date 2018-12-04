@@ -722,6 +722,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		I = N;
 	}
 
+	// Network file system needs to be configured before globals, since globals are based on the
+	// 'project.godot' file which will only be available through the network if this is enabled
+	FileAccessNetwork::configure();
+	if (remotefs != "") {
+
+		file_access_network_client = memnew(FileAccessNetworkClient);
+		int port;
+		if (remotefs.find(":") != -1) {
+			port = remotefs.get_slicec(':', 1).to_int();
+			remotefs = remotefs.get_slicec(':', 0);
+		} else {
+			port = 6010;
+		}
+
+		Error err = file_access_network_client->connect(remotefs, port, remotefs_pass);
+		if (err) {
+			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i.\n", remotefs.utf8().get_data(), port);
+			goto error;
+		}
+
+		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
+	}
+
 	if (globals->setup(project_path, main_pack, upwards) == OK) {
 		found_project = true;
 	} else {
@@ -767,28 +790,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		script_debugger = memnew(ScriptDebuggerLocal);
 		OS::get_singleton()->initialize_debugging();
-	}
-
-	FileAccessNetwork::configure();
-
-	if (remotefs != "") {
-
-		file_access_network_client = memnew(FileAccessNetworkClient);
-		int port;
-		if (remotefs.find(":") != -1) {
-			port = remotefs.get_slicec(':', 1).to_int();
-			remotefs = remotefs.get_slicec(':', 0);
-		} else {
-			port = 6010;
-		}
-
-		Error err = file_access_network_client->connect(remotefs, port, remotefs_pass);
-		if (err) {
-			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i.\n", remotefs.utf8().get_data(), port);
-			goto error;
-		}
-
-		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
 	if (script_debugger) {
 		//there is a debugger, parse breakpoints
@@ -1990,6 +1991,8 @@ void Main::cleanup() {
 		// cleanup now before we pull the rug from underneath...
 		memdelete(arvr_server);
 	}
+
+	ImageLoader::cleanup();
 
 	unregister_driver_types();
 	unregister_module_types();

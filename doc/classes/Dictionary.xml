@@ -41,6 +41,17 @@
 				Erase a dictionary key/value pair by key.
 			</description>
 		</method>
+		<method name="get">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<argument index="1" name="default" type="Variant" default="Null">
+			</argument>
+			<description>
+				Returns the current value for the specified key in the [code]Dictionary[/code]. If the key does not exist, the method returns the value of the optional default argument, or Null if it is omitted.
+			</description>
+		</method>
 		<method name="has">
 			<return type="bool">
 			</return>

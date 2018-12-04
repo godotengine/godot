@@ -182,8 +182,8 @@ namespace Godot
 
             return newRect;
         }
-        
-        // Constructors 
+
+        // Constructors
         public Rect2(Vector2 position, Vector2 size)
         {
             _position = position;

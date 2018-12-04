@@ -700,7 +700,7 @@ String AnimationNodeTransition::get_input_caption(int p_input) const {
 
 	if (tree.is_valid() && current >= 0) {
 		prev = current;
-		prev_xfading = xfade;		
+		prev_xfading = xfade;
 		time = 0;
 		current = p_current;
 		switched = true;

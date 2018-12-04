@@ -1401,31 +1401,31 @@
 		<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="G6DOFJointAxisParam">
 			The maximum force that the linear motor can apply while trying to reach the target velocity.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="7" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="10" enum="G6DOFJointAxisParam">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="8" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="11" enum="G6DOFJointAxisParam">
 			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="9" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="12" enum="G6DOFJointAxisParam">
 			A factor that gets multiplied onto all rotations across the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="10" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13" enum="G6DOFJointAxisParam">
 			The amount of rotational damping across the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="11" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="12" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
 			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="13" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="16" enum="G6DOFJointAxisParam">
 			When correcting the crossing of limits in rotation across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="14" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="G6DOFJointAxisParam">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="G6DOFJointAxisParam">
 			Maximum acceleration for the motor at the axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
@@ -1434,10 +1434,10 @@
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is rotational motion possible.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2" enum="G6DOFJointAxisFlag">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a rotational motor across these axes.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="3" enum="G6DOFJointAxisFlag">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">

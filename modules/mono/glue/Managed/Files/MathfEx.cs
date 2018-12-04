@@ -29,7 +29,7 @@ namespace Godot
         public static int FloorToInt(real_t s)
         {
             return (int)Math.Floor(s);
-        }    
+        }
 
         public static int RoundToInt(real_t s)
         {

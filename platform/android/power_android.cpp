@@ -98,7 +98,7 @@ ANativeWindow *Android_JNI_GetNativeWindow(void) {
 	return anw;
 }
 
-/* 
+/*
  *  CODE CHUNK IMPORTED FROM SDL 2.0
  * returns 0 on success or -1 on error (others undefined then)
  * returns truthy or falsy value in plugged, charged and battery

@@ -185,7 +185,7 @@ namespace Godot
 
             int instanceIndex = 0;
             int toIndex = 0;
-            
+
             if (caseSensitive) // Outside while loop to avoid checking multiple times, despite some code duplication.
             {
                 while (true)
@@ -480,9 +480,9 @@ namespace Godot
                         return false; // Don't start with number plz
                 }
 
-                bool validChar = instance[i] >= '0' && 
-                                  instance[i] <= '9' || instance[i] >= 'a' && 
-                                  instance[i] <= 'z' || instance[i] >= 'A' && 
+                bool validChar = instance[i] >= '0' &&
+                                  instance[i] <= '9' || instance[i] >= 'a' &&
+                                  instance[i] <= 'z' || instance[i] >= 'A' &&
                                   instance[i] <= 'Z' || instance[i] == '_';
 
                 if (!validChar)

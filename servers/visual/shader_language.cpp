@@ -131,7 +131,6 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"TYPE_USAMPLER3D",
 	"TYPE_SAMPLERCUBE",
 	"INTERPOLATION_FLAT",
-	"INTERPOLATION_NO_PERSPECTIVE",
 	"INTERPOLATION_SMOOTH",
 	"PRECISION_LOW",
 	"PRECISION_MID",
@@ -271,7 +270,6 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_TYPE_USAMPLER3D, "usampler3D" },
 	{ TK_TYPE_SAMPLERCUBE, "samplerCube" },
 	{ TK_INTERPOLATION_FLAT, "flat" },
-	{ TK_INTERPOLATION_NO_PERSPECTIVE, "noperspective" },
 	{ TK_INTERPOLATION_SMOOTH, "smooth" },
 	{ TK_PRECISION_LOW, "lowp" },
 	{ TK_PRECISION_MID, "mediump" },
@@ -691,6 +689,30 @@ String ShaderLanguage::token_debug(const String &p_code) {
 	return output;
 }
 
+bool ShaderLanguage::is_token_variable_datatype(TokenType p_type) {
+	return (
+			p_type == TK_TYPE_VOID ||
+			p_type == TK_TYPE_BOOL ||
+			p_type == TK_TYPE_BVEC2 ||
+			p_type == TK_TYPE_BVEC3 ||
+			p_type == TK_TYPE_BVEC4 ||
+			p_type == TK_TYPE_INT ||
+			p_type == TK_TYPE_IVEC2 ||
+			p_type == TK_TYPE_IVEC3 ||
+			p_type == TK_TYPE_IVEC4 ||
+			p_type == TK_TYPE_UINT ||
+			p_type == TK_TYPE_UVEC2 ||
+			p_type == TK_TYPE_UVEC3 ||
+			p_type == TK_TYPE_UVEC4 ||
+			p_type == TK_TYPE_FLOAT ||
+			p_type == TK_TYPE_VEC2 ||
+			p_type == TK_TYPE_VEC3 ||
+			p_type == TK_TYPE_VEC4 ||
+			p_type == TK_TYPE_MAT2 ||
+			p_type == TK_TYPE_MAT3 ||
+			p_type == TK_TYPE_MAT4);
+}
+
 bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 
 	return (
@@ -735,7 +757,6 @@ bool ShaderLanguage::is_token_interpolation(TokenType p_type) {
 
 	return (
 			p_type == TK_INTERPOLATION_FLAT ||
-			p_type == TK_INTERPOLATION_NO_PERSPECTIVE ||
 			p_type == TK_INTERPOLATION_SMOOTH);
 }
 
@@ -743,8 +764,6 @@ ShaderLanguage::DataInterpolation ShaderLanguage::get_token_interpolation(TokenT
 
 	if (p_type == TK_INTERPOLATION_FLAT)
 		return INTERPOLATION_FLAT;
-	else if (p_type == TK_INTERPOLATION_NO_PERSPECTIVE)
-		return INTERPOLATION_NO_PERSPECTIVE;
 	else
 		return INTERPOLATION_SMOOTH;
 }
@@ -1196,6 +1215,15 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_MAT4 && nb == TYPE_VEC4) {
 				valid = true;
 				ret_type = TYPE_MAT4;
+			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC2 && nb == TYPE_MAT2) {
+				valid = true;
+				ret_type = TYPE_VEC2;
+			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC3 && nb == TYPE_MAT3) {
+				valid = true;
+				ret_type = TYPE_VEC3;
+			} else if (p_op->op == OP_ASSIGN_MUL && na == TYPE_VEC4 && nb == TYPE_MAT4) {
+				valid = true;
+				ret_type = TYPE_VEC4;
 			}
 		} break;
 		case OP_ASSIGN_BIT_AND:
@@ -2013,6 +2041,12 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 
 };
 
+const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[] = {
+	//constructors
+	{ "modf", 1 },
+	{ NULL, 0 }
+};
+
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type) {
 
 	ERR_FAIL_COND_V(p_func->op != OP_CALL && p_func->op != OP_CONSTRUCT, NULL);
@@ -2055,6 +2089,41 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 					fail = true; //make sure the number of arguments matches
 
 				if (!fail) {
+
+					//make sure its not an out argument used in the wrong way
+					int outarg_idx = 0;
+					while (builtin_func_out_args[outarg_idx].name) {
+
+						if (String(name) == builtin_func_out_args[outarg_idx].name) {
+							int arg_idx = builtin_func_out_args[outarg_idx].argument;
+
+							if (arg_idx < argcount) {
+
+								if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE) {
+									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable");
+									return false;
+								}
+								StringName var_name = static_cast<const VariableNode *>(p_func->arguments[arg_idx + 1])->name;
+
+								const BlockNode *b = p_block;
+								bool valid = false;
+								while (b) {
+									if (b->variables.has(var_name)) {
+										valid = true;
+										break;
+									}
+									b = b->parent_block;
+								}
+
+								if (!valid) {
+									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable");
+									return false;
+								}
+							}
+						}
+
+						outarg_idx++;
+					}
 
 					if (r_ret_type)
 						*r_ret_type = builtin_func_defs[idx].rettype;
@@ -2288,7 +2357,7 @@ bool ShaderLanguage::is_sampler_type(DataType p_type) {
 		   p_type == TYPE_SAMPLERCUBE;
 }
 
-Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type) {
+Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
 	if (p_value.size() > 0) {
 		Variant value;
 		switch (p_type) {
@@ -2332,7 +2401,11 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				value = Variant(Vector3(p_value[0].real, p_value[1].real, p_value[2].real));
 				break;
 			case ShaderLanguage::TYPE_VEC4:
-				value = Variant(Plane(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+				if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+					value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+				} else {
+					value = Variant(Plane(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+				}
 				break;
 			case ShaderLanguage::TYPE_MAT2:
 				value = Variant(Transform2D(p_value[0].real, p_value[2].real, p_value[1].real, p_value[3].real, 0.0, 0.0));
@@ -3563,6 +3636,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				}
 			}
 
+			if (!is_token_variable_datatype(tk.type)) {
+				_set_error("Invalid data type for variable (samplers not allowed)");
+				return ERR_PARSE_ERROR;
+			}
+
 			DataType type = get_token_datatype(tk.type);
 
 			tk = _get_token();
@@ -4215,6 +4293,11 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (!is_token_datatype(tk.type)) {
 					_set_error("Expected function, uniform or varying ");
+					return ERR_PARSE_ERROR;
+				}
+
+				if (!is_token_variable_datatype(tk.type)) {
+					_set_error("Invalid data type for function return (samplers not allowed)");
 					return ERR_PARSE_ERROR;
 				}
 

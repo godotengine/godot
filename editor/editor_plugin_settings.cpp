@@ -48,51 +48,55 @@ void EditorPluginSettings::_notification(int p_what) {
 }
 
 void EditorPluginSettings::enable_plugins() {
-	update_plugins();
+	update_plugins();		
 	// TreeItem *last = root;
-	// 	while (last) {
-	// 		if (last->next)
+ 	// 	while (last) {
+ 	// 		if (last->next)
 	// 			last = last->next;
 	// 		else if (last->children)
 	// 			last = last->children;
 	// 		else
 	// 			break;
 	// 	}
-	// 	return last;
+ 	// 	return last;
 	//TreeItem *ti = plugin_list->get_last_item();
 	TreeItem *ti = plugin_list->get_root();
 	//for(i=0;i<plugin_list->get_count();i++)
-	while (ti) {
+	while(ti)
+	{		
 		//TreeItem *ti = plugin_list->get_edited();
 		//plugin_list->
-		//plugin_list->set_
+		//plugin_list->set_	
 		if (ti->get_next())
 			ti = ti->get_next();
 		else if (ti->get_children())
 			ti = ti->get_children();
 		else
-			break;
+			break;	
 		ERR_FAIL_COND(!ti);
-		bool active = true; //ti->get_range(3);
-		if (flag == 1)
+ 		bool active = true;//ti->get_range(3);
+		if(flag==1) 
 			active = true;
 		else
 			active = false;
 		String name = ti->get_metadata(0);
-
+		
 		EditorNode::get_singleton()->set_addon_plugin_enabled(name, active);
-		bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(name);
-		if (is_active != active) {
+ 		bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(name);
+ 		if (is_active != active) {
 			updating = true;
 			ti->set_range(3, is_active ? 1 : 0);
 			updating = false;
 		}
-		if (is_active)
+ 		if (is_active)
 			ti->set_custom_color(3, get_color("success_color", "Editor"));
 		else
 			ti->set_custom_color(3, get_color("disabled_font_color", "Editor"));
+		
+		
 	}
 }
+
 void EditorPluginSettings::update_plugins() {
 
 	plugin_list->clear();

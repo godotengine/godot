@@ -106,13 +106,13 @@
 			</argument>
 			<argument index="2" name="floor_normal" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
-			<argument index="3" name="infinite_inertia" type="bool" default="true">
+			<argument index="3" name="stop_on_slope" type="bool" default="false">
 			</argument>
-			<argument index="4" name="stop_on_slope" type="bool" default="false">
+			<argument index="4" name="max_slides" type="int" default="4">
 			</argument>
-			<argument index="5" name="max_bounces" type="int" default="4">
+			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
 			</argument>
-			<argument index="6" name="floor_max_angle" type="float" default="0.785398">
+			<argument index="6" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
 				Moves the body while keeping it attached to slopes. Similar to [method move_and_slide].
@@ -126,7 +126,7 @@
 			</argument>
 			<argument index="1" name="rel_vec" type="Vector3">
 			</argument>
-			<argument index="2" name="infinite_inertia" type="bool">
+			<argument index="2" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
 				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.

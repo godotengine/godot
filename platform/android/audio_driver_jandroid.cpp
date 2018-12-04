@@ -34,8 +34,6 @@
 #include "core/project_settings.h"
 #include "thread_jandroid.h"
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 AudioDriverAndroid *AudioDriverAndroid::s_ad = NULL;
 
 jobject AudioDriverAndroid::io;
@@ -204,5 +202,3 @@ AudioDriverAndroid::AudioDriverAndroid() {
 	s_ad = this;
 	active = false;
 }
-
-#endif

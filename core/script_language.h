@@ -128,6 +128,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
+	virtual bool is_valid() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
 

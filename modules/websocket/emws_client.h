@@ -41,6 +41,8 @@ class EMWSClient : public WebSocketClient {
 	GDCIIMPL(EMWSClient, WebSocketClient);
 
 private:
+	int _in_buf_size;
+	int _in_pkt_size;
 	int _js_id;
 
 public:
@@ -52,6 +54,7 @@ public:
 	IP_Address get_connected_host() const;
 	uint16_t get_connected_port() const;
 	virtual ConnectionStatus get_connection_status() const;
+	int get_max_packet_size() const;
 	virtual void poll();
 	EMWSClient();
 	~EMWSClient();

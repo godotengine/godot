@@ -1471,6 +1471,22 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
+void BulletPhysicsServer::generic_6dof_joint_set_precision(RID p_joint, int p_precision) {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
+	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
+	generic_6dof_joint->set_precision(p_precision);
+}
+
+int BulletPhysicsServer::generic_6dof_joint_get_precision(RID p_joint) {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
+	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
+	return generic_6dof_joint->get_precision();
+}
+
 void BulletPhysicsServer::free(RID p_rid) {
 	if (shape_owner.owns(p_rid)) {
 

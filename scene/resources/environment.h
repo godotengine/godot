@@ -141,6 +141,7 @@ private:
 	GlowBlendMode glow_blend_mode;
 	float glow_hdr_bleed_threshold;
 	float glow_hdr_bleed_scale;
+	float glow_hdr_luminance_cap;
 	bool glow_bicubic_upscale;
 
 	bool dof_blur_far_enabled;
@@ -162,6 +163,7 @@ private:
 
 	bool fog_depth_enabled;
 	float fog_depth_begin;
+	float fog_depth_end;
 	float fog_depth_curve;
 
 	bool fog_transmit_enabled;
@@ -311,6 +313,9 @@ public:
 	void set_glow_hdr_bleed_threshold(float p_threshold);
 	float get_glow_hdr_bleed_threshold() const;
 
+	void set_glow_hdr_luminance_cap(float p_amount);
+	float get_glow_hdr_luminance_cap() const;
+
 	void set_glow_hdr_bleed_scale(float p_scale);
 	float get_glow_hdr_bleed_scale() const;
 
@@ -364,6 +369,9 @@ public:
 
 	void set_fog_depth_begin(float p_distance);
 	float get_fog_depth_begin() const;
+
+	void set_fog_depth_end(float p_distance);
+	float get_fog_depth_end() const;
 
 	void set_fog_depth_curve(float p_curve);
 	float get_fog_depth_curve() const;

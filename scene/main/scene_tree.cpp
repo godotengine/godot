@@ -535,10 +535,15 @@ bool SceneTree::idle(float p_time) {
 
 	//go through timers
 
+	List<Ref<SceneTreeTimer> >::Element *L = timers.back(); //last element
+
 	for (List<Ref<SceneTreeTimer> >::Element *E = timers.front(); E;) {
 
 		List<Ref<SceneTreeTimer> >::Element *N = E->next();
 		if (pause && !E->get()->is_pause_mode_process()) {
+			if (E == L) {
+				break; //break on last, so if new timers were added during list traversal, ignore them.
+			}
 			E = N;
 			continue;
 		}
@@ -549,6 +554,9 @@ bool SceneTree::idle(float p_time) {
 		if (time_left < 0) {
 			E->get()->emit_signal("timeout");
 			timers.erase(E);
+		}
+		if (E == L) {
+			break; //break on last, so if new timers were added during list traversal, ignore them.
 		}
 		E = N;
 	}
@@ -1965,6 +1973,7 @@ SceneTree::SceneTree() {
 
 	root = memnew(Viewport);
 	root->set_name("root");
+	root->set_handle_input_locally(false);
 	if (!root->get_world().is_valid())
 		root->set_world(Ref<World>(memnew(World)));
 

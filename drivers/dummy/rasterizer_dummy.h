@@ -63,7 +63,8 @@ public:
 
 	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
 	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
-	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) {}
+	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {}
+
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
@@ -74,7 +75,7 @@ public:
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
 
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
-	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
+	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
 	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
 
 	bool is_environment(RID p_env) { return false; }
@@ -584,22 +585,12 @@ public:
 
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
-		_FORCE_INLINE_ void instance_change_notify() {
+		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) {
 
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
 
-				instances->self()->base_changed();
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_material_change_notify() {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				instances->self()->base_material_changed();
+				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
 		}
@@ -690,6 +681,8 @@ public:
 	bool particles_get_emitting(RID p_particles) { return false; }
 	int particles_get_draw_passes(RID p_particles) const { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
+
+	virtual bool particles_is_inactive(RID p_particles) const { return false; }
 
 	/* RENDER TARGET */
 

@@ -32,9 +32,6 @@
 		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 			Angular velocity randomness ratio. Default value: [code]0[/code].
 		</member>
-		<member name="anim_loop" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code] animation will loop. Default value: [code]false[/code].
-		</member>
 		<member name="anim_offset" type="float" setter="set_param" getter="get_param">
 			Particle animation offset.
 		</member>
@@ -216,7 +213,7 @@
 		<constant name="FLAG_ROTATE_Y" value="1" enum="Flags">
 			Use with [method set_flag] to set [member flag_rotate_y]
 		</constant>
-		<constant name="FLAG_MAX" value="4" enum="Flags">
+		<constant name="FLAG_MAX" value="3" enum="Flags">
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
 			All particles will be emitted from a single point.

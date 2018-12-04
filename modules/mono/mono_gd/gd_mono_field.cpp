@@ -423,7 +423,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			MonoException *exc = NULL;
 
 			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
+			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, (MonoObject **)&exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
@@ -435,7 +435,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			exc = NULL;
 
 			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
+			MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, (MonoObject **)&exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {

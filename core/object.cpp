@@ -1443,8 +1443,20 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
 		//check in script
-		if (!signal_is_valid && !script.is_null() && Ref<Script>(script)->has_script_signal(p_signal))
-			signal_is_valid = true;
+		if (!signal_is_valid && !script.is_null()) {
+
+			if (Ref<Script>(script)->has_script_signal(p_signal)) {
+				signal_is_valid = true;
+			}
+#ifdef TOOLS_ENABLED
+			else {
+				//allow connecting signals anyway if script is invalid, see issue #17070
+				if (!Ref<Script>(script)->is_valid()) {
+					signal_is_valid = true;
+				}
+			}
+#endif
+		}
 
 		if (!signal_is_valid) {
 			ERR_EXPLAIN("In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to method '" + p_to_object->get_class() + "." + p_to_method + "'");
@@ -1715,6 +1727,8 @@ void Object::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind, mi);
 	}
 
+	ClassDB::bind_method(D_METHOD("set_deferred", "property", "value"), &Object::set_deferred);
+
 	ClassDB::bind_method(D_METHOD("callv", "method", "arg_array"), &Object::callv);
 
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
@@ -1769,6 +1783,10 @@ void Object::_bind_methods() {
 void Object::call_deferred(const StringName &p_method, VARIANT_ARG_DECLARE) {
 
 	MessageQueue::get_singleton()->push_call(this, p_method, VARIANT_ARG_PASS);
+}
+
+void Object::set_deferred(const StringName &p_property, const Variant &p_value) {
+	MessageQueue::get_singleton()->push_set(this, p_property, p_value);
 }
 
 void Object::set_block_signals(bool p_block) {
@@ -1935,30 +1953,30 @@ Object::~Object() {
 		memdelete(script_instance);
 	script_instance = NULL;
 
-	List<Connection> sconnections;
 	const StringName *S = NULL;
 
-	while ((S = signal_map.next(S))) {
+	while ((S = signal_map.next(NULL))) {
 
 		Signal *s = &signal_map[*S];
 
-		ERR_EXPLAIN("Attempt to delete an object in the middle of a signal emission from it");
-		ERR_CONTINUE(s->lock > 0);
-
-		for (int i = 0; i < s->slot_map.size(); i++) {
-
-			sconnections.push_back(s->slot_map.getv(i).conn);
+		if (s->lock) {
+			ERR_EXPLAIN("Attempt to delete an object in the middle of a signal emission from it");
+			ERR_CONTINUE(s->lock > 0);
 		}
+
+		//brute force disconnect for performance
+		int slot_count = s->slot_map.size();
+		const VMap<Signal::Target, Signal::Slot>::Pair *slot_list = s->slot_map.get_array();
+
+		for (int i = 0; i < slot_count; i++) {
+
+			slot_list[i].value.conn.target->connections.erase(slot_list[i].value.cE);
+		}
+
+		signal_map.erase(*S);
 	}
 
-	for (List<Connection>::Element *E = sconnections.front(); E; E = E->next()) {
-
-		Connection &c = E->get();
-		ERR_CONTINUE(c.source != this); //bug?
-
-		this->_disconnect(c.signal, c.target, c.method, true);
-	}
-
+	//signals from nodes that connect to this node
 	while (connections.size()) {
 
 		Connection c = connections.front()->get();

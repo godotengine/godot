@@ -80,19 +80,17 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	StringBuffer<> id;
-	id += "m_";
-	id += p_id;
-
-	return id.as_string();
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
 }
 
 static String f2sp0(float p_float) {
 
-	if (int(p_float) == p_float)
-		return itos(p_float) + ".0";
-	else
-		return rtoss(p_float);
+	String num = rtoss(p_float);
+	if (num.find(".") == -1 && num.find("e") == -1) {
+		num += ".0";
+	}
+	return num;
 }
 
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
@@ -364,6 +362,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			for (int i = 0; i < snode->functions.size(); i++) {
 				SL::FunctionNode *fnode = snode->functions[i].function;
+				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 
@@ -815,8 +814,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	/** SPATIAL SHADER **/
 
 	actions[VS::SHADER_SPATIAL].renames["WORLD_MATRIX"] = "world_transform";
-	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_matrix";
-	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_inverse_matrix";
+	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
+	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
 	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
 	actions[VS::SHADER_SPATIAL].renames["INV_PROJECTION_MATRIX"] = "projection_inverse_matrix";
 	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
@@ -932,7 +931,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
 	actions[VS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
 	actions[VS::SHADER_PARTICLES].renames["MASS"] = "mass";
-	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "active";
+	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "shader_active";
 	actions[VS::SHADER_PARTICLES].renames["RESTART"] = "restart";
 	actions[VS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
 	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";

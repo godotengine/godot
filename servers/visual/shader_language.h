@@ -80,7 +80,6 @@ public:
 		TK_TYPE_USAMPLER3D,
 		TK_TYPE_SAMPLERCUBE,
 		TK_INTERPOLATION_FLAT,
-		TK_INTERPOLATION_NO_PERSPECTIVE,
 		TK_INTERPOLATION_SMOOTH,
 		TK_PRECISION_LOW,
 		TK_PRECISION_MID,
@@ -210,7 +209,6 @@ public:
 
 	enum DataInterpolation {
 		INTERPOLATION_FLAT,
-		INTERPOLATION_NO_PERSPECTIVE,
 		INTERPOLATION_SMOOTH,
 	};
 
@@ -333,6 +331,7 @@ public:
 		virtual DataType get_datatype() const { return datatype_cache; }
 
 		VariableNode() {
+
 			type = TYPE_VARIABLE;
 			datatype_cache = TYPE_VOID;
 		}
@@ -534,6 +533,7 @@ public:
 	static String get_token_text(Token p_token);
 
 	static bool is_token_datatype(TokenType p_type);
+	static bool is_token_variable_datatype(TokenType p_type);
 	static DataType get_token_datatype(TokenType p_type);
 	static bool is_token_interpolation(TokenType p_type);
 	static DataInterpolation get_token_interpolation(TokenType p_type);
@@ -548,7 +548,7 @@ public:
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
-	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type);
+	static Variant constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);
@@ -642,6 +642,12 @@ private:
 		const DataType args[MAX_ARGS];
 	};
 
+	struct BuiltinFuncOutArgs { //arguments used as out in built in funcions
+
+		const char *name;
+		int argument;
+	};
+
 	CompletionType completion_type;
 	int completion_line;
 	BlockNode *completion_block;
@@ -652,6 +658,7 @@ private:
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 
 	static const BuiltinFuncDef builtin_func_defs[];
+	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 
 	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);

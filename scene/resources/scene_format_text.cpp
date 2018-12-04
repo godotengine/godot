@@ -626,14 +626,14 @@ Error ResourceInteractiveLoaderText::poll() {
 		if (!packed_scene.is_valid())
 			return error;
 
-		error = OK;
+		error = ERR_FILE_EOF;
 		//get it here
 		resource = packed_scene;
 		if (!ResourceCache::has(res_path)) {
 			packed_scene->set_path(res_path);
 		}
 
-		return ERR_FILE_EOF;
+		return error;
 
 	} else {
 		error_text += "Unknown tag in file: " + next_tag.name;

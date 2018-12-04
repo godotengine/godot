@@ -1134,7 +1134,7 @@ public:
 			} break;
 		}
 
-		if (!exists_export_template("uwp_" + platform_infix + "_debug.zip", &err) || !exists_export_template("uwp_" + platform_infix + "_debug.zip", &err)) {
+		if (!exists_export_template("uwp_" + platform_infix + "_debug.zip", &err) || !exists_export_template("uwp_" + platform_infix + "_release.zip", &err)) {
 			valid = false;
 			r_missing_templates = true;
 		}

@@ -177,7 +177,7 @@ private:
 
 	void _update_render_thread();
 
-	void _generate_mesh_texture();
+	void _update_mesh_texture();
 
 protected:
 	static void _bind_methods();
@@ -221,15 +221,6 @@ public:
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
-
-	void set_h_frames(int p_frames);
-	int get_h_frames();
-
-	void set_v_frames(int p_frames);
-	int get_v_frames();
-
-	void set_loop_animation(bool p_loop);
-	bool get_loop_animation() const;
 
 	void set_normalmap(const Ref<Texture> &p_normalmap);
 	Ref<Texture> get_normalmap() const;

@@ -588,14 +588,6 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="">
 			This is used by servers when used in multi threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="mono/debugger_agent/port" type="int" setter="" getter="">
-		</member>
-		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="">
-		</member>
-		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="">
-		</member>
-		<member name="mono/export/include_scripts_content" type="bool" setter="" getter="">
-		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
@@ -607,6 +599,22 @@
 		</member>
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
 			Default size of packet peer stream for deserializing godot data. Over this size, data is dropped.
+		</member>
+		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_client/max_in_packets" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_client/max_out_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_client/max_out_packets" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_in_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_in_packets" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_out_buffer_kb" type="int" setter="" getter="">
+		</member>
+		<member name="network/limits/websocket_server/max_out_packets" type="int" setter="" getter="">
 		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
 			Amount of read ahead used by remote filesystem. Improves latency.

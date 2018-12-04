@@ -286,6 +286,7 @@ public:
 
 	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
+	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
 
 	enum CompressMode {
 		COMPRESS_S3TC,

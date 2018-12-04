@@ -329,7 +329,7 @@ public:
 	float get_safe_margin() const;
 
 	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
-	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_infinite_inertia = true, bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45));
+	Vector3 move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction = Vector3(0, 0, 0), bool p_stop_on_slope = false, int p_max_slides = 4, float p_floor_max_angle = Math::deg2rad((float)45), bool p_infinite_inertia = true);
 	bool is_on_floor() const;
 	bool is_on_wall() const;
 	bool is_on_ceiling() const;
@@ -494,6 +494,10 @@ public:
 			real_t linear_limit_softness;
 			real_t linear_restitution;
 			real_t linear_damping;
+			bool linear_spring_enabled;
+			real_t linear_spring_stiffness;
+			real_t linear_spring_damping;
+			real_t linear_equilibrium_point;
 			bool angular_limit_enabled;
 			real_t angular_limit_upper;
 			real_t angular_limit_lower;
@@ -501,6 +505,10 @@ public:
 			real_t angular_restitution;
 			real_t angular_damping;
 			real_t erp;
+			bool angular_spring_enabled;
+			real_t angular_spring_stiffness;
+			real_t angular_spring_damping;
+			real_t angular_equilibrium_point;
 
 			SixDOFAxisData() :
 					linear_limit_enabled(true),
@@ -509,13 +517,21 @@ public:
 					linear_limit_softness(0.7),
 					linear_restitution(0.5),
 					linear_damping(1.),
+					linear_spring_enabled(false),
+					linear_spring_stiffness(0),
+					linear_spring_damping(0),
+					linear_equilibrium_point(0),
 					angular_limit_enabled(true),
 					angular_limit_upper(0),
 					angular_limit_lower(0),
 					angular_limit_softness(0.5),
 					angular_restitution(0),
 					angular_damping(1.),
-					erp(0.5) {}
+					erp(0.5),
+					angular_spring_enabled(false),
+					angular_spring_stiffness(0),
+					angular_spring_damping(0.),
+					angular_equilibrium_point(0) {}
 		};
 
 		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }

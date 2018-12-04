@@ -116,7 +116,8 @@ class EditorFileSystem : public Node {
 			ACTION_DIR_REMOVE,
 			ACTION_FILE_ADD,
 			ACTION_FILE_REMOVE,
-			ACTION_FILE_TEST_REIMPORT
+			ACTION_FILE_TEST_REIMPORT,
+			ACTION_FILE_RELOAD
 		};
 
 		Action action;

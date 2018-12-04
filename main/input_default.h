@@ -227,7 +227,7 @@ public:
 	void set_main_loop(MainLoop *p_main_loop);
 	void set_mouse_position(const Point2 &p_posf);
 
-	void action_press(const StringName &p_action);
+	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
 
 	void iteration(float p_step);

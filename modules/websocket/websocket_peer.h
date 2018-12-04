@@ -32,7 +32,6 @@
 
 #include "core/error_list.h"
 #include "core/io/packet_peer.h"
-#include "core/ring_buffer.h"
 #include "websocket_macros.h"
 
 class WebSocketPeer : public PacketPeer {

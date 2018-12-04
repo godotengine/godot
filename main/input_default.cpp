@@ -556,14 +556,14 @@ Point2i InputDefault::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_moti
 void InputDefault::iteration(float p_step) {
 }
 
-void InputDefault::action_press(const StringName &p_action) {
+void InputDefault::action_press(const StringName &p_action, float p_strength) {
 
 	Action action;
 
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = true;
-	action.strength = 0.f;
+	action.strength = p_strength;
 
 	action_state[p_action] = action;
 }

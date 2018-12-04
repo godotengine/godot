@@ -388,7 +388,7 @@ void Sprite3D::_draw() {
 		return;
 
 	Size2i s;
-	Rect2i src_rect;
+	Rect2 src_rect;
 
 	if (region) {
 
@@ -396,18 +396,18 @@ void Sprite3D::_draw() {
 		src_rect = region_rect;
 	} else {
 		s = texture->get_size();
-		s = s / Size2i(hframes, vframes);
+		s = s / Size2(hframes, vframes);
 
 		src_rect.size = s;
 		src_rect.position.x += (frame % hframes) * s.x;
 		src_rect.position.y += (frame / hframes) * s.y;
 	}
 
-	Point2i ofs = get_offset();
+	Point2 ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
 
-	Rect2i dst_rect(ofs, s);
+	Rect2 dst_rect(ofs, s);
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
@@ -461,6 +461,13 @@ void Sprite3D::_draw() {
 	int axis = get_axis();
 	normal[axis] = 1.0;
 
+	Plane tangent;
+	if (axis == Vector3::AXIS_X) {
+		tangent = Plane(0, 0, -1, -1);
+	} else {
+		tangent = Plane(1, 0, 0, -1);
+	}
+
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
@@ -487,6 +494,7 @@ void Sprite3D::_draw() {
 
 	for (int i = 0; i < 4; i++) {
 		VS::get_singleton()->immediate_normal(immediate, normal);
+		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 
@@ -612,7 +620,7 @@ Rect2 Sprite3D::get_item_rect() const {
 		s = s / Point2(hframes, vframes);
 	}
 
-	Point2i ofs = get_offset();
+	Point2 ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
 
@@ -699,15 +707,15 @@ void AnimatedSprite3D::_draw() {
 		return;
 
 	Size2i s = tsize;
-	Rect2i src_rect;
+	Rect2 src_rect;
 
 	src_rect.size = s;
 
-	Point2i ofs = get_offset();
+	Point2 ofs = get_offset();
 	if (is_centered())
 		ofs -= s / 2;
 
-	Rect2i dst_rect(ofs, s);
+	Rect2 dst_rect(ofs, s);
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
@@ -761,6 +769,13 @@ void AnimatedSprite3D::_draw() {
 	int axis = get_axis();
 	normal[axis] = 1.0;
 
+	Plane tangent;
+	if (axis == Vector3::AXIS_X) {
+		tangent = Plane(0, 0, -1, -1);
+	} else {
+		tangent = Plane(1, 0, 0, -1);
+	}
+
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
@@ -788,6 +803,7 @@ void AnimatedSprite3D::_draw() {
 
 	for (int i = 0; i < 4; i++) {
 		VS::get_singleton()->immediate_normal(immediate, normal);
+		VS::get_singleton()->immediate_tangent(immediate, tangent);
 		VS::get_singleton()->immediate_color(immediate, color);
 		VS::get_singleton()->immediate_uv(immediate, uvs[i]);
 

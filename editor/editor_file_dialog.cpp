@@ -558,14 +558,14 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	// Allow specific actions only on one item.
 	bool single_item_selected = item_list->get_selected_items().size() == 1;
 
-	// Disallow deleting the .cache folder, Godot kills a cat if you do and it is possibly a senseless novice action.
+	// Disallow deleting the .import folder, Godot kills a cat if you do and it is possibly a senseless novice action.
 	bool allow_delete = true;
 	for (int i = 0; i < item_list->get_item_count(); i++) {
 		if (!item_list->is_selected(i)) {
 			continue;
 		}
 		Dictionary item_meta = item_list->get_item_metadata(i);
-		if (item_meta["path"] == "res://.cache") {
+		if (item_meta["path"] == "res://.import") {
 			allow_delete = false;
 			break;
 		}

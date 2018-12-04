@@ -325,7 +325,7 @@ bool UndoRedo::undo() {
 	return true;
 }
 
-void UndoRedo::clear_history() {
+void UndoRedo::clear_history(bool p_increase_version) {
 
 	ERR_FAIL_COND(action_level > 0);
 	_discard_redo();
@@ -333,7 +333,8 @@ void UndoRedo::clear_history() {
 	while (actions.size())
 		_pop_history_tail();
 
-	//version++;
+	if (p_increase_version)
+		version++;
 }
 
 String UndoRedo::get_current_action_name() const {
@@ -493,7 +494,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_undo_property", "object", "property", "value"), &UndoRedo::add_undo_property);
 	ClassDB::bind_method(D_METHOD("add_do_reference", "object"), &UndoRedo::add_do_reference);
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &UndoRedo::add_undo_reference);
-	ClassDB::bind_method(D_METHOD("clear_history"), &UndoRedo::clear_history);
+	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);

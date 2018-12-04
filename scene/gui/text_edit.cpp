@@ -4264,6 +4264,7 @@ void TextEdit::_clear() {
 	cursor.line_ofs = 0;
 	cursor.wrap_ofs = 0;
 	cursor.last_fit_x = 0;
+	selection.active = false;
 }
 
 void TextEdit::clear() {
@@ -5757,6 +5758,7 @@ void TextEdit::_update_completion_candidates() {
 	completion_base = s;
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
+	Vector<String> completion_options_casei;
 
 	for (int i = 0; i < completion_strings.size(); i++) {
 		if (single_quote && completion_strings[i].is_quoted()) {
@@ -5765,8 +5767,12 @@ void TextEdit::_update_completion_candidates() {
 
 		if (completion_strings[i].begins_with(s)) {
 			completion_options.push_back(completion_strings[i]);
+		} else if (completion_strings[i].to_lower().begins_with(s.to_lower())) {
+			completion_options_casei.push_back(completion_strings[i]);
 		}
 	}
+
+	completion_options.append_array(completion_options_casei);
 
 	if (completion_options.size() == 0) {
 		for (int i = 0; i < completion_strings.size(); i++) {
@@ -6039,7 +6045,10 @@ void TextEdit::menu_option(int p_option) {
 		case MENU_UNDO: {
 			undo();
 		} break;
-	};
+		case MENU_REDO: {
+			redo();
+		}
+	}
 }
 
 void TextEdit::set_select_identifiers_on_hover(bool p_enable) {
@@ -6215,6 +6224,7 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_CLEAR);
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
 	BIND_ENUM_CONSTANT(MENU_UNDO);
+	BIND_ENUM_CONSTANT(MENU_REDO);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
@@ -6343,6 +6353,7 @@ TextEdit::TextEdit() {
 	menu->add_item(RTR("Clear"), MENU_CLEAR);
 	menu->add_separator();
 	menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
+	menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
 }
 

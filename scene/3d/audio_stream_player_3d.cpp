@@ -112,8 +112,10 @@ void AudioStreamPlayer3D::_mix_audio() {
 			AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
 			AudioFrame vol = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : current.vol[k];
 
-			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
+			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k))
+				continue; //may have been deleted, will be updated on process
 
+			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			current.filter.set_mode(AudioFilterSW::HIGHSHELF);
 			current.filter.set_sampling_rate(AudioServer::get_singleton()->get_mix_rate());
 			current.filter.set_cutoff(attenuation_filter_cutoff_hz);
@@ -158,6 +160,9 @@ void AudioStreamPlayer3D::_mix_audio() {
 			}
 
 			if (current.reverb_bus_index >= 0) {
+
+				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.reverb_bus_index, k))
+					continue; //may have been deleted, will be updated on process
 
 				AudioFrame *rtarget = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.reverb_bus_index, k);
 
@@ -636,6 +641,7 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 void AudioStreamPlayer3D::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
+		active = true;
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);

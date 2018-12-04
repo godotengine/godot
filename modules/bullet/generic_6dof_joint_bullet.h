@@ -68,6 +68,9 @@ public:
 
 	void set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag, bool p_value);
 	bool get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const;
+
+	void set_precision(int p_precision);
+	int get_precision() const;
 };
 
 #endif

@@ -52,6 +52,10 @@
 		<member name="depth_enabled" type="bool" setter="set_feature" getter="get_feature">
 			If [code]true[/code] Depth mapping is enabled. See also [member normal_enabled].
 		</member>
+		<member name="depth_flip_binormal" type="bool" setter="set_depth_deep_parallax_flip_binormal" getter="get_depth_deep_parallax_flip_binormal">
+		</member>
+		<member name="depth_flip_tangent" type="bool" setter="set_depth_deep_parallax_flip_tangent" getter="get_depth_deep_parallax_flip_tangent">
+		</member>
 		<member name="depth_max_layers" type="int" setter="set_depth_deep_parallax_max_layers" getter="get_depth_deep_parallax_max_layers">
 		</member>
 		<member name="depth_min_layers" type="int" setter="set_depth_deep_parallax_min_layers" getter="get_depth_deep_parallax_min_layers">
@@ -180,7 +184,7 @@
 		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
 			The number of horizontal frames in the particle spritesheet. Only enabled when using [code]BillboardMode.BILLBOARD_PARTICLES[/code]. See [member params_billboard_mode].
 		</member>
-		<member name="particles_anim_loop" type="int" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
+		<member name="particles_anim_loop" type="bool" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
 			If [code]true[/code] particle animations are looped. Only enabled when using [code]BillboardMode.BILLBOARD_PARTICLES[/code]. See [member params_billboard_mode].
 		</member>
 		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames">

@@ -30,7 +30,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total length of the text.
+				Returns the total number of printable characters in the text (excluding spaces and newlines).
 			</description>
 		</method>
 		<method name="get_visible_line_count" qualifiers="const">

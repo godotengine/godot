@@ -151,6 +151,7 @@ void SkeletonEditor::_bind_methods() {
 }
 
 SkeletonEditor::SkeletonEditor() {
+	skeleton = NULL;
 	options = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 

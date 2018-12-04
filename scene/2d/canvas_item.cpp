@@ -123,7 +123,7 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\tfloat h_frames = float(particles_anim_h_frames);\n";
 		code += "\tfloat v_frames = float(particles_anim_v_frames);\n";
 
-		code += "\tVERTEX.xy /= TEXTURE_PIXEL_SIZE * vec2(h_frames, v_frames);\n";
+		code += "\tVERTEX.xy /= vec2(h_frames, v_frames);\n";
 
 		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
@@ -136,7 +136,7 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\tfloat frame_w = 1.0 / h_frames;\n";
 		code += "\tfloat frame_h = 1.0 / v_frames;\n";
 		code += "\tUV.x = UV.x * frame_w + frame_w * float(frame % particles_anim_h_frames);\n";
-		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_v_frames);\n";
+		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_h_frames);\n";
 
 		code += "}\n";
 	}
@@ -376,6 +376,9 @@ bool CanvasItem::is_visible_in_tree() const {
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
+	if (p_visible && first_draw) { //avoid propagating it twice
+		first_draw = false;
+	}
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
 	if (p_visible)

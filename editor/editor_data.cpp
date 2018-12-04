@@ -857,11 +857,16 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	if (!ScriptServer::is_global_class(p_class))
 		return false;
 	String base = script_class_get_base(p_class);
+	Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
+	Ref<Script> base_script = script->get_base_script();
+
 	while (p_inherits != base) {
 		if (ClassDB::class_exists(base)) {
 			return ClassDB::is_parent_class(base, p_inherits);
 		} else if (ScriptServer::is_global_class(base)) {
 			base = script_class_get_base(base);
+		} else if (base_script.is_valid()) {
+			return ClassDB::is_parent_class(base_script->get_instance_base_type(), p_inherits);
 		} else {
 			return false;
 		}
@@ -946,16 +951,18 @@ void EditorData::script_class_save_icon_paths() {
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
-	Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
-	List<Variant> keys;
-	d.get_key_list(&keys);
+	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+		Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+		List<Variant> keys;
+		d.get_key_list(&keys);
 
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		String name = E->get().operator String();
-		_script_class_icon_paths[name] = d[name];
+		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			String name = E->get().operator String();
+			_script_class_icon_paths[name] = d[name];
 
-		String path = ScriptServer::get_global_class_path(name);
-		script_class_set_name(path, name);
+			String path = ScriptServer::get_global_class_path(name);
+			script_class_set_name(path, name);
+		}
 	}
 }
 

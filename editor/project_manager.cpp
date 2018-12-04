@@ -1444,7 +1444,7 @@ void ProjectManager::_run_project_confirm() {
 		const String &selected = E->key();
 		String path = EditorSettings::get_singleton()->get("projects/" + selected);
 
-		if (!DirAccess::exists(path + "/.cache")) {
+		if (!DirAccess::exists(path + "/.import")) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
 			return;

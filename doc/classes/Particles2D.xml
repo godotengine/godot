@@ -42,9 +42,6 @@
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta">
 		</member>
-		<member name="h_frames" type="int" setter="set_h_frames" getter="get_h_frames">
-			Number of horizontal frames in [code]texture[/code].
-		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime">
 			Amount of time each particle will exist. Default value: [code]1[/code].
 		</member>
@@ -70,9 +67,6 @@
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code] particles will be squares.
-		</member>
-		<member name="v_frames" type="int" setter="set_v_frames" getter="get_v_frames">
-			Number of vertical frames in [code]texture[/code].
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect">
 			Editor visibility helper.

@@ -40,6 +40,12 @@
 #include "joints/pin_joint_sw.h"
 #include "joints/slider_joint_sw.h"
 
+#define FLUSH_QUERY_CHECK                                                                                                                     \
+	if (flushing_queries) {                                                                                                                   \
+		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred()/set_deferred() to change monitoring state instead"); \
+		ERR_FAIL();                                                                                                                           \
+	}
+
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 
 	ShapeSW *shape = NULL;
@@ -352,6 +358,8 @@ void PhysicsServerSW::area_clear_shapes(RID p_area) {
 
 void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
 
+	FLUSH_QUERY_CHECK
+
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
@@ -434,6 +442,8 @@ void PhysicsServerSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 }
 
 void PhysicsServerSW::area_set_monitorable(RID p_area, bool p_monitorable) {
+
+	FLUSH_QUERY_CHECK
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
@@ -581,6 +591,8 @@ RID PhysicsServerSW::body_get_shape(RID p_body, int p_shape_idx) const {
 }
 
 void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
+
+	FLUSH_QUERY_CHECK
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -1459,6 +1471,8 @@ void PhysicsServerSW::flush_queries() {
 
 	doing_sync = true;
 
+	flushing_queries = true;
+
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
 	for (Set<const SpaceSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
@@ -1466,6 +1480,8 @@ void PhysicsServerSW::flush_queries() {
 		SpaceSW *space = (SpaceSW *)E->get();
 		space->call_queries();
 	}
+
+	flushing_queries = false;
 
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
 
@@ -1580,6 +1596,7 @@ PhysicsServerSW::PhysicsServerSW() {
 	collision_pairs = 0;
 
 	active = true;
+	flushing_queries = false;
 };
 
 PhysicsServerSW::~PhysicsServerSW(){

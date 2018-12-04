@@ -113,6 +113,30 @@
 		<member name="angular_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
 			Target speed for the motor at the z-axis.
 		</member>
+		<member name="angular_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="angular_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		</member>
+		<member name="angular_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="angular_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="angular_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="angular_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		</member>
+		<member name="angular_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="angular_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="angular_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="angular_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		</member>
+		<member name="angular_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="angular_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
 		<member name="linear_limit_x/damping" type="float" setter="set_param_x" getter="get_param_x">
 			The amount of damping that happens at the x-motion.
 		</member>
@@ -194,6 +218,30 @@
 		<member name="linear_motor_z/target_velocity" type="float" setter="set_param_z" getter="get_param_z">
 			The speed that the linear motor will attempt to reach on the z-axis.
 		</member>
+		<member name="linear_spring_x/damping" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="linear_spring_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
+		</member>
+		<member name="linear_spring_x/equilibrium_point" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="linear_spring_x/stiffness" type="float" setter="set_param_x" getter="get_param_x">
+		</member>
+		<member name="linear_spring_y/damping" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="linear_spring_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
+		</member>
+		<member name="linear_spring_y/equilibrium_point" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="linear_spring_y/stiffness" type="float" setter="set_param_y" getter="get_param_y">
+		</member>
+		<member name="linear_spring_z/damping" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="linear_spring_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
+		</member>
+		<member name="linear_spring_z/equilibrium_point" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
+		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
+		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_LINEAR_LOWER_LIMIT" value="0" enum="Param">
@@ -217,34 +265,34 @@
 		<constant name="PARAM_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="Param">
 			The maximum force the linear motor will apply while trying to reach the velocity target.
 		</constant>
-		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="7" enum="Param">
+		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="10" enum="Param">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="8" enum="Param">
+		<constant name="PARAM_ANGULAR_UPPER_LIMIT" value="11" enum="Param">
 			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="9" enum="Param">
+		<constant name="PARAM_ANGULAR_LIMIT_SOFTNESS" value="12" enum="Param">
 			The speed of all rotations across the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_DAMPING" value="10" enum="Param">
+		<constant name="PARAM_ANGULAR_DAMPING" value="13" enum="Param">
 			The amount of rotational damping across the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="PARAM_ANGULAR_RESTITUTION" value="11" enum="Param">
+		<constant name="PARAM_ANGULAR_RESTITUTION" value="14" enum="Param">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="12" enum="Param">
+		<constant name="PARAM_ANGULAR_FORCE_LIMIT" value="15" enum="Param">
 			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_ERP" value="13" enum="Param">
+		<constant name="PARAM_ANGULAR_ERP" value="16" enum="Param">
 			When rotating across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="14" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="Param">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="15" enum="Param">
+		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="Param">
 			Maximum acceleration for the motor at the axes.
 		</constant>
-		<constant name="PARAM_MAX" value="16" enum="Param">
+		<constant name="PARAM_MAX" value="22" enum="Param">
 			End flag of PARAM_* constants, used internally.
 		</constant>
 		<constant name="FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="Flag">
@@ -253,12 +301,16 @@
 		<constant name="FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="Flag">
 			If [code]set[/code] there is rotational motion possible.
 		</constant>
-		<constant name="FLAG_ENABLE_MOTOR" value="2" enum="Flag">
+		<constant name="FLAG_ENABLE_LINEAR_SPRING" value="3" enum="Flag">
+		</constant>
+		<constant name="FLAG_ENABLE_ANGULAR_SPRING" value="2" enum="Flag">
+		</constant>
+		<constant name="FLAG_ENABLE_MOTOR" value="4" enum="Flag">
 			If [code]set[/code] there is a rotational motor across these axes.
 		</constant>
-		<constant name="FLAG_ENABLE_LINEAR_MOTOR" value="3" enum="Flag">
+		<constant name="FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="Flag">
 		</constant>
-		<constant name="FLAG_MAX" value="4" enum="Flag">
+		<constant name="FLAG_MAX" value="6" enum="Flag">
 			End flag of FLAG_* constants, used internally.
 		</constant>
 	</constants>

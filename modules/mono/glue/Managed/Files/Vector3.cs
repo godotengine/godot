@@ -204,9 +204,9 @@ namespace Godot
         public Basis Outer(Vector3 b)
         {
             return new Basis(
-                new Vector3(x * b.x, x * b.y, x * b.z),
-                new Vector3(y * b.x, y * b.y, y * b.z),
-                new Vector3(z * b.x, z * b.y, z * b.z)
+                x * b.x, x * b.y, x * b.z,
+                y * b.x, y * b.y, y * b.z,
+                z * b.x, z * b.y, z * b.z
             );
         }
 
@@ -276,13 +276,13 @@ namespace Godot
                 0f, 0f, z
             );
         }
-        
+
         // Constants
         private static readonly Vector3 _zero = new Vector3(0, 0, 0);
         private static readonly Vector3 _one = new Vector3(1, 1, 1);
         private static readonly Vector3 _negOne = new Vector3(-1, -1, -1);
         private static readonly Vector3 _inf = new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf);
-    
+
         private static readonly Vector3 _up = new Vector3(0, 1, 0);
         private static readonly Vector3 _down = new Vector3(0, -1, 0);
         private static readonly Vector3 _right = new Vector3(1, 0, 0);
@@ -294,7 +294,7 @@ namespace Godot
         public static Vector3 One { get { return _one; } }
         public static Vector3 NegOne { get { return _negOne; } }
         public static Vector3 Inf { get { return _inf; } }
-        
+
         public static Vector3 Up { get { return _up; } }
         public static Vector3 Down { get { return _down; } }
         public static Vector3 Right { get { return _right; } }

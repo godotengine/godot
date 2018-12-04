@@ -421,31 +421,40 @@ bool GDScript::_update_exports() {
 				base_cache = Ref<GDScript>();
 			}
 
-			if (c->extends_used && String(c->extends_file) != "" && String(c->extends_file) != get_path()) {
+			if (c->extends_used) {
+				String path = "";
+				if (String(c->extends_file) != "" && String(c->extends_file) != get_path()) {
+					path = c->extends_file;
+					if (path.is_rel_path()) {
 
-				String path = c->extends_file;
-				if (path.is_rel_path()) {
+						String base = get_path();
+						if (base == "" || base.is_rel_path()) {
 
-					String base = get_path();
-					if (base == "" || base.is_rel_path()) {
-
-						ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
-					} else {
-						path = base.get_base_dir().plus_file(path);
+							ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
+						} else {
+							path = base.get_base_dir().plus_file(path);
+						}
 					}
+				} else if (c->extends_class.size() != 0) {
+					String base = c->extends_class[0];
+
+					if (ScriptServer::is_global_class(base))
+						path = ScriptServer::get_global_class_path(base);
 				}
 
-				if (path != get_path()) {
+				if (path != "") {
+					if (path != get_path()) {
 
-					Ref<GDScript> bf = ResourceLoader::load(path);
+						Ref<GDScript> bf = ResourceLoader::load(path);
 
-					if (bf.is_valid()) {
+						if (bf.is_valid()) {
 
-						base_cache = bf;
-						bf->inheriters_cache.insert(get_instance_id());
+							base_cache = bf;
+							bf->inheriters_cache.insert(get_instance_id());
+						}
+					} else {
+						ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
 					}
-				} else {
-					ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
 				}
 			}
 
@@ -469,8 +478,15 @@ bool GDScript::_update_exports() {
 			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
 				E->get()->set_build_failed(true);
 			}
+			return false;
 		}
 	} else {
+		if (!valid) {
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->set_build_failed(true);
+			}
+			return false;
+		}
 	}
 
 	if (base_cache.is_valid()) {
@@ -851,7 +867,6 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 	else if (base_cache.is_valid()) {
 		return base_cache->has_script_signal(p_signal);
 	}
-
 #endif
 	return false;
 }

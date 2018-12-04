@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "editor_properties_array_dict.h"
+#include "core/io/marshalls.h"
 #include "editor/editor_scale.h"
 #include "editor_properties.h"
-
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 
 	String pn = p_name;
@@ -54,6 +54,10 @@ bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) c
 		int idx = pn.get_slicec('/', 1).to_int();
 		bool valid;
 		r_ret = array.get(idx, &valid);
+		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+		}
+
 		return valid;
 	}
 
@@ -120,6 +124,10 @@ bool EditorPropertyDictionaryObject::_get(const StringName &p_name, Variant &r_r
 		int idx = pn.get_slicec('/', 1).to_int();
 		Variant key = dict.get_key_at_index(idx);
 		r_ret = dict[key];
+		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+		}
+
 		return true;
 	}
 
@@ -196,6 +204,10 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	}
 	object->set_array(array);
 	update_property();
+}
+
+void EditorPropertyArray::_object_id_selected(const String &p_property, ObjectID p_id) {
+	emit_signal("object_id_selected", p_property, p_id);
 }
 
 void EditorPropertyArray::update_property() {
@@ -431,9 +443,19 @@ void EditorPropertyArray::update_property() {
 
 				} break;
 				case Variant::OBJECT: {
-					EditorPropertyResource *editor = memnew(EditorPropertyResource);
-					editor->setup("Resource");
-					prop = editor;
+
+					if (Object::cast_to<EncodedObjectAsID>(value)) {
+
+						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+						editor->setup("Object");
+						prop = editor;
+
+					} else {
+
+						EditorPropertyResource *editor = memnew(EditorPropertyResource);
+						editor->setup("Resource");
+						prop = editor;
+					}
 
 				} break;
 				case Variant::DICTIONARY: {
@@ -497,6 +519,7 @@ void EditorPropertyArray::update_property() {
 			prop->set_label(itos(i + offset));
 			prop->set_selectable(false);
 			prop->connect("property_changed", this, "_property_changed");
+			prop->connect("object_id_selected", this, "_object_id_selected");
 			if (array.get_type() == Variant::ARRAY) {
 				HBoxContainer *hb = memnew(HBoxContainer);
 				vbox->add_child(hb);
@@ -578,6 +601,7 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method("_property_changed", &EditorPropertyArray::_property_changed, DEFVAL(false));
 	ClassDB::bind_method("_change_type", &EditorPropertyArray::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyArray::_change_type_menu);
+	ClassDB::bind_method("_object_id_selected", &EditorPropertyArray::_object_id_selected);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -893,9 +917,19 @@ void EditorPropertyDictionary::update_property() {
 
 				} break;
 				case Variant::OBJECT: {
-					EditorPropertyResource *editor = memnew(EditorPropertyResource);
-					editor->setup("Resource");
-					prop = editor;
+
+					if (Object::cast_to<EncodedObjectAsID>(value)) {
+
+						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+						editor->setup("Object");
+						prop = editor;
+
+					} else {
+
+						EditorPropertyResource *editor = memnew(EditorPropertyResource);
+						editor->setup("Resource");
+						prop = editor;
+					}
 
 				} break;
 				case Variant::DICTIONARY: {
@@ -986,6 +1020,7 @@ void EditorPropertyDictionary::update_property() {
 
 			prop->set_selectable(false);
 			prop->connect("property_changed", this, "_property_changed");
+			prop->connect("object_id_selected", this, "_object_id_selected");
 
 			HBoxContainer *hb = memnew(HBoxContainer);
 			if (add_vbox) {
@@ -1022,6 +1057,10 @@ void EditorPropertyDictionary::update_property() {
 #endif
 }
 
+void EditorPropertyDictionary::_object_id_selected(const String &p_property, ObjectID p_id) {
+	emit_signal("object_id_selected", p_property, p_id);
+}
+
 void EditorPropertyDictionary::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -1055,6 +1094,7 @@ void EditorPropertyDictionary::_bind_methods() {
 	ClassDB::bind_method("_change_type", &EditorPropertyDictionary::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyDictionary::_change_type_menu);
 	ClassDB::bind_method("_add_key_value", &EditorPropertyDictionary::_add_key_value);
+	ClassDB::bind_method("_object_id_selected", &EditorPropertyDictionary::_object_id_selected);
 }
 
 EditorPropertyDictionary::EditorPropertyDictionary() {

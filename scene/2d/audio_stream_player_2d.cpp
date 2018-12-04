@@ -92,6 +92,9 @@ void AudioStreamPlayer2D::_mix_audio() {
 		int cc = AudioServer::get_singleton()->get_channel_count();
 
 		if (cc == 1) {
+			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, 0))
+				continue; //may have been removed
+
 			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 0);
 
 			for (int j = 0; j < buffer_size; j++) {
@@ -102,10 +105,19 @@ void AudioStreamPlayer2D::_mix_audio() {
 
 		} else {
 			AudioFrame *targets[4];
+			bool valid = true;
 
 			for (int k = 0; k < cc; k++) {
+				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k)) {
+					valid = false; //may have been removed
+					break;
+				}
+
 				targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			}
+
+			if (!valid)
+				continue;
 
 			for (int j = 0; j < buffer_size; j++) {
 
@@ -311,6 +323,7 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	}
 
 	if (stream_playback.is_valid()) {
+		active = true;
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);

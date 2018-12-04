@@ -17,6 +17,7 @@
 			<argument index="0" name="from" type="Translation">
 			</argument>
 			<description>
+				Generates and sets an optimized translation from the given [Translation] resource.
 			</description>
 		</method>
 	</methods>

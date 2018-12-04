@@ -899,7 +899,16 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, a["NORMAL"], true);
 			}
 			if (a.has("TANGENT")) {
-				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_floats(state, a["TANGENT"], true);
+				PoolVector<float> tans = _decode_accessor_as_floats(state, a["TANGENT"], true);
+				{ // we need our binormals inversed, so flip our w component.
+					int ts = tans.size();
+					PoolVector<float>::Write w = tans.write();
+
+					for (int j = 3; j < ts; j += 4) {
+						w[j] *= -1.0;
+					}
+				}
+				array[Mesh::ARRAY_TANGENT] = tans;
 			}
 			if (a.has("TEXCOORD_0")) {
 				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(state, a["TEXCOORD_0"], true);
@@ -1686,7 +1695,7 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 
 	n->godot_nodes.push_back(node);
 
-	if (n->skin >= 0 && Object::cast_to<MeshInstance>(node)) {
+	if (n->skin >= 0 && n->skin < skeletons.size() && Object::cast_to<MeshInstance>(node)) {
 		MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 
 		Skeleton *s = skeletons[n->skin];

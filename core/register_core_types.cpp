@@ -55,6 +55,7 @@
 #include "core/math/a_star.h"
 #include "core/math/expression.h"
 #include "core/math/geometry.h"
+#include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
 #include "core/os/input.h"
 #include "core/os/main_loop.h"
@@ -180,6 +181,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<PackedDataContainerRef>();
 	ClassDB::register_class<AStar>();
 	ClassDB::register_class<EncodedObjectAsID>();
+	ClassDB::register_class<RandomNumberGenerator>();
 
 	ClassDB::register_class<JSONParseResult>();
 

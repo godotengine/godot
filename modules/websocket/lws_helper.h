@@ -60,6 +60,7 @@ void _lws_make_protocols(void *p_obj, lws_callback_function *p_callback, PoolVec
 protected:															\
 	struct _LWSRef *_lws_ref;												\
 	struct lws_context *context;												\
+	bool _keep_servicing;													\
 																\
 	static int _lws_gd_callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {	\
 																\
@@ -71,6 +72,7 @@ protected:															\
 		if (!ref->is_valid)												\
 			return 0;												\
 		CNAME *helper = (CNAME *)ref->obj;										\
+		helper->_keep_servicing = true;											\
 		return helper->_handle_cb(wsi, reason, user, in, len);								\
 	}															\
 																\
@@ -91,11 +93,14 @@ public:																\
 																\
 	void _lws_poll() {													\
 		ERR_FAIL_COND(context == NULL);											\
-																\
-		if (::_lws_poll(context, _lws_ref)) {										\
-			context = NULL;												\
-			_lws_ref = NULL;											\
-		}														\
+		do {														\
+			_keep_servicing = false;										\
+			if (::_lws_poll(context, _lws_ref)) {									\
+				context = NULL;											\
+				_lws_ref = NULL;										\
+				break;												\
+			}													\
+		} while (_keep_servicing);											\
 	}															\
 																\
 protected:

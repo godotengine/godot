@@ -157,7 +157,9 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 
 	Map<ObjectID, BodyState>::Element *E = body_map.find(objid);
 
-	ERR_FAIL_COND(!body_in && !E);
+	if (!body_in && !E) {
+		return; //likely removed from the tree
+	}
 
 	locked = true;
 
@@ -290,7 +292,7 @@ void Area::_notification(int p_what) {
 void Area::set_monitoring(bool p_enable) {
 
 	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitoring\",true/false)");
 	}
 	ERR_FAIL_COND(locked);
 
@@ -437,10 +439,10 @@ Array Area::get_overlapping_bodies() const {
 
 void Area::set_monitorable(bool p_enable) {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	if (locked || PhysicsServer::get_singleton()->is_flushing_queries()) {
+		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitorable\",true/false)");
 	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND(locked || PhysicsServer::get_singleton()->is_flushing_queries());
 
 	if (p_enable == monitorable)
 		return;

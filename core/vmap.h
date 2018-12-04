@@ -36,22 +36,23 @@
 
 template <class T, class V>
 class VMap {
-
-	struct _Pair {
+public:
+	struct Pair {
 
 		T key;
 		V value;
 
-		_FORCE_INLINE_ _Pair() {}
+		_FORCE_INLINE_ Pair() {}
 
-		_FORCE_INLINE_ _Pair(const T &p_key, const V &p_value) {
+		_FORCE_INLINE_ Pair(const T &p_key, const V &p_value) {
 
 			key = p_key;
 			value = p_value;
 		}
 	};
 
-	CowData<_Pair> _cowdata;
+private:
+	CowData<Pair> _cowdata;
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 
@@ -61,7 +62,7 @@ class VMap {
 
 		int low = 0;
 		int high = _cowdata.size() - 1;
-		const _Pair *a = _cowdata.ptr();
+		const Pair *a = _cowdata.ptr();
 		int middle = 0;
 
 #if DEBUG_ENABLED
@@ -95,7 +96,7 @@ class VMap {
 		int low = 0;
 		int high = _cowdata.size() - 1;
 		int middle;
-		const _Pair *a = _cowdata.ptr();
+		const Pair *a = _cowdata.ptr();
 
 		while (low <= high) {
 			middle = (low + high) / 2;
@@ -121,7 +122,7 @@ public:
 			_cowdata.get_m(pos).value = p_val;
 			return pos;
 		}
-		_cowdata.insert(pos, _Pair(p_key, p_val));
+		_cowdata.insert(pos, Pair(p_key, p_val));
 		return pos;
 	}
 
@@ -152,12 +153,12 @@ public:
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
-	const _Pair *get_array() const {
+	const Pair *get_array() const {
 
 		return _cowdata.ptr();
 	}
 
-	_Pair *get_array() {
+	Pair *get_array() {
 
 		return _cowdata.ptrw();
 	}

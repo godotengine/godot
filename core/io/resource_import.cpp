@@ -36,7 +36,7 @@
 Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid) const {
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".cache", FileAccess::READ, &err);
+	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
 	if (!f) {
 		if (r_valid) {
@@ -70,7 +70,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".cache:" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ResourceFormatImporter::load - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return err;
 		}
@@ -179,7 +179,7 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 
 bool ResourceFormatImporter::recognize_path(const String &p_path, const String &p_for_type) const {
 
-	return FileAccess::exists(p_path + ".cache");
+	return FileAccess::exists(p_path + ".import");
 }
 
 bool ResourceFormatImporter::can_be_imported(const String &p_path) const {
@@ -191,7 +191,7 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 
 	Ref<ResourceImporter> importer;
 
-	if (FileAccess::exists(p_path + ".cache")) {
+	if (FileAccess::exists(p_path + ".import")) {
 
 		PathAndType pat;
 		Error err = _get_path_and_type(p_path, pat);
@@ -240,7 +240,7 @@ String ResourceFormatImporter::get_internal_resource_path(const String &p_path) 
 void ResourceFormatImporter::get_internal_resource_path_list(const String &p_path, List<String> *r_paths) {
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".cache", FileAccess::READ, &err);
+	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
 
 	if (!f)
 		return;
@@ -265,7 +265,7 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 			memdelete(f);
 			return;
 		} else if (err != OK) {
-			ERR_PRINTS("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".cache:" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ResourceFormatImporter::get_internal_resource_path_list - " + p_path + ".import:" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return;
 		}
@@ -363,7 +363,7 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
 
-	return "res://.cache/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+	return "res://.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
 }
 
 ResourceFormatImporter *ResourceFormatImporter::singleton = NULL;

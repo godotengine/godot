@@ -20,6 +20,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="calculate_tangents" type="bool" setter="set_calculate_tangents" getter="is_calculating_tangents">
+			Calculate tangents for the CSG shape which allows the use of normal maps. This is only applied on the root shape, this setting is ignored on any child.
+		</member>
 		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape.Operation">
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
 		</member>

@@ -786,16 +786,22 @@ void SpaceBullet::check_body_collision() {
 			}
 
 			const int numContacts = contactManifold->getNumContacts();
+
+			/// Since I don't need report all contacts for these objects,
+			/// So report only the first
 #define REPORT_ALL_CONTACTS 0
 #if REPORT_ALL_CONTACTS
 			for (int j = 0; j < numContacts; j++) {
 				btManifoldPoint &pt = contactManifold->getContactPoint(j);
 #else
-			// Since I don't need report all contacts for these objects, I'll report only the first
 			if (numContacts) {
 				btManifoldPoint &pt = contactManifold->getContactPoint(0);
 #endif
-				if (pt.getDistance() <= 0.0) {
+				if (
+						pt.getDistance() <= 0.0 ||
+						bodyA->was_colliding(bodyB) ||
+						bodyB->was_colliding(bodyA)) {
+
 					Vector3 collisionWorldPosition;
 					Vector3 collisionLocalPosition;
 					Vector3 normalOnB;

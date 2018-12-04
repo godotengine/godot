@@ -229,6 +229,18 @@ void AbstractPolygon2DEditor::_wip_changed() {
 	}
 }
 
+void AbstractPolygon2DEditor::_wip_cancel() {
+
+	wip.clear();
+	wip_active = false;
+
+	edited_point = PosVertex();
+	hover_point = Vertex();
+	selected_point = Vertex();
+
+	canvas_item_editor->update_viewport();
+}
+
 void AbstractPolygon2DEditor::_wip_close() {
 	if (!wip_active)
 		return;
@@ -429,7 +441,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					}
 				}
 			} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && wip_active) {
-				_wip_close();
+				_wip_cancel();
 			}
 		}
 	}
@@ -510,6 +522,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		} else if (wip_active && k->get_scancode() == KEY_ENTER) {
 
 			_wip_close();
+		} else if (wip_active && k->get_scancode() == KEY_ESCAPE) {
+			_wip_cancel();
 		}
 	}
 

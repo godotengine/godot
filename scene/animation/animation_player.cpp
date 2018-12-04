@@ -1120,6 +1120,15 @@ void AnimationPlayer::queue(const StringName &p_name) {
 		queued.push_back(p_name);
 }
 
+PoolVector<String> AnimationPlayer::get_queue() {
+	PoolVector<String> ret;
+	for (List<StringName>::Element *E = queued.front(); E; E = E->next()) {
+		ret.push_back(E->get());
+	}
+
+	return ret;
+}
+
 void AnimationPlayer::clear_queue() {
 	queued.clear();
 }
@@ -1348,6 +1357,9 @@ void AnimationPlayer::_animation_changed() {
 
 	clear_caches();
 	emit_signal("caches_cleared");
+	if (is_playing()) {
+		playback.seeked = true; //need to restart stuff, like audio
+	}
 }
 
 void AnimationPlayer::_stop_playing_caches() {
@@ -1600,6 +1612,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_assigned_animation", "anim"), &AnimationPlayer::set_assigned_animation);
 	ClassDB::bind_method(D_METHOD("get_assigned_animation"), &AnimationPlayer::get_assigned_animation);
 	ClassDB::bind_method(D_METHOD("queue", "name"), &AnimationPlayer::queue);
+	ClassDB::bind_method(D_METHOD("get_queue"), &AnimationPlayer::get_queue);
 	ClassDB::bind_method(D_METHOD("clear_queue"), &AnimationPlayer::clear_queue);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &AnimationPlayer::set_active);

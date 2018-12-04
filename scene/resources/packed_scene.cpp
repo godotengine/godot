@@ -490,9 +490,15 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
 
-		if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
-			isdefault = true; //is script default value
+		Ref<Script> script = p_node->get_script();
+		if (!isdefault && script.is_valid() && script->get_property_default_value(name, default_value)) {
+			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
+		// the version above makes more sense, because it does not rely on placeholder or usage flag
+		// in the script, just the default value function.
+		// if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
+		// 	isdefault = true; //is script default value
+		// }
 
 		if (pack_state_stack.size()) {
 			// we are on part of an instanced subscene

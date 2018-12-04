@@ -660,11 +660,11 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		String path = E->get();
 		String type = ResourceLoader::get_resource_type(path);
 
-		if (FileAccess::exists(path + ".cache")) {
+		if (FileAccess::exists(path + ".import")) {
 			//file is imported, replace by what it imports
 			Ref<ConfigFile> config;
 			config.instance();
-			Error err = config->load(path + ".cache");
+			Error err = config->load(path + ".import");
 			if (err != OK) {
 				ERR_PRINTS("Could not parse: '" + path + "', not exported.");
 				continue;
@@ -706,9 +706,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			}
 
-			//also save the .cache file
-			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".cache");
-			p_func(p_udata, path + ".cache", array, idx, total);
+			//also save the .import file
+			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
+			p_func(p_udata, path + ".import", array, idx, total);
 
 		} else {
 

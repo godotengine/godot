@@ -133,8 +133,7 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 
 	switch (p_interp) {
 		case SL::INTERPOLATION_FLAT: return "flat ";
-		case SL::INTERPOLATION_NO_PERSPECTIVE: return "noperspective ";
-		case SL::INTERPOLATION_SMOOTH: return "smooth ";
+		case SL::INTERPOLATION_SMOOTH: return "";
 	}
 	return "";
 }
@@ -167,15 +166,17 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	return "m_" + p_id;
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
 }
 
 static String f2sp0(float p_float) {
 
-	if (int(p_float) == p_float)
-		return itos(p_float) + ".0";
-	else
-		return rtoss(p_float);
+	String num = rtoss(p_float);
+	if (num.find(".") == -1 && num.find("e") == -1) {
+		num += ".0";
+	}
+	return num;
 }
 
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
@@ -228,7 +229,7 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			text += ")";
 			return text;
 		} break;
-		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real) + "f";
+		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real);
 		case SL::TYPE_VEC2:
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
@@ -476,6 +477,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			//code for functions
 			for (int i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
+				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 
@@ -946,7 +948,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
 	actions[VS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
 	actions[VS::SHADER_PARTICLES].renames["MASS"] = "mass";
-	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "active";
+	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "shader_active";
 	actions[VS::SHADER_PARTICLES].renames["RESTART"] = "restart";
 	actions[VS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
 	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";

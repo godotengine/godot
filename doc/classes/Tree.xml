@@ -315,12 +315,12 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Emitted when an item is selected with right mouse button.
+				Emitted when an item is selected with the right mouse button.
 			</description>
 		</signal>
 		<signal name="item_selected">
 			<description>
-				Emitted when an item is selected with right mouse button.
+				Emitted when an item is selected.
 			</description>
 		</signal>
 		<signal name="multi_selected">
@@ -383,6 +383,8 @@
 		<theme_item name="custom_button_hover" type="StyleBox">
 		</theme_item>
 		<theme_item name="custom_button_pressed" type="StyleBox">
+		</theme_item>
+		<theme_item name="draw_guides" type="int">
 		</theme_item>
 		<theme_item name="draw_relationship_lines" type="int">
 		</theme_item>

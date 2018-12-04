@@ -234,7 +234,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
 
 	int selecting_method_id;
-	void _selected_method(const String &p_method, const String &p_type);
+	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 	void _button_resource_previewed(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, Variant p_ud);

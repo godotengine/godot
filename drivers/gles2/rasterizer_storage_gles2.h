@@ -60,20 +60,12 @@ public:
 
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
-		// bool use_anisotropic_filter;
-
-		bool hdr_supported;
-
-		bool use_rgba_2d_shadows;
-
-		// float anisotropic_level;
 
 		int max_texture_image_units;
 		int max_texture_size;
 
-		bool generate_wireframes;
-
-		bool use_texture_array_environment;
+		// TODO implement wireframe in GLES2
+		// bool generate_wireframes;
 
 		Set<String> extensions;
 
@@ -83,7 +75,6 @@ public:
 
 		bool keep_original_textures;
 
-		bool no_depth_prepass;
 		bool force_vertex_shading;
 	} config;
 
@@ -159,20 +150,12 @@ public:
 	struct Instantiable : public RID_Data {
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
-		_FORCE_INLINE_ void instance_change_notify() {
+		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
+
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-
 			while (instances) {
-				instances->self()->base_changed();
-				instances = instances->next();
-			}
-		}
 
-		_FORCE_INLINE_ void instance_material_change_notify() {
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-
-			while (instances) {
-				instances->self()->base_material_changed();
+				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
 		}
@@ -272,31 +255,28 @@ public:
 		void *detect_normal_ud;
 
 		Texture() {
-			flags = 0;
-			width = 0;
-			height = 0;
 			alloc_width = 0;
 			alloc_height = 0;
-			format = Image::FORMAT_L8;
-
 			target = 0;
 
-			data_size = 0;
-			total_data_size = 0;
-			ignore_mipmaps = false;
-
-			compressed = false;
-
-			active = false;
-
-			tex_id = 0;
-
 			stored_cube_sides = 0;
-
-			proxy = NULL;
-
+			ignore_mipmaps = false;
 			render_target = NULL;
-
+			flags = width = height = 0;
+			tex_id = 0;
+			data_size = 0;
+			format = Image::FORMAT_L8;
+			active = false;
+			compressed = false;
+			total_data_size = 0;
+			mipmaps = 0;
+			detect_3d = NULL;
+			detect_3d_ud = NULL;
+			detect_srgb = NULL;
+			detect_srgb_ud = NULL;
+			detect_normal = NULL;
+			detect_normal_ud = NULL;
+			proxy = NULL;
 			redraw_if_visible = false;
 		}
 
@@ -673,7 +653,7 @@ public:
 			SelfList<MultiMesh> *mm = multimeshes.first();
 
 			while (mm) {
-				mm->self()->instance_material_change_notify();
+				mm->self()->instance_change_notify(false, true);
 				mm = mm->next();
 			}
 		}
@@ -1109,6 +1089,8 @@ public:
 
 	virtual int particles_get_draw_passes(RID p_particles) const;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const;
+
+	virtual bool particles_is_inactive(RID p_particles) const;
 
 	/* INSTANCE */
 

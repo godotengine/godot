@@ -846,7 +846,7 @@ void RasterizerSceneGLES3::environment_set_dof_blur_near(RID p_env, bool p_enabl
 	env->dof_blur_near_amount = p_amount;
 	env->dof_blur_near_quality = p_quality;
 }
-void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, bool p_bicubic_upscale) {
+void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -859,6 +859,7 @@ void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_
 	env->glow_blend_mode = p_blend_mode;
 	env->glow_hdr_bleed_threshold = p_hdr_bleed_threshold;
 	env->glow_hdr_bleed_scale = p_hdr_bleed_scale;
+	env->glow_hdr_luminance_cap = p_hdr_luminance_cap;
 	env->glow_bicubic_upscale = p_bicubic_upscale;
 }
 void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
@@ -934,13 +935,14 @@ void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, const C
 	env->fog_sun_amount = p_sun_amount;
 }
 
-void RasterizerSceneGLES3::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
+void RasterizerSceneGLES3::environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->fog_depth_enabled = p_enable;
 	env->fog_depth_begin = p_depth_begin;
+	env->fog_depth_end = p_depth_end;
 	env->fog_depth_curve = p_depth_curve;
 	env->fog_transmit_enabled = p_transmit;
 	env->fog_transmit_curve = p_transmit_curve;
@@ -1189,11 +1191,12 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 		if (t) {
 
+			t = t->get_ptr(); //resolve for proxies
+
 			if (t->redraw_if_visible) { //must check before proxy because this is often used with proxies
 				VisualServerRaster::redraw_request();
 			}
 
-			t = t->get_ptr(); //resolve for proxies
 #ifdef TOOLS_ENABLED
 			if (t->detect_3d) {
 				t->detect_3d(t->detect_3d_ud);
@@ -2221,7 +2224,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
 
-		state.scene_shader.set_uniform(SceneShaderGLES3::NORMAL_MULT, e->instance->mirror ? -1.0 : 1.0);
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
 		_render_geometry(e);
@@ -2587,6 +2589,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.fog_color_enabled[1] = linear_fog.g;
 		state.ubo_data.fog_color_enabled[2] = linear_fog.b;
 		state.ubo_data.fog_color_enabled[3] = (!p_no_fog && env->fog_enabled) ? 1.0 : 0.0;
+		state.ubo_data.fog_density = linear_fog.a;
 
 		Color linear_sun = env->fog_sun_color.to_linear();
 		state.ubo_data.fog_sun_color_amount[0] = linear_sun.r;
@@ -2595,6 +2598,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 		state.ubo_data.fog_sun_color_amount[3] = env->fog_sun_amount;
 		state.ubo_data.fog_depth_enabled = env->fog_depth_enabled;
 		state.ubo_data.fog_depth_begin = env->fog_depth_begin;
+		state.ubo_data.fog_depth_end = env->fog_depth_end;
 		state.ubo_data.fog_depth_curve = env->fog_depth_curve;
 		state.ubo_data.fog_transmit_enabled = env->fog_transmit_enabled;
 		state.ubo_data.fog_transmit_curve = env->fog_transmit_curve;
@@ -3036,20 +3040,17 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 			reflection_ubo.ambient[3] = rpi->probe_ptr->interior_ambient_probe_contrib;
 		} else {
 			Color ambient_linear;
-			// FIXME: contrib was retrieved but never used, is it meant to be set as ambient[3]? (GH-20361)
-			//float contrib = 0;
 			if (p_env) {
 				ambient_linear = p_env->ambient_color.to_linear();
 				ambient_linear.r *= p_env->ambient_energy;
 				ambient_linear.g *= p_env->ambient_energy;
 				ambient_linear.b *= p_env->ambient_energy;
-				//contrib = p_env->ambient_sky_contribution;
 			}
 
 			reflection_ubo.ambient[0] = ambient_linear.r;
 			reflection_ubo.ambient[1] = ambient_linear.g;
 			reflection_ubo.ambient[2] = ambient_linear.b;
-			reflection_ubo.ambient[3] = 0;
+			reflection_ubo.ambient[3] = 0; //not used in exterior mode, since it just blends with regular ambient light
 		}
 
 		int cell_size = reflection_atlas->size / reflection_atlas->subdiv;
@@ -3596,7 +3597,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) { //no post process on small render targets
 		//no environment or transparent render, simply return and convert to SRGB
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glActiveTexture(GL_TEXTURE0);
@@ -3898,6 +3899,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::PIXEL_SIZE, Vector2(1.0 / vp_w, 1.0 / vp_h));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LOD, float(i));
 			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::GLOW_STRENGTH, env->glow_strength);
+			state.effect_blur_shader.set_uniform(EffectBlurShaderGLES3::LUMINANCE_CAP, env->glow_hdr_luminance_cap);
 
 			glActiveTexture(GL_TEXTURE0);
 			if (i == 0) {
@@ -4294,8 +4296,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glClearBufferfv(GL_COLOR, 0, clear_color.components); // specular
 	}
 
+	VS::EnvironmentBG bg_mode = (!env || (probe && env->bg_mode == VS::ENV_BG_CANVAS)) ? VS::ENV_BG_CLEAR_COLOR : env->bg_mode; //if no environment, or canvas while rendering a probe (invalid use case), use color.
+
 	if (env) {
-		switch (env->bg_mode) {
+		switch (bg_mode) {
 			case VS::ENV_BG_COLOR_SKY:
 			case VS::ENV_BG_SKY:
 
@@ -4336,6 +4340,10 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 				break;
 			default: {}
 		}
+	}
+
+	if (probe && probe->probe_ptr->interior) {
+		env_radiance_tex = 0; //for rendering probe interiors, radiance must not be used.
 	}
 
 	state.texscreen_copied = false;

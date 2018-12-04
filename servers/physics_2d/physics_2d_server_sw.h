@@ -54,6 +54,8 @@ class Physics2DServerSW : public Physics2DServer {
 
 	bool using_threads;
 
+	bool flushing_queries;
+
 	Step2DSW *stepper;
 	Set<const Space2DSW *> active_spaces;
 
@@ -277,6 +279,8 @@ public:
 	virtual void flush_queries();
 	virtual void end_sync();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const { return flushing_queries; }
 
 	int get_process_info(ProcessInfo p_info);
 

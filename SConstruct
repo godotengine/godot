@@ -425,8 +425,13 @@ if selected_platform in platform_list:
     # (SH)LIBSUFFIX will be used for our own built libraries
     # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
     # so we need to append the default suffixes to keep the ability
-    # to link against thirdparty libraries (.a, .so, .dll, etc.).
-    env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
+    # to link against thirdparty libraries (.a, .so, .lib, etc.).
+    if os.name == "nt":
+        # On Windows, only static libraries and import libraries can be
+        # statically linked - both using .lib extension
+        env["LIBSUFFIXES"] += [env["LIBSUFFIX"]]
+    else:
+        env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 

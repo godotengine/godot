@@ -698,6 +698,7 @@ public:
 	bool is_connected(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) const;
 
 	void call_deferred(const StringName &p_method, VARIANT_ARG_LIST);
+	void set_deferred(const StringName &p_property, const Variant &p_value);
 
 	void set_block_signals(bool p_block);
 	bool is_blocking_signals() const;

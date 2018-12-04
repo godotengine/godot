@@ -348,6 +348,16 @@
 				If set to true, signal emission is blocked.
 			</description>
 		</method>
+		<method name="set_deferred">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_indexed">
 			<return type="void">
 			</return>

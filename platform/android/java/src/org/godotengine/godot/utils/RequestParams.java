@@ -39,7 +39,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 /**
- * 
+ *
  * @author Luis Linietsky <luis.linietsky@gmail.com>
  */
 public class RequestParams {

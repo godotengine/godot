@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dir_access_android.h                                                 */
+/*  mutex_utils.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DIR_ACCESS_ANDROID_H
-#define DIR_ACCESS_ANDROID_H
+#ifndef MUTEX_UTILS_H
+#define MUTEX_UTILS_H
 
-#ifdef ANDROID_NATIVE_ACTIVITY
+#include "core/error_macros.h"
+#include "core/os/mutex.h"
 
-#include "core/os/dir_access.h"
-#include <android/asset_manager.h>
-#include <android/log.h>
-#include <android_native_app_glue.h>
-#include <stdio.h>
+#include "macros.h"
 
-class DirAccessAndroid : public DirAccess {
-
-	AAssetDir *aad;
-	String current_dir;
-	String current;
-
-	static DirAccess *create_fs();
+class ScopedMutexLock {
+	Mutex *mutex;
 
 public:
-	virtual Error list_dir_begin(); ///< This starts dir listing
-	virtual String get_next();
-	virtual bool current_is_dir() const;
-	virtual bool current_is_hidden() const;
-	virtual void list_dir_end(); ///<
+	ScopedMutexLock(Mutex *mutex) {
+		this->mutex = mutex;
+#ifndef NO_THREADS
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!mutex);
+#endif
+		this->mutex->lock();
+#endif
+	}
 
-	virtual int get_drive_count();
-	virtual String get_drive(int p_drive);
-
-	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
-	virtual String get_current_dir(); ///< return current dir location
-
-	virtual bool file_exists(String p_file);
-
-	virtual Error make_dir(String p_dir);
-
-	virtual Error rename(String p_from, String p_to);
-	virtual Error remove(String p_name);
-
-	//virtual FileType get_file_type() const;
-	size_t get_space_left();
-
-	static void make_default();
-
-	DirAccessAndroid();
-	~DirAccessAndroid();
+	~ScopedMutexLock() {
+#ifndef NO_THREADS
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!mutex);
+#endif
+		mutex->unlock();
+#endif
+	}
 };
 
-#endif
-#endif // DIR_ACCESS_ANDROID_H
+#define SCOPED_MUTEX_LOCK(m_mutex) ScopedMutexLock GD_UNIQUE_NAME(__scoped_mutex_lock__)(m_mutex);
+
+// TODO: Add version that receives a lambda instead, once C++11 is allowed
+
+#endif // MUTEX_UTILS_H

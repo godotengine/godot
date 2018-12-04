@@ -71,8 +71,6 @@ public:
 	void set_visible_layers(uint32_t p_layers);
 	uint32_t get_visible_layers() const;
 
-	Vector<Plane> get_frustum() const;
-
 	Listener();
 	~Listener();
 };

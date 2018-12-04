@@ -51,9 +51,7 @@ protected:
 		SYS_DEL = 2,
 		SYS_ID = 3,
 
-		PROTO_SIZE = 9,
-		SYS_PACKET_SIZE = 13,
-		MAX_PACKET_SIZE = 65536 - 14 // 5 websocket, 9 multiplayer
+		PROTO_SIZE = 9
 	};
 
 	struct Packet {
@@ -93,7 +91,7 @@ public:
 
 	/* PacketPeer */
 	virtual int get_available_packet_count() const;
-	virtual int get_max_packet_size() const;
+	virtual int get_max_packet_size() const = 0;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 

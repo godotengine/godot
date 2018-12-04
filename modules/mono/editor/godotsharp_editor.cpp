@@ -475,7 +475,9 @@ MonoReloadNode *MonoReloadNode::singleton = NULL;
 
 void MonoReloadNode::_reload_timer_timeout() {
 
-	CSharpLanguage::get_singleton()->reload_assemblies_if_needed(false);
+	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
+		CSharpLanguage::get_singleton()->reload_assemblies(false);
+	}
 }
 
 void MonoReloadNode::restart_reload_timer() {
@@ -493,7 +495,9 @@ void MonoReloadNode::_notification(int p_what) {
 	switch (p_what) {
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
 			restart_reload_timer();
-			CSharpLanguage::get_singleton()->reload_assemblies_if_needed(true);
+			if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
+				CSharpLanguage::get_singleton()->reload_assemblies(false);
+			}
 		} break;
 		default: {
 		} break;

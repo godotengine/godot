@@ -155,9 +155,7 @@ struct _VariantCall {
 		funcdata.default_args = p_defaultarg;
 		funcdata._const = p_const;
 		funcdata.returns = p_has_return;
-#ifdef DEBUG_ENABLED
 		funcdata.return_type = p_return;
-#endif
 
 		if (p_argtype1.name) {
 			funcdata.arg_types.push_back(p_argtype1.type);
@@ -486,6 +484,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Dictionary, keys);
 	VCALL_LOCALMEM0R(Dictionary, values);
 	VCALL_LOCALMEM1R(Dictionary, duplicate);
+	VCALL_LOCALMEM2R(Dictionary, get);
 
 	VCALL_LOCALMEM2(Array, set);
 	VCALL_LOCALMEM1R(Array, get);
@@ -1679,6 +1678,7 @@ void register_variant_methods() {
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, keys, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());
 	ADDFUNC1R(DICTIONARY, DICTIONARY, Dictionary, duplicate, BOOL, "deep", varray(false));
+	ADDFUNC2R(DICTIONARY, NIL, Dictionary, get, NIL, "key", NIL, "default", varray(Variant()));
 
 	ADDFUNC0R(ARRAY, INT, Array, size, varray());
 	ADDFUNC0R(ARRAY, BOOL, Array, empty, varray());
