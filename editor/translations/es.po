@@ -33,12 +33,13 @@
 # Franklin David Macias Avellan <franklin.macias864@gmail.com>, 2018.
 # Dianiel García <jdangarr@gmail.com>, 2018.
 # ayahuasca1979 <ayahuasca1979@gmail.com>, 2018.
+# Elena G <elena.guzbla@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-09-14 23:25+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2018-12-04 22:15+0000\n"
+"Last-Translator: Elena G <elena.guzbla@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1753,7 +1754,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "¡No se puede sobreescribir una escena que está abierta!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -4553,8 +4554,9 @@ msgid "Show Viewport"
 msgstr "Ver viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Mostrar iconos de grupo y bloqueo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -5948,8 +5950,9 @@ msgid "Pitch"
 msgstr "Altura"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Yaw"
-msgstr ""
+msgstr "Girar desde eje vertical"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -6685,11 +6688,11 @@ msgstr "Mover a la derecha"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip horizontally"
-msgstr ""
+msgstr "Voltear horizontalmente"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip vertically"
-msgstr ""
+msgstr "Voltear verticalmente"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -8965,12 +8968,11 @@ msgstr "Buscar en VisualScript"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Get %s"
-msgstr ""
+msgstr "Obtener %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
-#, fuzzy
 msgid "Set %s"
-msgstr "Establecer "
+msgstr "Establecer %s"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9070,6 +9072,8 @@ msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"La animación CPUParticles2D requiere el uso de un CanvasItemMaterial con "
+"\"Particles Animation\" activado."
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -9127,6 +9131,8 @@ msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"La animación Particles2D requiere el uso de un CanvasItemMaterial con "
+"\"Particles Animation\" activado."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -9282,6 +9288,8 @@ msgid ""
 "CPUParticles animation requires the usage of a SpatialMaterial with "
 "\"Billboard Particles\" enabled."
 msgstr ""
+"La animación CPUParticles requiere el uso de un SpatialMaterial con "
+"\"Billboard Particles\" activado."
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -9312,6 +9320,8 @@ msgid ""
 "Particles animation requires the usage of a SpatialMaterial with \"Billboard "
 "Particles\" enabled."
 msgstr ""
+"La animación de partículas requiere el uso de un SpatialMaterial con "
+"\"Billboard Particles\" activado."
 
 #: scene/3d/path.cpp
 #, fuzzy
@@ -9461,7 +9471,7 @@ msgstr ""
 
 #: scene/gui/range.cpp
 msgid "If exp_edit is true min_value must be > 0."
-msgstr ""
+msgstr "Si exp_edit es `true` min_value debe ser > 0."
 
 #: scene/gui/scroll_container.cpp
 msgid ""

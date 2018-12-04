@@ -37,12 +37,14 @@
 # LucasSouza6 <lucasosouza66@gmail.com>, 2018.
 # Pedro Pacheco <pedroxixipa@hotmail.com>, 2018.
 # Bruno Henrique <nimbusdroid@gmail.com>, 2018.
+# Luciano Scilletta <lucianoscilletta@gmail.com>, 2018.
+# Julio Yagami <juliohenrique31501234@hotmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2018-11-26 16:10+0000\n"
-"Last-Translator: Bruno Henrique <nimbusdroid@gmail.com>\n"
+"PO-Revision-Date: 2018-12-04 22:15+0000\n"
+"Last-Translator: Julio Yagami <juliohenrique31501234@hotmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -50,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.3-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -433,12 +435,10 @@ msgid "Delete Selection"
 msgstr "Deletar Seleção"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
 msgstr "Ir ao Próximo Passo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
 msgstr "Ir ao Passo Anterior"
 
@@ -693,9 +693,8 @@ msgid "Edit Connection: "
 msgstr "Editar Conexão: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Tem certeza que quer remover todas conexões desse sinal?"
+msgstr "Tem certeza que quer remover todas as conexões do sinal \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -1344,7 +1343,6 @@ msgid "Copy Path"
 msgstr "Copiar Caminho"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
 msgstr "Mostrar no Gerenciador de Arquivos"
 
@@ -1495,9 +1493,8 @@ msgid "Methods"
 msgstr "Métodos"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods:"
-msgstr "Métodos"
+msgstr "Métodos:"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -1748,8 +1745,9 @@ msgstr ""
 "herança) não foram satisfeitas."
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "Não é possível sobrescrever cena que ainda está aberta!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -2636,18 +2634,26 @@ msgid "Assign.."
 msgstr "Atribuir.."
 
 #: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
+"Não é possível criar uma ViewportTexture nos recursos salvos como um "
+"arquivo.\n"
+"Recursos precisam pertencer à cena."
 
 #: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
 "Can't create a ViewportTexture on this resource because it's not set as "
 "local to scene.\n"
 "Please switch on the 'local to scene' property on it (and all resources "
 "containing it up to a node)."
 msgstr ""
+"Não é possível criar uma ViewportTexture nesse recurso porque não está "
+"definido como uma cena local.\n"
+"Por favor troque na 'local para cena' propriedade"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"

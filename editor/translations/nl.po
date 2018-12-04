@@ -24,18 +24,19 @@
 # Wout Standaert <wout@blobkat.com>, 2017.
 # Zatherz <zatherz@linux.pl>, 2017.
 # Tahar Meijs <tntmeijs@gmail.com>, 2018.
+# Laurent Windels <laurentwindels@yahoo.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-09-24 22:24+0000\n"
-"Last-Translator: frank <frankvprive@gmail.com>\n"
+"PO-Revision-Date: 2018-12-04 22:14+0000\n"
+"Last-Translator: Laurent Windels <laurentwindels@yahoo.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -309,10 +310,14 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Audio tracks kunnen enkel verwijzen naar nodes van het type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animatie tracks kunnen enkel verwijzen naar AnimatiePlayer nodes."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -320,33 +325,31 @@ msgstr "Een animatiespeler kan zichzelf niet animeren, alleen andere spelers."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Niet mogelijk om een nieuwe track toe te voegen zonder een root"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Track path is niet geldig, dus kan geen key toevoegen."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Track is niet van het type Spatial, kan geen key invoegen"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Track path is niet geldig, dus kan geen methode key toevoegen."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "VariableGet niet gevonden in script: "
+msgstr "Methode niet gevonden in object "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "Anim Verplaats Keys"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "Bronnen klembord is leeg!"
+msgstr "Klembord is leeg"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -385,19 +388,16 @@ msgid "Edit"
 msgstr "Bewerken"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "AnimatieBoom"
+msgstr "Animatie kenmerken."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "Kopieer Parameters"
+msgstr "Kopieer Tracks"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "Plak Parameters"
+msgstr "Plak Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -416,9 +416,8 @@ msgid "Duplicate Transposed"
 msgstr "Dupliceer Getransponeerde"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Geselecteerde Verwijderen"
+msgstr "Verwijder Selectie"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -440,11 +439,11 @@ msgstr "Animatie Opschonen"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Kies de node die geanimeerd zal worden:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Gebruik Bezier Curves"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -7105,9 +7104,8 @@ msgid "Import Existing Project"
 msgstr "Importeer bestaand project"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "Importeren"
+msgstr "Importeer & Bewerk"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
@@ -7123,9 +7121,8 @@ msgid "Install Project:"
 msgstr "Installeer project:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "Installeer"
+msgstr "Installeer & Bewerk"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -7141,9 +7138,8 @@ msgid "Project Path:"
 msgstr "Projectpad:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Project Installation Path:"
-msgstr "Projectpad:"
+msgstr "Project Installatie Path:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
@@ -7154,9 +7150,8 @@ msgid "Unnamed Project"
 msgstr "Naamloos Project"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project"
-msgstr "Verbind..."
+msgstr "Kan project niet openen"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -8074,7 +8069,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visibility"
-msgstr ""
+msgstr "Toggle Zichtbaarheid"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -8088,7 +8083,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
-msgstr ""
+msgstr "Hernoem Node"
 
 #: editor/scene_tree_editor.cpp
 msgid "Scene Tree (Nodes):"
@@ -8100,73 +8095,67 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"
-msgstr ""
+msgstr "Selecteer een Node"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading template '%s'"
-msgstr "Error bij het laden van lettertype."
+msgstr "Error bij het laden van sjabloon '%s'"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error - Could not create script in filesystem."
-msgstr "Map kon niet gemaakt worden."
+msgstr "Fout - Kon geen script aanmaken in bestandssysteem."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
-msgstr ""
+msgstr "Fout bij het laden script van %s"
 
 #: editor/script_create_dialog.cpp
 msgid "N/A"
-msgstr ""
+msgstr "Niet van toepassing"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Open Script/Choose Location"
-msgstr "Open Script Bewerker"
+msgstr "Open Script/Kies Locatie"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty"
-msgstr ""
+msgstr "Path is leeg"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Filename is empty"
-msgstr "Mesh is leeg!"
+msgstr "Bestandsnaam is leeg"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is not local"
-msgstr ""
+msgstr "Path is niet lokaal"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid base path"
-msgstr ""
+msgstr "Ongeldig basis path"
 
 #: editor/script_create_dialog.cpp
 msgid "Directory of the same name exists"
-msgstr ""
+msgstr "Directory met dezelfde naam bestaat al"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "File exists, will be reused"
-msgstr "Bestand Bestaat, Overschrijven?"
+msgstr "Bestand Bestaat, zal herbruikt worden"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid extension"
-msgstr ""
+msgstr "Ongeldige extensie"
 
 #: editor/script_create_dialog.cpp
 msgid "Wrong extension chosen"
-msgstr ""
+msgstr "Verkeerde extensie gekozen"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid Path"
-msgstr "Ongeldig Pad."
+msgstr "Ongeldig Path"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name"
-msgstr ""
+msgstr "Ongeldige klassenaam"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -8175,47 +8164,43 @@ msgstr "Ongeldige index eigenschap naam."
 
 #: editor/script_create_dialog.cpp
 msgid "Script valid"
-msgstr ""
+msgstr "Script geldig"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9 and _"
-msgstr ""
+msgstr "Toegestaan: a-z, A-Z, 0-9 en _"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)"
-msgstr ""
+msgstr "Ingebouwd script (in scene bestand)"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script file"
-msgstr "Subscriptie Maken"
+msgstr "Maak nieuw script bestand"
 
 #: editor/script_create_dialog.cpp
 msgid "Load existing script file"
-msgstr ""
+msgstr "Laad bestaand script"
 
 #: editor/script_create_dialog.cpp
 msgid "Language"
-msgstr ""
+msgstr "Taal"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Inherits"
-msgstr "Erft:"
+msgstr "Erft"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Class Name"
-msgstr "Klasse:"
+msgstr "Klasse Naam"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template"
-msgstr "Verwijder Selectie"
+msgstr "Sjabloon"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in Script"
-msgstr ""
+msgstr "Ingebouwd Script"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
@@ -8240,24 +8225,23 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
 msgid "Errors"
-msgstr ""
+msgstr "Fouten"
 
 #: editor/script_editor_debugger.cpp
 msgid "Child Process Connected"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "Laadfouten"
+msgstr "Kopieer Fout"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
-msgstr ""
+msgstr "Inspecteer vorige instantie"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Next Instance"
-msgstr ""
+msgstr "Inspecteer Volgende Instantie"
 
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
@@ -8285,7 +8269,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
+msgstr "Totaal:"
 
 #: editor/script_editor_debugger.cpp
 msgid "Video Mem"
@@ -8297,7 +8281,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: editor/script_editor_debugger.cpp
 msgid "Format"
@@ -8305,7 +8289,7 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Usage"
-msgstr ""
+msgstr "Gebruik"
 
 #: editor/script_editor_debugger.cpp
 msgid "Misc"
@@ -8329,7 +8313,7 @@ msgstr ""
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
-msgstr ""
+msgstr "Snelkoppelingen"
 
 #: editor/settings_config_dialog.cpp
 msgid "Binding"
@@ -8345,7 +8329,7 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
-msgstr ""
+msgstr "Wijzig Camera FOV"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera Size"
@@ -8365,7 +8349,7 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Sphere Shape Radius"
-msgstr ""
+msgstr "Wijzig Sphere Vorm Straal"
 
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Change Box Shape Extents"
@@ -8373,11 +8357,11 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Radius"
-msgstr ""
+msgstr "Wijzig Capsule Vorm Straal"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Capsule Shape Height"
-msgstr ""
+msgstr "Wijzig Capsule Vorm Hoogte"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Cylinder Shape Radius"
@@ -8389,43 +8373,39 @@ msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
-msgstr ""
+msgstr "Wijzig Ray Vorm Lengte"
 
 #: modules/csg/csg_gizmos.cpp
-#, fuzzy
 msgid "Change Cylinder Radius"
-msgstr "Wijzig Meng Tijd"
+msgstr "Wijzig Cylinder Straal"
 
 #: modules/csg/csg_gizmos.cpp
-#, fuzzy
 msgid "Change Cylinder Height"
-msgstr "Wijzig Meng Tijd"
+msgstr "Wijzig Cylinder Hoogte"
 
 #: modules/csg/csg_gizmos.cpp
-#, fuzzy
 msgid "Change Torus Inner Radius"
-msgstr "Wijzig Ankers en Marges"
+msgstr "Wijzig Torus Binnenste Straal"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Torus Outer Radius"
-msgstr ""
+msgstr "Wijzig Torus Buitenste Straal"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select the dynamic library for this entry"
-msgstr ""
+msgstr "Selecteer de dynamische bibliotheek voor deze ingave"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Select dependencies of the library for this entry"
-msgstr ""
+msgstr "Selecteer afhankelijkheden van de bibliotheek voor deze ingave"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Remove current entry"
-msgstr "Verwijder Signaal"
+msgstr "Verwijder huidige ingave"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
-msgstr ""
+msgstr "Dubbelklikken om een nieuwe ingave te creëren"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Platform:"
@@ -8445,23 +8425,23 @@ msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "GDNativeLibrary"
-msgstr ""
+msgstr "GDInheemsBibliotheek"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
-msgstr ""
+msgstr "Bibliotheek"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
-msgstr ""
+msgstr "Bibliotheken: "
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
-msgstr ""
+msgstr "GDInheems"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "step argument is zero!"
@@ -8565,27 +8545,27 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit X Axis"
-msgstr ""
+msgstr "Bewerk X As"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Y Axis"
-msgstr ""
+msgstr "Bewerk Y As"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Edit Z Axis"
-msgstr ""
+msgstr "Bewerk Z As"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate X"
-msgstr ""
+msgstr "Cursor Roteer X"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate Y"
-msgstr ""
+msgstr "Cursor Roteer Y"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Rotate Z"
-msgstr ""
+msgstr "Cursor Roteer Z"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cursor Back Rotate X"
