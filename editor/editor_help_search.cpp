@@ -132,7 +132,7 @@ void EditorHelpSearch::_notification(int p_what) {
 
 			results_tree->clear();
 			get_ok()->set_disabled(true);
-			EditorSettings::get_singleton()->set("interface/dialogs/search_help_bounds", get_rect());
+			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", get_rect());
 		} break;
 		case NOTIFICATION_PROCESS: {
 
@@ -177,8 +177,9 @@ void EditorHelpSearch::popup_dialog() {
 void EditorHelpSearch::popup_dialog(const String &p_term) {
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/search_help_bounds"))
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/search_help_bounds"));
+	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "search_help", Rect2());
+	if (saved_size != Rect2())
+		popup(saved_size);
 	else
 		popup_centered_ratio(0.5F);
 

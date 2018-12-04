@@ -56,7 +56,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			custom_feature_display->get_parent_control()->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->set("interface/dialogs/export_bounds", get_rect());
+			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "export", get_rect());
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			duplicate_preset->set_icon(get_icon("Duplicate", "EditorIcons"));
@@ -84,8 +84,9 @@ void ProjectExportDialog::popup_export() {
 	}
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/export_bounds")) {
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/export_bounds"));
+	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "export", Rect2());
+	if (saved_size != Rect2()) {
+		popup(saved_size);
 	} else {
 
 		Size2 popup_size = Size2(900, 700) * editor_get_scale();
