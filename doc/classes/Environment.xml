@@ -159,6 +159,8 @@
 		<member name="glow_enabled" type="bool" setter="set_glow_enabled" getter="is_glow_enabled">
 			Enables glow rendering.
 		</member>
+		<member name="glow_hdr_luminance_cap" type="float" setter="set_glow_hdr_luminance_cap" getter="get_glow_hdr_luminance_cap">
+		</member>
 		<member name="glow_hdr_scale" type="float" setter="set_glow_hdr_bleed_scale" getter="get_glow_hdr_bleed_scale">
 			Bleed scale of the HDR glow.
 		</member>

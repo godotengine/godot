@@ -1161,7 +1161,9 @@
 			</argument>
 			<argument index="8" name="hdr_bleed_scale" type="float">
 			</argument>
-			<argument index="9" name="bicubic_upscale" type="bool">
+			<argument index="9" name="hdr_luminance_cap" type="float">
+			</argument>
+			<argument index="10" name="bicubic_upscale" type="bool">
 			</argument>
 			<description>
 			</description>

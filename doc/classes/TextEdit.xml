@@ -467,7 +467,9 @@
 		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 			Undoes the previous action.
 		</constant>
-		<constant name="MENU_MAX" value="6" enum="MenuItems">
+		<constant name="MENU_REDO" value="6" enum="MenuItems">
+		</constant>
+		<constant name="MENU_MAX" value="7" enum="MenuItems">
 		</constant>
 	</constants>
 	<theme_items>

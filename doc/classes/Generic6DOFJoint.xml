@@ -242,6 +242,8 @@
 		</member>
 		<member name="linear_spring_z/stiffness" type="float" setter="set_param_z" getter="get_param_z">
 		</member>
+		<member name="precision" type="int" setter="set_precision" getter="get_precision">
+		</member>
 	</members>
 	<constants>
 		<constant name="PARAM_LINEAR_LOWER_LIMIT" value="0" enum="Param">

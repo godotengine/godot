@@ -123,11 +123,11 @@
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio">
 		</member>
-		<member name="scale" type="float" setter="set_param" getter="get_param">
+		<member name="scale_amount" type="float" setter="set_param" getter="get_param">
 		</member>
-		<member name="scale_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
+		<member name="scale_amount_curve" type="Curve" setter="set_param_curve" getter="get_param_curve">
 		</member>
-		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
+		<member name="scale_amount_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
 		</member>
