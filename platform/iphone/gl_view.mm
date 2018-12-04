@@ -84,7 +84,8 @@ Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height) {
 	}
 	ERR_FAIL_COND_V(insets.left < 0 || insets.top < 0 || insets.right < 0 || insets.bottom < 0,
 			Rect2(0, 0, p_window_width, p_window_height));
-	return Rect2(insets.left, insets.top, p_window_width - insets.right - insets.left, p_window_height - insets.bottom - insets.top);
+	UIEdgeInsets window_insets = UIEdgeInsetsMake(_points_to_pixels(insets.top), _points_to_pixels(insets.left), _points_to_pixels(insets.bottom), _points_to_pixels(insets.right));
+	return Rect2(window_insets.left, window_insets.top, p_window_width - window_insets.right - window_insets.left, p_window_height - window_insets.bottom - window_insets.top);
 }
 
 bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
