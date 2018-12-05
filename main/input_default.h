@@ -229,6 +229,7 @@ public:
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
+	void release_all();
 
 	void iteration(float p_step);
 

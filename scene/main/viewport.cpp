@@ -673,6 +673,7 @@ void Viewport::_notification(int p_what) {
 				//if mouse is being pressed, send a release event
 				_drop_mouse_focus();
 			}
+			Input::get_singleton()->release_all();
 		} break;
 	}
 }

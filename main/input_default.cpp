@@ -580,6 +580,19 @@ void InputDefault::action_release(const StringName &p_action) {
 	action_state[p_action] = action;
 }
 
+void InputDefault::release_all() {
+
+	for (Map<StringName, Action>::Element *E = action_state.front(); E; E = E->next()) {
+		if (E->get().pressed) {
+			action_release(E->key());
+		}
+	}
+
+	keys_pressed.clear();
+	joy_buttons_pressed.clear();
+	_joy_axis.clear();
+}
+
 void InputDefault::set_emulate_touch_from_mouse(bool p_emulate) {
 
 	emulate_touch_from_mouse = p_emulate;

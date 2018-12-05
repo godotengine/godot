@@ -115,6 +115,7 @@ public:
 
 	virtual void action_press(const StringName &p_action, float p_strength = 1.f) = 0;
 	virtual void action_release(const StringName &p_action) = 0;
+	virtual void release_all() = 0;
 
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
