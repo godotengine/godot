@@ -563,6 +563,7 @@ public:
 	bool are_column_titles_visible() const;
 
 	TreeItem *get_edited() const;
+	bool is_editing() const;
 	int get_edited_column() const;
 
 	void ensure_cursor_is_visible();

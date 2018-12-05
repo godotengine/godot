@@ -960,7 +960,8 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 	int item_min_height = p_item->get_custom_minimum_height();
@@ -2008,7 +2009,9 @@ void Tree::text_editor_enter(String p_text) {
 
 			//popup_edited_item->edited_signal.call( popup_edited_item_col );
 		} break;
-		default: { ERR_FAIL(); }
+		default: {
+			ERR_FAIL();
+		}
 	}
 
 	item_edited(popup_edited_item_col, popup_edited_item);
@@ -3175,6 +3178,10 @@ int Tree::get_selected_column() const {
 TreeItem *Tree::get_edited() const {
 
 	return edited_item;
+}
+
+bool Tree::is_editing() const {
+	return popup_edited_item != NULL;
 }
 
 int Tree::get_edited_column() const {

@@ -73,6 +73,7 @@ class SceneTreeEditor : public Control {
 
 	bool _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
+	void _attempt_configuration_update();
 	void _update_tree();
 	void _tree_changed();
 	void _node_removed(Node *p_node);

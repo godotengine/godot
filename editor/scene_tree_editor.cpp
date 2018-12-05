@@ -483,6 +483,14 @@ void SceneTreeEditor::_test_update_tree() {
 	tree_dirty = true;
 }
 
+void SceneTreeEditor::_attempt_configuration_update() {
+	if (tree->is_editing()) {
+		update_timer->start();
+	} else {
+		update_tree();
+	}
+}
+
 void SceneTreeEditor::_tree_changed() {
 
 	if (EditorNode::get_singleton()->is_exiting())
@@ -997,6 +1005,7 @@ void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_renamed", &SceneTreeEditor::_renamed);
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
 	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
+	ClassDB::bind_method("_attempt_configuration_update", &SceneTreeEditor::_attempt_configuration_update);
 	ClassDB::bind_method("_cell_multi_selected", &SceneTreeEditor::_cell_multi_selected);
 	ClassDB::bind_method("_selection_changed", &SceneTreeEditor::_selection_changed);
 	ClassDB::bind_method("_cell_button_pressed", &SceneTreeEditor::_cell_button_pressed);
@@ -1088,7 +1097,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	blocked = 0;
 
 	update_timer = memnew(Timer);
-	update_timer->connect("timeout", this, "_update_tree");
+	update_timer->connect("timeout", this, "_attempt_configuration_update");
 	update_timer->set_one_shot(true);
 	update_timer->set_wait_time(0.5);
 	add_child(update_timer);
