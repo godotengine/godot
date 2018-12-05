@@ -115,10 +115,9 @@ void ProjectSettingsEditor::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->set("interface/dialogs/project_settings_bounds", get_rect());
+			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
@@ -788,8 +787,9 @@ void ProjectSettingsEditor::_update_actions() {
 void ProjectSettingsEditor::popup_project_settings() {
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/project_settings_bounds")) {
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
+	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());
+	if (saved_size != Rect2()) {
+		popup(saved_size);
 	} else {
 
 		Size2 popup_size = Size2(900, 700) * editor_get_scale();
