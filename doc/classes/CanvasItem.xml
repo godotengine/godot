@@ -135,7 +135,7 @@
 		<method name="draw_multimesh">
 			<return type="void">
 			</return>
-			<argument index="0" name="mesh" type="Mesh">
+			<argument index="0" name="mesh" type="MultiMesh">
 			</argument>
 			<argument index="1" name="texture" type="Texture">
 			</argument>
