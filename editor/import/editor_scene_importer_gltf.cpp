@@ -1138,7 +1138,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 				data_size = data.size();
 			} else {
 
-				String base_path;
+				String base_path = p_base_path;
 
 				if (p_base_path == String("res://.import")) {
 					base_path = p_original_base_path;
