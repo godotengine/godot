@@ -50,10 +50,16 @@ private:
 	bool closed;
 	CullMode cull;
 
+	mutable Rect2 item_rect;
+	mutable bool rect_cache_dirty;
+
 protected:
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_polygon(const PoolVector<Vector2> &p_polygon);
 	PoolVector<Vector2> get_polygon() const;
 
@@ -85,6 +91,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
 	void set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon);
 	Ref<OccluderPolygon2D> get_occluder_polygon() const;
 
