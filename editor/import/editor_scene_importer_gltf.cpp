@@ -2125,7 +2125,7 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	return root;
 }
 
-Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path) {
+Node * EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path /*= ""*/, List<String> *r_missing_deps /*= NULL*/, Error *r_err /*= NULL*/) {
 
 	GLTFState state;
 

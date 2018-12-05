@@ -69,7 +69,7 @@ void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 
 	ERR_FAIL();
 }
-Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path) {
+Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path, List<String> * r_missing_deps, Error *r_err) {
 
 	if (get_script_instance()) {
 		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
@@ -1150,7 +1150,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 
 	List<String> missing;
 	Error err;
-	return importer->import_scene(p_path, p_flags, p_bake_fps, &missing, &err, p_original_path);
+	return importer->import_scene(p_path, p_flags, p_bake_fps, p_original_path, &missing, &err);
 }
 
 Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps) {
@@ -1233,7 +1233,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
-	Node *scene = importer->import_scene(src_path, import_flags, fps, &missing_deps, &err);
+	Node *scene = importer->import_scene(src_path, import_flags, fps, src_path,&missing_deps, &err);
 	if (!scene || err != OK) {
 		return err;
 	}
@@ -1443,7 +1443,7 @@ uint32_t EditorSceneImporterESCN::get_import_flags() const {
 void EditorSceneImporterESCN::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("escn");
 }
-Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path) {
+Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path, List<String> * r_missing_deps, Error *r_err) {
 
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);

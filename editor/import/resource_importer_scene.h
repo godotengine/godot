@@ -66,7 +66,7 @@ public:
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
 
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = NULL, Error *r_err = NULL, const String &p_original_path = "");
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path = "", List<String> *r_missing_deps = NULL, Error *r_err = NULL);
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path = "");
 
 	EditorSceneImporter() {}
@@ -168,8 +168,8 @@ class EditorSceneImporterESCN : public EditorSceneImporter {
 public:
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err, const String &p_original_path);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path = "", List<String> * r_missing_deps = NULL, Error *r_err = NULL);
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps, const String &p_original_path = "");
 };
 
 #endif // RESOURCEIMPORTERSCENE_H
