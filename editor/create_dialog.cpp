@@ -162,6 +162,9 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	bool cpp_type = ClassDB::class_exists(p_type);
 	EditorData &ed = EditorNode::get_editor_data();
 
+	bool is_script_class = !cpp_type || ScriptServer::is_global_class(p_type);
+	bool is_custom_type = !(cpp_type || is_script_class) || ed.is_custom_type(p_type);
+
 	if (p_type == base_type)
 		return;
 
@@ -169,7 +172,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		if (!ClassDB::is_parent_class(p_type, base_type))
 			return;
 	} else {
-		if (!ScriptServer::is_global_class(p_type) || !ed.script_class_is_parent(p_type, base_type))
+		if (!is_script_class || !ed.script_class_is_parent(p_type, base_type))
 			return;
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
@@ -196,14 +199,25 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 			return;
 	}
 
-	bool can_instance = (cpp_type && ClassDB::can_instance(p_type)) || ScriptServer::is_global_class(p_type);
+	StringName cpp_base = p_type;
+	if (is_script_class)
+		cpp_base = ScriptServer::get_global_class_base(p_type);
+	else if (is_custom_type)
+		cpp_base = ed.custom_type_get_base(p_type);
+
+	bool can_instance = ClassDB::can_instance(cpp_base);
 
 	TreeItem *item = search_options->create_item(parent);
+	item->set_metadata(0, p_type);
 	if (cpp_type) {
 		item->set_text(0, p_type);
-	} else {
-		item->set_metadata(0, p_type);
+	} else if (is_script_class) {
 		item->set_text(0, p_type + " (" + ScriptServer::get_global_class_path(p_type).get_file() + ")");
+	} else if (is_custom_type) {
+		Ref<Script> script = ed.get_custom_type(p_type).script;
+		if (script.is_null())
+			return;
+		item->set_text(0, p_type + " (" + script->get_path().get_file() + ")");
 	}
 	if (!can_instance) {
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
@@ -213,13 +227,27 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
 		to_select_type = to_select_type.split(" ")[0];
 		bool current_item_is_preferred;
+
+		String cpp_to_select_type = to_select_type;
+		if (ScriptServer::is_global_class(to_select_type))
+			cpp_to_select_type = ScriptServer::get_global_class_base(to_select_type);
+		String select_ct_base;
+		const EditorData::CustomType &select_ct = ed.get_custom_type(to_select_type, &select_ct_base);
+		if (select_ct.script.is_valid()) {
+			cpp_to_select_type = select_ct_base;
+		}
+
 		if (cpp_type) {
-			String cpp_to_select_type = to_select_type;
-			if (ScriptServer::is_global_class(to_select_type))
-				cpp_to_select_type = ScriptServer::get_global_class_base(to_select_type);
 			current_item_is_preferred = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(cpp_to_select_type, preferred_search_result_type);
-		} else {
+		} else if (is_script_class) {
 			current_item_is_preferred = ed.script_class_is_parent(p_type, preferred_search_result_type) && !ed.script_class_is_parent(to_select_type, preferred_search_result_type) && search_box->get_text() != to_select_type;
+		} else if (is_custom_type) {
+			String ct_base;
+			const EditorData::CustomType &ct = ed.get_custom_type(p_type, &ct_base);
+
+			if (ct.script.is_valid()) {
+				current_item_is_preferred = ClassDB::is_parent_class(ct_base, preferred_search_result_type) && !ClassDB::is_parent_class(cpp_to_select_type, preferred_search_result_type);
+			}
 		}
 		if (search_box->get_text() == p_type || (*to_select && p_type.length() < (*to_select)->get_text(0).length())) {
 			current_item_is_preferred = true;

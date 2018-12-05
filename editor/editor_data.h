@@ -181,6 +181,12 @@ public:
 	Object *instance_custom_type(const String &p_type, const String &p_inherits);
 	void remove_custom_type(const String &p_type);
 	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
+	const CustomType get_custom_type(const String &p_type, String *r_base = NULL) const;
+	bool is_custom_type(const String &p_type) const;
+	String custom_type_get_base(const String &p_type) const;
+	bool custom_type_is_parent_class(const String &p_type, const String &p_inherits) const;
+
+	static bool script_inherits(const Ref<Script> &p_script, const Ref<Script> &p_inherits);
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);

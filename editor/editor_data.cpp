@@ -534,6 +534,58 @@ void EditorData::remove_custom_type(const String &p_type) {
 	}
 }
 
+const EditorData::CustomType EditorData::get_custom_type(const String &p_type, String *r_base) const {
+	for (Map<String, Vector<CustomType> >::Element *E = get_custom_types().front(); E; E = E->next()) {
+		const Vector<CustomType> &customs = E->value();
+		for (int i = 0; i < customs.size(); i++) {
+			if (p_type == customs[i].name) {
+				if (r_base)
+					*r_base = E->key();
+				return customs[i];
+			}
+		}
+	}
+	return CustomType();
+}
+
+bool EditorData::is_custom_type(const String &p_type) const {
+	const CustomType &ct = get_custom_type(p_type);
+	return ct.script.is_valid();
+}
+
+String EditorData::custom_type_get_base(const String &p_type) const {
+	const CustomType &ct = get_custom_type(p_type);
+	return ct.script.is_valid() && p_type == ct.name ? String(ct.script->get_instance_base_type()) : String();
+}
+
+bool EditorData::custom_type_is_parent_class(const String &p_type, const String &p_inherits) const {
+	const CustomType &ct = get_custom_type(p_type);
+	if (p_type == ct.name) {
+		Ref<Script> script = ct.script;
+		if (script.is_null())
+			return false;
+		if (ClassDB::class_exists(p_inherits))
+			return ClassDB::is_parent_class(script->get_instance_base_type(), p_inherits);
+		if (ScriptServer::is_global_class(p_inherits)) {
+			Ref<Script> script_class = ResourceLoader::load(ScriptServer::get_global_class_path(p_inherits), "Script");
+			if (script_class.is_null())
+				return false;
+			return script_inherits(script, script_class);
+		}
+		return false; // custom types can't inherit
+	}
+	return false;
+}
+
+bool EditorData::script_inherits(const Ref<Script> &p_script, const Ref<Script> &p_inherits) {
+	Ref<Script> current = p_script;
+	void *inherits_ptr = p_inherits.get_ref_ptr().get_data();
+	while (current.is_valid() && current.get_ref_ptr().get_data() != inherits_ptr) {
+		current = current->get_base_script();
+	}
+	return current.is_valid();
+}
+
 int EditorData::add_edited_scene(int p_at_pos) {
 
 	if (p_at_pos < 0)
