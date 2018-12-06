@@ -72,22 +72,67 @@
 			<key>UTTypeDescription</key>
 			<string>Godot Scene</string>
 			<key>UTTypeIconFile</key>
-			<string>Document.icns</string>
+			<string>Scene.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
 			<key>UTTypeTagSpecification</key>
 			<dict>
-				<key>com.apple.ostype</key>
-				<string>TSCN</string>
 				<key>public.filename-extension</key>
 				<array>
 					<string>scn</string>
 					<string>tscn</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>scene/x-scn</string>
+				<string>application/x-godot-scene</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.gd</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeDescription</key>
+			<string>Godot Script</string>
+			<key>UTTypeIconFile</key>
+			<string>GDScript.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gd</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>text/x-gdscript</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.res</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeDescription</key>
+			<string>Godot Resource</string>
+			<key>UTTypeIconFile</key>
+			<string>Resource.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>res</string>
+					<string>tres</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-godot-resource</string>
 			</dict>
 		</dict>
 		<dict>
@@ -98,21 +143,19 @@
 			<key>UTTypeDescription</key>
 			<string>Godot Project</string>
 			<key>UTTypeIconFile</key>
-			<string>Document.icns</string>
+			<string>Project.icns</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
 			<key>UTTypeTagSpecification</key>
 			<dict>
-				<key>com.apple.ostype</key>
-				<string>GODP</string>
 				<key>public.filename-extension</key>
 				<array>
 					<string>godot</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>project/x-godot</string>
+				<string>text/x-godot-project</string>
 			</dict>
 		</dict>
 	</array>
