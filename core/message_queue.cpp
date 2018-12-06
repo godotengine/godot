@@ -209,9 +209,9 @@ void MessageQueue::statistics() {
 				} break;
 			}
 
+		} else {
 			//object was deleted
 			print_line("Object was deleted while awaiting a callback");
-		} else {
 
 			null_count++;
 		}
