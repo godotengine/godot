@@ -95,7 +95,7 @@ void Polygon3DEditor::_menu_option(int p_option) {
 
 void Polygon3DEditor::_wip_close() {
 
-	undo_redo->create_action(TTR("Create Poly3D"));
+	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(node, "set_polygon", node->call("get_polygon"));
 	undo_redo->add_do_method(node, "set_polygon", wip);
 	undo_redo->add_do_method(this, "_polygon_draw");
