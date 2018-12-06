@@ -600,6 +600,8 @@ void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
 }
 
 void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
+	draw_handles = false;
+	creating_shape = false;
 	edit_mode = (EditMode)p_edit_mode;
 	switch (edit_mode) {
 		case EDITMODE_REGION: {
