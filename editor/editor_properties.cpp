@@ -233,7 +233,7 @@ void EditorPropertyPath::_path_pressed() {
 		dialog->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		dialog->set_current_dir(full_path);
 	} else {
-		dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+		dialog->set_mode(save_mode ? EditorFileDialog::MODE_SAVE_FILE : EditorFileDialog::MODE_OPEN_FILE);
 		for (int i = 0; i < extensions.size(); i++) {
 			String e = extensions[i].strip_edges();
 			if (e != String()) {
@@ -258,6 +258,11 @@ void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder
 	extensions = p_extensions;
 	folder = p_folder;
 	global = p_global;
+}
+
+void EditorPropertyPath::set_save_mode() {
+
+	save_mode = true;
 }
 
 void EditorPropertyPath::_notification(int p_what) {
@@ -296,6 +301,7 @@ EditorPropertyPath::EditorPropertyPath() {
 	path_edit->connect("pressed", this, "_path_pressed");
 	folder = false;
 	global = false;
+	save_mode = false;
 }
 
 ///////////////////// CLASS NAME /////////////////////////

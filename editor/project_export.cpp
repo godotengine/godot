@@ -192,7 +192,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	if (p_index < 0 || p_index >= presets->get_item_count()) {
 		name->set_text("");
 		name->set_editable(false);
-		export_path->set_editable(false);
+		export_path->hide();
 		runnable->set_disabled(true);
 		parameters->edit(NULL);
 		presets->unselect_all();
@@ -214,11 +214,19 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	sections->show();
 
 	name->set_editable(true);
-	export_path->set_editable(true);
+	export_path->show();
 	duplicate_preset->set_disabled(false);
 	delete_preset->set_disabled(false);
 	name->set_text(current->get_name());
-	export_path->set_text(current->get_export_path());
+
+	List<String> extension_list = current->get_platform()->get_binary_extensions(current);
+	Vector<String> extension_vector;
+	for (int i = 0; i < extension_list.size(); i++) {
+		extension_vector.push_back("*." + extension_list[i]);
+	}
+
+	export_path->setup(extension_vector, false, true);
+	export_path->update_property();
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
 	parameters->edit(current.ptr());
@@ -458,7 +466,21 @@ void ProjectExportDialog::_name_changed(const String &p_string) {
 	_update_presets();
 }
 
-void ProjectExportDialog::_export_path_changed(const String &p_string) {
+void ProjectExportDialog::set_export_path(const String &p_value) {
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_export_path(p_value);
+}
+
+String ProjectExportDialog::get_export_path() {
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND_V(current.is_null(), String(""));
+
+	return current->get_export_path();
+}
+
+void ProjectExportDialog::_export_path_changed(const StringName &p_property, const Variant &p_value) {
 
 	if (updating)
 		return;
@@ -466,7 +488,7 @@ void ProjectExportDialog::_export_path_changed(const String &p_string) {
 	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
 	ERR_FAIL_COND(current.is_null());
 
-	current->set_export_path(p_string);
+	current->set_export_path(p_value);
 	_update_presets();
 }
 
@@ -955,6 +977,10 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_export_all_dialog_action", &ProjectExportDialog::_export_all_dialog_action);
 	ClassDB::bind_method("_custom_features_changed", &ProjectExportDialog::_custom_features_changed);
 	ClassDB::bind_method("_tab_changed", &ProjectExportDialog::_tab_changed);
+	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
+	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "export_path"), "set_export_path", "get_export_path");
 }
 
 ProjectExportDialog::ProjectExportDialog() {
@@ -1007,9 +1033,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	runnable->connect("pressed", this, "_runnable_pressed");
 	settings_vb->add_child(runnable);
 
-	export_path = memnew(LineEdit);
-	settings_vb->add_margin_child(TTR("Export Path:"), export_path);
-	export_path->connect("text_changed", this, "_export_path_changed");
+	export_path = memnew(EditorPropertyPath);
+	settings_vb->add_child(export_path);
+	export_path->set_label(TTR("Export Path"));
+	export_path->set_object_and_property(this, "export_path");
+	export_path->set_save_mode();
+	export_path->connect("property_changed", this, "_export_path_changed");
 
 	sections = memnew(TabContainer);
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
@@ -1101,7 +1130,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	//disable by default
 	name->set_editable(false);
-	export_path->set_editable(false);
+	export_path->hide();
 	runnable->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
