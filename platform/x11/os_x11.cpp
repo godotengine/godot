@@ -2853,11 +2853,19 @@ void OS_X11::set_context(int p_context) {
 	XClassHint *classHint = XAllocClassHint();
 	if (classHint) {
 
+		char *wm_class = (char *)"Godot";
 		if (p_context == CONTEXT_EDITOR)
 			classHint->res_name = (char *)"Godot_Editor";
 		if (p_context == CONTEXT_PROJECTMAN)
 			classHint->res_name = (char *)"Godot_ProjectList";
-		classHint->res_class = (char *)"Godot";
+
+		if (p_context == CONTEXT_ENGINE) {
+			classHint->res_name = (char *)"Godot_Engine";
+			wm_class = (char *)((String)GLOBAL_GET("application/config/name")).utf8().ptrw();
+		}
+
+		classHint->res_class = wm_class;
+
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
 	}

@@ -480,6 +480,7 @@ public:
 	enum EngineContext {
 		CONTEXT_EDITOR,
 		CONTEXT_PROJECTMAN,
+		CONTEXT_ENGINE,
 	};
 
 	virtual void set_context(int p_context);
