@@ -594,6 +594,20 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 		result.features.insert(E->get());
 		result.features_pv.push_back(E->get());
 	}
+
+	if (p_preset->get_custom_features() != String()) {
+
+		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
+
+		for (int i = 0; i < tmp_custom_list.size(); i++) {
+			String f = tmp_custom_list[i].strip_edges();
+			if (f != String()) {
+				result.features.insert(f);
+				result.features_pv.push_back(f);
+			}
+		}
+	}
+
 	return result;
 }
 
