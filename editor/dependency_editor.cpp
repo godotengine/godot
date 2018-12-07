@@ -506,6 +506,8 @@ void DependencyRemoveDialog::ok_pressed() {
 		Error err = OS::get_singleton()->move_to_trash(path);
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + files_to_delete[i] + "\n");
+		} else {
+			emit_signal("file_removed", files_to_delete[i]);
 		}
 	}
 
@@ -521,6 +523,8 @@ void DependencyRemoveDialog::ok_pressed() {
 			Error err = OS::get_singleton()->move_to_trash(path);
 			if (err != OK) {
 				EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + dirs_to_delete[i] + "\n");
+			} else {
+				emit_signal("folder_removed", dirs_to_delete[i]);
 			}
 		}
 
@@ -544,6 +548,11 @@ void DependencyRemoveDialog::ok_pressed() {
 	if (new_favorites.size() < previous_favorites.size()) {
 		EditorSettings::get_singleton()->set_favorites(new_favorites);
 	}
+}
+
+void DependencyRemoveDialog::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
+	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 }
 
 DependencyRemoveDialog::DependencyRemoveDialog() {

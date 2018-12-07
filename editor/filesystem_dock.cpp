@@ -951,7 +951,7 @@ void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd, const Map<Str
 }
 
 void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_new_path,
-		Map<String, String> &p_file_renames, Map<String, String> &p_folder_renames) const {
+		Map<String, String> &p_file_renames, Map<String, String> &p_folder_renames) {
 	//Ensure folder paths end with "/"
 	String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
 	String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
@@ -981,6 +981,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 	print_verbose("Moving " + old_path + " -> " + new_path);
 	Error err = da->rename(old_path, new_path);
 	if (err == OK) {
+
 		//Move/Rename any corresponding import settings too
 		if (p_item.is_file && FileAccess::exists(old_path + ".import")) {
 			err = da->rename(old_path + ".import", new_path + ".import");
@@ -1007,9 +1008,11 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 		for (int i = 0; i < file_changed_paths.size(); ++i) {
 			p_file_renames[file_changed_paths[i]] = file_changed_paths[i].replace_first(old_path, new_path);
 			print_verbose("  Remap: " + file_changed_paths[i] + " -> " + p_file_renames[file_changed_paths[i]]);
+			emit_signal("files_moved", file_changed_paths[i], p_file_renames[file_changed_paths[i]]);
 		}
 		for (int i = 0; i < folder_changed_paths.size(); ++i) {
 			p_folder_renames[folder_changed_paths[i]] = folder_changed_paths[i].replace_first(old_path, new_path);
+			emit_signal("folder_moved", folder_changed_paths[i], p_folder_renames[folder_changed_paths[i]].substr(0, p_folder_renames[folder_changed_paths[i]].length() - 1));
 		}
 	} else {
 		EditorNode::get_singleton()->add_io_error(TTR("Error moving:") + "\n" + old_path + "\n");
@@ -1203,6 +1206,14 @@ void FileSystemDock::_make_dir_confirm() {
 	} else {
 		EditorNode::get_singleton()->show_warning(TTR("Could not create folder."));
 	}
+}
+
+void FileSystemDock::_file_deleted(String p_file) {
+	emit_signal("file_deleted", p_file);
+}
+
+void FileSystemDock::_folder_deleted(String p_folder) {
+	emit_signal("folder_deleted", p_folder);
 }
 
 void FileSystemDock::_rename_operation_confirm() {
@@ -2273,6 +2284,9 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_select"), &FileSystemDock::_file_list_rmb_select);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_pressed"), &FileSystemDock::_file_list_rmb_pressed);
 
+	ClassDB::bind_method(D_METHOD("_file_deleted"), &FileSystemDock::_file_deleted);
+	ClassDB::bind_method(D_METHOD("_folder_deleted"), &FileSystemDock::_folder_deleted);
+
 	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_tree_thumbnail_done"), &FileSystemDock::_tree_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_file_list_activate_file"), &FileSystemDock::_file_list_activate_file);
@@ -2303,6 +2317,11 @@ void FileSystemDock::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));
+
+	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
+	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
+	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
+	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_file")));
 }
 
 FileSystemDock::FileSystemDock(EditorNode *p_editor) {
@@ -2464,6 +2483,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(owners_editor);
 
 	remove_dialog = memnew(DependencyRemoveDialog);
+	remove_dialog->connect("file_removed", this, "_file_deleted");
+	remove_dialog->connect("folder_removed", this, "_folder_deleted");
 	add_child(remove_dialog);
 
 	move_dialog = memnew(EditorDirDialog);
