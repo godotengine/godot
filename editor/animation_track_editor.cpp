@@ -5393,7 +5393,138 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			undo_redo->commit_action();
 		} break;
+		case EDIT_DUPLICATE_TRACKS: {
+			track_duplicate_select->clear();
+			TreeItem *troot = track_duplicate_select->create_item();
 
+			for (int i = 0; i < animation->get_track_count(); i++) {
+
+				NodePath path = animation->track_get_path(i);
+				Node *node = NULL;
+
+				if (root && root->has_node(path)) {
+					node = root->get_node(path);
+				}
+
+				String text;
+				Ref<Texture> icon = get_icon("Node", "EditorIcons");
+				if (node) {
+					if (has_icon(node->get_class(), "EditorIcons")) {
+						icon = get_icon(node->get_class(), "EditorIcons");
+					}
+
+					text = node->get_name();
+					Vector<StringName> sn = path.get_subnames();
+					for (int j = 0; j < sn.size(); j++) {
+						text += ".";
+						text += sn[j];
+					}
+
+					path = NodePath(node->get_path().get_names(), path.get_subnames(), true); //store full path instead for copying
+				} else {
+					text = path;
+					int sep = text.find(":");
+					if (sep != -1) {
+						text = text.substr(sep + 1, text.length());
+					}
+				}
+
+				switch (animation->track_get_type(i)) {
+					case Animation::TYPE_TRANSFORM: text += " (Transform)"; break;
+					case Animation::TYPE_METHOD: text += " (Methods)"; break;
+					case Animation::TYPE_BEZIER: text += " (Bezier)"; break;
+					case Animation::TYPE_AUDIO: text += " (Audio)"; break;
+					default: {
+					};
+				}
+
+				TreeItem *it = track_duplicate_select->create_item(troot);
+				it->set_editable(0, true);
+				it->set_selectable(0, true);
+				it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+				it->set_icon(0, icon);
+				it->set_text(0, text);
+				Dictionary md;
+				md["track_idx"] = i;
+				md["path"] = path;
+				it->set_metadata(0, md);
+			}
+
+			track_duplicate_dialog->popup_centered_minsize(Size2(300, 500) * EDSCALE);
+		} break;
+		case EDIT_DUPLICATE_TRACKS_CONFIRM: {
+
+			track_clipboard.clear();
+			TreeItem *root1 = track_duplicate_select->get_root();
+			if (root1) {
+
+				TreeItem *it = root1->get_children();
+				while (it) {
+					Dictionary md = it->get_metadata(0);
+					int idx = md["track_idx"];
+					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
+						TrackClipboard tc;
+						tc.base_path = animation->track_get_path(idx);
+						tc.full_path = md["path"];
+						tc.track_type = animation->track_get_type(idx);
+						tc.interp_type = animation->track_get_interpolation_type(idx);
+						if (tc.track_type == Animation::TYPE_VALUE) {
+							tc.update_mode = animation->value_track_get_update_mode(idx);
+						}
+						tc.loop_wrap = animation->track_get_interpolation_loop_wrap(idx);
+						tc.enabled = animation->track_is_enabled(idx);
+						for (int i = 0; i < animation->track_get_key_count(idx); i++) {
+							TrackClipboard::Key k;
+							k.time = animation->track_get_key_time(idx, i);
+							k.value = animation->track_get_key_value(idx, i);
+							k.transition = animation->track_get_key_transition(idx, i);
+							tc.keys.push_back(k);
+						}
+						track_clipboard.push_back(tc);
+					}
+					it = it->get_next();
+				}
+			}
+			//--------------------------------------------------------------------------------------------------------------------//
+			if (track_clipboard.size() == 0) {
+				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty"));
+				break;
+			}
+
+			int base_track = animation->get_track_count();
+			undo_redo->create_action("Paste Tracks");
+			for (int i = 0; i < track_clipboard.size(); i++) {
+				undo_redo->add_do_method(animation.ptr(), "add_track", track_clipboard[i].track_type);
+				Node *exists = NULL;
+				NodePath path = track_clipboard[i].base_path;
+
+				if (root) {
+					NodePath np = track_clipboard[i].full_path;
+					exists = root->get_node(np);
+					if (exists) {
+						path = NodePath(root->get_path_to(exists).get_names(), track_clipboard[i].full_path.get_subnames(), false);
+					}
+				}
+
+				undo_redo->add_do_method(animation.ptr(), "track_set_path", base_track, path);
+				undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", base_track, track_clipboard[i].interp_type);
+				undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", base_track, track_clipboard[i].loop_wrap);
+				undo_redo->add_do_method(animation.ptr(), "track_set_enabled", base_track, track_clipboard[i].enabled);
+				if (track_clipboard[i].track_type == Animation::TYPE_VALUE) {
+					undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", base_track, track_clipboard[i].update_mode);
+				}
+
+				for (int j = 0; j < track_clipboard[i].keys.size(); j++) {
+					undo_redo->add_do_method(animation.ptr(), "track_insert_key", base_track, track_clipboard[i].keys[j].time, track_clipboard[i].keys[j].value, track_clipboard[i].keys[j].transition);
+				}
+
+				undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
+
+				base_track++;
+			}
+
+			undo_redo->commit_action();
+		} break;
 		case EDIT_SCALE_SELECTION:
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
@@ -5925,6 +6056,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->set_tooltip(TTR("Animation properties."));
 	edit->get_popup()->add_item(TTR("Copy Tracks"), EDIT_COPY_TRACKS);
 	edit->get_popup()->add_item(TTR("Paste Tracks"), EDIT_PASTE_TRACKS);
+	edit->get_popup()->add_item(TTR("Duplicate Tracks"), EDIT_DUPLICATE_TRACKS);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Scale Selection"), EDIT_SCALE_SELECTION);
 	edit->get_popup()->add_item(TTR("Scale From Cursor"), EDIT_SCALE_FROM_CURSOR);
@@ -6083,6 +6215,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_vbox->add_child(track_copy_select);
 	track_copy_dialog->connect("confirmed", this, "_edit_menu_pressed", varray(EDIT_COPY_TRACKS_CONFIRM));
 	animation_changing_awaiting_update = false;
+
+	track_duplicate_dialog = memnew(ConfirmationDialog);
+	add_child(track_duplicate_dialog);
+	track_duplicate_dialog->set_title(TTR("Select tracks to duplicate:"));
+	track_duplicate_dialog->get_ok()->set_text(TTR("Duplicate"));
+
+	track_duplicate_select = memnew(Tree);
+	track_duplicate_select->set_hide_root(true);
+	track_duplicate_dialog->add_child(track_duplicate_select);
+	track_duplicate_dialog->connect("confirmed", this, "_edit_menu_pressed", varray(EDIT_DUPLICATE_TRACKS_CONFIRM));
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {

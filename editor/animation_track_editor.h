@@ -279,6 +279,8 @@ class AnimationTrackEditor : public VBoxContainer {
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,
 		EDIT_PASTE_TRACKS,
+		EDIT_DUPLICATE_TRACKS,
+		EDIT_DUPLICATE_TRACKS_CONFIRM,
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
@@ -468,6 +470,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	ConfirmationDialog *track_copy_dialog;
 	Tree *track_copy_select;
 
+	ConfirmationDialog *track_duplicate_dialog;
+	Tree *track_duplicate_select;
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
