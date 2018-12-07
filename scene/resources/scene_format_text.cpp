@@ -1242,7 +1242,7 @@ void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &
 		return;
 	}
 
-	if (p_type == "PackedScene")
+	if (p_type == "PackedScene" || p_type == "Resource")
 		p_extensions->push_back("tscn");
 	else
 		p_extensions->push_back("tres");
