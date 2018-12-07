@@ -431,8 +431,12 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags) {
 		ERR_FAIL_COND_V(err, err);
 	}
 
+	if (!p_to.ends_with("/")) {
+		p_to = p_to + "/";
+	}
+
 	DirChanger dir_changer(this, p_from);
-	Error err = _copy_dir(target_da, p_to + "/", p_chmod_flags);
+	Error err = _copy_dir(target_da, p_to, p_chmod_flags);
 	memdelete(target_da);
 
 	return err;
