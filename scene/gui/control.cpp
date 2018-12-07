@@ -451,6 +451,11 @@ void Control::_update_canvas_item_transform() {
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 
+	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
+	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
+		xform[2] = xform[2].round();
+	}
+
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
 
@@ -1336,11 +1341,6 @@ void Control::_size_changed() {
 		new_size_cache.height = minimum_size.height;
 	}
 
-	// We use a little workaround to avoid flickering when moving the pivot with _edit_set_pivot()
-	if (is_inside_tree() && Math::abs(Math::sin(data.rotation * 4.0f)) < 0.00001f && get_viewport()->is_snap_controls_to_pixels_enabled()) {
-		new_size_cache = new_size_cache.round();
-		new_pos_cache = new_pos_cache.round();
-	}
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;
 
@@ -1740,10 +1740,10 @@ Rect2 Control::_compute_child_rect(const float p_anchors[4], const float p_margi
 void Control::_compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]) {
 
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
-	r_margins[0] = Math::floor(p_rect.position.x - (p_anchors[0] * parent_rect_size.x));
-	r_margins[1] = Math::floor(p_rect.position.y - (p_anchors[1] * parent_rect_size.y));
-	r_margins[2] = Math::floor(p_rect.position.x + p_rect.size.x - (p_anchors[2] * parent_rect_size.x));
-	r_margins[3] = Math::floor(p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y));
+	r_margins[0] = p_rect.position.x - (p_anchors[0] * parent_rect_size.x);
+	r_margins[1] = p_rect.position.y - (p_anchors[1] * parent_rect_size.y);
+	r_margins[2] = p_rect.position.x + p_rect.size.x - (p_anchors[2] * parent_rect_size.x);
+	r_margins[3] = p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y);
 }
 
 void Control::set_position(const Size2 &p_point) {
