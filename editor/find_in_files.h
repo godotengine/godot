@@ -73,7 +73,6 @@ private:
 	// Config
 	String _pattern;
 	Set<String> _extension_filter;
-	String _root_prefix;
 	String _root_dir;
 	bool _whole_words;
 	bool _match_case;

@@ -350,9 +350,9 @@ void ShaderEditor::_menu_option(int p_option) {
 
 void ShaderEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-	}
-	if (p_what == NOTIFICATION_DRAW) {
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (is_visible_in_tree())
+			shader_editor->get_text_edit()->grab_focus();
 	}
 }
 
@@ -389,7 +389,6 @@ void ShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_menu_option", &ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed", &ShaderEditor::_params_changed);
 	ClassDB::bind_method("apply_shaders", &ShaderEditor::apply_shaders);
-	//ClassDB::bind_method("_close_current_tab",&ShaderEditor::_close_current_tab);
 }
 
 void ShaderEditor::ensure_select_current() {
@@ -403,6 +402,11 @@ void ShaderEditor::ensure_select_current() {
 		Ref<Shader> shader = ste->get_edited_shader();
 		get_scene()->get_root_node()->call("_resource_selected",shader);
 	}*/
+}
+
+void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+
+	shader_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
 void ShaderEditor::edit(const Ref<Shader> &p_shader) {
