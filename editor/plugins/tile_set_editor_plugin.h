@@ -71,6 +71,7 @@ class TileSetEditor : public HSplitContainer {
 		EDITMODE_BITMASK,
 		EDITMODE_PRIORITY,
 		EDITMODE_ICON,
+		EDITMODE_Z_INDEX,
 		EDITMODE_MAX
 	};
 
@@ -138,6 +139,7 @@ class TileSetEditor : public HSplitContainer {
 	VSeparator *separator_delete;
 	VSeparator *separator_grid;
 	SpinBox *spin_priority;
+	SpinBox *spin_z_index;
 	WorkspaceMode workspace_mode;
 	EditMode edit_mode;
 	int current_tile;
@@ -178,6 +180,7 @@ private:
 	void _on_workspace_input(const Ref<InputEvent> &p_ie);
 	void _on_tool_clicked(int p_tool);
 	void _on_priority_changed(float val);
+	void _on_z_index_changed(float val);
 	void _on_grid_snap_toggled(bool p_val);
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
