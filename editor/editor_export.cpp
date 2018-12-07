@@ -546,6 +546,13 @@ void EditorExportPlugin::_export_begin_script(const PoolVector<String> &p_featur
 	}
 }
 
+void EditorExportPlugin::_export_end_script() {
+
+	if (get_script_instance()) {
+		get_script_instance()->call("_export_end");
+	}
+}
+
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
 }
 
@@ -606,6 +613,9 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->get_script_instance()) {
+			export_plugins.write[i]->_export_end_script();
+		}
 		export_plugins.write[i]->_export_end();
 	}
 }
