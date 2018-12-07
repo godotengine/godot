@@ -789,6 +789,7 @@ public:
 	void edit_current() { _edit_current(); };
 
 	void update_keying() const { inspector_dock->update_keying(); };
+	bool has_scenes_in_session();
 
 	EditorNode();
 	~EditorNode();
