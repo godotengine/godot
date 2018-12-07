@@ -751,6 +751,10 @@
 			<argument index="0" name="message" type="String">
 			</argument>
 			<description>
+				Pushes an error message to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				push_error("test error") # prints "test error" to debugger and terminal as error call
+				[/codeblock]
 			</description>
 		</method>
 		<method name="push_warning">
@@ -759,6 +763,10 @@
 			<argument index="0" name="message" type="String">
 			</argument>
 			<description>
+				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				push_warning("test warning") # prints "test warning" to debugger and terminal as warning call
+				[/codeblock]
 			</description>
 		</method>
 		<method name="rad2deg">
