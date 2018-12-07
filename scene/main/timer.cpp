@@ -50,7 +50,9 @@ void Timer::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal())
 				return;
-			time_left -= get_process_delta_time();
+			float delta = get_process_delta_time();
+			time_left -= delta;
+			emit_signal("tick", delta);
 
 			if (time_left < 0) {
 				if (!one_shot)
@@ -65,7 +67,9 @@ void Timer::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal())
 				return;
-			time_left -= get_physics_process_delta_time();
+			float delta = get_physics_process_delta_time();
+			time_left -= delta;
+			emit_signal("tick", delta);
 
 			if (time_left < 0) {
 				if (!one_shot)
@@ -202,6 +206,7 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_timer_process_mode"), &Timer::get_timer_process_mode);
 
 	ADD_SIGNAL(MethodInfo("timeout"));
+	ADD_SIGNAL(MethodInfo("tick", PropertyInfo(Variant::REAL, "delta")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_timer_process_mode", "get_timer_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01"), "set_wait_time", "get_wait_time");
