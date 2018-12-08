@@ -17,6 +17,7 @@
 			</return>
 			<description>
 				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref].
+				The error "Nonexistent function 'call_func' in base 'Func_Ref'" is most often the result of a misspelled function string.  The call_func method is dynamically bound to the Func_Ref class at runtime, and only if set_function() is given a valid function name.  If set_function() is given an invalid string, the call_func method will not be available.
 			</description>
 		</method>
 		<method name="set_function">
