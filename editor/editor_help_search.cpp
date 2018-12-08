@@ -579,18 +579,12 @@ bool EditorHelpSearch::Runner::work(uint64_t slot) {
 	return true;
 }
 
-EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags) {
-
-	ui_service = p_icon_service;
-	results_tree = p_results_tree;
-	term = p_term.strip_edges();
-	search_flags = p_search_flags;
-
-	if ((search_flags & SEARCH_CASE_SENSITIVE) == 0)
-		term = term.to_lower();
-
-	empty_icon = ui_service->get_icon("ArrowRight", "EditorIcons");
-	disabled_color = ui_service->get_color("disabled_font_color", "Editor");
-
-	phase = 0;
+EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags) :
+		phase(0),
+		ui_service(p_icon_service),
+		results_tree(p_results_tree),
+		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
+		search_flags(p_search_flags),
+		empty_icon(ui_service->get_icon("ArrowRight", "EditorIcons")),
+		disabled_color(ui_service->get_color("disabled_font_color", "Editor")) {
 }

@@ -35,10 +35,9 @@
 
 /* helpers / binders */
 
-PacketPeer::PacketPeer() {
-
-	allow_object_decoding = false;
-	last_get_error = OK;
+PacketPeer::PacketPeer() :
+		last_get_error(OK),
+		allow_object_decoding(false) {
 }
 
 void PacketPeer::set_allow_object_decoding(bool p_enable) {

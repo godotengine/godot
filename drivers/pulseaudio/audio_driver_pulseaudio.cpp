@@ -743,35 +743,28 @@ String AudioDriverPulseAudio::capture_get_device() {
 	return name;
 }
 
-AudioDriverPulseAudio::AudioDriverPulseAudio() {
-
-	pa_ml = NULL;
-	pa_ctx = NULL;
-	pa_str = NULL;
-	pa_rec_str = NULL;
-
-	mutex = NULL;
-	thread = NULL;
-
-	device_name = "Default";
-	new_device = "Default";
-	default_device = "";
-
+AudioDriverPulseAudio::AudioDriverPulseAudio() :
+		thread(NULL),
+		mutex(NULL),
+		pa_ml(NULL),
+		pa_ctx(NULL),
+		pa_str(NULL),
+		pa_rec_str(NULL),
+		device_name("Default"),
+		new_device("Default"),
+		default_device(""),
+		mix_rate(0),
+		buffer_frames(0),
+		pa_buffer_size(0),
+		channels(0),
+		pa_ready(0),
+		pa_status(0),
+		active(false),
+		thread_exited(false),
+		exit_thread(false),
+		latency(0) {
 	samples_in.clear();
 	samples_out.clear();
-
-	mix_rate = 0;
-	buffer_frames = 0;
-	pa_buffer_size = 0;
-	channels = 0;
-	pa_ready = 0;
-	pa_status = 0;
-
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
-
-	latency = 0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {

@@ -110,14 +110,13 @@ public:
 		float z_near;
 		float z_far;
 
-		CameraData() {
-
-			mode = MODE_PERSPECTIVE;
-			perspective.y_fov = 0;
+		CameraData() :
+				mode(MODE_PERSPECTIVE),
+				aspect(1),
+				z_near(0.1),
+				z_far(100) {
 			perspective.x_fov = 0;
-			aspect = 1;
-			z_near = 0.1;
-			z_far = 100;
+			perspective.y_fov = 0;
 		}
 	};
 
@@ -141,16 +140,14 @@ public:
 		float spot_angle;
 		float spot_exp;
 
-		LightData() {
-
-			mode = MODE_AMBIENT;
-			color = Color(1, 1, 1, 1);
-			constant_att = 0;
-			linear_att = 0;
-			quad_att = 0;
-
-			spot_angle = 45;
-			spot_exp = 1;
+		LightData() :
+				mode(MODE_AMBIENT),
+				color(Color(1, 1, 1, 1)),
+				constant_att(0),
+				linear_att(0),
+				quad_att(0),
+				spot_angle(45),
+				spot_exp(1) {
 		}
 	};
 
@@ -580,11 +577,11 @@ public:
 
 		float animation_length;
 
-		State() {
-			unit_scale = 1.0;
-			up_axis = Vector3::AXIS_Y;
-			import_flags = 0;
-			animation_length = 0;
+		State() :
+				import_flags(0),
+				unit_scale(1.0),
+				up_axis(Vector3::AXIS_Y),
+				animation_length(0) {
 		}
 	} state;
 

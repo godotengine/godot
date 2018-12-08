@@ -159,7 +159,7 @@ Error AudioDriverALSA::init() {
 	}
 
 	return err;
-};
+}
 
 void AudioDriverALSA::thread_func(void *p_udata) {
 
@@ -232,25 +232,25 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 
 		ad->stop_counting_ticks();
 		ad->unlock();
-	};
+	}
 
 	ad->thread_exited = true;
-};
+}
 
 void AudioDriverALSA::start() {
 
 	active = true;
-};
+}
 
 int AudioDriverALSA::get_mix_rate() const {
 
 	return mix_rate;
-};
+}
 
 AudioDriver::SpeakerMode AudioDriverALSA::get_speaker_mode() const {
 
 	return speaker_mode;
-};
+}
 
 Array AudioDriverALSA::get_device_list() {
 
@@ -302,14 +302,14 @@ void AudioDriverALSA::lock() {
 	if (!thread || !mutex)
 		return;
 	mutex->lock();
-};
+}
 
 void AudioDriverALSA::unlock() {
 
 	if (!thread || !mutex)
 		return;
 	mutex->unlock();
-};
+}
 
 void AudioDriverALSA::finish_device() {
 
@@ -337,18 +337,15 @@ void AudioDriverALSA::finish() {
 	finish_device();
 }
 
-AudioDriverALSA::AudioDriverALSA() {
+AudioDriverALSA::AudioDriverALSA() :
+		thread(NULL),
+		mutex(NULL),
+		pcm_handle(NULL),
+		device_name("Default"),
+		new_device("Default") {
+}
 
-	mutex = NULL;
-	thread = NULL;
-	pcm_handle = NULL;
-
-	device_name = "Default";
-	new_device = "Default";
-};
-
-AudioDriverALSA::~AudioDriverALSA(){
-
-};
+AudioDriverALSA::~AudioDriverALSA() {
+}
 
 #endif

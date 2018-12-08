@@ -684,22 +684,18 @@ String AudioDriverCoreAudio::capture_get_device() {
 
 #endif
 
-AudioDriverCoreAudio::AudioDriverCoreAudio() {
-	audio_unit = NULL;
-	input_unit = NULL;
-	active = false;
-	mutex = NULL;
-
-	mix_rate = 0;
-	channels = 2;
-	capture_channels = 2;
-
-	buffer_frames = 0;
-
+AudioDriverCoreAudio::AudioDriverCoreAudio() :
+		audio_unit(NULL),
+		input_unit(NULL),
+		active(false),
+		mutex(NULL),
+		device_name("Default"),
+		capture_device_name("Default"),
+		mix_rate(0),
+		channels(2),
+		capture_channels(2),
+		buffer_frames(0) {
 	samples_in.clear();
-
-	device_name = "Default";
-	capture_device_name = "Default";
 }
 
 AudioDriverCoreAudio::~AudioDriverCoreAudio(){};

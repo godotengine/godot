@@ -56,12 +56,12 @@ struct MemoryPool {
 
 		Alloc *free_list;
 
-		Alloc() {
-			mem = NULL;
-			lock = 0;
-			pool_id = POOL_ALLOCATOR_INVALID_ID;
-			size = 0;
-			free_list = NULL;
+		Alloc() :
+				lock(0),
+				mem(NULL),
+				pool_id(POOL_ALLOCATOR_INVALID_ID),
+				size(0),
+				free_list(NULL) {
 		}
 	};
 

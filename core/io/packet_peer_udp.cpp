@@ -239,13 +239,12 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dest_address", "host", "port"), &PacketPeerUDP::_set_dest_address);
 }
 
-PacketPeerUDP::PacketPeerUDP() {
-
-	_sock = Ref<NetSocket>(NetSocket::create());
-	blocking = true;
-	packet_port = 0;
-	queue_count = 0;
-	peer_port = 0;
+PacketPeerUDP::PacketPeerUDP() :
+		packet_port(0),
+		queue_count(0),
+		peer_port(0),
+		blocking(true),
+		_sock(Ref<NetSocket>(NetSocket::create())) {
 	rb.resize(16);
 }
 

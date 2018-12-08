@@ -349,12 +349,11 @@ void StreamPeerTCP::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATUS_ERROR);
 }
 
-StreamPeerTCP::StreamPeerTCP() {
-
-	_sock = Ref<NetSocket>(NetSocket::create());
-	status = STATUS_NONE;
-	peer_host = IP_Address();
-	peer_port = 0;
+StreamPeerTCP::StreamPeerTCP() :
+		_sock(Ref<NetSocket>(NetSocket::create())),
+		status(STATUS_NONE),
+		peer_host(IP_Address()),
+		peer_port(0) {
 }
 
 StreamPeerTCP::~StreamPeerTCP() {

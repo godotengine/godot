@@ -93,9 +93,8 @@ void ThreadWindows::make_default() {
 	wait_to_finish_func = wait_to_finish_func_windows;
 }
 
-ThreadWindows::ThreadWindows() {
-
-	handle = NULL;
+ThreadWindows::ThreadWindows() :
+		handle(NULL) {
 }
 
 ThreadWindows::~ThreadWindows() {

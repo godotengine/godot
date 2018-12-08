@@ -194,13 +194,12 @@ void AudioDriverRtAudio::finish() {
 	}
 }
 
-AudioDriverRtAudio::AudioDriverRtAudio() {
-
-	active = false;
-	mutex = NULL;
-	dac = NULL;
-	mix_rate = DEFAULT_MIX_RATE;
-	speaker_mode = SPEAKER_MODE_STEREO;
+AudioDriverRtAudio::AudioDriverRtAudio() :
+		speaker_mode(SPEAKER_MODE_STEREO),
+		mutex(NULL),
+		dac(NULL),
+		mix_rate(DEFAULT_MIX_RATE),
+		active(false) {
 }
 
 #endif

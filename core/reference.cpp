@@ -139,8 +139,8 @@ void WeakRef::set_ref(const REF &p_ref) {
 	ref = p_ref.is_valid() ? p_ref->get_instance_id() : 0;
 }
 
-WeakRef::WeakRef() {
-	ref = 0;
+WeakRef::WeakRef() :
+		ref(0) {
 }
 
 void WeakRef::_bind_methods() {
