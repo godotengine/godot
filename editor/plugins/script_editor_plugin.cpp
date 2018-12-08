@@ -897,12 +897,12 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 		} break;
 		case THEME_SAVE_AS: {
 			if (!EditorSettings::get_singleton()->save_text_editor_theme_as(p_file)) {
-				editor->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
+				editor->show_warning(TTR("Error while saving theme."), TTR("Error Saving"));
 			}
 		} break;
 		case THEME_IMPORT: {
 			if (!EditorSettings::get_singleton()->import_text_editor_theme(p_file)) {
-				editor->show_warning(TTR("Error importing theme"), TTR("Error importing"));
+				editor->show_warning(TTR("Error importing theme."), TTR("Error Importing"));
 			}
 		} break;
 	}
@@ -1090,7 +1090,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				Ref<Script> scr = current->get_edited_resource();
 				if (scr == NULL || scr.is_null()) {
-					EditorNode::get_singleton()->show_warning("Can't obtain the script for running");
+					EditorNode::get_singleton()->show_warning("Can't obtain the script for running.");
 					break;
 				}
 
@@ -1103,13 +1103,13 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 				if (!scr->is_tool()) {
 
-					EditorNode::get_singleton()->show_warning("Script is not in tool mode, will not be able to run");
+					EditorNode::get_singleton()->show_warning("Script is not in tool mode, will not be able to run.");
 					return;
 				}
 
 				if (!ClassDB::is_parent_class(scr->get_instance_base_type(), "EditorScript")) {
 
-					EditorNode::get_singleton()->show_warning("To run this script, it must inherit EditorScript and be set to tool mode");
+					EditorNode::get_singleton()->show_warning("To run this script, it must inherit EditorScript and be set to tool mode.");
 					return;
 				}
 
@@ -2978,9 +2978,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(file_menu);
 	file_menu->set_text(TTR("File"));
 	file_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script")), FILE_NEW);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New TextFile")), FILE_NEW_TEXTFILE);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open")), FILE_OPEN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script...")), FILE_NEW);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New TextFile...")), FILE_NEW_TEXTFILE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open...")), FILE_OPEN);
 	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
 
 	recent_scripts = memnew(PopupMenu);
@@ -3009,10 +3009,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	theme_submenu->set_name("Theme");
 	file_menu->get_popup()->add_child(theme_submenu);
 	theme_submenu->connect("id_pressed", this, "_theme_option");
-	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme")), THEME_IMPORT);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/import_theme", TTR("Import Theme...")), THEME_IMPORT);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/reload_theme", TTR("Reload Theme")), THEME_RELOAD);
+	theme_submenu->add_separator();
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTR("Save Theme")), THEME_SAVE);
-	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As")), THEME_SAVE_AS);
+	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTR("Save Theme As...")), THEME_SAVE_AS);
 
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
