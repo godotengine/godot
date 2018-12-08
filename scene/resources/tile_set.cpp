@@ -137,7 +137,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			int z_index;
 			while (p.size() > 0) {
 				val = p[0];
-				if (val.z > 1) {
+				if (val.z != 0) {
 					v.x = val.x;
 					v.y = val.y;
 					z_index = (int)val.z;
