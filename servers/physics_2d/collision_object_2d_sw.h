@@ -115,6 +115,11 @@ public:
 	void set_shape_metadata(int p_index, const Variant &p_metadata);
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
+
+	_FORCE_INLINE_ bool check_if_shape_is_not_disabled(int shape_index) const {
+		CRASH_BAD_INDEX(shape_index, shapes.size());
+		return !shapes[shape_index].disabled;
+	}
 	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].shape;

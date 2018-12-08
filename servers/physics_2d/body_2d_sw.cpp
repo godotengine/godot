@@ -61,17 +61,17 @@ void Body2DSW::update_inertias() {
 
 			for (int i = 0; i < get_shape_count(); i++) {
 
-				const Shape2DSW *shape = get_shape(i);
+				if (check_if_shape_is_not_disabled(i)) { //it only adds to inertia if shape is not disabled
+					const Shape2DSW *shape = get_shape(i);
 
-				real_t area = get_shape_aabb(i).get_area();
+					real_t area = get_shape_aabb(i).get_area();
 
-				real_t mass = area * this->mass / total_area;
+					real_t mass = area * this->mass / total_area;
 
-				Transform2D mtx = get_shape_transform(i);
-				Vector2 scale = mtx.get_scale();
-				_inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
-				//Rect2 ab = get_shape_aabb(i);
-				//_inertia+=mass*ab.size.dot(ab.size)/12.0f;
+					Transform2D mtx = get_shape_transform(i);
+					Vector2 scale = mtx.get_scale();
+					_inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
+				}
 			}
 
 			if (_inertia != 0)
