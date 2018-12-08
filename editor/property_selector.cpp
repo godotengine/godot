@@ -210,9 +210,6 @@ void PropertySelector::_update_search() {
 
 				methods.push_back(MethodInfo("*Script Methods"));
 				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
-				// TODO: Filter out things unsuitable for explicit calls, like constructors.
-
-				// TODO: We should handle script class hierarchies somehow. Right now we don't; it's unclear where this functionality should live.
 			}
 
 			StringName base = base_type;

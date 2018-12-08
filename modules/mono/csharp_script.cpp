@@ -2479,6 +2479,7 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	if (!script_class)
 		return;
 
+	// TODO: Filter out things unsuitable for explicit calls, like constructors.
 	const Vector<GDMonoMethod *> &methods = script_class->get_all_methods();
 	for (int i = 0; i < methods.size(); ++i) {
 		p_list->push_back(methods[i]->get_method_info());

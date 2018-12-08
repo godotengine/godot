@@ -139,20 +139,6 @@ void GDMonoClass::fetch_attributes() {
 	attrs_fetched = true;
 }
 
-void GDMonoClass::fetch_method_list() {
-
-	if (method_list_fetched)
-		return;
-
-	void *iter = NULL;
-	MonoMethod *raw_method = NULL;
-	while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
-		method_list.push_back(memnew(GDMonoMethod(mono_method_get_name(raw_method), raw_method)));
-	}
-
-	method_list_fetched = true;
-}
-
 void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base) {
 
 	CRASH_COND(!CACHED_CLASS(GodotObject)->is_assignable_from(this));
@@ -465,8 +451,16 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 }
 
 const Vector<GDMonoMethod *> &GDMonoClass::get_all_methods() {
-	if (!method_list_fetched)
-		fetch_method_list();
+
+	if (!method_list_fetched) {
+		void *iter = NULL;
+		MonoMethod *raw_method = NULL;
+		while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
+			method_list.push_back(memnew(GDMonoMethod(mono_method_get_name(raw_method), raw_method)));
+		}
+
+		method_list_fetched = true;
+	}
 
 	return method_list;
 }

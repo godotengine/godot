@@ -102,8 +102,6 @@ class GDMonoClass {
 	friend class GDMonoAssembly;
 	GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly);
 
-	void fetch_method_list();
-
 public:
 	static String get_full_name(MonoClass *p_mono_class);
 	static MonoType *get_mono_type(MonoClass *p_mono_class);
