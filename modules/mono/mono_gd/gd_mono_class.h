@@ -79,8 +79,13 @@ class GDMonoClass {
 	bool attrs_fetched;
 	MonoCustomAttrInfo *attributes;
 
+	// This contains both the original method names and remapped method names from the native Godot identifiers to the C# functions.
+	// Most method-related functions refer to this and it's possible this is unintuitive for outside users; this may be a prime location for refactoring or renaming.
 	bool methods_fetched;
 	HashMap<MethodKey, GDMonoMethod *, MethodKey::Hasher> methods;
+
+	bool method_list_fetched;
+	Vector<GDMonoMethod *> method_list;
 
 	bool fields_fetched;
 	Map<StringName, GDMonoField *> fields;
@@ -142,6 +147,8 @@ public:
 	const Vector<GDMonoProperty *> &get_all_properties();
 
 	const Vector<GDMonoClass *> &get_all_delegates();
+
+	const Vector<GDMonoMethod *> &get_all_methods();
 
 	~GDMonoClass();
 };

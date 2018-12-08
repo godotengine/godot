@@ -2474,12 +2474,43 @@ void CSharpScript::set_source_code(const String &p_code) {
 #endif
 }
 
+void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
+
+	if (!script_class)
+		return;
+
+	// TODO: Filter out things unsuitable for explicit calls, like constructors.
+	const Vector<GDMonoMethod *> &methods = script_class->get_all_methods();
+	for (int i = 0; i < methods.size(); ++i) {
+		p_list->push_back(methods[i]->get_method_info());
+	}
+}
+
 bool CSharpScript::has_method(const StringName &p_method) const {
 
 	if (!script_class)
 		return false;
 
 	return script_class->has_fetched_method_unknown_params(p_method);
+}
+
+MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
+
+	if (!script_class)
+		return MethodInfo();
+
+	GDMonoClass *top = script_class;
+
+	while (top && top != native) {
+		GDMonoMethod *params = top->get_fetched_method_unknown_params(p_method);
+		if (params) {
+			return params->get_method_info();
+		}
+
+		top = top->get_parent_class();
+	}
+
+	return MethodInfo();
 }
 
 Error CSharpScript::reload(bool p_keep_state) {
