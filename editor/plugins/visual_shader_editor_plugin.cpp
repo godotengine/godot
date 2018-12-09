@@ -636,13 +636,15 @@ void VisualShaderEditor::_duplicate_nodes() {
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 
-		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
-			int id = String(graph->get_child(i)->get_name()).to_int();
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			int id = String(gn->get_name()).to_int();
 			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
 			Ref<VisualShaderNodeOutput> output = node;
-			if (output.is_valid()) //can't duplicate output
+			if (output.is_valid()) { // can't duplicate output
 				continue;
-			if (node.is_valid()) {
+			}
+			if (node.is_valid() && gn->is_selected()) {
 				nodes.push_back(id);
 			}
 		}
