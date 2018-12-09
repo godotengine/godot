@@ -461,7 +461,47 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 	int l_width = d["width"];
 	int l_depth = d["depth"];
-	PoolVector<real_t> l_heights = d["heights"];
+
+	// TODO This code will need adjustments if real_t is set to `double`,
+	// because that precision is unnecessary for a heightmap and Bullet doesn't support it...
+
+	PoolVector<real_t> l_heights;
+	Variant l_heights_v = d["heights"];
+
+	if (l_heights_v.get_type() == Variant::POOL_REAL_ARRAY) {
+		// Ready-to-use heights can be passed
+
+		l_heights = l_heights_v;
+
+	} else if (l_heights_v.get_type() == Variant::OBJECT) {
+		// If an image is passed, we have to convert it to a format Bullet supports.
+		// this would be expensive to do with a script, so it's nice to have it here.
+
+		Ref<Image> l_image = l_heights_v;
+		ERR_FAIL_COND(l_image.is_null());
+
+		// Float is the only common format between Godot and Bullet that can be used for decent collision.
+		// (Int16 would be nice too but we still don't have it)
+		// We could convert here automatically but it's better to not be intrusive and let the caller do it if necessary.
+		ERR_FAIL_COND(l_image->get_format() != Image::FORMAT_RF);
+
+		PoolByteArray im_data = l_image->get_data();
+
+		l_heights.resize(l_image->get_width() * l_image->get_width());
+
+		PoolRealArray::Write w = l_heights.write();
+		PoolByteArray::Read r = im_data.read();
+		float *rp = (float *)r.ptr();
+		// At this point, `rp` could be used directly for Bullet, but I don't know how safe it would be.
+
+		for (int i = 0; i < l_heights.size(); ++i) {
+			w[i] = rp[i];
+		}
+
+	} else {
+		ERR_EXPLAIN("Expected PoolRealArray or float Image.");
+		ERR_FAIL();
+	}
 
 	ERR_FAIL_COND(l_width <= 0);
 	ERR_FAIL_COND(l_depth <= 0);
@@ -497,19 +537,8 @@ PhysicsServer::ShapeType HeightMapShapeBullet::get_type() const {
 void HeightMapShapeBullet::setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height) {
 	// TODO cell size must be tweaked using localScaling, which is a shared property for all Bullet shapes
 
-	{ // Copy
-
-		// TODO If Godot supported 16-bit integer image format, we could share the same memory block for heightfields
-		// without having to copy anything, optimizing memory and loading performance (Bullet only reads and doesn't take ownership of the data).
-
-		const int heights_size = p_heights.size();
-		heights.resize(heights_size);
-		PoolVector<real_t>::Read p_heights_r = p_heights.read();
-		PoolVector<real_t>::Write heights_w = heights.write();
-		for (int i = heights_size - 1; 0 <= i; --i) {
-			heights_w[i] = p_heights_r[i];
-		}
-	}
+	// If this array is resized outside of here, it should be preserved due to CoW
+	heights = p_heights;
 
 	width = p_width;
 	depth = p_depth;
