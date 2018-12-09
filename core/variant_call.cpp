@@ -33,6 +33,8 @@
 #include "script_language.h"
 #include "variant.h"
 
+#include "thirdparty/misc/sha256.h"
+
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
@@ -502,6 +504,21 @@ struct _VariantCall {
 			ByteArray::Read r = ba->read();
 			s.parse_utf8((const char *)r.ptr(), ba->size());
 		}
+		r_ret = s;
+	}
+
+	static void _call_ByteArray_sha256_string(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		ByteArray *ba = reinterpret_cast<ByteArray *>(p_self._data._mem);
+		ByteArray::Read r = ba->read();
+		String s;
+		unsigned char hash[32];
+		sha256_context sha256;
+		sha256_init(&sha256);
+		sha256_hash(&sha256, (unsigned char *)r.ptr(), ba->size());
+		sha256_done(&sha256, hash);
+		s = String::hex_encode_buffer(hash, 32);
+
 		r_ret = s;
 	}
 
@@ -1547,6 +1564,7 @@ void register_variant_methods() {
 
 	ADDFUNC0(RAW_ARRAY, STRING, ByteArray, get_string_from_ascii, varray());
 	ADDFUNC0(RAW_ARRAY, STRING, ByteArray, get_string_from_utf8, varray());
+	ADDFUNC0(RAW_ARRAY, STRING, ByteArray, sha256_string, varray());
 
 	ADDFUNC0(INT_ARRAY, INT, IntArray, size, varray());
 	ADDFUNC2(INT_ARRAY, NIL, IntArray, set, INT, "idx", INT, "integer", varray());
