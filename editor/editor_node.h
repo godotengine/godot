@@ -243,7 +243,6 @@ private:
 	Control *vp_base;
 	PaneDrag *pd;
 
-	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -255,7 +254,6 @@ private:
 	ToolButton *export_button;
 	ToolButton *prev_scene;
 	ToolButton *play_button;
-	MenuButton *native_play_button;
 	ToolButton *pause_button;
 	ToolButton *stop_button;
 	ToolButton *run_settings_button;
