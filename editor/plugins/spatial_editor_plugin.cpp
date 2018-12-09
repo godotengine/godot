@@ -5475,6 +5475,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	transform_menu = memnew(MenuButton);
 	transform_menu->set_text(TTR("Transform"));
+	transform_menu->set_switch_on_hover(true);
 	hbc_menu->add_child(transform_menu);
 
 	p = transform_menu->get_popup();
@@ -5487,6 +5488,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
+	view_menu->set_switch_on_hover(true);
 	hbc_menu->add_child(view_menu);
 
 	p = view_menu->get_popup();

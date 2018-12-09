@@ -5189,6 +5189,7 @@ EditorNode::EditorNode() {
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_flat(false);
+	file_menu->set_switch_on_hover(true);
 	file_menu->set_text(TTR("Scene"));
 	file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(file_menu);
@@ -5280,6 +5281,7 @@ EditorNode::EditorNode() {
 
 	project_menu = memnew(MenuButton);
 	project_menu->set_flat(false);
+	project_menu->set_switch_on_hover(true);
 	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
 	project_menu->set_text(TTR("Project"));
 	project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
@@ -5321,6 +5323,7 @@ EditorNode::EditorNode() {
 
 	debug_menu = memnew(MenuButton);
 	debug_menu->set_flat(false);
+	debug_menu->set_switch_on_hover(true);
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(debug_menu);
@@ -5351,6 +5354,7 @@ EditorNode::EditorNode() {
 
 	settings_menu = memnew(MenuButton);
 	settings_menu->set_flat(false);
+	settings_menu->set_switch_on_hover(true);
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(settings_menu);
@@ -5387,6 +5391,7 @@ EditorNode::EditorNode() {
 	// Help Menu
 	help_menu = memnew(MenuButton);
 	help_menu->set_flat(false);
+	help_menu->set_switch_on_hover(true);
 	help_menu->set_text(TTR("Help"));
 	help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(help_menu);

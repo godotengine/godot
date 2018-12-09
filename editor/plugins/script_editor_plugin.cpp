@@ -2977,6 +2977,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu = memnew(MenuButton);
 	menu_hb->add_child(file_menu);
 	file_menu->set_text(TTR("File"));
+	file_menu->set_switch_on_hover(true);
 	file_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script...")), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New TextFile...")), FILE_NEW_TEXTFILE);
@@ -3029,6 +3030,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu = memnew(MenuButton);
 	menu_hb->add_child(script_search_menu);
 	script_search_menu->set_text(TTR("Search"));
+	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
@@ -3038,6 +3040,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
 	debug_menu->set_text(TTR("Debug"));
+	debug_menu->set_switch_on_hover(true);
 	debug_menu->get_popup()->set_hide_on_window_lose_focus(true);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11), DEBUG_STEP);
