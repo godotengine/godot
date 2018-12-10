@@ -304,7 +304,7 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 	uint32_t code = get_scancode_with_modifiers();
 	uint32_t event_code = key->get_scancode_with_modifiers();
 
-	bool match = get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+	bool match = code == event_code && (!key->is_pressed() || (code & event_code) == code);
 	if (match) {
 		if (p_pressed != NULL)
 			*p_pressed = key->is_pressed();
