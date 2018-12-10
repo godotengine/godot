@@ -294,7 +294,8 @@ void ProjectSettingsEditor::_device_input_add() {
 			ie = jb;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (idx < 0 || idx >= events.size()) {
@@ -519,7 +520,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1600,6 +1602,11 @@ void ProjectSettingsEditor::set_plugins_page() {
 	tab_container->set_current_tab(plugin_settings->get_index());
 }
 
+void ProjectSettingsEditor::set_groups_page() {
+
+	tab_container->set_current_tab(group_settings->get_index());
+}
+
 TabContainer *ProjectSettingsEditor::get_tabs() {
 
 	return tab_container;
@@ -2018,6 +2025,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	autoload_settings->set_name(TTR("AutoLoad"));
 	tab_container->add_child(autoload_settings);
 	autoload_settings->connect("autoload_changed", this, "_settings_changed");
+
+	group_settings = memnew(EditorGroupSettings);
+	group_settings->set_name(TTR("Groups"));
+	tab_container->add_child(group_settings);
+	group_settings->connect("group_changed", this, "_settings_changed");
 
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));

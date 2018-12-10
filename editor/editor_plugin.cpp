@@ -298,6 +298,16 @@ void EditorPlugin::remove_custom_type(const String &p_type) {
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
+void EditorPlugin::create_group(const String &p_name, const String &d_description) {
+
+	ProjectSettingsEditor::get_singleton()->get_group_settings()->create_group(p_name, d_description);
+}
+
+void EditorPlugin::delete_group(const String &p_name) {
+
+	ProjectSettingsEditor::get_singleton()->get_group_settings()->delete_group(p_name);
+}
+
 void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path);
 }
@@ -757,6 +767,9 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_tool_menu_item", "name"), &EditorPlugin::remove_tool_menu_item);
 	ClassDB::bind_method(D_METHOD("add_custom_type", "type", "base", "script", "icon"), &EditorPlugin::add_custom_type);
 	ClassDB::bind_method(D_METHOD("remove_custom_type", "type"), &EditorPlugin::remove_custom_type);
+
+	ClassDB::bind_method(D_METHOD("create_group", "name", "description"), &EditorPlugin::create_group);
+	ClassDB::bind_method(D_METHOD("delete_group", "name"), &EditorPlugin::delete_group);
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);

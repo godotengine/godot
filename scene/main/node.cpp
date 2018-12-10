@@ -2615,7 +2615,26 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	if ((pf == "has_node" || pf == "get_node") && p_idx == 0) {
 
 		_add_nodes_to_options(this, this, r_options);
+	} else if ((pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group") && p_idx == 0) {
+
+		List<PropertyInfo> props;
+		ProjectSettings::get_singleton()->get_property_list(&props);
+		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+
+			const PropertyInfo &pi = E->get();
+
+			if (!pi.name.begins_with("groups/"))
+				continue;
+
+			String name = pi.name.get_slice("/", 1);
+
+			if (name.empty())
+				continue;
+
+			r_options->push_back(name);
+		}
 	}
+
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
 

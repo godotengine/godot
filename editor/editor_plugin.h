@@ -120,6 +120,9 @@ protected:
 	static void _bind_methods();
 	UndoRedo &get_undo_redo() { return *undo_redo; }
 
+	void create_group(const String &p_name, const String &d_description);
+	void delete_group(const String &p_name);
+
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
 	void remove_custom_type(const String &p_type);
 
