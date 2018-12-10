@@ -112,6 +112,11 @@
 				Change the byte at the given index.
 			</description>
 		</method>
+		<method name="sha256_string">
+			<description>
+				Return SHA256 string of the PoolByteArray.
+			</description>
+		</method>
 		<method name="size">
 			<return type="int">
 			</return>
