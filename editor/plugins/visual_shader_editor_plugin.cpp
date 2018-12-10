@@ -633,6 +633,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 
 	List<int> nodes;
+	Set<int> excluded;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 
@@ -642,11 +643,13 @@ void VisualShaderEditor::_duplicate_nodes() {
 			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
 			Ref<VisualShaderNodeOutput> output = node;
 			if (output.is_valid()) { // can't duplicate output
+				excluded.insert(id);
 				continue;
 			}
 			if (node.is_valid() && gn->is_selected()) {
 				nodes.push_back(id);
 			}
+			excluded.insert(id);
 		}
 	}
 
@@ -685,15 +688,16 @@ void VisualShaderEditor::_duplicate_nodes() {
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 
-	//reselect
+	// reselect duplicated nodes by excluding the other ones
 	for (int i = 0; i < graph->get_child_count(); i++) {
 
-		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
-			int id = String(graph->get_child(i)->get_name()).to_int();
-			if (nodes.find(id)) {
-				Object::cast_to<GraphNode>(graph->get_child(i))->set_selected(true);
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			int id = String(gn->get_name()).to_int();
+			if (!excluded.has(id)) {
+				gn->set_selected(true);
 			} else {
-				Object::cast_to<GraphNode>(graph->get_child(i))->set_selected(false);
+				gn->set_selected(false);
 			}
 		}
 	}
