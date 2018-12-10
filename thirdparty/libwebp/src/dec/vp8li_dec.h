@@ -132,4 +132,4 @@ void VP8LDelete(VP8LDecoder* const dec);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_DEC_VP8LI_DEC_H_ */
+#endif  // WEBP_DEC_VP8LI_DEC_H_

@@ -154,7 +154,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.0
+- Version: 1.0.1
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
