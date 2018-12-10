@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "core/io/compression.h"
 #include "core_string_names.h"
 #include "object.h"
 #include "os/os.h"
@@ -503,6 +504,44 @@ struct _VariantCall {
 			s.parse_utf8((const char *)r.ptr(), ba->size());
 		}
 		r_ret = s;
+	}
+
+	static void _call_ByteArray_compress(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		ByteArray *ba = reinterpret_cast<ByteArray *>(p_self._data._mem);
+		ByteArray compressed;
+		Compression::Mode mode = (Compression::Mode)(int)(*p_args[0]);
+
+		compressed.resize(Compression::get_max_compressed_buffer_size(ba->size(), mode));
+		int result = Compression::compress(compressed.write().ptr(), ba->read().ptr(), ba->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		compressed.resize(result);
+
+		r_ret = compressed;
+	}
+
+	static void _call_ByteArray_decompress(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+
+		ByteArray *ba = reinterpret_cast<ByteArray *>(p_self._data._mem);
+		ByteArray decompressed;
+		Compression::Mode mode = (Compression::Mode)(int)(*p_args[1]);
+
+		int buffer_size = (int)(*p_args[0]);
+
+		if (buffer_size < 0) {
+			r_ret = decompressed;
+			ERR_EXPLAIN("Decompression buffer size is less than zero");
+			ERR_FAIL();
+		}
+
+		decompressed.resize(buffer_size);
+		int result = Compression::decompress(decompressed.write().ptr(), buffer_size, ba->read().ptr(), ba->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		decompressed.resize(result);
+
+		r_ret = decompressed;
 	}
 
 	VCALL_LOCALMEM0R(ByteArray, size);
@@ -1547,6 +1586,8 @@ void register_variant_methods() {
 
 	ADDFUNC0(RAW_ARRAY, STRING, ByteArray, get_string_from_ascii, varray());
 	ADDFUNC0(RAW_ARRAY, STRING, ByteArray, get_string_from_utf8, varray());
+	ADDFUNC1(RAW_ARRAY, RAW_ARRAY, ByteArray, compress, INT, "compression_mode", varray(0));
+	ADDFUNC2(RAW_ARRAY, RAW_ARRAY, ByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
 
 	ADDFUNC0(INT_ARRAY, INT, IntArray, size, varray());
 	ADDFUNC2(INT_ARRAY, NIL, IntArray, set, INT, "idx", INT, "integer", varray());
