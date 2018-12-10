@@ -31529,6 +31529,26 @@
 				Append an [RawArray] at the end of this array.
 			</description>
 		</method>
+		<method name="compress">
+			<return type="RawArray">
+			</return>
+			<argument index="0" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [code]RawArray[/code] with the data compressed. Set the compression mode using one of [File]'s COMPRESS_* constants.
+			</description>
+		</method>
+		<method name="decompress">
+			<return type="RawArray">
+			</return>
+			<argument index="0" name="buffer_size" type="int">
+			</argument>
+			<argument index="1" name="compression_mode" type="int" default="0">
+			</argument>
+			<description>
+				Returns a new [code]RawArray[/code] with the data decompressed. Set buffer_size to the size of the uncompressed data. Set the compression mode using one of [File]'s COMPRESS_* constants.
+			</description>
+		</method>
 		<method name="get_string_from_ascii">
 			<return type="String">
 			</return>
