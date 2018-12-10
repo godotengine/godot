@@ -715,6 +715,7 @@ static int CalculateBestCacheSize(const uint32_t* argb, int quality,
   for (i = 0; i <= cache_bits_max; ++i) {
     histos[i] = VP8LAllocateHistogram(i);
     if (histos[i] == NULL) goto Error;
+    VP8LHistogramInit(histos[i], i, /*init_arrays=*/ 1);
     if (i == 0) continue;
     cc_init[i] = VP8LColorCacheInit(&hashers[i], i);
     if (!cc_init[i]) goto Error;
