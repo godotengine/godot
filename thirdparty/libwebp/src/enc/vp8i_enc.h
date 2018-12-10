@@ -32,7 +32,7 @@ extern "C" {
 // version numbers
 #define ENC_MAJ_VERSION 1
 #define ENC_MIN_VERSION 0
-#define ENC_REV_VERSION 0
+#define ENC_REV_VERSION 1
 
 enum { MAX_LF_LEVELS = 64,       // Maximum loop filter level
        MAX_VARIABLE_LEVEL = 67,  // last (inclusive) level with variable cost
@@ -278,7 +278,7 @@ int VP8IteratorIsDone(const VP8EncIterator* const it);
 // Import uncompressed samples from source.
 // If tmp_32 is not NULL, import boundary samples too.
 // tmp_32 is a 32-bytes scratch buffer that must be aligned in memory.
-void VP8IteratorImport(VP8EncIterator* const it, uint8_t* tmp_32);
+void VP8IteratorImport(VP8EncIterator* const it, uint8_t* const tmp_32);
 // export decimated samples
 void VP8IteratorExport(const VP8EncIterator* const it);
 // go to next macroblock. Returns false if not finished.
@@ -515,4 +515,4 @@ void WebPCleanupTransparentAreaLossless(WebPPicture* const pic);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_ENC_VP8I_ENC_H_ */
+#endif  // WEBP_ENC_VP8I_ENC_H_

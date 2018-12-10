@@ -87,4 +87,4 @@ WEBP_EXTERN const WebPWorkerInterface* WebPGetWorkerInterface(void);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_UTILS_THREAD_UTILS_H_ */
+#endif  // WEBP_UTILS_THREAD_UTILS_H_
