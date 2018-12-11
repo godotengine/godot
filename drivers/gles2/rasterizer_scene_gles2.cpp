@@ -2017,6 +2017,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 
+	Vector2 viewport_size = state.viewport_size;
+
 	Vector2 screen_pixel_size = state.screen_pixel_size;
 
 	bool use_radiance_map = false;
@@ -2335,6 +2337,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			state.scene_shader.set_uniform(SceneShaderGLES2::TIME, storage->frame.time[0]);
 
+			state.scene_shader.set_uniform(SceneShaderGLES2::VIEWPORT_SIZE, viewport_size);
+
 			state.scene_shader.set_uniform(SceneShaderGLES2::SCREEN_PIXEL_SIZE, screen_pixel_size);
 		}
 
@@ -2506,8 +2510,6 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		}
 
 		current_fb = probe->fbo[p_reflection_probe_pass];
-		state.screen_pixel_size.x = 1.0 / probe->probe_ptr->resolution;
-		state.screen_pixel_size.y = 1.0 / probe->probe_ptr->resolution;
 
 		viewport_width = probe->probe_ptr->resolution;
 		viewport_height = probe->probe_ptr->resolution;
@@ -2518,11 +2520,16 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		state.render_no_shadows = false;
 		current_fb = storage->frame.current_rt->fbo;
 		env = environment_owner.getornull(p_environment);
-		state.screen_pixel_size.x = 1.0 / storage->frame.current_rt->width;
-		state.screen_pixel_size.y = 1.0 / storage->frame.current_rt->height;
+
 		viewport_width = storage->frame.current_rt->width;
 		viewport_height = storage->frame.current_rt->height;
 	}
+
+	state.viewport_size.x = viewport_width;
+	state.viewport_size.y = viewport_height;
+	state.screen_pixel_size.x = 1.0 / viewport_width;
+	state.screen_pixel_size.y = 1.0 / viewport_height;
+
 	//push back the directional lights
 
 	if (p_light_cull_count) {

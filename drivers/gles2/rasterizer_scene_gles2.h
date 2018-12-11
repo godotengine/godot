@@ -211,6 +211,8 @@ public:
 
 		bool render_no_shadows;
 
+		Vector2 viewport_size;
+
 		Vector2 screen_pixel_size;
 	} state;
 
