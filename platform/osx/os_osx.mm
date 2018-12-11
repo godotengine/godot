@@ -427,11 +427,13 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	} else {
 		[markedText initWithString:aString];
 	}
-	if (OS_OSX::singleton->im_callback) {
+	if (OS_OSX::singleton->im_active) {
 		imeMode = true;
-		String ret;
-		ret.parse_utf8([[markedText mutableString] UTF8String]);
-		OS_OSX::singleton->im_callback(OS_OSX::singleton->im_target, ret, Point2(selectedRange.location, selectedRange.length));
+		OS_OSX::singleton->im_text.parse_utf8([[markedText mutableString] UTF8String]);
+		OS_OSX::singleton->im_selection = Point2(selectedRange.location, selectedRange.length);
+
+		if (OS_OSX::singleton->get_main_loop())
+			OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 	}
 }
 
@@ -443,8 +445,13 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 - (void)unmarkText {
 	imeMode = false;
 	[[markedText mutableString] setString:@""];
-	if (OS_OSX::singleton->im_callback)
-		OS_OSX::singleton->im_callback(OS_OSX::singleton->im_target, "", Point2());
+	if (OS_OSX::singleton->im_active) {
+		OS_OSX::singleton->im_text = String();
+		OS_OSX::singleton->im_selection = Point2();
+
+		if (OS_OSX::singleton->get_main_loop())
+			OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+	}
 }
 
 - (NSArray *)validAttributesForMarkedText {
@@ -1136,12 +1143,14 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 
 @end
 
-void OS_OSX::set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {
-	im_callback = p_callback;
-	im_target = p_inp;
-	if (!im_callback) {
-		[window_view cancelComposition];
-	}
+Point2 OS_OSX::get_ime_selection() const {
+
+	return im_selection;
+}
+
+String OS_OSX::get_ime_text() const {
+
+	return im_text;
 }
 
 String OS_OSX::get_unique_id() const {
@@ -1169,10 +1178,14 @@ String OS_OSX::get_unique_id() const {
 }
 
 void OS_OSX::set_ime_active(const bool p_active) {
+
 	im_active = p_active;
+	if (!im_active)
+		[window_view cancelComposition];
 }
 
 void OS_OSX::set_ime_position(const Point2 &p_pos) {
+
 	im_position = p_pos;
 }
 
@@ -2637,8 +2650,6 @@ OS_OSX::OS_OSX() {
 	singleton = this;
 	im_active = false;
 	im_position = Point2();
-	im_callback = NULL;
-	im_target = NULL;
 	layered_window = false;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
 

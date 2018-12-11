@@ -382,8 +382,6 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
-
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
 
