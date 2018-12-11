@@ -126,7 +126,7 @@ private:
 	}
 
 	static Mutex *material_mutex;
-	static SelfList<ParticlesMaterial>::List dirty_materials;
+	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
 		StringName spread;

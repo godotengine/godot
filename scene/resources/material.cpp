@@ -258,7 +258,7 @@ ShaderMaterial::~ShaderMaterial() {
 /////////////////////////////////
 
 Mutex *SpatialMaterial::material_mutex = NULL;
-SelfList<SpatialMaterial>::List SpatialMaterial::dirty_materials;
+SelfList<SpatialMaterial>::List *SpatialMaterial::dirty_materials = NULL;
 Map<SpatialMaterial::MaterialKey, SpatialMaterial::ShaderData> SpatialMaterial::shader_map;
 SpatialMaterial::ShaderNames *SpatialMaterial::shader_names = NULL;
 
@@ -267,6 +267,8 @@ void SpatialMaterial::init_shaders() {
 #ifndef NO_THREADS
 	material_mutex = Mutex::create();
 #endif
+
+	dirty_materials = memnew(SelfList<SpatialMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
 
@@ -348,12 +350,15 @@ void SpatialMaterial::finish_shaders() {
 	memdelete(material_mutex);
 #endif
 
+	memdelete(dirty_materials);
+	dirty_materials = NULL;
+
 	memdelete(shader_names);
 }
 
 void SpatialMaterial::_update_shader() {
 
-	dirty_materials.remove(&element);
+	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key)
@@ -1002,9 +1007,9 @@ void SpatialMaterial::flush_changes() {
 	if (material_mutex)
 		material_mutex->lock();
 
-	while (dirty_materials.first()) {
+	while (dirty_materials->first()) {
 
-		dirty_materials.first()->self()->_update_shader();
+		dirty_materials->first()->self()->_update_shader();
 	}
 
 	if (material_mutex)
@@ -1017,7 +1022,7 @@ void SpatialMaterial::_queue_shader_change() {
 		material_mutex->lock();
 
 	if (!element.in_list()) {
-		dirty_materials.add(&element);
+		dirty_materials->add(&element);
 	}
 
 	if (material_mutex)
