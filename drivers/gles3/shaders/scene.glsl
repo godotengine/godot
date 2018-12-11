@@ -1565,6 +1565,7 @@ void main() {
 
 	//lay out everything, whathever is unused is optimized away anyway
 	highp vec3 vertex = vertex_interp;
+	vec3 view = -normalize(vertex_interp);
 	vec3 albedo = vec3(1.0);
 	vec3 transmission = vec3(0.0);
 	float metallic = 0.0;
@@ -1699,7 +1700,7 @@ FRAGMENT_SHADER_CODE
 	vec3 ambient_light;
 	vec3 env_reflection_light = vec3(0.0, 0.0, 0.0);
 
-	vec3 eye_vec = -normalize(vertex_interp);
+	vec3 eye_vec = view;
 
 #ifdef USE_RADIANCE_MAP
 
