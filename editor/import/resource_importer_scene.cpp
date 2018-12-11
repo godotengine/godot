@@ -1024,7 +1024,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 					} else {
 
 						ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-						p_materials[mat] = ResourceLoader::load(ext_name);
+						p_materials[mat] = ResourceLoader::load(ext_name, "", true); // disable loading from the cache.
 					}
 				}
 
@@ -1070,13 +1070,13 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 									String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
 									;
-									if (FileAccess::exists(ext_name)) {
+									if (p_keep_materials && FileAccess::exists(ext_name)) {
 										//if exists, use it
 										p_materials[mat] = ResourceLoader::load(ext_name);
 									} else {
 
 										ResourceSaver::save(ext_name, mat, ResourceSaver::FLAG_CHANGE_PATH);
-										p_materials[mat] = ResourceLoader::load(ext_name);
+										p_materials[mat] = ResourceLoader::load(ext_name, "", true); // disable loading from the cache.
 									}
 								}
 
