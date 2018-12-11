@@ -110,6 +110,9 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 				range_click_timer->start();
 
 				line_edit->grab_focus();
+
+				drag.allowed = true;
+				drag.capture_pos = mb->get_position();
 			} break;
 			case BUTTON_RIGHT: {
 
@@ -133,14 +136,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == 1) {
-
-		//set_default_cursor_shape(CURSOR_VSIZE);
-		Vector2 cpos = Vector2(mb->get_position().x, mb->get_position().y);
-		drag.mouse_pos = cpos;
-	}
-
-	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == 1) {
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
@@ -150,32 +146,24 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			warp_mouse(drag.capture_pos);
 		}
+		drag.allowed = false;
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && mm->get_button_mask() & 1) {
-
-		Vector2 cpos = mm->get_position();
+	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
 
 		if (drag.enabled) {
 
-			float diff_y = drag.mouse_pos.y - cpos.y;
-			diff_y = Math::pow(ABS(diff_y), 1.8f) * SGN(diff_y);
-			diff_y *= 0.1;
-
-			drag.mouse_pos = cpos;
-			drag.base_val = CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max());
-
-			set_value(drag.base_val);
-
-		} else if (drag.mouse_pos.distance_to(cpos) > 2) {
+			drag.diff_y += mm->get_relative().y;
+			float diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8f) * SGN(drag.diff_y);
+			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
+		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			drag.enabled = true;
 			drag.base_val = get_value();
-			drag.mouse_pos = cpos;
-			drag.capture_pos = cpos;
+			drag.diff_y = 0;
 		}
 	}
 }
