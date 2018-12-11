@@ -280,7 +280,7 @@ def rstize_text(text, cclass):
                 escape_post = True
 
         # Properly escape things like `[Node]s`
-        if escape_post and post_text and post_text[0].isalnum():  # not punctuation, escape
+        if escape_post and post_text and (post_text[0].isalnum() or post_text[0] == "("):  # not punctuation, escape
             post_text = '\ ' + post_text
 
         next_brac_pos = post_text.find('[', 0)
