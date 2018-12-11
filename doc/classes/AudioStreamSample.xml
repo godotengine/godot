@@ -62,5 +62,8 @@
 		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing back and forth.
 		</constant>
+		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">
+			Audio loops the data between loop_begin and loop_end playing backward only.
+		</constant>
 	</constants>
 </class>
