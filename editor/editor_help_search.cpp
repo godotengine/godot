@@ -130,7 +130,7 @@ void EditorHelpSearch::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 
-			results_tree->clear();
+			results_tree->call_deferred("clear"); // Wait for the Tree's mouse event propagation.
 			get_ok()->set_disabled(true);
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "search_help", get_rect());
 		} break;
