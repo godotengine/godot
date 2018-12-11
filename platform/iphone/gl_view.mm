@@ -47,6 +47,7 @@
 @end
 */
 
+bool gles3_available = true;
 int gl_view_base_fb;
 static String keyboard_text;
 static GLView *_instance = NULL;
@@ -288,8 +289,12 @@ static void clear_touches() {
 	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
 
 	if (!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer]) {
-		[self release];
-		return nil;
+		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+		gles3_available = false;
+		if (!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer]) {
+			[self release];
+			return nil;
+		}
 	}
 
 	// Default the animation interval to 1/60th of a second.
