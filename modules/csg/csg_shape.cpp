@@ -197,17 +197,6 @@ void CSGShape::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexc
 	fvTexcOut[1] = t.y;
 }
 
-void CSGShape::mikktSetTSpaceBasic(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
-
-	int i = (iFace * 3 + iVert) * 4;
-
-	surface.tansw[i++] = fvTangent[0];
-	surface.tansw[i++] = fvTangent[1];
-	surface.tansw[i++] = fvTangent[2];
-	surface.tansw[i++] = fSign;
-}
-
 void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
 
@@ -216,7 +205,7 @@ void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const f
 	int i = iFace * 3 + iVert;
 	Vector3 normal = surface.normalsw[i];
 	Vector3 tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-	Vector3 bitangent = Vector3(fvBiTangent[0], fvBiTangent[1], fvBiTangent[2]);
+	Vector3 bitangent = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
 	float d = bitangent.dot(normal.cross(tangent));
 
 	i *= 4;

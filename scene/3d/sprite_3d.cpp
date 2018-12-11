@@ -463,9 +463,9 @@ void Sprite3D::_draw() {
 
 	Plane tangent;
 	if (axis == Vector3::AXIS_X) {
-		tangent = Plane(0, 0, -1, -1);
+		tangent = Plane(0, 0, -1, 1);
 	} else {
-		tangent = Plane(1, 0, 0, -1);
+		tangent = Plane(1, 0, 0, 1);
 	}
 
 	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
