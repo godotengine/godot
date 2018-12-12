@@ -31,18 +31,20 @@
 #include "register_types.h"
 
 #include "core/class_db.h"
-#include "resource_importer_av_gdnative.h"
 #include "video_stream_gdnative.h"
+
+static ResourceFormatLoaderVideoStreamGDNative *resource_loader_vsgdnative = NULL;
 
 void register_videodecoder_types() {
 
-#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterAVGDNative> avgdn_import;
-	avgdn_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(avgdn_import);
-#endif
+	resource_loader_vsgdnative = memnew(ResourceFormatLoaderVideoStreamGDNative);
+	ResourceLoader::add_resource_format_loader(resource_loader_vsgdnative, true);
 	ClassDB::register_class<VideoStreamGDNative>();
 }
 
 void unregister_videodecoder_types() {
+
+	if (resource_loader_vsgdnative) {
+		memdelete(resource_loader_vsgdnative);
+	}
 }
