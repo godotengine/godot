@@ -28,7 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "class_db.h"
+#include "register_types.h"
+
+#include "core/class_db.h"
 #include "resource_importer_av_gdnative.h"
 #include "video_stream_gdnative.h"
 
@@ -41,5 +43,6 @@ void register_videodecoder_types() {
 #endif
 	ClassDB::register_class<VideoStreamGDNative>();
 }
+
 void unregister_videodecoder_types() {
 }

@@ -31,15 +31,15 @@
 #ifndef VIDEO_STREAM_GDNATIVE_H
 #define VIDEO_STREAM_GDNATIVE_H
 
-#include <modules/gdnative/gdnative.h>
-#include <os/file_access.h>
-#include <scene/resources/texture.h>
-#include <scene/resources/video_stream.h>
+#include "../gdnative.h"
+#include "core/os/file_access.h"
+#include "scene/resources/texture.h"
+#include "scene/resources/video_stream.h"
 
 struct VideoDecoderGDNative {
+	const godot_videodecoder_interface_gdnative *interface;
 	String plugin_name;
 	Vector<String> supported_extensions;
-	const godot_videodecoder_interface_gdnative *interface;
 
 	VideoDecoderGDNative() :
 			interface(NULL),
@@ -124,7 +124,6 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 	int mix_rate;
 	double delay_compensation;
 
-	const int AUX_BUFFER_SIZE = 1024; // Buffer 1024 samples.
 	float *pcm;
 	int pcm_write_idx;
 	int samples_decoded;
@@ -135,10 +134,10 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 protected:
 	String file_name;
 
-	FileAccess *file = NULL;
+	FileAccess *file;
 
-	const godot_videodecoder_interface_gdnative *interface = NULL;
-	void *data_struct = NULL;
+	const godot_videodecoder_interface_gdnative *interface;
+	void *data_struct;
 
 public:
 	VideoStreamPlaybackGDNative();

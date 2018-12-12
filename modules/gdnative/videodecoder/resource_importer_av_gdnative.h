@@ -31,9 +31,8 @@
 #ifndef RESOURCE_IMPORTER_AV_GDNATIVE_H
 #define RESOURCE_IMPORTER_AV_GDNATIVE_H
 
-#include "video_stream_gdnative.h"
-
 #include "core/io/resource_import.h"
+#include "video_stream_gdnative.h"
 
 class ResourceImporterAVGDNative : public ResourceImporter {
 	GDCLASS(ResourceImporterAVGDNative, ResourceImporter)

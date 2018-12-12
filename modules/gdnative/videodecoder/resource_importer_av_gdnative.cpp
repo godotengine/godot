@@ -30,8 +30,8 @@
 
 #include "resource_importer_av_gdnative.h"
 
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterAVGDNative::get_importer_name() const {

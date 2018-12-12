@@ -29,12 +29,15 @@
 /*************************************************************************/
 
 #include "video_stream_gdnative.h"
-#include <project_settings.h>
-#include <servers/audio_server.h>
+
+#include "core/project_settings.h"
+#include "servers/audio_server.h"
 
 VideoDecoderServer *VideoDecoderServer::instance = NULL;
 
 static VideoDecoderServer decoder_server;
+
+const int AUX_BUFFER_SIZE = 1024; // Buffer 1024 samples.
 
 // NOTE: Callbacks for the GDNative libraries.
 extern "C" {
@@ -184,12 +187,20 @@ void VideoStreamPlaybackGDNative::update_texture() {
 
 VideoStreamPlaybackGDNative::VideoStreamPlaybackGDNative() :
 		texture(Ref<ImageTexture>(memnew(ImageTexture))),
-		time(0),
+		playing(false),
+		paused(false),
 		mix_udata(NULL),
 		mix_callback(NULL),
 		num_channels(-1),
+		time(0),
 		mix_rate(0),
-		playing(false) {}
+		delay_compensation(0),
+		pcm(NULL),
+		pcm_write_idx(0),
+		samples_decoded(0),
+		file(NULL),
+		interface(NULL),
+		data_struct(NULL) {}
 
 VideoStreamPlaybackGDNative::~VideoStreamPlaybackGDNative() {
 	cleanup();
@@ -198,7 +209,8 @@ VideoStreamPlaybackGDNative::~VideoStreamPlaybackGDNative() {
 void VideoStreamPlaybackGDNative::cleanup() {
 	if (data_struct)
 		interface->destructor(data_struct);
-	memfree(pcm);
+	if (pcm)
+		memfree(pcm);
 	pcm = NULL;
 	time = 0;
 	num_channels = -1;
