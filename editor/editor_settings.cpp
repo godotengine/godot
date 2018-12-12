@@ -581,6 +581,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Extra config */
 
+	_initial_set("project_manager/sorting_order", 0);
+	hints["project_manager/sorting_order"] = PropertyInfo(Variant::INT, "project_manager/sorting_order", PROPERTY_HINT_ENUM, "Name,Last Modified");
+
 	if (p_extra_config.is_valid()) {
 
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
