@@ -204,22 +204,9 @@ void ColorPicker::_update_presets() {
 
 	preset->draw_texture_rect(get_icon("preset_bg", "ColorPicker"), Rect2(Point2(), preset_size), true);
 
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		PoolColorArray arr_to_save = PoolColorArray();
-
-		for (int i = 0; i < presets.size(); i++) {
-			preset->draw_rect(Rect2(Point2(size.width * i, 0), size), presets[i]);
-			arr_to_save.insert(i, presets[i]);
-		}
-
-		EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
-	}
-#else
 	for (int i = 0; i < presets.size(); i++) {
 		preset->draw_rect(Rect2(Point2(size.width * i, 0), size), presets[i]);
 	}
-#endif
 }
 
 void ColorPicker::_text_type_toggled() {
@@ -251,6 +238,13 @@ void ColorPicker::add_preset(const Color &p_color) {
 	preset->update();
 	if (presets.size() == 10)
 		bt_add_preset->hide();
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		PoolColorArray arr_to_save = get_presets();
+		EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
+	}
+#endif
 }
 
 void ColorPicker::erase_preset(const Color &p_color) {
@@ -258,6 +252,13 @@ void ColorPicker::erase_preset(const Color &p_color) {
 	if (presets.find(p_color)) {
 		presets.erase(presets.find(p_color));
 		preset->update();
+
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			PoolColorArray arr_to_save = get_presets();
+			EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
+		}
+#endif
 	}
 }
 
@@ -462,16 +463,15 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			int index = bev->get_position().x / (preset->get_size().x / presets.size());
 			set_pick_color(presets[index]);
+			_update_color();
+			emit_signal("color_changed", color);
 		} else if (bev->is_pressed() && bev->get_button_index() == BUTTON_RIGHT) {
 			int index = bev->get_position().x / (preset->get_size().x / presets.size());
 			Color clicked_preset = presets[index];
-			presets.erase(clicked_preset);
+			erase_preset(clicked_preset);
 			emit_signal("preset_removed", clicked_preset);
-			preset->update();
 			bt_add_preset->show();
 		}
-		_update_color();
-		emit_signal("color_changed", color);
 	}
 
 	Ref<InputEventMouseMotion> mev = p_event;
