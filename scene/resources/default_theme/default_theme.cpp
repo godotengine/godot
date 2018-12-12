@@ -307,10 +307,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("hseparation", "MenuButton", 3 * scale);
 
-	// ButtonGroup
-
-	theme->set_stylebox("panel", "ButtonGroup", memnew(StyleBoxEmpty));
-
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
