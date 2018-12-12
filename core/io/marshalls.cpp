@@ -55,9 +55,8 @@ ObjectID EncodedObjectAsID::get_object_id() const {
 	return id;
 }
 
-EncodedObjectAsID::EncodedObjectAsID() {
-
-	id = 0;
+EncodedObjectAsID::EncodedObjectAsID() :
+		id(0) {
 }
 
 #define ENCODE_MASK 0xFF

@@ -71,23 +71,23 @@ private:
 		bool hide_from_editor;
 		bool save;
 		bool restart_if_changed;
-		VariantContainer() {
-			variant = Variant();
-			initial = Variant();
-			order = 0;
-			hide_from_editor = false;
-			has_default_value = false;
-			save = false;
-			restart_if_changed = false;
+		VariantContainer() :
+				order(0),
+				variant(Variant()),
+				initial(Variant()),
+				has_default_value(false),
+				hide_from_editor(false),
+				save(false),
+				restart_if_changed(false) {
 		}
-		VariantContainer(const Variant &p_variant, int p_order) {
-			variant = p_variant;
-			initial = Variant();
-			order = p_order;
-			hide_from_editor = false;
-			has_default_value = false;
-			save = false;
-			restart_if_changed = false;
+		VariantContainer(const Variant &p_variant, int p_order) :
+				order(p_order),
+				variant(p_variant),
+				initial(Variant()),
+				has_default_value(false),
+				hide_from_editor(false),
+				save(false),
+				restart_if_changed(false) {
 		}
 	};
 

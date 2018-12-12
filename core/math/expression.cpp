@@ -2157,13 +2157,13 @@ void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
 }
 
-Expression::Expression() {
-	output_type = Variant::NIL;
-	error_set = true;
-	root = NULL;
-	nodes = NULL;
-	sequenced = false;
-	execution_error = false;
+Expression::Expression() :
+		output_type(Variant::NIL),
+		sequenced(false),
+		error_set(true),
+		root(NULL),
+		nodes(NULL),
+		execution_error(false) {
 }
 
 Expression::~Expression() {

@@ -116,7 +116,9 @@ private:
 		Variant::Type type;
 		String name;
 
-		Input() { type = Variant::NIL; }
+		Input() :
+				type(Variant::NIL) {
+		}
 	};
 
 	Vector<Input> inputs;

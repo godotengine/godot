@@ -114,14 +114,14 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<int> children;
 		Vector<Node *> godot_nodes;
 
-		GLTFNode() {
-			//			child_of_skeleton = -1;
-			//			skeleton_skin = -1;
-			mesh = -1;
-			camera = -1;
-			parent = -1;
-			skin = -1;
-			scale = Vector3(1, 1, 1);
+		GLTFNode() :
+				parent(-1),
+				mesh(-1),
+				camera(-1),
+				skin(-1),
+				//skeleton_skin(-1),
+				//child_of_skeleton(-1),
+				scale(Vector3(1, 1, 1)) {
 		}
 	};
 
@@ -134,12 +134,12 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		bool indices;
 		//matrices need to be transformed to this
 
-		GLTFBufferView() {
-			buffer = 0;
-			byte_offset = 0;
-			byte_length = 0;
-			byte_stride = 0;
-			indices = false;
+		GLTFBufferView() :
+				buffer(0),
+				byte_offset(0),
+				byte_length(0),
+				byte_stride(0),
+				indices(false) {
 		}
 	};
 

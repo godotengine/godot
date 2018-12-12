@@ -70,9 +70,9 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 		String name;
 		String type;
 		Ref<Script> script;
-		AddOption(const String &p_name = String(), const String &p_type = String()) {
-			name = p_name;
-			type = p_type;
+		AddOption(const String &p_name = String(), const String &p_type = String()) :
+				name(p_name),
+				type(p_type) {
 		}
 	};
 

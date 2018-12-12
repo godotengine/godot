@@ -307,11 +307,10 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 	}
 }
 
-FileAccessWindows::FileAccessWindows() {
-
-	f = NULL;
-	flags = 0;
-	last_error = OK;
+FileAccessWindows::FileAccessWindows() :
+		f(NULL),
+		flags(0),
+		last_error(OK) {
 }
 FileAccessWindows::~FileAccessWindows() {
 

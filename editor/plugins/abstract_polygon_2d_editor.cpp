@@ -826,13 +826,11 @@ void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class) {
-
-	editor = p_node;
-	polygon_editor = p_polygon_editor;
-	klass = p_class;
+AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class) :
+		polygon_editor(p_polygon_editor),
+		editor(p_node),
+		klass(p_class) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
-
 	polygon_editor->hide();
 }
 

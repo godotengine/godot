@@ -112,13 +112,11 @@ PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
 	return list;
 }
 
-MIDIDriverCoreMidi::MIDIDriverCoreMidi() {
-
-	client = 0;
+MIDIDriverCoreMidi::MIDIDriverCoreMidi() :
+		client(0) {
 }
 
 MIDIDriverCoreMidi::~MIDIDriverCoreMidi() {
-
 	close();
 }
 

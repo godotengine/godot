@@ -309,11 +309,10 @@ FileAccess *FileAccessUnix::create_libc() {
 
 CloseNotificationFunc FileAccessUnix::close_notification_func = NULL;
 
-FileAccessUnix::FileAccessUnix() {
-
-	f = NULL;
-	flags = 0;
-	last_error = OK;
+FileAccessUnix::FileAccessUnix() :
+		f(NULL),
+		flags(0),
+		last_error(OK) {
 }
 
 FileAccessUnix::~FileAccessUnix() {

@@ -91,7 +91,7 @@ Error AudioDriverXAudio2::init() {
 	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
 
 	return OK;
-};
+}
 
 void AudioDriverXAudio2::thread_func(void *p_udata) {
 
@@ -131,10 +131,10 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 				WaitForSingleObject(ad->voice_callback.buffer_end_event, INFINITE);
 			}
 		}
-	};
+	}
 
 	ad->thread_exited = true;
-};
+}
 
 void AudioDriverXAudio2::start() {
 
@@ -144,17 +144,17 @@ void AudioDriverXAudio2::start() {
 		ERR_EXPLAIN("XAudio2 start error " + itos(hr));
 		ERR_FAIL();
 	}
-};
+}
 
 int AudioDriverXAudio2::get_mix_rate() const {
 
 	return mix_rate;
-};
+}
 
 AudioDriver::SpeakerMode AudioDriverXAudio2::get_speaker_mode() const {
 
 	return speaker_mode;
-};
+}
 
 float AudioDriverXAudio2::get_latency() {
 
@@ -172,13 +172,13 @@ void AudioDriverXAudio2::lock() {
 	if (!thread || !mutex)
 		return;
 	mutex->lock();
-};
+}
 void AudioDriverXAudio2::unlock() {
 
 	if (!thread || !mutex)
 		return;
 	mutex->unlock();
-};
+}
 
 void AudioDriverXAudio2::finish() {
 
@@ -195,12 +195,12 @@ void AudioDriverXAudio2::finish() {
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
-	};
+	}
 	if (samples_out[0]) {
 		for (int i = 0; i < AUDIO_BUFFERS; i++) {
 			memdelete_arr(samples_out[i]);
 		}
-	};
+	}
 
 	mastering_voice->DestroyVoice();
 
@@ -208,20 +208,18 @@ void AudioDriverXAudio2::finish() {
 	if (mutex)
 		memdelete(mutex);
 	thread = NULL;
-};
+}
 
-AudioDriverXAudio2::AudioDriverXAudio2() {
-
-	mutex = NULL;
-	thread = NULL;
+AudioDriverXAudio2::AudioDriverXAudio2() :
+		thread(NULL),
+		mutex(NULL),
+		current_buffer(0) {
 	wave_format = { 0 };
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
 		xaudio_buffer[i] = { 0 };
 		samples_out[i] = 0;
 	}
-	current_buffer = 0;
-};
+}
 
-AudioDriverXAudio2::~AudioDriverXAudio2(){
-
-};
+AudioDriverXAudio2::~AudioDriverXAudio2() {
+}

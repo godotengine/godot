@@ -970,12 +970,11 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	return type;
 }
 
-ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() {
-
-	f = NULL;
-	stage = 0;
-	error = OK;
-	translation_remapped = false;
+ResourceInteractiveLoaderBinary::ResourceInteractiveLoaderBinary() :
+		translation_remapped(false),
+		f(NULL),
+		error(OK),
+		stage(0) {
 }
 
 ResourceInteractiveLoaderBinary::~ResourceInteractiveLoaderBinary() {

@@ -167,10 +167,10 @@ void NetSocketPosix::cleanup() {
 #endif
 }
 
-NetSocketPosix::NetSocketPosix() {
-	_sock = SOCK_EMPTY;
-	_ip_type = IP::TYPE_NONE;
-	_is_stream = false;
+NetSocketPosix::NetSocketPosix() :
+		_sock(SOCK_EMPTY),
+		_ip_type(IP::TYPE_NONE),
+		_is_stream(false) {
 }
 
 NetSocketPosix::~NetSocketPosix() {

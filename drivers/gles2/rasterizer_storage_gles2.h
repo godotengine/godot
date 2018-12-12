@@ -131,10 +131,9 @@ public:
 			}
 		} render, render_final, snap;
 
-		Info() {
-
-			texture_mem = 0;
-			vertex_mem = 0;
+		Info() :
+				texture_mem(0),
+				vertex_mem(0) {
 			render.reset();
 			render_final.reset();
 		}
@@ -254,30 +253,31 @@ public:
 		VisualServer::TextureDetectCallback detect_normal;
 		void *detect_normal_ud;
 
-		Texture() {
-			alloc_width = 0;
-			alloc_height = 0;
-			target = 0;
-
-			stored_cube_sides = 0;
-			ignore_mipmaps = false;
-			render_target = NULL;
-			flags = width = height = 0;
-			tex_id = 0;
-			data_size = 0;
-			format = Image::FORMAT_L8;
-			active = false;
-			compressed = false;
-			total_data_size = 0;
-			mipmaps = 0;
-			detect_3d = NULL;
-			detect_3d_ud = NULL;
-			detect_srgb = NULL;
-			detect_srgb_ud = NULL;
-			detect_normal = NULL;
-			detect_normal_ud = NULL;
-			proxy = NULL;
-			redraw_if_visible = false;
+		Texture() :
+				proxy(NULL),
+				flags(0),
+				width(0),
+				height(0),
+				alloc_width(0),
+				alloc_height(0),
+				format(Image::FORMAT_L8),
+				target(0),
+				data_size(0),
+				total_data_size(0),
+				ignore_mipmaps(false),
+				compressed(false),
+				mipmaps(0),
+				active(false),
+				tex_id(0),
+				stored_cube_sides(0),
+				render_target(NULL),
+				redraw_if_visible(false),
+				detect_3d(NULL),
+				detect_3d_ud(NULL),
+				detect_srgb(NULL),
+				detect_srgb_ud(NULL),
+				detect_normal(NULL),
+				detect_normal_ud(NULL) {
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -615,20 +615,15 @@ public:
 
 		int total_data_size;
 
-		Surface() {
-			array_byte_size = 0;
-			index_array_byte_size = 0;
-
-			array_len = 0;
-			index_array_len = 0;
-
-			mesh = NULL;
-
-			primitive = VS::PRIMITIVE_POINTS;
-
-			active = false;
-
-			total_data_size = 0;
+		Surface() :
+				mesh(NULL),
+				array_len(0),
+				index_array_len(0),
+				array_byte_size(0),
+				index_array_byte_size(0),
+				primitive(VS::PRIMITIVE_POINTS),
+				active(false),
+				total_data_size(0) {
 		}
 	};
 
@@ -658,9 +653,9 @@ public:
 			}
 		}
 
-		Mesh() {
-			blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
-			blend_shape_count = 0;
+		Mesh() :
+				blend_shape_count(0),
+				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED) {
 		}
 	};
 
@@ -731,22 +726,18 @@ public:
 		bool dirty_data;
 
 		MultiMesh() :
+				size(0),
+				transform_format(VS::MULTIMESH_TRANSFORM_2D),
+				color_format(VS::MULTIMESH_COLOR_NONE),
+				custom_data_format(VS::MULTIMESH_CUSTOM_DATA_NONE),
 				update_list(this),
-				mesh_list(this) {
-			dirty_aabb = true;
-			dirty_data = true;
-
-			xform_floats = 0;
-			color_floats = 0;
-			custom_data_floats = 0;
-
-			visible_instances = -1;
-
-			size = 0;
-
-			transform_format = VS::MULTIMESH_TRANSFORM_2D;
-			color_format = VS::MULTIMESH_COLOR_NONE;
-			custom_data_format = VS::MULTIMESH_CUSTOM_DATA_NONE;
+				mesh_list(this),
+				visible_instances(-1),
+				xform_floats(0),
+				color_floats(0),
+				custom_data_floats(0),
+				dirty_aabb(true),
+				dirty_data(true) {
 		}
 	};
 
@@ -847,10 +838,10 @@ public:
 		Set<RasterizerScene::InstanceBase *> instances;
 
 		Skeleton() :
+				use_2d(false),
+				size(0),
+				tex_id(0),
 				update_list(this) {
-			tex_id = 0;
-			size = 0;
-			use_2d = false;
 		}
 	};
 
@@ -1121,11 +1112,11 @@ public:
 
 			GLuint color;
 
-			Effect() {
-				fbo = 0;
-				width = 0;
-				height = 0;
-				color = 0;
+			Effect() :
+					fbo(0),
+					width(0),
+					height(0),
+					color(0) {
 			}
 		};
 
@@ -1140,22 +1131,17 @@ public:
 
 		RID texture;
 
-		RenderTarget() {
-			fbo = 0;
-
-			color = 0;
-			depth = 0;
-
-			width = 0;
-			height = 0;
-
-			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
+		RenderTarget() :
+				fbo(0),
+				color(0),
+				depth(0),
+				width(0),
+				height(0),
+				used_in_frame(false),
+				msaa(VS::VIEWPORT_MSAA_DISABLED) {
+			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
 				flags[i] = false;
 			}
-
-			used_in_frame = false;
-
-			msaa = VS::VIEWPORT_MSAA_DISABLED;
 		}
 	};
 

@@ -371,33 +371,28 @@ public:
 		float fog_height_max;
 		float fog_height_curve;
 
-		Environment() {
-			bg_mode = VS::ENV_BG_CLEAR_COLOR;
-			sky_custom_fov = 0.0;
-			bg_energy = 1.0;
-			sky_ambient = 0;
-			ambient_energy = 1.0;
-			ambient_sky_contribution = 0.0;
-			canvas_max_layer = 0;
-
-			fog_enabled = false;
-			fog_color = Color(0.5, 0.5, 0.5);
-			fog_sun_color = Color(0.8, 0.8, 0.0);
-			fog_sun_amount = 0;
-
-			fog_depth_enabled = true;
-
-			fog_depth_begin = 10;
-			fog_depth_end = 0;
-			fog_depth_curve = 1;
-
-			fog_transmit_enabled = true;
-			fog_transmit_curve = 1;
-
-			fog_height_enabled = false;
-			fog_height_min = 0;
-			fog_height_max = 100;
-			fog_height_curve = 1;
+		Environment() :
+				bg_mode(VS::ENV_BG_CLEAR_COLOR),
+				sky_custom_fov(0.0),
+				bg_energy(1.0),
+				sky_ambient(0),
+				ambient_energy(1.0),
+				ambient_sky_contribution(0.0),
+				canvas_max_layer(0),
+				fog_enabled(false),
+				fog_color(Color(0.5, 0.5, 0.5)),
+				fog_sun_color(Color(0.8, 0.8, 0.0)),
+				fog_sun_amount(0),
+				fog_depth_enabled(true),
+				fog_depth_begin(10),
+				fog_depth_end(0),
+				fog_depth_curve(1),
+				fog_transmit_enabled(true),
+				fog_transmit_curve(1),
+				fog_height_enabled(false),
+				fog_height_min(0),
+				fog_height_max(100),
+				fog_height_curve(1) {
 		}
 	};
 

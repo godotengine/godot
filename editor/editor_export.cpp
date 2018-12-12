@@ -222,11 +222,10 @@ String EditorExportPreset::get_custom_features() const {
 	return custom_features;
 }
 
-EditorExportPreset::EditorExportPreset() {
-
-	export_path = "";
-	export_filter = EXPORT_ALL_RESOURCES;
-	runnable = false;
+EditorExportPreset::EditorExportPreset() :
+		export_filter(EXPORT_ALL_RESOURCES),
+		export_path(""),
+		runnable(false) {
 }
 
 ///////////////////////////////////

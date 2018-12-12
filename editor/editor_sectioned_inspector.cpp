@@ -298,19 +298,18 @@ EditorInspector *SectionedInspector::get_inspector() {
 	return inspector;
 }
 
-SectionedInspector::SectionedInspector() {
-
-	obj = -1;
-
-	search_box = NULL;
-
+SectionedInspector::SectionedInspector() :
+		obj(-1),
+		sections(memnew(Tree)),
+		filter(memnew(SectionedInspectorFilter)),
+		inspector(memnew(EditorInspector)),
+		search_box(NULL) {
 	add_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(170, 0) * EDSCALE);
 	add_child(left_vb);
 
-	sections = memnew(Tree);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
 
@@ -321,8 +320,6 @@ SectionedInspector::SectionedInspector() {
 	right_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(right_vb);
 
-	filter = memnew(SectionedInspectorFilter);
-	inspector = memnew(EditorInspector);
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);

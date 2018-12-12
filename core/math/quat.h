@@ -115,20 +115,20 @@ public:
 		z = p_z;
 		w = p_w;
 	}
-	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) {
-		x = p_x;
-		y = p_y;
-		z = p_z;
-		w = p_w;
+	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
+			x(p_x),
+			y(p_y),
+			z(p_z),
+			w(p_w) {
 	}
 	Quat(const Vector3 &axis, const real_t &angle) { set_axis_angle(axis, angle); }
 
 	Quat(const Vector3 &euler) { set_euler(euler); }
-	Quat(const Quat &q) {
-		x = q.x;
-		y = q.y;
-		z = q.z;
-		w = q.w;
+	Quat(const Quat &q) :
+			x(q.x),
+			y(q.y),
+			z(q.z),
+			w(q.w) {
 	}
 
 	Quat(const Vector3 &v0, const Vector3 &v1) // shortest arc
@@ -153,9 +153,11 @@ public:
 		}
 	}
 
-	inline Quat() {
-		x = y = z = 0;
-		w = 1;
+	inline Quat() :
+			x(0),
+			y(0),
+			z(0),
+			w(1) {
 	}
 };
 

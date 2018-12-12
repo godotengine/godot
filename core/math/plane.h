@@ -74,10 +74,11 @@ public:
 	_FORCE_INLINE_ bool operator!=(const Plane &p_plane) const;
 	operator String() const;
 
-	_FORCE_INLINE_ Plane() { d = 0; }
+	_FORCE_INLINE_ Plane() :
+			d(0) {}
 	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
 			normal(p_a, p_b, p_c),
-			d(p_d){};
+			d(p_d) {}
 
 	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point, const Vector3 &p_normal);

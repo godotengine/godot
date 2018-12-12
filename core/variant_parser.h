@@ -45,7 +45,8 @@ public:
 
 		CharType saved;
 
-		Stream() { saved = 0; }
+		Stream() :
+				saved(0) {}
 		virtual ~Stream() {}
 	};
 
