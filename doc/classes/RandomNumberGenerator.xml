@@ -10,7 +10,7 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="rand_range">
+		<method name="randf_range">
 			<return type="float">
 			</return>
 			<argument index="0" name="from" type="float">
@@ -19,6 +19,17 @@
 			</argument>
 			<description>
 				Generates pseudo-random float between [code]from[/code] and [code]to[/code].
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Generates pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code](inclusive).
 			</description>
 		</method>
 		<method name="randf">
@@ -32,7 +43,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Generates pseudo-random 32-bit integer between '0' and '4294967295'.
+				Generates pseudo-random 32-bit unsigned integer between '0' and '4294967295'.
 			</description>
 		</method>
 		<method name="randomize">
