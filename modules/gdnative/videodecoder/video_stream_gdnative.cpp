@@ -346,3 +346,42 @@ void VideoStreamGDNative::set_audio_track(int p_track) {
 
 	audio_track = p_track;
 }
+
+/* --- NOTE ResourceFormatLoaderVideoStreamGDNative starts here. ----- */
+
+RES ResourceFormatLoaderVideoStreamGDNative::load(const String &p_path, const String &p_original_path, Error *r_error) {
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+	if (!f) {
+		if (r_error) {
+			*r_error = ERR_CANT_OPEN;
+		}
+		memdelete(f);
+		return RES();
+	}
+	VideoStreamGDNative *stream = memnew(VideoStreamGDNative);
+	stream->set_file(p_path);
+	Ref<VideoStreamGDNative> ogv_stream = Ref<VideoStreamGDNative>(stream);
+	if (r_error) {
+		*r_error = OK;
+	}
+	return ogv_stream;
+}
+
+void ResourceFormatLoaderVideoStreamGDNative::get_recognized_extensions(List<String> *p_extensions) const {
+	Map<String, int>::Element *el = VideoDecoderServer::get_instance()->get_extensions().front();
+	while (el) {
+		p_extensions->push_back(el->key());
+		el = el->next();
+	}
+}
+
+bool ResourceFormatLoaderVideoStreamGDNative::handles_type(const String &p_type) const {
+	return ClassDB::is_parent_class(p_type, "VideoStream");
+}
+
+String ResourceFormatLoaderVideoStreamGDNative::get_resource_type(const String &p_path) const {
+	String el = p_path.get_extension().to_lower();
+	if (VideoDecoderServer::get_instance()->get_extensions().has(el))
+		return "VideoStreamGDNative";
+	return "";
+}
