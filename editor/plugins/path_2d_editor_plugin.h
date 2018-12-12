@@ -73,6 +73,7 @@ class Path2DEditor : public HBoxContainer {
 
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
+	bool on_edge;
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
@@ -93,6 +94,7 @@ class Path2DEditor : public HBoxContainer {
 	Point2 moving_screen_from;
 	float orig_in_length;
 	float orig_out_length;
+	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);

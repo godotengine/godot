@@ -144,7 +144,7 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 		Vector<Vector2> poly = node->call("get_polygon");
 
 		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 
 		switch (mode) {
 
