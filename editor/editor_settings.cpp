@@ -360,12 +360,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["filesystem/directories/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
 	_initial_set("filesystem/directories/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
 	hints["filesystem/directories/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
-	_initial_set("filesystem/directories/default_project_export_path", "");
-	hints["filesystem/directories/default_project_export_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_export_path", PROPERTY_HINT_GLOBAL_DIR);
 
 	// On save
 	_initial_set("filesystem/on_save/compress_binary_resources", true);
-	_initial_set("filesystem/on_save/save_modified_external_resources", true);
 	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
 
 	// File dialog
@@ -375,13 +372,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
 	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
 
-	// Resources
-	_initial_set("filesystem/resources/save_compressed_resources", true);
-	_initial_set("filesystem/resources/auto_reload_modified_images", true);
-
 	// Import
-	_initial_set("filesystem/import/automatic_reimport_on_sources_changed", true);
-	_initial_set("filesystem/import/ask_save_before_reimport", false);
 	_initial_set("filesystem/import/pvrtc_texture_tool", "");
 #ifdef WINDOWS_ENABLED
 	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "*.exe");
@@ -407,7 +398,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/filesystem/always_show_folders", true);
 
 	// Property editor
-	_initial_set("docks/property_editor/texture_preview_width", 48);
 	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);
 
 	/* Text editor */
