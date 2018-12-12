@@ -316,6 +316,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
+	uint32_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
 	while (!ad->exit_thread) {
 
@@ -404,6 +405,47 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 			avail_bytes = 0;
 			write_ofs = 0;
+		}
+
+		// If we're using the default device check that the current device is still the default
+		if (ad->device_name == "Default") {
+
+			uint32_t msec = OS::get_singleton()->get_ticks_msec();
+			if (msec > (default_device_msec + 1000)) {
+				String old_default_device = ad->default_device;
+
+				default_device_msec = msec;
+
+				ad->pa_status = 0;
+				pa_operation *pa_op = pa_context_get_server_info(ad->pa_ctx, &AudioDriverPulseAudio::pa_server_info_cb, (void *)ad);
+				if (pa_op) {
+					while (ad->pa_status == 0) {
+						int ret = pa_mainloop_iterate(ad->pa_ml, 1, NULL);
+						if (ret < 0) {
+							ERR_PRINT("pa_mainloop_iterate error");
+						}
+					}
+
+					pa_operation_unref(pa_op);
+				} else {
+					ERR_PRINT("pa_context_get_server_info error");
+				}
+
+				if (old_default_device != ad->default_device) {
+					ad->finish_device();
+
+					Error err = ad->init_device();
+					if (err != OK) {
+						ERR_PRINT("PulseAudio: init_device error");
+						ad->active = false;
+						ad->exit_thread = true;
+						break;
+					}
+
+					avail_bytes = 0;
+					write_ofs = 0;
+				}
+			}
 		}
 
 		if (ad->pa_rec_str && pa_stream_get_state(ad->pa_rec_str) == PA_STREAM_READY) {
