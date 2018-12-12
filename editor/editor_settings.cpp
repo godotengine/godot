@@ -256,6 +256,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	_THREAD_SAFE_METHOD_
 
+	/* Languages */
+
 	{
 		String lang_hint = "en";
 		String host_lang = OS::get_singleton()->get_locale();
@@ -291,11 +293,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		hints["interface/editor/editor_language"] = PropertyInfo(Variant::STRING, "interface/editor/editor_language", PROPERTY_HINT_ENUM, lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	}
 
+	/* Interface */
+
+	// Editor
 	_initial_set("interface/editor/display_scale", 0);
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, "Auto,75%,100%,125%,150%,175%,200%,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/custom_display_scale", 1.0f);
 	hints["interface/editor/custom_display_scale"] = PropertyInfo(Variant::REAL, "interface/editor/custom_display_scale", PROPERTY_HINT_RANGE, "0.75,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-	_initial_set("interface/scene_tabs/show_script_button", false);
 	_initial_set("interface/editor/main_font_size", 14);
 	hints["interface/editor/main_font_size"] = PropertyInfo(Variant::INT, "interface/editor/main_font_size", PROPERTY_HINT_RANGE, "10,40,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/code_font_size", 14);
@@ -317,12 +321,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/dim_amount"] = PropertyInfo(Variant::REAL, "interface/editor/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/dim_transition_time", 0.08f);
 	hints["interface/editor/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/editor/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
-
 	_initial_set("interface/editor/separate_distraction_mode", false);
-
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
 	_initial_set("interface/editor/quit_confirmation", true);
 
+	// Theme
 	_initial_set("interface/theme/preset", "Default");
 	hints["interface/theme/preset"] = PropertyInfo(Variant::STRING, "interface/theme/preset", PROPERTY_HINT_ENUM, "Default,Alien,Arc,Godot 2,Grey,Light,Solarized (Dark),Solarized (Light),Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/theme/icon_and_font_color", 0);
@@ -342,35 +345,78 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/theme/custom_theme", "");
 	hints["interface/theme/custom_theme"] = PropertyInfo(Variant::STRING, "interface/theme/custom_theme", PROPERTY_HINT_GLOBAL_FILE, "*.res,*.tres,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
+	// Scene tabs
 	_initial_set("interface/scene_tabs/show_extension", false);
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
 	_initial_set("interface/scene_tabs/resize_if_many_tabs", true);
 	_initial_set("interface/scene_tabs/minimum_width", 50);
 	hints["interface/scene_tabs/minimum_width"] = PropertyInfo(Variant::INT, "interface/scene_tabs/minimum_width", PROPERTY_HINT_RANGE, "50,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("interface/scene_tabs/show_script_button", false);
 
+	/* Filesystem */
+
+	// Directories
 	_initial_set("filesystem/directories/autoscan_project_path", "");
 	hints["filesystem/directories/autoscan_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/autoscan_project_path", PROPERTY_HINT_GLOBAL_DIR);
 	_initial_set("filesystem/directories/default_project_path", OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS));
 	hints["filesystem/directories/default_project_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_path", PROPERTY_HINT_GLOBAL_DIR);
-	_initial_set("filesystem/directories/default_project_export_path", "");
-	hints["filesystem/directories/default_project_export_path"] = PropertyInfo(Variant::STRING, "filesystem/directories/default_project_export_path", PROPERTY_HINT_GLOBAL_DIR);
-	_initial_set("interface/scene_tabs/show_script_button", false);
 
+	// On save
+	_initial_set("filesystem/on_save/compress_binary_resources", true);
+	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
+
+	// File dialog
+	_initial_set("filesystem/file_dialog/show_hidden_files", false);
+	_initial_set("filesystem/file_dialog/display_mode", 0);
+	hints["filesystem/file_dialog/display_mode"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
+	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
+
+	// Import
+	_initial_set("filesystem/import/pvrtc_texture_tool", "");
+#ifdef WINDOWS_ENABLED
+	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "*.exe");
+#else
+	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "");
+#endif
+	_initial_set("filesystem/import/pvrtc_fast_conversion", false);
+
+	/* Docks */
+
+	// SceneTree
+	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
+	_initial_set("docks/scene_tree/draw_relationship_lines", true);
+	_initial_set("docks/scene_tree/relationship_line_color", Color::html("464646"));
+
+	// FileSystem
+	_initial_set("docks/filesystem/display_mode", 0);
+	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Tree only, Split");
+	_initial_set("docks/filesystem/thumbnail_size", 64);
+	hints["docks/filesystem/thumbnail_size"] = PropertyInfo(Variant::INT, "docks/filesystem/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
+	_initial_set("docks/filesystem/files_display_mode", 0);
+	hints["docks/filesystem/files_display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/files_display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
+	_initial_set("docks/filesystem/always_show_folders", true);
+
+	// Property editor
+	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);
+
+	/* Text editor */
+
+	// Theme
 	_initial_set("text_editor/theme/color_theme", "Adaptive");
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
-
 	_initial_set("text_editor/theme/line_spacing", 6);
 	_initial_set("text_editor/theme/selection_color", Color::html("40808080"));
 
 	_load_default_text_editor_theme();
 
+	// Highlighting
 	_initial_set("text_editor/highlighting/syntax_highlighting", true);
-
 	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
 	_initial_set("text_editor/highlighting/highlight_current_line", true);
 	_initial_set("text_editor/highlighting/highlight_type_safe_lines", true);
-	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
 
+	// Indent
 	_initial_set("text_editor/indent/type", 0);
 	hints["text_editor/indent/type"] = PropertyInfo(Variant::INT, "text_editor/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces");
 	_initial_set("text_editor/indent/size", 4);
@@ -380,6 +426,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/indent/draw_indent_guides", true);
 	_initial_set("text_editor/indent/draw_tabs", true);
 
+	// Line numbers
 	_initial_set("text_editor/line_numbers/show_line_numbers", true);
 	_initial_set("text_editor/line_numbers/line_numbers_zero_padded", false);
 	_initial_set("text_editor/line_numbers/show_breakpoint_gutter", true);
@@ -389,35 +436,45 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/line_numbers/line_length_guideline_column", 80);
 	hints["text_editor/line_numbers/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/line_numbers/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
 
+	// Open scripts
 	_initial_set("text_editor/open_scripts/smooth_scrolling", true);
 	_initial_set("text_editor/open_scripts/v_scroll_speed", 80);
 	_initial_set("text_editor/open_scripts/show_members_overview", true);
 
+	// Files
 	_initial_set("text_editor/files/trim_trailing_whitespace_on_save", false);
-	_initial_set("text_editor/completion/idle_parse_delay", 2);
+	_initial_set("text_editor/files/autosave_interval_secs", 0);
+	_initial_set("text_editor/files/restore_scripts_on_load", true);
+
+	// Tools
 	_initial_set("text_editor/tools/create_signal_callbacks", true);
 	_initial_set("text_editor/tools/sort_members_outline_alphabetically", false);
-	_initial_set("text_editor/files/autosave_interval_secs", 0);
 
+	// Cursor
+	_initial_set("text_editor/cursor/scroll_past_end_of_file", false);
 	_initial_set("text_editor/cursor/block_caret", false);
 	_initial_set("text_editor/cursor/caret_blink", true);
 	_initial_set("text_editor/cursor/caret_blink_speed", 0.5);
 	hints["text_editor/cursor/caret_blink_speed"] = PropertyInfo(Variant::REAL, "text_editor/cursor/caret_blink_speed", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
 	_initial_set("text_editor/cursor/right_click_moves_caret", true);
 
+	// Completion
+	_initial_set("text_editor/completion/idle_parse_delay", 2);
 	_initial_set("text_editor/completion/auto_brace_complete", false);
 	_initial_set("text_editor/completion/put_callhint_tooltip_below_current_line", true);
 	_initial_set("text_editor/completion/callhint_tooltip_offset", Vector2());
-	_initial_set("text_editor/files/restore_scripts_on_load", true);
 	_initial_set("text_editor/completion/complete_file_paths", true);
 	_initial_set("text_editor/completion/add_type_hints", false);
 
-	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
-	_initial_set("docks/scene_tree/draw_relationship_lines", true);
-	_initial_set("docks/scene_tree/relationship_line_color", Color::html("464646"));
+	// Help
+	_initial_set("text_editor/help/show_help_index", true);
 
+	/* Editors */
+
+	// GridMap
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 
+	// 3D
 	_initial_set("editors/3d/primary_grid_color", Color::html("909090"));
 	hints["editors/3d/primary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/primary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 
@@ -434,7 +491,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/default_z_near", 0.05);
 	_initial_set("editors/3d/default_z_far", 500.0);
 
-	// navigation
+	// 3D: Navigation
 	_initial_set("editors/3d/navigation/navigation_scheme", 0);
 	_initial_set("editors/3d/navigation/invert_y_axis", false);
 	hints["editors/3d/navigation/navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/navigation/navigation_scheme", PROPERTY_HINT_ENUM, "Godot,Maya,Modo");
@@ -448,14 +505,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/navigation/pan_modifier"] = PropertyInfo(Variant::INT, "editors/3d/navigation/pan_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
 	_initial_set("editors/3d/navigation/zoom_modifier", 4);
 	hints["editors/3d/navigation/zoom_modifier"] = PropertyInfo(Variant::INT, "editors/3d/navigation/zoom_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
-
-	// _initial_set("editors/3d/navigation/emulate_numpad", false); not used at the moment
 	_initial_set("editors/3d/navigation/warped_mouse_panning", true);
 
-	// navigation feel
+	// 3D: Navigation feel
 	_initial_set("editors/3d/navigation_feel/orbit_sensitivity", 0.4);
 	hints["editors/3d/navigation_feel/orbit_sensitivity"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
-
 	_initial_set("editors/3d/navigation_feel/orbit_inertia", 0.05);
 	hints["editors/3d/navigation_feel/orbit_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/orbit_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 	_initial_set("editors/3d/navigation_feel/translation_inertia", 0.15);
@@ -467,7 +521,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/navigation_feel/manipulation_translation_inertia", 0.075);
 	hints["editors/3d/navigation_feel/manipulation_translation_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/navigation_feel/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 
-	// freelook
+	// 3D: Freelook
 	_initial_set("editors/3d/freelook/freelook_inertia", 0.1);
 	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
@@ -478,6 +532,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/freelook/freelook_modifier_speed_factor"] = PropertyInfo(Variant::REAL, "editors/3d/freelook/freelook_modifier_speed_factor", PROPERTY_HINT_RANGE, "0.0, 10.0, 0.1");
 	_initial_set("editors/3d/freelook/freelook_speed_zoom_link", false);
 
+	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07));
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8));
 	_initial_set("editors/2d/bone_width", 5);
@@ -494,9 +549,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/scroll_to_pan", false);
 	_initial_set("editors/2d/pan_speed", 20);
 
+	// Polygon editor
 	_initial_set("editors/poly_editor/point_grab_radius", 8);
 	_initial_set("editors/poly_editor/show_previous_outline", true);
 
+	// Animation
+	_initial_set("editors/animation/autorename_animation_tracks", true);
+	_initial_set("editors/animation/confirm_insert_track", true);
+	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
+	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
+
+	/* Run */
+
+	// Window placement
 	_initial_set("run/window_placement/rect", 1);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen");
 	String screen_hints = "Same as Editor,Previous Monitor,Next Monitor";
@@ -507,54 +572,15 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/window_placement/screen", 0);
 	hints["run/window_placement/screen"] = PropertyInfo(Variant::INT, "run/window_placement/screen", PROPERTY_HINT_ENUM, screen_hints);
 
-	_initial_set("filesystem/on_save/compress_binary_resources", true);
-	_initial_set("filesystem/on_save/save_modified_external_resources", true);
-
-	_initial_set("text_editor/tools/create_signal_callbacks", true);
-
-	_initial_set("filesystem/file_dialog/show_hidden_files", false);
-	_initial_set("filesystem/file_dialog/display_mode", 0);
-	hints["filesystem/file_dialog/display_mode"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
-
-	_initial_set("filesystem/file_dialog/thumbnail_size", 64);
-	hints["filesystem/file_dialog/thumbnail_size"] = PropertyInfo(Variant::INT, "filesystem/file_dialog/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
-
-	_initial_set("docks/filesystem/display_mode", 0);
-	hints["docks/filesystem/display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/display_mode", PROPERTY_HINT_ENUM, "Tree only, Split");
-	_initial_set("docks/filesystem/thumbnail_size", 64);
-	hints["docks/filesystem/thumbnail_size"] = PropertyInfo(Variant::INT, "docks/filesystem/thumbnail_size", PROPERTY_HINT_RANGE, "32,128,16");
-	_initial_set("docks/filesystem/files_display_mode", 0);
-	hints["docks/filesystem/files_display_mode"] = PropertyInfo(Variant::INT, "docks/filesystem/files_display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List");
-	_initial_set("docks/filesystem/always_show_folders", true);
-
-	_initial_set("editors/animation/autorename_animation_tracks", true);
-	_initial_set("editors/animation/confirm_insert_track", true);
-	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
-	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
-
-	_initial_set("docks/property_editor/texture_preview_width", 48);
-	_initial_set("docks/property_editor/auto_refresh_interval", 0.3);
-	_initial_set("text_editor/help/show_help_index", true);
-
-	_initial_set("filesystem/import/ask_save_before_reimport", false);
-
-	_initial_set("filesystem/import/pvrtc_texture_tool", "");
-#ifdef WINDOWS_ENABLED
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "*.exe");
-#else
-	hints["filesystem/import/pvrtc_texture_tool"] = PropertyInfo(Variant::STRING, "filesystem/import/pvrtc_texture_tool", PROPERTY_HINT_GLOBAL_FILE, "");
-#endif
-	_initial_set("filesystem/import/pvrtc_fast_conversion", false);
-
+	// Auto save
 	_initial_set("run/auto_save/save_before_running", true);
+
+	// Output
 	_initial_set("run/output/always_clear_output_on_play", true);
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
-	_initial_set("filesystem/resources/save_compressed_resources", true);
-	_initial_set("filesystem/resources/auto_reload_modified_images", true);
 
-	_initial_set("filesystem/import/automatic_reimport_on_sources_changed", true);
-	_initial_set("filesystem/on_save/safe_save_on_backup_then_rename", true);
+	/* Extra config */
 
 	if (p_extra_config.is_valid()) {
 
