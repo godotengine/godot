@@ -39,7 +39,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
-#include "editor_settings.h"
 #endif
 
 #define TAB_PIXELS
@@ -919,26 +918,6 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					int indent_level = get_indent_level(i);
-					if (draw_indent_guides && indent_level > 0) {
-#ifdef TOOLS_ENABLED
-						int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
-						float line_width = Math::round(EDSCALE);
-#else
-						int indent_size = 4;
-						float line_width = 1.0;
-#endif
-						int guides = 1 + (indent_level - 1) / indent_size;
-
-						for (int guide = 0; guide < guides; guide++) {
-							draw_line(
-									Point2(guide * indent_size * cache.font->get_char_size(' ').width + char_margin, ofs_y),
-									Point2(guide * indent_size * cache.font->get_char_size(' ').width + char_margin, ofs_y + get_row_height()),
-									cache.indent_guide_color,
-									line_width);
-						}
-					}
-
 					if (line_wrap_index == 0) {
 						// only do these if we are on the first wrapped part of a line
 
@@ -1200,14 +1179,9 @@ void TextEdit::_notification(int p_what) {
 
 								draw_rect(Rect2(char_ofs + char_margin + ofs_x, yofs + ascent + 2, w, line_width), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 							}
-						} else if (draw_tabs && (j > get_indent_level(i) || !draw_indent_guides) && str[j] == '\t') {
-							// If indent guides are enabled, only draw trailing or alignment tabs
-							// Otherwise, draw all tabs (including those used for indentation)
+						} else if (draw_tabs && str[j] == '\t') {
 							int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
-							cache.tab_icon->draw(
-									ci,
-									Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs),
-									in_selection && override_selected_font_color ? cache.font_selected_color : color);
+							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 
 						char_ofs += char_w;
@@ -4355,7 +4329,6 @@ void TextEdit::_update_caches() {
 	cache.font = get_font("font");
 	cache.caret_color = get_color("caret_color");
 	cache.caret_background_color = get_color("caret_background_color");
-	cache.indent_guide_color = get_color("indent_guide_color");
 	cache.line_number_color = get_color("line_number_color");
 	cache.safe_line_number_color = get_color("safe_line_number_color");
 	cache.font_color = get_color("font_color");
@@ -5467,16 +5440,6 @@ void TextEdit::set_indent_size(const int p_size) {
 int TextEdit::get_indent_size() {
 
 	return indent_size;
-}
-
-void TextEdit::set_draw_indent_guides(bool p_draw) {
-
-	draw_indent_guides = p_draw;
-}
-
-bool TextEdit::is_drawing_indent_guides() const {
-
-	return draw_indent_guides;
 }
 
 void TextEdit::set_draw_tabs(bool p_draw) {

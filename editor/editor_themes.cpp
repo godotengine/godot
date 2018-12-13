@@ -1080,7 +1080,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color safe_line_number_color = dim_color * Color(1, 1.2, 1, 1.5);
 	const Color caret_color = mono_color;
 	const Color caret_background_color = mono_color.inverted();
-	const Color indent_guide_color = alpha2;
 	const Color text_selected_color = dark_color_3;
 	const Color selection_color = alpha2;
 	const Color brace_mismatch_color = error_color;
@@ -1116,7 +1115,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/safe_line_number_color", safe_line_number_color, true);
 		setting->set_initial_value("text_editor/highlighting/caret_color", caret_color, true);
 		setting->set_initial_value("text_editor/highlighting/caret_background_color", caret_background_color, true);
-		setting->set_initial_value("text_editor/highlighting/indent_guide_color", indent_guide_color, true);
 		setting->set_initial_value("text_editor/highlighting/text_selected_color", text_selected_color, true);
 		setting->set_initial_value("text_editor/highlighting/selection_color", selection_color, true);
 		setting->set_initial_value("text_editor/highlighting/brace_mismatch_color", brace_mismatch_color, true);

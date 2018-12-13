@@ -423,7 +423,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/indent/size"] = PropertyInfo(Variant::INT, "text_editor/indent/size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
 	_initial_set("text_editor/indent/auto_indent", true);
 	_initial_set("text_editor/indent/convert_indent_on_save", false);
-	_initial_set("text_editor/indent/draw_indent_guides", true);
 	_initial_set("text_editor/indent/draw_tabs", true);
 
 	// Line numbers
@@ -619,8 +618,8 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/engine_type_color", Color::html("83d3ff"));
 	_initial_set("text_editor/highlighting/comment_color", Color::html("676767"));
 	_initial_set("text_editor/highlighting/string_color", Color::html("ef6ebe"));
-	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color::html("3b000000") : Color::html("323b4f"));
-	_initial_set("text_editor/highlighting/completion_background_color", Color::html("2c2a32"));
+	_initial_set("text_editor/highlighting/background_color", dark_theme ? Color::html("3b000000") : Color::html("#323b4f"));
+	_initial_set("text_editor/highlighting/completion_background_color", Color::html("2C2A32"));
 	_initial_set("text_editor/highlighting/completion_selected_color", Color::html("434244"));
 	_initial_set("text_editor/highlighting/completion_existing_color", Color::html("21dfdfdf"));
 	_initial_set("text_editor/highlighting/completion_scroll_color", Color::html("ffffff"));
@@ -630,14 +629,13 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/safe_line_number_color", Color::html("99aac8aa"));
 	_initial_set("text_editor/highlighting/caret_color", Color::html("aaaaaa"));
 	_initial_set("text_editor/highlighting/caret_background_color", Color::html("000000"));
-	_initial_set("text_editor/highlighting/indent_guide_color", Color::html("50808080"));
 	_initial_set("text_editor/highlighting/text_selected_color", Color::html("000000"));
 	_initial_set("text_editor/highlighting/selection_color", Color::html("6ca9c2"));
 	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
 	_initial_set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
 	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
 	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
-	_initial_set("text_editor/highlighting/number_color", Color::html("eb9532"));
+	_initial_set("text_editor/highlighting/number_color", Color::html("EB9532"));
 	_initial_set("text_editor/highlighting/function_color", Color::html("66a2ce"));
 	_initial_set("text_editor/highlighting/member_variable_color", Color::html("e64e59"));
 	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
