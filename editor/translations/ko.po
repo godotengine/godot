@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-03 19:25+0000\n"
+"PO-Revision-Date: 2018-12-13 14:41+0100\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -259,7 +259,6 @@ msgstr "%d개의 새 트랙을 생성하고 키를 삽입하시겠습니까?"
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -533,15 +532,19 @@ msgstr "전체 바꾸기"
 msgid "Selection Only"
 msgstr "선택 영역만"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "확대"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "축소"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "줌 리셋"
 
@@ -711,8 +714,8 @@ msgid "Recent:"
 msgstr "최근:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "검색:"
@@ -763,8 +766,7 @@ msgid "Resource"
 msgstr "리소스"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "경로"
 
@@ -1223,8 +1225,7 @@ msgid "Node Name:"
 msgstr "노드 이름:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "이름"
 
@@ -2146,7 +2147,7 @@ msgstr "프로젝트 설정"
 msgid "Export"
 msgstr "내보내기"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "도구"
 
@@ -2577,6 +2578,12 @@ msgstr "지정하기.."
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2599,8 +2606,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr "뷰포트 선택"
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr "새 스크립트"
 
@@ -3020,7 +3026,7 @@ msgstr "복제..."
 msgid "Move To..."
 msgstr "이동..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
 msgstr "새 스크립트..."
 
@@ -3145,7 +3151,8 @@ msgid "Group name already exists."
 msgstr "그룹 이름이 이미 존재합니다."
 
 #: editor/groups_editor.cpp
-msgid "invalid Group name."
+#, fuzzy
+msgid "Invalid group name."
 msgstr "유효하지 않은 그룹 이름."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3392,14 +3399,13 @@ msgid "Activate now?"
 msgstr "지금 실행하시겠습니까?"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Create Polygon"
 msgstr "폴리곤 만들기"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "폴리곤 편집"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3407,25 +3413,27 @@ msgid "Insert Point"
 msgstr "포인트 삽입"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "폴리곤 편집 (점 삭제)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "폴리곤과 포인트 삭제"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "처음부터 새로운 폴리곤 만들기"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Create points."
+msgstr "포인트 만들기."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "기존 폴리곤 편집:\n"
 "좌클릭: 포인트 이동.\n"
@@ -3433,8 +3441,9 @@ msgstr ""
 "우클릭: 포인트 지우기."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
-msgstr "포인트 삭제"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Erase points."
+msgstr "포인트 지우기."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3478,15 +3487,6 @@ msgstr "공간 내의 혼합 위치 설정"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr "포인트를 선택하고 이동합니다, 우클릭으로 포인트를 만드실 수 있습니다."
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-msgid "Create points."
-msgstr "포인트 만들기."
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-msgid "Erase points."
-msgstr "포인트 지우기."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3568,7 +3568,6 @@ msgstr ""
 "을 검색할 수 없습니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node.."
 msgstr "노드 추가.."
 
@@ -4105,7 +4104,7 @@ msgstr "모두"
 msgid "Plugins"
 msgstr "플러그인"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "정렬:"
 
@@ -4258,16 +4257,17 @@ msgid "Paste Pose"
 msgstr "포즈 붙여넣기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom out"
-msgstr "축소"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom reset"
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom Reset"
 msgstr "배율 초기화"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom in"
-msgstr "확대"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4526,8 +4526,17 @@ msgstr ""
 "드래그 & 드롭 + Alt : 노드 타입 변경"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "폴리곤3D 만들기"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "폴리곤 만들기"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "폴리곤 편집"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "폴리곤 편집 (점 삭제)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4628,36 +4637,8 @@ msgid "Item List Editor"
 msgstr "항목 목록 에디터"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"이 노드에 OccluderPolygon2D 리소스가 없습니다.\n"
-"새로 만들어서 지정하시겠습니까?"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "Occluder 폴리곤 만들기"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "처음부터 새로운 폴리곤 만들기."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "기존 폴리곤 편집:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "좌클릭: 포인트 이동."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "Ctrl+좌클릭: 선분 분할."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "우클릭: 포인트 삭제."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -5026,6 +5007,11 @@ msgid "Add Point to Curve"
 msgstr "커브에 포인트 추가"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "커브 닫기"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr "커브의 포인트 이동"
 
@@ -5053,6 +5039,11 @@ msgid "Click: Add Point"
 msgstr "클릭: 포인트 추가"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "선분 분할 (커브)"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "우클릭: 포인트 삭제"
@@ -5065,11 +5056,6 @@ msgstr "컨트롤 포인트 선택 (Shift+드래그)"
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "포인트 추가 (빈 공간)"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "선분 분할 (커브)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5129,6 +5115,10 @@ msgstr "아웃-컨트롤 포인트 삭제"
 msgid "Remove In-Control Point"
 msgstr "인-컨트롤 포인트 삭제"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "선분 분할 (커브)"
+
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move joint"
 msgstr "관절 이동"
@@ -5139,8 +5129,18 @@ msgid ""
 msgstr "Polygon2D의 스켈레톤 속성이 Skeleton2D 노드를 향하고 있지 않음"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Sync bones"
+#, fuzzy
+msgid "Sync Bones"
 msgstr "본 동기화"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr ""
+"이 노드에 텍스쳐가 없습니다.\n"
+"구역을 편집하기 위해서는 텍스쳐를 지정해야합니다."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5179,8 +5179,19 @@ msgid "Transform UV Map"
 msgstr "UV 맵 변형"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "변형 타입"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Paint Bone Weights"
 msgstr "본 가중치 페인트"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "폴리곤 2D UV 에디터"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5203,11 +5214,8 @@ msgid "Bones"
 msgstr "본"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Create Polygon"
-msgstr "폴리곤 만들기"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+#, fuzzy
+msgid "Move Points"
 msgstr "포인트 이동"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5235,19 +5243,23 @@ msgid "Scale Polygon"
 msgstr "폴리곤 크기 조절"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+#, fuzzy
+msgid "Connect two points to make a split."
 msgstr "두 포인트를 연결하여 분할"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it"
+#, fuzzy
+msgid "Select a split to erase it."
 msgstr "지울 분할을 선택"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+#, fuzzy
+msgid "Paint weights with specified intensity."
 msgstr "지정한 강도로 가중치를 페인트"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+#, fuzzy
+msgid "Unpaint weights with specified intensity."
 msgstr "지정한 강도로 가중치를 페인트 취소"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5385,19 +5397,23 @@ msgid "Error saving file!"
 msgstr "파일 저장 중 에러!"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "테마 저장 중 에러"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "저장 중 에러"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "테마 가져오는 중 에러"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "가져오는 중 에러"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5415,6 +5431,14 @@ msgstr "다른 이름으로 저장..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "테마 가져오기"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "테마 저장 중 에러"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "저장 중 에러"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5457,8 +5481,9 @@ msgid "File"
 msgstr "파일"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New TextFile"
-msgstr "새 텍스트 파일"
+#, fuzzy
+msgid "Open..."
+msgstr "열기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5486,16 +5511,17 @@ msgid "Theme"
 msgstr "테마"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "테마 가져오기"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "테마 다시 불러오기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "테마 저장"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "테마 다른 이름으로 저장"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5603,6 +5629,10 @@ msgstr "(무시함)"
 msgid "Go to Function"
 msgstr "함수로 이동"
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr "표준"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "파일 시스템에서 가져온 리소스만 드랍할 수 있습니다."
@@ -5634,10 +5664,6 @@ msgstr "대문자로 시작"
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
 msgstr "구문 강조"
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
-msgstr "표준"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6331,12 +6357,18 @@ msgid "Set Region Rect"
 msgstr "영역 설정"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "핸들 설정"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "스냅 모드:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
-msgstr "<없음>"
+#: scene/resources/visual_shader.cpp
+msgid "None"
+msgstr "없음"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -6571,11 +6603,13 @@ msgid "Clear transform"
 msgstr "변형 지우기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Texture(s) to TileSet"
+#, fuzzy
+msgid "Add Texture(s) to TileSet."
 msgstr "타일셋에 텍스쳐 추가"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove current Texture from TileSet"
+#, fuzzy
+msgid "Remove selected Texture from TileSet."
 msgstr "현재 텍스쳐를 타일셋에서 제거"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6587,15 +6621,35 @@ msgid "Merge from Scene"
 msgstr "씬으로부터 병합하기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
-"사용할 서브 타일을 아이콘으로 설정하세요, 효력없는 자동타일 바인딩에도 사용됩"
-"니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "애니메이션 붙여넣기"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "포인트 지우기."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "처음부터 새로운 폴리곤 만들기."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr "타일 이름 보이기 (Alt 키를 누르세요)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6627,14 +6681,9 @@ msgstr ""
 "다른 타일을 편집하려면 클릭."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
-"좌클릭: 비트 켜기 설정.\n"
-"우클릭: 비트 끄기 설정.\n"
-"다른 타일을 편집하려면 클릭."
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "선택된 파일들을 삭제하시겠습니까?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6642,6 +6691,22 @@ msgid ""
 "Click on another Tile to edit it."
 msgstr ""
 "현재 편집된 서브 타일 선택.\n"
+"다른 타일을 편집하려면 클릭."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "포인트 삭제"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"좌클릭: 비트 켜기 설정.\n"
+"우클릭: 비트 끄기 설정.\n"
 "다른 타일을 편집하려면 클릭."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6663,11 +6728,21 @@ msgstr ""
 "다른 타일을 편집하려면 클릭."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"서브 타일을 선택해 우선 순위를 바꿈.\n"
+"다른 타일을 편집하려면 클릭."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "이 속성을 바꿀 수 없습니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
+#, fuzzy
+msgid "TileSet"
 msgstr "타일 셋"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6681,6 +6756,11 @@ msgstr "프래그먼트"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "빛"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node..."
+msgstr "노드 추가.."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6719,7 +6799,8 @@ msgid "Add..."
 msgstr "추가..."
 
 #: editor/project_export.cpp
-msgid "Export Path:"
+#, fuzzy
+msgid "Export Path"
 msgstr "경로 내보내기:"
 
 #: editor/project_export.cpp
@@ -8199,7 +8280,8 @@ msgid "GDNative"
 msgstr "GD네이티브"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+#, fuzzy
+msgid "Step argument is zero!"
 msgstr "스텝 인수가 제로입니다!"
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9156,7 +9238,10 @@ msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr "OrientedPathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+#, fuzzy
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr "OrientedPathFollow는 부모 Path에서 벡터를 활성화해야 합니다."
 
 #: scene/3d/physics_body.cpp
@@ -9258,6 +9343,10 @@ msgstr ""
 msgid "AnimationPlayer root is not a valid node."
 msgstr "AnimationPlayer 루트가 유효한 노드가 아닙니다."
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Raw 모드"
@@ -9273,6 +9362,10 @@ msgstr "경고!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "확인해주세요..."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -9341,10 +9434,6 @@ msgstr "유효하지 않은 폰트 크기."
 msgid "Input"
 msgstr "입력"
 
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "없음"
-
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "셰이더에 유효하지 않은 소스."
@@ -9360,6 +9449,56 @@ msgstr "균일하게 배치함."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
+
+#~ msgid "Create Poly"
+#~ msgstr "폴리곤 만들기"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "처음부터 새로운 폴리곤 만들기"
+
+#~ msgid "Zoom out"
+#~ msgstr "축소"
+
+#~ msgid "Zoom in"
+#~ msgstr "확대"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "폴리곤3D 만들기"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "이 노드에 OccluderPolygon2D 리소스가 없습니다.\n"
+#~ "새로 만들어서 지정하시겠습니까?"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "기존 폴리곤 편집:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "좌클릭: 포인트 이동."
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "Ctrl+좌클릭: 선분 분할."
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "우클릭: 포인트 삭제."
+
+#~ msgid "New TextFile"
+#~ msgstr "새 텍스트 파일"
+
+#~ msgid "Save Theme As"
+#~ msgstr "테마 다른 이름으로 저장"
+
+#~ msgid "<None>"
+#~ msgstr "<없음>"
+
+#~ msgid ""
+#~ "Select sub-tile to use as icon, this will be also used on invalid "
+#~ "autotile bindings."
+#~ msgstr ""
+#~ "사용할 서브 타일을 아이콘으로 설정하세요, 효력없는 자동타일 바인딩에도 사"
+#~ "용됩니다."
 
 #~ msgid "Zoom:"
 #~ msgstr "확대:"
@@ -10855,13 +10994,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Scale Region Editor"
 #~ msgstr "스케일 구역 편집기"
-
-#~ msgid ""
-#~ "No texture in this node.\n"
-#~ "Set a texture to be able to edit region."
-#~ msgstr ""
-#~ "이 노드에 텍스쳐가 없습니다.\n"
-#~ "구역을 편집하기 위해서는 텍스쳐를 지정해야합니다."
 
 #~ msgid "Inherit Scene"
 #~ msgstr "상속 씬"

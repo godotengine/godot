@@ -40,7 +40,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-12-13 11:41+0000\n"
+"PO-Revision-Date: 2018-12-13 14:44+0100\n"
 "Last-Translator: tangdou1 <1093505442@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -49,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -282,7 +282,6 @@ msgstr "创建%d个新轨道并插入关键帧？"
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -554,15 +553,19 @@ msgstr "全部替换"
 msgid "Selection Only"
 msgstr "仅选中"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "放大"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "缩小"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "重置缩放"
 
@@ -729,8 +732,8 @@ msgid "Recent:"
 msgstr "最近文件:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "搜索:"
@@ -777,8 +780,7 @@ msgid "Resource"
 msgstr "资源"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "路径"
 
@@ -1232,8 +1234,7 @@ msgid "Node Name:"
 msgstr "节点名称:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "名称"
 
@@ -2141,7 +2142,7 @@ msgstr "项目设置"
 msgid "Export"
 msgstr "导出"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "工具"
 
@@ -2561,6 +2562,12 @@ msgstr "分配…。"
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2581,8 +2588,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr "选择1个视口"
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr "新建脚本"
 
@@ -2997,7 +3003,7 @@ msgstr "拷贝..."
 msgid "Move To..."
 msgstr "移动..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
 msgstr "新建脚本…"
 
@@ -3122,7 +3128,8 @@ msgid "Group name already exists."
 msgstr "分组名称已存在。"
 
 #: editor/groups_editor.cpp
-msgid "invalid Group name."
+#, fuzzy
+msgid "Invalid group name."
 msgstr "非法分组名。"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3368,14 +3375,13 @@ msgid "Activate now?"
 msgstr "现在激活吗？"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Create Polygon"
 msgstr "创建多边形"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "编辑多边形"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3383,25 +3389,27 @@ msgid "Insert Point"
 msgstr "插入点"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "编辑多边形（移除顶点）"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "移除多边形及顶点"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "创建一个新的多边形"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Create points."
+msgstr "创建点。"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "编辑多边形：\n"
 "LMB： 移动点。\n"
@@ -3409,8 +3417,9 @@ msgstr ""
 "人民币： 擦除点。"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
-msgstr "删除点"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Erase points."
+msgstr "擦除点。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3453,15 +3462,6 @@ msgstr "在此空间下设置位置混合状态"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr "选择并移动点，使用 RMB 创建点。"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-msgid "Create points."
-msgstr "创建点。"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-msgid "Erase points."
-msgstr "擦除点。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3540,7 +3540,6 @@ msgid ""
 msgstr "动画播放器没有合法的根节点路径，因此无法获取轨道名称。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node.."
 msgstr "添加节点.."
 
@@ -4075,7 +4074,7 @@ msgstr "全部"
 msgid "Plugins"
 msgstr "插件"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "排序:"
 
@@ -4226,16 +4225,17 @@ msgid "Paste Pose"
 msgstr "粘贴姿势"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom out"
-msgstr "缩小"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom reset"
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom Reset"
 msgstr "重置缩放"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom in"
-msgstr "放大"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4492,8 +4492,17 @@ msgstr ""
 "拖放+ Alt：更改节点类型"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "创建 Poly3D (多边型3D)"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "创建多边形"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "编辑多边形"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "编辑多边形（移除顶点）"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4594,36 +4603,8 @@ msgid "Item List Editor"
 msgstr "列表编辑器"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"在这个节点上没有 OccluderPolygon2D 资源。\n"
-"创建和分配一个吗？"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "添加遮光多边形"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "从头开始创建一个新的多边形。"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "编辑已存在的多边形:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "鼠标左键:移动点。"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "Ctrl+鼠标左键:分割视图块。"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "鼠标右键:移除点。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -4992,6 +4973,11 @@ msgid "Add Point to Curve"
 msgstr "向曲线添加顶点"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "关闭曲线"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr "在曲线中移动顶点"
 
@@ -5019,6 +5005,11 @@ msgid "Click: Add Point"
 msgstr "鼠标左键:添加点"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "拆分（曲线）"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "鼠标右键:删除点"
@@ -5031,11 +5022,6 @@ msgstr "选择控制点(Shift+拖动)"
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "添加点（在空白处）"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "拆分（曲线）"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5095,6 +5081,10 @@ msgstr "移除曲线外控制点"
 msgid "Remove In-Control Point"
 msgstr "移除曲线内控制点"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "拆分（曲线）"
+
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move joint"
 msgstr "移动关节"
@@ -5105,8 +5095,16 @@ msgid ""
 msgstr "Polygon2D 的骨架属性并没有指向一个 Skeleton2D 节点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Sync bones"
+#, fuzzy
+msgid "Sync Bones"
 msgstr "同步骨骼"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr "此节点没有贴图，请先为它设置贴图后再试。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5145,8 +5143,19 @@ msgid "Transform UV Map"
 msgstr "变换UV贴图"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "变换类型"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Paint Bone Weights"
 msgstr "绘制骨骼权重"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "2D多边形UV编辑器"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5169,11 +5178,8 @@ msgid "Bones"
 msgstr "骨骼"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Create Polygon"
-msgstr "创建多边形"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+#, fuzzy
+msgid "Move Points"
 msgstr "移动点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5201,19 +5207,23 @@ msgid "Scale Polygon"
 msgstr "缩放多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+#, fuzzy
+msgid "Connect two points to make a split."
 msgstr "连接两个点创建一个拆分"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it"
+#, fuzzy
+msgid "Select a split to erase it."
 msgstr "选择一个拆分以擦除它"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+#, fuzzy
+msgid "Paint weights with specified intensity."
 msgstr "使用指定的强度进行权重绘制"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+#, fuzzy
+msgid "Unpaint weights with specified intensity."
 msgstr "使用指定强度清除权重绘制"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5351,19 +5361,23 @@ msgid "Error saving file!"
 msgstr "保存文件时出错！"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "保存主题出错"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "保存出错"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "导入主题出错"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "导入出错"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5381,6 +5395,14 @@ msgstr "另存为..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "导入主题"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "保存主题出错"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "保存出错"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5423,8 +5445,9 @@ msgid "File"
 msgstr "文件"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New TextFile"
-msgstr "新建文本文件"
+#, fuzzy
+msgid "Open..."
+msgstr "打开"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5452,16 +5475,17 @@ msgid "Theme"
 msgstr "主题"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "导入主题"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "重新加载主题"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "保存主题"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "主题另存为"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5569,6 +5593,10 @@ msgstr "（忽略）"
 msgid "Go to Function"
 msgstr "转到函数"
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr "标准"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "只可以拖拽来自文件系统中的资源。"
@@ -5600,10 +5628,6 @@ msgstr "首字母大写"
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
 msgstr "语法高亮显示"
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
-msgstr "标准"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6296,11 +6320,17 @@ msgid "Set Region Rect"
 msgstr "设置纹理区域"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "设置处理程序"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "吸附模式:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
+#: scene/resources/visual_shader.cpp
+msgid "None"
 msgstr "无"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -6536,11 +6566,13 @@ msgid "Clear transform"
 msgstr "清除变换"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Texture(s) to TileSet"
+#, fuzzy
+msgid "Add Texture(s) to TileSet."
 msgstr "添加纹理到瓦片集"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove current Texture from TileSet"
+#, fuzzy
+msgid "Remove selected Texture from TileSet."
 msgstr "从瓦片集中删除当前纹理"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6552,14 +6584,35 @@ msgid "Merge from Scene"
 msgstr "从场景中合并"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
-"请选择一个子地砖(sub-tile)作为图标，此图标还会被绑定为无效的地砖(autotile)。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "粘贴动画"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "擦除点。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "从头开始创建一个新的多边形。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr "显示瓦片的名字（按住 Alt 键）"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6591,14 +6644,9 @@ msgstr ""
 "点击另一个瓦片进行编辑。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
-"鼠标左键： 启用比特。\n"
-"鼠标右键： 关闭比特。\n"
-"点击另一个瓦片进行编辑。"
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "删除选中的文件？"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6607,6 +6655,22 @@ msgid ""
 msgstr ""
 "选择当前编辑状态下的子瓦片。\n"
 "点击选择另一个瓦片进行编辑。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "删除点"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"鼠标左键： 启用比特。\n"
+"鼠标右键： 关闭比特。\n"
+"点击另一个瓦片进行编辑。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6626,11 +6690,21 @@ msgstr ""
 "点击选择另一个瓦片进行编辑。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"选择并修改子瓦片的优先级。\n"
+"点击选择另一个瓦片进行编辑。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "不能修改该属性。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
+#, fuzzy
+msgid "TileSet"
 msgstr "砖块集"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6644,6 +6718,11 @@ msgstr "片段"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "灯光"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node..."
+msgstr "添加节点.."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6682,7 +6761,8 @@ msgid "Add..."
 msgstr "添加..."
 
 #: editor/project_export.cpp
-msgid "Export Path:"
+#, fuzzy
+msgid "Export Path"
 msgstr "导出路径:"
 
 #: editor/project_export.cpp
@@ -8151,7 +8231,8 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+#, fuzzy
+msgid "Step argument is zero!"
 msgstr "step参数为0！"
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9066,7 +9147,10 @@ msgstr ""
 "OrientedPathFollow 类型的节点只有作为Path类型节点的子节点才能正常工作。"
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+#, fuzzy
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr "OrientedPathFollow 需要再其父路径中启用up vectors。"
 
 #: scene/3d/physics_body.cpp
@@ -9165,6 +9249,10 @@ msgstr "动画播放器的路径没有加载一个 AnimationPlayer 节点。"
 msgid "AnimationPlayer root is not a valid node."
 msgstr "AnimationPlayer 的根节点不是一个有效的节点。"
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Raw 模式"
@@ -9180,6 +9268,10 @@ msgstr "提示！"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "请确认..."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -9244,10 +9336,6 @@ msgstr "字体大小非法。"
 msgid "Input"
 msgstr "输入"
 
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr "无"
-
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "非法的着色器源。"
@@ -9263,6 +9351,56 @@ msgstr "对uniform的赋值。"
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
+
+#~ msgid "Create Poly"
+#~ msgstr "创建多边形"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "创建一个新的多边形"
+
+#~ msgid "Zoom out"
+#~ msgstr "缩小"
+
+#~ msgid "Zoom in"
+#~ msgstr "放大"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "创建 Poly3D (多边型3D)"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "在这个节点上没有 OccluderPolygon2D 资源。\n"
+#~ "创建和分配一个吗？"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "编辑已存在的多边形:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "鼠标左键:移动点。"
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "Ctrl+鼠标左键:分割视图块。"
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "鼠标右键:移除点。"
+
+#~ msgid "New TextFile"
+#~ msgstr "新建文本文件"
+
+#~ msgid "Save Theme As"
+#~ msgstr "主题另存为"
+
+#~ msgid "<None>"
+#~ msgstr "无"
+
+#~ msgid ""
+#~ "Select sub-tile to use as icon, this will be also used on invalid "
+#~ "autotile bindings."
+#~ msgstr ""
+#~ "请选择一个子地砖(sub-tile)作为图标，此图标还会被绑定为无效的地砖"
+#~ "(autotile)。"
 
 #~ msgid "Zoom:"
 #~ msgstr "缩放："
@@ -10785,11 +10923,6 @@ msgstr "变量只能在顶点函数中指定。"
 
 #~ msgid "Scale Region Editor"
 #~ msgstr "缩放区域编辑"
-
-#~ msgid ""
-#~ "No texture in this node.\n"
-#~ "Set a texture to be able to edit region."
-#~ msgstr "此节点没有贴图，请先为它设置贴图后再试。"
 
 #~ msgid "Inherit Scene"
 #~ msgstr "继承场景"

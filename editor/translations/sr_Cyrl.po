@@ -269,7 +269,6 @@ msgstr "Направите %d нових трака и убаците кључе
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -546,15 +545,19 @@ msgstr "Замени све"
 msgid "Selection Only"
 msgstr "Само одабрано"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "Увеличај"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "Умањи"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Ресетуј увеличање"
 
@@ -733,8 +736,8 @@ msgid "Recent:"
 msgstr "Честе:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Тражи:"
@@ -785,8 +788,7 @@ msgid "Resource"
 msgstr "Ресурс"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "Пут"
 
@@ -1248,8 +1250,7 @@ msgid "Node Name:"
 msgstr "Име чвора:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Име"
 
@@ -2204,7 +2205,7 @@ msgstr "Поставке пројекта"
 msgid "Export"
 msgstr "Извоз"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Алати"
 
@@ -2645,6 +2646,12 @@ msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2661,8 +2668,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr ""
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr ""
 
@@ -3106,7 +3112,7 @@ msgstr "Дуплирај"
 msgid "Move To..."
 msgstr "Помери у..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "New Script..."
 msgstr "Брзо отварање скриптице..."
@@ -3249,7 +3255,7 @@ msgstr "Грешка: име анимације већ постоји!"
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "invalid Group name."
+msgid "Invalid group name."
 msgstr "Неважеће име."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3507,14 +3513,14 @@ msgid "Activate now?"
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
 msgstr "Направи полигон"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "Измени полигон"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3522,25 +3528,28 @@ msgid "Insert Point"
 msgstr "Уметни тачку"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "Уреди полигон (обриши тачку)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "Обриши полигон и тачку"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "Направи нови полигон од почетка"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Create points."
+msgstr "Обриши тачке"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "Измени постојећи полигон:\n"
 "Леви тастер миша: помери тачку.\n"
@@ -3548,8 +3557,10 @@ msgstr ""
 "Десни тастер миша: обриши тачку."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
-msgstr "Обриши тачке"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Erase points."
+msgstr "Десни тастер миша: обриши тачку."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3591,17 +3602,6 @@ msgstr ""
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr ""
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
-msgid "Create points."
-msgstr "Обриши тачке"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
-msgid "Erase points."
-msgstr "Десни тастер миша: обриши тачку."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3683,7 +3683,6 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node.."
 msgstr ""
 
@@ -4234,7 +4233,7 @@ msgstr "сви"
 msgid "Plugins"
 msgstr "Прикључци"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "Сортирање:"
 
@@ -4388,19 +4387,17 @@ msgid "Paste Pose"
 msgstr "Налепи позу"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom out"
-msgstr "Умањи"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 #, fuzzy
-msgid "Zoom reset"
+msgid "Zoom Reset"
 msgstr "Умањи"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom in"
-msgstr "Увеличај"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4669,8 +4666,17 @@ msgstr ""
 "Превуците и испустите + Alt: Промени тип чвора"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "Направи Poly3D"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "Направи полигон"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "Измени полигон"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "Уреди полигон (обриши тачку)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4772,36 +4778,8 @@ msgid "Item List Editor"
 msgstr "Уредник ствари листе"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"OccluderPolygon2D не постоји на овом чвору.\n"
-"Направи и додели један?"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "Направи осенчен полигон"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "Направи нови полигон од почетка."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "Измени постојећи полигон:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "Леви тастер миша: помери тачку."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "Ctrl+леви тастер миша: одсеци дуж."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "Десни тастер миша: обриши тачку."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -5174,6 +5152,11 @@ msgid "Add Point to Curve"
 msgstr "Уметни тачку у криву"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "Затвори криву"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr "Помери тачку у криви"
 
@@ -5201,6 +5184,11 @@ msgid "Click: Add Point"
 msgstr "Клик: уметни тачку"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "Подели сегмент (у криви)"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "Десни клик: обриши тачку"
@@ -5213,11 +5201,6 @@ msgstr "Одабери контролне тачке (Shift+Превуците �
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "Додај тачку (у празном простору)"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "Подели сегмент (у криви)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5277,6 +5260,10 @@ msgstr "Обриши тачку контроле излаза"
 msgid "Remove In-Control Point"
 msgstr "Обриши тачку контроле улаза"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "Подели сегмент (у криви)"
+
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
 msgid "Move joint"
@@ -5289,8 +5276,14 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Sync bones"
+msgid "Sync Bones"
 msgstr "Покажи кости"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5334,8 +5327,18 @@ msgid "Transform UV Map"
 msgstr "Трансформиши UV мапу"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "Тип трансформације"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint Bone Weights"
 msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "Уредник UV 2Д полигона"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5362,11 +5365,7 @@ msgstr "Направи кости"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Create Polygon"
-msgstr "Направи полигон"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+msgid "Move Points"
 msgstr "Помери тачку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5394,19 +5393,19 @@ msgid "Scale Polygon"
 msgstr "Скалирај полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+msgid "Connect two points to make a split."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it"
+msgid "Select a split to erase it."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+msgid "Paint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+msgid "Unpaint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5560,19 +5559,23 @@ msgid "Error saving file!"
 msgstr "Грешка при чувању TileSet!"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "Грешка при чувању теме"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "Грешка при чувању"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "Грешка при увозу теме"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "Грешка при увозу"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5593,6 +5596,14 @@ msgstr "Сачувај као..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "Увези тему"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "Грешка при чувању теме"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "Грешка при чувању"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5636,8 +5647,8 @@ msgstr "Датотека"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "New TextFile"
-msgstr "Погледај датотеке"
+msgid "Open..."
+msgstr "Отвори"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5668,16 +5679,17 @@ msgid "Theme"
 msgstr "Сачувај тему"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "Увези тему"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "Поново учитај тему"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "Сачувај тему"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "Сачувај тему као"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5789,6 +5801,10 @@ msgstr ""
 msgid "Go to Function"
 msgstr "Иди на функцију..."
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr ""
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Само ресурси из датотечног система се могу убацити."
@@ -5820,10 +5836,6 @@ msgstr "Велика слова"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
@@ -6545,11 +6557,18 @@ msgid "Set Region Rect"
 msgstr "Постави правоугаони регион"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "Постави дршку"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Режим лепљења:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "None"
 msgstr "<Ниједан>"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -6801,12 +6820,12 @@ msgid "Clear transform"
 msgstr "Трансформација"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Texture(s) to TileSet"
+msgid "Add Texture(s) to TileSet."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Remove current Texture from TileSet"
+msgid "Remove selected Texture from TileSet."
 msgstr "Обриши тачку криве"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6819,13 +6838,34 @@ msgid "Merge from Scene"
 msgstr "Споји од сцене"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "Налепи анимацију"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "Десни тастер миша: обриши тачку."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "Направи нови полигон од почетка."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6856,16 +6896,27 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "Обриши одабране датотеке?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid ""
 "Select current edited sub-tile.\n"
+"Click on another Tile to edit it."
+msgstr "Сачувај тренутно измењени ресурс."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "Обриши тачке"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
 "Click on another Tile to edit it."
 msgstr "Сачувај тренутно измењени ресурс."
 
@@ -6884,12 +6935,19 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr "Сачувај тренутно измењени ресурс."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "Ова операција се не може обавити без сцене."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Tile Set"
+msgid "TileSet"
 msgstr "TileSet..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6905,6 +6963,10 @@ msgstr ""
 #, fuzzy
 msgid "Light"
 msgstr "десно"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -6948,7 +7010,7 @@ msgstr "Додај..."
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export Path:"
+msgid "Export Path"
 msgstr "Извези пројекат"
 
 #: editor/project_export.cpp
@@ -8434,7 +8496,7 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+msgid "Step argument is zero!"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9341,7 +9403,9 @@ msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr ""
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9434,6 +9498,10 @@ msgstr ""
 msgid "AnimationPlayer root is not a valid node."
 msgstr "Анимационо дрво није важеће."
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr ""
@@ -9448,6 +9516,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: scene/gui/popup.cpp
@@ -9507,11 +9579,6 @@ msgstr "Неважећа величина фонта."
 msgid "Input"
 msgstr "Додај улаз"
 
-#: scene/resources/visual_shader.cpp
-#, fuzzy
-msgid "None"
-msgstr "<Ниједан>"
-
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for shader."
@@ -9528,6 +9595,52 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Create Poly"
+#~ msgstr "Направи полигон"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "Направи нови полигон од почетка"
+
+#, fuzzy
+#~ msgid "Zoom out"
+#~ msgstr "Умањи"
+
+#, fuzzy
+#~ msgid "Zoom in"
+#~ msgstr "Увеличај"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "Направи Poly3D"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "OccluderPolygon2D не постоји на овом чвору.\n"
+#~ "Направи и додели један?"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "Измени постојећи полигон:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "Леви тастер миша: помери тачку."
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "Ctrl+леви тастер миша: одсеци дуж."
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "Десни тастер миша: обриши тачку."
+
+#, fuzzy
+#~ msgid "New TextFile"
+#~ msgstr "Погледај датотеке"
+
+#~ msgid "Save Theme As"
+#~ msgstr "Сачувај тему као"
+
+#~ msgid "<None>"
+#~ msgstr "<Ниједан>"
 
 #, fuzzy
 #~ msgid "Zoom:"

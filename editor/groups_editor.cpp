@@ -189,7 +189,7 @@ void GroupDialog::_group_renamed() {
 
 	if (name == "") {
 		renamed_group->set_text(0, selected_group);
-		error->set_text(TTR("invalid Group name."));
+		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();
 		return;
 	}

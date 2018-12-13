@@ -10,16 +10,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-12-09 11:02+0000\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2018-12-13 14:40+0100\n"
 "Last-Translator: RaikaRakka <shaiyatta@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -266,7 +268,6 @@ msgstr "ליצור %d רצועות חדשות ולהכניס מפתחות?"
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -544,15 +545,19 @@ msgstr "להחליף הכול"
 msgid "Selection Only"
 msgstr "בחירה בלבד"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "להתקרב"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "להתרחק"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "איפוס התקריב"
 
@@ -726,8 +731,8 @@ msgid "Recent:"
 msgstr "אחרונים:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "חיפוש:"
@@ -774,8 +779,7 @@ msgid "Resource"
 msgstr "משאב"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "נתיב"
 
@@ -1228,8 +1232,7 @@ msgid "Node Name:"
 msgstr "שם המפרק:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "שם"
 
@@ -2141,7 +2144,7 @@ msgstr "הגדרות מיזם"
 msgid "Export"
 msgstr "ייצוא"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "כלים"
 
@@ -2561,6 +2564,12 @@ msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2577,8 +2586,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr ""
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr ""
 
@@ -3000,7 +3008,7 @@ msgstr "שכפול…"
 msgid "Move To..."
 msgstr "העברה אל…"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "New Script..."
 msgstr "פתיחת סקריפט מהירה…"
@@ -3142,7 +3150,7 @@ msgstr "הפעולה ‚%s’ כבר קיימת!"
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "invalid Group name."
+msgid "Invalid group name."
 msgstr "שם שגוי."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3397,14 +3405,14 @@ msgid "Activate now?"
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
 msgstr "יצירת מצולע"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "עריכת מצולע"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3412,29 +3420,33 @@ msgid "Insert Point"
 msgstr "הוספת נקודה"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "עריכת מצולע (הסרת נקודה)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "הסרת מצולע ונקודה"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "יצירת מצולע חדש מאפס"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Create points."
+msgstr "מחיקת נקודות"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Erase points."
 msgstr "מחיקת נקודות"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3477,17 +3489,6 @@ msgstr ""
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr ""
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
-msgid "Create points."
-msgstr "מחיקת נקודות"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
-msgid "Erase points."
-msgstr "מחיקת נקודות"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3569,7 +3570,6 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node.."
 msgstr ""
 
@@ -4117,7 +4117,7 @@ msgstr ""
 msgid "Plugins"
 msgstr ""
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr ""
 
@@ -4267,19 +4267,17 @@ msgid "Paste Pose"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom out"
-msgstr "להתרחק"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 #, fuzzy
-msgid "Zoom reset"
+msgid "Zoom Reset"
 msgstr "להתרחק"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom in"
-msgstr "להתקרב"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4539,8 +4537,17 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr ""
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "יצירת מצולע"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "עריכת מצולע"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "עריכת מצולע (הסרת נקודה)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4642,33 +4649,7 @@ msgid "Item List Editor"
 msgstr ""
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
-msgstr ""
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr ""
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr ""
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr ""
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr ""
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5040,6 +5021,10 @@ msgid "Add Point to Curve"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+msgid "Split Curve"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr ""
 
@@ -5067,6 +5052,10 @@ msgid "Click: Add Point"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+msgid "Left Click: Split Segment (in curve)"
+msgstr ""
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr ""
@@ -5078,11 +5067,6 @@ msgstr ""
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
-msgstr ""
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -5143,6 +5127,10 @@ msgstr ""
 msgid "Remove In-Control Point"
 msgstr ""
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr ""
+
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
 msgid "Move joint"
@@ -5154,7 +5142,14 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Sync bones"
+#, fuzzy
+msgid "Sync Bones"
+msgstr "שינוי קנה מידה של מצולע"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5198,8 +5193,18 @@ msgid "Transform UV Map"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "התמרה"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint Bone Weights"
 msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "פתיחת עורך דו־ממד"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5225,11 +5230,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Create Polygon"
-msgstr "יצירת מצולע"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+msgid "Move Points"
 msgstr "הזזת נקודה"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5257,20 +5258,20 @@ msgid "Scale Polygon"
 msgstr "שינוי קנה מידה של מצולע"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+msgid "Connect two points to make a split."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Select a split to erase it"
+msgid "Select a split to erase it."
 msgstr "יש לבחור פריט הגדרה קודם כל!"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+msgid "Paint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+msgid "Unpaint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5415,19 +5416,23 @@ msgid "Error saving file!"
 msgstr "שגיאה בשמירה"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "שגיאה בשמירת ערכת העיצוב"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "שגיאה בשמירה"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "שגיאה בייבוא ערכת הנושא"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "שגיאה בייבוא"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5448,6 +5453,14 @@ msgstr "שמירה בשם…"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "ייבוא ערכת עיצוב"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "שגיאה בשמירת ערכת העיצוב"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "שגיאה בשמירה"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5490,8 +5503,9 @@ msgid "File"
 msgstr "קובץ"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New TextFile"
-msgstr ""
+#, fuzzy
+msgid "Open..."
+msgstr "פתיחה"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5520,16 +5534,17 @@ msgid "Theme"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "ייבוא ערכת עיצוב"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "רענון ערכת העיצוב"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "שמירת ערכת העיצוב"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "שמירת ערכת העיצוב בשם"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5641,6 +5656,10 @@ msgstr ""
 msgid "Go to Function"
 msgstr "מעבר לפונקציה…"
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr ""
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "ניתן להשמיט משאבים ממערכת הקבצים בלבד."
@@ -5671,10 +5690,6 @@ msgstr "הגדלת אות ראשונה"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
@@ -6385,11 +6400,16 @@ msgid "Set Region Rect"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+msgid "Set Margin"
+msgstr ""
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
+#: scene/resources/visual_shader.cpp
+msgid "None"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -6632,12 +6652,13 @@ msgid "Clear transform"
 msgstr "התמרה"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Texture(s) to TileSet"
+msgid "Add Texture(s) to TileSet."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove current Texture from TileSet"
-msgstr ""
+#, fuzzy
+msgid "Remove selected Texture from TileSet."
+msgstr "להסיר את הקבצים הנבחרים מהמיזם? (אי אפשר לשחזר)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6648,13 +6669,34 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "הדבקת משתנים"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "מחיקת נקודות"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "יצירת מצולע"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6684,15 +6726,25 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "למחוק את הקבצים הנבחרים?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select current edited sub-tile.\n"
+"Click on another Tile to edit it."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "מחיקת נקודות"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
 "Click on another Tile to edit it."
 msgstr ""
 
@@ -6710,12 +6762,18 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "This property can't be changed."
 msgstr "לא ניתן לבצע פעולה זו ללא סצנה."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
+msgid "TileSet"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6731,6 +6789,10 @@ msgstr ""
 #, fuzzy
 msgid "Light"
 msgstr "ימין"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6771,7 +6833,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export Path:"
+msgid "Export Path"
 msgstr "ייצוא מיזם"
 
 #: editor/project_export.cpp
@@ -8246,7 +8308,7 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+msgid "Step argument is zero!"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9140,7 +9202,9 @@ msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr "PathFollow2D עובד רק כאשר הוא מוגדר כצאצא של מפרק Path2D."
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9230,6 +9294,10 @@ msgstr ""
 msgid "AnimationPlayer root is not a valid node."
 msgstr ""
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "מצב גולמי"
@@ -9245,6 +9313,10 @@ msgstr ""
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "נא לאמת…"
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -9302,10 +9374,6 @@ msgstr "גודל הגופן שגוי."
 msgid "Input"
 msgstr ""
 
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr ""
-
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for shader."
@@ -9322,6 +9390,23 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Create Poly"
+#~ msgstr "יצירת מצולע"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "יצירת מצולע חדש מאפס"
+
+#, fuzzy
+#~ msgid "Zoom out"
+#~ msgstr "להתרחק"
+
+#, fuzzy
+#~ msgid "Zoom in"
+#~ msgstr "להתקרב"
+
+#~ msgid "Save Theme As"
+#~ msgstr "שמירת ערכת העיצוב בשם"
 
 #, fuzzy
 #~ msgid "Zoom:"

@@ -882,7 +882,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					int incr = *p_args[2];
 					if (incr == 0) {
 
-						r_ret = RTR("step argument is zero!");
+						r_ret = RTR("Step argument is zero!");
 						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 						return;
 					}

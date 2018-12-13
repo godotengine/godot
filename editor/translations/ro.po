@@ -10,16 +10,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-08-31 18:22+0000\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2018-12-13 14:42+0100\n"
 "Last-Translator: Nitroretro <nitroretro@protonmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -264,7 +266,6 @@ msgstr "Creați %d piste NOI și inserați cheie?"
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -541,15 +542,19 @@ msgstr "Înlocuiți Tot"
 msgid "Selection Only"
 msgstr "Numai Selecția"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "Zoom-ați  În"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "Zoom-ați  Afară"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Resetați Zoom-area"
 
@@ -726,8 +731,8 @@ msgid "Recent:"
 msgstr "Recent:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Cautați:"
@@ -778,8 +783,7 @@ msgid "Resource"
 msgstr "Resursă"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "Cale"
 
@@ -1244,8 +1248,7 @@ msgid "Node Name:"
 msgstr "Nume Nod:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Nume"
 
@@ -2204,7 +2207,7 @@ msgstr "Setări ale Proiectului"
 msgid "Export"
 msgstr "Exportare"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Unelte"
 
@@ -2641,6 +2644,12 @@ msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2657,8 +2666,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr ""
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr ""
 
@@ -3092,7 +3100,7 @@ msgstr "Duplicați..."
 msgid "Move To..."
 msgstr "Mută În..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "New Script..."
 msgstr "Deschide un script rapid..."
@@ -3235,7 +3243,7 @@ msgstr "EROARE: Numele animației există deja!"
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "invalid Group name."
+msgid "Invalid group name."
 msgstr "Nume nevalid."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3491,14 +3499,14 @@ msgid "Activate now?"
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
 msgstr "Crează Poligon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "Editează Poligon"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3506,25 +3514,28 @@ msgid "Insert Point"
 msgstr "Inserează Punct"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "Editează Poligon (Elimină Punct)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "Elimină Poligon Și Punct"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "Crează un nou poligon de la zero"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Create points."
+msgstr "Șterge puncte"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "Editează poligon existent:\n"
 "LMB: Mută Punct.\n"
@@ -3532,8 +3543,10 @@ msgstr ""
 "RMB: Șterge Punct."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
-msgstr "Șterge puncte"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Erase points."
+msgstr "RMB: Șterge Punctul."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3575,17 +3588,6 @@ msgstr ""
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr ""
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
-msgid "Create points."
-msgstr "Șterge puncte"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
-msgid "Erase points."
-msgstr "RMB: Șterge Punctul."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3667,7 +3669,6 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node.."
 msgstr ""
 
@@ -4218,7 +4219,7 @@ msgstr "Toate"
 msgid "Plugins"
 msgstr "Plugin-uri"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "Sorare:"
 
@@ -4379,19 +4380,17 @@ msgid "Paste Pose"
 msgstr "Lipește Postura"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom out"
-msgstr "Zoom-ați  Afară"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 #, fuzzy
-msgid "Zoom reset"
+msgid "Zoom Reset"
 msgstr "Zoom-ați  Afară"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom in"
-msgstr "Zoom-ați  În"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4659,8 +4658,17 @@ msgstr ""
 "Trage & lasă + Shift: Schimbă tipul nodului"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "Creează Poligon3D"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "Crează Poligon"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "Editează Poligon"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "Editează Poligon (Elimină Punct)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4762,36 +4770,8 @@ msgid "Item List Editor"
 msgstr "Editor Lista de Obiect"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"Nicio resursă OccluderPolygon2D în acest nod.\n"
-"Vrei să creezi și să atribui una?"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "Creează Poligon de Ocluziune"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "Creează un nou poligon de la zero."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "Editează poligonul existent:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "LMB: Mișcă Punctul."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "Ctrl+LMB: Despică Segmentul."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "RMB: Șterge Punctul."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -5163,6 +5143,11 @@ msgid "Add Point to Curve"
 msgstr "Adăugare punct pe curbă"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "Închidere curbă"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr "Deplasare punct pe curbă"
 
@@ -5190,6 +5175,11 @@ msgid "Click: Add Point"
 msgstr "Click: Adăugare punct"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "Divizare segment (pe curbă)"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "Click Drept: Ștergere punct"
@@ -5202,11 +5192,6 @@ msgstr "Selectare puncte de control (Shift+Tragere)"
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "Adăugare punct (într-un spațiu gol)"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "Divizare segment (pe curbă)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5266,6 +5251,10 @@ msgstr "Ștergere punct de Control-Ieșire"
 msgid "Remove In-Control Point"
 msgstr "Ștergere punct de Control-Intrare"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "Divizare segment (pe curbă)"
+
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
 msgid "Move joint"
@@ -5278,8 +5267,14 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Sync bones"
+msgid "Sync Bones"
 msgstr "Arată Oasele"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5323,8 +5318,18 @@ msgid "Transform UV Map"
 msgstr "Transformare hartă UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "Crează Poligon"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint Bone Weights"
 msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "Editor UV de poligoane 2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5351,11 +5356,7 @@ msgstr "Creează Oase"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Create Polygon"
-msgstr "Crează Poligon"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+msgid "Move Points"
 msgstr "Deplasare punct"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5383,19 +5384,19 @@ msgid "Scale Polygon"
 msgstr "Redimensionează Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+msgid "Connect two points to make a split."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it"
+msgid "Select a split to erase it."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+msgid "Paint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+msgid "Unpaint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5545,20 +5546,24 @@ msgid "Error saving file!"
 msgstr "Eroare la salvarea TileSet!"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
-msgstr ""
+#, fuzzy
+msgid "Error while saving theme."
+msgstr "Eroare la salvare."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
-msgstr ""
+#, fuzzy
+msgid "Error Saving"
+msgstr "Eroare mutând:"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
-msgstr ""
+#, fuzzy
+msgid "Error importing theme."
+msgstr "Eroare mutând:"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
-msgstr ""
+#, fuzzy
+msgid "Error Importing"
+msgstr "Eroare mutând:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -5577,6 +5582,14 @@ msgstr "Salvează Ca..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5621,8 +5634,8 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "New TextFile"
-msgstr "Vizualizează Fișierele"
+msgid "Open..."
+msgstr "Deschide"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5651,15 +5664,16 @@ msgid "Theme"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "Se Importa Scena..."
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5770,6 +5784,10 @@ msgstr ""
 msgid "Go to Function"
 msgstr "Faceți Funcția"
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr ""
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr ""
@@ -5800,10 +5818,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
@@ -6510,11 +6524,17 @@ msgid "Set Region Rect"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "Setează Mâner"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Mod Snap:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
+#: scene/resources/visual_shader.cpp
+msgid "None"
 msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -6757,12 +6777,13 @@ msgid "Clear transform"
 msgstr "Anim Schimbare transformare"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Texture(s) to TileSet"
+msgid "Add Texture(s) to TileSet."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove current Texture from TileSet"
-msgstr ""
+#, fuzzy
+msgid "Remove selected Texture from TileSet."
+msgstr "Elimină Obiectul Selectat"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6773,13 +6794,34 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "Lipește Animație"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "RMB: Șterge Punctul."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "Creează un nou poligon de la zero."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6809,15 +6851,25 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "Ştergeți fişierele selectate?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
 "Select current edited sub-tile.\n"
+"Click on another Tile to edit it."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "Șterge puncte"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
 "Click on another Tile to edit it."
 msgstr ""
 
@@ -6835,13 +6887,20 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "This property can't be changed."
 msgstr "Această operație nu se poate face fără o scenă."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
-msgstr ""
+#, fuzzy
+msgid "TileSet"
+msgstr "Set_de_Plăci..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -6853,6 +6912,10 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6894,7 +6957,7 @@ msgstr ""
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export Path:"
+msgid "Export Path"
 msgstr "Exportă Proiectul"
 
 #: editor/project_export.cpp
@@ -8373,7 +8436,7 @@ msgid "GDNative"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+msgid "Step argument is zero!"
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9264,7 +9327,9 @@ msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr ""
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9357,6 +9422,10 @@ msgstr ""
 msgid "AnimationPlayer root is not a valid node."
 msgstr "Arborele Animației este nevalid."
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr ""
@@ -9371,6 +9440,10 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
+msgstr ""
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: scene/gui/popup.cpp
@@ -9430,10 +9503,6 @@ msgstr ""
 msgid "Input"
 msgstr "Adaugă Intrare(Input)"
 
-#: scene/resources/visual_shader.cpp
-msgid "None"
-msgstr ""
-
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr ""
@@ -9449,6 +9518,46 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Create Poly"
+#~ msgstr "Crează Poligon"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "Crează un nou poligon de la zero"
+
+#, fuzzy
+#~ msgid "Zoom out"
+#~ msgstr "Zoom-ați  Afară"
+
+#, fuzzy
+#~ msgid "Zoom in"
+#~ msgstr "Zoom-ați  În"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "Creează Poligon3D"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "Nicio resursă OccluderPolygon2D în acest nod.\n"
+#~ "Vrei să creezi și să atribui una?"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "Editează poligonul existent:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "LMB: Mișcă Punctul."
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "Ctrl+LMB: Despică Segmentul."
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "RMB: Șterge Punctul."
+
+#, fuzzy
+#~ msgid "New TextFile"
+#~ msgstr "Vizualizează Fișierele"
 
 #, fuzzy
 #~ msgid "Zoom:"

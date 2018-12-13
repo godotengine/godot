@@ -10,15 +10,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-29 08:11+0000\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2018-12-13 14:38+0100\n"
 "Last-Translator: Abdullah Zubair <abdullahzubair109@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -275,7 +277,6 @@ msgstr "%d এর জন্য নতুন ট্র্যাক/পথ-সম�
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -553,15 +554,19 @@ msgstr "সমস্তগুলি প্রতিস্থাপন করু�
 msgid "Selection Only"
 msgstr "শুধুমাত্র নির্বাচিতসমূহ"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "সম্প্রসারিত করুন (জুম্ ইন)"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "সংকুচিত করুন (জুম্ আউট)"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
 
@@ -742,8 +747,8 @@ msgid "Recent:"
 msgstr "সাম্প্রতিক:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "অনুসন্ধান করুন:"
@@ -794,8 +799,7 @@ msgid "Resource"
 msgstr "রিসোর্স"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "পথ"
 
@@ -1263,8 +1267,7 @@ msgid "Node Name:"
 msgstr "নোডের নাম:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "নাম"
 
@@ -2250,7 +2253,7 @@ msgstr "প্রকল্পের সেটিংস"
 msgid "Export"
 msgstr "এক্সপোর্ট"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "সরঞ্জাম-সমূহ"
 
@@ -2706,6 +2709,12 @@ msgstr "নিযুক্ত"
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2723,8 +2732,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr "১ টি Viewport"
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr "নতুন স্ক্রিপ্ট"
 
@@ -3204,7 +3212,7 @@ msgstr "ডুপ্লিকেট"
 msgid "Move To..."
 msgstr "এখানে সরান..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "New Script..."
 msgstr "নতুন স্ক্রিপ্ট"
@@ -3347,7 +3355,7 @@ msgstr "ভুল: অ্যানিমেশনের নাম ইতিম�
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "invalid Group name."
+msgid "Invalid group name."
 msgstr "অগ্রহনযোগ্য নাম।"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3615,14 +3623,14 @@ msgid "Activate now?"
 msgstr ""
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
 msgstr "Poly তৈরি করুন"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "Poly সম্পাদন করুন"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3631,26 +3639,28 @@ msgid "Insert Point"
 msgstr "সন্নিবেশিত হচ্ছে"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "Poly সম্পাদন করুন (বিন্দু অপসারণ করুন)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "পলি এবং বিন্দু অপসারণ করুন"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
-msgid "Create a new polygon from scratch"
-msgstr "আরম্ভ হতে নতুন polygon তৈরি করুন।"
+msgid "Create points."
+msgstr "বিন্দু অপসারণ করুন"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "তৈরিকৃত পলিগন এডিট করুন:\n"
 "এলএমবি: পয়েন্ট মুভ করুন।\n"
@@ -3658,9 +3668,10 @@ msgstr ""
 "আরএমবি: পয়েন্ট মুছে ফেলুন।"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#: editor/plugins/animation_blend_space_1d_editor.cpp
 #, fuzzy
-msgid "Delete points"
-msgstr "বিন্দু অপসারণ করুন"
+msgid "Erase points."
+msgstr "মাউসের ডান বোতাম: বিন্দু মুছে ফেলুন।"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3702,17 +3713,6 @@ msgstr ""
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr ""
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
-msgid "Create points."
-msgstr "বিন্দু অপসারণ করুন"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
-msgid "Erase points."
-msgstr "মাউসের ডান বোতাম: বিন্দু মুছে ফেলুন।"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3796,7 +3796,6 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Add Node.."
 msgstr "নোড সংযোজন করুন"
@@ -4361,7 +4360,7 @@ msgstr "সকল"
 msgid "Plugins"
 msgstr "প্লাগইন-সমূহ"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "সাজান:"
 
@@ -4523,19 +4522,17 @@ msgid "Paste Pose"
 msgstr "ভঙ্গি প্রতিলেপন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom out"
-msgstr "সংকুচিত করুন (জুম্ আউট)"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 #, fuzzy
-msgid "Zoom reset"
+msgid "Zoom Reset"
 msgstr "জুম্ পুন:স্থাপন করুন"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom in"
-msgstr "সম্প্রসারিত করুন (জুম্ ইন)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4811,8 +4808,17 @@ msgstr ""
 "টানুন এবং ফেলুন + অল্টার কী (Alt) : নোডের ধরণ পরিবর্তন করতে"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "Poly3D তৈরি করুন"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "Poly তৈরি করুন"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "Poly সম্পাদন করুন"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "Poly সম্পাদন করুন (বিন্দু অপসারণ করুন)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4927,36 +4933,8 @@ msgid "Item List Editor"
 msgstr "বস্তুর তালিকা এডিটর"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"এই নোডের মধ্যে  কোন অক্লুডার পলিগন টুডি রিসোর্স বিদ্যমান নেই।\n"
-" নতুন পলিগন তৈরি করবেন?"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "অকলুডার (occluder) পলিগন তৈরি করুন"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "আরম্ভ হতে নতুন polygon তৈরি করুন।"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "বিদ্যমান পলিগন সম্পাদন করুন:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "মাউসের বাম বোতাম: বিন্দু সরান।"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "কন্ট্রোল + মাউসের বাম বোতাম: অংশ বিভক্ত করুন।"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "মাউসের ডান বোতাম: বিন্দু মুছে ফেলুন।"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -5341,6 +5319,11 @@ msgid "Add Point to Curve"
 msgstr "বক্ররেখায় বিন্দু যোগ করুন"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "বক্ররেখা বন্ধ করুন"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr "বক্ররেখায় বিন্দু সরান"
 
@@ -5368,6 +5351,11 @@ msgid "Click: Add Point"
 msgstr "ক্লিক: বিন্দু যোগ করুন"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "অংশ বিভক্ত করুন (বক্ররেখায়)"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "ডান ক্লিক: বিন্দু অপসারণ করুন"
@@ -5380,11 +5368,6 @@ msgstr "নিয়ন্ত্রণ বিন্দুসমূহ নির্�
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "বিন্দু যোগ করুন (শূন্যস্থানে)"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "অংশ বিভক্ত করুন (বক্ররেখায়)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5449,6 +5432,10 @@ msgstr "বক্ররেখা বহিঃ-নিয়ন্ত্রণে 
 msgid "Remove In-Control Point"
 msgstr "বক্ররেখা আন্ত-নিয়ন্ত্রণে সরান"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "অংশ বিভক্ত করুন (বক্ররেখায়)"
+
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
 msgid "Move joint"
@@ -5461,8 +5448,14 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Sync bones"
+msgid "Sync Bones"
 msgstr "বোন্‌/হাড় দেখান"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5506,8 +5499,18 @@ msgid "Transform UV Map"
 msgstr "UV Map রুপান্তর করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "রুপান্তরের ধরণ"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint Bone Weights"
 msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "Polygon 2D UV এডিটর"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5534,11 +5537,7 @@ msgstr "বোন্‌/হাড় তৈরি করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Create Polygon"
-msgstr "Poly তৈরি করুন"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+msgid "Move Points"
 msgstr "বিন্দু সরান"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5566,20 +5565,20 @@ msgid "Scale Polygon"
 msgstr "পলিগন মাপ করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+msgid "Connect two points to make a split."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Select a split to erase it"
+msgid "Select a split to erase it."
 msgstr "একটি সেটিং আইটেম প্রথম নির্বাচন করুন!"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+msgid "Paint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+msgid "Unpaint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5734,19 +5733,23 @@ msgid "Error saving file!"
 msgstr "TileSet সংরক্ষণে সমস্যা হয়েছে!"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "থিম সংরক্ষণে সমস্যা হয়েছে"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "সংরক্ষণে সমস্যা হয়েছে"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "থিম ইম্পোর্টে সমস্যা হয়েছে"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "ইম্পোর্টে সমস্যা হয়েছে"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5767,6 +5770,14 @@ msgstr "এইরূপে সংরক্ষণ করুন..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "থিম ইম্পোর্ট করুন"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "থিম সংরক্ষণে সমস্যা হয়েছে"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "সংরক্ষণে সমস্যা হয়েছে"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5811,8 +5822,8 @@ msgstr "ফাইল"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "New TextFile"
-msgstr "ফাইল"
+msgid "Open..."
+msgstr "খুলুন"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5842,16 +5853,17 @@ msgid "Theme"
 msgstr "থিম"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "থিম ইম্পোর্ট করুন"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "থিম রিলোড করুন"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "থিম সংরক্ষণ করুন"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "থিম এইরূপে সংরক্ষণ করুন"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5966,6 +5978,10 @@ msgstr ""
 msgid "Go to Function"
 msgstr "ফাংশনে যান..."
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr ""
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "শুধুমাত্র ফাইল সিস্টেম থেকে রিসোর্স ড্রপ করা সম্ভব।"
@@ -5998,10 +6014,6 @@ msgstr "বড় হাতের অক্ষরে পরিবর্তনে �
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
@@ -6745,11 +6757,18 @@ msgid "Set Region Rect"
 msgstr "গঠনবিন্যাসের এলাকা"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "হ্যান্ডেল স্থাপন করুন"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "স্ন্যাপ মোড:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "None"
 msgstr "<নান/কিছুই না>"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -7004,12 +7023,12 @@ msgstr "রুপান্তর"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Add Texture(s) to TileSet"
+msgid "Add Texture(s) to TileSet."
 msgstr "শাখা (tree) হতে নোড (সমূহ) যুক্ত করুন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Remove current Texture from TileSet"
+msgid "Remove selected Texture from TileSet."
 msgstr "পথের বিন্দু অপসারণ করুন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7021,13 +7040,34 @@ msgid "Merge from Scene"
 msgstr "দৃশ্য হতে একত্রিত করবেন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "অ্যানিমেশন প্রতিলেপন করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "মাউসের ডান বোতাম: বিন্দু মুছে ফেলুন।"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "আরম্ভ হতে নতুন polygon তৈরি করুন।"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7057,16 +7097,27 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "নির্বাচিত ফাইলসমূহ অপসারণ করবেন?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid ""
 "Select current edited sub-tile.\n"
+"Click on another Tile to edit it."
+msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "বিন্দু অপসারণ করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
 "Click on another Tile to edit it."
 msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
 
@@ -7085,12 +7136,19 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "দৃশ্য ছাড়া এটি করা সম্ভব হবে না।"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Tile Set"
+msgid "TileSet"
 msgstr "TileSet (টাইল-সেট)..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7106,6 +7164,11 @@ msgstr "ফ্রাগমেন্ট"
 #, fuzzy
 msgid "Light"
 msgstr "ডান"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node..."
+msgstr "নোড সংযোজন করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7154,7 +7217,7 @@ msgstr "সংযোগ..."
 
 #: editor/project_export.cpp
 #, fuzzy
-msgid "Export Path:"
+msgid "Export Path"
 msgstr "এক্সপোর্টের প্রিসেট:"
 
 #: editor/project_export.cpp
@@ -8741,7 +8804,8 @@ msgid "GDNative"
 msgstr "জিডিন্যাটিভ"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+#, fuzzy
+msgid "Step argument is zero!"
 msgstr "ধাপ মান/আর্গুমেন্ট শূন্য!"
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9745,7 +9809,9 @@ msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9843,6 +9909,10 @@ msgstr ""
 msgid "AnimationPlayer root is not a valid node."
 msgstr "অ্যানিমেশনের তালিকাটি অকার্যকর।"
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 #, fuzzy
 msgid "Raw Mode"
@@ -9859,6 +9929,10 @@ msgstr "সতর্কতা!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -9924,11 +9998,6 @@ msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
 msgid "Input"
 msgstr "ইনপুট যোগ করুন"
 
-#: scene/resources/visual_shader.cpp
-#, fuzzy
-msgid "None"
-msgstr "<নান/কিছুই না>"
-
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for shader."
@@ -9945,6 +10014,53 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Create Poly"
+#~ msgstr "Poly তৈরি করুন"
+
+#, fuzzy
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "আরম্ভ হতে নতুন polygon তৈরি করুন।"
+
+#, fuzzy
+#~ msgid "Zoom out"
+#~ msgstr "সংকুচিত করুন (জুম্ আউট)"
+
+#, fuzzy
+#~ msgid "Zoom in"
+#~ msgstr "সম্প্রসারিত করুন (জুম্ ইন)"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "Poly3D তৈরি করুন"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "এই নোডের মধ্যে  কোন অক্লুডার পলিগন টুডি রিসোর্স বিদ্যমান নেই।\n"
+#~ " নতুন পলিগন তৈরি করবেন?"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "বিদ্যমান পলিগন সম্পাদন করুন:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "মাউসের বাম বোতাম: বিন্দু সরান।"
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "কন্ট্রোল + মাউসের বাম বোতাম: অংশ বিভক্ত করুন।"
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "মাউসের ডান বোতাম: বিন্দু মুছে ফেলুন।"
+
+#, fuzzy
+#~ msgid "New TextFile"
+#~ msgstr "ফাইল"
+
+#~ msgid "Save Theme As"
+#~ msgstr "থিম এইরূপে সংরক্ষণ করুন"
+
+#~ msgid "<None>"
+#~ msgstr "<নান/কিছুই না>"
 
 #, fuzzy
 #~ msgid "Zoom:"

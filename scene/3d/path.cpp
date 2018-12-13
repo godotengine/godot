@@ -476,7 +476,7 @@ String OrientedPathFollow::get_configuration_warning() const {
 	} else {
 		Path *path = Object::cast_to<Path>(get_parent());
 		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled()) {
-			return TTR("OrientedPathFollow requires up vectors enabled in its parent Path.");
+			return TTR("OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve resource.");
 		}
 	}
 

@@ -1850,7 +1850,7 @@ ProjectManager::ProjectManager() {
 
 	sort_filters->add_spacer(true);
 	Label *search_label = memnew(Label);
-	search_label->set_text(TTR("  Search:"));
+	search_label->set_text(TTR("Search:"));
 	sort_filters->add_child(search_label);
 
 	HBoxContainer *search_filters = memnew(HBoxContainer);

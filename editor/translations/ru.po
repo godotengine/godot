@@ -34,7 +34,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 10:13+0000\n"
+"PO-Revision-Date: 2018-12-13 14:42+0100\n"
 "Last-Translator: Александр <ol-vin@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -280,7 +280,6 @@ msgstr "Создать %d новые дорожки и вставить ключ
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -554,15 +553,19 @@ msgstr "Заменить всё"
 msgid "Selection Only"
 msgstr "Только выделять"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "Приблизить"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "Отдалить"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Сбросить приближение"
 
@@ -731,8 +734,8 @@ msgid "Recent:"
 msgstr "Недавнее:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Поиск:"
@@ -783,8 +786,7 @@ msgid "Resource"
 msgstr "Ресурс"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "Путь"
 
@@ -1248,8 +1250,7 @@ msgid "Node Name:"
 msgstr "Имя Узла:"
 
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
-#: editor/editor_profiler.cpp editor/project_manager.cpp
-#: editor/settings_config_dialog.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Имя"
 
@@ -2180,7 +2181,7 @@ msgstr "Параметры проекта"
 msgid "Export"
 msgstr "Экспорт"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Инструменты"
 
@@ -2610,6 +2611,12 @@ msgstr "Назначить.."
 
 #: editor/editor_properties.cpp
 msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
@@ -2632,8 +2639,7 @@ msgstr ""
 msgid "Pick a Viewport"
 msgstr "Выберите Viewport"
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr "Новый скрипт"
 
@@ -3056,7 +3062,7 @@ msgstr "Дублировать..."
 msgid "Move To..."
 msgstr "Переместить в..."
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
 msgstr "Новый скрипт."
 
@@ -3181,7 +3187,8 @@ msgid "Group name already exists."
 msgstr "Имя группы уже существует."
 
 #: editor/groups_editor.cpp
-msgid "invalid Group name."
+#, fuzzy
+msgid "Invalid group name."
 msgstr "недопустимое имя группы."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
@@ -3427,14 +3434,13 @@ msgid "Activate now?"
 msgstr "Активировать сейчас?"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
-msgstr "Создан полигон"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Create Polygon"
+msgstr "Создать Полигон"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "Редактировать полигон"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3442,25 +3448,27 @@ msgid "Insert Point"
 msgstr "Вставить точку"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "Редактировать полигон (удалить точку)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "Удалить полигон и точку"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "Создать новый полигон с нуля"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Create points."
+msgstr "Создать точки."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "Редактирование полигона:\n"
 "ЛКМ: переместить точку.\n"
@@ -3468,8 +3476,9 @@ msgstr ""
 "ПКМ: удалить точку."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
-msgstr "Удалить точку"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Erase points."
+msgstr "Удалить точки."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3514,15 +3523,6 @@ msgstr "Установить место смешивания в простран
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr "Выбирайте, перемещайте и создавайте точки с ПКМ."
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-msgid "Create points."
-msgstr "Создать точки."
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-msgid "Erase points."
-msgstr "Удалить точки."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3604,7 +3604,6 @@ msgstr ""
 "удается получить отслеживаемые имена."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node.."
 msgstr "Добавить Узел.."
 
@@ -4144,7 +4143,7 @@ msgstr "Все"
 msgid "Plugins"
 msgstr "Плагины"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "Сортировать:"
 
@@ -4298,16 +4297,17 @@ msgid "Paste Pose"
 msgstr "Вставить позу"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom out"
-msgstr "Уменьшить"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom reset"
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
+#, fuzzy
+msgid "Zoom Reset"
 msgstr "Сбросить масштаб"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Zoom in"
-msgstr "Увеличить"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4568,8 +4568,17 @@ msgstr ""
 "Drag & drop + Alt : Изменить тип узла"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "Создан Poly3D"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "Создать Полигон"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "Редактировать полигон"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "Редактировать полигон (удалить точку)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
@@ -4670,36 +4679,8 @@ msgid "Item List Editor"
 msgstr "Редактор списка элементов"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"Нет OccluderPolygon2D ресурса у этого узла.\n"
-"Создать и назначить?"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "Создан затеняющий полигон"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "Создать новый полигон с нуля."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "Редактировать существующий полигон:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "ЛКМ: Передвинуть точку."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "Ctrl+ЛКМ: Разделить сегмент."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "ПКМ: Удалить точку."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -5068,6 +5049,11 @@ msgid "Add Point to Curve"
 msgstr "Добавить точку к кривой"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "Сомкнуть кривую"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
 msgstr "Точка кривой передвинута"
 
@@ -5095,6 +5081,11 @@ msgid "Click: Add Point"
 msgstr "ЛКМ: Добавить точку"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "Разделить сегмент (в кривой)"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "ПКМ: Удалить точку"
@@ -5107,11 +5098,6 @@ msgstr "Выбор точек управления (Shift+Тащить)"
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "Добавить точку (в пустом пространстрве)"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "Разделить сегмент (в кривой)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5171,6 +5157,10 @@ msgstr "Удалить выходную контрольную точку"
 msgid "Remove In-Control Point"
 msgstr "Удалить входную контрольную точку"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "Разделить сегмент (в кривой)"
+
 #: editor/plugins/physical_bone_plugin.cpp
 msgid "Move joint"
 msgstr "Передвинуть сустав"
@@ -5181,8 +5171,18 @@ msgid ""
 msgstr "Свойство скелета Polygon2D не указывает на узел Skeleton2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Sync bones"
+#, fuzzy
+msgid "Sync Bones"
 msgstr "Синхронизировать кости"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr ""
+"В этом узле нет текстуры.\n"
+"Выберите текстуру, чтобы редактировать область."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5221,8 +5221,19 @@ msgid "Transform UV Map"
 msgstr "Преобразовать UV карту"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "Тип преобразования"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Paint Bone Weights"
 msgstr "Рисовать веса костей"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "Polygon 2D UV редактор"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5245,11 +5256,8 @@ msgid "Bones"
 msgstr "Кости"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Create Polygon"
-msgstr "Создать Полигон"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+#, fuzzy
+msgid "Move Points"
 msgstr "Передвинуть точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5277,19 +5285,23 @@ msgid "Scale Polygon"
 msgstr "Масштабировать полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+#, fuzzy
+msgid "Connect two points to make a split."
 msgstr "Соединить две точки, чтобы создать разделение"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it"
+#, fuzzy
+msgid "Select a split to erase it."
 msgstr "Выберите разделение, чтобы стереть его"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+#, fuzzy
+msgid "Paint weights with specified intensity."
 msgstr "Красить веса с заданной интенсивностью"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+#, fuzzy
+msgid "Unpaint weights with specified intensity."
 msgstr "Снять краску веса с заданной интенсивностью"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5427,19 +5439,23 @@ msgid "Error saving file!"
 msgstr "Ошибка при сохранении файла!"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "Ошибка во время сохранения темы"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "Ошибка сохранения"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "Ошибка импортирования темы"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "Ошибка импортирования"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5457,6 +5473,14 @@ msgstr "Сохранить как..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "Импортировать тему"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "Ошибка во время сохранения темы"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "Ошибка сохранения"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5499,8 +5523,9 @@ msgid "File"
 msgstr "Файл"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New TextFile"
-msgstr "Новый текстовый файл"
+#, fuzzy
+msgid "Open..."
+msgstr "Открыть"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5528,16 +5553,17 @@ msgid "Theme"
 msgstr "Тема"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "Импортировать тему"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "Перезагрузить тему"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "Сохранить тему"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "Сохранить тему как"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5645,6 +5671,10 @@ msgstr "(игнорировать)"
 msgid "Go to Function"
 msgstr "Перейти к функции"
 
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr "Стандартный"
+
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
 msgstr "Можно перетащить только ресурс из файловой системы."
@@ -5676,10 +5706,6 @@ msgstr "Прописные"
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
 msgstr "Подсветка Синтаксиса"
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
-msgstr "Стандартный"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6373,12 +6399,19 @@ msgid "Set Region Rect"
 msgstr "Задать регион"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "Задать обработчик"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Режим привязки:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
-msgstr "<Нет>"
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "None"
+msgstr "None"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
@@ -6613,11 +6646,13 @@ msgid "Clear transform"
 msgstr "Очистить преобразование"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Add Texture(s) to TileSet"
+#, fuzzy
+msgid "Add Texture(s) to TileSet."
 msgstr "Добавить текстуры в набор тайлов"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove current Texture from TileSet"
+#, fuzzy
+msgid "Remove selected Texture from TileSet."
 msgstr "Удалить текущую текстуру из набора тайлов"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6629,15 +6664,35 @@ msgid "Merge from Scene"
 msgstr "Слияние из сцены"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
+msgid "Copy bitmask."
 msgstr ""
-"Выберите плитку для использования в качестве значка, она также будет "
-"использоваться при неверных привязках автотайлов."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "Вставить анимацию"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "Удалить точки."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "Создать новый полигон с нуля."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Отображение имен плитки (удерживайте нажатой клавишу Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6669,14 +6724,9 @@ msgstr ""
 "Нажмите на другую плитку, чтобы отредактировать ее."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
-"ЛКМ: установить бит.\n"
-"ПКМ: снять бит.\n"
-"Нажмите на другой тайл чтобы его отредактировать."
+#, fuzzy
+msgid "Delete selected Rect."
+msgstr "Удалить выбранные файлы?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6684,6 +6734,22 @@ msgid ""
 "Click on another Tile to edit it."
 msgstr ""
 "Выбрать текущий редактированный вложенный тайл.\n"
+"Нажмите на другой тайл чтобы его отредактировать."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "Удалить точку"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"ЛКМ: установить бит.\n"
+"ПКМ: снять бит.\n"
 "Нажмите на другой тайл чтобы его отредактировать."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6705,11 +6771,21 @@ msgstr ""
 "Нажмите на другую плитку, чтобы отредактировать ее."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"Выберите суб-плитку, чтобы изменить его приоритет.\n"
+"Нажмите на другую плитку, чтобы отредактировать ее."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "Это свойство не может быть изменено."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
+#, fuzzy
+msgid "TileSet"
 msgstr "Набор тайлов"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6723,6 +6799,11 @@ msgstr "Фрагмент"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "Свет"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node..."
+msgstr "Добавить Узел.."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6761,7 +6842,8 @@ msgid "Add..."
 msgstr "Добавить..."
 
 #: editor/project_export.cpp
-msgid "Export Path:"
+#, fuzzy
+msgid "Export Path"
 msgstr "Путь экспорта:"
 
 #: editor/project_export.cpp
@@ -8266,7 +8348,8 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+#, fuzzy
+msgid "Step argument is zero!"
 msgstr "Аргумент шага равен нулю!"
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -9237,7 +9320,10 @@ msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr "OrientedPathFollow работает только если она дочь узла Path."
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
+#, fuzzy
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
 msgstr ""
 "OrientedPathFollow требует, чтобы в его родительском пути были включены "
 "векторы."
@@ -9342,6 +9428,10 @@ msgstr "Путь, заданный для AnimationPlayer, не ведет к у
 msgid "AnimationPlayer root is not a valid node."
 msgstr "Корневой элемент AnimationPlayer недействительный."
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "RAW режим"
@@ -9357,6 +9447,10 @@ msgstr "Внимание!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Подтверждение..."
+
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -9430,11 +9524,6 @@ msgstr "Недопустимый размер шрифта."
 msgid "Input"
 msgstr "Добавить вход"
 
-#: scene/resources/visual_shader.cpp
-#, fuzzy
-msgid "None"
-msgstr "None"
-
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "Недействительный источник шейдера."
@@ -9452,6 +9541,56 @@ msgstr "Назначить форму"
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Переменные могут быть назначены только в функции вершин."
+
+#~ msgid "Create Poly"
+#~ msgstr "Создан полигон"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "Создать новый полигон с нуля"
+
+#~ msgid "Zoom out"
+#~ msgstr "Уменьшить"
+
+#~ msgid "Zoom in"
+#~ msgstr "Увеличить"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "Создан Poly3D"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "Нет OccluderPolygon2D ресурса у этого узла.\n"
+#~ "Создать и назначить?"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "Редактировать существующий полигон:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "ЛКМ: Передвинуть точку."
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "Ctrl+ЛКМ: Разделить сегмент."
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "ПКМ: Удалить точку."
+
+#~ msgid "New TextFile"
+#~ msgstr "Новый текстовый файл"
+
+#~ msgid "Save Theme As"
+#~ msgstr "Сохранить тему как"
+
+#~ msgid "<None>"
+#~ msgstr "<Нет>"
+
+#~ msgid ""
+#~ "Select sub-tile to use as icon, this will be also used on invalid "
+#~ "autotile bindings."
+#~ msgstr ""
+#~ "Выберите плитку для использования в качестве значка, она также будет "
+#~ "использоваться при неверных привязках автотайлов."
 
 #~ msgid "Zoom:"
 #~ msgstr "Приближение:"
@@ -11013,13 +11152,6 @@ msgstr "Переменные могут быть назначены только
 
 #~ msgid "Scale Region Editor"
 #~ msgstr "Редактор масштабируемой области текстуры"
-
-#~ msgid ""
-#~ "No texture in this node.\n"
-#~ "Set a texture to be able to edit region."
-#~ msgstr ""
-#~ "В этом узле нет текстуры.\n"
-#~ "Выберите текстуру, чтобы редактировать область."
 
 #~ msgid "Inherit Scene"
 #~ msgstr "Унаследовать сцену"
