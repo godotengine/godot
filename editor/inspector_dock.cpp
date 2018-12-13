@@ -334,6 +334,7 @@ void InspectorDock::_notification(int p_what) {
 			set_theme(editor->get_gui_base()->get_theme());
 			resource_new_button->set_icon(get_icon("New", "EditorIcons"));
 			resource_load_button->set_icon(get_icon("Load", "EditorIcons"));
+			resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
 			backward_button->set_icon(get_icon("Back", "EditorIcons"));
 			forward_button->set_icon(get_icon("Forward", "EditorIcons"));
 			history_menu->set_icon(get_icon("History", "EditorIcons"));
@@ -416,6 +417,7 @@ void InspectorDock::update(Object *p_object) {
 
 	object_menu->set_disabled(false);
 	search->set_editable(true);
+	resource_save_button->set_disabled(!is_resource);
 
 	PopupMenu *p = object_menu->get_popup();
 
@@ -514,6 +516,16 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	general_options_hb->add_child(resource_load_button);
 	resource_load_button->connect("pressed", this, "_open_resource_selector");
 	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
+
+	resource_save_button = memnew(MenuButton);
+	resource_save_button->set_tooltip(TTR("Save the currently edited resource."));
+	resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
+	general_options_hb->add_child(resource_save_button);
+	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
+	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
+	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_disabled(true);
 
 	general_options_hb->add_spacer();
 
