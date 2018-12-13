@@ -32,6 +32,7 @@
 
 #include "os_iphone.h"
 
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
@@ -51,12 +52,19 @@
 
 int OSIPhone::get_video_driver_count() const {
 
-	return 1;
+	return 2;
 };
 
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
 
-	return "GLES3";
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+	}
+	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
+	ERR_FAIL_V(NULL);
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -97,16 +105,48 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+extern bool gles3_available; // from gl_view.mm
+
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	video_driver_index = VIDEO_DRIVER_GLES3;
+	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
+	bool gl_initialization_error = false;
 
-	if (RasterizerGLES3::is_viable() != OK) {
+	while (true) {
+		if (use_gl3) {
+			if (RasterizerGLES3::is_viable() == OK && gles3_available) {
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					use_gl3 = false;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		} else {
+			if (RasterizerGLES2::is_viable() == OK) {
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
+				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
 
+	video_driver_index = p_video_driver;
 	visual_server = memnew(VisualServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -117,7 +157,10 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	//visual_server->cursor_set_visible(false, 0);
 
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
+	if (use_gl3)
+		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
+	else
+		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
 
 	AudioDriverManager::initialize(p_audio_driver);
 
