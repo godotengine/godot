@@ -70,7 +70,6 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
 	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
 	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
-	Color indent_guide_color = EDITOR_GET("text_editor/highlighting/indent_guide_color");
 	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
 	Color selection_color = EDITOR_GET("text_editor/highlighting/selection_color");
 	Color brace_mismatch_color = EDITOR_GET("text_editor/highlighting/brace_mismatch_color");
@@ -99,7 +98,6 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("line_number_color", line_number_color);
 	get_text_edit()->add_color_override("caret_color", caret_color);
 	get_text_edit()->add_color_override("caret_background_color", caret_background_color);
-	get_text_edit()->add_color_override("indent_guide_color", indent_guide_color);
 	get_text_edit()->add_color_override("font_selected_color", text_selected_color);
 	get_text_edit()->add_color_override("selection_color", selection_color);
 	get_text_edit()->add_color_override("brace_mismatch_color", brace_mismatch_color);
@@ -370,7 +368,6 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_edit()->set_indent_size(EditorSettings::get_singleton()->get("text_editor/indent/size"));
 	shader_editor->get_text_edit()->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
 	shader_editor->get_text_edit()->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
-	shader_editor->get_text_edit()->set_draw_indent_guides(EditorSettings::get_singleton()->get("text_editor/indent/draw_indent_guides"));
 	shader_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
 	shader_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_line_numbers"));
 	shader_editor->get_text_edit()->set_syntax_coloring(EditorSettings::get_singleton()->get("text_editor/highlighting/syntax_highlighting"));

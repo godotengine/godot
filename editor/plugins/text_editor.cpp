@@ -84,7 +84,6 @@ void TextEditor::_load_theme_settings() {
 	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
 	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
 	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
-	Color indent_guide_color = EDITOR_GET("text_editor/highlighting/indent_guide_color");
 	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
 	Color selection_color = EDITOR_GET("text_editor/highlighting/selection_color");
 	Color brace_mismatch_color = EDITOR_GET("text_editor/highlighting/brace_mismatch_color");
@@ -116,7 +115,6 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_color_override("line_number_color", line_number_color);
 	text_edit->add_color_override("caret_color", caret_color);
 	text_edit->add_color_override("caret_background_color", caret_background_color);
-	text_edit->add_color_override("indent_guide_color", indent_guide_color);
 	text_edit->add_color_override("font_selected_color", text_selected_color);
 	text_edit->add_color_override("selection_color", selection_color);
 	text_edit->add_color_override("brace_mismatch_color", brace_mismatch_color);
