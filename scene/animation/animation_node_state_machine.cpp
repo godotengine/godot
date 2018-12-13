@@ -795,7 +795,7 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-void AnimationNodeStateMachine::on_playback_state_changed(){
+void AnimationNodeStateMachine::on_playback_state_changed() {
 
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND(playback.is_null());
@@ -808,7 +808,7 @@ float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND_V(playback.is_null(), 0.0);
 
-	if (!playback->is_connected("state_changed", this, "on_playback_state_changed")){
+	if (!playback->is_connected("state_changed", this, "on_playback_state_changed")) {
 		playback->connect("state_changed", this, "on_playback_state_changed");
 	}
 
@@ -983,7 +983,7 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeStateMachine::get_graph_offset);
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationNodeStateMachine::_tree_changed);
-	
+
 	ClassDB::bind_method(D_METHOD("on_playback_state_changed"), &AnimationNodeStateMachine::on_playback_state_changed);
 
 	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::STRING, "new_state")));
@@ -992,6 +992,4 @@ void AnimationNodeStateMachine::_bind_methods() {
 AnimationNodeStateMachine::AnimationNodeStateMachine() {
 
 	playback = "playback";
-
 }
-
