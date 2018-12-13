@@ -433,13 +433,32 @@ String keycode_get_string(uint32_t p_code) {
 }
 
 int find_keycode(const String &p_code) {
-
+	if (p_code == "")
+		return 0;
 	const _KeyCodeText *kct = &_keycodes[0];
 
+	Vector<String> v = p_code.split("+", false);
+	String key;
+	if (v.size() > 1) {
+		key = v.get(v.size() - 1);
+	} else {
+		key = p_code;
+	}
 	while (kct->text) {
-
-		if (p_code.nocasecmp_to(kct->text) == 0) {
-			return kct->code;
+		if (key.nocasecmp_to(kct->text) == 0) {
+			int scancode = kct->code;
+			for (int i = 0; i < v.size() - 1; i++) {
+				if (v[i].nocasecmp_to("Control") == 0) {
+					scancode |= KEY_MASK_CTRL;
+				} else if (v[i].nocasecmp_to("Alt") == 0) {
+					scancode |= KEY_MASK_ALT;
+				} else if (v[i].nocasecmp_to("Shift") == 0) {
+					scancode |= KEY_MASK_SHIFT;
+				} else if (v[i].nocasecmp_to("Meta") == 0) {
+					scancode |= KEY_MASK_META;
+				}
+			}
+			return scancode;
 		}
 		kct++;
 	}
