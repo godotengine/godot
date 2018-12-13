@@ -777,6 +777,7 @@ void RichTextLabel::_update_scroll() {
 		main->first_invalid_line = 0; //invalidate ALL
 		_validate_line_caches(main);
 	}
+	scroll_updated = true;
 }
 
 void RichTextLabel::_notification(int p_what) {
@@ -929,6 +930,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 			if (true) {
 
 				if (b->is_pressed() && !b->is_doubleclick()) {
+					scroll_updated = false;
 					int line = 0;
 					Item *item = NULL;
 
@@ -937,12 +939,7 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 					if (item) {
 
-						Variant meta;
-						if (!outside && _find_meta(item, &meta)) {
-							//meta clicked
-
-							emit_signal("meta_clicked", meta);
-						} else if (selection.enabled) {
+						if (selection.enabled) {
 
 							selection.click = item;
 							selection.click_char = line;
@@ -991,6 +988,24 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 				} else if (!b->is_pressed()) {
 
 					selection.click = NULL;
+
+					if (!b->is_doubleclick() && !scroll_updated) {
+						int line = 0;
+						Item *item = NULL;
+
+						bool outside;
+						_find_click(main, b->get_position(), &item, &line, &outside);
+
+						if (item) {
+
+							Variant meta;
+							if (!outside && _find_meta(item, &meta)) {
+								//meta clicked
+
+								emit_signal("meta_clicked", meta);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -2324,6 +2339,7 @@ RichTextLabel::RichTextLabel() {
 	updating_scroll = false;
 	scroll_active = true;
 	scroll_w = 0;
+	scroll_updated = false;
 
 	vscroll = memnew(VScrollBar);
 	add_child(vscroll);
