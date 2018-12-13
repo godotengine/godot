@@ -29,7 +29,7 @@
 				Remove the given color from the list of color presets of this color picker.
 			</description>
 		</method>
-		<method name="get_presets">
+		<method name="get_presets" qualifiers="const">
 			<return type="PoolColorArray">
 			</return>
 			<description>
@@ -59,8 +59,6 @@
 				Emitted when the color is changed.
 			</description>
 		</signal>
-	</signals>
-	<signals>
 		<signal name="preset_added">
 			<argument index="0" name="color" type="Color">
 			</argument>
@@ -68,8 +66,6 @@
 				Emitted when a preset is added.
 			</description>
 		</signal>
-	</signals>
-	<signals>
 		<signal name="preset_removed">
 			<argument index="0" name="color" type="Color">
 			</argument>

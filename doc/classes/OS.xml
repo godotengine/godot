@@ -210,18 +210,18 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
-		<method name="get_ime_text" qualifiers="const">
-			<return type="String">
-			</return>
-			<description>
-				Returns IME intermediate text.
-			</description>
-		</method>
 		<method name="get_ime_selection" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
 				Returns IME selection range.
+			</description>
+		</method>
+		<method name="get_ime_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns IME intermediate text.
 			</description>
 		</method>
 		<method name="get_latin_keyboard_variant" qualifiers="const">
