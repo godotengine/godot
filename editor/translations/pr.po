@@ -2,22 +2,21 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Calum Knott <calum@calumk.com>, 2017.
 # Zion Nimchuk <zionnimchuk@gmail.com>, 2016-2017.
-#
+# Allan Nordhøy <epost@anotheragency.no>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-11-23 14:48+0000\n"
-"Last-Translator: Calum Knott <calum@calumk.com>\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Pirate <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pr/>\n"
 "Language: pr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.18-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -8503,7 +8502,7 @@ msgstr "Yer variables:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr "Yer name's got no valid identifier: "
+msgstr "Yer name's got no valid identifier:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"

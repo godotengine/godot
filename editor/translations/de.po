@@ -39,8 +39,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-04 22:14+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -577,9 +577,8 @@ msgid "Warnings:"
 msgstr "Warnungen:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Quellschriftgröße:"
+msgstr "Schriftgröße:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1728,6 +1727,9 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Diese Szene kann nicht gespeichert werden da sie eine zyklische "
+"Instantiierungshierarchie enthält.\n"
+"Speichern ist erst nach Beheben des Konflikts möglich."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -9227,7 +9229,6 @@ msgstr ""
 "Bitte erzeuge eine shape Ressource dafür!"
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nichts ist sichtbar da kein Mesh zugewiesen wurden."
 

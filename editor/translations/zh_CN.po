@@ -40,7 +40,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-12-04 05:19+0000\n"
+"PO-Revision-Date: 2018-12-13 11:41+0000\n"
 "Last-Translator: tangdou1 <1093505442@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -571,9 +571,8 @@ msgid "Warnings:"
 msgstr "警告："
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "源字体大小:"
+msgstr "字体大小:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1698,6 +1697,8 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"无法保存此场景，因为包含循环实例化。\n"
+"请解决它，然后尝试再次保存。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -7431,7 +7432,7 @@ msgstr "由计数器增量得到的每个节点的总量"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "内边距"
+msgstr "填充"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -9020,9 +9021,8 @@ msgstr ""
 "源！"
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr "无物可见，因为没有未被分配的网格(mesh)。"
+msgstr "无物可见，因为没有指定网格。"
 
 #: scene/3d/cpu_particles.cpp
 msgid ""

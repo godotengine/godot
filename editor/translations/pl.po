@@ -30,7 +30,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-12-04 22:15+0000\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -566,9 +566,8 @@ msgid "Warnings:"
 msgstr "Ostrzeżenia:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Wielkość oryginalna fontu:"
+msgstr "Rozmiar czcionki:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1324,7 +1323,7 @@ msgstr "Wybierz ten folder"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr "Skopiuj Ścieżkę"
+msgstr "Skopiuj ścieżkę"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Open in File Manager"
@@ -3043,7 +3042,7 @@ msgstr "Duplikuj..."
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr "Przenieś Do..."
+msgstr "Przenieś do..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Script..."
@@ -7792,7 +7791,7 @@ msgstr "Zapisz gałąź jako scenę"
 
 #: editor/scene_tree_dock.cpp
 msgid "Copy Node Path"
-msgstr "Skopiuj Ścieżkę"
+msgstr "Skopiuj ścieżkę węzła"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"

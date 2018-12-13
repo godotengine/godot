@@ -6,18 +6,19 @@
 # Nagy Lajos <neutron9707@gmail.com>, 2017.
 # Sandor Domokos <sandor.domokos@gmail.com>, 2017-2018.
 # Varga Dániel <danikah.danikah@gmail.com>, 2016-2018.
+# Gabor Csordas <gaborcsordas@yahoo.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-06-17 07:39+0000\n"
-"Last-Translator: Árpád Horváth <horvatha4@googlemail.com>\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
+"Last-Translator: Varga Dániel <danikah.danikah@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.0.1\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -33,11 +34,11 @@ msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Érvénytelen bemenet %1 (nem átadott) a kifejezésben."
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "self nem használható, mert a példány null (nincs átadva)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -133,7 +134,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier Görbe Nyomvonal"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
@@ -219,7 +220,7 @@ msgstr "Jövő"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Legközelebbi"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -6669,7 +6670,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Style"
-msgstr ""
+msgstr "Stílus"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Font"
@@ -6677,7 +6678,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr ""
+msgstr "Szín"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
@@ -6711,7 +6712,7 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
-msgstr ""
+msgstr "Kitöltés egy színnel"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase TileMap"
@@ -7061,7 +7062,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
-msgstr ""
+msgstr "Meglévő Projekt Importálása"
 
 #: editor/project_manager.cpp
 msgid "Import & Edit"
@@ -7069,7 +7070,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
-msgstr ""
+msgstr "Új Projekt Létrehozása"
 
 #: editor/project_manager.cpp
 msgid "Create & Edit"
@@ -7235,19 +7236,19 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr ""
+msgstr "Eszköz"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Shift+"
-msgstr ""
+msgstr "Shift+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Alt+"
-msgstr ""
+msgstr "Alt+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Control+"
-msgstr ""
+msgstr "Control+"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -7299,7 +7300,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Axis"
-msgstr ""
+msgstr "Tengely"
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Button Index:"
@@ -7319,19 +7320,19 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr ""
+msgstr "Gomb"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
-msgstr ""
+msgstr "Bal Egérgomb."
 
 #: editor/project_settings_editor.cpp
 msgid "Right Button."
-msgstr ""
+msgstr "Jobb Egérgomb."
 
 #: editor/project_settings_editor.cpp
 msgid "Middle Button."
-msgstr ""
+msgstr "Középső Egérgomb."
 
 #: editor/project_settings_editor.cpp
 msgid "Wheel Up."

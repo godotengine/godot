@@ -29,12 +29,13 @@
 # Victor Butorin <mrwebsterchannel@gmail.com>, 2018.
 # Александр <ol-vin@mail.ru>, 2018.
 # Анатолий Горбунов <afgorbunov@gmail.com>, 2018.
+# Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-04 22:15+0000\n"
-"Last-Translator: Анатолий Горбунов <afgorbunov@gmail.com>\n"
+"PO-Revision-Date: 2018-12-13 10:13+0000\n"
+"Last-Translator: Александр <ol-vin@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -92,11 +93,12 @@ msgstr "Освободить"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "Сбалансированно"
+msgstr "Сбалансированный"
 
 #: editor/animation_bezier_editor.cpp
+#, fuzzy
 msgid "Mirror"
-msgstr "Отобразить зеркально"
+msgstr "Зеркало"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -569,9 +571,8 @@ msgid "Warnings:"
 msgstr "Предупреждения:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Исходный размер шрифта:"
+msgstr "Размер шрифта:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1542,7 +1543,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
-msgstr "Описание свойств:"
+msgstr "Описание свойств"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions:"
@@ -1713,6 +1714,9 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Эта сцена не может быть сохранена, потому что есть циклическое создание "
+"ссылок.\n"
+"Пожалуйста, решите проблему, а затем повторите попытку сохранения."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2039,7 +2043,6 @@ msgstr "По умолчанию"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Show in FileSystem"
 msgstr "Показать в файловой системе"
 
@@ -2299,11 +2302,11 @@ msgstr "Переключить полноэкранный режим"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "Открыть папку с данными Редактора"
+msgstr "Открыть папку данных/настроек редактора"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "Открыть директорию с данными редактора"
+msgstr "Открыть папку данных редактора"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
@@ -2783,7 +2786,7 @@ msgstr "Не удаётся открыть архив шаблонов эксп�
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "Неверный формат version.txt у шаблона. %s."
+msgstr "Недействительный формат version.txt внутри шаблонов: %s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -2930,7 +2933,7 @@ msgstr "Загрузить Шаблоны"
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-msgstr "Выберите зеркало из списка: (Shift+Click: Открыть в Браузере)"
+msgstr "Выберите зеркало из списка: (Shift+Click: Открыть в браузере)"
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -3062,7 +3065,6 @@ msgid "New Resource..."
 msgstr "Новый ресурс..."
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Expand All"
 msgstr "Развернуть все"
 
@@ -3130,12 +3132,10 @@ msgid "Find in Files"
 msgstr "Найти в файлах"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find:"
 msgstr "Найти:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Folder:"
 msgstr "Папка:"
 
@@ -5197,7 +5197,6 @@ msgid "Split point with itself."
 msgstr "Точка разделения."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Split can't form an existing edge."
 msgstr "Нельзя отделить от существующего края."
 
@@ -5516,7 +5515,6 @@ msgid "Copy Script Path"
 msgstr "Копировать путь к скрипту"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "History Previous"
 msgstr "Предыдущий файл"
 
@@ -5872,7 +5870,7 @@ msgstr "Высота"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
-msgstr ""
+msgstr "Отклонение"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -6039,7 +6037,6 @@ msgid "Freelook Speed Modifier"
 msgstr "Обзор модификатор скорости"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Rotation Locked"
 msgstr "Блокировать вращение камеры"
 
@@ -6273,7 +6270,7 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't replace by mesh."
-msgstr "Недопустимая геометрия, не удается заменить сетки."
+msgstr "Некорректная геометрия, не может быть заменена сеткой."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
@@ -6612,9 +6609,8 @@ msgid "Flip vertically"
 msgstr "Отразить по вертикали"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear transform"
-msgstr "Преобразование"
+msgstr "Очистить преобразование"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet"
@@ -6641,14 +6637,12 @@ msgstr ""
 "использоваться при неверных привязках автотайлов."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Display tile's names (hold Alt Key)"
-msgstr "Отобразить имена плиток (удерживайте клавишу Alt)"
+msgstr "Отображение имен плитки (удерживайте нажатой клавишу Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture and ALL TILES which use it?"
-msgstr "Удалить выбранную текстуру и все плитки, которые используют её?"
+msgstr "Удалить выделенную текстуру и ВСЕ ПЛИТКИ, которые ее используют?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -6663,9 +6657,8 @@ msgid "Merge from scene?"
 msgstr "Слияние из сцены?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "%s file(s) were not added because was already on the list."
-msgstr " файл(ы) не был(и) добавлен(ы), поскольку уже в списке."
+msgstr "%s файл(ы) не были добавлены, потому что уже были в списке."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6694,33 +6687,32 @@ msgstr ""
 "Нажмите на другой тайл чтобы его отредактировать."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Select sub-tile to use as icon, this will be also used on invalid autotile "
 "bindings.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Выберите плитку для использования в качестве значка, она также будет "
-"использоваться при неверных привязках автотайлов."
+"Выберите вложенную плитку для использования в качестве иконки, она также "
+"будет использоваться для недействительных автопривязок.\n"
+"Нажмите на другую плитку, чтобы отредактировать ее."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Select sub-tile to change its priority.\n"
 "Click on another Tile to edit it."
-msgstr "Выберите вложенный тайл, для изменения его приоритета."
+msgstr ""
+"Выберите суб-плитку, чтобы изменить его приоритет.\n"
+"Нажмите на другую плитку, чтобы отредактировать ее."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "This property can't be changed."
-msgstr "Эта операция не может быть выполнена без сцены."
+msgstr "Это свойство не может быть изменено."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tile Set"
 msgstr "Набор тайлов"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vertex"
 msgstr "Вершины"
 
@@ -6729,14 +6721,12 @@ msgid "Fragment"
 msgstr "Фрагмент"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Light"
-msgstr "Право"
+msgstr "Свет"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "VisualShader"
-msgstr "Шейдер"
+msgstr "VisualShader"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -6755,14 +6745,12 @@ msgid "Export templates for this platform are missing/corrupted:"
 msgstr "Шаблоны экспорта для этой платформы отсутствуют/повреждены:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Release"
-msgstr "просто отпущена"
+msgstr "Релиз"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Exporting All"
-msgstr "Экспортирование для %s"
+msgstr "Экспорт всех"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -6773,9 +6761,8 @@ msgid "Add..."
 msgstr "Добавить..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Path:"
-msgstr "Экспортировать настройки:"
+msgstr "Путь экспорта:"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6838,14 +6825,12 @@ msgid "Export PCK/Zip"
 msgstr "Экспортировать PCK/Zip"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export mode?"
-msgstr "Режим экспортирования:"
+msgstr "Режим экспорта?"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All"
-msgstr "Экспорт"
+msgstr "Экспортировать всё"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -6860,23 +6845,21 @@ msgid "The path does not exist."
 msgstr "Путь не существует."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
-msgstr "Пожалуйста, выберите папку, которая не содержит файл 'project.godot'."
+msgstr ""
+"Недействительный '.zip' файл проекта, не содержит файл 'project.godot'."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Пожалуйста, выберите пустую папку."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "Пожалуйста, выберите 'project.godot' файл."
+msgstr "Пожалуйста, выберите файл 'project.godot' или '.zip'."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Directory already contains a Godot project."
-msgstr "Каталог уже содержит Godot проект."
+msgstr "Каталог уже содержит проект Godot."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -6967,9 +6950,8 @@ msgid "Project Path:"
 msgstr "Путь к проекту:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Project Installation Path:"
-msgstr "Путь к проекту:"
+msgstr "Путь установки проекта:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
@@ -7090,13 +7072,12 @@ msgid "Mouse Button"
 msgstr "Кнопка мыши"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid ""
 "Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
-"Недопустимое имя действия. Оно не может быть пустым или содержать '/', ':', "
-"'=', '\\' или '\"'."
+"Неверное имя действия. Оно не может быть пустым и не может содержать символы "
+"\"/\", \":\", \"=\", \"\\\" или \"''\""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
@@ -7107,18 +7088,16 @@ msgid "Rename Input Action Event"
 msgstr "Переименовать действие"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Change Action deadzone"
-msgstr "Изменить имя анимации:"
+msgstr "Изменить Действие мертвой зоны"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Input Action Event"
 msgstr "Добавить действие"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "All Devices"
-msgstr "Устройство"
+msgstr "Все устройства"
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
@@ -7165,24 +7144,20 @@ msgid "Wheel Down Button"
 msgstr "Колёсико вниз"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Wheel Left Button"
-msgstr "Колёсико вверх"
+msgstr "Кнопка на колесике слева"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Wheel Right Button"
-msgstr "Правая кнопка мыши"
+msgstr "Правая кнопка колеса"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "X Button 1"
-msgstr "Кнопка 6"
+msgstr "Кнопка X 1"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "X Button 2"
-msgstr "Кнопка 6"
+msgstr "Кнопка X 2"
 
 #: editor/project_settings_editor.cpp
 msgid "Joypad Axis Index:"
@@ -7345,9 +7320,8 @@ msgid "Action"
 msgstr "Действие"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Deadzone"
-msgstr "\"Мертвая\" зона"
+msgstr "Мертвая зона"
 
 #: editor/project_settings_editor.cpp
 msgid "Device:"
@@ -7480,9 +7454,8 @@ msgstr ""
 "инструмент:"
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Batch Rename"
-msgstr "Переименовать"
+msgstr "Пакетное переименование"
 
 #: editor/rename_dialog.cpp
 msgid "Prefix"
@@ -7493,52 +7466,45 @@ msgid "Suffix"
 msgstr "Суффикс"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Advanced options"
-msgstr "Параметры прилипания"
+msgstr "Дополнительные параметры"
 
 #: editor/rename_dialog.cpp
 msgid "Substitute"
 msgstr "Заменить"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Node name"
-msgstr "Имя Узла:"
+msgstr "Имя узла"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Node's parent name, if available"
-msgstr "Родительское имя узла, если оно доступно"
+msgstr "Имя родительского узла, если оно доступно"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Node type"
-msgstr "Найти тип узла"
+msgstr "Тип узла"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Current scene name"
-msgstr "Текущая сцена"
+msgstr "Название текущей сцены"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Root node name"
-msgstr "Имя корневого узла:"
+msgstr "Имя корневого узла"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid ""
 "Sequential integer counter.\n"
 "Compare counter options."
 msgstr ""
 "Последовательный целочисленный счетчик.\n"
-"Сравните параметры счетчика."
+"Сравните параметров счетчика."
 
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "Per Level counter"
-msgstr "Счетчик на уровень"
+msgstr "Счетчик уровеня"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -7551,14 +7517,13 @@ msgid "Initial value for the counter"
 msgstr "Начальное значение для счетчика"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Step"
-msgstr "Шаг:"
+msgstr "Шаг"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Amount by which counter is incremented for each node"
-msgstr "Количество, на которое увеличивается счетчик для каждого узла"
+msgstr ""
+"Количество, на которое увеличивается значение счетчика для каждого узла"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
@@ -7571,17 +7536,16 @@ msgid ""
 "Missing digits are padded with leading zeros."
 msgstr ""
 "Минимальное количество цифр для счетчика.\n"
-"Недостающие цифры дополняются ведущими нулями."
+"Недостающие цифры заполняются нулями."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expressions"
-msgstr "Изменить выражение"
+msgstr "Регулярные Выражения"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
 msgid "Post-Process"
-msgstr "Скрипт пост-процесса:"
+msgstr "Пост-обработка"
 
 #: editor/rename_dialog.cpp
 msgid "Keep"
@@ -7613,9 +7577,8 @@ msgid "To Uppercase"
 msgstr "ВЕРХНИЙ РЕГИСТР"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Reset"
-msgstr "Сбросить приближение"
+msgstr "Сброс"
 
 #: editor/rename_dialog.cpp
 msgid "Error"
@@ -7722,6 +7685,8 @@ msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
+"Отключение параметра \"editable_instance\" приведет к тому, что все свойства "
+"узла будут возвращены к значениям по умолчанию."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -7736,29 +7701,24 @@ msgid "Make Local"
 msgstr "Сделать локальным"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Create Root Node:"
-msgstr "Создать узел"
+msgstr "Создать корневой узел:"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "2D Scene"
-msgstr "Сцена"
+msgstr "2D-сцена"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "3D Scene"
-msgstr "Сцена"
+msgstr "3D-сцена"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "User Interface"
-msgstr "Очистить наследование"
+msgstr "Пользовательский интерфейс"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Custom Node"
-msgstr "Вырезать узлы"
+msgstr "Пользовательский узел"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -7801,9 +7761,8 @@ msgid "Clear Inheritance"
 msgstr "Очистить наследование"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Open documentation"
-msgstr "Открыть онлайн документацию Godot"
+msgstr "Открыть документацию"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -7820,7 +7779,7 @@ msgstr "Изменить тип"
 #: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Extend Script"
-msgstr "Открыть скрипт"
+msgstr "Наследовать скрипт"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -7977,16 +7936,15 @@ msgstr "Н/Д"
 #: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Open Script/Choose Location"
-msgstr "Открыть редактор скриптов"
+msgstr "Открыть Скрипт/Выбрать Место"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Не указан путь"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Filename is empty"
-msgstr "Спрайт пуст!"
+msgstr "Пустое имя файла"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is not local"
@@ -8079,7 +8037,7 @@ msgstr "Байты:"
 #: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Stack Trace"
-msgstr "Стек"
+msgstr "Трассировка Стека"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
@@ -8530,8 +8488,9 @@ msgid "End of inner exception stack trace"
 msgstr "Конец трассировки внутреннего стека исключений"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
+#, fuzzy
 msgid "Bake NavMesh"
-msgstr ""
+msgstr "Испечь NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -8917,12 +8876,11 @@ msgstr "Искать VisualScript"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Get %s"
-msgstr ""
+msgstr "Получить %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
-#, fuzzy
 msgid "Set %s"
-msgstr "Задать "
+msgstr "Задать %s"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -8973,16 +8931,15 @@ msgstr ""
 "сцен). Будет работать первый созданный, остальные будут проигнорированы."
 
 #: scene/2d/collision_object_2d.cpp
-#, fuzzy
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"Этот узел не имеет дочерних форм, поэтому он не может взаимодействовать с "
-"пространством.\n"
-"Рассмотрите возможность добавления CollisionShape2D или CollisionPolygon2D "
-"дочерних узлов, для определения его формы."
+"Этот узел не имеет форму, поэтому не может сталкиваться или "
+"взаимодействовать с другими объектами.\n"
+"Подумайте о добавлении CollisionShape2D или CollisionPolygon2D как дочерний, "
+"чтобы определить ее форму."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -9023,6 +8980,8 @@ msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"Анимация CPUParticles2D требует использования CanvasItemMaterial с "
+"включенной функцией \"Particles Animation\"."
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -9078,6 +9037,8 @@ msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"Для анимации Particles2D требуется использование CanvasItemMaterial с "
+"включенной функцией \"Particles Animation\"."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -9102,23 +9063,21 @@ msgstr ""
 "Node2D."
 
 #: scene/2d/skeleton_2d.cpp
-#, fuzzy
 msgid "This Bone2D chain should end at a Skeleton2D node."
-msgstr "Эта цепь Bone2D должна заканчиваться на узле Skeleton2D ."
+msgstr "Эта Bone2D цепь должна заканчиваться на узле Skeleton2D."
 
 #: scene/2d/skeleton_2d.cpp
-#, fuzzy
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr ""
-"Bone2D работает только с Skeleton2D или другим Bone2D как родительский узел."
+"Bone2D работает только со Skeleton2D или другим Bone2D в качестве "
+"родительского узла."
 
 #: scene/2d/skeleton_2d.cpp
-#, fuzzy
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr ""
-"Этой кости не хватает правильной позы REST. Перейдите к узлу Skeleton2D и "
-"установите его."
+"У этой кости отсутствует правильная REST-позиция. Перейдите к узлу "
+"Skeleton2D и установите её."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -9185,16 +9144,15 @@ msgid "Lighting Meshes: "
 msgstr "Освещение полисетки: "
 
 #: scene/3d/collision_object.cpp
-#, fuzzy
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"Этот узел не имеет дочерних форм, поэтому он не может взаимодействовать с "
-"пространством.\n"
-"Рассмотрите возможность добавления CollisionShape или CollisionPolygon "
-"дочерних узлов, чтобы определить его форму."
+"Этот узел не имеет форму, поэтому не может сталкиваться или "
+"взаимодействовать с другими объектами.\n"
+"Подумайте о добавлении CollisionShape или CollisionPolygon как дочернего, "
+"чтобы определить ее форму."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -9229,15 +9187,16 @@ msgstr ""
 "создайте shape-ресурс для этого!"
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr "Ничего не видно, потому что полисетки не были назначены на отрисовку."
+msgstr "Ничто не видно, потому что не назначена сетка."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
 "CPUParticles animation requires the usage of a SpatialMaterial with "
 "\"Billboard Particles\" enabled."
 msgstr ""
+"Анимация CPUParticles требует использования SpatialMaterial с включенной "
+"функцией \"Billboard Particles\"."
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -9266,24 +9225,22 @@ msgid ""
 "Particles animation requires the usage of a SpatialMaterial with \"Billboard "
 "Particles\" enabled."
 msgstr ""
+"Анимация частиц требует использования SpatialMaterial с включенной функцией "
+"\"Billboard Particles\"."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr ""
-"PathFollow2D работает только при установке его в качестве дочернего узла "
-"Path2D."
+msgstr "PathFollow работает только при если она дочь узла Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr ""
-"PathFollow2D работает только при установке его в качестве дочернего узла "
-"Path2D."
+msgstr "OrientedPathFollow работает только если она дочь узла Path."
 
 #: scene/3d/path.cpp
 msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
 msgstr ""
+"OrientedPathFollow требует, чтобы в его родительском пути были включены "
+"векторы."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9323,15 +9280,15 @@ msgid "This body will be ignored until you set a mesh"
 msgstr "Это тело будет игнорироваться, пока вы не установите сетку"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid ""
 "Size changes to SoftBody will be overridden by the physics engine when "
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"Изменения размера RigidBody (в режиме character или rigid) будут "
-"переопределены движком при запуске.\n"
-"Измените размер дочерней формы коллизии."
+"Изменения размера SoftBody будут переопределены физическим движком во время "
+"работы.\n"
+"Вместо этого измените размер его дочерних форм столкновений(collision "
+"shapes)."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
@@ -9354,39 +9311,32 @@ msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "На узле BlendTree '%s' анимация не найдена: '%s'"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Animation not found: '%s'"
-msgstr "Инструменты анимации"
+msgstr "Анимация не найдена: %s"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
 msgstr "В узле '%s' недопустимая анимация: '%s'."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "ОШИБКА: Недопустимое название анимации!"
+msgstr "Неверная анимация: \"%s\"."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "Отключить '%s' от '%s'"
+msgstr "Ничего не подключено к входу \"%s\" узла \"%s\"."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "A root AnimationNode for the graph is not set."
 msgstr "Не задан корневой AnimationNode для графа."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Path to an AnimationPlayer node containing animations is not set."
-msgstr "Выберите AnimationPlayer из дерева сцены для редактирования анимаций."
+msgstr "Путь к узлу AnimationPlayer, содержащему анимацию, не задан."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
-msgstr ""
-"Путь установленный для AnimationPlayer не приводит к узлу AnimationPlayer."
+msgstr "Путь, заданный для AnimationPlayer, не ведет к узлу AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
 msgid "AnimationPlayer root is not a valid node."
@@ -9420,7 +9370,7 @@ msgstr ""
 
 #: scene/gui/range.cpp
 msgid "If exp_edit is true min_value must be > 0."
-msgstr ""
+msgstr "Если exp_edit равен true min_value должно быть > 0."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -9483,12 +9433,11 @@ msgstr "Добавить вход"
 #: scene/resources/visual_shader.cpp
 #, fuzzy
 msgid "None"
-msgstr "<Нет>"
+msgstr "None"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for shader."
-msgstr "Неверный источник!"
+msgstr "Недействительный источник шейдера."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

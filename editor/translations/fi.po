@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-12-04 05:21+0000\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -399,14 +399,12 @@ msgid "Delete Selection"
 msgstr "Poista valitut"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
-msgstr "Mene seuraavaan vaiheeseen"
+msgstr "Mene seuraavaan askeleeseen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
-msgstr "Mene edelliseen vaiheeseen"
+msgstr "Mene edelliseen askeleeseen"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -545,9 +543,8 @@ msgid "Warnings:"
 msgstr "Varoitukset:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Etunäkymä"
+msgstr "Fontin koko:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1303,7 +1300,6 @@ msgid "File Exists, Overwrite?"
 msgstr "Tiedosto on jo olemassa, korvaa?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select This Folder"
 msgstr "Valitse tämä kansio"
 
@@ -1312,13 +1308,11 @@ msgid "Copy Path"
 msgstr "Kopioi polku"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
 msgstr "Avaa tiedostonhallinnassa"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Show in File Manager"
 msgstr "Näytä tiedostonhallinnassa"
 
@@ -1463,19 +1457,16 @@ msgid "Methods"
 msgstr "Metodit"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods:"
-msgstr "Metodit"
+msgstr "Metodit:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
-msgstr "Ominaisuudet"
+msgstr "Teeman ominaisuudet"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties:"
-msgstr "Ominaisuudet:"
+msgstr "Teeman ominaisuudet:"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
@@ -1502,14 +1493,12 @@ msgid "Constants:"
 msgstr "Vakiot:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Class Description"
-msgstr "Kuvaus"
+msgstr "Luokan kuvaus"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Class Description:"
-msgstr "Kuvaus:"
+msgstr "Luokan kuvaus:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials:"
@@ -1526,14 +1515,12 @@ msgstr ""
 "sellaisen[/url][/color]."
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
-msgstr "Ominaisuuden kuvaus:"
+msgstr "Ominaisuuksien kuvaukset"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions:"
-msgstr "Ominaisuuden kuvaus:"
+msgstr "Ominaisuuksien kuvaukset:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -1544,14 +1531,12 @@ msgstr ""
 "$color][url=$url]kirjoittamalla sellaisen[/url][/color]!"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Method Descriptions"
-msgstr "Metodin kuvaus:"
+msgstr "Metodien kuvaukset"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Method Descriptions:"
-msgstr "Metodin kuvaus:"
+msgstr "Metodien kuvaukset:"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -1567,49 +1552,40 @@ msgid "Search Help"
 msgstr "Etsi ohjeesta"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Display All"
-msgstr "Näytä normaali"
+msgstr "Näytä kaikki"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Classes Only"
-msgstr "Luokat"
+msgstr "Vain luokat"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Methods Only"
-msgstr "Metodit"
+msgstr "Vain metodit"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Signals Only"
-msgstr "Signaalit"
+msgstr "Vain signaalit"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Constants Only"
-msgstr "Vakiot"
+msgstr "Vain vakiot"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Properties Only"
-msgstr "Ominaisuudet"
+msgstr "Vain ominaisuudet"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Properties Only"
-msgstr "Ominaisuudet"
+msgstr "Vain teeman ominaisuudet"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Member Type"
-msgstr "Jäsenet"
+msgstr "Jäsenen tyyppi"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Class"
-msgstr "Luokka:"
+msgstr "Luokka"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -1711,6 +1687,9 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Tätä skeneä ei voida tallentaa, koska ilmentymät on sisällytetty toisiinsa "
+"syklisesti.\n"
+"Ratkaise ensin se ja yritä sitten tallennusta uudelleen."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1722,7 +1701,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "Ei voida ylikirjoittaa vielä auki olevaa skeneä!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -1975,12 +1954,12 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Virhe ladattaessa lisäosaa polusta: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"Virhe ladattaessa lisäosaa polusta: '%s'. Skripti ei ole työkalu-tilassa."
+"Virhe ladattaessa lisäosaa polusta: '%s'. Koodissa vaikuttaa olevan virhe, "
+"ole hyvä ja tarkista syntaksi."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2031,7 +2010,6 @@ msgstr "Oletus"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Show in FileSystem"
 msgstr "Näytä tiedostojärjestelmässä"
 
@@ -2116,7 +2094,6 @@ msgid "Save Scene"
 msgstr "Tallenna skene"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save All Scenes"
 msgstr "Tallenna kaikki skenet"
 
@@ -2602,6 +2579,9 @@ msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
+"Ei voida luoda ViewportTexture tietoa tiedostoon tallennetuille "
+"resursseille.\n"
+"Resurssin täytyy kuulua johonkin skeneen."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -2610,6 +2590,10 @@ msgid ""
 "Please switch on the 'local to scene' property on it (and all resources "
 "containing it up to a node)."
 msgstr ""
+"Ei voida luoda ViewportTexture tietoa tälle resurssille, koska sitä ei ole "
+"asetettu paikalliseksi skeneen.\n"
+"Ole hyvä ja vaihda 'local to scene' ominaisuus sille (ja kaikille sen "
+"sisältäville resursseille aina solmuun saakka)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
@@ -2926,9 +2910,8 @@ msgstr ""
 "Välimuistia ei tallenneta!"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Favorites"
-msgstr "Suosikit:"
+msgstr "Suosikit"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
@@ -3014,14 +2997,12 @@ msgid "Instance"
 msgstr "Luo ilmentymä"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Add to favorites"
-msgstr "Suosikit:"
+msgstr "Lisää suosikkeihin"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Remove from favorites"
-msgstr "Poista ryhmästä"
+msgstr "Poista suosikeista"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -3052,14 +3033,12 @@ msgid "New Resource..."
 msgstr "Uusi resurssi..."
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Expand All"
 msgstr "Laajenna kaikki"
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Collapse All"
-msgstr "Pienennä kaikki"
+msgstr "Tiivistä kaikki"
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3081,9 +3060,8 @@ msgid "Re-Scan Filesystem"
 msgstr "Skannaa tiedostojärjestelmä uudelleen"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle split mode"
-msgstr "Aseta tila"
+msgstr "Aseta jaettu tila"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
@@ -3118,24 +3096,20 @@ msgid "Create Script"
 msgstr "Luo skripti"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find in Files"
 msgstr "Etsi tiedostoista"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find:"
-msgstr "Etsi: "
+msgstr "Etsi:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Folder:"
-msgstr "Kansio: "
+msgstr "Kansio:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Filters:"
-msgstr "Suodattimet"
+msgstr "Suodattimet:"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -3313,12 +3287,10 @@ msgid "Failed to load resource."
 msgstr "Resurssin lataaminen epäonnistui."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Expand All Properties"
 msgstr "Laajenna kaikki ominaisuudet"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Collapse All Properties"
 msgstr "Tiivistä kaikki ominaisuudet"
 
@@ -4272,9 +4244,8 @@ msgid "Resize CanvasItem"
 msgstr "Muokkaa CanvasItemin kokoa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem"
-msgstr "Kierrä CanvasItemiä"
+msgstr "Skaalaa CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem"
@@ -4339,9 +4310,8 @@ msgid "Rotate Mode"
 msgstr "Kääntötila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Mode"
-msgstr "Skaalaustila (R)"
+msgstr "Skaalaustila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4440,9 +4410,8 @@ msgid "Restores the object's children's ability to be selected."
 msgstr "Palauttaa objektin aliobjektien mahdollisuuden tulla valituksi."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Skeleton Options"
-msgstr "Luuranko"
+msgstr "Luurangon asetukset"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
@@ -4496,7 +4465,7 @@ msgstr "Näytä näyttöikkuna"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Näytä ryhmityksen ja lukituksen kuvakkeet"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -4939,9 +4908,8 @@ msgid "Create Navigation Polygon"
 msgstr "Luo navigointipolygoni"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Generating Visibility Rect"
-msgstr "Kartoita näkyvä alue"
+msgstr "Kartoitetaan näkyvää aluetta"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -5420,9 +5388,8 @@ msgid "Error writing TextFile:"
 msgstr "Virhe kirjoitettaessa teksitiedostoa:"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error: could not load file."
-msgstr "Virhe - Ei voitu ladata tiedostoa."
+msgstr "Virhe: ei voitu ladata tiedostoa."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error could not load file."
@@ -5521,7 +5488,6 @@ msgid "Copy Script Path"
 msgstr "Kopioi skriptin polku"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "History Previous"
 msgstr "Edellinen historiassa"
 
@@ -5593,9 +5559,8 @@ msgid "Keep Debugger Open"
 msgstr "Pidä testaaja auki"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Debug with External Editor"
-msgstr "Testaa ulkoisella editorilla"
+msgstr "Debuggaa ulkoisella editorilla"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
@@ -5638,7 +5603,6 @@ msgid "Debugger"
 msgstr "Debuggeri"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Search Results"
 msgstr "Haun tulokset"
 
@@ -5651,9 +5615,8 @@ msgid "(ignore)"
 msgstr "(sivuuta)"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Function"
-msgstr "Mene funktioon..."
+msgstr "Mene funktioon"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
@@ -5742,12 +5705,10 @@ msgid "Trim Trailing Whitespace"
 msgstr "Poista välilyönnit lopusta"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Indent to Spaces"
 msgstr "Muuta sisennys välilyönneiksi"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Convert Indent to Tabs"
 msgstr "Muuta sisennys sarkaimiksi"
 
@@ -5758,38 +5719,33 @@ msgstr "Automaattinen sisennys"
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr "Aseta tai poista breakpoint"
+msgstr "Aseta tai poista keskeytyskohta"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
-msgstr "Poista kaikki breakpointit"
+msgstr "Poista kaikki keskeytyskohdat"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Breakpoint"
-msgstr "Mene seuraavaan breakpointiin"
+msgstr "Mene seuraavaan keskeytyskohtaan"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Breakpoint"
-msgstr "Mene edelliseen breakpointiin"
+msgstr "Mene edelliseen keskeytyskohtaan"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
 msgstr "Etsi edellinen"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Find in Files..."
 msgstr "Etsi tiedostoista..."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Function..."
 msgstr "Mene funktioon..."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Line..."
 msgstr "Mene riville..."
 
@@ -5883,11 +5839,11 @@ msgstr "Animaatioavain lisätty."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Pitch"
-msgstr "Sävelkorkeus"
+msgstr "Nyökkäys (pitch)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
-msgstr ""
+msgstr "Käännös (yaw)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -6054,9 +6010,8 @@ msgid "Freelook Speed Modifier"
 msgstr "Liikkumisen nopeussäädin"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "View Rotation Locked"
-msgstr "Lukitse näkymän kierto"
+msgstr "Näkymän kierto lukittu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -6558,9 +6513,8 @@ msgid "Fix Invalid Tiles"
 msgstr "Korjaa virheelliset ruudut"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Cut Selection"
-msgstr "Keskitä valintaan"
+msgstr "Leikkaa valinta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -6607,32 +6561,28 @@ msgid "Pick Tile"
 msgstr "Poimi ruutu"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Selection"
-msgstr "Siirrä valintaa"
+msgstr "Kopioi valinta"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate left"
-msgstr "Kääntötila"
+msgstr "Kierrä vasemmalle"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate right"
-msgstr "Siirry oikealle"
+msgstr "Kierrä oikealle"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip horizontally"
-msgstr ""
+msgstr "Käännä vaakasuorasti"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip vertically"
-msgstr ""
+msgstr "Käännä pystysuorasti"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear transform"
-msgstr "Muunna"
+msgstr "Tyhjennä muunnos"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet"
@@ -6663,7 +6613,6 @@ msgid "Display tile's names (hold Alt Key)"
 msgstr "Näytä ruutujen nimet (pidä Alt-näppäin pohjassa)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture and ALL TILES which use it?"
 msgstr "Poista valittu tekstuuri ja KAIKKI RUUDUT, jotka käyttävät sitä?"
 
@@ -6680,9 +6629,8 @@ msgid "Merge from scene?"
 msgstr "Yhdistä skenestä?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "%s file(s) were not added because was already on the list."
-msgstr " tiedostoa ei lisätty, koska ne ovat jo listalla."
+msgstr "%s tiedostoa ei lisätty, koska ne olivat jo listalla."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6769,14 +6717,12 @@ msgid "Export templates for this platform are missing/corrupted:"
 msgstr "Vientimallit tälle alustalle puuttuvat tai ovat viallisia:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Release"
-msgstr "juuri julkaistu"
+msgstr "Julkaisuversio"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Exporting All"
-msgstr "Vie"
+msgstr "Viedään kaikki"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -6787,9 +6733,8 @@ msgid "Add..."
 msgstr "Lisää..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Path:"
-msgstr "Vie projekti"
+msgstr "Vientipolku:"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6854,14 +6799,12 @@ msgid "Export PCK/Zip"
 msgstr "Vie PCK/Zip"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export mode?"
-msgstr "Vientitila:"
+msgstr "Vientitila?"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All"
-msgstr "Vie"
+msgstr "Vie kaikki"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -7547,7 +7490,6 @@ msgid "Step"
 msgstr "Askel"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Amount by which counter is incremented for each node"
 msgstr "Lukumäärä, jolla laskuria kasvatetaan kullekin solmulle"
 
@@ -7556,13 +7498,12 @@ msgid "Padding"
 msgstr "Täyte"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid ""
 "Minimum number of digits for the counter.\n"
 "Missing digits are padded with leading zeros."
 msgstr ""
 "Pienin määrä numeromerkkejä laskurille.\n"
-"Puuttuvat numermerkit täytetään edeltävillä nollilla."
+"Puuttuvat numeromerkit täytetään edeltävillä nollilla."
 
 #: editor/rename_dialog.cpp
 msgid "Regular Expressions"
@@ -7705,6 +7646,8 @@ msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
+"\"editable_instance\" ominaisuuden poistaminen käytöstä palauttaa kaikki "
+"solmun ominaisuudet oletusarvoihin."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -7779,9 +7722,8 @@ msgid "Clear Inheritance"
 msgstr "Poista perintä"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Open documentation"
-msgstr "Avaa Godotin online-dokumentaatio"
+msgstr "Avaa dokumentaatio"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
@@ -7796,9 +7738,8 @@ msgid "Change Type"
 msgstr "Muuta tyyppiä"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Extend Script"
-msgstr "Avaa skripti"
+msgstr "Laajenna skriptiä"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -7961,9 +7902,8 @@ msgid "Path is empty"
 msgstr "Polku on tyhjä"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Filename is empty"
-msgstr "Sprite on tyhjä!"
+msgstr "Tiedostonimi on tyhjä"
 
 #: editor/script_create_dialog.cpp
 msgid "Path is not local"
@@ -8054,9 +7994,8 @@ msgid "Bytes:"
 msgstr "Tavu(j)a:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Stack Trace"
-msgstr "Pinokehykset"
+msgstr "Pinojäljitys"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
@@ -8508,7 +8447,7 @@ msgstr "Sisemmän poikkeuksen kutsupinon loppu"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr ""
+msgstr "Kehitä NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -8894,12 +8833,11 @@ msgstr "Hae VisualScriptistä"
 
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Get %s"
-msgstr ""
+msgstr "Hae %s"
 
 #: modules/visual_script/visual_script_property_selector.cpp
-#, fuzzy
 msgid "Set %s"
-msgstr "Set "
+msgstr "Aseta %s"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -8997,6 +8935,8 @@ msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"CPUParticles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
+"\"Particles Animation\" on kytketty päälle."
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -9054,6 +8994,8 @@ msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"Particles2D animaatio edellyttää CanvasItemMaterial käyttöä niin että "
+"\"Particles Animation\" on kytketty päälle."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -9199,17 +9141,16 @@ msgstr ""
 "luo sille muotoresurssi!"
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
-"Mitään ei näy, koska mesheille ei ole asetettu piirtopyyhkäisyjä (draw "
-"passes)."
+msgstr "Mitään ei näy, koska meshiä ei ole asetettu."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
 "CPUParticles animation requires the usage of a SpatialMaterial with "
 "\"Billboard Particles\" enabled."
 msgstr ""
+"CPUParticles animaatio edellyttää SpatialMaterial käyttöä niin että "
+"\"Billboard Particles\" on kytketty päälle."
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -9241,22 +9182,23 @@ msgid ""
 "Particles animation requires the usage of a SpatialMaterial with \"Billboard "
 "Particles\" enabled."
 msgstr ""
+"Particles animaatio edellyttää SpatialMaterial käyttöä niin että \"Billboard "
+"Particles\" on kytketty päälle."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr ""
-"PathFollow2D toimii ainoastaan ollessaan asetettuna Path2D solmun alle."
+msgstr "PathFollow toimii ainoastaan ollessaan asetettuna Path solmun alle."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr ""
-"PathFollow2D toimii ainoastaan ollessaan asetettuna Path2D solmun alle."
+"OrientedPathFollow toimii ainoastaan ollessaan asetettuna Path solmun alle."
 
 #: scene/3d/path.cpp
 msgid "OrientedPathFollow requires up vectors enabled in its parent Path."
 msgstr ""
+"OrientedPathFollow edellyttää, että sen Path isäntäsolmulle on asetettu ylös-"
+"vektorit."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9297,7 +9239,6 @@ msgid "This body will be ignored until you set a mesh"
 msgstr "Tämä kappale sivuutetaan, kunnes asetat meshin"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid ""
 "Size changes to SoftBody will be overridden by the physics engine when "
 "running.\n"
@@ -9387,7 +9328,7 @@ msgstr ""
 
 #: scene/gui/range.cpp
 msgid "If exp_edit is true min_value must be > 0."
-msgstr ""
+msgstr "Jos exp_edit on tosi, min_value täytyy olla > 0."
 
 #: scene/gui/scroll_container.cpp
 msgid ""

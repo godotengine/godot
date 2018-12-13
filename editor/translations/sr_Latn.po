@@ -4,11 +4,12 @@
 # This file is distributed under the same license as the Godot source code.
 # Milos Ponjavusic <brane@branegames.com>, 2018.
 # BLu <blmasfon@gmail.com>, 2018.
+# Vojislav Bajakic <ch3d4.ns@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-09-21 20:35+0000\n"
-"Last-Translator: BLu <blmasfon@gmail.com>\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
+"Last-Translator: Vojislav Bajakic <ch3d4.ns@gmail.com>\n"
 "Language-Team: Serbian (latin) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/sr_Latn/>\n"
 "Language: sr_Latn\n"
@@ -16,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.2-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2229,11 +2230,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Zajednica"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "O nama / O Godou"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -7109,7 +7110,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "Opšti deo"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."

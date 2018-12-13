@@ -22,7 +22,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-12-04 22:14+0000\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -414,12 +414,10 @@ msgid "Delete Selection"
 msgstr "選択範囲を削除"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
 msgstr "次のステップへ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
 msgstr "前のステップへ"
 
@@ -560,9 +558,8 @@ msgid "Warnings:"
 msgstr "警告:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "ソース　フォントサイズ:"
+msgstr "フォントサイズ:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -675,9 +672,8 @@ msgid "Edit Connection: "
 msgstr "接続を編集 "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "この信号から全ての接続を除去してもよろしいですか？"
+msgstr "信号 %s から全ての接続を除去してもよろしいですか？"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -831,9 +827,8 @@ msgid "Error loading:"
 msgstr "読込みエラー:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Load failed due to missing dependencies:"
-msgstr "依存関係が確認できず、シーンを読込めません:"
+msgstr "依存関係が見つからないため、シーンを読込めません:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -1320,13 +1315,11 @@ msgid "Copy Path"
 msgstr "パスをコピー"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
 msgstr "ファイルマネージャーで開く"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Show in File Manager"
 msgstr "ファイルマネージャーで表示"
 
@@ -2657,7 +2650,7 @@ msgstr "ユニーク化"
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr "貼付け"
+msgstr "貼り付け"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
@@ -4638,9 +4631,8 @@ msgid "Set Handle"
 msgstr "ハンドルを設定する"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
-#, fuzzy
 msgid "CPUParticles"
-msgstr "頂点"
+msgstr "CPUパーティクル"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5086,9 +5078,8 @@ msgstr "発光(Emission)マスクをクリア"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to CPUParticles"
-msgstr "大文字に変換"
+msgstr "CPUパーティクルに変換"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5529,20 +5520,17 @@ msgid "ERROR: Couldn't load resource!"
 msgstr "エラー:リソースを読み込めませんでした!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Resource"
 msgstr "リソースを追加"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "Rename Resource"
-msgstr "リソースの名前を変える"
+msgstr "リソース名を変更"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Resource"
-msgstr "リソースを消去する"
+msgstr "リソースを削除"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #, fuzzy
@@ -5550,9 +5538,8 @@ msgid "Resource clipboard is empty!"
 msgstr "リソースのクリップボードは空です!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Resource"
-msgstr "リソースを張り付ける"
+msgstr "リソースの張り付け"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
@@ -5596,11 +5583,8 @@ msgid "Clear Recent Files"
 msgstr "最近開いたファイルの記録をクリア"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close and save changes?"
-msgstr ""
-"変更を保存して閉じますか?\n"
-"\""
+msgstr "変更を保存して閉じますか?"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -7147,9 +7131,8 @@ msgid "Export mode?"
 msgstr "エクスポートのモード:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All"
-msgstr "エクスポート"
+msgstr "すべてエクスポート"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -7167,18 +7150,18 @@ msgid "The path does not exist."
 msgstr "ファイルが見つかりません."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
-msgstr "'project.godot'がないフォルダを選択してください."
+msgstr ""
+"無効な '.zip' プロジェクトファイルです。'project.godot' ファイルが含まれてい"
+"ません。"
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "空のフォルダーを選択してください。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "'project.godot' ファイルを選択してください."
+msgstr "'project.godot' もしくは '.zip' ファイルを選択してください."
 
 #: editor/project_manager.cpp
 msgid "Directory already contains a Godot project."
@@ -7189,9 +7172,8 @@ msgid "Imported Project"
 msgstr "インポートされたプロジェクト"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid Project Name."
-msgstr "プロジェクト名:"
+msgstr "無効なプロジェクト名です。"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -7263,9 +7245,8 @@ msgid "Install Project:"
 msgstr "プロジェクトをインストール:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Install & Edit"
-msgstr "インストール"
+msgstr "インストールして編集"
 
 #: editor/project_manager.cpp
 msgid "Project Name:"
@@ -7385,9 +7366,8 @@ msgstr ""
 "アセットライブラリで公式のサンプルプロジェクトをチェックしますか？"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Key "
-msgstr "キー.. "
+msgstr "キー "
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
@@ -7428,9 +7408,8 @@ msgid "Add Input Action Event"
 msgstr "入力アクションイベントを追加"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "All Devices"
-msgstr "デバイス"
+msgstr "すべてのデバイス"
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
@@ -7733,14 +7712,12 @@ msgid "Show only selected locales"
 msgstr "選択したロケールのみ表示"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Filter mode:"
-msgstr "フィルター"
+msgstr "フィルターモード:"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Locales:"
-msgstr "ロケール"
+msgstr "ロケール:"
 
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
@@ -7844,9 +7821,8 @@ msgid "Substitute"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Node name"
-msgstr "ノードの名前:"
+msgstr "ノード名"
 
 #: editor/rename_dialog.cpp
 msgid "Node's parent name, if available"
@@ -7858,9 +7834,8 @@ msgid "Node type"
 msgstr "ノードタイプを探す"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Current scene name"
-msgstr "現在のシーン"
+msgstr "現在のシーン名"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -7886,9 +7861,8 @@ msgid "Initial value for the counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Step"
-msgstr "ステップ:"
+msgstr "ステップ"
 
 #: editor/rename_dialog.cpp
 msgid "Amount by which counter is incremented for each node"
@@ -7910,9 +7884,8 @@ msgid "Regular Expressions"
 msgstr "式を変更"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Post-Process"
-msgstr "後処理スクリプト:"
+msgstr "ポストプロセス"
 
 #: editor/rename_dialog.cpp
 msgid "Keep"
@@ -7941,9 +7914,8 @@ msgid "To Uppercase"
 msgstr "大文字"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Reset"
-msgstr "ズームをリセット"
+msgstr "リセット"
 
 #: editor/rename_dialog.cpp
 msgid "Error"
@@ -8086,19 +8058,16 @@ msgid "Create Root Node:"
 msgstr "ノードを生成"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "2D Scene"
-msgstr "シーン"
+msgstr "2D シーン"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "3D Scene"
-msgstr "シーン"
+msgstr "3D シーン"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "User Interface"
-msgstr "継承をクリアする"
+msgstr "ユーザーインターフェース"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8115,9 +8084,8 @@ msgid "Can't operate on nodes the current scene inherits from!"
 msgstr "現在のシーンが継承するノードを処理できません!"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach Script"
-msgstr "スクリプトを付与"
+msgstr "スクリプトをアタッチ"
 
 #: editor/scene_tree_dock.cpp
 msgid "Remove Node(s)"
@@ -8141,9 +8109,8 @@ msgid "Error duplicating scene to save it."
 msgstr "保存のためシーンを複製する際にエラーが発生."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Sub-Resources"
-msgstr "サブリソース:"
+msgstr "サブリソース"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8169,14 +8136,12 @@ msgid "Change Type"
 msgstr "型(type)を変更"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Extend Script"
-msgstr "フォルダを作成"
+msgstr "スクリプトを拡張"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make Scene Root"
-msgstr "有意義に!"
+msgstr "ルートシーンを作成"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -8193,9 +8158,8 @@ msgid "Copy Node Path"
 msgstr "ノードのパスをコピー"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr "確認してください。"
+msgstr "削除 (確認なし)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
@@ -8221,9 +8185,8 @@ msgid "Clear a script for the selected node."
 msgstr "選択したノードのスクリプトをクリア"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Remote"
-msgstr "削除"
+msgstr "リモート"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8273,18 +8236,16 @@ msgstr ""
 "クリックしてグループのドックを表示してください."
 
 #: editor/scene_tree_editor.cpp editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Open Script"
-msgstr "フォルダを作成"
+msgstr "スクリプトを開く"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid ""
 "Node is locked.\n"
 "Click to unlock it."
 msgstr ""
-"ノードはロックされています.\n"
-"クリックしてロックを外してください"
+"ノードはロックされています。\n"
+"クリックしてロックを外してください。"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy
@@ -8328,14 +8289,12 @@ msgid "Select a Node"
 msgstr "ノードを選択"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading template '%s'"
-msgstr "イメージ読み込みエラー:"
+msgstr "テンプレート %s 読み込みエラー"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error - Could not create script in filesystem."
-msgstr "フォルダを作成できませんでした。"
+msgstr "エラー - ファイルシステムにスクリプトを作成できませんでした。"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -8356,9 +8315,8 @@ msgid "Path is empty"
 msgstr "パスがありません"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Filename is empty"
-msgstr "保存するパスがありません!"
+msgstr "ファイル名が空です"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -8414,16 +8372,14 @@ msgid "Built-in script (into scene file)"
 msgstr "組み込みスクリプト(シーンファイルの）"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script file"
-msgstr "フォルダを作成"
+msgstr "新規スクリプトファイルを作成"
 
 #: editor/script_create_dialog.cpp
 msgid "Load existing script file"
 msgstr "既存のスクリプトファイルを読み込む"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Language"
 msgstr "言語"
 
@@ -8436,9 +8392,8 @@ msgid "Class Name"
 msgstr "クラス名"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Template"
-msgstr "選択しているものを削除"
+msgstr "テンプレート"
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in Script"
@@ -8450,18 +8405,16 @@ msgid "Attach Node Script"
 msgstr "ノードにスクリプトを添付する"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr "削除"
+msgstr "リモート "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
 msgstr "バイト:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Stack Trace"
-msgstr "スタックフレーム"
+msgstr "スタックトレース"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
@@ -8476,9 +8429,8 @@ msgid "Child Process Connected"
 msgstr "子プロセス接続"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Copy Error"
-msgstr "読み込みエラー"
+msgstr "コピーエラー"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
@@ -8673,9 +8625,8 @@ msgid "Platform:"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
-#, fuzzy
 msgid "Platform"
-msgstr "プラットフォームへコピー..."
+msgstr "プラットフォーム"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 #, fuzzy
@@ -8692,14 +8643,12 @@ msgid "GDNativeLibrary"
 msgstr "メッシュライブラリ..."
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Library"
-msgstr "メッシュライブラリ..."
+msgstr "ライブラリ"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-#, fuzzy
 msgid "Status"
-msgstr "ステータス:"
+msgstr "ステータス"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
@@ -8910,19 +8859,16 @@ msgid "Failed to create solution."
 msgstr "アウトラインを生成できませんでした!"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to save solution."
-msgstr "リソース読み込み失敗"
+msgstr "ソリューションの保存に失敗しました。"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Done"
-msgstr "完了!"
+msgstr "完了"
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Failed to create C# project."
-msgstr "リソース読み込み失敗"
+msgstr "C#プロジェクトの生成に失敗しました。"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Mono"
@@ -8933,28 +8879,24 @@ msgid "About C# support"
 msgstr ""
 
 #: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
 msgid "Create C# solution"
-msgstr "アウトラインを生成"
+msgstr "C#ソリューションを生成"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 msgid "Builds"
 msgstr "ビルド"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Build Project"
-msgstr "プロジェクト"
+msgstr "プロジェクトをビルド"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "Warnings"
 msgstr "警告"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "View log"
-msgstr "ビューファイル:"
+msgstr "ログを表示"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -9104,14 +9046,12 @@ msgid "Name already in use by another func/var/signal:"
 msgstr "他の関数/変数/シグナルにより既に使われている名前です:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Function"
-msgstr "関数を作成"
+msgstr "関数名を変更"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Rename Variable"
-msgstr "変数の名前を変える"
+msgstr "変数名を変更"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
@@ -9122,24 +9062,20 @@ msgid "Add Function"
 msgstr "関数を追加"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Variable"
-msgstr "変数を加える"
+msgstr "変数を追加"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Signal"
-msgstr "signalを加える"
+msgstr "信号を追加"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Expression"
 msgstr "式を変更"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node"
-msgstr "ノードを加える"
+msgstr "ノードを追加"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -9208,9 +9144,8 @@ msgid "Change Base Type"
 msgstr "型(type)を変更"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Move Node(s)"
-msgstr "ノードを除去"
+msgstr "ノードを移動"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -9247,9 +9182,8 @@ msgid "Can't copy the function node."
 msgstr "'..'を処理できません"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty!"
-msgstr "リソースのクリップボードは空です!"
+msgstr "クリップボードは空です!"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -9257,9 +9191,8 @@ msgid "Paste VisualScript Nodes"
 msgstr "ノードを貼り付け:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Function"
-msgstr "選択しているものを削除"
+msgstr "関数を除去"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -9272,9 +9205,8 @@ msgid "Editing Variable:"
 msgstr "変数を編集中:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Remove Signal"
-msgstr "選択しているものを削除"
+msgstr "信号を除去"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -9300,12 +9232,10 @@ msgid "Select or create a function to edit graph"
 msgstr "グラフを編集する関数を、選択するか生成する"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Signal Arguments:"
 msgstr "シグナルの引数を編集:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Variable:"
 msgstr "変数を編集:"
 
@@ -9318,7 +9248,6 @@ msgid "Find Node Type"
 msgstr "ノードタイプを探す"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Copy Nodes"
 msgstr "ノードをコピー"
 
@@ -9331,9 +9260,8 @@ msgid "Paste Nodes"
 msgstr "ノードを貼り付け:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Edit Member"
-msgstr "メンバー:"
+msgstr "メンバーを編集"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
@@ -9371,14 +9299,12 @@ msgid "Invalid index property name '%s' in node %s."
 msgstr "ノード%sの不正なインデックスのプロパティ名'%s' ."
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid argument of type: "
-msgstr ":不正な引数です.引数の型=: "
+msgstr ":無効な引数 引数の型: "
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid ": Invalid arguments: "
-msgstr ":不正な引数: "
+msgstr ": 無効な引数: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -9418,7 +9344,6 @@ msgid "Set %s"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Run in Browser"
 msgstr "ブラウザで実行"
 
@@ -9428,9 +9353,8 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "エクスポートしたHTMLファイルを既定のブラウザで実行."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file:"
-msgstr "ファイルに書き込みできませんでした:\n"
+msgstr "ファイルを書き込めませんでした:"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -9834,18 +9758,16 @@ msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Animation not found: '%s'"
-msgstr "アニメーションツール"
+msgstr "見つからないアニメーション: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "エラー:アニメーションの名前が不正です!"
+msgstr "無効なアニメーション: '%s'。"
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
@@ -9913,7 +9835,6 @@ msgstr ""
 "イズを手動で設定してください。"
 
 #: scene/gui/tree.cpp
-#, fuzzy
 msgid "(Other)"
 msgstr "(その他)"
 
@@ -9955,19 +9876,16 @@ msgid "Invalid font size."
 msgstr "無効なフォント サイズです。"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Input"
-msgstr "入力を追加"
+msgstr "入力"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "None"
-msgstr "<None>"
+msgstr "None"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for shader."
-msgstr "不正なソース!"
+msgstr "無効なシェーダーのソースです。"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

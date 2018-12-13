@@ -3,11 +3,12 @@
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 # Gustavs Porietis (pg829-) <porietisgustavs@gmail.com>, 2018.
+# Martch Zagorski <martchzagorski@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-10-11 13:29+0000\n"
-"Last-Translator: Gustavs Porietis (pg829-) <porietisgustavs@gmail.com>\n"
+"PO-Revision-Date: 2018-12-10 09:51+0000\n"
+"Last-Translator: Martch Zagorski <martchzagorski@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -15,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 3.2.1\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -30,7 +31,7 @@ msgstr "Nepietiekams skaits baitu lai dekodētu baitus vai nepareizs formāts."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Nederīga ievade %i (nav padota) izteikumā"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -38,19 +39,19 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Nederīgi operatoru %s, %s un %s operandi."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Nederīgs %s tipa indekss bāzes tipam %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Nederīgs nosaukts indekss '%s' bāzes tipam %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "Nepareizs arguments lai konstruētu '%s'"
+msgstr "Nderīgs arguments, lai izveidotu '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -141,11 +142,11 @@ msgstr "Pievienot celiņu"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Length Time (seconds)"
-msgstr "Animācijas garums (sekundēs)."
+msgstr "Animācijas Garums (sekundes)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Animācijas cikls."
+msgstr "Animāciju Cilpa"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -919,7 +920,7 @@ msgstr "Bronzas Donors"
 
 #: editor/editor_about.cpp
 msgid "Donors"
-msgstr "Donors"
+msgstr "Ziedotāji"
 
 #: editor/editor_about.cpp
 msgid "License"

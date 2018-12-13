@@ -25,11 +25,12 @@
 # Zatherz <zatherz@linux.pl>, 2017.
 # Tahar Meijs <tntmeijs@gmail.com>, 2018.
 # Laurent Windels <laurentwindels@yahoo.com>, 2018.
+# rxadmin <r.van.eeghem@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-12-04 22:14+0000\n"
-"Last-Translator: Laurent Windels <laurentwindels@yahoo.com>\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
+"Last-Translator: rxadmin <r.van.eeghem@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -359,14 +360,16 @@ msgstr "Anim Schaal Keys"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Deze optie is nu niet mogelijk bij Bezier bewerken omdat slechts een spoor "
+"aanwezig is."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Toon alleen sporen die horen bij de geselecteerde node in de boom."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "Sporen weergeven op basis van nodes of als lijst."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -374,9 +377,8 @@ msgid "Snap (s): "
 msgstr "Stap(pen):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Animatie boom is geldig."
+msgstr "Animatie stap waarde."
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -389,15 +391,15 @@ msgstr "Bewerken"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation properties."
-msgstr "Animatie kenmerken."
+msgstr "Animatie eigenschappen."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
-msgstr "Kopieer Tracks"
+msgstr "Kopieer sporen"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
-msgstr "Plak Tracks"
+msgstr "Plak sporen"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -451,11 +453,11 @@ msgstr "Anim. Optimalisator"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "Max. Lineair Error:"
+msgstr "Max. Lineaire Fout:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Max. Hoekig Error:"
+msgstr "Max. Fout in hoek:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
@@ -467,11 +469,11 @@ msgstr "Optimaliseren"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Verwijder ongeldige keys"
+msgstr "Verwijder ongeldige sleutels"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "Verwijder onopgeloste en lege tracks"
+msgstr "Verwijder onopgeloste en lege sporen"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -491,7 +493,7 @@ msgstr "Schaal Ratio:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Selecteer sporen om te kopieren:"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -503,7 +505,7 @@ msgstr "Kopiëren"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
-msgstr "Array van Grootte Veranderen"
+msgstr "Array Grootte Wijzigen"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
@@ -523,7 +525,7 @@ msgstr "Regelnummer:"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
-msgstr "Geen Matches"
+msgstr "Geen Overeenkomsten"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
@@ -559,11 +561,11 @@ msgstr "Uitzoomen"
 
 #: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Reset Zoom"
-msgstr "Reset Zoom"
+msgstr "Initialiseer Zoom"
 
 #: editor/code_editor.cpp
 msgid "Warnings:"
-msgstr ""
+msgstr "Waarschuwingen:"
 
 #: editor/code_editor.cpp
 #, fuzzy
@@ -580,15 +582,15 @@ msgstr "Kolom:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "Methode in target Node moet gespecificeerd worden!"
+msgstr "Methode in doel Node moet gespecificeerd worden!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
-"Target methode niet gevonden! Specificeer een geldige methode of koppel een "
-"script aan de target Node."
+"Doel methode niet gevonden! Specificeer een geldige methode of koppel een "
+"script aan de doel Node."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -674,19 +676,17 @@ msgid "Disconnect"
 msgstr "Losmaken"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect Signal: "
-msgstr "Signaal aan het Verbinden:"
+msgstr "Verbind met Signaal: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection: "
-msgstr "Verbindingsfout"
+msgstr "Verbinding bewerken: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Weet je zeker dat je meerdere projecten wilt uitvoeren?"
+msgstr ""
+"Weet je zeker dat je alle verbindingen met signaal \"%s\" wilt verwijderen?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -695,6 +695,7 @@ msgstr "Signalen"
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
+"Weet je zeker dat je alle verbindingen naar dit signaal wilt verwijderen?"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -707,9 +708,8 @@ msgid "Edit..."
 msgstr "Bewerken"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "Methodes"
+msgstr "Ga Naar Methode"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -722,7 +722,7 @@ msgstr "Wijzig"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr "Maake Nieuwe %s"
+msgstr "Maak Nieuwe %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -766,7 +766,7 @@ msgid ""
 "Changes will not take effect unless reloaded."
 msgstr ""
 "Scene '%s' wordt op dit moment gewijzigd.\n"
-"Wijzigingen hebben geen effect tenzij ze herladen worden."
+"Wijzigingen hebben geen effect tenzij de scene herladen worden."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -783,7 +783,7 @@ msgstr "Afhankelijkheden"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr "Resource"
+msgstr "Bron"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
@@ -797,7 +797,7 @@ msgstr "Afhankelijkheden:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr "Gebroken Repareren"
+msgstr "Repareer defecten"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"

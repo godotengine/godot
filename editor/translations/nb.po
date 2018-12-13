@@ -15,15 +15,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-10-15 21:32+0000\n"
+"PO-Revision-Date: 2018-12-13 11:42+0000\n"
 "Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
-"engine/godot/nb/>\n"
+"engine/godot/nb_NO/>\n"
 "Language: nb\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.2.1\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -56,8 +56,9 @@ msgid "Invalid index of type %s for base type %s"
 msgstr "Ugyldig indeks egenskap navn '%s' i node %s."
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Ugyldig navngitt indeks \"%s\" for grunntypen %s"
 
 #: core/math/expression.cpp
 #, fuzzy

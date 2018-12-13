@@ -56,8 +56,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-11-29 13:23+0000\n"
-"Last-Translator: Sylvain Corsini <sylvain.corsini@gmail.com>\n"
+"PO-Revision-Date: 2018-12-13 12:40+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -65,7 +65,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.3-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -598,9 +598,8 @@ msgid "Warnings:"
 msgstr "Avertissements :"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Taille de la police source :"
+msgstr "Taille de police :"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1744,6 +1743,9 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Cette scène ne peut pas être enregistrée du fait d'une dépendance circulaire "
+"à l'instanciation.\n"
+"L'enregistrement ne sera possible qu'une fois ce problème résolu."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2668,6 +2670,10 @@ msgid ""
 "Please switch on the 'local to scene' property on it (and all resources "
 "containing it up to a node)."
 msgstr ""
+"Impossible de créer un ViewportTexture sur cette ressource car elle n'est "
+"pas définie comme locale à la scène.\n"
+"Merci de changer la propriété \"Local To Scene\" de cette ressource (et des "
+"ressources intermédiaires la contenant, jusqu'au nœud qui l'utilise)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
@@ -3137,9 +3143,8 @@ msgid "Re-Scan Filesystem"
 msgstr "Analyser à nouveau le système de fichiers"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle split mode"
-msgstr "Basculer le mode"
+msgstr "Activer/désactiver le mode scindé"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
@@ -4334,9 +4339,8 @@ msgid "Resize CanvasItem"
 msgstr "Redimensionner l'élément de canevas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem"
-msgstr "Pivoter l'élément de canevas"
+msgstr "Mise à l'échelle de CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem"
@@ -4501,9 +4505,8 @@ msgid "Restores the object's children's ability to be selected."
 msgstr "Rendre la sélection des enfants de l'objet de nouveau possible."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Skeleton Options"
-msgstr "Squelette"
+msgstr "Configuration du squelette"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
@@ -5003,9 +5006,8 @@ msgid "Create Navigation Polygon"
 msgstr "Créer Polygone de Navigation"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Generating Visibility Rect"
-msgstr "Générer Rect de Visibilité"
+msgstr "Génération du rectangle de visibilité"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -5937,11 +5939,11 @@ msgstr "Clé d'animation insérée."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Pitch"
-msgstr "Hauteur"
+msgstr "Tangage (latéral)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
-msgstr ""
+msgstr "Lacet (hauteur)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -6683,9 +6685,8 @@ msgid "Flip vertically"
 msgstr "Retourner verticalement"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear transform"
-msgstr "Transformation"
+msgstr "Supprimer la transformation"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Add Texture(s) to TileSet"
@@ -6734,9 +6735,8 @@ msgid "Merge from scene?"
 msgstr "Fusionner depuis la scène ?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "%s file(s) were not added because was already on the list."
-msgstr " fichier(s) non ajouté(s) car déjà sur la liste."
+msgstr "%s fichier(s) non ajouté(s) car déjà sur la liste."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6823,9 +6823,8 @@ msgid "Export templates for this platform are missing/corrupted:"
 msgstr "Modèles d'exportation manquants ou corrompus pour cette plateforme :"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Release"
-msgstr "Réalisation"
+msgstr "Publication (release)"
 
 #: editor/project_export.cpp
 msgid "Exporting All"
@@ -6840,9 +6839,8 @@ msgid "Add..."
 msgstr "Ajouter…"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Path:"
-msgstr "Pré-réglage d'exportation :"
+msgstr "Chemin d'exportation :"
 
 #: editor/project_export.cpp
 msgid "Resources"

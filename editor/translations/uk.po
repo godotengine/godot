@@ -13,8 +13,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
-"PO-Revision-Date: 2018-12-04 22:15+0000\n"
-"Last-Translator: Максим Якимчук <xpinovo@gmail.com>\n"
+"PO-Revision-Date: 2018-12-09 13:37+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -551,9 +551,8 @@ msgid "Warnings:"
 msgstr "Попередження:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Вигляд спереду"
+msgstr "Розмір шрифту:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1694,6 +1693,8 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Цю сцену неможливо зберегти через циклічне включення екземпляра.\n"
+"Будь ласка, приберіть це включення, потім повторіть спробу збереження."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -9160,7 +9161,6 @@ msgstr ""
 "ласка, створіть ресурс форми для цього елемента!"
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Нічого не видно, оскільки не призначено сітки."
 

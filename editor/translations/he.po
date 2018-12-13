@@ -2,17 +2,16 @@
 # Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Daniel <lorddaniel09@gmail.com>, 2018.
 # Ben Golan <golanben4@gmail.com>, 2017.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
 # Yaron Shahrabani <sh.yaron@gmail.com>, 2018.
-#
+# RaikaRakka <shaiyatta@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-04-18 16:38+0000\n"
-"Last-Translator: Daniel <lorddaniel09@gmail.com>\n"
+"PO-Revision-Date: 2018-12-09 11:02+0000\n"
+"Last-Translator: RaikaRakka <shaiyatta@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -20,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 3.0-dev\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7299,7 +7298,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr ""
+msgstr "כללי"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."

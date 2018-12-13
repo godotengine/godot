@@ -16,7 +16,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-12-04 22:15+0000\n"
+"PO-Revision-Date: 2018-12-06 22:50+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -553,9 +553,8 @@ msgid "Warnings:"
 msgstr "Avisos:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Vista de frente"
+msgstr "Tamanho do tipo de letra:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -1698,6 +1697,9 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Esta cena não pode ser guardada porque existe inclusão de instâncias "
+"cíclica.\n"
+"Resolva-a e tente guardá-la novamente."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -8797,7 +8799,7 @@ msgstr "Objeto de base não é um Nó!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr "Caminho não aponta para Nó!"
+msgstr "Caminho não conduz Nó!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
@@ -9143,7 +9145,6 @@ msgstr ""
 "recurso forma!"
 
 #: scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nada é visível porque nenhuma Malha foi atribuída."
 
