@@ -172,6 +172,7 @@ int AudioDriverManager::get_driver_count() {
 }
 
 void AudioDriverManager::initialize(int p_driver) {
+	GLOBAL_DEF_RST("audio/enable_audio_input", false);
 	int failed_driver = -1;
 
 	// Check if there is a selected driver
