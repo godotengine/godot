@@ -263,6 +263,7 @@ private:
 	};
 
 	Set<CallbackItem> callbacks;
+	Set<CallbackItem> update_callbacks;
 
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
@@ -360,6 +361,9 @@ public:
 
 	void add_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_callback(AudioCallback p_callback, void *p_userdata);
+
+	void add_update_callback(AudioCallback p_callback, void *p_userdata);
+	void remove_update_callback(AudioCallback p_callback, void *p_userdata);
 
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;
