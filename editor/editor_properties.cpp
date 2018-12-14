@@ -2421,6 +2421,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_keying(is_keying());
 				sub_inspector->set_read_only(is_read_only());
 				sub_inspector->set_use_folding(is_using_folding());
+				sub_inspector->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
 
 				sub_inspector_vbox = memnew(VBoxContainer);
 				add_child(sub_inspector_vbox);
