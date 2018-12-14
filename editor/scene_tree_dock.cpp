@@ -96,6 +96,8 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_ATTACH_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/clear_script", p_event)) {
 		_tool_selected(TOOL_CLEAR_SCRIPT);
+	} else if (ED_IS_SHORTCUT("scene_tree/align_camera_to_view", p_event)) {
+		_tool_selected(TOOL_ALIGN_CAMERA_TO_VIEW);
 	} else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
 		_tool_selected(TOOL_MOVE_UP);
 	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
@@ -841,7 +843,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_selection->add_node(new_node);
 
 		} break;
+		case TOOL_ALIGN_CAMERA_TO_VIEW: {
+			
+			Node *selected = scene_tree->get_selected();
+			Spatial *spatial_node = Object::cast_to<Spatial>(selected);
+			if (!spatial_node)
+				break;
 
+			// The extra translate here avoids error spam in the editor
+			SpatialEditorPlugin *editor = Object::cast_to<SpatialEditorPlugin>(editor_data->get_editor("3D"));
+			Camera *camera = editor->get_spatial_editor()->get_editor_viewport(0)->get_camera();
+			spatial_node->set_global_transform(camera->get_global_transform());
+			Vector3 localTranslate = Vector3(0,0,0.012f);
+    		spatial_node->translate(spatial_node->get_transform().basis.xform(localTranslate));
+			
+		} break;
 		default: {
 
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
@@ -2079,6 +2095,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_ATTACH_SCRIPT);
 	}
 
+	if (selection.size() == 1) {
+		Camera *camera = Object::cast_to<Camera>(selection[0]);
+		if(camera) {
+			menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/align_camera_to_view"), TOOL_ALIGN_CAMERA_TO_VIEW);
+		}
+	}
 	menu->add_separator();
 	if (selection.size() == 1) {
 		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
@@ -2342,6 +2364,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/attach_script", TTR("Attach Script"));
 	ED_SHORTCUT("scene_tree/extend_script", TTR("Extend Script"));
 	ED_SHORTCUT("scene_tree/clear_script", TTR("Clear Script"));
+	ED_SHORTCUT("scene_tree/align_camera_to_view", TTR("Align to View"), KEY_MASK_CTRL | KEY_MASK_ALT | KEY_KP_0);
 	ED_SHORTCUT("scene_tree/move_up", TTR("Move Up"), KEY_MASK_CMD | KEY_UP);
 	ED_SHORTCUT("scene_tree/move_down", TTR("Move Down"), KEY_MASK_CMD | KEY_DOWN);
 	ED_SHORTCUT("scene_tree/duplicate", TTR("Duplicate"), KEY_MASK_CMD | KEY_D);
@@ -2390,6 +2413,14 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter_hbc->add_child(tb);
 	button_clear_script = tb;
 	tb->hide();
+	
+	tb = memnew(ToolButton);
+	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_ALIGN_CAMERA_TO_VIEW, false));
+	tb->set_tooltip(TTR("Aligns the camera to the current viewport view."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/align_camera_to_view"));
+	filter_hbc->add_child(tb);
+	//tb->hide();
+	//button_create_script = tb;
 
 	button_hb = memnew(HBoxContainer);
 	vbc->add_child(button_hb);

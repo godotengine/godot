@@ -31,6 +31,7 @@
 #ifndef SCENE_TREE_DOCK_H
 #define SCENE_TREE_DOCK_H
 
+#include "core/math/matrix3.h"
 #include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
@@ -49,7 +50,9 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
+#include "scene/3d/camera.h"
 
+class Camera;
 class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
@@ -90,6 +93,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_USER_INTERFACE,
 		TOOL_CREATE_FAVORITE,
 
+		TOOL_ALIGN_CAMERA_TO_VIEW,
 	};
 
 	enum {
