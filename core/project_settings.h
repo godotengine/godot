@@ -112,6 +112,8 @@ protected:
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
+
 protected:
 	static void _bind_methods();
 
