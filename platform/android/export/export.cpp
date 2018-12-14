@@ -551,12 +551,15 @@ class EditorExportAndroid : public EditorExportPlatform {
 	}
 
 	static Vector<String> get_abis() {
-		// mips and armv6 are dead (especially for games), so not including them
 		Vector<String> abis;
+		// We can still build armv7 in theory, but it doesn't make much
+		// sense for games, so disabling for now.
+		//abis.push_back("armeabi");
 		abis.push_back("armeabi-v7a");
 		abis.push_back("arm64-v8a");
 		abis.push_back("x86");
-		abis.push_back("x86_64");
+		// Don't expose x86_64 for now, we don't support it in detect.py
+		//abis.push_back("x86_64");
 		return abis;
 	}
 
