@@ -295,6 +295,30 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 		default: return false;
 	}
 
+	if (ev->is_pressed()) {
+
+		uint64_t diff = p_event->timestamp - os->last_click_ms;
+
+		if (ev->get_button_index() == os->last_click_button_index) {
+
+			if (diff < 400 && Point2(os->last_click_pos).distance_to(ev->get_position()) < 5) {
+
+				os->last_click_ms = 0;
+				os->last_click_pos = Point2(-100, -100);
+				os->last_click_button_index = -1;
+				ev->set_doubleclick(true);
+			}
+
+		} else {
+			os->last_click_button_index = ev->get_button_index();
+		}
+
+		if (!ev->is_doubleclick()) {
+			os->last_click_ms += diff;
+			os->last_click_pos = ev->get_position();
+		}
+	}
+
 	int mask = os->input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
@@ -1069,6 +1093,10 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 		arguments.push_back(String::utf8(p_argv[i]));
 	}
 	set_cmdline(p_argv[0], arguments);
+
+	last_click_button_index = -1;
+	last_click_ms = 0;
+	last_click_pos = Point2(-100, -100);
 
 	window_maximized = false;
 	entering_fullscreen = false;

@@ -52,6 +52,10 @@ class OS_JavaScript : public OS_Unix {
 	CursorShape cursor_shape;
 	Point2 touches[32];
 
+	Point2i last_click_pos;
+	uint64_t last_click_ms;
+	int last_click_button_index;
+
 	MainLoop *main_loop;
 	AudioDriverJavaScript audio_driver_javascript;
 

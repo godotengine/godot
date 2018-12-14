@@ -96,6 +96,8 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	xmbstring = NULL;
 	x11_window = 0;
 	last_click_ms = 0;
+	last_click_button_index = -1;
+	last_click_pos = Point2(-100, -100);
 	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
 	main_loop = NULL;
@@ -1958,17 +1960,25 @@ void OS_X11::process_xevents() {
 
 				mb->set_pressed((event.type == ButtonPress));
 
-				if (event.type == ButtonPress && event.xbutton.button == 1) {
+				if (event.type == ButtonPress) {
 
 					uint64_t diff = get_ticks_usec() / 1000 - last_click_ms;
 
-					if (diff < 400 && Point2(last_click_pos).distance_to(Point2(event.xbutton.x, event.xbutton.y)) < 5) {
+					if (mb->get_button_index() == last_click_button_index) {
 
-						last_click_ms = 0;
-						last_click_pos = Point2(-100, -100);
-						mb->set_doubleclick(true);
+						if (diff < 400 && Point2(last_click_pos).distance_to(Point2(event.xbutton.x, event.xbutton.y)) < 5) {
 
-					} else {
+							last_click_ms = 0;
+							last_click_pos = Point2(-100, -100);
+							last_click_button_index = -1;
+							mb->set_doubleclick(true);
+						}
+
+					} else if (mb->get_button_index() < 4 || mb->get_button_index() > 7) {
+						last_click_button_index = mb->get_button_index();
+					}
+
+					if (!mb->is_doubleclick()) {
 						last_click_ms += diff;
 						last_click_pos = Point2(event.xbutton.x, event.xbutton.y);
 					}
