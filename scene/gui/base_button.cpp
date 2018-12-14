@@ -595,6 +595,16 @@ void ButtonGroup::get_buttons(List<BaseButton *> *r_buttons) {
 	}
 }
 
+Array ButtonGroup::_get_buttons() {
+
+	Array btns;
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
+		btns.push_back(E->get());
+	}
+
+	return btns;
+}
+
 BaseButton *ButtonGroup::get_pressed_button() {
 
 	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
@@ -608,6 +618,7 @@ BaseButton *ButtonGroup::get_pressed_button() {
 void ButtonGroup::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &ButtonGroup::get_pressed_button);
+	ClassDB::bind_method(D_METHOD("get_buttons"), &ButtonGroup::_get_buttons);
 }
 
 ButtonGroup::ButtonGroup() {
