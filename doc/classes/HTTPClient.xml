@@ -108,14 +108,14 @@
 				Generates a GET/POST application/x-www-form-urlencoded style query string from a provided dictionary, e.g.:
 				[codeblock]
 				var fields = {"username": "user", "password": "pass"}
-				String queryString = httpClient.query_string_from_dict(fields)
-				returns:= "username=user&amp;password=pass"
+				String query_string = http_client.query_string_from_dict(fields)
+				# returns: "username=user&amp;password=pass"
 				[/codeblock]
 				Furthermore, if a key has a null value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblock]
 				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
-				String queryString = httpClient.query_string_from_dict(fields)
-				returns:= "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
+				String query_string = http_client.query_string_from_dict(fields)
+				# returns: "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/codeblock]
 			</description>
 		</method>
@@ -143,9 +143,9 @@
 				To create a POST request with query strings to push to the server, do:
 				[codeblock]
 				var fields = {"username" : "user", "password" : "pass"}
-				var queryString = httpClient.query_string_from_dict(fields)
-				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(queryString.length())]
-				var result = httpClient.request(httpClient.METHOD_POST, "index.php", headers, queryString)
+				var query_string = http_client.query_string_from_dict(fields)
+				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(query_string.length())]
+				var result = http_client.request(http_client.METHOD_POST, "index.php", headers, query_string)
 				[/codeblock]
 			</description>
 		</method>

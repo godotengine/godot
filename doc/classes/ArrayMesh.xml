@@ -6,9 +6,9 @@
 		The [code]ArrayMesh[/code] is used to construct a [Mesh] by specifying the attributes as arrays. The most basic example is the creation of a single triangle
 		[codeblock]
 		var vertices = PoolVector3Array()
-		vertices.push_back(Vector3(0,1,0))
-		vertices.push_back(Vector3(1,0,0))
-		vertices.push_back(Vector3(0,0,1))
+		vertices.push_back(Vector3(0, 1, 0))
+		vertices.push_back(Vector3(1, 0, 0))
+		vertices.push_back(Vector3(0, 0, 1))
 		# Initialize the ArrayMesh.
 		var arr_mesh = ArrayMesh.new()
 		var arrays = []

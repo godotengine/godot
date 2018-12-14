@@ -19,11 +19,6 @@
 			</argument>
 			<description>
 				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format. See also [method @GDScript.ColorN].
-				The following string formats are supported:
-					[code]"#ff00ff00"[/code] - ARGB format with '#'
-					[code]"ff00ff00"[/code] - ARGB format
-					[code]"#ff00ff"[/code] - RGB format with '#'
-					[code]"ff00ff"[/code] - RGB format
 				[codeblock]
 				# Each of the following creates the same color RGBA(178, 217, 10, 255)
 				var c1 = Color("#ffb2d90a") # ARGB format with '#'
@@ -57,7 +52,7 @@
 			<description>
 				Constructs a color from an RGB profile using values between 0 and 1. Alpha will always be 1.
 				[codeblock]
-				var c = Color(0.2, 1.0, .7) # Equivalent to RGBA(51, 255, 178, 255)
+				var c = Color(0.2, 1.0, 0.7) # Equivalent to RGBA(51, 255, 178, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -75,7 +70,7 @@
 			<description>
 				Constructs a color from an RGBA profile using values between 0 and 1.
 				[codeblock]
-				var c = Color(0.2, 1.0, .7, .8) # Equivalent to RGBA(51, 255, 178, 204)
+				var c = Color(0.2, 1.0, 0.7, 0.8) # Equivalent to RGBA(51, 255, 178, 204)
 				[/codeblock]
 			</description>
 		</method>
@@ -88,8 +83,8 @@
 				Returns a new color resulting from blending this color over another. If the color is opaque, the result is also opaque. The second color may have a range of alpha values.
 				[codeblock]
 				var bg = Color(0.0, 1.0, 0.0, 0.5) # Green with alpha of 50%
-				var fg = Color(1.0, 0.0, 0.0, .5) # Red with alpha of 50%
-				var blendedColor = bg.blend(fg) # Brown with alpha of 75%
+				var fg = Color(1.0, 0.0, 0.0, 0.5) # Red with alpha of 50%
+				var blended_color = bg.blend(fg) # Brown with alpha of 75%
 				[/codeblock]
 			</description>
 		</method>
@@ -99,8 +94,8 @@
 			<description>
 				Returns the most contrasting color.
 				[codeblock]
-				var c = Color(.3, .4, .9)
-				var contrastedColor = c.contrasted() # Equivalent to RGBA(204, 229, 102, 255)
+				var c = Color(0.3, 0.4, 0.9)
+				var contrasted_color = c.contrasted() # Equivalent to RGBA(204, 229, 102, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -110,7 +105,7 @@
 			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
-				Returns a new color resulting from making this color darker by the specified percentage (0-1).
+				Returns a new color resulting from making this color darker by the specified percentage (ratio from 0 to 1).
 				[codeblock]
 				var green = Color(0.0, 1.0, 0.0)
 				var darkgreen = green.darkened(0.2) # 20% darker than regular green
@@ -140,7 +135,7 @@
 			</return>
 			<description>
 				Returns the color's grayscale representation.
-				The gray is calculated by [code](r + g + b) / 3[/code].
+				The gray value is calculated as [code](r + g + b) / 3[/code].
 				[codeblock]
 				var c = Color(0.2, 0.45, 0.82)
 				var gray = c.gray() # a value of 0.466667
@@ -153,8 +148,8 @@
 			<description>
 				Returns the inverted color [code](1 - r, 1 - g, 1 - b, 1 - a)[/code].
 				[codeblock]
-				var c = Color(.3, .4, .9)
-				var invertedColor = c.inverted() # a color of an RGBA(178, 153, 26, 255)
+				var c = Color(0.3, 0.4, 0.9)
+				var inverted_color = c.inverted() # a color of an RGBA(178, 153, 26, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -164,7 +159,7 @@
 			<argument index="0" name="amount" type="float">
 			</argument>
 			<description>
-				Returns a new color resulting from making this color lighter by the specified percentage (0-1).
+				Returns a new color resulting from making this color lighter by the specified percentage (ratio from 0 to 1).
 				[codeblock]
 				var green = Color(0.0, 1.0, 0.0)
 				var lightgreen = green.lightened(0.2) # 20% lighter than regular green
@@ -179,7 +174,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the linear interpolation with another color. The value t is between 0 and 1.
+				Returns the linear interpolation with another color. The interpolation factor [code]t[/code] is between 0 and 1.
 				[codeblock]
 				var c1 = Color(1.0, 0.0, 0.0)
 				var c2 = Color(0.0, 1.0, 0.0)
@@ -193,7 +188,7 @@
 			<description>
 				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
 				[codeblock]
-				var c = Color(1, .5, .2)
+				var c = Color(1, 0.5, 0.2)
 				print(c.to_abgr32()) # Prints 4281565439
 				[/codeblock]
 			</description>
@@ -204,7 +199,7 @@
 			<description>
 				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
 				[codeblock]
-				var c = Color(1, .5, .2)
+				var c = Color(1, 0.5, 0.2)
 				print(c.to_abgr64()) # Prints -225178692812801
 				[/codeblock]
 			</description>
@@ -215,7 +210,7 @@
 			<description>
 				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
 				[codeblock]
-				var c = Color(1, .5, .2)
+				var c = Color(1, 0.5, 0.2)
 				print(c.to_argb32()) # Prints 4294934323
 				[/codeblock]
 			</description>
@@ -226,7 +221,7 @@
 			<description>
 				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
 				[codeblock]
-				var c = Color(1, .5, .2)
+				var c = Color(1, 0.5, 0.2)
 				print(c.to_argb64()) # Prints -2147470541
 				[/codeblock]
 			</description>
@@ -240,7 +235,7 @@
 				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
 				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string.
 				[codeblock]
-				var c = Color(1, 1, 1, .5)
+				var c = Color(1, 1, 1, 0.5)
 				var s1 = c.to_html() # Results "7fffffff"
 				var s2 = c.to_html(false) # Results 'ffffff'
 				[/codeblock]
@@ -252,7 +247,7 @@
 			<description>
 				Returns the color's 32-bit integer in RGBA format (each byte represents a component of the RGBA profile). RGBA is Godot's default format.
 				[codeblock]
-				var c = Color(1, .5, .2)
+				var c = Color(1, 0.5, 0.2)
 				print(c.to_rgba32()) # Prints 4286526463
 				[/codeblock]
 			</description>
@@ -263,7 +258,7 @@
 			<description>
 				Returns the color's 64-bit integer in RGBA format (each word represents a component of the RGBA profile). RGBA is Godot's default format.
 				[codeblock]
-				var c = Color(1, .5, .2)
+				var c = Color(1, 0.5, 0.2)
 				print(c.to_rgba64()) # Prints -140736629309441
 				[/codeblock]
 			</description>

@@ -127,7 +127,7 @@
 			<description>
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				[codeblock]
-				a = atan(0,-1) # a is 3.141593
+				a = atan(0, -1) # a is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -175,7 +175,7 @@
 				# a is 'A'
 				a = char(65)
 				# a is 'a'
-				a = char(65+32)
+				a = char(65 + 32)
 				[/codeblock]
 			</description>
 		</method>
@@ -230,7 +230,7 @@
 				Returns the cosine of angle [code]s[/code] in radians.
 				[codeblock]
 				# prints 1 and -1
-				print(cos(PI*2))
+				print(cos(PI * 2))
 				print(cos(PI))
 				[/codeblock]
 			</description>
@@ -584,7 +584,7 @@
 			<description>
 				Returns the maximum of two values.
 				[codeblock]
-				max(1,2) # returns 2
+				max(1, 2) # returns 2
 				max(-3.99, -4) # returns -3.99
 				[/codeblock]
 			</description>
@@ -599,7 +599,7 @@
 			<description>
 				Returns the minimum of two values.
 				[codeblock]
-				min(1,2) # returns 1
+				min(1, 2) # returns 1
 				min(-3.99, -4) # returns -4
 				[/codeblock]
 			</description>
@@ -657,7 +657,7 @@
 			<description>
 				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
 				[codeblock]
-				pow(2,5) # returns 32
+				pow(2, 5) # returns 32
 				[/codeblock]
 			</description>
 		</method>
@@ -681,8 +681,8 @@
 			<description>
 				Converts one or more arguments to strings in the best way possible and prints them to the console.
 				[codeblock]
-				a = [1,2,3]
-				print("a","b",a) # prints ab[1, 2, 3]
+				a = [1, 2, 3]
+				print("a", "b", a) # prints ab[1, 2, 3]
 				[/codeblock]
 			</description>
 		</method>
@@ -1009,7 +1009,7 @@
 			<description>
 				Returns the tangent of angle [code]s[/code] in radians.
 				[codeblock]
-				tan( deg2rad(45) ) # returns 1
+				tan(deg2rad(45)) # returns 1
 				[/codeblock]
 			</description>
 		</method>
