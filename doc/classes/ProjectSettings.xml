@@ -210,6 +210,9 @@
 		</member>
 		<member name="audio/driver" type="String" setter="" getter="">
 		</member>
+		<member name="audio/enable_audio_input" type="bool" setter="" getter="">
+			This option should be enabled if project works with microphone.
+		</member>
 		<member name="audio/mix_rate" type="int" setter="" getter="">
 			Mix rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>

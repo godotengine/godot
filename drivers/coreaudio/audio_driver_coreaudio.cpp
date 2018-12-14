@@ -159,7 +159,10 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitInitialize(audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	return capture_init();
+	if (GLOBAL_GET("audio/enable_audio_input")) {
+		return capture_init();
+	}
+	return OK;
 }
 
 OSStatus AudioDriverCoreAudio::output_callback(void *inRefCon,
