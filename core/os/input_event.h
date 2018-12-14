@@ -156,11 +156,11 @@ enum MidiMessageList {
  * for keyboard/mouse events.
  */
 enum DeviceId {
-	Null = 0,
-	Keyboard,
-	Mouse,
-	Joypad,
-	ScreenTouch
+	NIL = 0,
+	KEYBOARD,
+	MOUSE,
+	JOYPAD,
+	SCREEN
 };
 
 class InputEvent : public Resource {
@@ -176,6 +176,7 @@ public:
 	int get_device() const;
 	void set_dev(DeviceId p_dev);
 	DeviceId get_dev() const;
+
 
 	bool is_action(const StringName &p_action) const;
 	bool is_action_pressed(const StringName &p_action) const;

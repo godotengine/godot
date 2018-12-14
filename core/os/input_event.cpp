@@ -112,7 +112,7 @@ bool InputEvent::is_action_type() const {
 }
 
 void InputEvent::_bind_methods() {
-	//TODO
+
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
@@ -136,7 +136,7 @@ void InputEvent::_bind_methods() {
 }
 
 InputEvent::InputEvent() {
-	dev = Null;
+	dev = NIL;
 	device = 0;
 }
 
@@ -361,7 +361,7 @@ InputEventKey::InputEventKey() {
 	unicode = 0; ///unicode
 	echo = false;
 	set_device(1);
-	set_dev(Keyboard);
+	set_dev(KEYBOARD);
 }
 
 ////////////////////////////////////////
@@ -413,7 +413,7 @@ InputEventMouse::InputEventMouse() {
 
 	button_mask = 0;
 	set_device(2);
-	set_dev(Mouse);
+	set_dev(MOUSE);
 }
 
 ///////////////////////////////////////
@@ -713,9 +713,8 @@ InputEventJoypadMotion::InputEventJoypadMotion() {
 
 	axis = 0;
 	axis_value = 0;
-	//TODO
 	set_device(3);
-	set_dev(Joypad);
+	set_dev(JOYPAD);
 }
 /////////////////////////////////
 
@@ -791,7 +790,7 @@ InputEventJoypadButton::InputEventJoypadButton() {
 	pressure = 0;
 	pressed = false;
 	set_device(3);
-	set_dev(Joypad);
+	set_dev(JOYPAD);
 }
 
 //////////////////////////////////////////////
@@ -860,9 +859,8 @@ InputEventScreenTouch::InputEventScreenTouch() {
 
 	index = 0;
 	pressed = false;
-	//TODO
 	set_device(4);
-	set_dev(ScreenTouch);
+	set_dev(SCREEN);
 }
 
 /////////////////////////////
@@ -948,9 +946,8 @@ void InputEventScreenDrag::_bind_methods() {
 InputEventScreenDrag::InputEventScreenDrag() {
 
 	index = 0;
-	//TODO
 	set_device(4);
-	set_dev(ScreenTouch);
+	set_dev(SCREEN);
 }
 /////////////////////////////
 
