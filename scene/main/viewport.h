@@ -271,6 +271,7 @@ private:
 
 		bool key_event_accepted;
 		Control *mouse_focus;
+		Control *last_mouse_focus;
 		Control *mouse_click_grabber;
 		int mouse_focus_mask;
 		Control *key_focus;
