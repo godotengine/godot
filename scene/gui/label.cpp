@@ -537,8 +537,8 @@ void Label::set_text(const String &p_string) {
 
 	if (text == p_string)
 		return;
-	text = p_string;
-	xl_text = tr(p_string);
+	text = p_string.check_control_characters();
+	xl_text = tr(p_string.check_control_characters());
 	word_cache_dirty = true;
 	if (percent_visible < 1)
 		visible_chars = get_total_character_count() * percent_visible;
@@ -559,7 +559,7 @@ bool Label::is_clipping_text() const {
 
 String Label::get_text() const {
 
-	return text;
+	return text.check_control_characters();
 }
 
 void Label::set_visible_characters(int p_amount) {
