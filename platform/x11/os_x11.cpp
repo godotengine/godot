@@ -2080,14 +2080,14 @@ void OS_X11::process_xevents() {
 				mb.instance();
 
 				get_key_modifier_state(event.xbutton.state, mb);
+				mb->set_button_index(event.xbutton.button);
 				if (mb->get_button_index() == 2)
 					mb->set_button_index(3);
 				else if (mb->get_button_index() == 3)
 					mb->set_button_index(2);
-				mb->set_button_mask(get_mouse_button_state(event.xbutton.button, event.xbutton.type));
+				mb->set_button_mask(get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
 				mb->set_global_position(mb->get_position());
-				mb->set_button_index(event.xbutton.button);
 
 				mb->set_pressed((event.type == ButtonPress));
 
