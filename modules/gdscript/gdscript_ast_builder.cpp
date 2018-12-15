@@ -1050,9 +1050,13 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 		switch(data_type.kind) {
 			case GDScriptParser::DataType::BUILTIN:
 				serialize(L"BUILTIN");
+				key(L"builtin_type");
+				serialize(data_type.builtin_type);
 				break;
 			case GDScriptParser::DataType::NATIVE:
 				serialize(L"NATIVE");
+				key(L"native_type");
+				serialize(data_type.native_type);
 				break;
 			case GDScriptParser::DataType::SCRIPT:
 				serialize(L"SCRIPT");
@@ -1084,12 +1088,6 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 
 		key(L"may_yield");
 		serialize(data_type.may_yield);
-
-		key(L"builtin_type");
-		serialize(data_type.builtin_type);
-
-		key(L"native_type");
-		serialize(data_type.native_type);
 
 		// circular reference
 		// key(L"class_type");
@@ -1530,6 +1528,9 @@ void GDScriptASTBuilder::serialize(Variant::Type type) {
 
 		key(L"patterns");
 		serialize(node->patterns);
+
+		key(L"body");
+		serialize(node->body);
 
 		node_suffix(node);
 	}
