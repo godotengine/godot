@@ -114,7 +114,7 @@ public:
 		TonemapShaderGLES3 tonemap_shader;
 
 		struct SceneDataUBO {
-			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes
+			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specification spec before doing any changes
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
 			float camera_inverse_matrix[16];
@@ -365,6 +365,7 @@ public:
 
 		RID sky;
 		float sky_custom_fov;
+		Basis sky_orientation;
 
 		Color bg_color;
 		float bg_energy;
@@ -531,6 +532,7 @@ public:
 	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
 	virtual void environment_set_sky(RID p_env, RID p_sky);
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale);
+	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color);
 	virtual void environment_set_bg_energy(RID p_env, float p_energy);
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
@@ -823,7 +825,7 @@ public:
 
 	_FORCE_INLINE_ void _add_geometry_with_material(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, RasterizerStorageGLES3::Material *p_material, bool p_depth_pass, bool p_shadow_pass);
 
-	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy);
+	void _draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation);
 
 	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog = false);
 	void _setup_directional_light(int p_index, const Transform &p_camera_inverse_transform, bool p_use_shadows);
