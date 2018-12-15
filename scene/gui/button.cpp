@@ -196,15 +196,15 @@ void Button::set_text(const String &p_text) {
 
 	if (text == p_text)
 		return;
-	text = p_text;
-	xl_text = tr(p_text);
+	text = p_text.check_control_characters();
+	xl_text = tr(p_text.check_control_characters());
 	update();
 	_change_notify("text");
 	minimum_size_changed();
 }
 String Button::get_text() const {
 
-	return text;
+	return text.check_control_characters();
 }
 
 void Button::set_icon(const Ref<Texture> &p_icon) {
