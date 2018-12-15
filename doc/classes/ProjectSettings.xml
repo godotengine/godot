@@ -172,8 +172,8 @@
 			Path to an image used for boot splash.
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="">
-			This directory is used for storing persistent data (user:// filesystem). If a custom name is set, then system paths will be used to store this on Desktop (AppData on Windows, user ~/.config on Unixes, etc), else the Godot config folder is used. This name needs to be unique, and it's recommended to set it to something before publishing.
-		the "use_custom_user_dir" setting must be enabled for this to take effect.
+			This user directory is used for storing persistent data ([code]user://[/code] filesystem). By default (no custom name defined), [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
+			The [member use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="">
 			Icon used for the project, set when project loads. Exporters will use this icon when possible to.
@@ -181,11 +181,11 @@
 		<member name="application/config/name" type="String" setter="" getter="">
 			Name of the project. It is used from both project manager and by the exporters. Overriding this as name.locale allows setting it in multiple languages.
 		</member>
-		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
-			Allow the project to save to its own custom user dir (in AppData on windows or ~/.config on unixes). This setting only works for desktop exporters. A name must be set in the "custom_user_dir_name" setting for this to take effect.
-		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="">
-			Specifies a file to override project settings. For example: user://custom_settings.cfg.
+			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
+		</member>
+		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
+			Allow the project to save to its own custom user dir (see [member custom_user_dir_name]). This setting only works for desktop platforms. A name must be set in the [member custom_user_dir_name] setting for this to take effect.
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
 			Disable printing to stderr on exported build.
@@ -583,10 +583,10 @@
 			Log all output to a file.
 		</member>
 		<member name="logging/file_logging/log_path" type="String" setter="" getter="">
-			Path to logs withint he project. Using an user:// based path is recommended.
+			Path to logs withint he project. Using an [code]user://[/code] based path is recommended.
 		</member>
 		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="">
-			Amount of log files (used for rotation)/
+			Amount of log files (used for rotation).
 		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
