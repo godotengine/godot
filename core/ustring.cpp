@@ -4214,6 +4214,46 @@ String String::unquote() const {
 	return substr(1, length() - 2);
 }
 
+String String::check_control_characters() const {
+	String s = *this;
+	String slash = "\\";
+	String tab = "\t";
+	size_t tab_pos = s.find(tab, 0);
+
+	while (tab_pos != npos) {
+		String str_begin = s.substr(0, tab_pos);
+		String str_end = s.substr(tab_pos + 1, s.length());
+
+		s = str_begin + "    " + str_end;
+
+		tab_pos = s.find(tab, tab_pos + 1);
+	}
+
+	size_t slash_pos = s.find(slash, 0);
+
+	while (slash_pos != npos) {
+
+		if (slash_pos + 1 != s.length()) {
+			String str_begin = s.substr(0, slash_pos);
+			String str_end = s.substr(slash_pos + 2, s.length());
+
+			char chr = s.ord_at(slash_pos + 1);
+
+			if (chr == 'n') {
+				s = str_begin + "\n" + str_end;
+			}
+
+			if (chr == 't') {
+				s = str_begin + "    " + str_end;
+			}
+		}
+		///printf("slash : %d\n", slash_pos);
+		slash_pos = s.find(slash, slash_pos + 1);
+	}
+
+	return s;
+}
+
 #ifdef TOOLS_ENABLED
 String TTR(const String &p_text) {
 

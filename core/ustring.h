@@ -279,6 +279,8 @@ public:
 	String percent_encode() const;
 	String percent_decode() const;
 
+	String check_control_characters() const;
+
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;
 	bool is_valid_float() const;

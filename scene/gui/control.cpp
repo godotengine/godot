@@ -41,6 +41,10 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/scene_string_names.h"
+
+//#include <wchar.h>
+//#include <stdlib.h>
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
@@ -2197,9 +2201,11 @@ void Control::set_tooltip(const String &p_tooltip) {
 }
 
 String Control::get_tooltip(const Point2 &p_pos) const {
-
-	return data.tooltip;
+	
+	return data.tooltip.check_control_characters();
 }
+
+
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	if (get_script_instance()) {
 		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
