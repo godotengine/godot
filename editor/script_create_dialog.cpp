@@ -308,8 +308,10 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 	if (internal->is_pressed()) {
 		is_built_in = true;
+		is_new_script_created = true;
 	} else {
 		is_built_in = false;
+		_path_changed(file_path->get_text());
 	}
 	_update_dialog();
 }
