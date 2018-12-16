@@ -417,8 +417,8 @@ void PluginScriptLanguage::unlock() {
 
 PluginScriptLanguage::PluginScriptLanguage(const godot_pluginscript_language_desc *desc) :
 		_desc(*desc) {
-	_resource_loader = memnew(ResourceFormatLoaderPluginScript(this));
-	_resource_saver = memnew(ResourceFormatSaverPluginScript(this));
+	_resource_loader = Ref<ResourceFormatLoaderPluginScript>(memnew(ResourceFormatLoaderPluginScript(this)));
+	_resource_saver = Ref<ResourceFormatSaverPluginScript>(memnew(ResourceFormatSaverPluginScript(this)));
 
 // TODO: totally remove _lock attribute if NO_THREADS is set
 #ifdef NO_THREADS
@@ -429,8 +429,6 @@ PluginScriptLanguage::PluginScriptLanguage(const godot_pluginscript_language_des
 }
 
 PluginScriptLanguage::~PluginScriptLanguage() {
-	memdelete(_resource_loader);
-	memdelete(_resource_saver);
 #ifndef NO_THREADS
 	if (_lock) {
 		memdelete(_lock);

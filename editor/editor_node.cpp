@@ -2471,7 +2471,7 @@ void EditorNode::_editor_select(int p_which) {
 	}
 }
 
-void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
+void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 
 	if (p_editor->has_main_screen()) {
 
@@ -2496,9 +2496,11 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 	}
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
+	if (p_config_changed)
+		p_editor->enable_plugin();
 }
 
-void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
+void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 
 	if (p_editor->has_main_screen()) {
 
@@ -2521,6 +2523,8 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 	}
 	p_editor->make_visible(false);
 	p_editor->clear();
+	if (p_config_changed)
+		p_editor->disable_plugin();
 	singleton->editor_plugins_over->get_plugins_list().erase(p_editor);
 	singleton->remove_child(p_editor);
 	singleton->editor_data.remove_editor_plugin(p_editor);
@@ -2546,7 +2550,7 @@ void EditorNode::_update_addon_config() {
 	project_settings->queue_save();
 }
 
-void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled) {
+void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 
 	ERR_FAIL_COND(p_enabled && plugin_addons.has(p_addon));
 	ERR_FAIL_COND(!p_enabled && !plugin_addons.has(p_addon));
@@ -2554,7 +2558,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	if (!p_enabled) {
 
 		EditorPlugin *addon = plugin_addons[p_addon];
-		remove_editor_plugin(addon);
+		remove_editor_plugin(addon, p_config_changed);
 		memdelete(addon); //bye
 		plugin_addons.erase(p_addon);
 		_update_addon_config();
@@ -2606,7 +2610,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	ep->set_script(script.get_ref_ptr());
 	ep->set_dir_cache(p_addon);
 	plugin_addons[p_addon] = ep;
-	add_editor_plugin(ep);
+	add_editor_plugin(ep, p_config_changed);
 
 	_update_addon_config();
 }

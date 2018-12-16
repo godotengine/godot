@@ -232,6 +232,9 @@ public:
 	String get_dir_cache() { return _dir_cache; }
 	Ref<ConfigFile> get_config();
 
+	void enable_plugin();
+	void disable_plugin();
+
 	EditorPlugin();
 	virtual ~EditorPlugin();
 };

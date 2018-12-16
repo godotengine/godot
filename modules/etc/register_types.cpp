@@ -33,11 +33,11 @@
 #include "image_etc.h"
 #include "texture_loader_pkm.h"
 
-static ResourceFormatPKM *resource_loader_pkm = NULL;
+static Ref<ResourceFormatPKM> resource_loader_pkm;
 
 void register_etc_types() {
 
-	resource_loader_pkm = memnew(ResourceFormatPKM);
+	resource_loader_pkm.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_pkm);
 
 	_register_etc_compress_func();
@@ -45,5 +45,6 @@ void register_etc_types() {
 
 void unregister_etc_types() {
 
-	memdelete(resource_loader_pkm);
+	ResourceLoader::remove_resource_format_loader(resource_loader_pkm);
+	resource_loader_pkm.unref();
 }

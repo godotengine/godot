@@ -32,16 +32,17 @@
 
 #include "audio_stream_ogg_vorbis.h"
 
-static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader = NULL;
+static Ref<ResourceFormatLoaderAudioStreamOGGVorbis> vorbis_stream_loader;
 
 void register_vorbis_types() {
 
-	vorbis_stream_loader = memnew(ResourceFormatLoaderAudioStreamOGGVorbis);
+	vorbis_stream_loader.instance();
 	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
 	ClassDB::register_class<AudioStreamOGGVorbis>();
 }
 
 void unregister_vorbis_types() {
 
-	memdelete(vorbis_stream_loader);
+	ResourceLoader::remove_resource_format_loader(vorbis_stream_loader);
+	vorbis_stream_loader.unref();
 }

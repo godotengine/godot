@@ -39,7 +39,7 @@
 #include "core/translation.h"
 #include "core/variant_parser.h"
 
-ResourceFormatLoader *ResourceLoader::loader[MAX_LOADERS];
+Ref<ResourceFormatLoader> ResourceLoader::loader[ResourceLoader::MAX_LOADERS];
 
 int ResourceLoader::loader_count = 0;
 
@@ -71,6 +71,25 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	}
 
 	return false;
+}
+
+bool ResourceFormatLoader::handles_type(const String &p_type) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("handles_type")) {
+		// I guess custom loaders for custom resources should use "Resource"
+		return get_script_instance()->call("handles_type", p_type);
+	}
+
+	return false;
+}
+
+String ResourceFormatLoader::get_resource_type(const String &p_path) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("get_resource_type")) {
+		return get_script_instance()->call("get_resource_type", p_path);
+	}
+
+	return "";
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
@@ -129,9 +148,37 @@ bool ResourceFormatLoader::exists(const String &p_path) const {
 	return FileAccess::exists(p_path); //by default just check file
 }
 
+void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
+		PoolStringArray exts = get_script_instance()->call("get_recognized_extensions");
+
+		{
+			PoolStringArray::Read r = exts.read();
+			for (int i = 0; i < exts.size(); ++i) {
+				p_extensions->push_back(r[i]);
+			}
+		}
+	}
+}
+
 RES ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
 
-	String path = p_path;
+	if (get_script_instance() && get_script_instance()->has_method("load")) {
+		Variant res = get_script_instance()->call("load", p_path, p_original_path);
+
+		if (res.get_type() == Variant::INT) {
+
+			if (r_error)
+				*r_error = (Error)res.operator int64_t();
+
+		} else {
+
+			if (r_error)
+				*r_error = OK;
+			return res;
+		}
+	}
 
 	//or this must be implemented
 	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path, p_original_path, r_error);
@@ -160,7 +207,47 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
-	//do nothing by default
+	if (get_script_instance() && get_script_instance()->has_method("get_dependencies")) {
+		PoolStringArray deps = get_script_instance()->call("get_dependencies", p_path, p_add_types);
+
+		{
+			PoolStringArray::Read r = deps.read();
+			for (int i = 0; i < deps.size(); ++i) {
+				p_dependencies->push_back(r[i]);
+			}
+		}
+	}
+}
+
+Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Map<String, String> &p_map) {
+
+	if (get_script_instance() && get_script_instance()->has_method("rename_dependencies")) {
+
+		Dictionary deps_dict;
+		for (Map<String, String>::Element *E = p_map.front(); E; E = E->next()) {
+			deps_dict[E->key()] = E->value();
+		}
+
+		int64_t res = get_script_instance()->call("rename_dependencies", deps_dict);
+		return (Error)res;
+	}
+
+	return OK;
+}
+
+void ResourceFormatLoader::_bind_methods() {
+
+	{
+		MethodInfo info = MethodInfo(Variant::NIL, "load", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "original_path"));
+		info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		ClassDB::add_virtual_method(get_class_static(), info);
+	}
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_recognized_extensions"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "handles_type", PropertyInfo(Variant::STRING, "typename")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_resource_type", PropertyInfo(Variant::STRING, "path")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_dependencies", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "add_types")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "rename_dependencies", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::STRING, "renames")));
 }
 
 ///////////////////////////////////
@@ -348,9 +435,11 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	return Ref<ResourceInteractiveLoader>();
 }
 
-void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_loader, bool p_at_front) {
+void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
 
+	ERR_FAIL_COND(p_format_loader.is_null());
 	ERR_FAIL_COND(loader_count >= MAX_LOADERS);
+
 	if (p_at_front) {
 		for (int i = loader_count; i > 0; i--) {
 			loader[i] = loader[i - 1];
@@ -360,6 +449,27 @@ void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_l
 	} else {
 		loader[loader_count++] = p_format_loader;
 	}
+}
+
+void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+
+	ERR_FAIL_COND(p_format_loader.is_null());
+
+	// Find loader
+	int i = 0;
+	for (; i < loader_count; ++i) {
+		if (loader[i] == p_format_loader)
+			break;
+	}
+
+	ERR_FAIL_COND(i >= loader_count); // Not found
+
+	// Shift next loaders up
+	for (; i < loader_count - 1; ++i) {
+		loader[i] = loader[i + 1];
+	}
+	loader[loader_count - 1].unref();
+	--loader_count;
 }
 
 int ResourceLoader::get_import_order(const String &p_path) {
@@ -644,6 +754,84 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 }
 
 ResourceLoadedCallback ResourceLoader::_loaded_callback = NULL;
+
+Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(String path) {
+	for (int i = 0; i < loader_count; ++i) {
+		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == path) {
+			return loader[i];
+		}
+	}
+	return Ref<ResourceFormatLoader>();
+}
+
+bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
+
+	if (_find_custom_resource_format_loader(script_path).is_valid())
+		return false;
+
+	Ref<Resource> res = ResourceLoader::load(script_path);
+	ERR_FAIL_COND_V(res.is_null(), false);
+	ERR_FAIL_COND_V(!res->is_class("Script"), false);
+
+	Ref<Script> s = res;
+	StringName ibt = s->get_instance_base_type();
+	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
+	ERR_EXPLAIN("Script does not inherit a CustomResourceLoader: " + script_path);
+	ERR_FAIL_COND_V(!valid_type, false);
+
+	Object *obj = ClassDB::instance(ibt);
+
+	ERR_EXPLAIN("Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt));
+	ERR_FAIL_COND_V(obj == NULL, false);
+
+	ResourceFormatLoader *crl = NULL;
+	crl = Object::cast_to<ResourceFormatLoader>(obj);
+	crl->set_script(s.get_ref_ptr());
+	ResourceLoader::add_resource_format_loader(crl);
+
+	return true;
+}
+
+void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
+
+	Ref<ResourceFormatLoader> loader = _find_custom_resource_format_loader(script_path);
+	if (loader.is_valid())
+		remove_resource_format_loader(loader);
+}
+
+void ResourceLoader::add_custom_loaders() {
+	// Custom loaders registration exploits global class names
+
+	String custom_loader_base_class = ResourceFormatLoader::get_class_static();
+
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
+
+	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
+
+		StringName class_name = E->get();
+		StringName base_class = ScriptServer::get_global_class_base(class_name);
+
+		if (base_class == custom_loader_base_class) {
+			String path = ScriptServer::get_global_class_path(class_name);
+			add_custom_resource_format_loader(path);
+		}
+	}
+}
+
+void ResourceLoader::remove_custom_loaders() {
+
+	Vector<Ref<ResourceFormatLoader> > custom_loaders;
+	for (int i = 0; i < loader_count; ++i) {
+		if (loader[i]->get_script_instance()) {
+			custom_loaders.push_back(loader[i]);
+		}
+	}
+
+	for (int i = 0; i < custom_loaders.size(); ++i) {
+		remove_resource_format_loader(custom_loaders[i]);
+	}
+}
 
 ResourceLoadErrorNotify ResourceLoader::err_notify = NULL;
 void *ResourceLoader::err_notify_ud = NULL;

@@ -35,8 +35,8 @@
 #include "csharp_script.h"
 
 CSharpLanguage *script_language_cs = NULL;
-ResourceFormatLoaderCSharpScript *resource_loader_cs = NULL;
-ResourceFormatSaverCSharpScript *resource_saver_cs = NULL;
+Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
+Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 
 _GodotSharp *_godotsharp = NULL;
 
@@ -52,9 +52,10 @@ void register_mono_types() {
 	script_language_cs->set_language_index(ScriptServer::get_language_count());
 	ScriptServer::register_language(script_language_cs);
 
-	resource_loader_cs = memnew(ResourceFormatLoaderCSharpScript);
+	resource_loader_cs.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_cs);
-	resource_saver_cs = memnew(ResourceFormatSaverCSharpScript);
+
+	resource_saver_cs.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_cs);
 }
 
@@ -63,10 +64,16 @@ void unregister_mono_types() {
 
 	if (script_language_cs)
 		memdelete(script_language_cs);
-	if (resource_loader_cs)
-		memdelete(resource_loader_cs);
-	if (resource_saver_cs)
-		memdelete(resource_saver_cs);
+
+	if (resource_loader_cs.is_valid()) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_cs);
+		resource_loader_cs.unref();
+	}
+
+	if (resource_saver_cs.is_valid()) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_cs);
+		resource_saver_cs.unref();
+	}
 
 	if (_godotsharp)
 		memdelete(_godotsharp);

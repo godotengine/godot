@@ -65,11 +65,11 @@
 #include "core/translation.h"
 #include "core/undo_redo.h"
 
-static ResourceFormatSaverBinary *resource_saver_binary = NULL;
-static ResourceFormatLoaderBinary *resource_loader_binary = NULL;
-static ResourceFormatImporter *resource_format_importer = NULL;
+static Ref<ResourceFormatSaverBinary> resource_saver_binary;
+static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
+static Ref<ResourceFormatImporter> resource_format_importer;
 
-static ResourceFormatLoaderImage *resource_format_image = NULL;
+static Ref<ResourceFormatLoaderImage> resource_format_image;
 
 static _ResourceLoader *_resource_loader = NULL;
 static _ResourceSaver *_resource_saver = NULL;
@@ -77,7 +77,7 @@ static _OS *_os = NULL;
 static _Engine *_engine = NULL;
 static _ClassDB *_classdb = NULL;
 static _Marshalls *_marshalls = NULL;
-static TranslationLoaderPO *resource_format_po = NULL;
+static Ref<TranslationLoaderPO> resource_format_po;
 static _JSON *_json = NULL;
 
 static IP *ip = NULL;
@@ -106,18 +106,18 @@ void register_core_types() {
 
 	CoreStringNames::create();
 
-	resource_format_po = memnew(TranslationLoaderPO);
+	resource_format_po.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_po);
 
-	resource_saver_binary = memnew(ResourceFormatSaverBinary);
+	resource_saver_binary.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
-	resource_loader_binary = memnew(ResourceFormatLoaderBinary);
+	resource_loader_binary.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
-	resource_format_importer = memnew(ResourceFormatImporter);
+	resource_format_importer.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
 
-	resource_format_image = memnew(ResourceFormatLoaderImage);
+	resource_format_image.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
 
 	ClassDB::register_class<Object>();
@@ -164,6 +164,9 @@ void register_core_types() {
 	ClassDB::register_class<TriangleMesh>();
 
 	ClassDB::register_virtual_class<ResourceInteractiveLoader>();
+
+	ClassDB::register_class<ResourceFormatLoader>();
+	ClassDB::register_class<ResourceFormatSaver>();
 
 	ClassDB::register_class<_File>();
 	ClassDB::register_class<_Directory>();
@@ -248,16 +251,28 @@ void unregister_core_types() {
 
 	memdelete(_geometry);
 
-	if (resource_format_image)
-		memdelete(resource_format_image);
-	if (resource_saver_binary)
-		memdelete(resource_saver_binary);
-	if (resource_loader_binary)
-		memdelete(resource_loader_binary);
-	if (resource_format_importer)
-		memdelete(resource_format_importer);
+	if (resource_format_image.is_valid()) {
+		ResourceLoader::remove_resource_format_loader(resource_format_image);
+		resource_format_image.unref();
+	}
 
-	memdelete(resource_format_po);
+	if (resource_saver_binary.is_valid()) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_binary);
+		resource_saver_binary.unref();
+	}
+
+	if (resource_loader_binary.is_valid()) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_binary);
+		resource_loader_binary.unref();
+	}
+
+	if (resource_format_importer.is_valid()) {
+		ResourceLoader::remove_resource_format_loader(resource_format_importer);
+		resource_format_importer.unref();
+	}
+
+	ResourceLoader::remove_resource_format_loader(resource_format_po);
+	resource_format_po.unref();
 
 	if (ip)
 		memdelete(ip);

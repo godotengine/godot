@@ -637,8 +637,8 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
-	static void add_editor_plugin(EditorPlugin *p_editor);
-	static void remove_editor_plugin(EditorPlugin *p_editor);
+	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
+	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
@@ -651,7 +651,7 @@ public:
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);
 
-	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled);
+	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);

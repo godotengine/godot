@@ -32,11 +32,11 @@
 
 #include "video_stream_webm.h"
 
-static ResourceFormatLoaderWebm *resource_loader_webm = NULL;
+static Ref<ResourceFormatLoaderWebm> resource_loader_webm;
 
 void register_webm_types() {
 
-	resource_loader_webm = memnew(ResourceFormatLoaderWebm);
+	resource_loader_webm.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_webm, true);
 
 	ClassDB::register_class<VideoStreamWebm>();
@@ -44,7 +44,9 @@ void register_webm_types() {
 
 void unregister_webm_types() {
 
-	if (resource_loader_webm) {
-		memdelete(resource_loader_webm);
+	ResourceLoader::remove_resource_format_loader(resource_loader_webm);
+
+	if (resource_loader_webm.is_valid()) {
+		resource_loader_webm.unref();
 	}
 }
