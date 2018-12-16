@@ -1172,7 +1172,7 @@ void CodeTextEditor::_on_settings_change() {
 	code_complete_timer->set_wait_time(
 			EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
 
-	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
+	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion", true);
 
 	// call hint settings
 	text_editor->set_callhint_settings(
@@ -1252,7 +1252,7 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
-	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
+	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion", true);
 
 	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
 
