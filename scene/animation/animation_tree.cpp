@@ -1483,6 +1483,13 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void AnimationTree::set_parameter(const StringName &p_name, const Variant &p_value) {
 
+	if (properties_dirty) {
+		_update_properties();
+	}
+
+	ERR_EXPLAIN("Parameter not found: " + p_name);
+	ERR_FAIL_COND(!property_map.has(p_name));
+
 	_set(p_name, p_value);
 }
 
@@ -1492,11 +1499,10 @@ Variant AnimationTree::get_parameter(const StringName &p_name) const {
 		const_cast<AnimationTree *>(this)->_update_properties();
 	}
 
-	if (property_map.has(p_name)) {
-		return property_map[p_name];
-	}
+	ERR_EXPLAIN("Parameter not found: " + p_name);
+	ERR_FAIL_COND_V(!property_map.has(p_name), Variant());
 
-	return Variant();
+	return property_map[p_name];
 }
 
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
