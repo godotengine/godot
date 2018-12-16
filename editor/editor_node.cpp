@@ -3135,6 +3135,9 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 
 void EditorNode::register_editor_types() {
 
+	ResourceLoader::set_timestamp_on_load(true);
+	ResourceSaver::set_timestamp_on_save(true);
+
 	ClassDB::register_class<EditorPlugin>();
 	ClassDB::register_class<EditorImportPlugin>();
 	ClassDB::register_class<EditorScript>();
@@ -4825,9 +4828,6 @@ EditorNode::EditorNode() {
 	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 	ResourceLoader::set_error_notify_func(this, _load_error_notify);
 	ResourceLoader::set_dependency_error_notify_func(this, _dependency_error_report);
-
-	ResourceLoader::set_timestamp_on_load(true);
-	ResourceSaver::set_timestamp_on_save(true);
 
 	{ //register importers at the beginning, so dialogs are created with the right extensions
 		Ref<ResourceImporterTexture> import_texture;
