@@ -79,7 +79,7 @@ void GDAPI godot_string_new(godot_string *r_dest);
 void GDAPI godot_string_new_copy(godot_string *r_dest, const godot_string *p_src);
 void GDAPI godot_string_new_with_wide_string(godot_string *r_dest, const wchar_t *p_contents, const int p_size);
 
-wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
+const wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx);
 wchar_t GDAPI godot_string_operator_index_const(const godot_string *p_self, const godot_int p_idx);
 const wchar_t GDAPI *godot_string_wide_str(const godot_string *p_self);
 

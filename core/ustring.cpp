@@ -179,7 +179,7 @@ void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 	resize(p_length + 1);
 	set(p_length, 0);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	for (int i = 0; i < p_length; i++) {
 		dst[i] = p_char[i];
@@ -250,7 +250,7 @@ String &String::operator+=(const String &p_str) {
 	resize(length() + p_str.size());
 
 	const CharType *src = p_str.c_str();
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -289,7 +289,7 @@ String &String::operator+=(const char *p_str) {
 
 	resize(from + src_len + 1);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -1431,7 +1431,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	resize(str_size + 1);
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 	dst[str_size] = 0;
 
 	while (cstr_size) {
@@ -3476,7 +3476,7 @@ String String::xml_unescape() const {
 	if (len == 0)
 		return String();
 	str.resize(len + 1);
-	_xml_unescape(c_str(), l, &str[0]);
+	_xml_unescape(c_str(), l, str.ptrw());
 	str[len] = 0;
 	return str;
 }

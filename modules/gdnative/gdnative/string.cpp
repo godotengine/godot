@@ -74,7 +74,7 @@ void GDAPI godot_string_new_with_wide_string(godot_string *r_dest, const wchar_t
 	memnew_placement(dest, String(p_contents, p_size));
 }
 
-wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx) {
+const wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx) {
 	String *self = (String *)p_self;
 	return &(self->operator[](p_idx));
 }

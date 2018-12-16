@@ -216,7 +216,7 @@ String mono_to_utf16_string(MonoString *p_mono_string) {
 	ret.set(len, 0);
 
 	CharType *src = (CharType *)mono_string_chars(p_mono_string);
-	CharType *dst = &(ret.operator[](0));
+	CharType *dst = ret.ptrw();
 
 	for (int i = 0; i < len; i++) {
 		dst[i] = src[i];
