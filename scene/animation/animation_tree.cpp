@@ -1481,6 +1481,24 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void AnimationTree::set_parameter(const StringName &p_name, const Variant &p_value) {
+
+	_set(p_name, p_value);
+}
+
+Variant AnimationTree::get_parameter(const StringName &p_name) const {
+
+	if (properties_dirty) {
+		const_cast<AnimationTree *>(this)->_update_properties();
+	}
+
+	if (property_map.has(p_name)) {
+		return property_map[p_name];
+	}
+
+	return Variant();
+}
+
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
 
 	//rename values first
@@ -1534,6 +1552,9 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationTree::_tree_changed);
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
+
+	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationTree::set_parameter);
+	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationTree::get_parameter);
 
 	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 

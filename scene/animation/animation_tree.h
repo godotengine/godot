@@ -332,6 +332,9 @@ public:
 	float get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(float p_time);
 
+	void set_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_parameter(const StringName &p_name) const;
+
 	void rename_parameter(const String &p_base, const String &p_new_base);
 
 	uint64_t get_last_process_pass() const;
