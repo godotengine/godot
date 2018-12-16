@@ -1111,7 +1111,7 @@ void AnimationNodeStateMachineEditor::_erase_selected() {
 		updating = true;
 		undo_redo->create_action("Node Removed");
 		undo_redo->add_do_method(state_machine.ptr(), "remove_node", selected_node);
-		undo_redo->add_undo_method(state_machine.ptr(), "add_node", selected_node, state_machine->get_node(selected_node));
+		undo_redo->add_undo_method(state_machine.ptr(), "add_node", selected_node, state_machine->get_node(selected_node), state_machine->get_node_position(selected_node));
 		for (int i = 0; i < state_machine->get_transition_count(); i++) {
 			String from = state_machine->get_transition_from(i);
 			String to = state_machine->get_transition_to(i);
