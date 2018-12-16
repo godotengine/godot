@@ -1165,10 +1165,12 @@ void ProjectManager::_load_recent_projects() {
 
 	bool set_ordered_latest_modification;
 	ProjectListFilter::FilterOption filter_order_option = project_order_filter->get_filter_option();
-	if (filter_order_option == ProjectListFilter::FILTER_NAME)
+	if (filter_order_option == ProjectListFilter::FILTER_NAME) {
 		set_ordered_latest_modification = false;
-	else
+	} else {
 		set_ordered_latest_modification = true;
+	}
+	EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)filter_order_option);
 
 	List<ProjectItem> projects;
 	List<ProjectItem> favorite_projects;
@@ -1838,15 +1840,18 @@ ProjectManager::ProjectManager() {
 	Label *sort_label = memnew(Label);
 	sort_label->set_text(TTR("Sort:"));
 	sort_filters->add_child(sort_label);
-	Vector<String> vec1;
-	vec1.push_back("Name");
-	vec1.push_back("Last Modified");
+	Vector<String> sort_filter_titles;
+	sort_filter_titles.push_back("Name");
+	sort_filter_titles.push_back("Last Modified");
 	project_order_filter = memnew(ProjectListFilter);
-	project_order_filter->_setup_filters(vec1);
+	project_order_filter->_setup_filters(sort_filter_titles);
 	project_order_filter->set_filter_size(150);
 	sort_filters->add_child(project_order_filter);
 	project_order_filter->connect("filter_changed", this, "_load_recent_projects");
 	project_order_filter->set_custom_minimum_size(Size2(180, 10) * EDSCALE);
+
+	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
+	project_order_filter->set_filter_option((ProjectListFilter::FilterOption)projects_sorting_order);
 
 	sort_filters->add_spacer(true);
 	Label *search_label = memnew(Label);
@@ -2072,6 +2077,11 @@ String ProjectListFilter::get_search_term() {
 
 ProjectListFilter::FilterOption ProjectListFilter::get_filter_option() {
 	return _current_filter;
+}
+
+void ProjectListFilter::set_filter_option(FilterOption option) {
+	filter_option->select((int)option);
+	_filter_option_selected(0);
 }
 
 void ProjectListFilter::_filter_option_selected(int p_idx) {

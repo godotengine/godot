@@ -152,6 +152,7 @@ public:
 	void set_filter_size(int h_size);
 	String get_search_term();
 	FilterOption get_filter_option();
+	void set_filter_option(FilterOption);
 	ProjectListFilter();
 };
 
