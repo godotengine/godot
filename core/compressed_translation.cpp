@@ -83,7 +83,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		if (ps.orig_len != 0) {
 			CharString dst_s;
 			dst_s.resize(src_s.size());
-			int ret = smaz_compress(src_s.get_data(), src_s.size(), &dst_s[0], src_s.size());
+			int ret = smaz_compress(src_s.get_data(), src_s.size(), dst_s.ptrw(), src_s.size());
 			if (ret >= src_s.size()) {
 				//if compressed is larger than original, just use original
 				ps.orig_len = src_s.size();

@@ -583,7 +583,7 @@ static void clear_touches() {
 	character.parse_utf8([p_text UTF8String]);
 	keyboard_text = keyboard_text + character;
 	OSIPhone::get_singleton()->key(character[0] == 10 ? KEY_ENTER : character[0], true);
-	printf("inserting text with character %i\n", character[0]);
+	printf("inserting text with character %lc\n", (CharType)character[0]);
 };
 
 - (void)audioRouteChangeListenerCallback:(NSNotification *)notification {
