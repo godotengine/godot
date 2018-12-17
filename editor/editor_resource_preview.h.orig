@@ -103,7 +103,6 @@ class EditorResourcePreview : public Node {
 	int order;
 
 	Map<String, Item> cache;
-	bool enabled;
 
 	void _preview_ready(const String &p_str, const Ref<Texture> &p_texture, const Ref<Texture> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud);
 	void _generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base);
@@ -126,7 +125,6 @@ public:
 	void add_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void check_for_invalidation(const String &p_path);
-	void disable_previews();
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

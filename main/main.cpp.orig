@@ -1632,10 +1632,7 @@ bool Main::start() {
 			//startup editor
 
 			if (_export_preset != "") {
-				// Resource previews can get triggered while shutting down, due to the filesystem dock
-				// thinking the filesystem has changed. This is probably not the best solution to that,
-				// but it works to prevent a deadlock on exit ()
-				EditorResourcePreview::get_singleton()->disable_previews();
+
 				editor_node->export_preset(_export_preset, game_path, export_debug, "", true);
 				game_path = ""; //no load anything
 			}

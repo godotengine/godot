@@ -319,14 +319,9 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 	ERR_FAIL_NULL(p_receiver);
 	ERR_FAIL_COND(!p_res.is_valid());
 
-	String path_id = "ID:" + itos(p_res->get_instance_id());
-
-	if (!enabled) {
-		p_receiver->call_deferred(p_receiver_func, path_id, Ref<ImageTexture>(), p_userdata);
-		return;
-	}
-
 	preview_mutex->lock();
+
+	String path_id = "ID:" + itos(p_res->get_instance_id());
 
 	if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
 
@@ -351,10 +346,6 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 }
 
 void EditorResourcePreview::queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
-	if (!enabled) {
-		p_receiver->call_deferred(p_receiver_func, p_path, Ref<ImageTexture>(), p_userdata);
-		return;
-	}
 
 	ERR_FAIL_NULL(p_receiver);
 	preview_mutex->lock();
@@ -425,17 +416,12 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 	}
 }
 
-void EditorResourcePreview::disable_previews() {
-	enabled = false;
-}
-
 EditorResourcePreview::EditorResourcePreview() {
 	singleton = this;
 	preview_mutex = Mutex::create();
 	preview_sem = Semaphore::create();
 	order = 0;
 	exit = false;
-	enabled = true;
 
 	thread = Thread::create(_thread_func, this);
 }
