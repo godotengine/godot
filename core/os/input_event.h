@@ -155,6 +155,8 @@ enum MidiMessageList {
  * Input Modifier Status
  * for keyboard/mouse events.
  */
+
+/*
 enum DeviceId {
 	NIL = 0,
 	KEYBOARD,
@@ -162,10 +164,11 @@ enum DeviceId {
 	JOYPAD,
 	SCREEN
 };
+*/
 
 class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource)
-	DeviceId dev;
+	//DeviceId dev;
 	int device;
 
 protected:
@@ -174,8 +177,8 @@ protected:
 public:
 	void set_device(int p_device);
 	int get_device() const;
-	void set_dev(DeviceId p_dev);
-	DeviceId get_dev() const;
+	//void set_dev(DeviceId p_dev);
+	//DeviceId get_dev() const;
 
 
 	bool is_action(const StringName &p_action) const;

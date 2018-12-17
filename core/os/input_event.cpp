@@ -41,14 +41,6 @@ int InputEvent::get_device() const {
 	return device;
 }
 
-void InputEvent::set_dev(DeviceId p_dev) {
-	dev = p_dev;
-}
-
-DeviceId InputEvent::get_dev() const {
-	return dev;
-}
-
 bool InputEvent::is_action(const StringName &p_action) const {
 
 	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>((InputEvent *)this), p_action);
@@ -136,7 +128,7 @@ void InputEvent::_bind_methods() {
 }
 
 InputEvent::InputEvent() {
-	dev = NIL;
+	//dev = NIL;
 	device = 0;
 }
 
@@ -361,7 +353,7 @@ InputEventKey::InputEventKey() {
 	unicode = 0; ///unicode
 	echo = false;
 	set_device(1);
-	set_dev(KEYBOARD);
+	//set_dev(KEYBOARD);
 }
 
 ////////////////////////////////////////
@@ -413,7 +405,7 @@ InputEventMouse::InputEventMouse() {
 
 	button_mask = 0;
 	set_device(2);
-	set_dev(MOUSE);
+	//set_dev(MOUSE);
 }
 
 ///////////////////////////////////////
@@ -714,7 +706,7 @@ InputEventJoypadMotion::InputEventJoypadMotion() {
 	axis = 0;
 	axis_value = 0;
 	set_device(3);
-	set_dev(JOYPAD);
+	//set_dev(JOYPAD);
 }
 /////////////////////////////////
 
@@ -790,7 +782,7 @@ InputEventJoypadButton::InputEventJoypadButton() {
 	pressure = 0;
 	pressed = false;
 	set_device(3);
-	set_dev(JOYPAD);
+	//set_dev(JOYPAD);
 }
 
 //////////////////////////////////////////////
@@ -860,7 +852,7 @@ InputEventScreenTouch::InputEventScreenTouch() {
 	index = 0;
 	pressed = false;
 	set_device(4);
-	set_dev(SCREEN);
+	//set_dev(SCREEN);
 }
 
 /////////////////////////////
@@ -947,7 +939,7 @@ InputEventScreenDrag::InputEventScreenDrag() {
 
 	index = 0;
 	set_device(4);
-	set_dev(SCREEN);
+	//set_dev(SCREEN);
 }
 /////////////////////////////
 
