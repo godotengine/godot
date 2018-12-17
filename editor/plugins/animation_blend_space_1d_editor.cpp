@@ -650,6 +650,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
+	snap->set_tooltip(TTR("Enable snap and show grid."));
 	snap->connect("pressed", this, "_snap_toggled");
 
 	snap_value = memnew(SpinBox);

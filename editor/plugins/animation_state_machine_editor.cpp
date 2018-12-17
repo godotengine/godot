@@ -118,7 +118,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			menu->add_item(TTR("Paste"), MENU_PASTE);
 		}
 		menu->add_separator();
-		menu->add_item(TTR("Load.."), MENU_LOAD_FILE);
+		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
 		menu->set_global_position(state_machine_draw->get_global_transform().xform(mb->get_position()));
 		menu->popup();
@@ -1267,7 +1267,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(tool_erase_hb);
 	tool_erase_hb->add_child(memnew(VSeparator));
 	tool_erase = memnew(ToolButton);
-	tool_erase->set_tooltip(TTR("Remove selected node or transition"));
+	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
 	tool_erase_hb->add_child(tool_erase);
 	tool_erase->connect("pressed", this, "_erase_selected");
 	tool_erase->set_disabled(true);

@@ -237,23 +237,17 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			mb->get_popup()->connect("index_pressed", this, "_anim_selected", varray(options, E->get()), CONNECT_DEFERRED);
 		}
 
-		/* should be no longer necessary, as the boolean works
-		Ref<AnimationNodeOneShot> oneshot = agnode;
-		if (oneshot.is_valid()) {
+		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
+			Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
+			Color c = sb->get_border_color(MARGIN_TOP);
+			Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
+			mono_color.a = 0.85;
+			c = mono_color;
 
-			HBoxContainer *play_stop = memnew(HBoxContainer);
-			play_stop->add_spacer();
-			Button *play = memnew(Button);
-			play->set_icon(get_icon("Play", "EditorIcons"));
-			play->connect("pressed", this, "_oneshot_start", varray(E->get()), CONNECT_DEFERRED);
-			play_stop->add_child(play);
-			Button *stop = memnew(Button);
-			stop->set_icon(get_icon("Stop", "EditorIcons"));
-			stop->connect("pressed", this, "_oneshot_stop", varray(E->get()), CONNECT_DEFERRED);
-			play_stop->add_child(stop);
-			play_stop->add_spacer();
-			node->add_child(play_stop);
-		} */
+			node->add_color_override("title_color", c);
+			c.a = 0.7;
+			node->add_color_override("close_color", c);
+		}
 	}
 
 	List<AnimationNodeBlendTree::NodeConnection> connections;
@@ -646,6 +640,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 
 		error_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 		error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+
+		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
+			_update_graph();
 	}
 
 	if (p_what == NOTIFICATION_PROCESS) {
