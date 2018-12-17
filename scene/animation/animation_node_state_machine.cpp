@@ -480,10 +480,9 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 	}
 
 	//compute time left for transitions by using the end node
-
 	if (sm->end_node != StringName() && sm->end_node != current) {
 
-		rem = sm->blend_node(current, sm->states[sm->end_node].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
+		rem = sm->blend_node(sm->end_node, sm->states[sm->end_node].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 	}
 
 	return rem;
