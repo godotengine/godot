@@ -241,7 +241,7 @@ void Label::_notification(int p_what) {
 							CharType n = xl_text[i + pos + 1];
 							if (uppercase) {
 								c = String::char_uppercase(c);
-								n = String::char_uppercase(c);
+								n = String::char_uppercase(n);
 							}
 
 							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow);
@@ -262,7 +262,7 @@ void Label::_notification(int p_what) {
 						CharType n = xl_text[i + pos + 1];
 						if (uppercase) {
 							c = String::char_uppercase(c);
-							n = String::char_uppercase(c);
+							n = String::char_uppercase(n);
 						}
 
 						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
