@@ -395,7 +395,7 @@ void Label::regenerate_word_cache() {
 
 	for (int i = 0; i <= xl_text.length(); i++) {
 
-		CharType current = i < xl_text.length() ? xl_text[i] : ' '; //always a space at the end, so the algo works
+		CharType current = i < xl_text.length() ? xl_text[i] : L' '; //always a space at the end, so the algo works
 
 		if (uppercase)
 			current = String::char_uppercase(current);
