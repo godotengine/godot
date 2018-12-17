@@ -91,7 +91,7 @@ void Polygon2DEditor::_notification(int p_what) {
 
 void Polygon2DEditor::_sync_bones() {
 
-	Skeleton2D *skeleton;
+	Skeleton2D *skeleton = NULL;
 	if (!node->has_node(node->get_skeleton())) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
 		error->popup_centered_minsize();
