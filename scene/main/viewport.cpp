@@ -1727,6 +1727,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				gui.mouse_focus = _gui_find_control(pos);
 				gui.mouse_focus_mask = 1 << (mb->get_button_index() - 1);
+				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
 					return;
@@ -2114,14 +2115,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				set_input_as_handled();
 				return;
 			}
-		} else if (gui.mouse_focus) {
+		} else if (touch_event->get_index() == 0 && gui.last_mouse_focus) {
 
-			if (gui.mouse_focus->can_process()) {
+			if (gui.last_mouse_focus->can_process()) {
 
 				touch_event = touch_event->xformed_by(Transform2D()); //make a copy
 				touch_event->set_position(gui.focus_inv_xform.xform(pos));
 
-				_gui_call_input(gui.mouse_focus, touch_event);
+				_gui_call_input(gui.last_mouse_focus, touch_event);
 			}
 			set_input_as_handled();
 			return;

@@ -40,6 +40,36 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+template <class T>
+class CharProxy {
+	friend class CharString;
+	friend class String;
+
+	const int _index;
+	CowData<T> &_cowdata;
+
+	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &cowdata) :
+			_index(p_index),
+			_cowdata(cowdata) {}
+
+public:
+	_FORCE_INLINE_ operator T() const {
+		return _cowdata.get(_index);
+	}
+
+	_FORCE_INLINE_ const T *operator&() const {
+		return _cowdata.ptr() + _index;
+	}
+
+	_FORCE_INLINE_ void operator=(const T &other) const {
+		_cowdata.set(_index, other);
+	}
+
+	_FORCE_INLINE_ void operator=(const CharProxy<T> &other) const {
+		_cowdata.set(_index, other.operator T());
+	}
+};
+
 class CharString {
 
 	CowData<char> _cowdata;
@@ -53,8 +83,8 @@ public:
 	_FORCE_INLINE_ char get(int p_index) { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ const char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ char &operator[](int p_index) { return _cowdata.get_m(p_index); }
 	_FORCE_INLINE_ const char &operator[](int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ CharProxy<char> operator[](int p_index) { return CharProxy<char>(p_index, _cowdata); }
 
 	_FORCE_INLINE_ CharString() {}
 	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
@@ -107,8 +137,9 @@ public:
 	_FORCE_INLINE_ void set(int p_index, const CharType &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
-	_FORCE_INLINE_ CharType &operator[](int p_index) { return _cowdata.get_m(p_index); }
+
 	_FORCE_INLINE_ const CharType &operator[](int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ CharProxy<CharType> operator[](int p_index) { return CharProxy<CharType>(p_index, _cowdata); }
 
 	bool operator==(const String &p_str) const;
 	bool operator!=(const String &p_str) const;

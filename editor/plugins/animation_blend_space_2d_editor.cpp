@@ -904,8 +904,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap = memnew(ToolButton);
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
-	//snap->set_text(TTR("Snap"));
 	snap->set_pressed(true);
+	snap->set_tooltip(TTR("Enable snap and show grid."));
 	snap->connect("pressed", this, "_snap_toggled");
 
 	snap_x = memnew(SpinBox);

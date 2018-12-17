@@ -1401,6 +1401,14 @@ void EditorFileSystem::update_script_classes() {
 
 	ScriptServer::save_global_classes();
 	EditorNode::get_editor_data().script_class_save_icon_paths();
+
+	// Rescan custom loaders and savers.
+	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.
+	// So I thought it's better to do this when script classes really get updated
+	ResourceLoader::remove_custom_loaders();
+	ResourceLoader::add_custom_loaders();
+	ResourceSaver::remove_custom_savers();
+	ResourceSaver::add_custom_savers();
 }
 
 void EditorFileSystem::_queue_update_script_classes() {

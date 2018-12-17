@@ -44,17 +44,11 @@
 
 template <class T>
 class VectorWriteProxy {
-	friend class Vector<T>;
-	CowData<T> *_parent;
-
-	_FORCE_INLINE_ VectorWriteProxy(CowData<T> *parent) :
-			_parent(parent){};
-
 public:
 	_FORCE_INLINE_ T &operator[](int p_index) {
-		CRASH_BAD_INDEX(p_index, _parent->size());
+		CRASH_BAD_INDEX(p_index, ((Vector<T> *)(this))->_cowdata.size());
 
-		return _parent->ptrw()[p_index];
+		return ((Vector<T> *)(this))->_cowdata.ptrw()[p_index];
 	}
 };
 
@@ -62,39 +56,41 @@ template <class T>
 class Vector {
 	friend class VectorWriteProxy<T>;
 
-	CowData<T> *_cowdata;
-
 public:
 	VectorWriteProxy<T> write;
 
+private:
+	CowData<T> _cowdata;
+
+public:
 	bool push_back(const T &p_elem);
 
-	void remove(int p_index) { _cowdata->remove(p_index); }
+	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
 		int idx = find(p_val);
 		if (idx >= 0) remove(idx);
 	};
 	void invert();
 
-	_FORCE_INLINE_ T *ptrw() { return _cowdata->ptrw(); }
-	_FORCE_INLINE_ const T *ptr() const { return _cowdata->ptr(); }
+	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ void clear() { resize(0); }
-	_FORCE_INLINE_ bool empty() const { return _cowdata->empty(); }
+	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
-	_FORCE_INLINE_ T get(int p_index) { return _cowdata->get(p_index); }
-	_FORCE_INLINE_ const T get(int p_index) const { return _cowdata->get(p_index); }
-	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata->set(p_index, p_elem); }
-	_FORCE_INLINE_ int size() const { return _cowdata->size(); }
-	Error resize(int p_size) { return _cowdata->resize(p_size); }
-	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata->get(p_index); }
-	Error insert(int p_pos, const T &p_val) { return _cowdata->insert(p_pos, p_val); }
+	_FORCE_INLINE_ T get(int p_index) { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T get(int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
+	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	Error resize(int p_size) { return _cowdata.resize(p_size); }
+	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
+	Error insert(int p_pos, const T &p_val) { return _cowdata.insert(p_pos, p_val); }
 
 	void append_array(const Vector<T> &p_other);
 
 	template <class C>
 	void sort_custom() {
 
-		int len = _cowdata->size();
+		int len = _cowdata.size();
 		if (len == 0)
 			return;
 
@@ -110,7 +106,7 @@ public:
 
 	void ordered_insert(const T &p_val) {
 		int i;
-		for (i = 0; i < _cowdata->size(); i++) {
+		for (i = 0; i < _cowdata.size(); i++) {
 
 			if (p_val < operator[](i)) {
 				break;
@@ -135,20 +131,14 @@ public:
 		return ret;
 	}
 
-	_FORCE_INLINE_ Vector() :
-			_cowdata(new CowData<T>()),
-			write(VectorWriteProxy<T>(_cowdata)) {}
-	_FORCE_INLINE_ Vector(const Vector &p_from) :
-			_cowdata(new CowData<T>()),
-			write(VectorWriteProxy<T>(_cowdata)) { _cowdata->_ref(p_from._cowdata); }
+	_FORCE_INLINE_ Vector() {}
+	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 	inline Vector &operator=(const Vector &p_from) {
-		_cowdata->_ref(p_from._cowdata);
+		_cowdata._ref(p_from._cowdata);
 		return *this;
 	}
 
-	_FORCE_INLINE_ ~Vector() {
-		delete _cowdata;
-	}
+	_FORCE_INLINE_ ~Vector() {}
 };
 
 template <class T>

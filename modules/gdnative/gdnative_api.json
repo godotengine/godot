@@ -4755,7 +4755,7 @@
       },
       {
         "name": "godot_string_operator_index",
-        "return_type": "wchar_t *",
+        "return_type": "const wchar_t *",
         "arguments": [
           ["godot_string *", "p_self"],
           ["const godot_int", "p_idx"]

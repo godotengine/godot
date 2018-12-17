@@ -42,15 +42,15 @@
 #include "platform/windows/export/export.h"
 #endif
 
-static ImageLoaderPNG *image_loader_png = NULL;
-static ResourceSaverPNG *resource_saver_png = NULL;
+static ImageLoaderPNG *image_loader_png;
+static Ref<ResourceSaverPNG> resource_saver_png;
 
 void register_core_driver_types() {
 
 	image_loader_png = memnew(ImageLoaderPNG);
 	ImageLoader::add_image_format_loader(image_loader_png);
 
-	resource_saver_png = memnew(ResourceSaverPNG);
+	resource_saver_png.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_png);
 }
 
@@ -58,8 +58,11 @@ void unregister_core_driver_types() {
 
 	if (image_loader_png)
 		memdelete(image_loader_png);
-	if (resource_saver_png)
-		memdelete(resource_saver_png);
+
+	if (resource_saver_png.is_valid()) {
+		ResourceSaver::remove_resource_format_saver(resource_saver_png);
+		resource_saver_png.unref();
+	}
 }
 
 void register_driver_types() {

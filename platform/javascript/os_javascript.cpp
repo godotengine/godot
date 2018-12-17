@@ -295,6 +295,30 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 		default: return false;
 	}
 
+	if (ev->is_pressed()) {
+
+		uint64_t diff = p_event->timestamp - os->last_click_ms;
+
+		if (ev->get_button_index() == os->last_click_button_index) {
+
+			if (diff < 400 && Point2(os->last_click_pos).distance_to(ev->get_position()) < 5) {
+
+				os->last_click_ms = 0;
+				os->last_click_pos = Point2(-100, -100);
+				os->last_click_button_index = -1;
+				ev->set_doubleclick(true);
+			}
+
+		} else {
+			os->last_click_button_index = ev->get_button_index();
+		}
+
+		if (!ev->is_doubleclick()) {
+			os->last_click_ms += diff;
+			os->last_click_pos = ev->get_position();
+		}
+	}
+
 	int mask = os->input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
@@ -452,7 +476,6 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	InputDefault *input = get_singleton()->input;
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_button_mask(input->get_mouse_button_mask());
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
@@ -475,10 +498,14 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
+	int button_flag = 1 << (ev->get_button_index() - 1);
+
 	ev->set_pressed(true);
+	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
 	input->parse_input_event(ev);
 
 	ev->set_pressed(false);
+	ev->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
 	input->parse_input_event(ev);
 
 	return true;
@@ -1066,6 +1093,10 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 		arguments.push_back(String::utf8(p_argv[i]));
 	}
 	set_cmdline(p_argv[0], arguments);
+
+	last_click_button_index = -1;
+	last_click_ms = 0;
+	last_click_pos = Point2(-100, -100);
 
 	window_maximized = false;
 	entering_fullscreen = false;

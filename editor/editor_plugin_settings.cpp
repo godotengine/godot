@@ -152,7 +152,7 @@ void EditorPluginSettings::_plugin_activity_changed() {
 	bool active = ti->get_range(3);
 	String name = ti->get_metadata(0);
 
-	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active);
+	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active, true);
 
 	bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(name);
 

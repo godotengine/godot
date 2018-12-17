@@ -1148,7 +1148,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	set_title(TTR("Select a Node"));
 
-	tree = memnew(SceneTreeEditor(false, false));
+	tree = memnew(SceneTreeEditor(false, false, true));
 	add_child(tree);
 	//set_child_rect(tree);
 

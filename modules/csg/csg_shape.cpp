@@ -48,16 +48,74 @@ void CSGShape::set_use_collision(bool p_enable) {
 		PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 		PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
 		PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+		set_collision_layer(collision_layer);
+		set_collision_mask(collision_mask);
 		_make_dirty(); //force update
 	} else {
 		PhysicsServer::get_singleton()->free(root_collision_instance);
 		root_collision_instance = RID();
 		root_collision_shape.unref();
 	}
+	_change_notify();
 }
 
 bool CSGShape::is_using_collision() const {
 	return use_collision;
+}
+
+void CSGShape::set_collision_layer(uint32_t p_layer) {
+	collision_layer = p_layer;
+	if (root_collision_instance.is_valid()) {
+		PhysicsServer::get_singleton()->body_set_collision_layer(root_collision_instance, p_layer);
+	}
+}
+
+uint32_t CSGShape::get_collision_layer() const {
+
+	return collision_layer;
+}
+
+void CSGShape::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask = p_mask;
+	if (root_collision_instance.is_valid()) {
+		PhysicsServer::get_singleton()->body_set_collision_mask(root_collision_instance, p_mask);
+	}
+}
+
+uint32_t CSGShape::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+void CSGShape::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_mask(mask);
+}
+
+bool CSGShape::get_collision_mask_bit(int p_bit) const {
+
+	return get_collision_mask() & (1 << p_bit);
+}
+
+void CSGShape::set_collision_layer_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_layer();
+	if (p_value)
+		mask |= 1 << p_bit;
+	else
+		mask &= ~(1 << p_bit);
+	set_collision_layer(mask);
+}
+
+bool CSGShape::get_collision_layer_bit(int p_bit) const {
+
+	return get_collision_layer() & (1 << p_bit);
 }
 
 bool CSGShape::is_root_shape() const {
@@ -459,6 +517,8 @@ void CSGShape::_notification(int p_what) {
 			PhysicsServer::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
 			PhysicsServer::get_singleton()->body_set_space(root_collision_instance, get_world()->get_space());
 			PhysicsServer::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+			set_collision_layer(collision_layer);
+			set_collision_mask(collision_mask);
 		}
 
 		_make_dirty();
@@ -477,7 +537,7 @@ void CSGShape::_notification(int p_what) {
 			parent->_make_dirty();
 		parent = NULL;
 
-		if (use_collision && is_root_shape()) {
+		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
 			PhysicsServer::get_singleton()->free(root_collision_instance);
 			root_collision_instance = RID();
 			root_collision_shape.unref();
@@ -506,9 +566,12 @@ bool CSGShape::is_calculating_tangents() const {
 }
 
 void CSGShape::_validate_property(PropertyInfo &property) const {
-	if (is_inside_tree() && property.name.begins_with("use_collision") && !is_root_shape()) {
+	bool is_collision_prefixed = property.name.begins_with("collision_");
+	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
 		property.usage = PROPERTY_USAGE_NOEDITOR;
+	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 	}
 }
 
@@ -520,19 +583,35 @@ void CSGShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_operation", "operation"), &CSGShape::set_operation);
 	ClassDB::bind_method(D_METHOD("get_operation"), &CSGShape::get_operation);
 
+	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
+	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
+
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape::is_using_collision);
 
-	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape::set_snap);
-	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape::get_snap);
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &CSGShape::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CSGShape::get_collision_layer);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CSGShape::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CSGShape::get_collision_mask);
+
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CSGShape::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CSGShape::get_collision_mask_bit);
+
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CSGShape::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CSGShape::get_collision_layer_bit);
 
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape::is_calculating_tangents);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
+
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
@@ -540,14 +619,16 @@ void CSGShape::_bind_methods() {
 }
 
 CSGShape::CSGShape() {
-	brush = NULL;
-	set_notify_local_transform(true);
-	dirty = false;
-	parent = NULL;
-	use_collision = false;
 	operation = OPERATION_UNION;
+	parent = NULL;
+	brush = NULL;
+	dirty = false;
 	snap = 0.001;
+	use_collision = false;
+	collision_layer = 1;
+	collision_mask = 1;
 	calculate_tangents = true;
+	set_notify_local_transform(true);
 }
 
 CSGShape::~CSGShape() {

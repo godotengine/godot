@@ -39,6 +39,9 @@
 class PluginScriptLanguage;
 
 class ResourceFormatLoaderPluginScript : public ResourceFormatLoader {
+
+	GDCLASS(ResourceFormatLoaderPluginScript, ResourceFormatLoader)
+
 	PluginScriptLanguage *_language;
 
 public:
@@ -50,6 +53,9 @@ public:
 };
 
 class ResourceFormatSaverPluginScript : public ResourceFormatSaver {
+
+	GDCLASS(ResourceFormatSaverPluginScript, ResourceFormatSaver)
+
 	PluginScriptLanguage *_language;
 
 public:

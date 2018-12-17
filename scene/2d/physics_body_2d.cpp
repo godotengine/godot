@@ -1279,7 +1279,6 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				bool is_on_slope = false;
 				if (p_floor_direction == Vector2()) {
 					//all is a wall
 					on_wall = true;
@@ -1291,15 +1290,13 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if (Vector2() == lv_n + p_floor_direction) {
+							if (Vector2() == lv_n + p_floor_direction && collision.travel.length() < 1) {
 								Transform2D gt = get_global_transform();
-								gt.elements[2] -= collision.travel;
+								gt.elements[2] -= collision.travel.project(p_floor_direction.tangent());
 								set_global_transform(gt);
 								return Vector2();
 							}
 						}
-
-						is_on_slope = true;
 
 					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
 						on_ceiling = true;
@@ -1308,14 +1305,9 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 					}
 				}
 
-				if (p_stop_on_slope && is_on_slope) {
-					motion = motion.slide(p_floor_direction);
-					lv = lv.slide(p_floor_direction);
-				} else {
-					Vector2 n = collision.normal;
-					motion = motion.slide(n);
-					lv = lv.slide(n);
-				}
+				Vector2 n = collision.normal;
+				motion = motion.slide(n);
+				lv = lv.slide(n);
 			}
 
 			if (p_stop_on_slope)

@@ -32,15 +32,16 @@
 
 #include "texture_loader_dds.h"
 
-static ResourceFormatDDS *resource_loader_dds = NULL;
+static Ref<ResourceFormatDDS> resource_loader_dds;
 
 void register_dds_types() {
 
-	resource_loader_dds = memnew(ResourceFormatDDS);
+	resource_loader_dds.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dds);
 }
 
 void unregister_dds_types() {
 
-	memdelete(resource_loader_dds);
+	ResourceLoader::remove_resource_format_loader(resource_loader_dds);
+	resource_loader_dds.unref();
 }

@@ -432,8 +432,8 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 	int stack_size = 0;
 
 	Point2i pos = p_pos;
-	int next_i;
-	int next_j;
+	int next_i = 0;
+	int next_j = 0;
 
 	bool reenter = true;
 	bool popped = false;

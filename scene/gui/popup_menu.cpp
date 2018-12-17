@@ -453,7 +453,6 @@ void PopupMenu::_notification(int p_what) {
 
 				Color icon_color(1, 1, 1, items[i].disabled ? 0.5 : 1);
 
-				item_ofs.x += items[i].h_ofs;
 				if (!items[i].icon.is_null()) {
 
 					icon_size = items[i].icon->get_size();
@@ -470,6 +469,7 @@ void PopupMenu::_notification(int p_what) {
 
 				String text = items[i].shortcut.is_valid() ? String(tr(items[i].shortcut->get_name())) : items[i].xl_text;
 
+				item_ofs.x += items[i].h_ofs;
 				if (items[i].separator) {
 
 					int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;

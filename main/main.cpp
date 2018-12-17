@@ -1230,6 +1230,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	register_driver_types();
 
+	// This loads global classes, so it must happen before custom loaders and savers are registered
 	ScriptServer::init_languages();
 
 	MAIN_PRINT("Main: Load Translations");
@@ -1488,6 +1489,9 @@ bool Main::start() {
 			sml->set_debug_navigation_hint(true);
 		}
 #endif
+
+		ResourceLoader::add_custom_loaders();
+		ResourceSaver::add_custom_savers();
 
 		if (!project_manager && !editor) { // game
 			if (game_path != "" || script != "") {
@@ -1961,10 +1965,12 @@ void Main::force_redraw() {
  * so that the engine closes cleanly without leaking memory or crashing.
  * The order matters as some of those steps are linked with each other.
  */
-
 void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
+
+	ResourceLoader::remove_custom_loaders();
+	ResourceSaver::remove_custom_savers();
 
 	message_queue->flush();
 	memdelete(message_queue);

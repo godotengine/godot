@@ -2701,6 +2701,7 @@ bool Tree::edit_selected() {
 
 		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
 		Point2i textedpos = get_global_position() + rect.position - ofs;
+		cache.text_editor_position = textedpos;
 		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
@@ -2955,6 +2956,21 @@ void Tree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
 		update_cache();
+	}
+
+	if (p_what == NOTIFICATION_RESIZED || p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+
+		if (popup_edited_item != NULL) {
+			Rect2 rect = popup_edited_item->get_meta("__focus_rect");
+			Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
+			Point2i textedpos = get_global_position() + rect.position - ofs;
+
+			if (cache.text_editor_position != textedpos) {
+				cache.text_editor_position = textedpos;
+				text_editor->set_position(textedpos);
+				value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
+			}
+		}
 	}
 }
 
@@ -3884,6 +3900,7 @@ Tree::Tree() {
 
 	value_editor->set_as_toplevel(true);
 	text_editor->set_as_toplevel(true);
+	set_notify_transform(true);
 
 	updating_value_editor = false;
 	pressed_button = -1;

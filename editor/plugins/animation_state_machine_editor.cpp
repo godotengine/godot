@@ -118,7 +118,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			menu->add_item(TTR("Paste"), MENU_PASTE);
 		}
 		menu->add_separator();
-		menu->add_item(TTR("Load.."), MENU_LOAD_FILE);
+		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
 		menu->set_global_position(state_machine_draw->get_global_transform().xform(mb->get_position()));
 		menu->popup();
@@ -1111,7 +1111,7 @@ void AnimationNodeStateMachineEditor::_erase_selected() {
 		updating = true;
 		undo_redo->create_action("Node Removed");
 		undo_redo->add_do_method(state_machine.ptr(), "remove_node", selected_node);
-		undo_redo->add_undo_method(state_machine.ptr(), "add_node", selected_node, state_machine->get_node(selected_node));
+		undo_redo->add_undo_method(state_machine.ptr(), "add_node", selected_node, state_machine->get_node(selected_node), state_machine->get_node_position(selected_node));
 		for (int i = 0; i < state_machine->get_transition_count(); i++) {
 			String from = state_machine->get_transition_from(i);
 			String to = state_machine->get_transition_to(i);
@@ -1267,7 +1267,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(tool_erase_hb);
 	tool_erase_hb->add_child(memnew(VSeparator));
 	tool_erase = memnew(ToolButton);
-	tool_erase->set_tooltip(TTR("Remove selected node or transition"));
+	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
 	tool_erase_hb->add_child(tool_erase);
 	tool_erase->connect("pressed", this, "_erase_selected");
 	tool_erase->set_disabled(true);

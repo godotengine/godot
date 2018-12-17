@@ -128,7 +128,7 @@ public:
 };
 
 class ResourceFormatLoaderText : public ResourceFormatLoader {
-
+	GDCLASS(ResourceFormatLoaderText, ResourceFormatLoader)
 public:
 	static ResourceFormatLoaderText *singleton;
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
@@ -170,6 +170,7 @@ public:
 };
 
 class ResourceFormatSaverText : public ResourceFormatSaver {
+	GDCLASS(ResourceFormatSaverText, ResourceFormatSaver)
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

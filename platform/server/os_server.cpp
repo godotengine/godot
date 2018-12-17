@@ -99,7 +99,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	_ensure_user_data_dir();
 
-	resource_loader_dummy = memnew(ResourceFormatDummyTexture);
+	resource_loader_dummy.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dummy);
 
 	return OK;
@@ -118,7 +118,8 @@ void OS_Server::finalize() {
 
 	memdelete(power_manager);
 
-	memdelete(resource_loader_dummy);
+	ResourceLoader::remove_resource_format_loader(resource_loader_dummy);
+	resource_loader_dummy.unref();
 
 	args.clear();
 }

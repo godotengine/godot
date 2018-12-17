@@ -61,6 +61,25 @@ void Environment::set_sky_custom_fov(float p_scale) {
 	bg_sky_custom_fov = p_scale;
 	VS::get_singleton()->environment_set_sky_custom_fov(environment, p_scale);
 }
+void Environment::set_sky_orientation(const Basis &p_orientation) {
+
+	bg_sky_orientation = p_orientation;
+	_change_notify("background_sky_rotation");
+	_change_notify("background_sky_rotation_degrees");
+	VS::get_singleton()->environment_set_sky_orientation(environment, bg_sky_orientation);
+}
+void Environment::set_sky_rotation(const Vector3 &p_euler_rad) {
+
+	bg_sky_orientation.set_euler(p_euler_rad);
+	_change_notify("background_sky_orientation");
+	_change_notify("background_sky_rotation_degrees");
+	VS::get_singleton()->environment_set_sky_orientation(environment, bg_sky_orientation);
+}
+void Environment::set_sky_rotation_degrees(const Vector3 &p_euler_deg) {
+
+	set_sky_rotation(p_euler_deg * Math_PI / 180.0);
+	_change_notify("background_sky_rotation");
+}
 void Environment::set_bg_color(const Color &p_color) {
 
 	bg_color = p_color;
@@ -104,6 +123,22 @@ Ref<Sky> Environment::get_sky() const {
 float Environment::get_sky_custom_fov() const {
 
 	return bg_sky_custom_fov;
+}
+
+Basis Environment::get_sky_orientation() const {
+
+	return bg_sky_orientation;
+}
+
+Vector3 Environment::get_sky_rotation() const {
+
+	// should we cache this? maybe overkill
+	return bg_sky_orientation.get_euler();
+}
+
+Vector3 Environment::get_sky_rotation_degrees() const {
+
+	return get_sky_rotation() * 180.0 / Math_PI;
 }
 
 Color Environment::get_bg_color() const {
@@ -268,7 +303,7 @@ Ref<Texture> Environment::get_adjustment_color_correction() const {
 
 void Environment::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "background_sky" || property.name == "background_sky_custom_fov" || property.name == "ambient_light/sky_contribution") {
+	if (property.name == "background_sky" || property.name == "background_sky_custom_fov" || property.name == "background_sky_orientation" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && bg_mode != BG_COLOR_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
@@ -875,6 +910,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);
 	ClassDB::bind_method(D_METHOD("set_sky", "sky"), &Environment::set_sky);
 	ClassDB::bind_method(D_METHOD("set_sky_custom_fov", "scale"), &Environment::set_sky_custom_fov);
+	ClassDB::bind_method(D_METHOD("set_sky_orientation", "orientation"), &Environment::set_sky_orientation);
+	ClassDB::bind_method(D_METHOD("set_sky_rotation", "euler_radians"), &Environment::set_sky_rotation);
+	ClassDB::bind_method(D_METHOD("set_sky_rotation_degrees", "euler_degrees"), &Environment::set_sky_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
 	ClassDB::bind_method(D_METHOD("set_canvas_max_layer", "layer"), &Environment::set_canvas_max_layer);
@@ -885,6 +923,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
 	ClassDB::bind_method(D_METHOD("get_sky"), &Environment::get_sky);
 	ClassDB::bind_method(D_METHOD("get_sky_custom_fov"), &Environment::get_sky_custom_fov);
+	ClassDB::bind_method(D_METHOD("get_sky_orientation"), &Environment::get_sky_orientation);
+	ClassDB::bind_method(D_METHOD("get_sky_rotation"), &Environment::get_sky_rotation);
+	ClassDB::bind_method(D_METHOD("get_sky_rotation_degrees"), &Environment::get_sky_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &Environment::get_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_energy"), &Environment::get_bg_energy);
 	ClassDB::bind_method(D_METHOD("get_canvas_max_layer"), &Environment::get_canvas_max_layer);
@@ -896,6 +937,9 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep"), "set_background", "get_background");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "background_sky_orientation"), "set_sky_orientation", "get_sky_orientation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation", "get_sky_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation_degrees", "get_sky_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
@@ -1226,6 +1270,7 @@ Environment::Environment() {
 
 	bg_mode = BG_CLEAR_COLOR;
 	bg_sky_custom_fov = 0;
+	bg_sky_orientation = Basis();
 	bg_energy = 1.0;
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;

@@ -353,7 +353,8 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	String l;
 	int qc = 0;
 	do {
-		ERR_FAIL_COND_V(eof_reached(), Vector<String>());
+		if (eof_reached())
+			break;
 
 		l += get_line() + "\n";
 		qc = 0;

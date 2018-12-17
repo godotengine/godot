@@ -698,6 +698,34 @@ void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
 }
 
+int find(const PoolStringArray &a, const String &v) {
+	PoolStringArray::Read r = a.read();
+	for (int j = 0; j < a.size(); ++j) {
+		if (r[j] == v) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+void EditorPlugin::enable_plugin() {
+	// Called when the plugin gets enabled in project settings, after it's added to the tree.
+	// You can implement it to register autoloads.
+
+	if (get_script_instance() && get_script_instance()->has_method("enable_plugin")) {
+		get_script_instance()->call("enable_plugin");
+	}
+}
+
+void EditorPlugin::disable_plugin() {
+	// Last function called when the plugin gets disabled in project settings.
+	// Implement it to cleanup things from the project, such as unregister autoloads.
+
+	if (get_script_instance() && get_script_instance()->has_method("disable_plugin")) {
+		get_script_instance()->call("disable_plugin");
+	}
+}
+
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	if (get_script_instance() && get_script_instance()->has_method("set_window_layout")) {
@@ -801,6 +829,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "build"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("enable_plugin"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("disable_plugin"));
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));

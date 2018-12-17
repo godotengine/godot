@@ -668,6 +668,13 @@ void RasterizerSceneGLES2::environment_set_sky_custom_fov(RID p_env, float p_sca
 	env->sky_custom_fov = p_scale;
 }
 
+void RasterizerSceneGLES2::environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->sky_orientation = p_orientation;
+}
+
 void RasterizerSceneGLES2::environment_set_bg_color(RID p_env, const Color &p_color) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -2283,7 +2290,13 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				}
 			} else {
 				if (use_radiance_map) {
-					state.scene_shader.set_uniform(SceneShaderGLES2::RADIANCE_INVERSE_XFORM, p_view_transform);
+					if (p_env) {
+						Transform sky_orientation(p_env->sky_orientation, Vector3(0.0, 0.0, 0.0));
+						state.scene_shader.set_uniform(SceneShaderGLES2::RADIANCE_INVERSE_XFORM, sky_orientation.affine_inverse() * p_view_transform);
+					} else {
+						// would be a bit weird if we dont have this...
+						state.scene_shader.set_uniform(SceneShaderGLES2::RADIANCE_INVERSE_XFORM, p_view_transform);
+					}
 				}
 
 				if (p_env) {
@@ -2393,7 +2406,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, false);
 }
 
-void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy) {
+void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation) {
 	ERR_FAIL_COND(!p_sky);
 
 	RasterizerStorageGLES2::Texture *tex = storage->texture_owner.getornull(p_sky->panorama);
@@ -2473,6 +2486,10 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA, false);
 	storage->shaders.copy.bind();
 	storage->shaders.copy.set_uniform(CopyShaderGLES2::MULTIPLIER, p_energy);
+
+	// don't know why but I always have problems setting a uniform mat3, so we're using a transform
+	storage->shaders.copy.set_uniform(CopyShaderGLES2::SKY_TRANSFORM, Transform(p_sky_orientation, Vector3(0.0, 0.0, 0.0)).affine_inverse());
+
 	if (asymmetrical) {
 		// pack the bits we need from our projection matrix
 		storage->shaders.copy.set_uniform(CopyShaderGLES2::ASYM_PROJ, camera.matrix[2][0], camera.matrix[0][0], camera.matrix[2][1], camera.matrix[1][1]);
@@ -2648,7 +2665,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
 
 		if (sky && sky->panorama.is_valid()) {
-			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy);
+			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
 		}
 	}
 

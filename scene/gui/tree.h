@@ -457,6 +457,8 @@ private:
 		TreeItem *hover_item;
 		int hover_cell;
 
+		Point2i text_editor_position;
+
 	} cache;
 
 	int _get_title_button_height() const;
