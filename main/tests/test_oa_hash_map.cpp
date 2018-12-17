@@ -95,7 +95,7 @@ MainLoop *test() {
 	// stress test / test for issue #22928
 	{
 		OAHashMap<int, int> map;
-		int dummy;
+		int dummy = 0;
 		const int N = 1000;
 		uint32_t *keys = new uint32_t[N];
 
