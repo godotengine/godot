@@ -356,7 +356,7 @@ void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int
 
 	undo_redo->create_action("Nodes Connected");
 	undo_redo->add_do_method(blend_tree.ptr(), "connect_node", p_to, p_to_index, p_from);
-	undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index, p_from);
+	undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();

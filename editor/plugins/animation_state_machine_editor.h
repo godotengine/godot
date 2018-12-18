@@ -143,6 +143,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	String prev_name;
 	void _name_edited(const String &p_text);
+	void _name_edited_focus_out();
 	void _open_editor(const String &p_name);
 	void _scroll_changed(double);
 
