@@ -1073,7 +1073,9 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 
 	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1)
 
-	ERR_FAIL_COND(new_name == prev_name);
+	if (new_name == prev_name) {
+		return; // Nothing to do.
+	}
 
 	String base_name = new_name;
 	int base = 1;

@@ -236,6 +236,8 @@
 		</theme_item>
 		<theme_item name="close" type="Texture">
 		</theme_item>
+		<theme_item name="close_color" type="Color">
+		</theme_item>
 		<theme_item name="close_offset" type="int">
 		</theme_item>
 		<theme_item name="comment" type="StyleBox">

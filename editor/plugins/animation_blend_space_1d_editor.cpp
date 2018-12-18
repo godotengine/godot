@@ -72,7 +72,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				ap->get_animation_list(&names);
 
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					animations_menu->add_icon_item(get_icon("Animation", "Editoricons"), E->get());
+					animations_menu->add_icon_item(get_icon("Animation", "EditorIcons"), E->get());
 					animations_to_add.push_back(E->get());
 				}
 			}
