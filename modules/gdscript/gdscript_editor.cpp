@@ -499,8 +499,10 @@ struct GDScriptCompletionIdentifier {
 
 static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Set<String> &r_list) {
 
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
-		r_list.insert("\"" + p_dir->get_file_path(i) + "\"");
+		r_list.insert(quote_style + p_dir->get_file_path(i) + quote_style);
 	}
 
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
@@ -2151,6 +2153,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 	GDScriptParser::DataType base_type = p_base.type;
 	bool _static = false;
 
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+
 	while (base_type.has_type) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
@@ -2171,7 +2175,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 
 				if ((p_method == "connect" || p_method == "emit_signal") && p_argidx == 0) {
 					for (int i = 0; i < base_type.class_type->_signals.size(); i++) {
-						r_result.insert("\"" + base_type.class_type->_signals[i].name.operator String() + "\"");
+						r_result.insert(quote_style + base_type.class_type->_signals[i].name.operator String() + quote_style);
 					}
 				}
 
@@ -2184,7 +2188,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 						List<MethodInfo> signals;
 						gds->get_script_signal_list(&signals);
 						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-							r_result.insert("\"" + E->get().name + "\"");
+							r_result.insert(quote_style + E->get().name + quote_style);
 						}
 					}
 					Ref<GDScript> base_script = gds->get_base_script();
@@ -2243,7 +2247,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 					List<MethodInfo> signals;
 					ClassDB::get_signal_list(class_name, &signals);
 					for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-						r_result.insert("\"" + E->get().name + "\"");
+						r_result.insert(quote_style + E->get().name + quote_style);
 					}
 				}
 
@@ -2258,7 +2262,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 							continue;
 						}
 						String name = s.get_slice("/", 1);
-						r_result.insert("\"/root/" + name + "\"");
+						r_result.insert(quote_style + "/root/" + name + quote_style);
 					}
 				}
 
@@ -2272,7 +2276,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 							continue;
 						}
 						String name = s.get_slice("/", 1);
-						r_result.insert("\"" + name + "\"");
+						r_result.insert(quote_style + name + quote_style);
 					}
 				}
 
@@ -2306,6 +2310,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 }
 
 static void _find_call_arguments(const GDScriptCompletionContext &p_context, const GDScriptParser::Node *p_node, int p_argidx, Set<String> &r_result, bool &r_forced, String &r_arghint) {
+
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	if (!p_node || p_node->type != GDScriptParser::Node::TYPE_OPERATOR) {
 		return;
@@ -2424,7 +2430,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 		Set<String> methods;
 		_find_identifiers_in_base(p_context, connect_base, true, methods);
 		for (Set<String>::Element *E = methods.front(); E; E = E->next()) {
-			r_result.insert("\"" + E->get().replace("(", "").replace(")", "") + "\"");
+			r_result.insert(quote_style + E->get().replace("(", "").replace(")", "") + quote_style);
 		}
 	}
 
@@ -2432,6 +2438,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 }
 
 Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
 	GDScriptParser parser;
 
@@ -2495,7 +2503,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						continue;
 					}
 					String name = s.get_slice("/", 1);
-					options.insert("\"/root/" + name + "\"");
+					options.insert(quote_style + "/root/" + name + quote_style);
 				}
 			}
 		} break;
@@ -2635,7 +2643,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				switch (base_type.kind) {
 					case GDScriptParser::DataType::CLASS: {
 						for (int i = 0; i < base_type.class_type->_signals.size(); i++) {
-							options.insert("\"" + base_type.class_type->_signals[i].name.operator String() + "\"");
+							options.insert(quote_style + base_type.class_type->_signals[i].name.operator String() + quote_style);
 						}
 						base_type = base_type.class_type->base_type;
 					} break;
@@ -2646,7 +2654,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 							List<MethodInfo> signals;
 							scr->get_script_signal_list(&signals);
 							for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-								options.insert("\"" + E->get().name + "\"");
+								options.insert(quote_style + E->get().name + quote_style);
 							}
 							Ref<Script> base_script = scr->get_base_script();
 							if (base_script.is_valid()) {
@@ -2673,7 +2681,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						List<MethodInfo> signals;
 						ClassDB::get_signal_list(class_name, &signals);
 						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-							options.insert("\"" + E->get().name + "\"");
+							options.insert(quote_style + E->get().name + quote_style);
 						}
 					} break;
 					default: {
@@ -2859,7 +2867,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", 0);
+		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", false);
 
 		if (use_space_indentation) {
 			int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
