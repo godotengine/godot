@@ -408,7 +408,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 
 			//draw edited curve
-			_draw_track(track, accent);
+			const Color highlight = get_color("highlight_color", "Editor");
+			_draw_track(track, highlight);
 		}
 
 		//draw editor handles
