@@ -1797,6 +1797,7 @@ bool Main::start() {
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
+			project_manager = true;
 		}
 
 		if (project_manager || editor) {
@@ -1806,6 +1807,10 @@ bool Main::start() {
 				StreamPeerSSL::load_certs_from_file(certs);
 			else
 				StreamPeerSSL::load_certs_from_memory(StreamPeerSSL::get_project_cert_array());
+
+			// Hide console window if requested (Windows-only)
+			bool hide_console = EditorSettings::get_singleton()->get_setting("interface/editor/hide_console_window");
+			OS::get_singleton()->set_console_visible(!hide_console);
 		}
 #endif
 	}
