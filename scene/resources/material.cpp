@@ -30,6 +30,10 @@
 
 #include "material.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
 #include "scene/scene_string_names.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
@@ -236,6 +240,12 @@ void ShaderMaterial::_bind_methods() {
 
 void ShaderMaterial::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
 	String f = p_function.operator String();
 	if ((f == "get_shader_param" || f == "set_shader_param") && p_idx == 0) {
 
@@ -243,7 +253,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
 			for (List<PropertyInfo>::Element *E = pl.front(); E; E = E->next()) {
-				r_options->push_back("\"" + E->get().name.replace_first("shader_param/", "") + "\"");
+				r_options->push_back(quote_style + E->get().name.replace_first("shader_param/", "") + quote_style);
 			}
 		}
 	}

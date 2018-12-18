@@ -2634,6 +2634,12 @@ bool Control::is_visibility_clip_disabled() const {
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 
+#ifdef TOOLS_ENABLED
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
+#else
+	const String quote_style = "\"";
+#endif
+
 	Node::get_argument_options(p_function, p_idx, r_options);
 
 	if (p_idx == 0) {
@@ -2651,7 +2657,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 
 		sn.sort_custom<StringName::AlphCompare>();
 		for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
-			r_options->push_back("\"" + E->get() + "\"");
+			r_options->push_back(quote_style + E->get() + quote_style);
 		}
 	}
 }
