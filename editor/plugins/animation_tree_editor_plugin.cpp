@@ -90,8 +90,8 @@ void AnimationTreeEditor::_path_button_pressed(int p_path) {
 }
 
 void AnimationTreeEditor::_update_path() {
-	while (path_hb->get_child_count()) {
-		memdelete(path_hb->get_child(0));
+	while (path_hb->get_child_count() > 1) {
+		memdelete(path_hb->get_child(1));
 	}
 
 	Ref<ButtonGroup> group;
@@ -251,6 +251,9 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	path_edit->set_enable_v_scroll(false);
 	path_hb = memnew(HBoxContainer);
 	path_edit->add_child(path_hb);
+	path_hb->add_child(memnew(Label(TTR("Path:"))));
+
+	add_child(memnew(HSeparator));
 
 	current_root = 0;
 	singleton = this;
