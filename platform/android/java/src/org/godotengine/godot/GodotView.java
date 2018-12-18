@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 package org.godotengine.godot;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -75,9 +76,9 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 	private static String TAG = "GodotView";
 	private static final boolean DEBUG = false;
-	private static Context ctx;
+	private Context ctx;
 
-	private static GodotIO io;
+	private GodotIO io;
 	private static boolean firsttime = true;
 	private static boolean use_gl3 = false;
 	private static boolean use_32 = false;
@@ -105,20 +106,26 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		init(false, 16, 0);
 	}
 
+	public GodotView(Context context) {
+		super(context);
+		ctx = context;
+	}
+
 	public GodotView(Context context, boolean translucent, int depth, int stencil) {
 		super(context);
 		init(translucent, depth, stencil);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		return activity.gotTouchEvent(event);
-	};
+	}
 
 	public int get_godot_button(int keyCode) {
 
-		int button = 0;
+		int button;
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_BUTTON_A: // Android A is SNES B
 				button = 0;
@@ -178,7 +185,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			default:
 				button = keyCode - KeyEvent.KEYCODE_BUTTON_1 + 20;
 				break;
-		};
+		}
 		return button;
 	};
 
@@ -440,6 +447,10 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
 		private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 		public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+			String driver_name = GodotLib.getGlobal("rendering/quality/driver/driver_name");
+			if (use_gl3 && !driver_name.equals("GLES3")) {
+				use_gl3 = false;
+			}
 			if (use_gl3)
 				Log.w(TAG, "creating OpenGL ES 3.0 context :");
 			else
@@ -508,26 +519,24 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		 * perform actual matching in chooseConfig() below.
 		 */
 		private static int EGL_OPENGL_ES2_BIT = 4;
-		private static int[] s_configAttribs2 =
-				{
-					EGL10.EGL_RED_SIZE, 4,
-					EGL10.EGL_GREEN_SIZE, 4,
-					EGL10.EGL_BLUE_SIZE, 4,
-					//  EGL10.EGL_DEPTH_SIZE,     16,
-					// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-					EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-					EGL10.EGL_NONE
-				};
-		private static int[] s_configAttribs3 =
-				{
-					EGL10.EGL_RED_SIZE, 4,
-					EGL10.EGL_GREEN_SIZE, 4,
-					EGL10.EGL_BLUE_SIZE, 4,
-					// EGL10.EGL_DEPTH_SIZE,     16,
-					//  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-					EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, //apparently there is no EGL_OPENGL_ES3_BIT
-					EGL10.EGL_NONE
-				};
+		private static int[] s_configAttribs2 = {
+			EGL10.EGL_RED_SIZE, 4,
+			EGL10.EGL_GREEN_SIZE, 4,
+			EGL10.EGL_BLUE_SIZE, 4,
+			//  EGL10.EGL_DEPTH_SIZE,     16,
+			// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+			EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+			EGL10.EGL_NONE
+		};
+		private static int[] s_configAttribs3 = {
+			EGL10.EGL_RED_SIZE, 4,
+			EGL10.EGL_GREEN_SIZE, 4,
+			EGL10.EGL_BLUE_SIZE, 4,
+			// EGL10.EGL_DEPTH_SIZE,     16,
+			//  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+			EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, //apparently there is no EGL_OPENGL_ES3_BIT
+			EGL10.EGL_NONE
+		};
 
 		public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
 

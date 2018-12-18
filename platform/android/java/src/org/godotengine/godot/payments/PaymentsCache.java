@@ -46,7 +46,7 @@ public class PaymentsCache {
 		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putBoolean(sku, flag);
-		editor.commit();
+		editor.apply();
 	}
 
 	public boolean getConsumableFlag(String set, String sku) {
@@ -60,7 +60,7 @@ public class PaymentsCache {
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(sku, value);
 		//Log.d("XXX", "Setting asset: consumables_" + set + ":" + sku);
-		editor.commit();
+		editor.apply();
 	}
 
 	public String getConsumableValue(String set, String sku) {
