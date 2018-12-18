@@ -965,7 +965,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	// attachements for it, so we can fill them by issuing draw calls.
 	GLuint tmp_fb;
 
-	int size = p_radiance_size;
+	int size = p_radiance_size / 4; //divide by four because its a cubemap (this is an approximation because GLES3 uses a dual paraboloid)
 
 	int lod = 0;
 
