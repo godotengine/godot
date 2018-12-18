@@ -335,6 +335,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 				POOL_COLOR_ARRAY,
 				POOL_VECTOR2_ARRAY,
 				POOL_VECTOR3_ARRAY,
+				INT,
 				NIL
 			};
 
@@ -345,6 +346,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 
@@ -354,6 +356,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 			valid_types = valid;
@@ -362,6 +365,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 
@@ -371,6 +375,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 			valid_types = valid;
@@ -379,6 +384,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 			valid_types = valid;
@@ -388,6 +394,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 			valid_types = valid;
@@ -397,6 +404,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			static const Type valid[] = {
 				ARRAY,
+				INT,
 				NIL
 			};
 
