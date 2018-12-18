@@ -462,6 +462,20 @@ public:
 
 	void operator=(const PoolVector &p_dvector) { _reference(p_dvector); }
 	PoolVector() { alloc = NULL; }
+
+	static PoolVector<T> sizeInit(int size){
+		PoolVector<T> pool;
+		pool.resize(size);
+		return pool;
+	}
+
+	void setValues(const T &value) {
+		for(int i = 0; i < this->size();i++){
+			this->set(i,value);
+		}
+	}
+
+
 	PoolVector(const PoolVector &p_dvector) {
 		alloc = NULL;
 		_reference(p_dvector);

@@ -828,6 +828,97 @@ struct _VariantCall {
 
 	static ConstructFunc *construct_funcs;
 
+	static void Array_init1(Variant &r_ret, const Variant **p_args){
+		Array ret;
+		int size = p_args[0]->operator int();
+		ret.resize(size);
+		r_ret = ret;
+	}
+
+	static void Array_init2(Variant &r_ret, const Variant **p_args){
+		Array ret;
+		int size = p_args[0]->operator int();
+		ret.resize(size);
+		for(int i = 0; i < size;i++){
+			ret.set(i,*p_args[1]);
+		}
+		r_ret = ret;
+	}
+
+	static void PoolByteArray_init2(Variant &r_ret, const Variant **p_args){
+		PoolByteArray ret;
+		int size = p_args[0]->operator int();
+		unsigned char byte = p_args[1]->operator unsigned char();
+		ret.resize(size);
+		ret.setValues(byte);
+		r_ret = ret;
+	}
+
+	static void PoolIntArray_init2(Variant &r_ret, const Variant **p_args){
+		PoolIntArray ret;
+		int size = p_args[0]->operator int();
+		int num = p_args[1]->operator int();
+		ret.resize(size);
+		ret.setValues(num);
+		r_ret = ret;
+	}
+
+	static void PoolRealArray_init2(Variant &r_ret, const Variant **p_args){
+		PoolRealArray ret;
+		int size = p_args[0]->operator int();
+		real_t num = p_args[1]->operator real_t();
+		ret.resize(size);
+		ret.setValues(num);
+		r_ret = ret;
+	}
+
+	static void PoolStringArray_init2(Variant &r_ret, const Variant **p_args){
+		PoolStringArray ret;
+		int size = p_args[0]->operator int();
+		String str = p_args[1]->operator String();
+		ret.resize(size);
+		ret.setValues(str);
+		r_ret = ret;
+	}
+
+	static void PoolVector2Array_init2(Variant &r_ret, const Variant **p_args) {
+
+		PoolVector2Array ret;
+		int size = p_args[0]->operator int();
+		Vector2 vec = p_args[1]->operator Vector2();
+		ret.resize(size);
+		ret.setValues(vec);
+		r_ret = ret;
+	}
+
+	static void PoolVector3Array_init1(Variant &r_ret, const Variant **p_args) {
+
+		PoolVector3Array ret;
+		ret.resize(p_args[0]->operator int());
+		r_ret = ret;
+	}
+
+	static void PoolVector3Array_init2(Variant &r_ret, const Variant **p_args) {
+
+		PoolVector3Array ret;
+		int size = p_args[0]->operator int();
+		Vector3 vec = p_args[1]->operator Vector3();
+		ret.resize(size);
+		ret.setValues(vec);
+		r_ret = ret;
+	}
+
+	static void PoolColorArray_init2(Variant &r_ret, const Variant **p_args) {
+
+		PoolColorArray ret;
+		int size = p_args[0]->operator int();
+		Color col = p_args[1]->operator Color();
+		ret.resize(size);
+		ret.setValues(col);
+		r_ret = ret;
+	}
+
+
 	static void Vector2_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Vector2(*p_args[0], *p_args[1]);
@@ -1192,17 +1283,17 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case OBJECT: return ((Object *)(p_args[0]->operator Object *()));
 			case DICTIONARY: return p_args[0]->operator Dictionary();
 			case ARRAY:
-				return p_args[0]->operator Array(); // 20
+				return Array::sizeInit(*p_args[0]); // 20
 
 			// arrays
-			case POOL_BYTE_ARRAY: return (PoolByteArray(*p_args[0]));
-			case POOL_INT_ARRAY: return (PoolIntArray(*p_args[0]));
-			case POOL_REAL_ARRAY: return (PoolRealArray(*p_args[0]));
-			case POOL_STRING_ARRAY: return (PoolStringArray(*p_args[0]));
+			case POOL_BYTE_ARRAY: return PoolVector<unsigned char>::sizeInit(*p_args[0]);
+			case POOL_INT_ARRAY: return PoolVector<int>::sizeInit(*p_args[0]);
+			case POOL_REAL_ARRAY: return PoolVector<real_t>::sizeInit(*p_args[0]);
+			case POOL_STRING_ARRAY: return PoolVector<String>::sizeInit(*p_args[0]);
 			case POOL_VECTOR2_ARRAY:
-				return (PoolVector2Array(*p_args[0])); // 25
-			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0]));
-			case POOL_COLOR_ARRAY: return (PoolColorArray(*p_args[0]));
+				return PoolVector<Vector2>::sizeInit(*p_args[0]); // 25
+			case POOL_VECTOR3_ARRAY: return PoolVector<Vector3>::sizeInit(*p_args[0]);
+			case POOL_COLOR_ARRAY: return PoolVector<Color>::sizeInit(*p_args[0]);
 			default: return Variant();
 		}
 	}
@@ -1853,6 +1944,25 @@ void register_variant_methods() {
 	ADDFUNC1R(TRANSFORM, NIL, Transform, xform_inv, NIL, "v", varray());
 
 	/* REGISTER CONSTRUCTORS */
+
+	_VariantCall::add_constructor(_VariantCall::Array_init1, Variant::ARRAY, "size", Variant::INT);
+	_VariantCall::add_constructor(_VariantCall::Array_init2, Variant::ARRAY, "size", Variant::INT, "value", Variant::NIL);
+
+	_VariantCall::add_constructor(_VariantCall::PoolVector3Array_init1, Variant::POOL_VECTOR3_ARRAY, "size", Variant::INT);
+	_VariantCall::add_constructor(_VariantCall::PoolVector3Array_init2, Variant::POOL_VECTOR3_ARRAY, "size", Variant::INT, "value", Variant::VECTOR3);
+
+	_VariantCall::add_constructor(_VariantCall::PoolByteArray_init2, Variant::POOL_BYTE_ARRAY, "size", Variant::INT, "value", Variant::INT);
+	
+	_VariantCall::add_constructor(_VariantCall::PoolIntArray_init2, Variant::POOL_INT_ARRAY, "size", Variant::INT, "value", Variant::INT);
+	
+	_VariantCall::add_constructor(_VariantCall::PoolRealArray_init2, Variant::POOL_REAL_ARRAY, "size", Variant::INT, "value", Variant::REAL);
+	
+	_VariantCall::add_constructor(_VariantCall::PoolStringArray_init2, Variant::POOL_STRING_ARRAY, "size", Variant::INT, "value", Variant::STRING);
+	
+	_VariantCall::add_constructor(_VariantCall::PoolVector2Array_init2, Variant::POOL_VECTOR2_ARRAY, "size", Variant::INT, "value", Variant::VECTOR2);
+	
+	_VariantCall::add_constructor(_VariantCall::PoolColorArray_init2, Variant::POOL_COLOR_ARRAY, "size", Variant::INT, "value", Variant::COLOR);
+
 
 	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::REAL, "y", Variant::REAL);
 

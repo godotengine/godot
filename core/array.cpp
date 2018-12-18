@@ -412,6 +412,13 @@ Array::Array() {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
 }
+
+Array Array::sizeInit(int size){
+	Array arr;
+	arr.resize(size);
+	return arr;
+}
+
 Array::~Array() {
 
 	_unref();
