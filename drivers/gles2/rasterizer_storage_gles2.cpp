@@ -4482,6 +4482,8 @@ void RasterizerStorageGLES2::initialize() {
 
 	shaders.copy.init();
 	shaders.cubemap_filter.init();
+	bool ggx_hq = GLOBAL_GET("rendering/quality/reflections/high_quality_ggx.mobile");
+	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::LOW_QUALITY, !ggx_hq);
 
 	{
 		// quad for copying stuff
