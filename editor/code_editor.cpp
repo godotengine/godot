@@ -708,8 +708,7 @@ void CodeTextEditor::_text_changed() {
 void CodeTextEditor::_code_complete_timer_timeout() {
 	if (!is_visible_in_tree())
 		return;
-	if (enable_complete_timer)
-		text_editor->query_code_comple();
+	text_editor->query_code_comple();
 }
 
 void CodeTextEditor::_complete_request() {
@@ -1172,8 +1171,6 @@ void CodeTextEditor::_on_settings_change() {
 	code_complete_timer->set_wait_time(
 			EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
 
-	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
-
 	// call hint settings
 	text_editor->set_callhint_settings(
 			EDITOR_DEF("text_editor/completion/put_callhint_tooltip_below_current_line", true),
@@ -1252,8 +1249,6 @@ CodeTextEditor::CodeTextEditor() {
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
-	enable_complete_timer = EDITOR_DEF("text_editor/completion/enable_code_completion_delay", true);
-
 	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
 
 	error_line = 0;
