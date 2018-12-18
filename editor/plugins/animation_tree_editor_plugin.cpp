@@ -64,28 +64,9 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
 
-	Ref<AnimationNode> node = tree->get_tree_root();
-	if (node.is_null())
-		return;
-
 	edited_path.clear();
-	if (p_path >= 0) {
-		for (int i = 0; i <= p_path; i++) {
-			Ref<AnimationNode> child = node->get_child_by_name(button_path[i]);
-			ERR_BREAK(child.is_null());
-			node = child;
-			edited_path.push_back(button_path[i]);
-		}
-	}
-
-	for (int i = 0; i < editors.size(); i++) {
-		if (editors[i]->can_edit(node)) {
-			editors[i]->edit(node);
-			editors[i]->show();
-		} else {
-			editors[i]->edit(Ref<AnimationNode>());
-			editors[i]->hide();
-		}
+	for (int i = 0; i <= p_path; i++) {
+		edited_path.push_back(button_path[i]);
 	}
 }
 
@@ -175,6 +156,10 @@ void AnimationTreeEditor::_notification(int p_what) {
 
 		if (root != current_root) {
 			edit_path(Vector<String>());
+		}
+
+		if (button_path.size() != edited_path.size()) {
+			edit_path(edited_path);
 		}
 	}
 }
