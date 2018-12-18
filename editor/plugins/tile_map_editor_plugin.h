@@ -111,6 +111,7 @@ class TileMapEditor : public VBoxContainer {
 	bool flip_h;
 	bool flip_v;
 	bool transpose;
+	Point2i autotile_coord;
 
 	Point2i rectangle_begin;
 	Rect2i rectangle;
@@ -145,6 +146,7 @@ class TileMapEditor : public VBoxContainer {
 		bool flip_h;
 		bool flip_v;
 		bool transpose;
+		Point2i autotile_coord;
 
 		TileData() :
 				cell(TileMap::INVALID_CELL),
@@ -168,8 +170,8 @@ class TileMapEditor : public VBoxContainer {
 	void _select(const Point2i &p_from, const Point2i &p_to);
 	void _erase_selection();
 
-	void _draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
-	void _draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
+	void _draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i p_autotile_coord, const Transform2D &p_xform);
+	void _draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i p_autotile_coord, const Transform2D &p_xform);
 	void _clear_bucket_cache();
 
 	void _update_copydata();
@@ -189,7 +191,7 @@ class TileMapEditor : public VBoxContainer {
 	void _start_undo(const String &p_action);
 	void _finish_undo();
 	void _create_set_cell_undo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new);
-	void _set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false);
+	void _set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, const Point2i p_autotile_coord = Point2());
 
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();
