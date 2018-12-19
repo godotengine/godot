@@ -142,7 +142,7 @@ def configure(env):
 
             copy_file(mono_bin_path, 'bin', mono_dll_name + '.dll')
     else:
-        sharedlib_ext = '.dylib' if sys.platform == 'darwin' else '.so'
+        sharedlib_ext = '.dylib' if (sys.platform == 'darwin' or ("OSXCROSS_ROOT" in os.environ)) else '.so'
 
         mono_root = ''
         mono_lib_path = ''
@@ -154,7 +154,7 @@ def configure(env):
             if os.getenv('MONO64_PREFIX'):
                 mono_root = os.getenv('MONO64_PREFIX')
 
-        if not mono_root and sys.platform == 'darwin':
+        if not mono_root and (sys.platform == 'darwin' or ("OSXCROSS_ROOT" in os.environ)):
             # Try with some known directories under OSX
             hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current', '/usr/local/var/homebrew/linked/mono']
             for hint_dir in hint_dirs:
@@ -190,14 +190,14 @@ def configure(env):
             if mono_static:
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
 
-                if sys.platform == 'darwin':
+                if sys.platform == 'darwin' or ("OSXCROSS_ROOT" in os.environ):
                     env.Append(LINKFLAGS=['-Wl,-force_load,' + mono_lib_file])
                 else:
                     env.Append(LINKFLAGS=['-Wl,-whole-archive', mono_lib_file, '-Wl,-no-whole-archive'])
             else:
                 env.Append(LIBS=[mono_lib])
 
-            if sys.platform == 'darwin':
+            if sys.platform == 'darwin' or ("OSXCROSS_ROOT" in os.environ):
                 env.Append(LIBS=['iconv', 'pthread'])
             else:
                 env.Append(LIBS=['m', 'rt', 'dl', 'pthread'])
