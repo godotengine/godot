@@ -76,7 +76,7 @@
 			Set dialog to open or save mode, changes selection behavior. See enum [code]Mode[/code] constants.
 		</member>
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title">
-			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e. g. setting mode to [code]MODE_OPEN_FILE[/code] will change the window title to "Open a File").
+			If [code]true[/code], changing the [code]Mode[/code] property will set the window title accordingly (e.g. setting mode to [code]MODE_OPEN_FILE[/code] will change the window title to "Open a File").
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
 			If [code]true[/code], the dialog will show hidden files.

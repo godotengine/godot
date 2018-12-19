@@ -36,12 +36,66 @@
 			<description>
 			</description>
 		</method>
+		<method name="autotile_clear_bitmask_map">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Clears all bitmask info of the autotile.
+			</description>
+		</method>
+		<method name="autotile_get_bitmask">
+			<return type="int" enum="TileSet.AutotileBindings">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Returns the bitmask of the subtile from an autotile given its coordinates.
+				The value is the sum of the values in [enum TileSet.AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
+			</description>
+		</method>
 		<method name="autotile_get_bitmask_mode" qualifiers="const">
 			<return type="int" enum="TileSet.BitmaskMode">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns the [enum TileSet.BitmaskMode] of the autotile.
+			</description>
+		</method>
+		<method name="autotile_get_icon_coordinate" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns the subtile that's being used as an icon in an atlas/autotile given its coordinates.
+				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask info is incomplete. It will also be used to represent it in the TileSet editor.
+			</description>
+		</method>
+		<method name="autotile_get_light_occluder" qualifiers="const">
+			<return type="OccluderPolygon2D">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Returns the light occluder of the subtile from an atlas/autotile given its coordinates.
+			</description>
+		</method>
+		<method name="autotile_get_navigation_polygon" qualifiers="const">
+			<return type="NavigationPolygon">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Returns the navigation polygon of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
 		<method name="autotile_get_size" qualifiers="const">
@@ -50,6 +104,53 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns the size of the subtiles in an atlas/autotile.
+			</description>
+		</method>
+		<method name="autotile_get_spacing" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns the spacing between subtiles of the atlas/autotile.
+			</description>
+		</method>
+		<method name="autotile_get_subtile_priority">
+			<return type="int">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Returns the priority of the subtile from an autotile given its coordinates.
+				When more than one subtile has the same bitmask value, one of them will be picked randomly for drawing. Its priority will define how often it will be picked.
+			</description>
+		</method>
+		<method name="autotile_get_z_index">
+			<return type="int">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Returns the drawing index of the subtile from an atlas/autotile given its coordinates.
+			</description>
+		</method>
+		<method name="autotile_set_bitmask">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="bitmask" type="Vector2">
+			</argument>
+			<argument index="2" name="flag" type="int" enum="TileSet.AutotileBindings">
+			</argument>
+			<description>
+				Sets the bitmask of the subtile from an autotile given its coordinates.
+				The value is the sum of the values in [enum TileSet.AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
 			</description>
 		</method>
 		<method name="autotile_set_bitmask_mode">
@@ -60,6 +161,45 @@
 			<argument index="1" name="mode" type="int" enum="TileSet.BitmaskMode">
 			</argument>
 			<description>
+				Sets the [enum TileSet.BitmaskMode] of the autotile.
+			</description>
+		</method>
+		<method name="autotile_set_icon_coordinate">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Sets the subtile that will be used as an icon in an atlas/autotile given its coordinates.
+				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask info is incomplete. It will also be used to represent it in the TileSet editor.
+			</description>
+		</method>
+		<method name="autotile_set_light_occluder">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
+			</argument>
+			<argument index="2" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Sets the light occluder of the subtile from an atlas/autotile given its coordinates.
+			</description>
+		</method>
+		<method name="autotile_set_navigation_polygon">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
+			</argument>
+			<argument index="2" name="coord" type="Vector2">
+			</argument>
+			<description>
+				Sets the navigation polygon of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
 		<method name="autotile_set_size">
@@ -70,6 +210,45 @@
 			<argument index="1" name="size" type="Vector2">
 			</argument>
 			<description>
+				Sets the size of the subtiles in an atlas/autotile.
+			</description>
+		</method>
+		<method name="autotile_set_spacing">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="spacing" type="int">
+			</argument>
+			<description>
+				Sets the spacing between subtiles of the atlas/autotile.
+			</description>
+		</method>
+		<method name="autotile_set_subtile_priority">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<argument index="2" name="priority" type="int">
+			</argument>
+			<description>
+				Sets the priority of the subtile from an autotile given its coordinates.
+				When more than one subtile has the same bitmask value, one of them will be picked randomly for drawing. Its priority will define how often it will be picked.
+			</description>
+		</method>
+		<method name="autotile_set_z_index">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="coord" type="Vector2">
+			</argument>
+			<argument index="2" name="z_index" type="int">
+			</argument>
+			<description>
+				Sets the drawing index of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
 		<method name="clear">
@@ -304,7 +483,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the tile's [enum TileMode].
+				Returns the tile's [enum TileSet.TileMode].
 			</description>
 		</method>
 		<method name="tile_get_z_index" qualifiers="const">
@@ -508,7 +687,7 @@
 			<argument index="1" name="tilemode" type="int" enum="TileSet.TileMode">
 			</argument>
 			<description>
-				Sets the tile's [enum TileMode].
+				Sets the tile's [enum TileSet.TileMode].
 			</description>
 		</method>
 		<method name="tile_set_z_index">

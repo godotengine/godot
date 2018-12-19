@@ -517,7 +517,7 @@ void TileMapEditor::_update_palette() {
 		manual_palette->show();
 	}
 
-	if (tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
+	if (sel_tile != TileMap::INVALID_CELL && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
 		manual_button->show();
 	} else {
 		manual_button->hide();

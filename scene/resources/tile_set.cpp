@@ -507,6 +507,13 @@ int TileSet::autotile_get_subtile_priority(int p_id, const Vector2 &p_coord) {
 	return 1;
 }
 
+const Map<Vector2, int> &TileSet::autotile_get_priority_map(int p_id) const {
+
+	static Map<Vector2, int> dummy;
+	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
+	return tile_map[p_id].autotile_data.priority_map;
+}
+
 void TileSet::autotile_set_z_index(int p_id, const Vector2 &p_coord, int p_z_index) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -524,11 +531,11 @@ int TileSet::autotile_get_z_index(int p_id, const Vector2 &p_coord) {
 	return 0;
 }
 
-const Map<Vector2, int> &TileSet::autotile_get_priority_map(int p_id) const {
+const Map<Vector2, int> &TileSet::autotile_get_z_index_map(int p_id) const {
 
 	static Map<Vector2, int> dummy;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
-	return tile_map[p_id].autotile_data.priority_map;
+	return tile_map[p_id].autotile_data.z_index_map;
 }
 
 void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag) {
@@ -986,8 +993,23 @@ void TileSet::clear() {
 void TileSet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_tile", "id"), &TileSet::create_tile);
+	ClassDB::bind_method(D_METHOD("autotile_clear_bitmask_map", "id"), &TileSet::autotile_clear_bitmask_map);
+	ClassDB::bind_method(D_METHOD("autotile_set_icon_coordinate", "id", "coord"), &TileSet::autotile_set_icon_coordinate);
+	ClassDB::bind_method(D_METHOD("autotile_get_icon_coordinate", "id"), &TileSet::autotile_get_icon_coordinate);
+	ClassDB::bind_method(D_METHOD("autotile_set_subtile_priority", "id", "coord", "priority"), &TileSet::autotile_set_subtile_priority);
+	ClassDB::bind_method(D_METHOD("autotile_get_subtile_priority", "id", "coord"), &TileSet::autotile_get_subtile_priority);
+	ClassDB::bind_method(D_METHOD("autotile_set_z_index", "id", "coord", "z_index"), &TileSet::autotile_set_z_index);
+	ClassDB::bind_method(D_METHOD("autotile_get_z_index", "id", "coord"), &TileSet::autotile_get_z_index);
+	ClassDB::bind_method(D_METHOD("autotile_set_light_occluder", "id", "light_occluder", "coord"), &TileSet::autotile_set_light_occluder);
+	ClassDB::bind_method(D_METHOD("autotile_get_light_occluder", "id", "coord"), &TileSet::autotile_get_light_occluder);
+	ClassDB::bind_method(D_METHOD("autotile_set_navigation_polygon", "id", "navigation_polygon", "coord"), &TileSet::autotile_set_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("autotile_get_navigation_polygon", "id", "coord"), &TileSet::autotile_get_navigation_polygon);
+	ClassDB::bind_method(D_METHOD("autotile_set_bitmask", "id", "bitmask", "flag"), &TileSet::autotile_set_bitmask);
+	ClassDB::bind_method(D_METHOD("autotile_get_bitmask", "id", "coord"), &TileSet::autotile_get_bitmask);
 	ClassDB::bind_method(D_METHOD("autotile_set_bitmask_mode", "id", "mode"), &TileSet::autotile_set_bitmask_mode);
 	ClassDB::bind_method(D_METHOD("autotile_get_bitmask_mode", "id"), &TileSet::autotile_get_bitmask_mode);
+	ClassDB::bind_method(D_METHOD("autotile_set_spacing", "id", "spacing"), &TileSet::autotile_set_spacing);
+	ClassDB::bind_method(D_METHOD("autotile_get_spacing", "id"), &TileSet::autotile_get_spacing);
 	ClassDB::bind_method(D_METHOD("autotile_set_size", "id", "size"), &TileSet::autotile_set_size);
 	ClassDB::bind_method(D_METHOD("autotile_get_size", "id"), &TileSet::autotile_get_size);
 	ClassDB::bind_method(D_METHOD("tile_set_name", "id", "name"), &TileSet::tile_set_name);
