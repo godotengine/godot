@@ -972,7 +972,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	current->set_export_path(p_path);
 
 	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
-	if (err != OK) {
+	if (err != OK && err != ERR_SKIP) {
 		if (err == ERR_FILE_NOT_FOUND) {
 			error_dialog->set_text(vformat(TTR("Failed to export the project for platform '%s'.\nExport templates seem to be missing or invalid."), platform->get_name()));
 		} else { // Assume misconfiguration. FIXME: Improve error handling and preset config validation.
@@ -1001,7 +1001,7 @@ void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
 void ProjectExportDialog::_export_all(bool p_debug) {
 
 	String mode = p_debug ? TTR("Debug") : TTR("Release");
-	EditorProgress ep("exportall", TTR("Exporting All") + " " + mode, EditorExport::get_singleton()->get_export_preset_count());
+	EditorProgress ep("exportall", TTR("Exporting All") + " " + mode, EditorExport::get_singleton()->get_export_preset_count(), true);
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
@@ -1012,7 +1012,7 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 		ep.step(preset->get_name(), i);
 
 		Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
-		if (err != OK) {
+		if (err != OK && err != ERR_SKIP) {
 			if (err == ERR_FILE_BAD_PATH) {
 				error_dialog->set_text(TTR("The given export path doesn't exist:") + "\n" + preset->get_export_path().get_base_dir());
 			} else {
