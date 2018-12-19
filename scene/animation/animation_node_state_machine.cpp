@@ -323,10 +323,12 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 				//can't travel, then teleport
 				path.clear();
 				current = start_request;
+				emit_signal("state_changed");
 			}
 		} else {
 			path.clear();
 			current = start_request;
+			emit_signal("state_changed");
 			playing = true;
 			play_start = true;
 		}
@@ -340,6 +342,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 
 		if (sm->start_node != StringName() && p_seek && p_time == 0) {
 			current = sm->start_node;
+			emit_signal("state_changed");
 		}
 
 		len_current = sm->blend_node(current, sm->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
@@ -350,6 +353,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 	if (!sm->states.has(current)) {
 		playing = false; //current does not exist
 		current = StringName();
+		emit_signal("state_changed");
 		return 0;
 	}
 	float fade_blend = 1.0;
@@ -464,6 +468,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 				path.remove(0);
 			}
 			current = next;
+			emit_signal("state_changed");
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
 				len_current = sm->blend_node(current, sm->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = MIN(pos_current, len_current);
@@ -496,6 +501,8 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationNodeStateMachinePlayback::is_playing);
 	ClassDB::bind_method(D_METHOD("get_current_node"), &AnimationNodeStateMachinePlayback::get_current_node);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
+
+	ADD_SIGNAL(MethodInfo("state_changed"));
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
@@ -787,10 +794,22 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
+void AnimationNodeStateMachine::on_playback_state_changed() {
+
+	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
+	ERR_FAIL_COND(playback.is_null());
+
+	emit_signal("state_changed", playback->current);
+}
+
 float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
 
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND_V(playback.is_null(), 0.0);
+
+	if (!playback->is_connected("state_changed", this, "on_playback_state_changed")) {
+		playback->connect("state_changed", this, "on_playback_state_changed");
+	}
 
 	return playback->process(this, p_time, p_seek);
 }
@@ -963,6 +982,10 @@ void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &AnimationNodeStateMachine::get_graph_offset);
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationNodeStateMachine::_tree_changed);
+
+	ClassDB::bind_method(D_METHOD("on_playback_state_changed"), &AnimationNodeStateMachine::on_playback_state_changed);
+
+	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::STRING, "new_state")));
 }
 
 AnimationNodeStateMachine::AnimationNodeStateMachine() {

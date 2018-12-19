@@ -163,6 +163,7 @@ private:
 	Vector2 graph_offset;
 
 	void _tree_changed();
+	void on_playback_state_changed();
 
 protected:
 	void _notification(int p_what);
