@@ -413,7 +413,11 @@ Array::Array() {
 	_p->refcount.init();
 }
 
+<<<<<<< HEAD
 Array Array::sizeInit(int size) {
+=======
+Array Array::sizeInit(int size){
+>>>>>>> refs/remotes/origin/SizedContainers
 	Array arr;
 	arr.resize(size);
 	return arr;

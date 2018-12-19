@@ -835,12 +835,12 @@ struct _VariantCall {
 		r_ret = ret;
 	}
 
-	static void Array_init2(Variant &r_ret, const Variant **p_args) {
+	static void Array_init2(Variant &r_ret, const Variant **p_args){
 		Array ret;
 		int size = p_args[0]->operator int();
 		ret.resize(size);
-		for (int i = 0; i < size; i++) {
-			ret.set(i, *p_args[1]);
+		for(int i = 0; i < size;i++){
+			ret.set(i,*p_args[1]);
 		}
 		r_ret = ret;
 	}
