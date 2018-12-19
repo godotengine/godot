@@ -152,7 +152,6 @@ class CodeTextEditor : public VBoxContainer {
 	Label *info;
 	Timer *idle;
 	Timer *code_complete_timer;
-	bool enable_complete_timer;
 
 	Timer *font_resize_timer;
 	int font_resize_val;
