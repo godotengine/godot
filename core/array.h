@@ -96,11 +96,7 @@ public:
 
 	Array(const Array &p_from);
 	Array();
-<<<<<<< HEAD
 	static Array sizeInit(int size);
-=======
-	static  Array sizeInit(int size);
->>>>>>> refs/remotes/origin/SizedContainers
 	~Array();
 };
 
