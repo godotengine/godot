@@ -94,6 +94,7 @@ class TileSetEditor : public HSplitContainer {
 	Ref<TileSet> tileset;
 	TilesetEditorContext *helper;
 	EditorNode *editor;
+	UndoRedo *undo_redo;
 
 	ConfirmationDialog *cd;
 	AcceptDialog *err_dialog;
@@ -151,10 +152,14 @@ class TileSetEditor : public HSplitContainer {
 	void update_texture_list();
 	void update_texture_list_icon();
 
+	void add_texture(Ref<Texture> p_texture);
+	void remove_texture(Ref<Texture> p_texture);
+
 	Ref<Texture> get_current_texture();
 
 	static void _import_node(Node *p_node, Ref<TileSet> p_library);
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
+	void _undo_redo_import_scene(Node *p_scene, bool p_merge);
 
 protected:
 	static void _bind_methods();
@@ -185,6 +190,10 @@ private:
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
 	void _set_snap_sep(Vector2 p_val);
+
+	void _validate_current_tile_id();
+	void _select_edited_shape_coord();
+	void _undo_tile_removal(int p_id);
 
 	void _zoom_in();
 	void _zoom_out();

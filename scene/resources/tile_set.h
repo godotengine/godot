@@ -175,6 +175,7 @@ public:
 
 	void autotile_set_z_index(int p_id, const Vector2 &p_coord, int p_z_index);
 	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
+	const Map<Vector2, int> &autotile_get_z_index_map(int p_id) const;
 
 	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag);
 	uint16_t autotile_get_bitmask(int p_id, Vector2 p_coord);
