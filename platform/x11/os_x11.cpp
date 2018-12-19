@@ -1885,12 +1885,23 @@ void OS_X11::process_xevents() {
 						// Determine the axis used (called valuators in XInput for some forsaken reason)
 						//  Mask is a bitmask indicating which axes are involved.
 						//  We are interested in the values of axes 0 and 1.
-						if (raw_event->valuators.mask_len <= 0 || !XIMaskIsSet(raw_event->valuators.mask, 0) || !XIMaskIsSet(raw_event->valuators.mask, 1)) {
+						if (raw_event->valuators.mask_len <= 0) {
 							break;
 						}
 
-						double rel_x = raw_event->raw_values[0];
-						double rel_y = raw_event->raw_values[1];
+						const double *values = raw_event->raw_values;
+
+						double rel_x = 0.0;
+						double rel_y = 0.0;
+
+						if (XIMaskIsSet(raw_event->valuators.mask, 0)) {
+							rel_x = *values;
+							values++;
+						}
+
+						if (XIMaskIsSet(raw_event->valuators.mask, 1)) {
+							rel_y = *values;
+						}
 
 						// https://bugs.freedesktop.org/show_bug.cgi?id=71609
 						// http://lists.libsdl.org/pipermail/commits-libsdl.org/2015-June/000282.html
