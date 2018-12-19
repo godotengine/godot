@@ -413,7 +413,7 @@ Array::Array() {
 	_p->refcount.init();
 }
 
-Array Array::sizeInit(int size){
+Array Array::sizeInit(int size) {
 	Array arr;
 	arr.resize(size);
 	return arr;

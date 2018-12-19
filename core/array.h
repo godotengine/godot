@@ -96,7 +96,7 @@ public:
 
 	Array(const Array &p_from);
 	Array();
-	static  Array sizeInit(int size);
+	static Array sizeInit(int size);
 	~Array();
 };
 
